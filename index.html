@@ -456,21 +456,13 @@ function confirmLeave() {
 function openSheet() {
   const s = activeGame.settings;
   const n = s.numPlayers;
-  const lastIdx = n - 1;
   const inputs = document.getElementById('sheet-inputs');
-  inputs.innerHTML = s.playerNames.map((name, i) => {
-    if (i === lastIdx) {
-      return `<div class="sheet-row">
-        <label>${esc(name)}</label>
-        <input type="number" id="si-${i}" placeholder="自動計算" readonly
-          style="background:#f5f5f5;color:#888;border:1.5px solid #ddd;border-radius:8px;padding:10px;font-size:16px;text-align:right;flex:1">
-      </div>`;
-    }
-    return `<div class="sheet-row">
+  inputs.innerHTML = s.playerNames.map((name, i) =>
+    `<div class="sheet-row">
       <label>${esc(name)}</label>
       <input type="number" id="si-${i}" placeholder="点数" oninput="updateTotal()">
-    </div>`;
-  }).join('');
+    </div>`
+  ).join('');
   document.getElementById('total-check').textContent = '点数を入力してください';
   document.getElementById('total-check').className = 'total-check ng';
   document.getElementById('confirm-btn').disabled = true;
@@ -487,21 +479,39 @@ function closeSheet() {
 function updateTotal() {
   const n = activeGame.settings.numPlayers;
   const expected = activeGame.settings.startPoints * n;
-  const lastIdx = n - 1;
-  let sum = 0;
-  for (let i = 0; i < lastIdx; i++) {
-    const v = document.getElementById('si-' + i);
-    sum += v ? (Number(v.value) || 0) : 0;
-  }
-  const lastVal = expected - sum;
-  const lastEl = document.getElementById('si-' + lastIdx);
-  if (lastEl) lastEl.value = lastVal;
 
+  const values = [];
+  for (let i = 0; i < n; i++) {
+    const el = document.getElementById('si-' + i);
+    values.push(el.value === '' ? null : Number(el.value));
+  }
+
+  const emptyIndices = values.map((v,i) => v === null ? i : -1).filter(i => i >= 0);
+
+  // 1人だけ空欄なら自動計算
+  if (emptyIndices.length === 1) {
+    const autoIdx = emptyIndices[0];
+    const filledSum = values.reduce((s, v) => s + (v ?? 0), 0);
+    const autoVal = expected - filledSum;
+    const autoEl = document.getElementById('si-' + autoIdx);
+    autoEl.value = autoVal;
+    values[autoIdx] = autoVal;
+  }
+
+  const total = values.reduce((s, v) => s + (v ?? 0), 0);
   const el = document.getElementById('total-check');
   const btn = document.getElementById('confirm-btn');
-  el.textContent = `入力合計: ${(sum + lastVal).toLocaleString()} ✓`;
-  el.className = 'total-check ok';
-  btn.disabled = false;
+
+  if (emptyIndices.length <= 1 && total === expected) {
+    el.textContent = `入力合計: ${total.toLocaleString()} ✓`;
+    el.className = 'total-check ok';
+    btn.disabled = false;
+  } else {
+    const filled = values.filter(v => v !== null).reduce((s,v) => s+v, 0);
+    el.textContent = `入力合計: ${filled.toLocaleString()}`;
+    el.className = 'total-check ng';
+    btn.disabled = true;
+  }
 }
 
 function submitRound() {
