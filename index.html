@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麻雀スコア管理</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
+
+.view { display: none; min-height: 100vh; flex-direction: column; }
+.view.active { display: flex; }
+
+.header { background: #1a237e; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.header h1 { font-size: 18px; font-weight: 700; flex: 1; }
+.back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+
+/* Home */
+#view-home { background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%); justify-content: center; align-items: center; gap: 20px; }
+.home-title { color: #fff; font-size: 28px; font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; text-align: center; }
+.home-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 30px; text-align: center; }
+.home-btn { width: 240px; padding: 18px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+.home-btn:active { transform: scale(0.97); }
+.home-btn-primary { background: #fff; color: #1a237e; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.home-btn-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.5); }
+
+/* Setup */
+#view-setup { background: #f0f2f5; }
+.form-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.card-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+label { font-size: 13px; color: #555; font-weight: 600; }
+input[type=text], input[type=number], select {
+  border: 1.5px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 15px;
+  transition: border-color 0.2s; outline: none; width: 100%;
+}
+input:focus, select:focus { border-color: #1a237e; }
+.toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
+.toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
+.toggle-btn.active { background: #1a237e; color: #fff; }
+.player-inputs { display: flex; flex-direction: column; gap: 8px; }
+.custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.custom-uma-grid .field { margin-bottom: 0; }
+.submit-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
+.submit-btn:active { opacity: 0.85; }
+
+/* Game */
+#view-game { background: #f0f2f5; }
+.game-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 100px; }
+.score-cards { display: flex; flex-direction: column; gap: 10px; }
+.score-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
+.rank-badge { font-size: 20px; font-weight: 800; color: #1a237e; width: 28px; text-align: center; }
+.score-info { flex: 1; }
+.score-name { font-size: 14px; font-weight: 700; }
+.score-yen { font-size: 12px; color: #888; }
+.score-val { font-size: 22px; font-weight: 800; }
+.score-val.pos { color: #1a237e; }
+.score-val.neg { color: #c62828; }
+.rounds-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rounds-table th { background: #1a237e; color: #fff; padding: 8px 6px; text-align: center; font-size: 12px; }
+.rounds-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; }
+.rounds-table tr:last-child td { border-bottom: none; }
+.fab { position: fixed; bottom: 24px; right: 24px; background: #1a237e; color: #fff; border: none; border-radius: 50px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(26,35,126,0.4); z-index: 100; }
+.end-btn { background: #c62828; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
+
+/* Sheet */
+.backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
+.backdrop.open { display: block; }
+.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 20px 20px 0 0; padding: 20px 16px 32px; z-index: 201; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); max-height: 90vh; overflow-y: auto; }
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 16px; }
+.sheet-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+.sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.sheet-row { display: flex; align-items: center; gap: 10px; }
+.sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
+.sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
+.sheet-row input:focus { border-color: #1a237e; }
+.total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
+.total-check.ok { background: #e8f5e9; color: #2e7d32; }
+.total-check.ng { background: #ffebee; color: #c62828; }
+.confirm-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
+.confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+/* History */
+#view-history { background: #f0f2f5; }
+.history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.history-item { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+.history-item:active { opacity: 0.75; }
+.history-info { flex: 1; }
+.history-name { font-size: 15px; font-weight: 700; }
+.history-meta { font-size: 12px; color: #888; margin-top: 2px; }
+.history-arrow { color: #bbb; font-size: 18px; }
+.empty-msg { text-align: center; color: #aaa; margin-top: 60px; font-size: 15px; }
+
+/* Detail */
+#view-detail { background: #f0f2f5; }
+.detail-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="view-home" class="view active">
+  <div class="home-title">🀄 麻雀スコア</div>
+  <div class="home-sub">スコア管理アプリ</div>
+  <button class="home-btn home-btn-primary" onclick="showView('setup')">新しいゲームを始める</button>
+  <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の結果を見る</button>
+</div>
+
+<!-- SETUP -->
+<div id="view-setup" class="view">
+  <div class="header">
+    <button class="back-btn" onclick="showView('home')">←</button>
+    <h1>ゲーム設定</h1>
+  </div>
+  <div class="form-body">
+    <div class="card">
+      <div class="card-title">基本情報</div>
+      <div class="field">
+        <label>ゲーム名</label>
+        <input type="text" id="s-name" placeholder="例: 2025-07-01">
+      </div>
+      <div class="field">
+        <label>人数</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="p4-btn" onclick="setPlayers(4)">4人</button>
+          <button class="toggle-btn" id="p3-btn" onclick="setPlayers(3)">3人</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">プレイヤー名</div>
+      <div class="player-inputs" id="player-inputs"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">点数設定</div>
+      <div class="field">
+        <label>持ち点</label>
+        <input type="number" id="s-start" value="25000">
+      </div>
+      <div class="field">
+        <label>返し点</label>
+        <input type="number" id="s-return" value="30000">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">ウマ</div>
+      <div class="field">
+        <select id="s-uma" onchange="onUmaChange()">
+          <option value="10-30">10-30</option>
+          <option value="10-20">10-20</option>
+          <option value="5-15">5-15</option>
+          <option value="5-10">5-10</option>
+          <option value="0">なし</option>
+          <option value="custom">カスタム</option>
+        </select>
+      </div>
+      <div id="uma-custom" style="display:none">
+        <div class="custom-uma-grid" id="uma-custom-fields"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">レート</div>
+      <div class="field">
+        <select id="s-rate" onchange="onRateChange()">
+          <option value="10">×10（テンイチ）</option>
+          <option value="20">×20（テンニ）</option>
+          <option value="30">×30（テンサン）</option>
+          <option value="50">×50（テンゴ）</option>
+          <option value="100">×100（テンピン）</option>
+          <option value="200">×200（テンリャンピン）</option>
+          <option value="500">×500（ゴジュー）</option>
+          <option value="1000">×1000（デカピン）</option>
+          <option value="2000">×2000（デカリャンピン）</option>
+          <option value="0">なし</option>
+          <option value="custom">カスタム</option>
+        </select>
+      </div>
+      <div id="rate-custom" style="display:none">
+        <div class="field">
+          <label>カスタムレート（倍率）</label>
+          <input type="number" id="s-rate-custom" placeholder="例: 150">
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="submit-btn" onclick="startGame()">ゲームを開始する →</button>
+</div>
+
+<!-- GAME -->
+<div id="view-game" class="view">
+  <div class="header">
+    <button class="back-btn" onclick="confirmLeave()">←</button>
+    <h1 id="game-title">ゲーム中</h1>
+  </div>
+  <div class="game-body">
+    <div class="card">
+      <div class="card-title">合計スコア</div>
+      <div class="score-cards" id="score-cards"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">局履歴</div>
+      <div style="overflow-x:auto">
+        <table class="rounds-table" id="rounds-table"></table>
+      </div>
+    </div>
+    <div class="card">
+      <button class="end-btn" onclick="endGame()">試合終了・保存</button>
+    </div>
+  </div>
+  <button class="fab" onclick="openSheet()">＋ 点数入力</button>
+</div>
+
+<!-- HISTORY -->
+<div id="view-history" class="view">
+  <div class="header">
+    <button class="back-btn" onclick="showView('home')">←</button>
+    <h1>過去の結果</h1>
+  </div>
+  <div class="history-body" id="history-body"></div>
+</div>
+
+<!-- DETAIL -->
+<div id="view-detail" class="view">
+  <div class="header">
+    <button class="back-btn" onclick="showView('history')">←</button>
+    <h1 id="detail-title">結果詳細</h1>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- Bottom sheet -->
+<div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
+<div class="sheet" id="score-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">点数入力</div>
+  <div class="sheet-inputs" id="sheet-inputs"></div>
+  <div class="total-check ng" id="total-check">合計を入力してください</div>
+  <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
+</div>
+
+<script>
+const UMA_MAP = {
+  '10-30': [30, 10, -10, -30],
+  '10-20': [20, 10, -10, -20],
+  '5-15':  [15, 5, -5, -15],
+  '5-10':  [10, 5, -5, -10],
+  '0':     [0, 0, 0, 0]
+};
+
+let numPlayers = 3;
+let activeGame = null;
+let appState = { games: [] };
+
+function loadStorage() {
+  try {
+    const d = localStorage.getItem('mahjong-v3');
+    if (d) appState = JSON.parse(d);
+  } catch(e) {}
+}
+function saveStorage() {
+  localStorage.setItem('mahjong-v3', JSON.stringify(appState));
+}
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'game') renderGame();
+  if (name === 'setup') initSetupForm();
+}
+
+// ---- Setup ----
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function initSetupForm() {
+  document.getElementById('s-name').value = todayStr();
+  numPlayers = 4;
+  document.getElementById('p4-btn').classList.add('active');
+  document.getElementById('p3-btn').classList.remove('active');
+  buildPlayerInputs();
+  onUmaChange();
+  onRateChange();
+}
+
+function setPlayers(n) {
+  numPlayers = n;
+  document.getElementById('p4-btn').classList.toggle('active', n === 4);
+  document.getElementById('p3-btn').classList.toggle('active', n === 3);
+  buildPlayerInputs();
+  onUmaChange();
+}
+
+function buildPlayerInputs() {
+  const container = document.getElementById('player-inputs');
+  container.innerHTML = '';
+  const defaults = ['プレイヤー1','プレイヤー2','プレイヤー3','プレイヤー4'];
+  for (let i = 0; i < numPlayers; i++) {
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.id = 'p-name-' + i;
+    inp.placeholder = defaults[i]; inp.value = defaults[i];
+    inp.style.cssText = 'border:1.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:15px;outline:none;width:100%;transition:border-color 0.2s';
+    inp.onfocus = function() { this.style.borderColor = '#1a237e'; };
+    inp.onblur = function() { this.style.borderColor = '#ddd'; };
+    container.appendChild(inp);
+  }
+}
+
+function onUmaChange() {
+  const v = document.getElementById('s-uma').value;
+  const customDiv = document.getElementById('uma-custom');
+  if (v === 'custom') {
+    customDiv.style.display = 'block';
+    const grid = document.getElementById('uma-custom-fields');
+    grid.innerHTML = '';
+    const ranks = numPlayers === 3 ? ['1位','2位','3位'] : ['1位','2位','3位','4位'];
+    ranks.forEach((r, i) => {
+      const div = document.createElement('div'); div.className = 'field';
+      div.innerHTML = `<label>${r}</label><input type="number" id="uma-c-${i}" value="0" style="border:1.5px solid #ddd;border-radius:8px;padding:10px;font-size:15px;outline:none;width:100%">`;
+      grid.appendChild(div);
+    });
+  } else {
+    customDiv.style.display = 'none';
+  }
+}
+
+function onRateChange() {
+  const v = document.getElementById('s-rate').value;
+  document.getElementById('rate-custom').style.display = v === 'custom' ? 'block' : 'none';
+}
+
+function getUmaArray() {
+  const v = document.getElementById('s-uma').value;
+  if (v === 'custom') {
+    const arr = [];
+    for (let i = 0; i < numPlayers; i++) {
+      arr.push(Number(document.getElementById('uma-c-' + i).value) || 0);
+    }
+    return arr;
+  }
+  const full = UMA_MAP[v] || [0,0,0,0];
+  if (numPlayers === 3) return [full[0], full[1], full[3]];
+  return full.slice(0, 4);
+}
+
+function startGame() {
+  const name = document.getElementById('s-name').value.trim() || todayStr();
+  const playerNames = [];
+  for (let i = 0; i < numPlayers; i++) {
+    playerNames.push(document.getElementById('p-name-' + i).value.trim() || ('プレイヤー' + (i+1)));
+  }
+  const startPoints = Number(document.getElementById('s-start').value) || 25000;
+  const returnPoints = Number(document.getElementById('s-return').value) || 30000;
+  const uma = getUmaArray();
+  const rateVal = document.getElementById('s-rate').value;
+  const rate = rateVal === 'custom'
+    ? (Number(document.getElementById('s-rate-custom').value) || 1)
+    : Number(rateVal);
+
+  activeGame = {
+    id: Date.now().toString(36),
+    name,
+    createdAt: new Date().toISOString(),
+    settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate },
+    rounds: []
+  };
+  showView('game');
+}
+
+// ---- Game ----
+function calcScores(points, settings) {
+  const n = settings.numPlayers;
+  const diffs = points.map(p => (p - settings.returnPoints) / 1000);
+  const order = diffs.map((d,i) => ({d,i})).sort((a,b) => b.d - a.d);
+  const result = new Array(n);
+  order.forEach((o, rank) => {
+    result[o.i] = Math.round((diffs[o.i] + settings.uma[rank]) * 10) / 10;
+  });
+  return result;
+}
+
+function getTotals() {
+  if (!activeGame) return [];
+  const n = activeGame.settings.numPlayers;
+  const totals = new Array(n).fill(0);
+  activeGame.rounds.forEach(r => r.scores.forEach((s, i) => totals[i] += s));
+  return totals.map(t => Math.round(t * 10) / 10);
+}
+
+function renderGame() {
+  if (!activeGame) return;
+  const s = activeGame.settings;
+  document.getElementById('game-title').textContent = activeGame.name;
+
+  const totals = getTotals();
+  const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]}))
+                       .sort((a,b) => b.t - a.t);
+  const cards = document.getElementById('score-cards');
+  cards.innerHTML = ranked.map((p, rank) => {
+    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
+    const cls = p.t >= 0 ? 'pos' : 'neg';
+    const sign = p.t > 0 ? '+' : '';
+    const display = p.t.toFixed(1);
+    return `<div class="score-card">
+      <div class="rank-badge">${rank+1}</div>
+      <div class="score-info">
+        <div class="score-name">${esc(p.name)}</div>
+        ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
+      </div>
+      <div class="score-val ${cls}">${sign}${display}</div>
+    </div>`;
+  }).join('');
+
+  const headers = ['局', ...s.playerNames.map(n => `<th>${esc(n)}</th>`)].join('');
+  const rows = activeGame.rounds.map((r, idx) => {
+    const cells = r.scores.map(sc => {
+      const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
+      return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
+    }).join('');
+    return `<tr><td style="color:#888">${idx+1}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('rounds-table').innerHTML =
+    `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+}
+
+function endGame() {
+  if (!activeGame) return;
+  saveActiveGame();
+  activeGame = null;
+  showView('home');
+}
+
+function saveActiveGame() {
+  if (!activeGame) return;
+  const idx = appState.games.findIndex(g => g.id === activeGame.id);
+  if (idx >= 0) {
+    appState.games[idx] = activeGame;
+  } else {
+    appState.games.unshift(activeGame);
+  }
+  saveStorage();
+}
+
+function confirmLeave() {
+  saveActiveGame();
+  activeGame = null;
+  showView('home');
+}
+
+// ---- Sheet ----
+function openSheet() {
+  const s = activeGame.settings;
+  const n = s.numPlayers;
+  const lastIdx = n - 1;
+  const inputs = document.getElementById('sheet-inputs');
+  inputs.innerHTML = s.playerNames.map((name, i) => {
+    if (i === lastIdx) {
+      return `<div class="sheet-row">
+        <label>${esc(name)}</label>
+        <input type="number" id="si-${i}" placeholder="自動計算" readonly
+          style="background:#f5f5f5;color:#888;border:1.5px solid #ddd;border-radius:8px;padding:10px;font-size:16px;text-align:right;flex:1">
+      </div>`;
+    }
+    return `<div class="sheet-row">
+      <label>${esc(name)}</label>
+      <input type="number" id="si-${i}" placeholder="点数" oninput="updateTotal()">
+    </div>`;
+  }).join('');
+  document.getElementById('total-check').textContent = '点数を入力してください';
+  document.getElementById('total-check').className = 'total-check ng';
+  document.getElementById('confirm-btn').disabled = true;
+  document.getElementById('backdrop').classList.add('open');
+  document.getElementById('score-sheet').classList.add('open');
+  setTimeout(() => { const el = document.getElementById('si-0'); if(el) el.focus(); }, 350);
+}
+
+function closeSheet() {
+  document.getElementById('backdrop').classList.remove('open');
+  document.getElementById('score-sheet').classList.remove('open');
+}
+
+function updateTotal() {
+  const n = activeGame.settings.numPlayers;
+  const expected = activeGame.settings.startPoints * n;
+  const lastIdx = n - 1;
+  let sum = 0;
+  for (let i = 0; i < lastIdx; i++) {
+    const v = document.getElementById('si-' + i);
+    sum += v ? (Number(v.value) || 0) : 0;
+  }
+  const lastVal = expected - sum;
+  const lastEl = document.getElementById('si-' + lastIdx);
+  if (lastEl) lastEl.value = lastVal;
+
+  const el = document.getElementById('total-check');
+  const btn = document.getElementById('confirm-btn');
+  el.textContent = `入力合計: ${(sum + lastVal).toLocaleString()} ✓`;
+  el.className = 'total-check ok';
+  btn.disabled = false;
+}
+
+function submitRound() {
+  const n = activeGame.settings.numPlayers;
+  const points = [];
+  for (let i = 0; i < n; i++) {
+    points.push(Number(document.getElementById('si-' + i).value) || 0);
+  }
+  const scores = calcScores(points, activeGame.settings);
+  activeGame.rounds.push({ points, scores });
+  saveActiveGame();
+  closeSheet();
+  renderGame();
+}
+
+// ---- History ----
+function renderHistory() {
+  const body = document.getElementById('history-body');
+  if (!appState.games || appState.games.length === 0) {
+    body.innerHTML = '<div class="empty-msg">保存されたゲームはありません</div>';
+    return;
+  }
+  body.innerHTML = appState.games.map((g, idx) => {
+    const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
+    const n = g.settings ? g.settings.numPlayers : '?';
+    const rounds = g.rounds ? g.rounds.length : 0;
+    return `<div class="history-item" onclick="viewDetail(${idx})">
+      <div class="history-info">
+        <div class="history-name">${esc(g.name)}</div>
+        <div class="history-meta">${date} · ${n}人 · ${rounds}局</div>
+      </div>
+      <div class="history-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function viewDetail(idx) {
+  const g = appState.games[idx];
+  document.getElementById('detail-title').textContent = g.name;
+  const s = g.settings;
+  const n = s.numPlayers;
+
+  const totals = new Array(n).fill(0);
+  g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
+  const ranked = totals.map((t,i) => ({t: Math.round(t*10)/10, i, name: s.playerNames[i]}))
+                       .sort((a,b) => b.t - a.t);
+
+  let html = '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
+  ranked.forEach((p, rank) => {
+    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
+    const cls = p.t >= 0 ? 'pos' : 'neg';
+    const sign = p.t > 0 ? '+' : '';
+    html += `<div class="score-card">
+      <div class="rank-badge">${rank+1}</div>
+      <div class="score-info">
+        <div class="score-name">${esc(p.name)}</div>
+        ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
+      </div>
+      <div class="score-val ${cls}">${sign}${p.t.toFixed(1)}</div>
+    </div>`;
+  });
+  html += '</div></div>';
+
+  const rows = g.rounds.map((r, ridx) => {
+    const cells = r.scores.map(sc => {
+      const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
+      return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
+    }).join('');
+    return `<tr><td style="color:#888">${ridx+1}</td>${cells}</tr>`;
+  }).join('');
+
+  html += `<div class="card"><div class="card-title">局履歴</div>
+    <div style="overflow-x:auto"><table class="rounds-table">
+      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div></div>`;
+
+  html += `<div class="card"><div class="card-title">設定</div>
+    <div style="font-size:13px;color:#555;line-height:2.2">
+      持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
+      ウマ: ${s.uma.join(' / ')} ／ レート: ×${s.rate}
+    </div></div>`;
+
+  document.getElementById('detail-body').innerHTML = html;
+  showView('detail');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadStorage();
+initSetupForm();
+</script>
+</body>
+</html>
