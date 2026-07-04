@@ -134,12 +134,6 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .chart-legend span { font-size: 12px; font-weight: 600; color: #555; display: flex; align-items: center; gap: 4px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
-/* Stats */
-.stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.stats-table th { background: #1a237e; color: #fff; padding: 8px 6px; font-size: 12px; }
-.stats-table td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #eee; }
-.stats-table td:first-child { text-align: left; font-weight: 700; }
-
 /* Toast */
 .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .toast.show { opacity: 1; }
@@ -293,7 +287,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
   </div>
   <div class="game-body">
     <div class="card">
-      <div class="card-title">合計スコア</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">合計スコア</div>
+        <button class="edit-tab" id="yen-toggle" onclick="toggleYen()">金額表示</button>
+      </div>
       <div class="score-cards" id="score-cards"></div>
     </div>
     <div class="card">
@@ -314,19 +311,9 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <div id="view-history" class="view">
   <div class="header">
     <button class="back-btn" onclick="showView('home')">←</button>
-    <h1>過去の結果</h1>
-    <button class="share-btn" onclick="showView('stats')">📊 統計</button>
+    <h1>過去の戦績</h1>
   </div>
   <div class="history-body" id="history-body"></div>
-</div>
-
-<!-- STATS -->
-<div id="view-stats" class="view">
-  <div class="header">
-    <button class="back-btn" onclick="showView('history')">←</button>
-    <h1>プレイヤー統計</h1>
-  </div>
-  <div class="detail-body" id="stats-body"></div>
 </div>
 
 <!-- DETAIL -->
@@ -414,6 +401,8 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
+let showYen = true; // 合計スコアの金額表示ON/OFF
+function toggleYen() { showYen = !showYen; renderGame(); }
 
 // ---- Storage ----
 function loadStorage() {
@@ -471,7 +460,6 @@ function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   if (name === 'history') renderHistory();
-  if (name === 'stats') renderStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { history.replaceState(null, '', location.pathname); checkPendingSession(); }
 }
@@ -683,19 +671,25 @@ function chartHtml(rounds, playerNames) {
 }
 
 // ---- 局履歴テーブルの共通パーツ ----
-// スコアの下に入力した素点をうっすら表示
-function roundCellsHtml(r) {
-  return r.scores.map((sc, i) => {
+// 局履歴と順位取得回数で列幅を揃えるため、先頭列は固定幅・table-layout:fixed を共用
+const FIRST_COL_TH = '<th style="width:44px">';
+function roundsTheadHtml(names) {
+  return `<thead><tr>${FIRST_COL_TH}局</th>${names.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>`;
+}
+// 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示
+function roundRowHtml(r, idx, onclickJs) {
+  const cells = r.scores.map((sc, i) => {
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
     const raw = (r.points && r.points[i] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[i].toLocaleString()}</div>`
       : '';
     return `<td style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}</td>`;
   }).join('');
-}
-const TIME_TH = '<th style="font-weight:500;font-size:10px;color:rgba(255,255,255,0.75)">入力時刻</th>';
-function timeTdHtml(at) {
-  return `<td><span style="background:#f0f2f5;color:#98a0b3;border-radius:10px;padding:2px 7px;font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums">${fmtTime(at)}</span></td>`;
+  const editedMark = r.edited ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
+  return `<tr onclick="${onclickJs}" style="cursor:pointer">
+    <td style="color:#888"><div>${idx+1}</div>${editedMark}</td>
+    ${cells}
+  </tr>`;
 }
 
 // ---- 順位取得回数 ----
@@ -716,26 +710,34 @@ function rankCountHtml(rounds, names) {
   }).join('');
   return `<div style="border-top:1px solid #eee;margin-top:14px;padding-top:14px">
     <div class="card-title">順位取得回数</div>
-    <div style="overflow-x:auto"><table class="rounds-table">
-      <thead><tr><th>順位</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
+    <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
+      <thead><tr>${FIRST_COL_TH}順位</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
 }
 
-// ---- 変更履歴表示 ----
+// ---- 履歴表示（入力・修正・削除の3パターン） ----
 function renderLogHtml(log) {
-  const events = (log || []).filter(e => e.type === 'edit' || e.type === 'delete');
+  const events = (log || []).filter(e => e.type === 'add' || e.type === 'edit' || e.type === 'delete');
   if (events.length === 0) return '';
-  const fmtPts = pts => pts.map(p => p.toLocaleString()).join(' / ');
+  const fmtPts = pts => pts ? pts.map(p => p.toLocaleString()).join(' / ') : '';
+  const sub = 'font-size:11px;color:#999;margin-top:2px';
   const rows = events.map(e => {
-    let detail = '';
-    if (e.type === 'edit' && e.prev && e.points) detail = `<br>${fmtPts(e.prev)} → <b>${fmtPts(e.points)}</b>`;
-    else if (e.points) detail = `（${fmtPts(e.points)}）`;
-    return `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span>${esc(e.label)}${detail}</div>`;
+    const head = `<div><span class="log-time">${fmtTime(e.at)}</span><b>${esc(e.label)}</b></div>`;
+    let body = '';
+    if (e.type === 'add' && e.points) {
+      body = `<div style="${sub}">${fmtPts(e.points)}</div>`;
+    } else if (e.type === 'edit') {
+      if (e.prev) body += `<div style="${sub}">${fmtPts(e.prev)}（修正前）</div>`;
+      if (e.points) body += `<div style="${sub}">${fmtPts(e.points)}（修正後）</div>`;
+    } else if (e.type === 'delete' && e.points) {
+      body = `<div style="${sub}">${fmtPts(e.points)}（削除前）</div>`;
+    }
+    return `<div class="log-row">${head}${body}</div>`;
   }).join('');
   return `<details class="log-details">
-    <summary>変更履歴（${events.length}件）▸</summary>
+    <summary>履歴（${events.length}件）▸</summary>
     <div class="log-list">${rows}</div>
   </details>`;
 }
@@ -746,10 +748,11 @@ function renderGame() {
   document.getElementById('game-title').textContent = activeGame.name;
 
   // スコアカード
+  document.getElementById('yen-toggle').textContent = showYen ? '金額表示' : 'スコア表示';
   const totals = getTotals();
   const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
   document.getElementById('score-cards').innerHTML = ranked.map((p, rank) => {
-    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
+    const yenStr = (showYen && s.rate) ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
       ${rankBadgeHtml(rank)}
@@ -761,32 +764,28 @@ function renderGame() {
     </div>`;
   }).join('');
 
-  // 局履歴（入力時刻＋編集タブ付き）
+  // 局履歴（行タップで編集メニュー）
   const hasRounds = activeGame.rounds.length > 0;
-  let tableHtml = `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}${TIME_TH}<th></th></tr></thead><tbody>`;
+  let tableHtml = roundsTheadHtml(s.playerNames) + '<tbody>';
   if (hasRounds) {
-    tableHtml += activeGame.rounds.map((r, idx) => {
-      const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
-      return `<tr>
-        <td style="color:#888;white-space:nowrap">${idx+1}${editedMark}</td>
-        ${roundCellsHtml(r)}
-        ${timeTdHtml(r.at)}
-        <td><button class="edit-tab" onclick="openRoundMenu(${idx})">編集</button></td>
-      </tr>`;
-    }).join('');
+    tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`)).join('');
   } else {
-    tableHtml += `<tr><td colspan="${s.numPlayers + 3}" style="color:#bbb;padding:16px">局なし</td></tr>`;
+    tableHtml += `<tr><td colspan="${s.numPlayers + 1}" style="color:#bbb;padding:16px">局なし</td></tr>`;
   }
   tableHtml += '</tbody>';
-  document.getElementById('rounds-table').innerHTML = tableHtml;
+  const table = document.getElementById('rounds-table');
+  table.style.tableLayout = 'fixed';
+  table.innerHTML = tableHtml;
 
-  // 順位取得回数＋変更履歴
+  // 履歴＋順位取得回数
   let logEl = document.getElementById('game-log');
   if (!logEl) {
     logEl = document.createElement('div'); logEl.id = 'game-log';
-    document.getElementById('rounds-table').closest('.card').appendChild(logEl);
+    table.closest('.card').appendChild(logEl);
   }
-  logEl.innerHTML = rankCountHtml(activeGame.rounds, s.playerNames) + renderLogHtml(activeGame.log);
+  logEl.innerHTML = (hasRounds ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '')
+    + renderLogHtml(activeGame.log)
+    + rankCountHtml(activeGame.rounds, s.playerNames);
 
   // スコア推移グラフ
   const chartCard = document.getElementById('chart-card');
@@ -933,7 +932,7 @@ async function submitRound() {
     logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}局を修正`, prev: orig.points || null, points };
   } else {
     newRounds.push({ points, scores, at: now }); // 新規
-    logEntry = { type: 'add', at: now, label: `第${newRounds.length}局を入力` };
+    logEntry = { type: 'add', at: now, label: `第${newRounds.length}局を入力`, points };
   }
   closeSheet();
   try {
@@ -1021,12 +1020,6 @@ async function saveGameEdit() {
 }
 
 // ---- 履歴 ----
-function gameFinalTotals(g) {
-  const n = g.settings.numPlayers;
-  const totals = new Array(n).fill(0);
-  (g.rounds || []).forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
-  return totals.map(t => Math.round(t * 10) / 10);
-}
 function historyItemHtml(g) {
   const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
   const n = g.settings ? g.settings.numPlayers : '?';
@@ -1076,19 +1069,15 @@ function viewDetail(g) {
   });
   html += '</div></div>';
 
-  const rows = g.rounds.map((r, ridx) => {
-    const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
-    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${roundCellsHtml(r)}
-      ${timeTdHtml(r.at)}
-      <td><button class="edit-tab" onclick="editDetailRound(${ridx})">編集</button></td></tr>`;
-  }).join('');
+  const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`)).join('');
   html += `<div class="card"><div class="card-title">局履歴</div>
-    <div style="overflow-x:auto"><table class="rounds-table">
-      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}${TIME_TH}<th></th></tr></thead>
+    <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
+      ${roundsTheadHtml(s.playerNames)}
       <tbody>${rows}</tbody>
     </table></div>
-    ${rankCountHtml(g.rounds, s.playerNames)}
-    ${renderLogHtml(g.log)}</div>`;
+    ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}
+    ${renderLogHtml(g.log)}
+    ${rankCountHtml(g.rounds, s.playerNames)}</div>`;
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
@@ -1145,56 +1134,6 @@ function saveDetailEdit() {
   closeFormModal();
   viewDetail(g);
   showToast('更新しました');
-}
-
-// ---- プレイヤー統計 ----
-function renderStats() {
-  const body = document.getElementById('stats-body');
-  if (!appState.games || appState.games.length === 0) {
-    body.innerHTML = '<div class="empty-msg">データがありません</div>'; return;
-  }
-  // プレイヤー名ごとに集計（保存済みゲームの最終順位ベース）
-  const stats = {}; // name -> {games, totalScore, rankCounts, totalYen}
-  appState.games.forEach(g => {
-    if (!g.settings || !g.rounds || g.rounds.length === 0) return;
-    const totals = gameFinalTotals(g);
-    const ranked = totals.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
-    ranked.forEach((r, rank) => {
-      const name = g.settings.playerNames[r.i];
-      if (!stats[name]) stats[name] = { games: 0, totalScore: 0, rankCounts: [0,0,0,0], totalYen: 0 };
-      stats[name].games++;
-      stats[name].totalScore += r.t;
-      stats[name].rankCounts[rank]++;
-      stats[name].totalYen += r.t * (g.settings.rate || 0);
-    });
-  });
-  const rows = Object.entries(stats)
-    .sort((a, b) => b[1].totalScore - a[1].totalScore)
-    .map(([name, st]) => {
-      const total = Math.round(st.totalScore * 10) / 10;
-      const avg = Math.round(st.totalScore / st.games * 10) / 10;
-      const topRate = Math.round(st.rankCounts[0] / st.games * 100);
-      const cls = total >= 0 ? 'color:#1a237e;font-weight:700' : 'color:#c62828;font-weight:700';
-      return `<tr>
-        <td>${esc(name)}</td>
-        <td>${st.games}</td>
-        <td style="${cls}">${total >= 0 ? '+' : ''}${total.toFixed(1)}</td>
-        <td>${avg >= 0 ? '+' : ''}${avg.toFixed(1)}</td>
-        <td>${topRate}%</td>
-        <td>${st.rankCounts[0]}-${st.rankCounts[1]}-${st.rankCounts[2]}-${st.rankCounts[3]}</td>
-      </tr>`;
-    }).join('');
-  if (!rows) { body.innerHTML = '<div class="empty-msg">データがありません</div>'; return; }
-  body.innerHTML = `<div class="card">
-    <div class="card-title">通算成績（保存済みゲーム集計）</div>
-    <div style="overflow-x:auto">
-      <table class="stats-table">
-        <thead><tr><th>名前</th><th>回数</th><th>通算</th><th>平均</th><th>1位率</th><th>順位分布</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
-    <div style="font-size:11px;color:#999;margin-top:10px">※順位分布は 1位-2位-3位-4位 の回数。この端末に保存されたゲームのみ集計されます。</div>
-  </div>`;
 }
 
 function esc(s) {
