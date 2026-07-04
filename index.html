@@ -101,12 +101,32 @@ input:focus, select:focus { border-color: #1a237e; }
 .chip:active { opacity: 0.7; }
 .chips-hint { font-size: 11px; color: #999; margin-bottom: 6px; }
 
-/* Collapsible settlement */
-details.settle-details summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; user-select: none; }
-details.settle-details summary::-webkit-details-marker { display: none; }
-details.settle-details summary .toggle-arrow { font-size: 14px; color: #1a237e; transition: transform 0.2s; }
-details.settle-details[open] summary .toggle-arrow { transform: rotate(90deg); }
-details.settle-details[open] summary { margin-bottom: 12px; }
+/* Edit tab (rounds) */
+.edit-tab { background: #f0f0f0; border: none; color: #999; border-radius: 5px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600; }
+.edit-tab:active { background: #e0e0e0; }
+
+/* Action modal buttons */
+.modal-action { display: block; width: 100%; background: #f8f9ff; color: #1a237e; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+.modal-action.danger { background: #ffebee; color: #c62828; }
+
+/* Change log */
+details.log-details summary { list-style: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #888; user-select: none; margin-top: 12px; }
+details.log-details summary::-webkit-details-marker { display: none; }
+.log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.log-row { font-size: 12px; color: #666; background: #f8f8f8; border-radius: 6px; padding: 6px 10px; }
+.log-row .log-time { color: #999; margin-right: 6px; font-variant-numeric: tabular-nums; }
+
+/* Rank medal colors */
+.rank-badge.rank-1 { color: #d4a017; }
+.rank-badge.rank-2 { color: #8e9aa5; }
+.rank-badge.rank-3 { color: #b46a3c; }
+.rank-badge.rank-last { color: #546e7a; }
+.rank-emoji { font-size: 18px; display: block; line-height: 1; }
+.rank-num { font-size: 12px; font-weight: 800; display: block; }
+
+/* Form modal (settings edit) */
+.form-modal-box { background: #fff; border-radius: 16px; padding: 20px 16px; width: 100%; max-width: 360px; max-height: 82vh; overflow-y: auto; text-align: left; }
+.form-modal-title { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 14px; }
 
 /* Score chart */
 .chart-wrap { width: 100%; }
@@ -268,6 +288,7 @@ details.settle-details[open] summary { margin-bottom: 12px; }
   <div class="header">
     <button class="back-btn" onclick="leaveGame()">←</button>
     <h1 id="game-title">ゲーム中</h1>
+    <button class="share-btn" onclick="openGameEdit()">✏ 編集</button>
     <button class="share-btn" onclick="copyUrl()">🔗 共有</button>
   </div>
   <div class="game-body">
@@ -284,12 +305,6 @@ details.settle-details[open] summary { margin-bottom: 12px; }
     <div class="card" id="chart-card" style="display:none">
       <div class="card-title">スコア推移</div>
       <div class="chart-wrap" id="chart-body"></div>
-    </div>
-    <div class="card" id="settlement-card" style="display:none">
-      <details class="settle-details">
-        <summary>精算 <span class="toggle-arrow">▸</span></summary>
-        <div class="settlement-list" id="settlement-body"></div>
-      </details>
     </div>
     <div class="card">
       <button class="end-btn" onclick="endGame()">試合終了・保存</button>
@@ -322,6 +337,7 @@ details.settle-details[open] summary { margin-bottom: 12px; }
   <div class="header">
     <button class="back-btn" onclick="showView('history')">←</button>
     <h1 id="detail-title">結果詳細</h1>
+    <button class="share-btn" onclick="openDetailEdit()">✏ 編集</button>
   </div>
   <div class="detail-body" id="detail-body"></div>
 </div>
@@ -346,6 +362,23 @@ details.settle-details[open] summary { margin-bottom: 12px; }
       <button class="modal-cancel" onclick="closeConfirmModal()">キャンセル</button>
       <button class="modal-danger" id="confirm-modal-ok">削除する</button>
     </div>
+  </div>
+</div>
+
+<!-- Round action menu -->
+<div class="modal-backdrop" id="action-modal" onclick="if(event.target===this)closeActionModal()">
+  <div class="modal">
+    <div class="modal-title" id="action-modal-title">編集</div>
+    <div id="action-modal-body"></div>
+    <button class="modal-cancel" style="width:100%" onclick="closeActionModal()">キャンセル</button>
+  </div>
+</div>
+
+<!-- Form modal (settings / detail edit) -->
+<div class="modal-backdrop" id="form-modal" onclick="if(event.target===this)closeFormModal()">
+  <div class="form-modal-box">
+    <div class="form-modal-title" id="form-modal-title">編集</div>
+    <div id="form-modal-body"></div>
   </div>
 </div>
 
@@ -412,10 +445,8 @@ function startListening() {
   sessionCallback = sessionRef.on('value', snapshot => {
     const data = snapshot.val();
     if (!data) return;
-    const rounds = data.rounds
-      ? (Array.isArray(data.rounds) ? data.rounds : Object.values(data.rounds)).filter(Boolean)
-      : [];
-    activeGame = { ...data, rounds };
+    const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
+    activeGame = { ...data, rounds: normArr(data.rounds), log: normArr(data.log) };
     renderGame();
   });
 }
@@ -425,8 +456,15 @@ function stopListening() {
     sessionCallback = null; sessionRef = null;
   }
 }
-async function writeRoundsToFirebase(rounds) {
-  await db.ref('sessions/' + sessionId + '/rounds').set(rounds.length ? rounds : null);
+async function writeRoundsToFirebase(rounds, logEntry) {
+  const updates = { rounds: rounds.length ? rounds : null };
+  if (logEntry) updates.log = [...(activeGame.log || []), logEntry];
+  await db.ref('sessions/' + sessionId).update(updates);
+}
+function fmtTime(iso) {
+  if (!iso) return '--:--';
+  const d = new Date(iso);
+  return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 
 // ---- Views ----
@@ -477,6 +515,7 @@ function todayStr() {
 }
 function initSetupForm() {
   document.getElementById('s-name').value = todayStr();
+  document.getElementById('s-rate').value = '100'; // デフォルト: テンピン
   numPlayers = 4;
   document.getElementById('p4-btn').classList.add('active');
   document.getElementById('p3-btn').classList.remove('active');
@@ -583,6 +622,16 @@ function getTotals() {
   return totals.map(t => Math.round(t * 10) / 10);
 }
 
+// ---- 順位バッジ（メダル） ----
+// 1〜3位は金銀銅メダル、4位は最下位カラー（🌑）
+function rankBadgeHtml(rank) {
+  const emojis = ['🥇', '🥈', '🥉'];
+  if (rank < 3) {
+    return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${rank+1}位</span></div>`;
+  }
+  return `<div class="rank-badge rank-last"><span class="rank-emoji">🌑</span><span class="rank-num">${rank+1}位</span></div>`;
+}
+
 // ---- スコア推移グラフ（SVG） ----
 const CHART_COLORS = ['#1a237e', '#c62828', '#2e7d32', '#f9a825'];
 function chartHtml(rounds, playerNames) {
@@ -615,7 +664,7 @@ function chartHtml(rounds, playerNames) {
   });
   // X軸ラベル（局番号）
   for (let i = 0; i <= R; i++) {
-    svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i === 0 ? '開始' : i}</text>`;
+    svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
   }
   // 折れ線
   series.forEach((s, i) => {
@@ -632,34 +681,18 @@ function chartHtml(rounds, playerNames) {
   return svg + legend;
 }
 
-// ---- 精算計算 ----
-function calcSettlement(totals, playerNames, rate) {
-  const n = totals.length;
-  // レートが0の場合はpt単位、それ以外は円単位
-  const useYen = rate > 0;
-  const amounts = totals.map((t, i) => ({
-    i, name: playerNames[i],
-    amount: useYen ? Math.round(t * rate) : t
-  }));
-
-  const payers = amounts.filter(a => a.amount < 0).map(a => ({ ...a, rem: -a.amount }))
-                        .sort((a,b) => b.rem - a.rem);
-  const receivers = amounts.filter(a => a.amount > 0).map(a => ({ ...a, rem: a.amount }))
-                           .sort((a,b) => b.rem - a.rem);
-
-  const txns = [];
-  let pi = 0, ri = 0;
-  while (pi < payers.length && ri < receivers.length) {
-    const amount = Math.min(payers[pi].rem, receivers[ri].rem);
-    if (amount > 0) {
-      txns.push({ from: payers[pi].name, to: receivers[ri].name, amount, useYen });
-    }
-    payers[pi].rem -= amount;
-    receivers[ri].rem -= amount;
-    if (payers[pi].rem <= 0) pi++;
-    if (receivers[ri].rem <= 0) ri++;
-  }
-  return txns;
+// ---- 変更履歴表示 ----
+function renderLogHtml(log) {
+  const events = (log || []).filter(e => e.type === 'edit' || e.type === 'delete');
+  if (events.length === 0) return '';
+  const rows = events.map(e => {
+    const detail = e.points ? `（${e.points.map(p => p.toLocaleString()).join(' / ')}）` : '';
+    return `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span>${esc(e.label)}${detail}</div>`;
+  }).join('');
+  return `<details class="log-details">
+    <summary>変更履歴（${events.length}件）▸</summary>
+    <div class="log-list">${rows}</div>
+  </details>`;
 }
 
 function renderGame() {
@@ -674,7 +707,7 @@ function renderGame() {
     const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
-      <div class="rank-badge">${rank+1}</div>
+      ${rankBadgeHtml(rank)}
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
@@ -683,12 +716,9 @@ function renderGame() {
     </div>`;
   }).join('');
 
-  // 精算
-  renderSettlement(totals, s.playerNames, s.rate);
-
-  // 局履歴（修正・削除ボタン付き）
+  // 局履歴（時刻＋編集タブ付き）
   const hasRounds = activeGame.rounds.length > 0;
-  let tableHtml = `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}<th></th></tr></thead><tbody>`;
+  let tableHtml = `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}<th>時刻</th><th></th></tr></thead><tbody>`;
   if (hasRounds) {
     tableHtml += activeGame.rounds.map((r, idx) => {
       const cells = r.scores.map(sc => {
@@ -699,19 +729,24 @@ function renderGame() {
       return `<tr>
         <td style="color:#888;white-space:nowrap">${idx+1}${editedMark}</td>
         ${cells}
-        <td>
-          <div class="round-actions">
-            <button class="round-edit-btn" onclick="openSheet(${idx})">修正</button>
-            <button class="round-del-btn" onclick="confirmDeleteRound(${idx})">削除</button>
-          </div>
-        </td>
+        <td style="color:#999;font-size:11px;white-space:nowrap">${fmtTime(r.at)}</td>
+        <td><button class="edit-tab" onclick="openRoundMenu(${idx})">編集</button></td>
       </tr>`;
     }).join('');
   } else {
-    tableHtml += `<tr><td colspan="${s.numPlayers + 2}" style="color:#bbb;padding:16px">局なし</td></tr>`;
+    tableHtml += `<tr><td colspan="${s.numPlayers + 3}" style="color:#bbb;padding:16px">局なし</td></tr>`;
   }
   tableHtml += '</tbody>';
   document.getElementById('rounds-table').innerHTML = tableHtml;
+
+  // 変更履歴（修正・削除の記録）
+  const logHtml = renderLogHtml(activeGame.log);
+  let logEl = document.getElementById('game-log');
+  if (!logEl) {
+    logEl = document.createElement('div'); logEl.id = 'game-log';
+    document.getElementById('rounds-table').closest('.card').appendChild(logEl);
+  }
+  logEl.innerHTML = logHtml;
 
   // スコア推移グラフ
   const chartCard = document.getElementById('chart-card');
@@ -721,26 +756,6 @@ function renderGame() {
   } else {
     chartCard.style.display = 'none';
   }
-}
-
-function renderSettlement(totals, playerNames, rate) {
-  const card = document.getElementById('settlement-card');
-  const body = document.getElementById('settlement-body');
-  const txns = calcSettlement(totals, playerNames, rate);
-  if (txns.length === 0) {
-    card.style.display = 'none';
-    return;
-  }
-  card.style.display = 'block';
-  body.innerHTML = txns.map(t => {
-    const amtStr = t.useYen ? `${t.amount.toLocaleString()}円` : `${t.amount > 0 ? '+' : ''}${t.amount.toFixed(1)}pt`;
-    return `<div class="settlement-row">
-      <span class="settlement-from">${esc(t.from)}</span>
-      <span class="settlement-arrow">→</span>
-      <span class="settlement-to">${esc(t.to)}</span>
-      <span class="settlement-amount">${amtStr}</span>
-    </div>`;
-  }).join('');
 }
 
 function endGame() {
@@ -760,10 +775,20 @@ function leaveGame() {
   showView('home');
 }
 
-// ---- 局の修正・削除 ----
+// ---- 局の編集メニュー ----
+function openRoundMenu(idx) {
+  document.getElementById('action-modal-title').textContent = `第${idx+1}局`;
+  document.getElementById('action-modal-body').innerHTML =
+    `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
+     <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この局を削除する</button>`;
+  document.getElementById('action-modal').classList.add('open');
+}
+function closeActionModal() {
+  document.getElementById('action-modal').classList.remove('open');
+}
 function confirmDeleteRound(idx) {
   document.getElementById('confirm-modal-title').textContent = `第${idx+1}局を削除`;
-  document.getElementById('confirm-modal-desc').textContent = 'この局の記録を削除します。全員の画面から削除され、元に戻せません。よろしいですか？';
+  document.getElementById('confirm-modal-desc').textContent = 'この局の記録を削除します。全員の画面から削除されます（変更履歴には残ります）。よろしいですか？';
   document.getElementById('confirm-modal-ok').onclick = () => { closeConfirmModal(); deleteRound(idx); };
   document.getElementById('confirm-modal').classList.add('open');
 }
@@ -772,21 +797,36 @@ function closeConfirmModal() {
 }
 async function deleteRound(idx) {
   if (!activeGame) return;
+  const old = activeGame.rounds[idx];
   const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
+  const logEntry = { type: 'delete', at: new Date().toISOString(), label: `第${idx+1}局を削除`, points: old ? old.points : null };
   try {
-    await writeRoundsToFirebase(newRounds);
+    await writeRoundsToFirebase(newRounds, logEntry);
     showToast('削除しました');
   } catch(e) { showToast('削除に失敗しました'); }
 }
 
 // ---- 点数入力シート ----
+// sheetCtx: 入力対象（進行中ゲーム or 過去の結果）を切り替える
+let sheetCtx = null;
+function liveSheetCtx() {
+  return {
+    settings: activeGame.settings,
+    rounds: activeGame.rounds,
+    save: (rounds, logEntry) => writeRoundsToFirebase(rounds, logEntry)
+  };
+}
 // idx = -1: 新規, idx >= 0: 修正
 function openSheet(idx) {
+  openSheetCtx(liveSheetCtx(), idx);
+}
+function openSheetCtx(ctx, idx) {
+  sheetCtx = ctx;
   editingIndex = idx;
-  const s = activeGame.settings;
+  const s = ctx.settings;
   const n = s.numPlayers;
   const isEdit = idx >= 0;
-  const existingPoints = isEdit ? activeGame.rounds[idx].points : null;
+  const existingPoints = isEdit ? ctx.rounds[idx].points : null;
 
   document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}局を修正` : '点数入力';
   const inputs = document.getElementById('sheet-inputs');
@@ -815,8 +855,8 @@ function closeSheet() {
   editingIndex = -1;
 }
 function updateTotal() {
-  const n = activeGame.settings.numPlayers;
-  const expected = activeGame.settings.startPoints * n;
+  const n = sheetCtx.settings.numPlayers;
+  const expected = sheetCtx.settings.startPoints * n;
   const values = Array.from({length: n}, (_, i) => {
     const el = document.getElementById('si-' + i);
     return el.value === '' ? null : Number(el.value);
@@ -836,8 +876,8 @@ function updateTotal() {
   }
 }
 function autoFill() {
-  const n = activeGame.settings.numPlayers;
-  const expected = activeGame.settings.startPoints * n;
+  const n = sheetCtx.settings.numPlayers;
+  const expected = sheetCtx.settings.startPoints * n;
   let filledSum = 0, emptyIdx = -1;
   for (let i = 0; i < n; i++) {
     const el = document.getElementById('si-' + i);
@@ -848,22 +888,107 @@ function autoFill() {
   updateTotal();
 }
 async function submitRound() {
-  const n = activeGame.settings.numPlayers;
+  const ctx = sheetCtx;
+  const n = ctx.settings.numPlayers;
   const points = Array.from({length: n}, (_, i) => Number(document.getElementById('si-'+i).value) || 0);
-  const scores = calcScores(points, activeGame.settings);
-  const newRounds = [...activeGame.rounds];
+  const scores = calcScores(points, ctx.settings);
+  const now = new Date().toISOString();
+  const newRounds = [...ctx.rounds];
+  let logEntry;
   if (editingIndex >= 0) {
-    newRounds[editingIndex] = { points, scores, edited: true }; // 修正
+    const orig = ctx.rounds[editingIndex];
+    newRounds[editingIndex] = { points, scores, at: orig.at || now, edited: true }; // 修正
+    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}局を修正`, points };
   } else {
-    newRounds.push({ points, scores }); // 新規
+    newRounds.push({ points, scores, at: now }); // 新規
+    logEntry = { type: 'add', at: now, label: `第${newRounds.length}局を入力` };
   }
   closeSheet();
   try {
-    await writeRoundsToFirebase(newRounds);
+    await ctx.save(newRounds, logEntry);
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
-// ---- 履歴（セット単位でグループ表示） ----
+// ---- 設定編集（ゲーム中） ----
+function closeFormModal() {
+  document.getElementById('form-modal').classList.remove('open');
+}
+function umaKeyOf(uma, n) {
+  for (const k of Object.keys(UMA_MAP)) {
+    const full = UMA_MAP[k];
+    const arr = n === 3 ? [full[0], full[1], full[3]] : full.slice(0, 4);
+    if (arr.length === uma.length && arr.every((v, i) => v === uma[i])) return k;
+  }
+  return 'custom';
+}
+const RATE_PRESETS = ['10','20','30','50','100','200','500','1000','2000','0'];
+function settingsFormHtml(name, s, prefix) {
+  const n = s.numPlayers;
+  const umaKey = umaKeyOf(s.uma, n);
+  const rateKey = RATE_PRESETS.includes(String(s.rate)) ? String(s.rate) : 'custom';
+  const umaOpts = [['10-30','10-30'],['10-20','10-20'],['5-15','5-15'],['5-10','5-10'],['0','なし'],['custom','カスタム']]
+    .map(([v,l]) => `<option value="${v}" ${v===umaKey?'selected':''}>${l}</option>`).join('');
+  const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100（テンピン）'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
+    .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
+  return `
+    <div class="field"><label>ゲーム名</label><input type="text" id="${prefix}-name" value="${esc(name)}"></div>
+    <div class="field"><label>プレイヤー名</label>
+      ${s.playerNames.map((nm, i) => `<input type="text" id="${prefix}-p-${i}" value="${esc(nm)}" style="margin-bottom:6px">`).join('')}
+    </div>
+    <div class="field"><label>持ち点</label><input type="number" id="${prefix}-start" value="${s.startPoints}"></div>
+    <div class="field"><label>返し点</label><input type="number" id="${prefix}-return" value="${s.returnPoints}"></div>
+    <div class="field"><label>ウマ</label>
+      <select id="${prefix}-uma" onchange="document.getElementById('${prefix}-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOpts}</select>
+      <div id="${prefix}-uma-custom" style="display:${umaKey==='custom'?'block':'none'};margin-top:6px">
+        <div class="custom-uma-grid">
+          ${Array.from({length: n}, (_, i) => `<div class="field"><label>${i+1}位</label><input type="number" id="${prefix}-uma-c-${i}" value="${s.uma[i] ?? 0}"></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="field"><label>レート</label>
+      <select id="${prefix}-rate" onchange="document.getElementById('${prefix}-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
+      <div id="${prefix}-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
+        <input type="number" id="${prefix}-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
+      </div>
+    </div>`;
+}
+function readSettingsForm(s, prefix) {
+  const n = s.numPlayers;
+  const name = document.getElementById(prefix+'-name').value.trim() || todayStr();
+  const playerNames = Array.from({length: n}, (_, i) => document.getElementById(`${prefix}-p-${i}`).value.trim() || ('プレイヤー'+(i+1)));
+  const startPoints = Number(document.getElementById(prefix+'-start').value) || 25000;
+  const returnPoints = Number(document.getElementById(prefix+'-return').value) || 30000;
+  const umaKey = document.getElementById(prefix+'-uma').value;
+  let uma;
+  if (umaKey === 'custom') uma = Array.from({length: n}, (_, i) => Number(document.getElementById(`${prefix}-uma-c-${i}`).value) || 0);
+  else { const full = UMA_MAP[umaKey]; uma = n === 3 ? [full[0], full[1], full[3]] : full.slice(0, 4); }
+  const rateKey = document.getElementById(prefix+'-rate').value;
+  const rate = rateKey === 'custom' ? (Number(document.getElementById(prefix+'-rate-c').value) || 0) : Number(rateKey);
+  return { name, settings: { ...s, playerNames, startPoints, returnPoints, uma, rate } };
+}
+function openGameEdit() {
+  if (!activeGame) return;
+  document.getElementById('form-modal-title').textContent = 'ゲーム設定を編集';
+  document.getElementById('form-modal-body').innerHTML =
+    settingsFormHtml(activeGame.name, activeGame.settings, 'e') +
+    `<button class="confirm-btn" style="margin-top:10px" onclick="saveGameEdit()">保存する</button>
+     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+async function saveGameEdit() {
+  const { name, settings } = readSettingsForm(activeGame.settings, 'e');
+  // 設定変更に合わせて全局のスコアを再計算
+  const rounds = activeGame.rounds.map(r => ({ ...r, scores: calcScores(r.points, settings) }));
+  const logEntry = { type: 'edit', at: new Date().toISOString(), label: 'ゲーム設定を変更' };
+  closeFormModal();
+  try {
+    await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: [...(activeGame.log || []), logEntry] });
+    savePlayerNames(settings.playerNames);
+    showToast('設定を更新しました');
+  } catch(e) { showToast('保存に失敗しました'); }
+}
+
+// ---- 履歴 ----
 function gameFinalTotals(g) {
   const n = g.settings.numPlayers;
   const totals = new Array(n).fill(0);
@@ -890,11 +1015,13 @@ function renderHistory() {
   body.innerHTML = appState.games.map(historyItemHtml).join('');
 }
 
+let detailGame = null;
 function viewDetailById(id) {
   const g = appState.games.find(x => x.id === id);
   if (g) viewDetail(g);
 }
 function viewDetail(g) {
+  detailGame = g;
   document.getElementById('detail-title').textContent = g.name;
   const s = g.settings; const n = s.numPlayers;
   const totals = new Array(n).fill(0);
@@ -907,7 +1034,7 @@ function viewDetail(g) {
     const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
-      <div class="rank-badge">${rank+1}</div>
+      ${rankBadgeHtml(rank)}
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
@@ -923,36 +1050,21 @@ function viewDetail(g) {
       return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
     }).join('');
     const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
-    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${cells}</tr>`;
+    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${cells}
+      <td style="color:#999;font-size:11px;white-space:nowrap">${fmtTime(r.at)}</td>
+      <td><button class="edit-tab" onclick="editDetailRound(${ridx})">編集</button></td></tr>`;
   }).join('');
   html += `<div class="card"><div class="card-title">局履歴</div>
     <div style="overflow-x:auto"><table class="rounds-table">
-      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>
+      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}<th>時刻</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
-    </table></div></div>`;
+    </table></div>
+    ${renderLogHtml(g.log)}</div>`;
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
     html += `<div class="card"><div class="card-title">スコア推移</div>
       <div class="chart-wrap">${chartHtml(g.rounds, s.playerNames)}</div></div>`;
-  }
-
-  // 精算（タップで開閉）
-  const txns = calcSettlement(tRounded, s.playerNames, s.rate);
-  if (txns.length > 0) {
-    const settleRows = txns.map(t => {
-      const amtStr = t.useYen ? `${t.amount.toLocaleString()}円` : `${t.amount.toFixed(1)}pt`;
-      return `<div class="settlement-row">
-        <span class="settlement-from">${esc(t.from)}</span>
-        <span class="settlement-arrow">→</span>
-        <span class="settlement-to">${esc(t.to)}</span>
-        <span class="settlement-amount">${amtStr}</span>
-      </div>`;
-    }).join('');
-    html += `<div class="card"><details class="settle-details">
-      <summary>精算 <span class="toggle-arrow">▸</span></summary>
-      <div class="settlement-list">${settleRows}</div>
-    </details></div>`;
   }
 
   html += `<div class="card"><div class="card-title">設定</div>
@@ -962,6 +1074,48 @@ function viewDetail(g) {
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   showView('detail');
+}
+
+// ---- 過去の結果の編集 ----
+// 局の点数編集: 点数入力シートを過去ゲーム用コンテキストで開く
+function editDetailRound(ridx) {
+  if (!detailGame) return;
+  const g = detailGame;
+  openSheetCtx({
+    settings: g.settings,
+    rounds: g.rounds,
+    save: (rounds, logEntry) => {
+      g.rounds = rounds;
+      g.log = [...(g.log || []), logEntry];
+      saveStorage();
+      viewDetail(g);
+      showToast('更新しました');
+    }
+  }, ridx);
+}
+// ゲーム名・プレイヤー名の編集
+function openDetailEdit() {
+  if (!detailGame) return;
+  const g = detailGame;
+  document.getElementById('form-modal-title').textContent = '結果を編集';
+  document.getElementById('form-modal-body').innerHTML = `
+    <div class="field"><label>ゲーム名</label><input type="text" id="d-name" value="${esc(g.name)}"></div>
+    <div class="field"><label>プレイヤー名</label>
+      ${g.settings.playerNames.map((nm, i) => `<input type="text" id="d-p-${i}" value="${esc(nm)}" style="margin-bottom:6px">`).join('')}
+    </div>
+    <button class="confirm-btn" style="margin-top:10px" onclick="saveDetailEdit()">保存する</button>
+    <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function saveDetailEdit() {
+  const g = detailGame;
+  g.name = document.getElementById('d-name').value.trim() || g.name;
+  g.settings.playerNames = g.settings.playerNames.map((nm, i) =>
+    document.getElementById(`d-p-${i}`).value.trim() || nm);
+  saveStorage();
+  closeFormModal();
+  viewDetail(g);
+  showToast('更新しました');
 }
 
 // ---- プレイヤー統計 ----
