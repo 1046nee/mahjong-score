@@ -14,6 +14,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .header { background: #1a237e; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
 .header h1 { font-size: 18px; font-weight: 700; flex: 1; }
 .back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+.share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.share-btn:active { opacity: 0.7; }
 
 /* Home */
 #view-home { background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%); justify-content: center; align-items: center; gap: 20px; }
@@ -23,6 +25,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .home-btn:active { transform: scale(0.97); }
 .home-btn-primary { background: #fff; color: #1a237e; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 .home-btn-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.5); }
+
+/* Join banner */
+.join-banner { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.4); border-radius: 12px; padding: 16px 20px; width: 240px; text-align: center; }
+.join-banner p { color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 10px; }
+.join-banner strong { color: #fff; font-size: 15px; display: block; margin-bottom: 10px; word-break: break-all; }
+.join-btn { background: #fff; color: #1a237e; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
 
 /* Setup */
 #view-setup { background: #f0f2f5; }
@@ -65,6 +73,15 @@ input:focus, select:focus { border-color: #1a237e; }
 .fab { position: fixed; bottom: 24px; right: 24px; background: #1a237e; color: #fff; border: none; border-radius: 50px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(26,35,126,0.4); z-index: 100; }
 .end-btn { background: #c62828; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
 
+/* Share toast */
+.toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* Loading */
+.loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
+.spinner { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: #1a237e; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* Sheet */
 .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
 .backdrop.open { display: block; }
@@ -77,13 +94,13 @@ input:focus, select:focus { border-color: #1a237e; }
 .sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
 .sheet-row input:focus { border-color: #1a237e; }
+.auto-btn { background: #e8f0fe; color: #1a237e; border: 1.5px solid #1a237e; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
+.auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 .total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
 .total-check.ok { background: #e8f5e9; color: #2e7d32; }
 .total-check.ng { background: #ffebee; color: #c62828; }
 .confirm-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
 .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
-.auto-btn { background: #e8f0fe; color: #1a237e; border: 1.5px solid #1a237e; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
-.auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 
 /* History */
 #view-history { background: #f0f2f5; }
@@ -109,6 +126,12 @@ input:focus, select:focus { border-color: #1a237e; }
   <div class="home-sub">スコア管理アプリ</div>
   <button class="home-btn home-btn-primary" onclick="showView('setup')">新しいゲームを始める</button>
   <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の結果を見る</button>
+  <!-- URLに共有IDがある場合に表示されるバナー -->
+  <div class="join-banner" id="join-banner" style="display:none">
+    <p>共有されたゲームがあります</p>
+    <strong id="join-game-name"></strong>
+    <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+  </div>
 </div>
 
 <!-- SETUP -->
@@ -194,8 +217,9 @@ input:focus, select:focus { border-color: #1a237e; }
 <!-- GAME -->
 <div id="view-game" class="view">
   <div class="header">
-    <button class="back-btn" onclick="confirmLeave()">←</button>
+    <button class="back-btn" onclick="leaveGame()">←</button>
     <h1 id="game-title">ゲーム中</h1>
+    <button class="share-btn" onclick="copyUrl()">🔗 共有</button>
   </div>
   <div class="game-body">
     <div class="card">
@@ -244,7 +268,28 @@ input:focus, select:focus { border-color: #1a237e; }
   <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK（Googleが提供する無料のデータベースサービス） -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
+// ---- Firebase 初期化 ----
+const firebaseConfig = {
+  apiKey: "AIzaSyDzZPhT7OzQDpaMXorp__yZ57v16VRY4W4",
+  authDomain: "mahjong-score-2e8aa.firebaseapp.com",
+  databaseURL: "https://mahjong-score-2e8aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mahjong-score-2e8aa",
+  storageBucket: "mahjong-score-2e8aa.firebasestorage.app",
+  messagingSenderId: "742827563606",
+  appId: "1:742827563606:web:91b4e849caa99eda7f39f7"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ---- 定数 ----
 const UMA_MAP = {
   '10-30': [30, 10, -10, -30],
   '10-20': [20, 10, -10, -20],
@@ -253,10 +298,16 @@ const UMA_MAP = {
   '0':     [0, 0, 0, 0]
 };
 
-let numPlayers = 3;
-let activeGame = null;
+// ---- 状態管理 ----
+let numPlayers = 4;
+let activeGame = null;      // 進行中のゲームデータ
+let sessionId = null;       // FirebaseのセッションID（共有URLのキー）
+let sessionRef = null;      // Firebaseのリアルタイム接続
+let sessionCallback = null; // リアルタイム更新のコールバック
+let pendingSessionId = null;// URLから読み取ったID（参加待ち）
 let appState = { games: [] };
 
+// ---- ローカル保存（過去の結果用） ----
 function loadStorage() {
   try {
     const d = localStorage.getItem('mahjong-v3');
@@ -266,16 +317,139 @@ function loadStorage() {
 function saveStorage() {
   localStorage.setItem('mahjong-v3', JSON.stringify(appState));
 }
+function saveToLocalHistory() {
+  if (!activeGame) return;
+  const idx = appState.games.findIndex(g => g.id === activeGame.id);
+  if (idx >= 0) appState.games[idx] = activeGame;
+  else appState.games.unshift(activeGame);
+  saveStorage();
+}
 
+// ---- Firebase 操作 ----
+function generateSessionId() {
+  // 推測されにくいランダムな22文字のID（英数字の組み合わせ）
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({length: 22}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function startListening() {
+  stopListening();
+  sessionRef = db.ref('sessions/' + sessionId);
+  sessionCallback = sessionRef.on('value', snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+    // Firebaseからのデータを正規化（rounds は配列に変換）
+    const rounds = data.rounds
+      ? (Array.isArray(data.rounds) ? data.rounds : Object.values(data.rounds)).filter(Boolean)
+      : [];
+    activeGame = { ...data, rounds };
+    renderGame();
+  });
+}
+
+function stopListening() {
+  if (sessionRef && sessionCallback) {
+    sessionRef.off('value', sessionCallback);
+    sessionCallback = null;
+    sessionRef = null;
+  }
+}
+
+async function writeGameToFirebase(game) {
+  await db.ref('sessions/' + sessionId).set(game);
+}
+
+async function writeRoundsToFirebase(rounds) {
+  await db.ref('sessions/' + sessionId + '/rounds').set(rounds);
+}
+
+// ---- 画面遷移 ----
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   if (name === 'history') renderHistory();
-  if (name === 'game') renderGame();
   if (name === 'setup') initSetupForm();
+  if (name === 'home') {
+    // ホームに戻ったときURLのハッシュをリセット
+    history.replaceState(null, '', location.pathname);
+    checkPendingSession();
+  }
 }
 
-// ---- Setup ----
+function checkPendingSession() {
+  // URLにセッションIDが残っている場合、参加バナーを表示
+  const banner = document.getElementById('join-banner');
+  if (pendingSessionId) {
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ---- URL共有 ----
+function copyUrl() {
+  const url = location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
+  } else {
+    // 古いブラウザ向けフォールバック
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('URLをコピーしました');
+  }
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ---- URLからセッション参加 ----
+async function joinSession(id) {
+  showLoading(true);
+  try {
+    const snap = await db.ref('sessions/' + id).once('value');
+    if (!snap.exists()) {
+      showLoading(false);
+      alert('このURLのゲームは見つかりませんでした。');
+      return;
+    }
+    sessionId = id;
+    history.replaceState(null, '', '#' + id);
+    startListening();
+    showView('game');
+  } catch(e) {
+    alert('接続エラーが発生しました。ネットワークを確認してください。');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function joinFromBanner() {
+  if (pendingSessionId) joinSession(pendingSessionId);
+}
+
+function showLoading(show) {
+  let el = document.getElementById('loading-overlay');
+  if (show) {
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'loading-overlay';
+      el.className = 'loading-overlay';
+      el.innerHTML = '<div class="spinner"></div><div style="color:#555;font-size:14px">読み込み中...</div>';
+      document.body.appendChild(el);
+    }
+    el.style.display = 'flex';
+  } else {
+    if (el) el.style.display = 'none';
+  }
+}
+
+// ---- セットアップ ----
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -340,23 +514,17 @@ function onRateChange() {
 function getUmaArray() {
   const v = document.getElementById('s-uma').value;
   if (v === 'custom') {
-    const arr = [];
-    for (let i = 0; i < numPlayers; i++) {
-      arr.push(Number(document.getElementById('uma-c-' + i).value) || 0);
-    }
-    return arr;
+    return Array.from({length: numPlayers}, (_, i) => Number(document.getElementById('uma-c-' + i).value) || 0);
   }
   const full = UMA_MAP[v] || [0,0,0,0];
-  if (numPlayers === 3) return [full[0], full[1], full[3]];
-  return full.slice(0, 4);
+  return numPlayers === 3 ? [full[0], full[1], full[3]] : full.slice(0, 4);
 }
 
-function startGame() {
+async function startGame() {
   const name = document.getElementById('s-name').value.trim() || todayStr();
-  const playerNames = [];
-  for (let i = 0; i < numPlayers; i++) {
-    playerNames.push(document.getElementById('p-name-' + i).value.trim() || ('プレイヤー' + (i+1)));
-  }
+  const playerNames = Array.from({length: numPlayers}, (_, i) =>
+    document.getElementById('p-name-' + i).value.trim() || ('プレイヤー' + (i+1))
+  );
   const startPoints = Number(document.getElementById('s-start').value) || 25000;
   const returnPoints = Number(document.getElementById('s-return').value) || 30000;
   const uma = getUmaArray();
@@ -365,17 +533,29 @@ function startGame() {
     ? (Number(document.getElementById('s-rate-custom').value) || 1)
     : Number(rateVal);
 
-  activeGame = {
-    id: Date.now().toString(36),
+  sessionId = generateSessionId();
+  const game = {
+    id: sessionId,
     name,
     createdAt: new Date().toISOString(),
     settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate },
     rounds: []
   };
-  showView('game');
+
+  showLoading(true);
+  try {
+    await writeGameToFirebase(game);
+    history.replaceState(null, '', '#' + sessionId);
+    startListening();
+    showView('game');
+  } catch(e) {
+    alert('ゲームの作成に失敗しました。ネットワークを確認してください。');
+  } finally {
+    showLoading(false);
+  }
 }
 
-// ---- Game ----
+// ---- ゲーム画面 ----
 function calcScores(points, settings) {
   const n = settings.numPlayers;
   const diffs = points.map(p => (p - settings.returnPoints) / 1000);
@@ -403,23 +583,19 @@ function renderGame() {
   const totals = getTotals();
   const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]}))
                        .sort((a,b) => b.t - a.t);
-  const cards = document.getElementById('score-cards');
-  cards.innerHTML = ranked.map((p, rank) => {
+  document.getElementById('score-cards').innerHTML = ranked.map((p, rank) => {
     const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
-    const sign = p.t > 0 ? '+' : '';
-    const display = p.t.toFixed(1);
     return `<div class="score-card">
       <div class="rank-badge">${rank+1}</div>
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
       </div>
-      <div class="score-val ${cls}">${sign}${display}</div>
+      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</div>
     </div>`;
   }).join('');
 
-  const headers = ['局', ...s.playerNames.map(n => `<th>${esc(n)}</th>`)].join('');
   const rows = activeGame.rounds.map((r, idx) => {
     const cells = r.scores.map(sc => {
       const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
@@ -433,29 +609,31 @@ function renderGame() {
 
 function endGame() {
   if (!activeGame) return;
-  saveActiveGame();
+  saveToLocalHistory();
+  stopListening();
   activeGame = null;
+  sessionId = null;
+  pendingSessionId = null;
+  history.replaceState(null, '', location.pathname);
   showView('home');
 }
 
-function saveActiveGame() {
-  if (!activeGame) return;
-  const idx = appState.games.findIndex(g => g.id === activeGame.id);
-  if (idx >= 0) {
-    appState.games[idx] = activeGame;
-  } else {
-    appState.games.unshift(activeGame);
+function leaveGame() {
+  // 進行中のゲームはFirebaseに保存済み。URLを知れば再アクセス可能。
+  if (activeGame && activeGame.rounds.length > 0) {
+    saveToLocalHistory();
   }
-  saveStorage();
-}
-
-function confirmLeave() {
-  saveActiveGame();
+  stopListening();
   activeGame = null;
+  // sessionIdとURLは保持したまま（URLを知れば再参加できる）
+  const savedSessionId = sessionId;
+  sessionId = null;
+  pendingSessionId = savedSessionId;
+  history.replaceState(null, '', location.pathname);
   showView('home');
 }
 
-// ---- Sheet ----
+// ---- 点数入力シート ----
 function openSheet() {
   const s = activeGame.settings;
   const n = s.numPlayers;
@@ -468,6 +646,7 @@ function openSheet() {
   ).join('');
   document.getElementById('total-check').textContent = '点数を入力してください';
   document.getElementById('total-check').className = 'total-check ng';
+  document.getElementById('auto-btn').disabled = true;
   document.getElementById('confirm-btn').disabled = true;
   document.getElementById('backdrop').classList.add('open');
   document.getElementById('score-sheet').classList.add('open');
@@ -482,24 +661,18 @@ function closeSheet() {
 function updateTotal() {
   const n = activeGame.settings.numPlayers;
   const expected = activeGame.settings.startPoints * n;
-
-  const values = [];
-  for (let i = 0; i < n; i++) {
+  const values = Array.from({length: n}, (_, i) => {
     const el = document.getElementById('si-' + i);
-    values.push(el.value === '' ? null : Number(el.value));
-  }
-
+    return el.value === '' ? null : Number(el.value);
+  });
   const emptyIndices = values.map((v,i) => v === null ? i : -1).filter(i => i >= 0);
   const filled = values.filter(v => v !== null).reduce((s,v) => s+v, 0);
   const total = values.reduce((s, v) => s + (v ?? 0), 0);
 
-  const autoBtn = document.getElementById('auto-btn');
+  document.getElementById('auto-btn').disabled = emptyIndices.length !== 1;
+
   const el = document.getElementById('total-check');
   const btn = document.getElementById('confirm-btn');
-
-  // 自動入力ボタン：空欄がちょうど1人のときだけ有効
-  autoBtn.disabled = emptyIndices.length !== 1;
-
   if (emptyIndices.length === 0 && total === expected) {
     el.textContent = `入力合計: ${total.toLocaleString()} ✓`;
     el.className = 'total-check ok';
@@ -514,32 +687,33 @@ function updateTotal() {
 function autoFill() {
   const n = activeGame.settings.numPlayers;
   const expected = activeGame.settings.startPoints * n;
-  let filledSum = 0;
-  let emptyIdx = -1;
+  let filledSum = 0, emptyIdx = -1;
   for (let i = 0; i < n; i++) {
     const el = document.getElementById('si-' + i);
-    if (el.value === '') { emptyIdx = i; }
-    else { filledSum += Number(el.value); }
+    if (el.value === '') emptyIdx = i;
+    else filledSum += Number(el.value);
   }
   if (emptyIdx < 0) return;
   document.getElementById('si-' + emptyIdx).value = expected - filledSum;
   updateTotal();
 }
 
-function submitRound() {
+async function submitRound() {
   const n = activeGame.settings.numPlayers;
-  const points = [];
-  for (let i = 0; i < n; i++) {
-    points.push(Number(document.getElementById('si-' + i).value) || 0);
-  }
+  const points = Array.from({length: n}, (_, i) => Number(document.getElementById('si-' + i).value) || 0);
   const scores = calcScores(points, activeGame.settings);
-  activeGame.rounds.push({ points, scores });
-  saveActiveGame();
+  const newRounds = [...activeGame.rounds, { points, scores }];
+
   closeSheet();
-  renderGame();
+  try {
+    await writeRoundsToFirebase(newRounds);
+    // リアルタイムリスナーが自動でrenderGame()を呼ぶ
+  } catch(e) {
+    showToast('保存に失敗しました');
+  }
 }
 
-// ---- History ----
+// ---- 履歴 ----
 function renderHistory() {
   const body = document.getElementById('history-body');
   if (!appState.games || appState.games.length === 0) {
@@ -575,14 +749,13 @@ function viewDetail(idx) {
   ranked.forEach((p, rank) => {
     const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
-    const sign = p.t > 0 ? '+' : '';
     html += `<div class="score-card">
       <div class="rank-badge">${rank+1}</div>
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
       </div>
-      <div class="score-val ${cls}">${sign}${p.t.toFixed(1)}</div>
+      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</div>
     </div>`;
   });
   html += '</div></div>';
@@ -615,8 +788,19 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ---- 起動処理 ----
 loadStorage();
 initSetupForm();
+
+// URLのハッシュ（#以降）を確認して、共有URLならそのゲームに参加
+const urlHash = location.hash.slice(1);
+if (urlHash && urlHash.length > 10) {
+  pendingSessionId = urlHash;
+  // ホーム画面を表示しつつ、参加バナーを出す
+  document.getElementById('join-banner').style.display = 'block';
+  // 自動でゲームに参加
+  joinSession(urlHash);
+}
 </script>
 </body>
 </html>
