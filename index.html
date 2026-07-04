@@ -329,7 +329,7 @@ function saveToLocalHistory() {
 function generateSessionId() {
   // 推測されにくいランダムな22文字のID（英数字の組み合わせ）
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  return Array.from({length: 22}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return Array.from({length: 10}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
 function startListening() {
