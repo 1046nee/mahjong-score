@@ -11,23 +11,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .view { display: none; min-height: 100vh; flex-direction: column; }
 .view.active { display: flex; }
 
-.header { background: #1a237e; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.header { background: #177083; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
 .header h1 { font-size: 18px; font-weight: 700; flex: 1; }
 .back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
 .share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
 /* Home */
-#view-home { background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%); justify-content: center; align-items: center; gap: 20px; }
+#view-home { background: linear-gradient(135deg, #0f5866 0%, #177083 60%, #1e8fa3 100%); justify-content: center; align-items: center; gap: 20px; }
 .home-title { color: #fff; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-align: center; }
 .home-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; text-align: center; }
 .home-btn { width: 240px; padding: 18px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
 .home-btn:active { transform: scale(0.97); }
-.home-btn-primary { background: #fff; color: #1a237e; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.home-btn-primary { background: #fff; color: #177083; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 .home-btn-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.5); }
 .join-banner { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.4); border-radius: 12px; padding: 16px 20px; width: 240px; text-align: center; }
 .join-banner p { color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 10px; }
 .join-banner strong { color: #fff; font-size: 15px; display: block; margin-bottom: 10px; word-break: break-all; }
-.join-btn { background: #fff; color: #1a237e; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+.join-btn { background: #fff; color: #177083; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
 
 /* Setup */
 #view-setup { background: #f0f2f5; }
@@ -38,14 +38,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .field:last-child { margin-bottom: 0; }
 label { font-size: 13px; color: #555; font-weight: 600; }
 input[type=text], input[type=number], select { border: 1.5px solid #ddd; border-radius: 8px; padding: 10px 12px; font-size: 15px; transition: border-color 0.2s; outline: none; width: 100%; }
-input:focus, select:focus { border-color: #1a237e; }
+input:focus, select:focus { border-color: #177083; }
 .toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
 .toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
-.toggle-btn.active { background: #1a237e; color: #fff; }
+.toggle-btn.active { background: #177083; color: #fff; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .custom-uma-grid .field { margin-bottom: 0; }
-.submit-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
+.submit-btn { background: #177083; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
 .submit-btn:active { opacity: 0.85; }
 
 /* Game */
@@ -53,7 +53,7 @@ input:focus, select:focus { border-color: #1a237e; }
 .game-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 100px; }
 .score-cards { display: flex; flex-direction: column; gap: 10px; }
 .score-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
-.rank-badge { font-size: 20px; font-weight: 800; color: #1a237e; width: 28px; text-align: center; }
+.rank-badge { font-size: 20px; font-weight: 800; color: #177083; width: 28px; text-align: center; }
 .score-info { flex: 1; }
 .score-name { font-size: 14px; font-weight: 700; }
 .score-yen { font-size: 12px; color: #888; }
@@ -63,11 +63,11 @@ input:focus, select:focus { border-color: #1a237e; }
 
 /* Rounds table */
 .rounds-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.rounds-table th { background: #1a237e; color: #fff; padding: 8px 6px; text-align: center; font-size: 12px; }
+.rounds-table th { background: #177083; color: #fff; padding: 8px 6px; text-align: center; font-size: 12px; }
 .rounds-table td { padding: 8px 6px; text-align: center; border-bottom: 1px solid #eee; }
 .rounds-table tr:last-child td { border-bottom: none; }
 .round-actions { display: flex; gap: 4px; justify-content: center; }
-.round-edit-btn { background: #e8f0fe; border: none; color: #1a237e; border-radius: 5px; padding: 3px 7px; font-size: 12px; cursor: pointer; }
+.round-edit-btn { background: #e8f0fe; border: none; color: #177083; border-radius: 5px; padding: 3px 7px; font-size: 12px; cursor: pointer; }
 .round-del-btn { background: #ffebee; border: none; color: #c62828; border-radius: 5px; padding: 3px 7px; font-size: 12px; cursor: pointer; }
 
 /* Settlement */
@@ -75,11 +75,11 @@ input:focus, select:focus { border-color: #1a237e; }
 .settlement-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #f8f9ff; border-radius: 10px; }
 .settlement-from { font-weight: 700; font-size: 14px; color: #c62828; flex: 1; }
 .settlement-arrow { color: #888; font-size: 16px; }
-.settlement-to { font-weight: 700; font-size: 14px; color: #1a237e; flex: 1; text-align: right; }
+.settlement-to { font-weight: 700; font-size: 14px; color: #177083; flex: 1; text-align: right; }
 .settlement-amount { font-size: 15px; font-weight: 800; color: #1a1a1a; white-space: nowrap; margin-left: 8px; }
 .settlement-empty { font-size: 13px; color: #aaa; text-align: center; padding: 8px 0; }
 
-.fab { position: fixed; bottom: 24px; right: 24px; background: #1a237e; color: #fff; border: none; border-radius: 50px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(26,35,126,0.4); z-index: 100; }
+.fab { position: fixed; bottom: 24px; right: 24px; background: #E75620; color: #fff; border: none; border-radius: 50px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(231,86,32,0.4); z-index: 100; }
 .end-btn { background: #c62828; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
 
 /* Confirm modal */
@@ -97,7 +97,7 @@ input:focus, select:focus { border-color: #1a237e; }
 
 /* Player name chips */
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.chip { background: #e8f0fe; color: #1a237e; border: none; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.chip { background: #e8f0fe; color: #177083; border: none; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .chip:active { opacity: 0.7; }
 .chips-hint { font-size: 11px; color: #999; margin-bottom: 6px; }
 
@@ -106,7 +106,7 @@ input:focus, select:focus { border-color: #1a237e; }
 .edit-tab:active { background: #e0e0e0; }
 
 /* Action modal buttons */
-.modal-action { display: block; width: 100%; background: #f8f9ff; color: #1a237e; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
+.modal-action { display: block; width: 100%; background: #f8f9ff; color: #177083; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
 .modal-action.danger { background: #ffebee; color: #c62828; }
 
 /* Change log */
@@ -140,7 +140,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 /* Loading */
 .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
-.spinner { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: #1a237e; border-radius: 50%; animation: spin 0.8s linear infinite; }
+.spinner { width: 40px; height: 40px; border: 4px solid #ddd; border-top-color: #177083; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Sheet */
@@ -154,13 +154,13 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .sheet-row { display: flex; align-items: center; gap: 10px; }
 .sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
-.sheet-row input:focus { border-color: #1a237e; }
-.auto-btn { background: #e8f0fe; color: #1a237e; border: 1.5px solid #1a237e; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
+.sheet-row input:focus { border-color: #177083; }
+.auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 .total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
 .total-check.ok { background: #e8f5e9; color: #2e7d32; }
 .total-check.ng { background: #ffebee; color: #c62828; }
-.confirm-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
+.confirm-btn { background: #177083; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
 .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
 
 /* History */
@@ -282,8 +282,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="header">
     <button class="back-btn" onclick="leaveGame()">←</button>
     <h1 id="game-title">ゲーム中</h1>
-    <button class="share-btn" onclick="openGameEdit()">✏ 編集</button>
-    <button class="share-btn" onclick="copyUrl()">🔗 共有</button>
+    <button class="share-btn" onclick="openGameEdit()">✏ 設定変更</button>
+    <button class="share-btn" onclick="copyUrl()">🔗 URL発行</button>
   </div>
   <div class="game-body">
     <div class="card">
@@ -294,7 +294,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <div class="score-cards" id="score-cards"></div>
     </div>
     <div class="card">
-      <div class="card-title">局履歴</div>
+      <div class="card-title">対局履歴</div>
       <div style="overflow-x:auto">
         <table class="rounds-table" id="rounds-table"></table>
       </div>
@@ -321,7 +321,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="header">
     <button class="back-btn" onclick="showView('history')">←</button>
     <h1 id="detail-title">結果詳細</h1>
-    <button class="share-btn" onclick="openDetailEdit()">✏ 編集</button>
+    <button class="share-btn" onclick="openDetailEdit()">✏ 設定変更</button>
   </div>
   <div class="detail-body" id="detail-body"></div>
 </div>
@@ -335,6 +335,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
   <div class="total-check ng" id="total-check">点数を入力してください</div>
   <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
+  <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px;display:none" onclick="closeSheet()">キャンセル</button>
 </div>
 
 <!-- Confirm modal -->
@@ -546,7 +547,7 @@ function buildPlayerInputs() {
     const inp = document.createElement('input');
     inp.type = 'text'; inp.id = 'p-name-' + i; inp.placeholder = def; inp.value = def;
     inp.style.cssText = 'border:1.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:15px;outline:none;width:100%;transition:border-color 0.2s';
-    inp.onfocus = function() { this.style.borderColor='#1a237e'; };
+    inp.onfocus = function() { this.style.borderColor='#177083'; };
     inp.onblur = function() { this.style.borderColor='#ddd'; };
     container.appendChild(inp);
   });
@@ -635,12 +636,15 @@ function chartHtml(rounds, playerNames) {
   const range = max - min;
   min -= range * 0.08; max += range * 0.08;
 
-  const W = 340, H = 200, left = 42, right = 12, top = 10, bottom = 24;
+  const W = 340, H = 214, left = 46, right = 12, top = 10, bottom = 38;
   const R = rounds.length;
   const px = i => left + (W - left - right) * (i / R);
   const py = v => top + (H - top - bottom) * ((max - v) / (max - min));
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
+  // 軸タイトル
+  svg += `<text transform="rotate(-90 10 ${(top + H - bottom) / 2})" x="10" y="${(top + H - bottom) / 2}" text-anchor="middle" font-size="10" fill="#888" font-weight="600">スコア</text>`;
+  svg += `<text x="${(left + W - right) / 2}" y="${H - 4}" text-anchor="middle" font-size="10" fill="#888" font-weight="600">試合</text>`;
   // 横グリッド線（50刻み）
   const gridVals = [];
   for (let v = Math.ceil(min / 50) * 50; v <= max; v += 50) gridVals.push(v);
@@ -653,7 +657,7 @@ function chartHtml(rounds, playerNames) {
   });
   // X軸ラベル（局番号）
   for (let i = 0; i <= R; i++) {
-    svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
+    svg += `<text x="${px(i)}" y="${H-22}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
   }
   // 折れ線
   series.forEach((s, i) => {
@@ -674,7 +678,7 @@ function chartHtml(rounds, playerNames) {
 // 局履歴と順位取得回数で列幅を揃えるため、先頭列は固定幅・table-layout:fixed を共用
 const FIRST_COL_TH = '<th style="width:44px">';
 function roundsTheadHtml(names) {
-  return `<thead><tr>${FIRST_COL_TH}局</th>${names.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>`;
+  return `<thead><tr>${FIRST_COL_TH}試合</th>${names.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示
 function roundRowHtml(r, idx, onclickJs) {
@@ -706,12 +710,12 @@ function rankCountHtml(rounds, names) {
       const c = counts[i][rank];
       return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${c}回</td>`;
     }).join('');
-    return `<tr><td style="color:#888">${rank+1}位</td>${cells}</tr>`;
+    return `<tr><td style="color:#888">${rank+1}着</td>${cells}</tr>`;
   }).join('');
   return `<div style="border-top:1px solid #eee;margin-top:14px;padding-top:14px">
-    <div class="card-title">順位取得回数</div>
+    <div class="card-title">その他成績</div>
     <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
-      <thead><tr>${FIRST_COL_TH}順位</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
+      <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
   </div>`;
@@ -760,17 +764,17 @@ function renderGame() {
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
       </div>
-      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</div>
+      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:super;margin-left:1px">pts</span></div>
     </div>`;
   }).join('');
 
-  // 局履歴（行タップで編集メニュー）
+  // 対局履歴（行タップで編集メニュー）
   const hasRounds = activeGame.rounds.length > 0;
   let tableHtml = roundsTheadHtml(s.playerNames) + '<tbody>';
   if (hasRounds) {
     tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`)).join('');
   } else {
-    tableHtml += `<tr><td colspan="${s.numPlayers + 1}" style="color:#bbb;padding:16px">局なし</td></tr>`;
+    tableHtml += `<tr><td colspan="${s.numPlayers + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
   }
   tableHtml += '</tbody>';
   const table = document.getElementById('rounds-table');
@@ -808,18 +812,18 @@ function leaveGame() {
 
 // ---- 局の編集メニュー ----
 function openRoundMenu(idx) {
-  document.getElementById('action-modal-title').textContent = `第${idx+1}局`;
+  document.getElementById('action-modal-title').textContent = `第${idx+1}試合`;
   document.getElementById('action-modal-body').innerHTML =
     `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
-     <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この局を削除する</button>`;
+     <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この試合を削除する</button>`;
   document.getElementById('action-modal').classList.add('open');
 }
 function closeActionModal() {
   document.getElementById('action-modal').classList.remove('open');
 }
 function confirmDeleteRound(idx) {
-  document.getElementById('confirm-modal-title').textContent = `第${idx+1}局を削除`;
-  document.getElementById('confirm-modal-desc').textContent = 'この局の記録を削除します。全員の画面から削除されます（変更履歴には残ります）。よろしいですか？';
+  document.getElementById('confirm-modal-title').textContent = `第${idx+1}試合を削除`;
+  document.getElementById('confirm-modal-desc').textContent = 'この試合の記録を削除します。全員の画面から削除されます（履歴には残ります）。よろしいですか？';
   document.getElementById('confirm-modal-ok').onclick = () => { closeConfirmModal(); deleteRound(idx); };
   document.getElementById('confirm-modal').classList.add('open');
 }
@@ -830,7 +834,7 @@ async function deleteRound(idx) {
   if (!activeGame) return;
   const old = activeGame.rounds[idx];
   const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
-  const logEntry = { type: 'delete', at: new Date().toISOString(), label: `第${idx+1}局を削除`, points: old ? old.points : null };
+  const logEntry = { type: 'delete', at: new Date().toISOString(), label: `第${idx+1}試合を削除`, points: old ? old.points : null };
   try {
     await writeRoundsToFirebase(newRounds, logEntry);
     showToast('削除しました');
@@ -859,7 +863,8 @@ function openSheetCtx(ctx, idx) {
   const isEdit = idx >= 0;
   const existingPoints = isEdit ? ctx.rounds[idx].points : null;
 
-  document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}局を修正` : '点数入力';
+  document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : '点数入力';
+  document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
   const inputs = document.getElementById('sheet-inputs');
   inputs.innerHTML = s.playerNames.map((name, i) =>
     `<div class="sheet-row">
@@ -929,10 +934,10 @@ async function submitRound() {
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
     newRounds[editingIndex] = { points, scores, at: orig.at || now, edited: true }; // 修正
-    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}局を修正`, prev: orig.points || null, points };
+    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}試合を修正`, prev: orig.points || null, points };
   } else {
     newRounds.push({ points, scores, at: now }); // 新規
-    logEntry = { type: 'add', at: now, label: `第${newRounds.length}局を入力`, points };
+    logEntry = { type: 'add', at: now, label: `第${newRounds.length}試合を入力`, points };
   }
   closeSheet();
   try {
@@ -1064,13 +1069,13 @@ function viewDetail(g) {
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
       </div>
-      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</div>
+      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:super;margin-left:1px">pts</span></div>
     </div>`;
   });
   html += '</div></div>';
 
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`)).join('');
-  html += `<div class="card"><div class="card-title">局履歴</div>
+  html += `<div class="card"><div class="card-title">対局履歴</div>
     <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
       ${roundsTheadHtml(s.playerNames)}
       <tbody>${rows}</tbody>
