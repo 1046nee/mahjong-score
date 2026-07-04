@@ -82,6 +82,39 @@ input:focus, select:focus { border-color: #1a237e; }
 .fab { position: fixed; bottom: 24px; right: 24px; background: #1a237e; color: #fff; border: none; border-radius: 50px; padding: 14px 24px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(26,35,126,0.4); z-index: 100; }
 .end-btn { background: #c62828; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
 
+/* Confirm modal */
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; padding: 24px; }
+.modal-backdrop.open { display: flex; }
+.modal { background: #fff; border-radius: 16px; padding: 24px 20px; width: 100%; max-width: 320px; text-align: center; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.modal-desc { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.6; }
+.modal-btns { display: flex; gap: 10px; }
+.modal-cancel { flex: 1; background: #f0f0f0; color: #555; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.modal-danger { flex: 1; background: #c62828; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+/* Edited badge */
+.edited-badge { display: inline-block; font-size: 10px; color: #888; background: #f0f0f0; border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
+
+/* Player name chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip { background: #e8f0fe; color: #1a237e; border: none; border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.chip:active { opacity: 0.7; }
+.chips-hint { font-size: 11px; color: #999; margin-bottom: 6px; }
+
+/* Set group in history */
+.set-group { border: 1.5px solid #c5cae9; border-radius: 12px; overflow: hidden; background: #fff; }
+.set-header { background: #e8eaf6; padding: 10px 16px; font-size: 13px; font-weight: 700; color: #1a237e; }
+.set-totals { font-size: 12px; font-weight: 600; color: #555; margin-top: 4px; }
+.set-group .history-item { border-radius: 0; box-shadow: none; border-bottom: 1px solid #eee; }
+.set-group .history-item:last-child { border-bottom: none; }
+.next-game-btn { background: #1a237e; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
+
+/* Stats */
+.stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.stats-table th { background: #1a237e; color: #fff; padding: 8px 6px; font-size: 12px; }
+.stats-table td { padding: 10px 6px; text-align: center; border-bottom: 1px solid #eee; }
+.stats-table td:first-child { text-align: left; font-weight: 700; }
+
 /* Toast */
 .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .toast.show { opacity: 1; }
@@ -164,6 +197,10 @@ input:focus, select:focus { border-color: #1a237e; }
     </div>
     <div class="card">
       <div class="card-title">プレイヤー名</div>
+      <div id="saved-players-area" style="display:none">
+        <div class="chips-hint">保存済みの名前（タップで入力）</div>
+        <div class="chips" id="saved-player-chips"></div>
+      </div>
       <div class="player-inputs" id="player-inputs"></div>
     </div>
     <div class="card">
@@ -244,6 +281,7 @@ input:focus, select:focus { border-color: #1a237e; }
       </div>
     </div>
     <div class="card">
+      <button class="next-game-btn" onclick="continueSet()">保存して次のゲームへ（セット続行）</button>
       <button class="end-btn" onclick="endGame()">試合終了・保存</button>
     </div>
   </div>
@@ -255,8 +293,18 @@ input:focus, select:focus { border-color: #1a237e; }
   <div class="header">
     <button class="back-btn" onclick="showView('home')">←</button>
     <h1>過去の結果</h1>
+    <button class="share-btn" onclick="showView('stats')">📊 統計</button>
   </div>
   <div class="history-body" id="history-body"></div>
+</div>
+
+<!-- STATS -->
+<div id="view-stats" class="view">
+  <div class="header">
+    <button class="back-btn" onclick="showView('history')">←</button>
+    <h1>プレイヤー統計</h1>
+  </div>
+  <div class="detail-body" id="stats-body"></div>
 </div>
 
 <!-- DETAIL -->
@@ -277,6 +325,18 @@ input:focus, select:focus { border-color: #1a237e; }
   <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
   <div class="total-check ng" id="total-check">点数を入力してください</div>
   <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title" id="confirm-modal-title">確認</div>
+    <div class="modal-desc" id="confirm-modal-desc"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeConfirmModal()">キャンセル</button>
+      <button class="modal-danger" id="confirm-modal-ok">削除する</button>
+    </div>
+  </div>
 </div>
 
 <!-- Toast -->
@@ -313,11 +373,12 @@ let sessionRef = null;
 let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
-let appState = { games: [] };
+let appState = { games: [], players: [] };
 
 // ---- Storage ----
 function loadStorage() {
   try { const d = localStorage.getItem('mahjong-v3'); if (d) appState = JSON.parse(d); } catch(e) {}
+  if (!appState.players) appState.players = [];
 }
 function saveStorage() {
   localStorage.setItem('mahjong-v3', JSON.stringify(appState));
@@ -363,6 +424,7 @@ function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   if (name === 'history') renderHistory();
+  if (name === 'stats') renderStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { history.replaceState(null, '', location.pathname); checkPendingSession(); }
 }
@@ -408,7 +470,32 @@ function initSetupForm() {
   numPlayers = 4;
   document.getElementById('p4-btn').classList.add('active');
   document.getElementById('p3-btn').classList.remove('active');
-  buildPlayerInputs(); onUmaChange(); onRateChange();
+  buildPlayerInputs(); renderPlayerChips(); onUmaChange(); onRateChange();
+}
+// ---- プレイヤー名の保存 ----
+function renderPlayerChips() {
+  const area = document.getElementById('saved-players-area');
+  const chips = document.getElementById('saved-player-chips');
+  if (!appState.players || appState.players.length === 0) { area.style.display = 'none'; return; }
+  area.style.display = 'block';
+  chips.innerHTML = appState.players.map(name =>
+    `<button class="chip" onclick="fillPlayerName(this)" data-name="${esc(name)}">${esc(name)}</button>`
+  ).join('');
+}
+function fillPlayerName(btn) {
+  const name = btn.getAttribute('data-name');
+  // デフォルト値（プレイヤーN）のままの最初の欄に入れる。全て変更済みなら最初の欄。
+  for (let i = 0; i < numPlayers; i++) {
+    const el = document.getElementById('p-name-' + i);
+    if (el && (el.value === '' || /^プレイヤー\d$/.test(el.value))) { el.value = name; return; }
+  }
+  document.getElementById('p-name-0').value = name;
+}
+function savePlayerNames(names) {
+  names.forEach(name => {
+    if (!/^プレイヤー\d$/.test(name) && !appState.players.includes(name)) appState.players.push(name);
+  });
+  saveStorage();
 }
 function setPlayers(n) {
   numPlayers = n;
@@ -458,14 +545,36 @@ async function startGame() {
   const uma = getUmaArray();
   const rateVal = document.getElementById('s-rate').value;
   const rate = rateVal === 'custom' ? (Number(document.getElementById('s-rate-custom').value) || 1) : Number(rateVal);
+  savePlayerNames(playerNames);
   sessionId = generateSessionId();
-  const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate }, rounds: [] };
+  const game = { id: sessionId, setId: sessionId, gameNo: 1, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate }, rounds: [] };
   showLoading(true);
   try {
     await db.ref('sessions/' + sessionId).set(game);
     history.replaceState(null, '', '#' + sessionId);
     startListening(); showView('game');
   } catch(e) { alert('ゲームの作成に失敗しました。'); } finally { showLoading(false); }
+}
+
+// ---- セット戦管理 ----
+// 現在のゲームを保存し、同じ設定・メンバーで次のゲームを開始（setIdで連結）
+async function continueSet() {
+  if (!activeGame) return;
+  saveToLocalHistory();
+  const prev = activeGame;
+  const setId = prev.setId || prev.id;
+  const gameNo = (prev.gameNo || 1) + 1;
+  stopListening();
+  sessionId = generateSessionId();
+  const baseName = prev.name.replace(/ 第\d+戦$/, '');
+  const game = { id: sessionId, setId, gameNo, name: `${baseName} 第${gameNo}戦`, createdAt: new Date().toISOString(), settings: prev.settings, rounds: [] };
+  showLoading(true);
+  try {
+    await db.ref('sessions/' + sessionId).set(game);
+    history.replaceState(null, '', '#' + sessionId);
+    startListening();
+    showToast(`第${gameNo}戦を開始しました（URLが変わりました。共有ボタンから再共有してください）`);
+  } catch(e) { alert('次のゲームの作成に失敗しました。'); } finally { showLoading(false); }
 }
 
 // ---- Game ----
@@ -548,13 +657,14 @@ function renderGame() {
         const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
         return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
       }).join('');
+      const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
       return `<tr>
-        <td style="color:#888">${idx+1}</td>
+        <td style="color:#888;white-space:nowrap">${idx+1}${editedMark}</td>
         ${cells}
         <td>
           <div class="round-actions">
             <button class="round-edit-btn" onclick="openSheet(${idx})">修正</button>
-            <button class="round-del-btn" onclick="deleteRound(${idx})">削除</button>
+            <button class="round-del-btn" onclick="confirmDeleteRound(${idx})">削除</button>
           </div>
         </td>
       </tr>`;
@@ -604,11 +714,21 @@ function leaveGame() {
 }
 
 // ---- 局の修正・削除 ----
+function confirmDeleteRound(idx) {
+  document.getElementById('confirm-modal-title').textContent = `第${idx+1}局を削除`;
+  document.getElementById('confirm-modal-desc').textContent = 'この局の記録を削除します。全員の画面から削除され、元に戻せません。よろしいですか？';
+  document.getElementById('confirm-modal-ok').onclick = () => { closeConfirmModal(); deleteRound(idx); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeConfirmModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+}
 async function deleteRound(idx) {
   if (!activeGame) return;
   const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
   try {
     await writeRoundsToFirebase(newRounds);
+    showToast('削除しました');
   } catch(e) { showToast('削除に失敗しました'); }
 }
 
@@ -686,7 +806,7 @@ async function submitRound() {
   const scores = calcScores(points, activeGame.settings);
   const newRounds = [...activeGame.rounds];
   if (editingIndex >= 0) {
-    newRounds[editingIndex] = { points, scores }; // 修正
+    newRounds[editingIndex] = { points, scores, edited: true }; // 修正
   } else {
     newRounds.push({ points, scores }); // 新規
   }
@@ -696,28 +816,64 @@ async function submitRound() {
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
-// ---- 履歴 ----
+// ---- 履歴（セット単位でグループ表示） ----
+function gameFinalTotals(g) {
+  const n = g.settings.numPlayers;
+  const totals = new Array(n).fill(0);
+  (g.rounds || []).forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
+  return totals.map(t => Math.round(t * 10) / 10);
+}
+function historyItemHtml(g) {
+  const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
+  const n = g.settings ? g.settings.numPlayers : '?';
+  const rounds = g.rounds ? g.rounds.length : 0;
+  return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
+    <div class="history-info">
+      <div class="history-name">${esc(g.name)}</div>
+      <div class="history-meta">${date} · ${n}人 · ${rounds}局</div>
+    </div>
+    <div class="history-arrow">›</div>
+  </div>`;
+}
 function renderHistory() {
   const body = document.getElementById('history-body');
   if (!appState.games || appState.games.length === 0) {
     body.innerHTML = '<div class="empty-msg">保存されたゲームはありません</div>'; return;
   }
-  body.innerHTML = appState.games.map((g, idx) => {
-    const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
-    const n = g.settings ? g.settings.numPlayers : '?';
-    const rounds = g.rounds ? g.rounds.length : 0;
-    return `<div class="history-item" onclick="viewDetail(${idx})">
-      <div class="history-info">
-        <div class="history-name">${esc(g.name)}</div>
-        <div class="history-meta">${date} · ${n}人 · ${rounds}局</div>
+  // setIdごとにグループ化（登場順を維持）
+  const groups = [];
+  const map = {};
+  appState.games.forEach(g => {
+    const key = g.setId || g.id;
+    if (!map[key]) { map[key] = { key, games: [] }; groups.push(map[key]); }
+    map[key].games.push(g);
+  });
+  body.innerHTML = groups.map(grp => {
+    if (grp.games.length === 1) return historyItemHtml(grp.games[0]);
+    // セット: 通算スコアを計算
+    const first = grp.games[grp.games.length - 1]; // 古い方（第1戦）
+    const names = first.settings.playerNames;
+    const totals = new Array(first.settings.numPlayers).fill(0);
+    grp.games.forEach(g => gameFinalTotals(g).forEach((t, i) => totals[i] += t));
+    const totalStr = names.map((nm, i) => {
+      const t = Math.round(totals[i] * 10) / 10;
+      return `${esc(nm)} ${t >= 0 ? '+' : ''}${t.toFixed(1)}`;
+    }).join(' ／ ');
+    const items = grp.games.map(historyItemHtml).join('');
+    return `<div class="set-group">
+      <div class="set-header">🀄 セット戦（全${grp.games.length}ゲーム）
+        <div class="set-totals">通算: ${totalStr}</div>
       </div>
-      <div class="history-arrow">›</div>
+      ${items}
     </div>`;
   }).join('');
 }
 
-function viewDetail(idx) {
-  const g = appState.games[idx];
+function viewDetailById(id) {
+  const g = appState.games.find(x => x.id === id);
+  if (g) viewDetail(g);
+}
+function viewDetail(g) {
   document.getElementById('detail-title').textContent = g.name;
   const s = g.settings; const n = s.numPlayers;
   const totals = new Array(n).fill(0);
@@ -761,7 +917,8 @@ function viewDetail(idx) {
       const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
       return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
     }).join('');
-    return `<tr><td style="color:#888">${ridx+1}</td>${cells}</tr>`;
+    const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
+    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${cells}</tr>`;
   }).join('');
   html += `<div class="card"><div class="card-title">局履歴</div>
     <div style="overflow-x:auto"><table class="rounds-table">
@@ -775,6 +932,56 @@ function viewDetail(idx) {
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   showView('detail');
+}
+
+// ---- プレイヤー統計 ----
+function renderStats() {
+  const body = document.getElementById('stats-body');
+  if (!appState.games || appState.games.length === 0) {
+    body.innerHTML = '<div class="empty-msg">データがありません</div>'; return;
+  }
+  // プレイヤー名ごとに集計（保存済みゲームの最終順位ベース）
+  const stats = {}; // name -> {games, totalScore, rankCounts, totalYen}
+  appState.games.forEach(g => {
+    if (!g.settings || !g.rounds || g.rounds.length === 0) return;
+    const totals = gameFinalTotals(g);
+    const ranked = totals.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
+    ranked.forEach((r, rank) => {
+      const name = g.settings.playerNames[r.i];
+      if (!stats[name]) stats[name] = { games: 0, totalScore: 0, rankCounts: [0,0,0,0], totalYen: 0 };
+      stats[name].games++;
+      stats[name].totalScore += r.t;
+      stats[name].rankCounts[rank]++;
+      stats[name].totalYen += r.t * (g.settings.rate || 0);
+    });
+  });
+  const rows = Object.entries(stats)
+    .sort((a, b) => b[1].totalScore - a[1].totalScore)
+    .map(([name, st]) => {
+      const total = Math.round(st.totalScore * 10) / 10;
+      const avg = Math.round(st.totalScore / st.games * 10) / 10;
+      const topRate = Math.round(st.rankCounts[0] / st.games * 100);
+      const cls = total >= 0 ? 'color:#1a237e;font-weight:700' : 'color:#c62828;font-weight:700';
+      return `<tr>
+        <td>${esc(name)}</td>
+        <td>${st.games}</td>
+        <td style="${cls}">${total >= 0 ? '+' : ''}${total.toFixed(1)}</td>
+        <td>${avg >= 0 ? '+' : ''}${avg.toFixed(1)}</td>
+        <td>${topRate}%</td>
+        <td>${st.rankCounts[0]}-${st.rankCounts[1]}-${st.rankCounts[2]}-${st.rankCounts[3]}</td>
+      </tr>`;
+    }).join('');
+  if (!rows) { body.innerHTML = '<div class="empty-msg">データがありません</div>'; return; }
+  body.innerHTML = `<div class="card">
+    <div class="card-title">通算成績（保存済みゲーム集計）</div>
+    <div style="overflow-x:auto">
+      <table class="stats-table">
+        <thead><tr><th>名前</th><th>回数</th><th>通算</th><th>平均</th><th>1位率</th><th>順位分布</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:#999;margin-top:10px">※順位分布は 1位-2位-3位-4位 の回数。この端末に保存されたゲームのみ集計されます。</div>
+  </div>`;
 }
 
 function esc(s) {
