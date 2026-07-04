@@ -598,12 +598,29 @@ async function startGame() {
 }
 
 // ---- Game ----
+// 同点は同順位とし、同点グループでウマ（順位点）とオカを均等に山分けする
 function calcScores(points, settings) {
   const n = settings.numPlayers;
   const diffs = points.map(p => (p - settings.returnPoints) / 1000);
-  const order = diffs.map((d,i) => ({d,i})).sort((a,b) => b.d - a.d);
+  const oka = (settings.returnPoints - settings.startPoints) * n / 1000; // 1位が取得
+  const order = points.map((p, i) => ({p, i})).sort((a, b) => b.p - a.p);
   const result = new Array(n);
-  order.forEach((o, rank) => { result[o.i] = Math.round((diffs[o.i] + settings.uma[rank]) * 10) / 10; });
+  let pos = 0;
+  while (pos < n) {
+    // 同じ点数のプレイヤーをグループ化し、占有する順位範囲 [pos, end] を求める
+    let end = pos;
+    while (end + 1 < n && order[end + 1].p === order[pos].p) end++;
+    const size = end - pos + 1;
+    let share = 0;
+    for (let r = pos; r <= end; r++) share += settings.uma[r];
+    share /= size;
+    if (pos === 0) share += oka / size; // オカ対象（1位）を含むグループはオカも山分け
+    for (let r = pos; r <= end; r++) {
+      const idx = order[r].i;
+      result[idx] = Math.round((diffs[idx] + share) * 10) / 10;
+    }
+    pos = end + 1;
+  }
   return result;
 }
 function getTotals() {
