@@ -130,7 +130,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 /* Score chart */
 .chart-wrap { width: 100%; }
-.chart-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; justify-content: center; }
 .chart-legend span { font-size: 12px; font-weight: 600; color: #555; display: flex; align-items: center; gap: 4px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
@@ -191,8 +191,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <div id="view-home" class="view active">
   <div class="home-title">🀄 麻雀スコア</div>
   <div class="home-sub">スコア管理アプリ</div>
-  <button class="home-btn home-btn-primary" onclick="showView('setup')">新しいゲームを始める</button>
-  <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の結果を見る</button>
+  <button class="home-btn home-btn-primary" onclick="showView('setup')">新しい対局を始める</button>
+  <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の戦績を振り返る</button>
   <div class="join-banner" id="join-banner" style="display:none">
     <p>共有されたゲームがあります</p>
     <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
@@ -305,9 +305,6 @@ details.log-details summary::-webkit-details-marker { display: none; }
     <div class="card" id="chart-card" style="display:none">
       <div class="card-title">スコア推移</div>
       <div class="chart-wrap" id="chart-body"></div>
-    </div>
-    <div class="card">
-      <button class="end-btn" onclick="endGame()">試合終了・保存</button>
     </div>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
@@ -448,6 +445,8 @@ function startListening() {
     const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
     activeGame = { ...data, rounds: normArr(data.rounds), log: normArr(data.log) };
     renderGame();
+    // 編集のたびに自動保存（過去の戦績に即時反映）
+    if (activeGame.rounds.length > 0 || activeGame.log.length > 0) saveToLocalHistory();
   });
 }
 function stopListening() {
@@ -629,7 +628,7 @@ function rankBadgeHtml(rank) {
   if (rank < 3) {
     return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${rank+1}位</span></div>`;
   }
-  return `<div class="rank-badge rank-last"><span class="rank-emoji">🌑</span><span class="rank-num">${rank+1}位</span></div>`;
+  return `<div class="rank-badge rank-last"><span class="rank-emoji">👿</span><span class="rank-num">${rank+1}位</span></div>`;
 }
 
 // ---- スコア推移グラフ（SVG） ----
@@ -654,12 +653,14 @@ function chartHtml(rounds, playerNames) {
   const py = v => top + (H - top - bottom) * ((max - v) / (max - min));
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
-  // 横グリッド線（min/0/max）
-  const gridVals = [...new Set([Math.ceil(min), 0, Math.floor(max)])].filter(v => v >= min && v <= max);
+  // 横グリッド線（50刻み）
+  const gridVals = [];
+  for (let v = Math.ceil(min / 50) * 50; v <= max; v += 50) gridVals.push(v);
+  if (gridVals.length === 0) gridVals.push(0);
   gridVals.forEach(v => {
     const y = py(v);
     const strong = v === 0;
-    svg += `<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="${strong ? '#bbb' : '#eee'}" stroke-width="${strong ? 1.5 : 1}"/>`;
+    svg += `<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="${strong ? '#bbb' : '#e5e5e5'}" stroke-width="${strong ? 1.5 : 1}"/>`;
     svg += `<text x="${left-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#999">${v > 0 ? '+' : ''}${v}</text>`;
   });
   // X軸ラベル（局番号）
@@ -681,12 +682,56 @@ function chartHtml(rounds, playerNames) {
   return svg + legend;
 }
 
+// ---- 局履歴テーブルの共通パーツ ----
+// スコアの下に入力した素点をうっすら表示
+function roundCellsHtml(r) {
+  return r.scores.map((sc, i) => {
+    const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
+    const raw = (r.points && r.points[i] != null)
+      ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[i].toLocaleString()}</div>`
+      : '';
+    return `<td style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}</td>`;
+  }).join('');
+}
+const TIME_TH = '<th style="font-weight:500;font-size:10px;color:rgba(255,255,255,0.75)">入力時刻</th>';
+function timeTdHtml(at) {
+  return `<td><span style="background:#f0f2f5;color:#98a0b3;border-radius:10px;padding:2px 7px;font-size:10px;white-space:nowrap;font-variant-numeric:tabular-nums">${fmtTime(at)}</span></td>`;
+}
+
+// ---- 順位取得回数 ----
+function rankCountHtml(rounds, names) {
+  if (!rounds || rounds.length === 0) return '';
+  const n = names.length;
+  const counts = Array.from({length: n}, () => new Array(n).fill(0));
+  rounds.forEach(r => {
+    const order = r.scores.map((sc, i) => ({sc, i})).sort((a, b) => b.sc - a.sc);
+    order.forEach((o, rank) => counts[o.i][rank]++);
+  });
+  const rows = Array.from({length: n}, (_, rank) => {
+    const cells = names.map((_, i) => {
+      const c = counts[i][rank];
+      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${c}回</td>`;
+    }).join('');
+    return `<tr><td style="color:#888">${rank+1}位</td>${cells}</tr>`;
+  }).join('');
+  return `<div style="border-top:1px solid #eee;margin-top:14px;padding-top:14px">
+    <div class="card-title">順位取得回数</div>
+    <div style="overflow-x:auto"><table class="rounds-table">
+      <thead><tr><th>順位</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
 // ---- 変更履歴表示 ----
 function renderLogHtml(log) {
   const events = (log || []).filter(e => e.type === 'edit' || e.type === 'delete');
   if (events.length === 0) return '';
+  const fmtPts = pts => pts.map(p => p.toLocaleString()).join(' / ');
   const rows = events.map(e => {
-    const detail = e.points ? `（${e.points.map(p => p.toLocaleString()).join(' / ')}）` : '';
+    let detail = '';
+    if (e.type === 'edit' && e.prev && e.points) detail = `<br>${fmtPts(e.prev)} → <b>${fmtPts(e.points)}</b>`;
+    else if (e.points) detail = `（${fmtPts(e.points)}）`;
     return `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span>${esc(e.label)}${detail}</div>`;
   }).join('');
   return `<details class="log-details">
@@ -716,20 +761,16 @@ function renderGame() {
     </div>`;
   }).join('');
 
-  // 局履歴（時刻＋編集タブ付き）
+  // 局履歴（入力時刻＋編集タブ付き）
   const hasRounds = activeGame.rounds.length > 0;
-  let tableHtml = `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}<th>時刻</th><th></th></tr></thead><tbody>`;
+  let tableHtml = `<thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}${TIME_TH}<th></th></tr></thead><tbody>`;
   if (hasRounds) {
     tableHtml += activeGame.rounds.map((r, idx) => {
-      const cells = r.scores.map(sc => {
-        const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
-        return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
-      }).join('');
       const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
       return `<tr>
         <td style="color:#888;white-space:nowrap">${idx+1}${editedMark}</td>
-        ${cells}
-        <td style="color:#999;font-size:11px;white-space:nowrap">${fmtTime(r.at)}</td>
+        ${roundCellsHtml(r)}
+        ${timeTdHtml(r.at)}
         <td><button class="edit-tab" onclick="openRoundMenu(${idx})">編集</button></td>
       </tr>`;
     }).join('');
@@ -739,14 +780,13 @@ function renderGame() {
   tableHtml += '</tbody>';
   document.getElementById('rounds-table').innerHTML = tableHtml;
 
-  // 変更履歴（修正・削除の記録）
-  const logHtml = renderLogHtml(activeGame.log);
+  // 順位取得回数＋変更履歴
   let logEl = document.getElementById('game-log');
   if (!logEl) {
     logEl = document.createElement('div'); logEl.id = 'game-log';
     document.getElementById('rounds-table').closest('.card').appendChild(logEl);
   }
-  logEl.innerHTML = logHtml;
+  logEl.innerHTML = rankCountHtml(activeGame.rounds, s.playerNames) + renderLogHtml(activeGame.log);
 
   // スコア推移グラフ
   const chartCard = document.getElementById('chart-card');
@@ -758,16 +798,8 @@ function renderGame() {
   }
 }
 
-function endGame() {
-  if (!activeGame) return;
-  saveToLocalHistory();
-  stopListening();
-  activeGame = null; sessionId = null; pendingSessionId = null;
-  history.replaceState(null, '', location.pathname);
-  showView('home');
-}
 function leaveGame() {
-  if (activeGame && activeGame.rounds.length > 0) saveToLocalHistory();
+  if (activeGame && (activeGame.rounds.length > 0 || (activeGame.log || []).length > 0)) saveToLocalHistory();
   stopListening();
   const saved = sessionId;
   activeGame = null; sessionId = null; pendingSessionId = saved;
@@ -898,7 +930,7 @@ async function submitRound() {
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
     newRounds[editingIndex] = { points, scores, at: orig.at || now, edited: true }; // 修正
-    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}局を修正`, points };
+    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}局を修正`, prev: orig.points || null, points };
   } else {
     newRounds.push({ points, scores, at: now }); // 新規
     logEntry = { type: 'add', at: now, label: `第${newRounds.length}局を入力` };
@@ -1045,20 +1077,17 @@ function viewDetail(g) {
   html += '</div></div>';
 
   const rows = g.rounds.map((r, ridx) => {
-    const cells = r.scores.map(sc => {
-      const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
-      return `<td style="${st}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>`;
-    }).join('');
     const editedMark = r.edited ? '<span class="edited-badge">修正済み</span>' : '';
-    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${cells}
-      <td style="color:#999;font-size:11px;white-space:nowrap">${fmtTime(r.at)}</td>
+    return `<tr><td style="color:#888;white-space:nowrap">${ridx+1}${editedMark}</td>${roundCellsHtml(r)}
+      ${timeTdHtml(r.at)}
       <td><button class="edit-tab" onclick="editDetailRound(${ridx})">編集</button></td></tr>`;
   }).join('');
   html += `<div class="card"><div class="card-title">局履歴</div>
     <div style="overflow-x:auto"><table class="rounds-table">
-      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}<th>時刻</th><th></th></tr></thead>
+      <thead><tr><th>局</th>${s.playerNames.map(n=>`<th>${esc(n)}</th>`).join('')}${TIME_TH}<th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
+    ${rankCountHtml(g.rounds, s.playerNames)}
     ${renderLogHtml(g.log)}</div>`;
 
   // スコア推移グラフ（局履歴の下）
