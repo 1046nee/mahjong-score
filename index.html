@@ -15,16 +15,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* Home (LP型) */
 #view-home { background: #fff; }
 
-/* 全画面共通ヘッダー（Walica風デザイン） */
-.global-header-wrap { background: #fff; border-bottom: 1px solid #e6eef0; position: sticky; top: 0; z-index: 150; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-.global-header { max-width: 480px; margin: 0 auto; padding: 14px 16px; text-align: center; }
-.global-logo { font-size: 22px; font-weight: 900; font-style: italic; color: #E75620; letter-spacing: 1px; cursor: pointer; user-select: none; display: inline-block; }
+/* 全画面共通ヘッダー（スマホ幅に制限・元のフォントデザインへ） */
+.global-header-wrap { background: #fff; border-bottom: 1px solid #e6eef0; position: sticky; top: 0; z-index: 150; box-shadow: 0 2px 8px rgba(0,0,0,0.03); max-width: 480px; margin: 0 auto; }
+.global-header { padding: 12px 16px; text-align: center; }
+.global-logo { font-size: 16px; font-weight: 800; color: #E75620; letter-spacing: 1.5px; cursor: pointer; user-select: none; display: inline-block; }
 
-/* 各ページのタイトル行とアイコンボタン（Walica風） */
-.page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 24px 16px 12px; }
-.page-title-row h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; margin: 0; line-height: 1.2; }
-.title-actions { display: flex; gap: 10px; }
-.icon-action-btn { background: #fff; border: 1.5px solid #e2ece7; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: background 0.2s; }
+/* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
+.page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
+.page-title-row h1 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0; }
+.title-actions { display: flex; gap: 8px; }
+.icon-action-btn { background: #fff; border: 1.5px solid #e2ece7; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.04); transition: background 0.2s; }
 .icon-action-btn:active { background: #f0f0f0; }
 
 .lp-inner { max-width: 100%; margin: 0 auto; }
