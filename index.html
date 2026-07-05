@@ -116,8 +116,9 @@ details.log-details summary { list-style: none; cursor: pointer; font-size: 12px
 details.log-details summary::-webkit-details-marker { display: none; }
 /* タイムライン形式の履歴 */
 .log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 0; }
-.log-row { font-size: 12px; color: #666; display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; position: relative; }
-.log-row + .log-row { border-top: 1px dashed #eee; }
+.log-row { font-size: 12px; color: #666; display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; position: relative; }
+.log-date { font-size: 11px; font-weight: 700; color: #177083; background: #eef7f9; border-radius: 6px; padding: 3px 10px; margin: 8px 0 4px; display: inline-block; align-self: flex-start; }
+.log-arrow { color: #b9cdd2; font-size: 11px; line-height: 1; padding-left: 15px; }
 .log-time { color: #177083; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 12px; flex-shrink: 0; width: 42px; padding-top: 1px; }
 .log-tag { flex-shrink: 0; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 6px; color: #fff; margin-top: 1px; }
 .log-tag.add { background: #177083; }
@@ -405,6 +406,24 @@ const UMA_MAP = {
   '5-10':  [10, 5, -5, -10],
   '0':     [0, 0, 0, 0]
 };
+// 3人麻雀用ウマ: 2位が0、1位と3位が絶対値同じでプラスマイナス逆
+const UMA3_MAP = {
+  '10-0-10': [10, 0, -10],
+  '15-0-15': [15, 0, -15],
+  '20-0-20': [20, 0, -20],
+  '30-0-30': [30, 0, -30],
+  '0':       [0, 0, 0]
+};
+function umaOptionsFor(n) {
+  return n === 3
+    ? [['10-0-10','10-0-10'],['15-0-15','15-0-15'],['20-0-20','20-0-20'],['30-0-30','30-0-30'],['0','なし'],['custom','カスタム']]
+    : [['10-30','10-30'],['10-20','10-20'],['5-15','5-15'],['5-10','5-10'],['0','なし'],['custom','カスタム']];
+}
+function umaArrayFor(key, n) {
+  if (n === 3) return (UMA3_MAP[key] || [0, 0, 0]).slice();
+  const full = UMA_MAP[key] || [0, 0, 0, 0];
+  return full.slice(0, 4);
+}
 
 let numPlayers = 4;
 let activeGame = null;
@@ -467,6 +486,12 @@ function fmtTime(iso) {
   const d = new Date(iso);
   return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const youbi = ['日','月','火','水','木','金','土'][d.getDay()];
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${youbi}）`;
+}
 
 // ---- Views ----
 function showView(name) {
@@ -516,11 +541,9 @@ function todayStr() {
 }
 function initSetupForm() {
   document.getElementById('s-name').value = todayStr();
+  setPlayers(4); // 人数・持ち点・返し点・ウマ選択肢を初期化
   document.getElementById('s-rate').value = '100'; // デフォルト: テンピン
-  numPlayers = 4;
-  document.getElementById('p4-btn').classList.add('active');
-  document.getElementById('p3-btn').classList.remove('active');
-  buildPlayerInputs(); renderPlayerOptions(); onUmaChange(); onRateChange();
+  renderPlayerOptions(); onRateChange();
 }
 // ---- プレイヤー名の保存 ----
 // 保存済みの名前はdatalistに入れておき、入力欄タップで候補から選ぶか自由入力できる
@@ -560,7 +583,16 @@ function setPlayers(n) {
   numPlayers = n;
   document.getElementById('p4-btn').classList.toggle('active', n === 4);
   document.getElementById('p3-btn').classList.toggle('active', n === 3);
+  // 3人麻雀は持ち点30000・返し点35000、4人麻雀は25000・30000
+  document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
+  document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
+  refreshUmaSelect();
   buildPlayerInputs(); onUmaChange();
+}
+// 人数に応じてウマの選択肢を差し替える（3人麻雀は「15-0-15」形式）
+function refreshUmaSelect() {
+  const sel = document.getElementById('s-uma');
+  sel.innerHTML = umaOptionsFor(numPlayers).map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
 }
 function buildPlayerInputs() {
   const container = document.getElementById('player-inputs');
@@ -594,8 +626,7 @@ function onRateChange() {
 function getUmaArray() {
   const v = document.getElementById('s-uma').value;
   if (v === 'custom') return Array.from({length: numPlayers}, (_, i) => Number(document.getElementById('uma-c-'+i).value) || 0);
-  const full = UMA_MAP[v] || [0,0,0,0];
-  return numPlayers === 3 ? [full[0], full[1], full[3]] : full.slice(0,4);
+  return umaArrayFor(v, numPlayers);
 }
 async function startGame() {
   const name = document.getElementById('s-name').value.trim() || todayStr();
@@ -783,15 +814,18 @@ function rankCountHtml(rounds, names) {
   const totalRowTd = 'border-top:1.5px solid #c8d6da';
   const statGroupTd = 'border-top:1px dashed #d5dde0';
   const games = rounds.length;
+  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員）
+  const avgs = names.map((_, i) => avgRankSum[i] / games);
+  const pcts = names.map((_, i) => Math.round((games - lastCount[i]) / games * 100));
+  const bestAvg = Math.min(...avgs);
+  const bestPct = Math.max(...pcts);
+  const hl = 'background:#e0f2f5;color:#177083';
   rows += `<tr>${[`<td style="${statLabel};${totalRowTd}">総試合数</td>`]
     .concat(names.map(() => `<td style="${totalRowTd}">${games}回</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel};${statGroupTd}">平均着順</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${(avgRankSum[i] / games).toFixed(2)}</td>`)).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd};${avgs[i] === bestAvg ? hl : ''}">${avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel}">ラス回避</td>`]
-    .concat(names.map((_, i) => {
-      const pct = Math.round((games - lastCount[i]) / games * 100);
-      return `<td style="font-weight:700">${pct}%</td>`;
-    })).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="font-weight:700;${pcts[i] === bestPct ? hl : ''}">${pcts[i]}%</td>`)).join('')}</tr>`;
   return `<div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
     <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
@@ -805,7 +839,17 @@ function renderLogHtml(log) {
   const fmtPts = pts => pts ? pts.map(p => p.toLocaleString()).join(' / ') : '';
   const sub = 'font-size:11px;color:#999;margin-top:2px';
   const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'] };
-  const rows = events.map(e => {
+  // 日付ごとに区切り、更新の順番が矢印で追えるタイムラインにする
+  let rows = '';
+  let prevDate = null;
+  events.forEach((e, idx) => {
+    const date = fmtDate(e.at);
+    if (date !== prevDate) {
+      rows += `<div class="log-date">${date || '日時不明'}</div>`;
+      prevDate = date;
+    } else if (idx > 0) {
+      rows += `<div class="log-arrow">↓</div>`;
+    }
     const [tagCls, tagLabel] = TAG[e.type] || ['add', e.type];
     let body = '';
     if (e.type === 'add' && e.points) {
@@ -816,12 +860,12 @@ function renderLogHtml(log) {
     } else if (e.type === 'delete' && e.points) {
       body = `<div style="${sub}">${fmtPts(e.points)}（削除前）</div>`;
     }
-    return `<div class="log-row">
+    rows += `<div class="log-row">
       <span class="log-time">${fmtTime(e.at)}</span>
       <span class="log-tag ${tagCls}">${tagLabel}</span>
       <div class="log-content"><b>${esc(e.label)}</b>${body}</div>
     </div>`;
-  }).join('');
+  });
   return `<details class="log-details">
     <summary>履歴（${events.length}件）▸</summary>
     <div class="log-list">${rows}</div>
@@ -1042,9 +1086,9 @@ function closeFormModal() {
   document.getElementById('form-modal').classList.remove('open');
 }
 function umaKeyOf(uma, n) {
-  for (const k of Object.keys(UMA_MAP)) {
-    const full = UMA_MAP[k];
-    const arr = n === 3 ? [full[0], full[1], full[3]] : full.slice(0, 4);
+  const map = n === 3 ? UMA3_MAP : UMA_MAP;
+  for (const k of Object.keys(map)) {
+    const arr = umaArrayFor(k, n);
     if (arr.length === uma.length && arr.every((v, i) => v === uma[i])) return k;
   }
   return 'custom';
@@ -1054,7 +1098,7 @@ function settingsFormHtml(name, s, prefix) {
   const n = s.numPlayers;
   const umaKey = umaKeyOf(s.uma, n);
   const rateKey = RATE_PRESETS.includes(String(s.rate)) ? String(s.rate) : 'custom';
-  const umaOpts = [['10-30','10-30'],['10-20','10-20'],['5-15','5-15'],['5-10','5-10'],['0','なし'],['custom','カスタム']]
+  const umaOpts = umaOptionsFor(n)
     .map(([v,l]) => `<option value="${v}" ${v===umaKey?'selected':''}>${l}</option>`).join('');
   const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100（テンピン）'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
@@ -1089,7 +1133,7 @@ function readSettingsForm(s, prefix) {
   const umaKey = document.getElementById(prefix+'-uma').value;
   let uma;
   if (umaKey === 'custom') uma = Array.from({length: n}, (_, i) => Number(document.getElementById(`${prefix}-uma-c-${i}`).value) || 0);
-  else { const full = UMA_MAP[umaKey]; uma = n === 3 ? [full[0], full[1], full[3]] : full.slice(0, 4); }
+  else uma = umaArrayFor(umaKey, n);
   const rateKey = document.getElementById(prefix+'-rate').value;
   const rate = rateKey === 'custom' ? (Number(document.getElementById(prefix+'-rate-c').value) || 0) : Number(rateKey);
   return { name, settings: { ...s, playerNames, startPoints, returnPoints, uma, rate } };
