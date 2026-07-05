@@ -33,7 +33,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #view-setup { background: #DBF4F9; }
 .form-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.card-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.card-title { font-size: 12px; font-weight: 700; color: #1a1a1a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .field:last-child { margin-bottom: 0; }
 label { font-size: 13px; color: #555; font-weight: 600; }
@@ -112,7 +112,7 @@ input:focus, select:focus { border-color: #177083; }
 .modal-action.danger { background: #ffebee; color: #c62828; }
 
 /* Change log */
-details.log-details summary { list-style: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #888; user-select: none; margin-top: 12px; }
+details.log-details summary { list-style: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #1a1a1a; user-select: none; margin-top: 12px; }
 details.log-details summary::-webkit-details-marker { display: none; }
 /* タイムライン形式の履歴 */
 .log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 0; }
@@ -722,7 +722,7 @@ function roundRowHtml(r, idx, onclickJs) {
   }).join('');
   const editedMark = r.edited ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
   return `<tr onclick="${onclickJs}" style="cursor:pointer">
-    <td style="color:#888"><div>${idx+1}</div>${editedMark}</td>
+    <td style="color:#1a1a1a"><div>${idx+1}</div>${editedMark}</td>
     ${cells}
   </tr>`;
 }
@@ -751,19 +751,24 @@ function rankCountHtml(rounds, names) {
       const c = counts[i][rank];
       return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
-    return `<tr><td style="color:#888">${rank+1}着</td>${cells}</tr>`;
+    return `<tr><td style="color:#1a1a1a">${rank+1}着</td>${cells}</tr>`;
   }).join('');
-  // 総試合数・平均着順・ラス回避（ラベルは1行で収まるよう小さめの文字で表示）
-  const statLabel = 'color:#888;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
+  // 総試合数（着順回数の合計）・平均着順・ラス回避
+  // 意味のまとまりごとに罫線を変える:
+  //   1〜4着 … 通常の薄い実線 / 総試合数 … 太めのティール実線で区切り＋淡い背景 / 平均着順・ラス回避 … 破線で区切った別グループ
+  const statLabel = 'color:#1a1a1a;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
+  const totalRowTd = 'border-top:2px solid #177083;background:#f2f9fa';
+  const statGroupTd = 'border-top:2px dashed #b9cdd2';
   const games = rounds.length;
-  rows += `<tr><td style="${statLabel}">総試合数</td>${names.map(() => `<td>${games}回</td>`).join('')}</tr>`;
-  rows += `<tr><td style="${statLabel}">平均着順</td>${names.map((_, i) => {
-    return `<td style="font-weight:700">${(avgRankSum[i] / games).toFixed(2)}</td>`;
-  }).join('')}</tr>`;
-  rows += `<tr><td style="${statLabel}">ラス回避</td>${names.map((_, i) => {
-    const pct = Math.round((games - lastCount[i]) / games * 100);
-    return `<td style="font-weight:700">${pct}%</td>`;
-  }).join('')}</tr>`;
+  rows += `<tr>${[`<td style="${statLabel};${totalRowTd}">総試合数</td>`]
+    .concat(names.map(() => `<td style="${totalRowTd}">${games}回</td>`)).join('')}</tr>`;
+  rows += `<tr>${[`<td style="${statLabel};${statGroupTd}">平均着順</td>`]
+    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${(avgRankSum[i] / games).toFixed(2)}</td>`)).join('')}</tr>`;
+  rows += `<tr>${[`<td style="${statLabel}">ラス回避</td>`]
+    .concat(names.map((_, i) => {
+      const pct = Math.round((games - lastCount[i]) / games * 100);
+      return `<td style="font-weight:700">${pct}%</td>`;
+    })).join('')}</tr>`;
   return `<div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
     <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
