@@ -17,7 +17,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
 /* Home */
-#view-home { background: linear-gradient(135deg, #0f5866 0%, #177083 60%, #1e8fa3 100%); justify-content: center; align-items: center; gap: 20px; }
+#view-home { background: linear-gradient(135deg, #0f5866 0%, #177083 60%, #1e8fa3 100%); overflow-y: auto; }
+.home-hero { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; padding: 24px 16px; }
+.home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 8px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
+.info-card { background: #fff; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
+.info-card h2 { font-size: 17px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
+.info-card h3 { font-size: 14px; margin: 16px 0 6px; color: #1a1a1a; }
+.info-card p, .info-card li { font-size: 13px; color: #444; }
+.info-card ol, .info-card ul { padding-left: 20px; }
+.site-footer { text-align: center; padding: 24px 16px 36px; color: rgba(255,255,255,0.85); font-size: 12px; }
+.site-footer a { color: #fff; text-decoration: underline; margin: 0 10px; }
+.footer-links { margin-bottom: 10px; }
 .home-title { color: #fff; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-align: center; }
 .home-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; text-align: center; }
 .home-btn { width: 240px; padding: 18px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
@@ -237,14 +247,56 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- HOME -->
 <div id="view-home" class="view active">
-  <div class="home-title">🀄 麻雀スコア</div>
-  <div class="home-sub">スコア管理アプリ</div>
-  <button class="home-btn home-btn-primary" onclick="showView('setup')">新しい対局を始める</button>
-  <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の戦績を振り返る</button>
-  <div class="join-banner" id="join-banner" style="display:none">
-    <p>共有されたゲームがあります</p>
-    <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+  <div class="home-hero">
+    <div class="home-title">🀄 麻雀スコア</div>
+    <div class="home-sub">スコア管理アプリ</div>
+    <button class="home-btn home-btn-primary" onclick="showView('setup')">新しい対局を始める</button>
+    <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の戦績を振り返る</button>
+    <div class="join-banner" id="join-banner" style="display:none">
+      <p>共有されたゲームがあります</p>
+      <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+    </div>
   </div>
+
+  <div class="home-content">
+    <section class="info-card">
+      <h2>このアプリの使い方</h2>
+      <p>「麻雀スコア」は、麻雀の対局結果を記録して自動でスコア計算し、メンバー全員とリアルタイムで共有できる無料のスコア管理アプリです。会員登録は不要で、スマートフォンのブラウザだけですぐに使えます。</p>
+      <h3>1. グループを作る</h3>
+      <p>「新しい対局を始める」からグループ名とメンバー名（3人または4人）を登録します。持ち点・返し点・ウマ・レートも自由に設定でき、3人麻雀にも対応しています。</p>
+      <h3>2. URLをメンバーに共有する</h3>
+      <p>グループを作成すると専用URLが発行されます。LINEなどでメンバーに送れば、全員が同じスコアをリアルタイムで確認できます。誰か1人が入力すれば全員の画面に反映されます。</p>
+      <h3>3. 半荘ごとに点数を入力する</h3>
+      <p>対局が終わるたびに各プレイヤーの持ち点を入力するだけで、ウマ・オカ・レートを反映したスコアを自動計算します。点数の下2桁は自動で補完されるので、百の位までの入力だけでスピーディーに記録できます。入力ミスはあとから修正・削除でき、変更履歴も残ります。</p>
+      <h3>4. 戦績を振り返る</h3>
+      <p>「過去の戦績を振り返る」から、これまでの対局結果・順位・スコア推移グラフ・着順回数などをいつでも確認できます。</p>
+    </section>
+
+    <section class="info-card">
+      <h2>麻雀の点数計算の基本（初心者向け）</h2>
+      <p>麻雀の最終的な勝ち負けは、対局終了時の持ち点をそのまま比べるのではなく、いくつかのルールを反映した「スコア（ポイント）」で計算するのが一般的です。ここでは代表的な用語を紹介します。</p>
+      <h3>素点と返し点</h3>
+      <p>対局終了時の持ち点から基準となる「返し点」（例: 30,000点）を引き、1,000点＝1ポイントに換算したものが素点です。例えば35,000点で終了した場合、素点は +5.0pts になります。</p>
+      <h3>ウマ（順位点）</h3>
+      <p>最終順位に応じて加減されるボーナスです。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
+      <h3>オカ</h3>
+      <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
+      <h3>レート</h3>
+      <p>1ポイントあたりの金額の倍率です。「テンピン」は1ポイント＝100円を意味します。このアプリではスコアと金額をワンタップで切り替えて表示できます。</p>
+      <h3>同点のときは？</h3>
+      <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
+      <h3>3人麻雀（サンマ）の場合</h3>
+      <p>3人麻雀では持ち点35,000点・返し点40,000点など、4人麻雀と異なる設定がよく使われます。このアプリは3人麻雀にも対応しており、ウマも「15-0-15」のような3人用の形式で設定できます。</p>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="privacy.html">プライバシーポリシー</a>
+      <a href="#" target="_blank" rel="noopener">お問い合わせ</a>
+    </div>
+    <div>© 2026 麻雀スコア計算アプリ</div>
+  </footer>
 </div>
 
 <!-- SETUP -->
