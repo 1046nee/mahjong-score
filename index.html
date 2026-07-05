@@ -17,14 +17,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
 /* Home (LP型) */
-#view-home { background: #fff; overflow-y: auto; display: block; }
-#view-home.active { display: block; }
+/* 注意: IDセレクタでdisplayを指定すると .view の排他表示を上書きしてしまうため、背景のみ指定する */
+#view-home { background: #fff; }
+
+/* 全画面共通ヘッダー（ロゴタップでトップへ） */
+.global-header { background: #fff; border-bottom: 1px solid #e6eef0; padding: 12px 16px; position: sticky; top: 0; z-index: 150; }
+.global-logo { font-size: 15px; font-weight: 800; color: #177083; letter-spacing: 1.5px; cursor: pointer; user-select: none; }
 .lp-inner { max-width: 640px; margin: 0 auto; }
 .lp-section { padding: 52px 20px; }
 
 /* ① ヒーロー: 薄緑（安心感・麻雀卓の連想） */
-.lp-hero { background: linear-gradient(180deg, #E4F3EC 0%, #D9EEE3 100%); padding: 60px 20px 56px; text-align: center; }
-.lp-logo { font-size: 15px; font-weight: 800; color: #177083; letter-spacing: 2px; margin-bottom: 30px; }
+.lp-hero { background: linear-gradient(180deg, #E4F3EC 0%, #D9EEE3 100%); padding: 52px 20px 56px; text-align: center; }
 .lp-hero h1 { font-size: 23px; line-height: 1.55; font-weight: 800; color: #1a1a1a; margin-bottom: 20px; }
 .lp-lead { font-size: 14px; color: #444; line-height: 2.0; text-align: left; margin-bottom: 30px; }
 .lp-sub-link { display: block; margin-top: 18px; color: #177083; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; }
@@ -282,13 +285,17 @@ details.log-details summary::-webkit-details-marker { display: none; }
 </head>
 <body>
 
+<!-- 全画面共通ヘッダー -->
+<div class="global-header">
+  <span class="global-logo" onclick="goHome()">🀄 まじゃすこ</span>
+</div>
+
 <!-- HOME -->
 <div id="view-home" class="view active">
 
   <!-- ① ヒーローセクション（薄緑: 安心感・麻雀卓の連想） -->
   <section class="lp-hero">
     <div class="lp-inner">
-      <div class="lp-logo">🀄 まじゃすこ</div>
       <h1>アプリで麻雀が打てる時代に、<br>あえて「対面」で卓を囲む人たちへ。</h1>
       <p class="lp-lead">指先で牌に触れる喜びや、対面ならではのヒリヒリとした空気感はそのままに。ネット麻雀の「全自動計算」の快適さだけを、リアルの卓へ持ち込みましょう。<br><br>「まじゃすこ」は、雀荘から紙とペンをなくす、共有型スコア記録ツールです。</p>
       <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
@@ -705,6 +712,12 @@ function showView(name) {
   if (name === 'history') renderHistory();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { history.replaceState(null, '', location.pathname); checkPendingSession(); }
+}
+// ロゴタップ: 進行状況を保存・リセットしてトップ（LP）へ戻る
+function goHome() {
+  if (activeGame) { leaveGame(); return; } // leaveGame内で保存してhomeへ遷移する
+  history.replaceState(null, '', location.pathname);
+  showView('home');
 }
 function checkPendingSession() {
   document.getElementById('join-banner').style.display = pendingSessionId ? 'block' : 'none';
