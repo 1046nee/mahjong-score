@@ -122,7 +122,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .rank-badge.rank-3 { color: #b46a3c; }
 .rank-badge.rank-last { color: #546e7a; }
 .rank-emoji { font-size: 18px; display: block; line-height: 1; }
-.rank-num { font-size: 12px; font-weight: 800; display: block; }
+.rank-num { font-size: 11px; font-weight: 800; display: block; white-space: nowrap; }
 
 /* Form modal (settings edit) */
 .form-modal-box { background: #fff; border-radius: 16px; padding: 20px 16px; width: 100%; max-width: 360px; max-height: 82vh; overflow-y: auto; text-align: left; }
@@ -598,30 +598,45 @@ async function startGame() {
 }
 
 // ---- Game ----
+// ---- 同点グループ（順位グループ） ----
+// アプリ全体の同点処理はここで一元化する。
+// values（点数や合計スコア）から、各プレイヤー index ごとに
+// { start, end, size, avgRank, isTop, isLast } を返す。
+//   start/end: グループが占有する順位範囲（0始まり）
+//   avgRank:   平均順位方式の順位（1始まり、例: 1・2位タイ→1.5）
+//   isTop:     1位を含むグループか（オカ対象）
+//   isLast:    最下位を含むグループか（ラス数の対象）
+function rankGroups(values) {
+  const n = values.length;
+  const order = values.map((v, i) => ({v, i})).sort((a, b) => b.v - a.v);
+  const info = new Array(n);
+  let pos = 0;
+  while (pos < n) {
+    let end = pos;
+    while (end + 1 < n && order[end + 1].v === order[pos].v) end++;
+    const size = end - pos + 1;
+    for (let r = pos; r <= end; r++) {
+      info[order[r].i] = { start: pos, end, size, avgRank: (pos + end) / 2 + 1, isTop: pos === 0, isLast: end === n - 1 };
+    }
+    pos = end + 1;
+  }
+  return info;
+}
+
 // 同点は同順位とし、同点グループでウマ（順位点）とオカを均等に山分けする
 function calcScores(points, settings) {
   const n = settings.numPlayers;
   const diffs = points.map(p => (p - settings.returnPoints) / 1000);
   const oka = (settings.returnPoints - settings.startPoints) * n / 1000; // 1位が取得
-  const order = points.map((p, i) => ({p, i})).sort((a, b) => b.p - a.p);
-  const result = new Array(n);
-  let pos = 0;
-  while (pos < n) {
-    // 同じ点数のプレイヤーをグループ化し、占有する順位範囲 [pos, end] を求める
-    let end = pos;
-    while (end + 1 < n && order[end + 1].p === order[pos].p) end++;
-    const size = end - pos + 1;
+  const groups = rankGroups(points.slice(0, n));
+  return points.slice(0, n).map((_, i) => {
+    const g = groups[i];
     let share = 0;
-    for (let r = pos; r <= end; r++) share += settings.uma[r];
-    share /= size;
-    if (pos === 0) share += oka / size; // オカ対象（1位）を含むグループはオカも山分け
-    for (let r = pos; r <= end; r++) {
-      const idx = order[r].i;
-      result[idx] = Math.round((diffs[idx] + share) * 10) / 10;
-    }
-    pos = end + 1;
-  }
-  return result;
+    for (let r = g.start; r <= g.end; r++) share += settings.uma[r];
+    share /= g.size;
+    if (g.isTop) share += oka / g.size;
+    return Math.round((diffs[i] + share) * 10) / 10;
+  });
 }
 function getTotals() {
   if (!activeGame) return [];
@@ -632,13 +647,15 @@ function getTotals() {
 }
 
 // ---- 順位バッジ（メダル） ----
-// 1〜3位は金銀銅メダル、4位は最下位カラー（🌑）
-function rankBadgeHtml(rank) {
+// 1〜3位は金銀銅メダル、4位は最下位カラー（👿）
+// 同点グループはグループ先頭の順位で表示し「〜位タイ」を付ける
+function rankBadgeHtml(rank, isTie) {
   const emojis = ['🥇', '🥈', '🥉'];
+  const label = `${rank+1}位${isTie ? 'タイ' : ''}`;
   if (rank < 3) {
-    return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${rank+1}位</span></div>`;
+    return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${label}</span></div>`;
   }
-  return `<div class="rank-badge rank-last"><span class="rank-emoji">👿</span><span class="rank-num">${rank+1}位</span></div>`;
+  return `<div class="rank-badge rank-last"><span class="rank-emoji">👿</span><span class="rank-num">${label}</span></div>`;
 }
 
 // ---- スコア推移グラフ（SVG） ----
@@ -718,15 +735,25 @@ function roundRowHtml(r, idx, onclickJs) {
 function rankCountHtml(rounds, names) {
   if (!rounds || rounds.length === 0) return '';
   const n = names.length;
+  // 平均順位方式: 同点グループが占める順位に 1/人数 ずつ配分して集計する。
+  // 内部では丸めず正確な値を保持し、表示時のみ小数第2位に丸める。
   const counts = Array.from({length: n}, () => new Array(n).fill(0));
+  const avgRankSum = new Array(n).fill(0);
+  const lastCount = new Array(n).fill(0);
   rounds.forEach(r => {
-    const order = r.scores.map((sc, i) => ({sc, i})).sort((a, b) => b.sc - a.sc);
-    order.forEach((o, rank) => counts[o.i][rank]++);
+    const groups = rankGroups((r.points || r.scores).slice(0, n));
+    for (let i = 0; i < n; i++) {
+      const g = groups[i];
+      for (let rank = g.start; rank <= g.end; rank++) counts[i][rank] += 1 / g.size;
+      avgRankSum[i] += g.avgRank;
+      if (g.isLast) lastCount[i] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
+    }
   });
+  const fmtCount = v => v === 0 ? '0回' : `${(Math.round(v * 100) / 100).toFixed(2)}回`;
   let rows = Array.from({length: n}, (_, rank) => {
     const cells = names.map((_, i) => {
       const c = counts[i][rank];
-      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${c}回</td>`;
+      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
     return `<tr><td style="color:#888">${rank+1}着</td>${cells}</tr>`;
   }).join('');
@@ -735,11 +762,10 @@ function rankCountHtml(rounds, names) {
   const games = rounds.length;
   rows += `<tr><td style="${statLabel}">総試合数</td>${names.map(() => `<td>${games}回</td>`).join('')}</tr>`;
   rows += `<tr><td style="${statLabel}">平均着順</td>${names.map((_, i) => {
-    const avg = counts[i].reduce((sum, c, rank) => sum + c * (rank + 1), 0) / games;
-    return `<td style="font-weight:700">${avg.toFixed(2)}</td>`;
+    return `<td style="font-weight:700">${(avgRankSum[i] / games).toFixed(2)}</td>`;
   }).join('')}</tr>`;
   rows += `<tr><td style="${statLabel}">ラス回避</td>${names.map((_, i) => {
-    const pct = Math.round((1 - counts[i][n - 1] / games) * 100);
+    const pct = Math.round((games - lastCount[i]) / games * 100);
     return `<td style="font-weight:700">${pct}%</td>`;
   }).join('')}</tr>`;
   return `<div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
@@ -781,12 +807,14 @@ function renderGame() {
   // スコアカード
   document.getElementById('yen-toggle').textContent = showYen ? '金額表示' : 'スコア表示';
   const totals = getTotals();
+  const totalGroups = rankGroups(totals);
   const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
-  document.getElementById('score-cards').innerHTML = ranked.map((p, rank) => {
+  document.getElementById('score-cards').innerHTML = ranked.map(p => {
+    const g = totalGroups[p.i];
     const yenStr = (showYen && s.rate) ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
-      ${rankBadgeHtml(rank)}
+      ${rankBadgeHtml(g.start, g.size > 1)}
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
@@ -1092,14 +1120,16 @@ function viewDetail(g) {
   const totals = new Array(n).fill(0);
   g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
   const tRounded = totals.map(t => Math.round(t*10)/10);
+  const totalGroups = rankGroups(tRounded);
   const ranked = tRounded.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
 
   let html = '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
-  ranked.forEach((p, rank) => {
+  ranked.forEach(p => {
+    const grp = totalGroups[p.i];
     const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
-      ${rankBadgeHtml(rank)}
+      ${rankBadgeHtml(grp.start, grp.size > 1)}
       <div class="score-info">
         <div class="score-name">${esc(p.name)}</div>
         ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
