@@ -6,24 +6,28 @@
 <title>まじゃすこ｜麻雀スコア管理アプリ</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #DBF4F9; color: #1a1a1a; min-height: 100vh; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
 
-.view { display: none; min-height: 100vh; flex-direction: column; }
-.view.active { display: flex; }
-
-.header { background: #177083; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
-.header h1 { font-size: 18px; font-weight: 700; flex: 1; }
-.back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
-.share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+/* スマホ縦スクロール用のベース（PCでも中央にスマホサイズで表示） */
+.view { display: none !important; min-height: 100vh; flex-direction: column; max-width: 480px; margin: 0 auto; background: #DBF4F9; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
+.view.active { display: flex !important; }
 
 /* Home (LP型) */
-/* 注意: IDセレクタでdisplayを指定すると .view の排他表示を上書きしてしまうため、背景のみ指定する */
 #view-home { background: #fff; }
 
-/* 全画面共通ヘッダー（ロゴタップでトップへ） */
-.global-header { background: #fff; border-bottom: 1px solid #e6eef0; padding: 12px 16px; position: sticky; top: 0; z-index: 150; }
-.global-logo { font-size: 15px; font-weight: 800; color: #177083; letter-spacing: 1.5px; cursor: pointer; user-select: none; }
-.lp-inner { max-width: 640px; margin: 0 auto; }
+/* 全画面共通ヘッダー（Walica風デザイン） */
+.global-header-wrap { background: #fff; border-bottom: 1px solid #e6eef0; position: sticky; top: 0; z-index: 150; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.global-header { max-width: 480px; margin: 0 auto; padding: 14px 16px; text-align: center; }
+.global-logo { font-size: 22px; font-weight: 900; font-style: italic; color: #E75620; letter-spacing: 1px; cursor: pointer; user-select: none; display: inline-block; }
+
+/* 各ページのタイトル行とアイコンボタン（Walica風） */
+.page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 24px 16px 12px; }
+.page-title-row h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; margin: 0; line-height: 1.2; }
+.title-actions { display: flex; gap: 10px; }
+.icon-action-btn { background: #fff; border: 1.5px solid #e2ece7; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: background 0.2s; }
+.icon-action-btn:active { background: #f0f0f0; }
+
+.lp-inner { max-width: 100%; margin: 0 auto; }
 .lp-section { padding: 52px 20px; }
 
 /* ① ヒーロー: 薄緑（安心感・麻雀卓の連想） */
@@ -286,8 +290,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <body>
 
 <!-- 全画面共通ヘッダー -->
-<div class="global-header">
-  <span class="global-logo" onclick="goHome()">🀄 まじゃすこ</span>
+<div class="global-header-wrap">
+  <div class="global-header">
+    <span class="global-logo" onclick="goHome()">まじゃすこ</span>
+  </div>
 </div>
 
 <!-- HOME -->
@@ -396,8 +402,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- SETUP -->
 <div id="view-setup" class="view">
-  <div class="header">
-    <button class="back-btn" onclick="showView('home')">←</button>
+  <div class="page-title-row">
     <h1>ゲーム設定</h1>
   </div>
   <div class="form-body">
@@ -493,11 +498,12 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- GAME -->
 <div id="view-game" class="view">
-  <div class="header">
-    <button class="back-btn" onclick="leaveGame()">←</button>
+  <div class="page-title-row">
     <h1 id="game-title">ゲーム中</h1>
-    <button class="share-btn" onclick="openGameEdit()">⚙️ 設定変更</button>
-    <button class="share-btn" onclick="copyUrl()">📤 URL発行</button>
+    <div class="title-actions">
+      <button class="icon-action-btn" onclick="copyUrl()" title="URLをコピー">🔗</button>
+      <button class="icon-action-btn" onclick="openGameEdit()" title="設定変更">✏️</button>
+    </div>
   </div>
   <div class="game-body">
     <div class="card">
@@ -530,8 +536,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- HISTORY -->
 <div id="view-history" class="view">
-  <div class="header">
-    <button class="back-btn" onclick="showView('home')">←</button>
+  <div class="page-title-row">
     <h1>過去の戦績</h1>
   </div>
   <div class="history-body" id="history-body"></div>
@@ -539,10 +544,11 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- DETAIL -->
 <div id="view-detail" class="view">
-  <div class="header">
-    <button class="back-btn" onclick="showView('history')">←</button>
+  <div class="page-title-row">
     <h1 id="detail-title">結果詳細</h1>
-    <button class="share-btn" onclick="openDetailEdit()">⚙️ 設定変更</button>
+    <div class="title-actions">
+      <button class="icon-action-btn" onclick="openDetailEdit()" title="設定変更">✏️</button>
+    </div>
   </div>
   <div class="detail-body" id="detail-body"></div>
 </div>
