@@ -54,6 +54,10 @@ body.sanma-mode .log-tag.edit { background: #E75620; }
 body.sanma-mode .log-time { color: #4261AA; }
 body.sanma-mode .log-date { color: #4261AA; background: #eaf0fb; }
 .sanma .rank-badge { color: #4261AA; }
+body.sanma-mode .modal-action { background: #eaf0fb; color: #4261AA; }
+body.sanma-mode .modal-action.danger { background: #ffebee; color: #c62828; }
+body.sanma-mode .total-check.ok { background: #eaf0fb; color: #4261AA; }
+body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -199,6 +203,12 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
 .sheet-row input:focus { border-color: #177083; }
+/* 点数入力: 下2桁（00）は固定表示し、百の位以上だけ入力する */
+.pt-input { flex: 1; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 12px; transition: border-color 0.2s; background: #fff; }
+.pt-input input { flex: 1; border: none; outline: none; padding: 10px; font-size: 16px; text-align: right; min-width: 0; background: transparent; }
+.pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
+.pt-input:focus-within { border-color: #177083; }
+.sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
 .auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 .total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
@@ -251,7 +261,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       </div>
     </div>
     <div class="card">
-      <div class="card-title">メンバー（3人または4人）</div>
+      <div class="card-title">メンバー名（3人または4人）</div>
       <div style="display:flex;gap:8px">
         <input type="text" id="member-input" placeholder="名前を入力" list="saved-players"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
@@ -1122,11 +1132,15 @@ function openSheetCtx(ctx, idx) {
   document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : '点数入力';
   document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
   const inputs = document.getElementById('sheet-inputs');
+  // 点数の下2桁は必ず00なので、百の位以上だけ入力する（例: 25000点 → 250）
   inputs.innerHTML = s.playerNames.map((name, i) =>
     `<div class="sheet-row">
       <label>${esc(name)}</label>
-      <input type="number" id="si-${i}" placeholder="点数" oninput="updateTotal()"
-        value="${isEdit ? existingPoints[i] : ''}">
+      <div class="pt-input">
+        <input type="number" id="si-${i}" placeholder="250" oninput="updateTotal()"
+          value="${isEdit ? existingPoints[i] / 100 : ''}">
+        <span class="pt-suffix">00</span>
+      </div>
     </div>`
   ).join('');
 
@@ -1151,7 +1165,7 @@ function updateTotal() {
   const expected = sheetCtx.settings.startPoints * n;
   const values = Array.from({length: n}, (_, i) => {
     const el = document.getElementById('si-' + i);
-    return el.value === '' ? null : Number(el.value);
+    return el.value === '' ? null : Number(el.value) * 100; // 入力は百の位以上のみ
   });
   const emptyIndices = values.map((v,i) => v === null ? i : -1).filter(i => i >= 0);
   const filled = values.filter(v => v !== null).reduce((s,v) => s+v, 0);
@@ -1173,16 +1187,16 @@ function autoFill() {
   let filledSum = 0, emptyIdx = -1;
   for (let i = 0; i < n; i++) {
     const el = document.getElementById('si-' + i);
-    if (el.value === '') emptyIdx = i; else filledSum += Number(el.value);
+    if (el.value === '') emptyIdx = i; else filledSum += Number(el.value) * 100;
   }
   if (emptyIdx < 0) return;
-  document.getElementById('si-' + emptyIdx).value = expected - filledSum;
+  document.getElementById('si-' + emptyIdx).value = (expected - filledSum) / 100;
   updateTotal();
 }
 async function submitRound() {
   const ctx = sheetCtx;
   const n = ctx.settings.numPlayers;
-  const points = Array.from({length: n}, (_, i) => Number(document.getElementById('si-'+i).value) || 0);
+  const points = Array.from({length: n}, (_, i) => (Number(document.getElementById('si-'+i).value) || 0) * 100);
   const scores = calcScores(points, ctx.settings);
   const now = new Date().toISOString();
   const newRounds = [...ctx.rounds];
