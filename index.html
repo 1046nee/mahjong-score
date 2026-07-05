@@ -53,7 +53,7 @@ input:focus, select:focus { border-color: #177083; }
 .game-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 100px; }
 .score-cards { display: flex; flex-direction: column; gap: 10px; }
 .score-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
-.rank-badge { font-size: 20px; font-weight: 800; color: #177083; width: 28px; text-align: center; }
+.rank-badge { font-size: 20px; font-weight: 800; color: #177083; min-width: 48px; text-align: center; flex-shrink: 0; }
 .score-info { flex: 1; }
 .score-name { font-size: 14px; font-weight: 700; }
 .score-yen { font-size: 12px; color: #888; }
@@ -112,9 +112,16 @@ input:focus, select:focus { border-color: #177083; }
 /* Change log */
 details.log-details summary { list-style: none; cursor: pointer; font-size: 12px; font-weight: 700; color: #888; user-select: none; margin-top: 12px; }
 details.log-details summary::-webkit-details-marker { display: none; }
-.log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-.log-row { font-size: 12px; color: #666; background: #f8f8f8; border-radius: 6px; padding: 6px 10px; }
-.log-row .log-time { color: #999; margin-right: 6px; font-variant-numeric: tabular-nums; }
+/* タイムライン形式の履歴 */
+.log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 0; }
+.log-row { font-size: 12px; color: #666; display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; position: relative; }
+.log-row + .log-row { border-top: 1px dashed #eee; }
+.log-time { color: #177083; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 12px; flex-shrink: 0; width: 42px; padding-top: 1px; }
+.log-tag { flex-shrink: 0; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 6px; color: #fff; margin-top: 1px; }
+.log-tag.add { background: #177083; }
+.log-tag.edit { background: #E75620; }
+.log-tag.del { background: #c62828; }
+.log-content { flex: 1; min-width: 0; }
 
 /* Rank medal colors */
 .rank-badge.rank-1 { color: #d4a017; }
@@ -282,8 +289,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="header">
     <button class="back-btn" onclick="leaveGame()">←</button>
     <h1 id="game-title">ゲーム中</h1>
-    <button class="share-btn" onclick="openGameEdit()">✏ 設定変更</button>
-    <button class="share-btn" onclick="copyUrl()">🔗 URL発行</button>
+    <button class="share-btn" onclick="openGameEdit()">⚙️ 設定変更</button>
+    <button class="share-btn" onclick="copyUrl()">📤 URL発行</button>
   </div>
   <div class="game-body">
     <div class="card">
@@ -325,7 +332,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="header">
     <button class="back-btn" onclick="showView('history')">←</button>
     <h1 id="detail-title">結果詳細</h1>
-    <button class="share-btn" onclick="openDetailEdit()">✏ 設定変更</button>
+    <button class="share-btn" onclick="openDetailEdit()">⚙️ 設定変更</button>
   </div>
   <div class="detail-body" id="detail-body"></div>
 </div>
@@ -749,7 +756,7 @@ function rankCountHtml(rounds, names) {
       if (g.isLast) lastCount[i] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
     }
   });
-  const fmtCount = v => v === 0 ? '0回' : `${(Math.round(v * 100) / 100).toFixed(2)}回`;
+  const fmtCount = v => v === 0 ? '0回' : `${(Math.round(v * 10) / 10).toFixed(1)}回`;
   let rows = Array.from({length: n}, (_, rank) => {
     const cells = names.map((_, i) => {
       const c = counts[i][rank];
@@ -780,8 +787,9 @@ function renderLogHtml(log) {
   if (events.length === 0) return '';
   const fmtPts = pts => pts ? pts.map(p => p.toLocaleString()).join(' / ') : '';
   const sub = 'font-size:11px;color:#999;margin-top:2px';
+  const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'] };
   const rows = events.map(e => {
-    const head = `<div><span class="log-time">${fmtTime(e.at)}</span><b>${esc(e.label)}</b></div>`;
+    const [tagCls, tagLabel] = TAG[e.type] || ['add', e.type];
     let body = '';
     if (e.type === 'add' && e.points) {
       body = `<div style="${sub}">${fmtPts(e.points)}</div>`;
@@ -791,7 +799,11 @@ function renderLogHtml(log) {
     } else if (e.type === 'delete' && e.points) {
       body = `<div style="${sub}">${fmtPts(e.points)}（削除前）</div>`;
     }
-    return `<div class="log-row">${head}${body}</div>`;
+    return `<div class="log-row">
+      <span class="log-time">${fmtTime(e.at)}</span>
+      <span class="log-tag ${tagCls}">${tagLabel}</span>
+      <div class="log-content"><b>${esc(e.label)}</b>${body}</div>
+    </div>`;
   }).join('');
   return `<details class="log-details">
     <summary>履歴（${events.length}件）▸</summary>
