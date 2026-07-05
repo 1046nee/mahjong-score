@@ -42,6 +42,9 @@ input:focus, select:focus { border-color: #177083; }
 .toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
 .toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
 .toggle-btn.active { background: #177083; color: #fff; }
+#p3-btn.active { background: #E75620; }
+/* 3人麻雀（サンマ）はテーブルヘッダーをオレンジに */
+.sanma .rounds-table th { background: #E75620; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -283,7 +286,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       </div>
     </div>
   </div>
-  <button class="submit-btn" onclick="startGame()">ゲームを開始する →</button>
+  <button class="submit-btn" id="setup-submit" onclick="startGame()">ゲームを開始する →</button>
 </div>
 
 <!-- GAME -->
@@ -303,7 +306,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <div class="score-cards" id="score-cards"></div>
     </div>
     <div class="card">
-      <div class="card-title">対局履歴</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">対局履歴</div>
+        <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
+      </div>
       <div style="overflow-x:auto">
         <table class="rounds-table" id="rounds-table"></table>
       </div>
@@ -587,6 +593,8 @@ function setPlayers(n) {
   document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
   document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
   refreshUmaSelect();
+  // 3人麻雀は開始ボタンもオレンジに
+  document.getElementById('setup-submit').style.background = n === 3 ? '#E75620' : '';
   buildPlayerInputs(); onUmaChange();
 }
 // 人数に応じてウマの選択肢を差し替える（3人麻雀は「15-0-15」形式）
@@ -799,7 +807,11 @@ function rankCountHtml(rounds, names) {
       if (g.isLast) lastCount[i] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
     }
   });
-  const fmtCount = v => v === 0 ? '0回' : `${(Math.round(v * 10) / 10).toFixed(1)}回`;
+  // 整数はそのまま、同点配分などで小数になる場合のみ小数第1位まで表示
+  const fmtCount = v => {
+    const r = Math.round(v * 10) / 10;
+    return Number.isInteger(r) ? `${r}回` : `${r.toFixed(1)}回`;
+  };
   let rows = Array.from({length: n}, (_, rank) => {
     const cells = names.map((_, i) => {
       const c = counts[i][rank];
@@ -819,13 +831,13 @@ function rankCountHtml(rounds, names) {
   const pcts = names.map((_, i) => Math.round((games - lastCount[i]) / games * 100));
   const bestAvg = Math.min(...avgs);
   const bestPct = Math.max(...pcts);
-  const hl = 'background:#e0f2f5;color:#177083';
+  const crown = '<span style="font-size:11px;margin-right:2px">👑</span>'; // トップの識別は王冠マークで
   rows += `<tr>${[`<td style="${statLabel};${totalRowTd}">総試合数</td>`]
     .concat(names.map(() => `<td style="${totalRowTd}">${games}回</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel};${statGroupTd}">平均着順</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd};${avgs[i] === bestAvg ? hl : ''}">${avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${avgs[i] === bestAvg ? crown : ''}${avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel}">ラス回避</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700;${pcts[i] === bestPct ? hl : ''}">${pcts[i]}%</td>`)).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="font-weight:700">${pcts[i] === bestPct ? crown : ''}${pcts[i]}%</td>`)).join('')}</tr>`;
   return `<div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
     <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
@@ -833,9 +845,22 @@ function rankCountHtml(rounds, names) {
 }
 
 // ---- 履歴表示（入力・修正・削除の3パターン） ----
-function renderLogHtml(log) {
-  const events = (log || []).filter(e => e.type === 'add' || e.type === 'edit' || e.type === 'delete');
-  if (events.length === 0) return '';
+function logEvents(log) {
+  return (log || []).filter(e => e.type === 'add' || e.type === 'edit' || e.type === 'delete');
+}
+// 「履歴」ボタンから画面上にモーダルで表示する
+function showLogModal(src) {
+  const g = src === 'detail' ? detailGame : activeGame;
+  if (!g) return;
+  document.getElementById('form-modal-title').textContent = '履歴';
+  document.getElementById('form-modal-body').innerHTML =
+    renderLogList(g.log)
+    + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function renderLogList(log) {
+  const events = logEvents(log);
+  if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">履歴はありません</div>';
   const fmtPts = pts => pts ? pts.map(p => p.toLocaleString()).join(' / ') : '';
   const sub = 'font-size:11px;color:#999;margin-top:2px';
   const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'] };
@@ -866,10 +891,7 @@ function renderLogHtml(log) {
       <div class="log-content"><b>${esc(e.label)}</b>${body}</div>
     </div>`;
   });
-  return `<details class="log-details">
-    <summary>履歴（${events.length}件）▸</summary>
-    <div class="log-list">${rows}</div>
-  </details>`;
+  return `<div class="log-list">${rows}</div>`;
 }
 
 function renderGame() {
@@ -915,8 +937,11 @@ function renderGame() {
     logEl = document.createElement('div'); logEl.id = 'game-log';
     table.closest('.card').appendChild(logEl);
   }
-  logEl.innerHTML = (hasRounds ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '')
-    + renderLogHtml(activeGame.log);
+  logEl.innerHTML = hasRounds ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
+  document.getElementById('log-btn').style.display = logEvents(activeGame.log).length > 0 ? 'inline-block' : 'none';
+
+  // 3人麻雀はテーブルをオレンジ配色に
+  document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
 
   // その他成績（別カード）
   const rankCard = document.getElementById('rank-card');
@@ -1175,8 +1200,9 @@ function historyItemHtml(g) {
     const groups = rankGroups(tRounded);
     const medals = ['🥇', '🥈', '🥉'];
     const ranked = tRounded.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
+    const thBg = g.settings.numPlayers === 3 ? 'background:#E75620;' : '';
     const ths = ranked.map(p =>
-      `<th style="font-size:11px;padding:6px 4px">${esc(g.settings.playerNames[p.i])}</th>`).join('');
+      `<th style="font-size:11px;padding:6px 4px;${thBg}">${esc(g.settings.playerNames[p.i])}</th>`).join('');
     const tds = ranked.map(p => {
       const grp = groups[p.i];
       const icon = grp.start < 3 ? medals[grp.start] : '👿';
@@ -1239,13 +1265,17 @@ function viewDetail(g) {
   html += '</div></div>';
 
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`)).join('');
-  html += `<div class="card"><div class="card-title">対局履歴</div>
+  const logBtn = logEvents(g.log).length > 0
+    ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
+  html += `<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:0">対局履歴</div>${logBtn}
+    </div>
     <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
       ${roundsTheadHtml(s.playerNames)}
       <tbody>${rows}</tbody>
     </table></div>
-    ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}
-    ${renderLogHtml(g.log)}</div>`;
+    ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
     html += `<div class="card"><div class="card-title">個人成績</div>${rankCountHtml(g.rounds, s.playerNames)}</div>`;
   }
@@ -1262,6 +1292,7 @@ function viewDetail(g) {
       ウマ: ${s.uma.join(' / ')} ／ レート: ×${s.rate}
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
+  document.getElementById('view-detail').classList.toggle('sanma', n === 3);
   showView('detail');
 }
 
