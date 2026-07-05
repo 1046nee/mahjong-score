@@ -734,7 +734,43 @@ function fmtDate(iso) {
   const youbi = ['日','月','火','水','木','金','土'][d.getDay()];
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${youbi}）`;
 }
+// ---- Views (画面遷移と履歴管理) ----
+if (!history.state) {
+  history.replaceState({ view: 'home' }, '', location.pathname);
+}
 
+function showView(name, skipHistory = false) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  window.scrollTo(0, 0); // 画面遷移時に一番上へ
+
+  if (name === 'history') renderHistory();
+  if (name === 'setup') initSetupForm();
+  if (name === 'home') checkPendingSession();
+
+  // ブラウザの履歴（戻る・進む）に追加（popstateからの呼び出し時はスキップ）
+  if (!skipHistory) {
+    const hash = (sessionId && name !== 'home' && name !== 'setup') ? '#' + sessionId : '';
+    history.pushState({ view: name }, '', hash || location.pathname);
+  }
+}
+
+// スマホやPCの「戻る」「進む」ボタンが押されたときの検知
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.view) {
+    showView(e.state.view, true);
+  } else {
+    showView('home', true);
+  }
+});
+
+function goHome() {
+  if (activeGame) { 
+    leaveGame(); 
+    return; 
+  }
+  showView('home');
+}
 function checkPendingSession() {
   document.getElementById('join-banner').style.display = pendingSessionId ? 'block' : 'none';
 }
