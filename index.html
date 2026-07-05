@@ -1104,10 +1104,28 @@ function historyItemHtml(g) {
   const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
   const n = g.settings ? g.settings.numPlayers : '?';
   const rounds = g.rounds ? g.rounds.length : 0;
+  // 最終順位とプレイヤー名（同点は同順位で表示）
+  let rankLine = '';
+  if (g.settings && g.rounds && g.rounds.length > 0) {
+    const totals = new Array(g.settings.numPlayers).fill(0);
+    g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
+    const tRounded = totals.map(t => Math.round(t * 10) / 10);
+    const groups = rankGroups(tRounded);
+    const medals = ['🥇', '🥈', '🥉'];
+    const ranked = tRounded.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
+    rankLine = '<div style="font-size:12px;color:#555;margin-top:5px;display:flex;flex-wrap:wrap;gap:4px 10px">'
+      + ranked.map(p => {
+          const grp = groups[p.i];
+          const icon = grp.start < 3 ? medals[grp.start] : '👿';
+          return `<span style="white-space:nowrap">${icon}${esc(g.settings.playerNames[p.i])}</span>`;
+        }).join('')
+      + '</div>';
+  }
   return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
     <div class="history-info">
       <div class="history-name">${esc(g.name)}</div>
-      <div class="history-meta">${date} · ${n}人 · ${rounds}局</div>
+      <div class="history-meta">${date} · ${n}人 · ${rounds}試合</div>
+      ${rankLine}
     </div>
     <div class="history-arrow">›</div>
   </div>`;
