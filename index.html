@@ -8,41 +8,35 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
 
-/* スマホ縦スクロール用のベース（背景を白に統一し、左右に薄い枠線） */
+/* スマホ縦スクロール用のベース（背景を完全に白へ統一） */
 .view { display: none !important; min-height: 100vh; flex-direction: column; max-width: 480px; margin: 0 auto; background: #fff; border-left: 1px solid #e6eef0; border-right: 1px solid #e6eef0; }
 .view.active { display: flex !important; }
-
-/* 各ページの背景指定をすべて白で上書き */
 #view-home, #view-setup, #view-share, #view-game, #view-history, #view-detail { background: #fff; }
 
-/* 各ページのタイトル行（余白を詰め、文字色をブランドカラーの緑ベースに） */
-.page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 4px; }
+/* 各ページのタイトル行（上下の余白を極力詰める） */
+.page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0; }
 .page-title-row h1 { font-size: 18px; font-weight: 700; color: #177083; margin: 0; }
 .title-actions { display: flex; gap: 8px; }
-.icon-action-btn { background: #fff; border: 1.5px solid #177083; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; color: #177083; transition: background 0.2s; }
-.icon-action-btn:active { background: #e0f2f5; }
 
 /* 各画面のボディ部分の余白（隙間を詰める） */
-.form-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
-.game-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
-.history-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-.detail-body { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+.form-body { flex: 1; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; }
+.game-body { flex: 1; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 100px; }
+.history-body { flex: 1; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; }
+.detail-body { flex: 1; overflow-y: auto; padding: 8px 16px; display: flex; flex-direction: column; gap: 8px; padding-bottom: 24px; }
 
-/* カードデザイン（背景色をなくし、緑ベースの枠線で統一） */
-.card { background: #fff; border: 1.5px solid #177083; border-radius: 12px; padding: 14px 16px; box-shadow: none; }
-.score-card { background: #fff; border: 1.5px solid #177083; border-radius: 12px; padding: 12px 14px; box-shadow: none; display: flex; align-items: center; gap: 12px; }
-.history-item { background: #fff; border: 1.5px solid #177083; border-radius: 12px; padding: 12px 14px; box-shadow: none; cursor: pointer; display: flex; align-items: center; gap: 12px; }
-
+/* カードデザイン（カード自体の余白も詰める） */
+.card { background: #fff; border: 1.5px solid #177083; border-radius: 12px; padding: 10px 12px; box-shadow: none; }
+.card-title { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
 /* 3人麻雀モード時は枠線を青ベースに変更 */
 .sanma .card, .sanma .score-card, .sanma .history-item { border-color: #4261AA; }
 
 /* Home (LP型) */
 #view-home { background: #fff; }
 
-/* 全画面共通ヘッダー（スマホ幅に制限・元のフォントデザインへ） */
-.global-header-wrap { background: #fff; border-bottom: 1px solid #e6eef0; position: sticky; top: 0; z-index: 150; box-shadow: 0 2px 8px rgba(0,0,0,0.03); max-width: 480px; margin: 0 auto; }
+/* 全画面共通ヘッダー（スクロール追従を解除し、背景を濃い緑に） */
+.global-header-wrap { background: #177083; border-bottom: none; max-width: 480px; margin: 0 auto; }
 .global-header { padding: 12px 16px; text-align: center; }
-.global-logo { font-size: 16px; font-weight: 800; color: #E75620; letter-spacing: 1.5px; cursor: pointer; user-select: none; display: inline-block; }
+.global-logo { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1.5px; cursor: pointer; user-select: none; display: inline-block; }
 
 /* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
 .page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
@@ -97,9 +91,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .info-card p, .info-card li { font-size: 13px; color: #444; }
 .info-card ol, .info-card ul { padding-left: 20px; }
 
-/* フッター（白背景＋緑ベースの文字と上部ライン） */
-.site-footer { background: #fff; border-top: 1.5px solid #177083; text-align: center; padding: 26px 16px 36px; color: #177083; font-size: 12px; margin-top: 40px; }
-.site-footer a { color: #177083; text-decoration: underline; margin: 0 10px; }
+/* フッター（元の濃い緑背景・白文字に戻す） */
+.site-footer { background: #177083; text-align: center; padding: 26px 16px 36px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }
+.site-footer a { color: #fff; text-decoration: underline; margin: 0 10px; }
 .footer-links { margin-bottom: 10px; }
 
 /* 共有ゲームへの参加バナー */
@@ -525,8 +519,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="page-title-row">
     <h1 id="game-title">ゲーム中</h1>
     <div class="title-actions">
-      <button class="icon-action-btn" onclick="copyUrl()" title="URLをコピー">🔗</button>
-      <button class="icon-action-btn" onclick="openGameEdit()" title="設定変更">✏️</button>
+      <button class="edit-tab" style="color: #177083; background: #e0f2f5; padding: 6px 12px;" onclick="openGameEdit()">変更</button>
     </div>
   </div>
   <div class="game-body">
@@ -571,7 +564,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="page-title-row">
     <h1 id="detail-title">結果詳細</h1>
     <div class="title-actions">
-      <button class="icon-action-btn" onclick="openDetailEdit()" title="設定変更">✏️</button>
+      <button class="edit-tab" style="color: #177083; background: #e0f2f5; padding: 6px 12px;" onclick="openDetailEdit()">変更</button>
     </div>
   </div>
   <div class="detail-body" id="detail-body"></div>
