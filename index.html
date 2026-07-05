@@ -52,6 +52,28 @@ input:focus, select:focus { border-color: #177083; }
 .custom-uma-grid .field { margin-bottom: 0; }
 .submit-btn { background: #177083; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
 .submit-btn:active { opacity: 0.85; }
+.submit-btn:disabled { background: #aaa !important; cursor: not-allowed; }
+
+/* メンバータグ入力（Walica風） */
+#member-input { flex: 1; }
+.add-member-btn { background: #177083; color: #fff; border: none; border-radius: 8px; padding: 0 20px; font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.add-member-btn:disabled { background: #aaa; cursor: not-allowed; }
+.member-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.member-tag { display: inline-flex; align-items: center; gap: 6px; background: #e0f2f5; color: #177083; border-radius: 20px; padding: 8px 8px 8px 14px; font-size: 14px; font-weight: 600; }
+.member-tag button { background: rgba(23,112,131,0.15); border: none; color: #177083; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; padding: 0; }
+
+/* グループ作成完了・共有画面 */
+#view-share { background: #DBF4F9; }
+.share-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+.share-card { background: #fff; border-radius: 16px; padding: 36px 22px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.share-check { width: 64px; height: 64px; border-radius: 50%; background: #e8f5e9; color: #2e7d32; font-size: 32px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+.share-title { font-size: 19px; font-weight: 800; margin-bottom: 10px; }
+.share-desc { font-size: 13px; color: #666; margin-bottom: 22px; line-height: 1.7; }
+.share-url-row { display: flex; gap: 8px; margin-bottom: 26px; }
+.share-url-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 10px; padding: 12px; font-size: 13px; color: #555; background: #f8f8f8; min-width: 0; }
+.copy-btn { background: #177083; color: #fff; border: none; border-radius: 10px; padding: 0 18px; font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0; }
+.go-game-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: #E75620; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+.go-game-btn:active { opacity: 0.85; }
 
 /* Game */
 #view-game { background: #DBF4F9; }
@@ -214,22 +236,20 @@ details.log-details summary::-webkit-details-marker { display: none; }
   </div>
   <div class="form-body">
     <div class="card">
-      <div class="card-title">基本情報</div>
+      <div class="card-title">グループ名</div>
       <div class="field">
-        <label>ゲーム名</label>
-        <input type="text" id="s-name" placeholder="例: 2025-07-01">
-      </div>
-      <div class="field">
-        <label>人数</label>
-        <div class="toggle-group">
-          <button class="toggle-btn active" id="p4-btn" onclick="setPlayers(4)">4人</button>
-          <button class="toggle-btn" id="p3-btn" onclick="setPlayers(3)">3人</button>
-        </div>
+        <input type="text" id="s-name" placeholder="例: 2026.07.05（日）">
       </div>
     </div>
     <div class="card">
-      <div class="card-title">プレイヤー名</div>
-      <div class="player-inputs" id="player-inputs"></div>
+      <div class="card-title">メンバー（3人または4人）</div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="member-input" placeholder="名前を入力" list="saved-players"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
+        <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
+      </div>
+      <div class="member-tags" id="member-tags"></div>
+      <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください（3人または4人で作成できます）</div>
       <datalist id="saved-players"></datalist>
       <div id="saved-players-hint" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
         <span class="chips-hint" style="margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</span>
@@ -286,7 +306,23 @@ details.log-details summary::-webkit-details-marker { display: none; }
       </div>
     </div>
   </div>
-  <button class="submit-btn" id="setup-submit" onclick="startGame()">ゲームを開始する →</button>
+  <button class="submit-btn" id="setup-submit" onclick="startGame()" disabled>グループを作成</button>
+</div>
+
+<!-- SHARE (グループ作成完了・URL共有) -->
+<div id="view-share" class="view">
+  <div class="share-wrap">
+    <div class="share-card">
+      <div class="share-check">✓</div>
+      <div class="share-title">グループを作成しました！</div>
+      <div class="share-desc">このURLをメンバーに共有すると、全員が同じスコアをリアルタイムで見られます。</div>
+      <div class="share-url-row">
+        <input type="text" id="share-url" readonly onclick="this.select()">
+        <button class="copy-btn" onclick="copyShareUrl()">コピー</button>
+      </div>
+      <button class="go-game-btn" onclick="showView('game')">スコア入力ページへ進む →</button>
+    </div>
+  </div>
 </div>
 
 <!-- GAME -->
@@ -547,9 +583,15 @@ function todayStr() {
 }
 function initSetupForm() {
   document.getElementById('s-name').value = todayStr();
-  setPlayers(4); // 人数・持ち点・返し点・ウマ選択肢を初期化
+  setupMembers = [];
+  document.getElementById('member-input').value = '';
+  numPlayers = 4;
+  refreshUmaSelect();
+  document.getElementById('s-start').value = 25000;
+  document.getElementById('s-return').value = 30000;
   document.getElementById('s-rate').value = '100'; // デフォルト: テンピン
-  renderPlayerOptions(); onRateChange();
+  renderMembers();
+  renderPlayerOptions(); onUmaChange(); onRateChange();
 }
 // ---- プレイヤー名の保存 ----
 // 保存済みの名前はdatalistに入れておき、入力欄タップで候補から選ぶか自由入力できる
@@ -585,35 +627,52 @@ function savePlayerNames(names) {
   });
   saveStorage();
 }
-function setPlayers(n) {
-  numPlayers = n;
-  document.getElementById('p4-btn').classList.toggle('active', n === 4);
-  document.getElementById('p3-btn').classList.toggle('active', n === 3);
-  // 3人麻雀は持ち点30000・返し点35000、4人麻雀は25000・30000
-  document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
-  document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
-  refreshUmaSelect();
-  // 3人麻雀は開始ボタンもオレンジに
-  document.getElementById('setup-submit').style.background = n === 3 ? '#E75620' : '';
-  buildPlayerInputs(); onUmaChange();
+// ---- メンバーのタグ入力（Walica風） ----
+let setupMembers = [];
+function addMember() {
+  const input = document.getElementById('member-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (setupMembers.length >= 4) { showToast('メンバーは4人までです'); return; }
+  if (setupMembers.includes(name)) { showToast('同じ名前がすでに追加されています'); return; }
+  setupMembers.push(name);
+  input.value = '';
+  renderMembers();
+  input.focus();
+}
+function removeMember(i) {
+  setupMembers.splice(i, 1);
+  renderMembers();
+}
+function renderMembers() {
+  document.getElementById('member-tags').innerHTML = setupMembers.map((m, i) =>
+    `<span class="member-tag">${esc(m)}<button onclick="removeMember(${i})" aria-label="削除">✕</button></span>`
+  ).join('');
+  const n = setupMembers.length;
+  const ok = n === 3 || n === 4;
+  const btn = document.getElementById('setup-submit');
+  btn.disabled = !ok;
+  // 人数が確定したらルール初期値とウマ選択肢を切り替える（3人麻雀は30000/35000）
+  if (ok && n !== numPlayers) {
+    numPlayers = n;
+    refreshUmaSelect();
+    document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
+    document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
+    onUmaChange();
+  }
+  btn.style.background = (ok && n === 3) ? '#E75620' : '';
+  const full = n >= 4;
+  document.getElementById('member-input').disabled = full;
+  document.getElementById('member-add-btn').disabled = full;
+  document.getElementById('member-count-hint').textContent =
+    ok ? `現在 ${n}人 — このメンバーでグループを作成できます`
+       : full ? 'メンバーは4人までです'
+       : `現在 ${n}人 — 3人または4人で作成できます`;
 }
 // 人数に応じてウマの選択肢を差し替える（3人麻雀は「15-0-15」形式）
 function refreshUmaSelect() {
   const sel = document.getElementById('s-uma');
   sel.innerHTML = umaOptionsFor(numPlayers).map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
-}
-function buildPlayerInputs() {
-  const container = document.getElementById('player-inputs');
-  container.innerHTML = '';
-  ['プレイヤー1','プレイヤー2','プレイヤー3','プレイヤー4'].slice(0, numPlayers).forEach((def, i) => {
-    const inp = document.createElement('input');
-    inp.type = 'text'; inp.id = 'p-name-' + i; inp.placeholder = def;
-    inp.setAttribute('list', 'saved-players'); // 保存済みの名前を候補表示（自由入力も可）
-    inp.style.cssText = 'border:1.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:15px;outline:none;width:100%;transition:border-color 0.2s';
-    inp.onfocus = function() { this.style.borderColor='#177083'; };
-    inp.onblur = function() { this.style.borderColor='#ddd'; };
-    container.appendChild(inp);
-  });
 }
 function onUmaChange() {
   const v = document.getElementById('s-uma').value;
@@ -637,8 +696,10 @@ function getUmaArray() {
   return umaArrayFor(v, numPlayers);
 }
 async function startGame() {
+  if (setupMembers.length !== 3 && setupMembers.length !== 4) { showToast('メンバーは3人または4人で登録してください'); return; }
   const name = document.getElementById('s-name').value.trim() || todayStr();
-  const playerNames = Array.from({length: numPlayers}, (_, i) => document.getElementById('p-name-'+i).value.trim() || ('プレイヤー'+(i+1)));
+  const playerNames = setupMembers.slice();
+  numPlayers = playerNames.length;
   const startPoints = Number(document.getElementById('s-start').value) || 25000;
   const returnPoints = Number(document.getElementById('s-return').value) || 30000;
   const uma = getUmaArray();
@@ -651,8 +712,16 @@ async function startGame() {
   try {
     await db.ref('sessions/' + sessionId).set(game);
     history.replaceState(null, '', '#' + sessionId);
-    startListening(); showView('game');
+    startListening();
+    // Walica風: まずURL共有画面を表示してからスコア入力へ
+    document.getElementById('share-url').value = location.href;
+    showView('share');
   } catch(e) { alert('ゲームの作成に失敗しました。'); } finally { showLoading(false); }
+}
+function copyShareUrl() {
+  const url = document.getElementById('share-url').value;
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('コピーしました'));
+  else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('コピーしました'); }
 }
 
 // ---- Game ----
