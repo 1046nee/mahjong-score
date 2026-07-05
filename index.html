@@ -42,20 +42,18 @@ input:focus, select:focus { border-color: #177083; }
 .toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
 .toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
 .toggle-btn.active { background: #177083; color: #fff; }
-/* 3人麻雀（サンマ）テーマ: ティールとオレンジを反転 */
-.sanma .rounds-table th { background: #E75620; }
-#view-game.sanma, #view-detail.sanma { background: #FDF0E8; }
-.sanma .header { background: #E75620; }
-.sanma .fab { background: #177083; box-shadow: 0 4px 16px rgba(23,112,131,0.4); }
-.sheet.sanma .confirm-btn { background: #E75620; }
+/* 3人麻雀（サンマ）テーマ: もともと緑（ティール）の部分を青（#4261AA）に置き換える */
+.sanma .rounds-table th { background: #4261AA; }
+#view-game.sanma, #view-detail.sanma { background: #EAF0FB; }
+.sanma .header { background: #4261AA; }
+.sheet.sanma .confirm-btn { background: #4261AA; }
 .sheet.sanma .confirm-btn:disabled { background: #aaa; }
-.sheet.sanma .auto-btn { background: #e0f2f5; color: #177083; border-color: #177083; }
-.sheet.sanma .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; }
-.sheet.sanma .sheet-row input:focus { border-color: #E75620; }
-body.sanma-mode .log-tag.add { background: #E75620; }
-body.sanma-mode .log-tag.edit { background: #177083; }
-body.sanma-mode .log-time { color: #E75620; }
-body.sanma-mode .log-date { color: #E75620; background: #fdeee7; }
+.sheet.sanma .sheet-row input:focus { border-color: #4261AA; }
+body.sanma-mode .log-tag.add { background: #4261AA; }
+body.sanma-mode .log-tag.edit { background: #E75620; }
+body.sanma-mode .log-time { color: #4261AA; }
+body.sanma-mode .log-date { color: #4261AA; background: #eaf0fb; }
+.sanma .rank-badge { color: #4261AA; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -83,7 +81,7 @@ body.sanma-mode .log-date { color: #E75620; background: #fdeee7; }
 .share-url-row { display: flex; gap: 8px; margin-bottom: 26px; }
 .share-url-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 10px; padding: 12px; font-size: 13px; color: #555; background: #f8f8f8; min-width: 0; }
 .copy-btn { background: #177083; color: #fff; border: none; border-radius: 10px; padding: 0 18px; font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0; }
-.go-game-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: #E75620; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+.go-game-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: #177083; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
 .go-game-btn:active { opacity: 0.85; }
 
 /* Game */
@@ -903,9 +901,9 @@ function rankCountHtml(rounds, names) {
   // 意味のまとまりを控えめに区別する:
   //   1〜4着 … 通常の薄い実線 / 総試合数 … 少し濃いめの実線で区切り / 平均着順・ラス回避 … 破線で区切った別グループ
   const statLabel = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
-  // 3人麻雀は区切り線もオレンジ系に
-  const totalRowTd = `border-top:1.5px solid ${n === 3 ? '#f0c9b4' : '#c8d6da'}`;
-  const statGroupTd = `border-top:1px dashed ${n === 3 ? '#f5ded0' : '#d5dde0'}`;
+  // 3人麻雀は区切り線も青系に
+  const totalRowTd = `border-top:1.5px solid ${n === 3 ? '#c3cfe8' : '#c8d6da'}`;
+  const statGroupTd = `border-top:1px dashed ${n === 3 ? '#dbe3f2' : '#d5dde0'}`;
   const games = rounds.length;
   // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員）
   const avgs = names.map((_, i) => avgRankSum[i] / games);
@@ -957,6 +955,11 @@ function renderLogList(log) {
       rows += `<div class="log-arrow">↓</div>`;
     }
     const [tagCls, tagLabel] = TAG[e.type] || ['add', e.type];
+    // 番号付きエントリは（現）/（旧）を付けて現在の試合番号と対応させる。旧形式はlabelをそのまま表示
+    const verb = { add: '入力', edit: '修正', delete: '削除' }[e.type] || '';
+    const label = typeof e.no === 'number'
+      ? `（${e.old ? '旧' : '現'}）第${e.no}試合を${verb}`
+      : (e.label || '');
     let body = '';
     if (e.type === 'add' && e.points) {
       body = `<div style="${sub}">${fmtPts(e.points)}</div>`;
@@ -969,7 +972,7 @@ function renderLogList(log) {
     rows += `<div class="log-row">
       <span class="log-time">${fmtTime(e.at)}</span>
       <span class="log-tag ${tagCls}">${tagLabel}</span>
-      <div class="log-content"><b>${esc(e.label)}</b>${body}</div>
+      <div class="log-content"><b>${esc(label)}</b>${body}</div>
     </div>`;
   });
   return `<div class="log-list">${rows}</div>`;
@@ -1077,9 +1080,17 @@ async function deleteRound(idx) {
   if (!activeGame) return;
   const old = activeGame.rounds[idx];
   const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
-  const logEntry = { type: 'delete', at: new Date().toISOString(), label: `第${idx+1}試合を削除`, points: old ? old.points : null };
+  // 履歴の試合番号を現在の番号に合わせて振り直す:
+  //   削除された試合の履歴 → 旧扱い（番号は当時のまま）、それより後の試合の履歴 → 番号を1つ繰り上げ
+  const newLog = (activeGame.log || []).map(e => {
+    if (e.old || typeof e.no !== 'number') return e;
+    if (e.no === idx + 1) return { ...e, old: true };
+    if (e.no > idx + 1) return { ...e, no: e.no - 1 };
+    return e;
+  });
+  newLog.push({ type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null });
   try {
-    await writeRoundsToFirebase(newRounds, logEntry);
+    await db.ref('sessions/' + sessionId).update({ rounds: newRounds.length ? newRounds : null, log: newLog });
     showToast('削除しました');
   } catch(e) { showToast('削除に失敗しました'); }
 }
@@ -1179,10 +1190,10 @@ async function submitRound() {
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
     newRounds[editingIndex] = { points, scores, at: orig.at || now, edited: true }; // 修正
-    logEntry = { type: 'edit', at: now, label: `第${editingIndex+1}試合を修正`, prev: orig.points || null, points };
+    logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points };
   } else {
     newRounds.push({ points, scores, at: now }); // 新規
-    logEntry = { type: 'add', at: now, label: `第${newRounds.length}試合を入力`, points };
+    logEntry = { type: 'add', at: now, no: newRounds.length, points };
   }
   closeSheet();
   try {
@@ -1284,7 +1295,7 @@ function historyItemHtml(g) {
     const groups = rankGroups(tRounded);
     const medals = ['🥇', '🥈', '🥉'];
     const ranked = tRounded.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
-    const thBg = g.settings.numPlayers === 3 ? 'background:#E75620;' : '';
+    const thBg = g.settings.numPlayers === 3 ? 'background:#4261AA;' : '';
     const ths = ranked.map(p =>
       `<th style="font-size:11px;padding:6px 4px;${thBg}">${esc(g.settings.playerNames[p.i])}</th>`).join('');
     const tds = ranked.map(p => {
