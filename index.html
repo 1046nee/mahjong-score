@@ -44,6 +44,8 @@ input:focus, select:focus { border-color: #177083; }
 .toggle-btn.active { background: #177083; color: #fff; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rule-grid .field { margin-bottom: 0; }
 .custom-uma-grid .field { margin-bottom: 0; }
 .submit-btn { background: #177083; color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
 .submit-btn:active { opacity: 0.85; }
@@ -223,57 +225,53 @@ details.log-details summary::-webkit-details-marker { display: none; }
     </div>
     <div class="card">
       <div class="card-title">プレイヤー名</div>
-      <div id="saved-players-area" style="display:none">
-        <div class="chips-hint">保存済みの名前（タップで入力）</div>
-        <div class="chips" id="saved-player-chips"></div>
-      </div>
       <div class="player-inputs" id="player-inputs"></div>
+      <datalist id="saved-players"></datalist>
+      <div class="chips-hint" id="saved-players-hint" style="display:none;margin-top:8px;margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</div>
     </div>
     <div class="card">
-      <div class="card-title">点数設定</div>
-      <div class="field">
-        <label>持ち点</label>
-        <input type="number" id="s-start" value="25000">
+      <div class="card-title">ルール設定</div>
+      <div class="rule-grid">
+        <div class="field">
+          <label>持ち点</label>
+          <input type="number" id="s-start" value="25000">
+        </div>
+        <div class="field">
+          <label>返し点</label>
+          <input type="number" id="s-return" value="30000">
+        </div>
+        <div class="field">
+          <label>ウマ</label>
+          <select id="s-uma" onchange="onUmaChange()">
+            <option value="10-30">10-30</option>
+            <option value="10-20">10-20</option>
+            <option value="5-15">5-15</option>
+            <option value="5-10">5-10</option>
+            <option value="0">なし</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>レート</label>
+          <select id="s-rate" onchange="onRateChange()">
+            <option value="10">×10（テンイチ）</option>
+            <option value="20">×20（テンニ）</option>
+            <option value="30">×30（テンサン）</option>
+            <option value="50">×50（テンゴ）</option>
+            <option value="100">×100（テンピン）</option>
+            <option value="200">×200（テンリャンピン）</option>
+            <option value="500">×500（ゴジュー）</option>
+            <option value="1000">×1000（デカピン）</option>
+            <option value="2000">×2000（デカリャンピン）</option>
+            <option value="0">なし</option>
+            <option value="custom">カスタム</option>
+          </select>
+        </div>
       </div>
-      <div class="field">
-        <label>返し点</label>
-        <input type="number" id="s-return" value="30000">
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">ウマ</div>
-      <div class="field">
-        <select id="s-uma" onchange="onUmaChange()">
-          <option value="10-30">10-30</option>
-          <option value="10-20">10-20</option>
-          <option value="5-15">5-15</option>
-          <option value="5-10">5-10</option>
-          <option value="0">なし</option>
-          <option value="custom">カスタム</option>
-        </select>
-      </div>
-      <div id="uma-custom" style="display:none">
+      <div id="uma-custom" style="display:none;margin-top:10px">
         <div class="custom-uma-grid" id="uma-custom-fields"></div>
       </div>
-    </div>
-    <div class="card">
-      <div class="card-title">レート</div>
-      <div class="field">
-        <select id="s-rate" onchange="onRateChange()">
-          <option value="10">×10（テンイチ）</option>
-          <option value="20">×20（テンニ）</option>
-          <option value="30">×30（テンサン）</option>
-          <option value="50">×50（テンゴ）</option>
-          <option value="100">×100（テンピン）</option>
-          <option value="200">×200（テンリャンピン）</option>
-          <option value="500">×500（ゴジュー）</option>
-          <option value="1000">×1000（デカピン）</option>
-          <option value="2000">×2000（デカリャンピン）</option>
-          <option value="0">なし</option>
-          <option value="custom">カスタム</option>
-        </select>
-      </div>
-      <div id="rate-custom" style="display:none">
+      <div id="rate-custom" style="display:none;margin-top:10px">
         <div class="field">
           <label>カスタムレート（倍率）</label>
           <input type="number" id="s-rate-custom" placeholder="例: 150">
@@ -307,7 +305,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       </div>
     </div>
     <div class="card" id="rank-card" style="display:none">
-      <div class="card-title">その他成績</div>
+      <div class="card-title">個人成績</div>
       <div id="rank-body"></div>
     </div>
     <div class="card" id="chart-card" style="display:none">
@@ -518,26 +516,16 @@ function initSetupForm() {
   numPlayers = 4;
   document.getElementById('p4-btn').classList.add('active');
   document.getElementById('p3-btn').classList.remove('active');
-  buildPlayerInputs(); renderPlayerChips(); onUmaChange(); onRateChange();
+  buildPlayerInputs(); renderPlayerOptions(); onUmaChange(); onRateChange();
 }
 // ---- プレイヤー名の保存 ----
-function renderPlayerChips() {
-  const area = document.getElementById('saved-players-area');
-  const chips = document.getElementById('saved-player-chips');
-  if (!appState.players || appState.players.length === 0) { area.style.display = 'none'; return; }
-  area.style.display = 'block';
-  chips.innerHTML = appState.players.map(name =>
-    `<button class="chip" onclick="fillPlayerName(this)" data-name="${esc(name)}">${esc(name)}</button>`
-  ).join('');
-}
-function fillPlayerName(btn) {
-  const name = btn.getAttribute('data-name');
-  // デフォルト値（プレイヤーN）のままの最初の欄に入れる。全て変更済みなら最初の欄。
-  for (let i = 0; i < numPlayers; i++) {
-    const el = document.getElementById('p-name-' + i);
-    if (el && (el.value === '' || /^プレイヤー\d$/.test(el.value))) { el.value = name; return; }
-  }
-  document.getElementById('p-name-0').value = name;
+// 保存済みの名前はdatalistに入れておき、入力欄タップで候補から選ぶか自由入力できる
+function renderPlayerOptions() {
+  const dl = document.getElementById('saved-players');
+  const hint = document.getElementById('saved-players-hint');
+  const has = appState.players && appState.players.length > 0;
+  dl.innerHTML = has ? appState.players.map(name => `<option value="${esc(name)}"></option>`).join('') : '';
+  hint.style.display = has ? 'block' : 'none';
 }
 function savePlayerNames(names) {
   names.forEach(name => {
@@ -556,7 +544,8 @@ function buildPlayerInputs() {
   container.innerHTML = '';
   ['プレイヤー1','プレイヤー2','プレイヤー3','プレイヤー4'].slice(0, numPlayers).forEach((def, i) => {
     const inp = document.createElement('input');
-    inp.type = 'text'; inp.id = 'p-name-' + i; inp.placeholder = def; inp.value = def;
+    inp.type = 'text'; inp.id = 'p-name-' + i; inp.placeholder = def;
+    inp.setAttribute('list', 'saved-players'); // 保存済みの名前を候補表示（自由入力も可）
     inp.style.cssText = 'border:1.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:15px;outline:none;width:100%;transition:border-color 0.2s';
     inp.onfocus = function() { this.style.borderColor='#177083'; };
     inp.onblur = function() { this.style.borderColor='#ddd'; };
@@ -725,7 +714,7 @@ function roundsTheadHtml(names) {
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示
 function roundRowHtml(r, idx, onclickJs) {
   const cells = r.scores.map((sc, i) => {
-    const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : '';
+    const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
     const raw = (r.points && r.points[i] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[i].toLocaleString()}</div>`
       : '';
@@ -1117,14 +1106,15 @@ function historyItemHtml(g) {
       + ranked.map(p => {
           const grp = groups[p.i];
           const icon = grp.start < 3 ? medals[grp.start] : '👿';
-          return `<span style="white-space:nowrap">${icon}${esc(g.settings.playerNames[p.i])}</span>`;
+          const scoreCls = p.t > 0 ? 'color:#1a237e' : p.t < 0 ? 'color:#c62828' : '';
+          return `<span style="white-space:nowrap">${icon}${esc(g.settings.playerNames[p.i])} <b style="${scoreCls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</b><span style="font-size:9px;color:#999">pts</span></span>`;
         }).join('')
       + '</div>';
   }
   return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
     <div class="history-info">
       <div class="history-name">${esc(g.name)}</div>
-      <div class="history-meta">${date} · ${n}人 · ${rounds}試合</div>
+      <div class="history-meta">${date} · ${n}人 · 計${rounds}試合</div>
       ${rankLine}
     </div>
     <div class="history-arrow">›</div>
@@ -1178,7 +1168,7 @@ function viewDetail(g) {
     ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}
     ${renderLogHtml(g.log)}</div>`;
   if (g.rounds.length > 0) {
-    html += `<div class="card"><div class="card-title">その他成績</div>${rankCountHtml(g.rounds, s.playerNames)}</div>`;
+    html += `<div class="card"><div class="card-title">個人成績</div>${rankCountHtml(g.rounds, s.playerNames)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
