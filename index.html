@@ -42,9 +42,20 @@ input:focus, select:focus { border-color: #177083; }
 .toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
 .toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
 .toggle-btn.active { background: #177083; color: #fff; }
-#p3-btn.active { background: #E75620; }
-/* 3人麻雀（サンマ）はテーブルヘッダーをオレンジに */
+/* 3人麻雀（サンマ）テーマ: ティールとオレンジを反転 */
 .sanma .rounds-table th { background: #E75620; }
+#view-game.sanma, #view-detail.sanma { background: #FDF0E8; }
+.sanma .header { background: #E75620; }
+.sanma .fab { background: #177083; box-shadow: 0 4px 16px rgba(23,112,131,0.4); }
+.sheet.sanma .confirm-btn { background: #E75620; }
+.sheet.sanma .confirm-btn:disabled { background: #aaa; }
+.sheet.sanma .auto-btn { background: #e0f2f5; color: #177083; border-color: #177083; }
+.sheet.sanma .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; }
+.sheet.sanma .sheet-row input:focus { border-color: #E75620; }
+body.sanma-mode .log-tag.add { background: #E75620; }
+body.sanma-mode .log-tag.edit { background: #177083; }
+body.sanma-mode .log-time { color: #E75620; }
+body.sanma-mode .log-date { color: #E75620; background: #fdeee7; }
 .player-inputs { display: flex; flex-direction: column; gap: 8px; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -660,7 +671,7 @@ function renderMembers() {
     document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
     onUmaChange();
   }
-  btn.style.background = (ok && n === 3) ? '#E75620' : '';
+  btn.textContent = ok ? `${n}人麻雀を開始` : 'グループを作成';
   const full = n >= 4;
   document.getElementById('member-input').disabled = full;
   document.getElementById('member-add-btn').disabled = full;
@@ -892,8 +903,9 @@ function rankCountHtml(rounds, names) {
   // 意味のまとまりを控えめに区別する:
   //   1〜4着 … 通常の薄い実線 / 総試合数 … 少し濃いめの実線で区切り / 平均着順・ラス回避 … 破線で区切った別グループ
   const statLabel = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
-  const totalRowTd = 'border-top:1.5px solid #c8d6da';
-  const statGroupTd = 'border-top:1px dashed #d5dde0';
+  // 3人麻雀は区切り線もオレンジ系に
+  const totalRowTd = `border-top:1.5px solid ${n === 3 ? '#f0c9b4' : '#c8d6da'}`;
+  const statGroupTd = `border-top:1px dashed ${n === 3 ? '#f5ded0' : '#d5dde0'}`;
   const games = rounds.length;
   // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員）
   const avgs = names.map((_, i) => avgRankSum[i] / games);
@@ -1009,8 +1021,9 @@ function renderGame() {
   logEl.innerHTML = hasRounds ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
   document.getElementById('log-btn').style.display = logEvents(activeGame.log).length > 0 ? 'inline-block' : 'none';
 
-  // 3人麻雀はテーブルをオレンジ配色に
+  // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
+  document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
 
   // その他成績（別カード）
   const rankCard = document.getElementById('rank-card');
@@ -1088,6 +1101,8 @@ function openSheet(idx) {
 function openSheetCtx(ctx, idx) {
   sheetCtx = ctx;
   editingIndex = idx;
+  // 3人麻雀の点数入力シートは配色を反転
+  document.getElementById('score-sheet').classList.toggle('sanma', ctx.settings.numPlayers === 3);
   const s = ctx.settings;
   const n = s.numPlayers;
   const isEdit = idx >= 0;
@@ -1362,6 +1377,7 @@ function viewDetail(g) {
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', n === 3);
+  document.body.classList.toggle('sanma-mode', n === 3);
   showView('detail');
 }
 
