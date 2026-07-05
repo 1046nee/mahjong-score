@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>麻雀スコア管理</title>
+<title>まじゃすこ｜麻雀スコア管理アプリ</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #DBF4F9; color: #1a1a1a; min-height: 100vh; }
@@ -248,8 +248,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <!-- HOME -->
 <div id="view-home" class="view active">
   <div class="home-hero">
-    <div class="home-title">🀄 麻雀スコア</div>
-    <div class="home-sub">スコア管理アプリ</div>
+    <div class="home-title">🀄 まじゃすこ</div>
+    <div class="home-sub">麻雀スコア管理アプリ</div>
     <button class="home-btn home-btn-primary" onclick="showView('setup')">新しい対局を始める</button>
     <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の戦績を振り返る</button>
     <div class="join-banner" id="join-banner" style="display:none">
@@ -261,13 +261,13 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <div class="home-content">
     <section class="info-card">
       <h2>このアプリの使い方</h2>
-      <p>「麻雀スコア」は、麻雀の対局結果を記録して自動でスコア計算し、メンバー全員とリアルタイムで共有できる無料のスコア管理アプリです。会員登録は不要で、スマートフォンのブラウザだけですぐに使えます。</p>
+      <p>「まじゃすこ」は、麻雀の対局結果を記録して自動でスコア計算し、メンバー全員とリアルタイムで共有できる無料のスコア管理アプリです。会員登録は不要で、スマートフォンのブラウザだけですぐに使えます。</p>
       <h3>1. グループを作る</h3>
-      <p>「新しい対局を始める」からグループ名とメンバー名（3人または4人）を登録します。持ち点・返し点・ウマ・レートも自由に設定でき、3人麻雀にも対応しています。</p>
+      <p>「新しい対局を始める」からグループ名とメンバー名（3人または4人）を登録します。持ち点・返し点・ウマ・スコア係数も自由に設定でき、3人麻雀にも対応しています。</p>
       <h3>2. URLをメンバーに共有する</h3>
       <p>グループを作成すると専用URLが発行されます。LINEなどでメンバーに送れば、全員が同じスコアをリアルタイムで確認できます。誰か1人が入力すれば全員の画面に反映されます。</p>
       <h3>3. 半荘ごとに点数を入力する</h3>
-      <p>対局が終わるたびに各プレイヤーの持ち点を入力するだけで、ウマ・オカ・レートを反映したスコアを自動計算します。点数の下2桁は自動で補完されるので、百の位までの入力だけでスピーディーに記録できます。入力ミスはあとから修正・削除でき、変更履歴も残ります。</p>
+      <p>対局が終わるたびに各プレイヤーの持ち点を入力するだけで、ウマ・オカ・スコア係数を反映したスコアを自動計算します。点数の下2桁は自動で補完されるので、百の位までの入力だけでスピーディーに記録できます。入力ミスはあとから修正・削除でき、変更履歴も残ります。</p>
       <h3>4. 戦績を振り返る</h3>
       <p>「過去の戦績を振り返る」から、これまでの対局結果・順位・スコア推移グラフ・着順回数などをいつでも確認できます。</p>
     </section>
@@ -281,8 +281,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <p>最終順位に応じて加減されるボーナスです。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
       <h3>オカ</h3>
       <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
-      <h3>レート</h3>
-      <p>1ポイントあたりの金額の倍率です。「テンピン」は1ポイント＝100円を意味します。このアプリではスコアと金額をワンタップで切り替えて表示できます。</p>
+      <h3>スコア係数（チップ換算）</h3>
+      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをチップ数に換算して表示できます。このアプリではスコアとチップ換算をワンタップで切り替えられます。</p>
       <h3>同点のときは？</h3>
       <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
       <h3>3人麻雀（サンマ）の場合</h3>
@@ -295,7 +295,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <a href="privacy.html">プライバシーポリシー</a>
       <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
     </div>
-    <div>© 2026 麻雀スコア計算アプリ</div>
+    <div>© 2026 まじゃすこ</div>
   </footer>
 </div>
 
@@ -350,17 +350,17 @@ details.log-details summary::-webkit-details-marker { display: none; }
           </select>
         </div>
         <div class="field">
-          <label>レート</label>
+          <label>スコア係数</label>
           <select id="s-rate" onchange="onRateChange()">
-            <option value="10">×10（テンイチ）</option>
-            <option value="20">×20（テンニ）</option>
-            <option value="30">×30（テンサン）</option>
-            <option value="50">×50（テンゴ）</option>
-            <option value="100">×100（テンピン）</option>
-            <option value="200">×200（テンリャンピン）</option>
-            <option value="500">×500（ゴジュー）</option>
-            <option value="1000">×1000（デカピン）</option>
-            <option value="2000">×2000（デカリャンピン）</option>
+            <option value="10">×10</option>
+            <option value="20">×20</option>
+            <option value="30">×30</option>
+            <option value="50">×50</option>
+            <option value="100">×100</option>
+            <option value="200">×200</option>
+            <option value="500">×500</option>
+            <option value="1000">×1000</option>
+            <option value="2000">×2000</option>
             <option value="0">なし</option>
             <option value="custom">カスタム</option>
           </select>
@@ -371,7 +371,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
       </div>
       <div id="rate-custom" style="display:none;margin-top:10px">
         <div class="field">
-          <label>カスタムレート（倍率）</label>
+          <label>カスタム係数（倍率）</label>
           <input type="number" id="s-rate-custom" placeholder="例: 150">
         </div>
       </div>
@@ -408,7 +408,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">合計スコア</div>
-        <button class="edit-tab" id="yen-toggle" onclick="toggleYen()">金額表示</button>
+        <button class="edit-tab" id="yen-toggle" onclick="toggleYen()">チップ換算</button>
       </div>
       <div class="score-cards" id="score-cards"></div>
     </div>
@@ -546,7 +546,7 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
-let showYen = false; // 合計スコアの金額表示ON/OFF（初期はスコア表示）
+let showYen = false; // 合計スコアのチップ換算表示ON/OFF（初期はスコア表示）
 function toggleYen() { showYen = !showYen; renderGame(); }
 
 // ---- Storage ----
@@ -664,7 +664,7 @@ function initSetupForm() {
   refreshUmaSelect();
   document.getElementById('s-start').value = 25000;
   document.getElementById('s-return').value = 30000;
-  document.getElementById('s-rate').value = '100'; // デフォルト: テンピン
+  document.getElementById('s-rate').value = '100'; // デフォルト: ×100
   renderMembers();
   renderPlayerOptions(); onUmaChange(); onRateChange();
 }
@@ -1050,13 +1050,13 @@ function renderGame() {
   document.getElementById('game-title').textContent = activeGame.name;
 
   // スコアカード
-  document.getElementById('yen-toggle').textContent = showYen ? '金額表示' : 'スコア表示';
+  document.getElementById('yen-toggle').textContent = showYen ? 'チップ換算' : 'スコア表示';
   const totals = getTotals();
   const totalGroups = rankGroups(totals);
   const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
   document.getElementById('score-cards').innerHTML = ranked.map(p => {
     const g = totalGroups[p.i];
-    const yenStr = (showYen && s.rate) ? `${(p.t * s.rate).toLocaleString()}円` : '';
+    const yenStr = (showYen && s.rate) ? `${(p.t * s.rate).toLocaleString()}チップ` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
       ${rankBadgeHtml(g.start, g.size > 1)}
@@ -1290,7 +1290,7 @@ function settingsFormHtml(name, s, prefix) {
   const rateKey = RATE_PRESETS.includes(String(s.rate)) ? String(s.rate) : 'custom';
   const umaOpts = umaOptionsFor(n)
     .map(([v,l]) => `<option value="${v}" ${v===umaKey?'selected':''}>${l}</option>`).join('');
-  const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100（テンピン）'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
+  const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
     <div class="field"><label>ゲーム名</label><input type="text" id="${prefix}-name" value="${esc(name)}"></div>
@@ -1307,7 +1307,7 @@ function settingsFormHtml(name, s, prefix) {
         </div>
       </div>
     </div>
-    <div class="field"><label>レート</label>
+    <div class="field"><label>スコア係数</label>
       <select id="${prefix}-rate" onchange="document.getElementById('${prefix}-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
       <div id="${prefix}-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
         <input type="number" id="${prefix}-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
@@ -1429,7 +1429,7 @@ function viewDetail(g) {
   let html = '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
   ranked.forEach(p => {
     const grp = totalGroups[p.i];
-    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}円` : '';
+    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}チップ` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1)}
@@ -1467,7 +1467,7 @@ function viewDetail(g) {
   html += `<div class="card"><div class="card-title">設定</div>
     <div style="font-size:13px;color:#555;line-height:2.2">
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')} ／ レート: ×${s.rate}
+      ウマ: ${s.uma.join(' / ')} ／ スコア係数: ×${s.rate}
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', n === 3);
