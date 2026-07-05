@@ -16,28 +16,65 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .back-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px; }
 .share-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
-/* Home */
-#view-home { background: linear-gradient(135deg, #0f5866 0%, #177083 60%, #1e8fa3 100%); overflow-y: auto; }
-.home-hero { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; padding: 24px 16px; }
-.home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 8px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
-.info-card { background: #fff; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
+/* Home (LP型) */
+#view-home { background: #fff; overflow-y: auto; display: block; }
+#view-home.active { display: block; }
+.lp-inner { max-width: 640px; margin: 0 auto; }
+.lp-section { padding: 52px 20px; }
+
+/* ① ヒーロー: 薄緑（安心感・麻雀卓の連想） */
+.lp-hero { background: linear-gradient(180deg, #E4F3EC 0%, #D9EEE3 100%); padding: 60px 20px 56px; text-align: center; }
+.lp-logo { font-size: 15px; font-weight: 800; color: #177083; letter-spacing: 2px; margin-bottom: 30px; }
+.lp-hero h1 { font-size: 23px; line-height: 1.55; font-weight: 800; color: #1a1a1a; margin-bottom: 20px; }
+.lp-lead { font-size: 14px; color: #444; line-height: 2.0; text-align: left; margin-bottom: 30px; }
+.lp-sub-link { display: block; margin-top: 18px; color: #177083; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* CTA: オレンジ限定（行動喚起） */
+.cta-btn { display: inline-block; background: #E75620; color: #fff; border: none; border-radius: 50px; padding: 18px 34px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(231,86,32,0.35); transition: background 0.2s, transform 0.1s; }
+.cta-btn:hover { background: #F0824F; }
+.cta-btn:active { transform: scale(0.97); }
+
+/* ② ペイン共感: 薄い青（論理・鎮静・信頼） */
+.lp-pain { background: #EAF0FB; }
+.lp-pain h2 { font-size: 20px; line-height: 1.6; text-align: center; color: #2c3e6b; margin-bottom: 18px; }
+.lp-body { font-size: 14px; color: #444; line-height: 2.0; margin-bottom: 20px; }
+.pain-list { list-style: none; padding: 0; margin-bottom: 22px; }
+.pain-list li { background: #fff; border-left: 4px solid #4261AA; border-radius: 10px; padding: 13px 15px; margin-bottom: 10px; font-size: 13px; color: #444; line-height: 1.8; }
+.lp-emphasis { font-weight: 700; color: #2c3e6b; text-align: center; margin-bottom: 0; }
+
+/* ③ ソリューション: 白＋緑/青アイコン */
+.lp-solution { background: #fff; }
+.lp-solution h2 { font-size: 20px; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
+.feature { margin-bottom: 34px; }
+.feature:last-child { margin-bottom: 0; }
+.feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
+.fi-green { background: #E4F3EC; }
+.fi-blue { background: #EAF0FB; }
+.feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
+.feature p { font-size: 13px; color: #444; line-height: 2.0; }
+
+/* ④ クロージング: 薄緑＋オレンジCTA */
+.lp-close { background: #E4F3EC; text-align: center; }
+.lp-close h2 { font-size: 20px; color: #1a1a1a; margin-bottom: 16px; }
+.lp-close .cta-btn { margin-top: 8px; }
+
+/* 参考コンテンツ（使い方・点数計算の基本） */
+.home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
+.info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 17px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
 .info-card h3 { font-size: 14px; margin: 16px 0 6px; color: #1a1a1a; }
 .info-card p, .info-card li { font-size: 13px; color: #444; }
 .info-card ol, .info-card ul { padding-left: 20px; }
-.site-footer { text-align: center; padding: 24px 16px 36px; color: rgba(255,255,255,0.85); font-size: 12px; }
+
+/* フッター */
+.site-footer { background: #177083; text-align: center; padding: 26px 16px 36px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; }
 .site-footer a { color: #fff; text-decoration: underline; margin: 0 10px; }
 .footer-links { margin-bottom: 10px; }
-.home-title { color: #fff; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-align: center; }
-.home-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 20px; text-align: center; }
-.home-btn { width: 240px; padding: 18px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
-.home-btn:active { transform: scale(0.97); }
-.home-btn-primary { background: #fff; color: #177083; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-.home-btn-secondary { background: rgba(255,255,255,0.15); color: #fff; border: 2px solid rgba(255,255,255,0.5); }
-.join-banner { background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.4); border-radius: 12px; padding: 16px 20px; width: 240px; text-align: center; }
-.join-banner p { color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 10px; }
-.join-banner strong { color: #fff; font-size: 15px; display: block; margin-bottom: 10px; word-break: break-all; }
-.join-btn { background: #fff; color: #177083; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+
+/* 共有ゲームへの参加バナー */
+.join-banner { background: #fff; border: 1.5px solid #177083; border-radius: 12px; padding: 16px 20px; max-width: 300px; margin: 24px auto 0; text-align: center; }
+.join-banner p { color: #444; font-size: 13px; margin-bottom: 10px; }
+.join-btn { background: #177083; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
 
 /* Setup */
 #view-setup { background: #DBF4F9; }
@@ -247,16 +284,67 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- HOME -->
 <div id="view-home" class="view active">
-  <div class="home-hero">
-    <div class="home-title">🀄 まじゃすこ</div>
-    <div class="home-sub">麻雀スコア管理アプリ</div>
-    <button class="home-btn home-btn-primary" onclick="showView('setup')">新しい対局を始める</button>
-    <button class="home-btn home-btn-secondary" onclick="showView('history')">過去の戦績を振り返る</button>
-    <div class="join-banner" id="join-banner" style="display:none">
-      <p>共有されたゲームがあります</p>
-      <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+
+  <!-- ① ヒーローセクション（薄緑: 安心感・麻雀卓の連想） -->
+  <section class="lp-hero">
+    <div class="lp-inner">
+      <div class="lp-logo">🀄 まじゃすこ</div>
+      <h1>アプリで麻雀が打てる時代に、<br>あえて「対面」で卓を囲む人たちへ。</h1>
+      <p class="lp-lead">指先で牌に触れる喜びや、対面ならではのヒリヒリとした空気感はそのままに。ネット麻雀の「全自動計算」の快適さだけを、リアルの卓へ持ち込みましょう。<br><br>「まじゃすこ」は、雀荘から紙とペンをなくす、共有型スコア記録ツールです。</p>
+      <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+      <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
+      <div class="join-banner" id="join-banner" style="display:none">
+        <p>共有されたゲームがあります</p>
+        <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ② ペインへの共感セクション（薄い青: 論理・共感・鎮静） -->
+  <section class="lp-section lp-pain">
+    <div class="lp-inner">
+      <h2>アナログの素晴らしさを、<br>「手計算のストレス」で台無しにしていませんか？</h2>
+      <p class="lp-body">牌がぶつかる音、相手の息遣い。人と対面で打つアナログ麻雀には、画面越しでは決して味わえない熱狂があります。しかし、スコア管理まで「アナログ」である必要はありません。</p>
+      <ul class="pain-list">
+        <li>ペンのインクが薄く、誰の字か読めない手書きのメモ。</li>
+        <li>ウマ・オカ、小数点の切り上げ……複雑な条件で電卓を叩く煩わしさ。</li>
+        <li>「あれ、この点数合ってる？」という確認作業で止まるゲームのテンポ。</li>
+        <li>計算ミスから生まれる、プレイヤー同士の微妙な空気。</li>
+      </ul>
+      <p class="lp-body lp-emphasis">限られた最高の時間を、スコア管理という「作業」に奪われるのは、もう終わりにしましょう。</p>
+    </div>
+  </section>
+
+  <!-- ③ ソリューションセクション（白ベース＋緑/青アクセント: 信頼） -->
+  <section class="lp-section lp-solution">
+    <div class="lp-inner">
+      <h2>卓上には牌だけ。<br>面倒な計算はすべてスマホへ。</h2>
+      <div class="feature">
+        <div class="feature-icon fi-blue">🧮</div>
+        <h3>デジタルの利便性を、アナログ麻雀に</h3>
+        <p>点数を入力するだけで、複雑な最終スコア（pt）を瞬時に自動計算。字の汚さも、計算ミスも起こり得ません。あなたは無駄な労力を手放し、目の前の配牌と押し引きだけに100%集中できます。</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon fi-green">📱</div>
+        <h3>全員のスマホが「手元のスコアボード」に</h3>
+        <p>URLをLINE等でシェアするだけで、全員のスマホにリアルタイムでスコアが同期。「いま誰がトップ？」「点差は？」と紙を覗き込む必要はなくなり、常に自分の状況を正確に把握できます。</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon fi-blue">⚙️</div>
+        <h3>いつものルールを、そのまま引き継ぐ</h3>
+        <p>3人・4人麻雀の切り替え、グループ独自のウマ・オカ、スコア係数（ポイント倍率）にも柔軟に対応。対面で打つ楽しさは一切変えずに、計算のストレスだけをゼロにします。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ クロージングセクション（薄緑＋オレンジCTA） -->
+  <section class="lp-section lp-close">
+    <div class="lp-inner">
+      <h2>さあ、紙とペンを捨てて卓を囲もう。</h2>
+      <p class="lp-body" style="text-align:center">アプリのダウンロードも、面倒な会員登録も一切不要です。次の半荘から、アナログとデジタルが融合した「まったく新しい麻雀体験」を始めてみませんか？</p>
+      <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+    </div>
+  </section>
 
   <div class="home-content">
     <section class="info-card">
