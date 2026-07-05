@@ -507,9 +507,13 @@ function saveStorage() {
 }
 function saveToLocalHistory() {
   if (!activeGame) return;
-  const idx = appState.games.findIndex(g => g.id === activeGame.id);
-  if (idx >= 0) appState.games[idx] = activeGame;
-  else appState.games.unshift(activeGame);
+  // 最終アクセス日時を記録し、新しい順に最大20件まで保持する
+  const g = { ...activeGame, lastAccess: new Date().toISOString() };
+  const idx = appState.games.findIndex(x => x.id === g.id);
+  if (idx >= 0) appState.games[idx] = g;
+  else appState.games.unshift(g);
+  appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
+  appState.games = appState.games.slice(0, 20);
   saveStorage();
 }
 
@@ -527,8 +531,8 @@ function startListening() {
     const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
     activeGame = { ...data, rounds: normArr(data.rounds), log: normArr(data.log) };
     renderGame();
-    // 編集のたびに自動保存（過去の戦績に即時反映）
-    if (activeGame.rounds.length > 0 || activeGame.log.length > 0) saveToLocalHistory();
+    // 作成・参加したグループは常にローカル履歴へ自動保存（最終アクセス順・最大20件）
+    saveToLocalHistory();
   });
 }
 function stopListening() {
@@ -1058,7 +1062,7 @@ function renderGame() {
 }
 
 function leaveGame() {
-  if (activeGame && (activeGame.rounds.length > 0 || (activeGame.log || []).length > 0)) saveToLocalHistory();
+  if (activeGame) saveToLocalHistory();
   stopListening();
   const saved = sessionId;
   activeGame = null; sessionId = null; pendingSessionId = saved;
@@ -1325,21 +1329,34 @@ function historyItemHtml(g) {
       </table>
     </div>`;
   }
+  const lastAccess = g.lastAccess
+    ? `・最終アクセス ${new Date(g.lastAccess).toLocaleDateString('ja-JP')} ${fmtTime(g.lastAccess)}` : '';
   return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
     <div class="history-info">
-      <div class="history-name">${esc(g.name)}</div>
-      <div class="history-meta">${date} · ${n}人 · 計${rounds}試合</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div class="history-name">${esc(g.name)}</div>
+        <button class="edit-tab" style="flex-shrink:0" onclick="event.stopPropagation();rejoinGame('${esc(g.id)}')">再開</button>
+      </div>
+      <div class="history-meta">${date} · ${n}人 · 計${rounds}試合${lastAccess}</div>
       ${rankLine}
     </div>
     <div class="history-arrow">›</div>
   </div>`;
 }
+// 履歴からグループの共有セッションに再接続する（URL遷移と同等）
+function rejoinGame(id) {
+  joinSession(id);
+}
 function renderHistory() {
   const body = document.getElementById('history-body');
   if (!appState.games || appState.games.length === 0) {
-    body.innerHTML = '<div class="empty-msg">保存されたゲームはありません</div>'; return;
+    body.innerHTML = '<div class="empty-msg">まだ戦績の履歴がありません</div>'; return;
   }
-  body.innerHTML = appState.games.map(historyItemHtml).join('');
+  // 最終アクセスの新しい順・最大20件で表示
+  const sorted = [...appState.games]
+    .sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt))
+    .slice(0, 20);
+  body.innerHTML = sorted.map(historyItemHtml).join('');
 }
 
 let detailGame = null;
