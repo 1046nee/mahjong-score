@@ -30,7 +30,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .join-btn { background: #fff; color: #177083; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; }
 
 /* Setup */
-#view-setup { background: linear-gradient(160deg, #0f5866 0%, #177083 55%, #1e8fa3 100%); }
+#view-setup { background: #DBF4F9; }
 .form-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .card-title { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
@@ -51,7 +51,7 @@ input:focus, select:focus { border-color: #177083; }
 .submit-btn:active { opacity: 0.85; }
 
 /* Game */
-#view-game { background: linear-gradient(160deg, #0f5866 0%, #177083 55%, #1e8fa3 100%); }
+#view-game { background: #DBF4F9; }
 .game-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 100px; }
 .score-cards { display: flex; flex-direction: column; gap: 10px; }
 .score-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
@@ -173,7 +173,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
 
 /* History */
-#view-history { background: linear-gradient(160deg, #0f5866 0%, #177083 55%, #1e8fa3 100%); }
+#view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .history-item { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; display: flex; align-items: center; gap: 12px; }
 .history-item:active { opacity: 0.75; }
@@ -181,10 +181,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .history-name { font-size: 15px; font-weight: 700; }
 .history-meta { font-size: 12px; color: #888; margin-top: 2px; }
 .history-arrow { color: #bbb; font-size: 18px; }
-.empty-msg { text-align: center; color: rgba(255,255,255,0.85); margin-top: 60px; font-size: 15px; }
+.empty-msg { text-align: center; color: #888; margin-top: 60px; font-size: 15px; }
 
 /* Detail */
-#view-detail { background: linear-gradient(160deg, #0f5866 0%, #177083 55%, #1e8fa3 100%); }
+#view-detail { background: #DBF4F9; }
 .detail-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 24px; }
 </style>
 </head>
@@ -227,7 +227,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <div class="card-title">プレイヤー名</div>
       <div class="player-inputs" id="player-inputs"></div>
       <datalist id="saved-players"></datalist>
-      <div class="chips-hint" id="saved-players-hint" style="display:none;margin-top:8px;margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</div>
+      <div id="saved-players-hint" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
+        <span class="chips-hint" style="margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</span>
+        <button class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0;margin-left:8px">登録名の管理</button>
+      </div>
     </div>
     <div class="card">
       <div class="card-title">ルール設定</div>
@@ -508,7 +511,8 @@ function joinFromBanner() { if (pendingSessionId) joinSession(pendingSessionId);
 // ---- Setup ----
 function todayStr() {
   const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  const youbi = ['日','月','火','水','木','金','土'][d.getDay()];
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${youbi}）`;
 }
 function initSetupForm() {
   document.getElementById('s-name').value = todayStr();
@@ -525,7 +529,26 @@ function renderPlayerOptions() {
   const hint = document.getElementById('saved-players-hint');
   const has = appState.players && appState.players.length > 0;
   dl.innerHTML = has ? appState.players.map(name => `<option value="${esc(name)}"></option>`).join('') : '';
-  hint.style.display = has ? 'block' : 'none';
+  hint.style.display = has ? 'flex' : 'none';
+}
+// 登録済みの名前を一覧表示し、個別に削除できるモーダル
+function openPlayersManage() {
+  const list = appState.players.map((name, i) =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #eee">
+      <span style="font-size:14px">${esc(name)}</span>
+      <button class="round-del-btn" onclick="deleteSavedPlayer(${i})">削除</button>
+    </div>`).join('');
+  document.getElementById('form-modal-title').textContent = '登録済みの名前';
+  document.getElementById('form-modal-body').innerHTML =
+    (list || '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">登録された名前はありません</div>')
+    + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function deleteSavedPlayer(i) {
+  appState.players.splice(i, 1);
+  saveStorage();
+  renderPlayerOptions();
+  openPlayersManage(); // 一覧を更新
 }
 function savePlayerNames(names) {
   names.forEach(name => {
@@ -1104,16 +1127,17 @@ function historyItemHtml(g) {
     const totals = new Array(g.settings.numPlayers).fill(0);
     g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
     const tRounded = totals.map(t => Math.round(t * 10) / 10);
-    // 対局履歴と同様の表形式: ヘッダーにプレイヤー名、下の行に順位絵文字＋合計スコア
+    // 対局履歴と同様の表形式: 1位から左に並べ、ヘッダーにプレイヤー名、下の行に順位絵文字＋合計スコア
     const groups = rankGroups(tRounded);
     const medals = ['🥇', '🥈', '🥉'];
-    const ths = g.settings.playerNames.map(nm =>
-      `<th style="font-size:11px;padding:6px 4px">${esc(nm)}</th>`).join('');
-    const tds = tRounded.map((t, i) => {
-      const grp = groups[i];
+    const ranked = tRounded.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
+    const ths = ranked.map(p =>
+      `<th style="font-size:11px;padding:6px 4px">${esc(g.settings.playerNames[p.i])}</th>`).join('');
+    const tds = ranked.map(p => {
+      const grp = groups[p.i];
       const icon = grp.start < 3 ? medals[grp.start] : '👿';
-      const scoreCls = t > 0 ? 'color:#1a237e' : t < 0 ? 'color:#c62828' : '';
-      return `<td style="padding:7px 4px;white-space:nowrap">${icon}<b style="${scoreCls}">${t >= 0 ? '+' : ''}${t.toFixed(1)}</b></td>`;
+      const scoreCls = p.t > 0 ? 'color:#1a237e' : p.t < 0 ? 'color:#c62828' : '';
+      return `<td style="padding:7px 4px;white-space:nowrap">${icon}<b style="${scoreCls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</b></td>`;
     }).join('');
     rankLine = `<div style="overflow-x:auto;margin-top:8px">
       <table class="rounds-table" style="table-layout:fixed;font-size:12px">
