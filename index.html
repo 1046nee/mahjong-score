@@ -9,7 +9,8 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
 
 /* スマホ縦スクロール用のベース（背景を完全に白へ統一） */
-.view { display: none !important; min-height: 100vh; flex-direction: column; max-width: 480px; margin: 0 auto; background: #fff; border-left: 1px solid #e6eef0; border-right: 1px solid #e6eef0; }
+/* PC半画面でもスマホでも横幅がぴったり収まるよう、上限を960pxに拡大し左右の枠線を撤去 */
+.view { display: none !important; min-height: 100vh; flex-direction: column; max-width: 960px; margin: 0 auto; background: #fff; }
 .view.active { display: flex !important; }
 #view-home, #view-setup, #view-share, #view-game, #view-history, #view-detail { background: #fff; }
 
@@ -33,10 +34,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* Home (LP型) */
 #view-home { background: #fff; }
 
-/* 全画面共通ヘッダー（スクロール追従を解除し、背景を濃い緑に） */
-.global-header-wrap { background: #177083; border-bottom: none; max-width: 480px; margin: 0 auto; }
-.global-header { padding: 12px 16px; text-align: center; }
-.global-logo { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1.5px; cursor: pointer; user-select: none; display: inline-block; }
+/* 全画面共通ヘッダー（Walica風: 白背景＋濃い緑の文字） */
+.global-header-wrap { background: #fff; border-bottom: 1px solid #eef3f2; max-width: 960px; margin: 0 auto; }
+.global-header { padding: 14px 16px 10px; text-align: center; }
+.global-logo { font-size: 17px; font-weight: 800; color: #177083; letter-spacing: 1px; cursor: pointer; user-select: none; display: inline-block; }
+.global-sub { font-size: 11px; color: #177083; opacity: 0.75; margin-top: 2px; }
 
 /* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
 .page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
@@ -310,29 +312,21 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <!-- 全画面共通ヘッダー -->
 <div class="global-header-wrap">
   <div class="global-header">
-    <span class="global-logo" onclick="goHome()">まじゃすこ</span>
+    <span class="global-logo" onclick="goHome()">まじゃすこ / majasco</span>
+    <div class="global-sub">共有型麻雀スコア記録ツール</div>
   </div>
 </div>
 
 <!-- HOME -->
 <div id="view-home" class="view active">
-<!-- 新しく追加するLP冒頭メッセージ -->
-<section style="text-align: center; padding: 50px 20px; background: #fff;">
-  <h1 style="font-size: 1.6rem; color: #1a1a1a; margin-bottom: 5px;">まじゃすこ / majasco</h1>
-  <p style="font-size: 0.9rem; color: #666; margin-bottom: 30px;">共有型麻雀スコア記録ツール</p>
-  
-  <p style="font-size: 1.4rem; font-weight: bold; margin-bottom: 25px;">もうスコア計算で誰も悩まないし、待たせない。</p>
-  
+<!-- LP冒頭メッセージ（Walica風） -->
+<section style="text-align: center; padding: 44px 20px 50px; background: #fff;">
+  <h1 style="font-size: 1.5rem; line-height: 1.7; color: #177083; font-weight: 800; margin-bottom: 25px;">もうスコア計算で<br>誰も悩ませない、待たせない。</h1>
+
   <div style="margin: 30px auto; width: 100px; height: 100px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #999;">イラスト</div>
-  
-  <div style="text-align: left; max-width: 480px; margin: 0 auto; line-height: 1.8; color: #444; font-size: 0.95rem;">
-    <p>ネットで麻雀が打てる時代に、あえて「対面」で卓を囲む雀士たちへ。</p>
-    <p>複雑なスコア計算は、すべてアプリにお任せ。<br>
-    URLひとつで全員のスマホがリアルタイムのスコア表に。<br>
-    雀荘の紙とペンは、もう持たなくていいんです。</p>
-    <p>「まじゃすこ」は、麻雀のスコア集計や共有の手間を最小限に抑え、快適な対局環境を提供してくれる無料のサービスです。</p>
-  </div>
-  
+
+  <p style="max-width: 560px; margin: 0 auto; line-height: 2.0; color: #444; font-size: 0.95rem;">まじゃすこ / majascoは、電卓と紙の代わりにスマホ1台で、麻雀スコア計算のわずらわしさをシンプルに解決してくれる無料のサービスです</p>
+
   <div style="margin-top: 30px;">
     <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
   </div>
