@@ -80,10 +80,45 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
 .feature p { font-size: 13px; color: #444; line-height: 2.0; }
 
-/* ④ クロージング: 薄緑＋オレンジCTA */
+/* ② 共感・アイデンティティ: 薄緑（安心・卓の連想） */
+.lp-identity { background: #E4F3EC; }
+.lp-identity h2 { font-size: 20px; line-height: 1.6; text-align: center; color: #177083; margin-bottom: 18px; }
+.lp-identity .lp-body { text-align: center; }
+
+/* ④ 中心コンセプト: 白・大きな一文 */
+.lp-concept { background: #fff; text-align: center; padding: 60px 20px; }
+.lp-concept h2 { font-size: 24px; line-height: 1.6; font-weight: 800; color: #1a1a1a; margin-bottom: 16px; }
+.lp-concept .lp-body { text-align: center; margin-bottom: 0; }
+.lp-concept .accent { color: #E75620; }
+
+/* ⑥ Before / After 比較表 */
+.lp-compare { background: #E4F3EC; }
+.lp-compare h2 { font-size: 20px; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
+.compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.compare-table th { font-size: 13px; padding: 12px 10px; text-align: center; }
+.compare-table th.before { background: #eceff1; color: #888; }
+.compare-table th.after { background: #177083; color: #fff; }
+.compare-table td { font-size: 12.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; }
+.compare-table td.before { color: #999; width: 50%; }
+.compare-table td.after { color: #1a1a1a; font-weight: 700; width: 50%; }
+
+/* ⑦ 始めやすさ: バッジ＋3ステップ */
+.lp-start { background: #EAF0FB; text-align: center; }
+.lp-start h2 { font-size: 20px; color: #1a1a1a; margin-bottom: 22px; }
+.start-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.start-badge { background: #fff; border: 1.5px solid #177083; color: #177083; border-radius: 50px; padding: 6px 16px; font-size: 13px; font-weight: 700; }
+.steps { display: flex; flex-direction: column; gap: 12px; max-width: 340px; margin: 0 auto 20px; }
+.step { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 14px 16px; text-align: left; }
+.step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #177083; color: #fff; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+.step-text { font-size: 14px; color: #1a1a1a; font-weight: 600; }
+.start-note { font-size: 14px; font-weight: 700; color: #177083; }
+.start-note strong { color: #E75620; font-size: 17px; }
+
+/* ⑧ クロージング: 薄緑＋オレンジCTA */
 .lp-close { background: #E4F3EC; text-align: center; }
 .lp-close h2 { font-size: 20px; color: #1a1a1a; margin-bottom: 16px; }
 .lp-close .cta-btn { margin-top: 8px; }
+.lp-close .lp-sub-link { color: #177083; }
 
 /* 参考コンテンツ（使い方・点数計算の基本） */
 .home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
@@ -329,67 +364,111 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
   <div style="margin-top: 30px;">
     <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+    <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
+    <div class="join-banner" id="join-banner" style="display:none">
+      <p>共有されたゲームがあります</p>
+      <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
+    </div>
   </div>
 </section>
 
-<!-- ここから下が元々のLP（そのまま残す） -->
-  <!-- ① ヒーローセクション（薄緑: 安心感・麻雀卓の連想） -->
-  <section class="lp-hero">
+<!-- ここから下がLP本体 -->
+  <!-- ② 共感・アイデンティティ（薄緑: 安心・卓の連想） -->
+  <section class="lp-section lp-identity">
     <div class="lp-inner">
-      <h1>アプリで麻雀が打てる時代に、<br>あえて「対面」で卓を囲む人たちへ。</h1>
-      <p class="lp-lead">指先で牌に触れる喜びや、対面ならではのヒリヒリとした空気感はそのままに。ネット麻雀の「全自動計算」の快適さだけを、リアルの卓へ持ち込みましょう。<br><br>「まじゃすこ」は、雀荘から紙とペンをなくす、共有型スコア記録ツールです。</p>
-      <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
-      <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
-      <div class="join-banner" id="join-banner" style="display:none">
-        <p>共有されたゲームがあります</p>
-        <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
-      </div>
+      <h2>アプリで麻雀が打てる時代に、<br>あえて「対面」で卓を囲む人へ。</h2>
+      <p class="lp-body">指先で牌をつまむ感触。相手の一瞬の間。読み合いのヒリヒリ。<br>画面の中では、決して手に入らないものがある。<br>——その時間が好きだから、あなたは今日も卓を囲む。</p>
     </div>
   </section>
 
-  <!-- ② ペインへの共感セクション（薄い青: 論理・共感・鎮静） -->
+  <!-- ③ ペイン（薄い青: 論理・鎮静） -->
   <section class="lp-section lp-pain">
     <div class="lp-inner">
-      <h2>アナログの素晴らしさを、<br>「手計算のストレス」で台無しにしていませんか？</h2>
-      <p class="lp-body">牌がぶつかる音、相手の息遣い。人と対面で打つアナログ麻雀には、画面越しでは決して味わえない熱狂があります。しかし、スコア管理まで「アナログ」である必要はありません。</p>
+      <h2>なのに、その熱が<br>止まる瞬間がある。</h2>
+      <p class="lp-body">それは和了(アガ)った直後。全員の意識が、牌から“計算”に移るあの数十秒。</p>
       <ul class="pain-list">
-        <li>ペンのインクが薄く、誰の字か読めない手書きのメモ。</li>
-        <li>ウマ・オカ、小数点の切り上げ……複雑な条件で電卓を叩く煩わしさ。</li>
-        <li>「あれ、この点数合ってる？」という確認作業で止まるゲームのテンポ。</li>
-        <li>計算ミスから生まれる、プレイヤー同士の微妙な空気。</li>
+        <li>「30符4翻は…」と電卓を回す沈黙。</li>
+        <li>途中から誰の字か読めない、手書きのメモ。</li>
+        <li>ウマ・オカの取り決めを、毎回思い出す手間。</li>
+        <li>「その点数、合ってる？」の一言で止まる空気。</li>
       </ul>
-      <p class="lp-body lp-emphasis">限られた最高の時間を、スコア管理という「作業」に奪われるのは、もう終わりにしましょう。</p>
+      <p class="lp-body lp-emphasis">麻雀は最高なのに、“計算”だけが、その熱を毎回少しずつ冷ましていく。</p>
     </div>
   </section>
 
-  <!-- ③ ソリューションセクション（白ベース＋緑/青アクセント: 信頼） -->
+  <!-- ④ 中心コンセプト（白・大きな一文） -->
+  <section class="lp-concept">
+    <div class="lp-inner">
+      <h2>麻雀の“点数計算係”、<br><span class="accent">卒業</span>しませんか。</h2>
+      <p class="lp-body">対面の楽しさは、何ひとつ変えなくていい。<br>面倒な計算だけ、まじゃすこが引き受けます。</p>
+    </div>
+  </section>
+
+  <!-- ⑤ 3つの価値（白＋緑/青アイコン） -->
   <section class="lp-section lp-solution">
     <div class="lp-inner">
-      <h2>卓上には牌だけ。<br>面倒な計算はすべてスマホへ。</h2>
+      <h2>卓上に、電卓はいらない。</h2>
       <div class="feature">
         <div class="feature-icon fi-blue">🧮</div>
-        <h3>デジタルの利便性を、アナログ麻雀に</h3>
-        <p>点数を入力するだけで、複雑な最終スコア（pt）を瞬時に自動計算。字の汚さも、計算ミスも起こり得ません。あなたは無駄な労力を手放し、目の前の配牌と押し引きだけに100%集中できます。</p>
+        <h3>打てば、もう出ている。</h3>
+        <p>点数を入れるだけで、ウマ・オカ・pt換算まで一瞬で自動計算。あなたは計算から解放され、次の配牌に集中できます。</p>
       </div>
       <div class="feature">
         <div class="feature-icon fi-green">📱</div>
-        <h3>全員のスマホが「手元のスコアボード」に</h3>
-        <p>URLをLINE等でシェアするだけで、全員のスマホにリアルタイムでスコアが同期。「いま誰がトップ？」「点差は？」と紙を覗き込む必要はなくなり、常に自分の状況を正確に把握できます。</p>
+        <h3>全員のスマホが、同じスコア表。</h3>
+        <p>URLをLINE等で送るだけで、全員にリアルタイム同期。「いま誰がトップ？」がひと目で分かり、もう紙を覗き込みません。</p>
       </div>
       <div class="feature">
         <div class="feature-icon fi-blue">⚙️</div>
-        <h3>いつものルールを、そのまま引き継ぐ</h3>
-        <p>3人・4人麻雀の切り替え、グループ独自のウマ・オカ、スコア係数（ポイント倍率）にも柔軟に対応。対面で打つ楽しさは一切変えずに、計算のストレスだけをゼロにします。</p>
+        <h3>ルールは、あなたたちのまま。</h3>
+        <p>3人・4人の切り替え、グループ独自のウマ・オカ、スコア係数もそのまま。慣れた卓のルールを一切変えずに使えます。</p>
       </div>
     </div>
   </section>
 
-  <!-- ④ クロージングセクション（薄緑＋オレンジCTA） -->
+  <!-- ⑥ Before / After 比較（薄緑） -->
+  <section class="lp-section lp-compare">
+    <div class="lp-inner">
+      <h2>紙とペンの麻雀は、もう卒業。</h2>
+      <table class="compare-table">
+        <thead>
+          <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="before">計算で毎回ゲームが止まる</td><td class="after">入れた瞬間に結果</td></tr>
+          <tr><td class="before">手書きで揉めることも</td><td class="after">全員が同じ画面を見る</td></tr>
+          <tr><td class="before">ルールを毎回説明</td><td class="after">保存して即再開</td></tr>
+          <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台だけ</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ⑦ 始めやすさ（薄青: バッジ＋3ステップ） -->
+  <section class="lp-section lp-start">
+    <div class="lp-inner">
+      <div class="start-badges">
+        <span class="start-badge">完全無料</span>
+        <span class="start-badge">登録不要</span>
+        <span class="start-badge">インストール不要</span>
+      </div>
+      <h2>始めるのに、<br>必要なものはありません。</h2>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><span class="step-text">メンバーの名前を入れる</span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-text">URLを送る</span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-text">点数を打つだけ</span></div>
+      </div>
+      <p class="start-note">たった <strong>10秒</strong> で、次の半荘から。</p>
+    </div>
+  </section>
+
+  <!-- ⑧ クロージング（薄緑＋オレンジCTA） -->
   <section class="lp-section lp-close">
     <div class="lp-inner">
-      <h2>さあ、紙とペンを捨てて卓を囲もう。</h2>
-      <p class="lp-body" style="text-align:center">アプリのダウンロードも、面倒な会員登録も一切不要です。次の半荘から、アナログとデジタルが融合した「まったく新しい麻雀体験」を始めてみませんか？</p>
+      <h2>さあ、卓を囲むのは、人だけでいい。</h2>
+      <p class="lp-body" style="text-align:center">ダウンロードも会員登録も不要。次の半荘から、計算のない麻雀を。</p>
       <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+      <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
     </div>
   </section>
 
