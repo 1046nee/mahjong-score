@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>まじゃすこ｜麻雀スコア管理アプリ</title>
+<title>まじゃすこ（majasco）｜麻雀のスコア計算・URL共有がスマホで一瞬</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1a1a1a; min-height: 100vh; }
@@ -365,8 +365,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <!-- 全画面共通ヘッダー -->
 <div class="global-header-wrap">
   <div class="global-header">
-    <span class="global-logo" onclick="goHome()">まじゃすこ / majasco</span>
-    <div class="global-sub">共有型麻雀スコア記録ツール</div>
+    <span class="global-logo" onclick="goHome()">まじゃすこ（majasco）</span>
+    <div class="global-sub">麻雀スコア記録ツール</div>
   </div>
 </div>
 
@@ -374,20 +374,19 @@ details.log-details summary::-webkit-details-marker { display: none; }
 <div id="view-home" class="view active">
 <!-- ファーストビュー（案X: スコア集計係フック） -->
 <section class="hero">
-  <h1>麻雀の“スコア集計係”、<br><span class="accent">卒業</span>しませんか。</h1>
-  <p class="hero-sub">目の前の表示点数を入力するだけ。<br>順位もスコアも、まじゃすこが一瞬で。</p>
+  <h1>もう、麻雀の邪魔をさせない。、<br><span class="accent">スコア記録</span>は一瞬で。</h1>
+  <p class="hero-sub">目の前の表示点数を入力するだけ。<br>あとはスマホが、一瞬で完結させる。</p>
 
   <div class="hero-illust">イラスト</div>
 
-  <p class="hero-desc">まじゃすこ / majascoは、電卓と紙の代わりにスマホ1台で、麻雀スコア計算のわずらわしさをシンプルに解決してくれる無料のサービスです。</p>
+  <p class="hero-desc">まじゃすこ（majasco）は、電卓と紙の代わりにスマホ1台で、麻雀スコア計算のわずらわしさをシンプルに解決してくれる無料のサービスです。</p>
 
-  <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+  <button class="cta-btn" onclick="showView('setup')">スコア記録をはじめる</button>
   <div class="start-badges">
-    <span class="start-badge">完全無料</span>
-    <span class="start-badge">登録不要</span>
-    <span class="start-badge">インストール不要</span>
+    <span class="start-badge">面倒な登録やアプリのインストールは一切不要。すぐに使い始められます。</span>
+
   </div>
-  <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
+  <a class="lp-sub-link" onclick="showView('history')">これまでの対局を見る ›</a>
   <div class="join-banner" id="join-banner" style="display:none">
     <p>共有されたゲームがあります</p>
     <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
