@@ -4,56 +4,49 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ブログ | まじゃすこ / majasco</title>
-<meta name="description" content="麻雀スコア集計・共有アプリ「まじゃすこ」の開発ストーリーや、麻雀のスコア計算・点数集計に役立つ記事をお届けします。">
+<meta name="description" content="麻雀スコア集計・共有アプリ「まじゃすこ」の開発ストーリーや、麻雀のスコア計算・ウマ・オカに役立つ記事をお届けします。">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #f4faf7; color: #1f2a28; line-height: 1.9; -webkit-font-smoothing: antialiased; }
-a { color: #177083; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.9; -webkit-font-smoothing: antialiased; }
 
-/* ヘッダー（白＋濃い緑ロゴ） */
-.site-head { background: #fff; border-bottom: 1px solid #e6efeb; }
-.site-head-inner { max-width: 720px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: baseline; gap: 12px; }
-.brand { font-size: 17px; font-weight: 800; color: #177083; letter-spacing: 0.5px; text-decoration: none; }
-.brand-sub { font-size: 11px; color: #7a8a86; }
+.site-head { border-bottom: 1px solid #eee; }
+.site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
+.brand { font-size: 16px; font-weight: 800; color: #177083; text-decoration: none; }
 
-/* コンテンツ */
-.wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 56px; }
-.page-title { font-size: 22px; font-weight: 800; color: #1f2a28; margin-bottom: 6px; }
-.page-lead { font-size: 13px; color: #6a7a76; margin-bottom: 28px; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 28px 20px 48px; }
+.page-title { font-size: 20px; font-weight: 800; color: #222; margin-bottom: 4px; }
+.page-lead { font-size: 13px; color: #777; margin-bottom: 24px; }
 
-/* 記事カード */
-.post-card { display: block; background: #fff; border: 1px solid #e6efeb; border-radius: 16px; padding: 22px 20px; margin-bottom: 16px; text-decoration: none; color: inherit; transition: transform .12s, box-shadow .12s, border-color .12s; }
-.post-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(23,112,131,0.10); border-color: #cfe3db; }
-.post-tag { display: inline-block; background: #E4F3EC; color: #177083; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 12px; margin-bottom: 12px; }
-.post-card h2 { font-size: 17px; font-weight: 800; color: #1f2a28; line-height: 1.6; margin-bottom: 8px; }
-.post-card p { font-size: 13px; color: #5a6a66; line-height: 1.9; }
-.post-date { font-size: 12px; color: #9aa8a4; margin-top: 12px; }
-.read-more { display: inline-block; margin-top: 14px; color: #E75620; font-weight: 700; font-size: 13px; }
+.post-item { display: block; padding: 20px 0; border-top: 1px solid #eee; text-decoration: none; color: inherit; }
+.post-item:last-child { border-bottom: 1px solid #eee; }
+.post-item h2 { font-size: 16px; font-weight: 700; color: #222; line-height: 1.6; margin-bottom: 6px; }
+.post-item p { font-size: 13px; color: #555; line-height: 1.8; }
+.post-item .date { font-size: 12px; color: #999; margin-top: 8px; }
 
-/* フッター */
-.site-foot { background: #177083; color: rgba(255,255,255,0.85); text-align: center; font-size: 12px; padding: 26px 16px 34px; }
-.site-foot a { color: #fff; text-decoration: underline; margin: 0 10px; }
-.site-foot .links { margin-bottom: 10px; }
+.site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; margin-top: 8px; }
+.site-foot a { color: #555; margin: 0 8px; }
+.site-foot .links { margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <header class="site-head">
-  <div class="site-head-inner">
-    <a href="index.html" class="brand">まじゃすこ / majasco</a>
-    <span class="brand-sub">ブログ</span>
-  </div>
+  <div class="site-head-inner"><a href="index.html" class="brand">まじゃすこ / majasco</a></div>
 </header>
 
 <main class="wrap">
   <h1 class="page-title">ブログ</h1>
-  <p class="page-lead">開発ストーリーや、麻雀のスコア計算・集計に役立つ話をお届けします。</p>
+  <p class="page-lead">開発の話や、麻雀のスコア計算に役立つ記事をお届けします。</p>
 
-  <a class="post-card" href="blog-why-majasco.html">
-    <span class="post-tag">開発ストーリー</span>
-    <h2>「麻雀のスコア計算、もう疲れた」──紙とペンをなくすために『まじゃすこ』を作った話</h2>
-    <p>試合後の計算がめんどう。紙のスコアシートは読みにくいし、合計も合わない……。そんな不満から生まれた無料の麻雀スコア集計・共有アプリ「まじゃすこ」の開発経緯とこだわりを紹介します。</p>
-    <div class="post-date">2026.07.06</div>
-    <span class="read-more">記事を読む ▶</span>
+  <a class="post-item" href="blog-uma-oka.html">
+    <h2>麻雀のウマ・オカとは？初心者向けスコア計算入門</h2>
+    <p>ウマ・オカ・返し点・素点とは何かを、具体的な数字の例つきで初心者向けに解説します。</p>
+    <div class="date">2026.07.06</div>
+  </a>
+
+  <a class="post-item" href="blog-why-majasco.html">
+    <h2>麻雀のスコア計算がめんどうで『まじゃすこ』を作った話</h2>
+    <p>対局後の計算が面倒、紙のスコアシートは読みにくい……。そんな不満から無料の麻雀スコア集計・共有アプリを作りました。</p>
+    <div class="date">2026.07.06</div>
   </a>
 </main>
 
