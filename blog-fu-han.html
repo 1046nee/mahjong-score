@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麻雀の点数計算はなぜ難しい？符と翻の仕組みをやさしく解説 | まじゃすこ</title>
+<meta name="description" content="麻雀の点数計算がわからない人向けに、符と翻の仕組みをゼロから解説。なぜ点数計算が難しく感じるのか、その理由と考え方のコツをやさしく説明します。">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.95; -webkit-font-smoothing: antialiased; }
+
+.site-head { border-bottom: 1px solid #eee; }
+.site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
+.brand { font-size: 16px; font-weight: 800; color: #177083; text-decoration: none; }
+
+.crumbs { max-width: 680px; margin: 0 auto; padding: 14px 20px 0; font-size: 12px; color: #999; }
+.crumbs a { color: #555; text-decoration: none; }
+
+.blog-post { max-width: 680px; margin: 0 auto; padding: 8px 20px 40px; }
+.blog-post h1 { font-size: 22px; font-weight: 800; line-height: 1.6; margin: 16px 0 6px; color: #222; }
+.post-meta { font-size: 12px; color: #999; margin-bottom: 28px; }
+.blog-post h2 { font-size: 18px; font-weight: 800; margin: 40px 0 14px; color: #177083; border-left: 5px solid #177083; padding-left: 12px; line-height: 1.5; }
+.blog-post h3 { font-size: 16px; font-weight: 700; margin: 26px 0 8px; color: #222; }
+.blog-post p { font-size: 15px; color: #222; margin-bottom: 18px; }
+.blog-post ul, .blog-post ol { margin: 0 0 18px; padding-left: 1.5em; }
+.blog-post li { font-size: 15px; color: #222; margin-bottom: 12px; line-height: 1.9; }
+.blog-post strong { font-weight: 700; color: #177083; }
+.blog-post .hl { color: #E75620; font-weight: 700; }
+.blog-post table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 14px; }
+.blog-post th, .blog-post td { border: 1px solid #ddd; padding: 8px 10px; text-align: center; color: #222; }
+.blog-post th { background: #E4F3EC; color: #177083; font-weight: 700; }
+
+.cta-wrap { text-align: center; margin-top: 40px; padding-top: 28px; border-top: 1px solid #eee; }
+.cta-wrap p { font-size: 14px; color: #222; margin-bottom: 16px; }
+.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; box-shadow: 0 5px 16px rgba(231,86,32,0.28); }
+
+.post-nav { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
+.post-nav a { color: #177083; font-weight: 700; font-size: 14px; text-decoration: none; }
+
+.site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; }
+.site-foot a { color: #555; margin: 0 8px; }
+.site-foot .links { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="site-head-inner"><a href="index.html" class="brand">まじゃすこ / majasco</a></div>
+</header>
+
+<nav class="crumbs"><a href="index.html">トップ</a> ＞ <a href="blog.html">ブログ</a> ＞ 点数計算の仕組み</nav>
+
+<article class="blog-post">
+  <h1>麻雀の点数計算はなぜ難しい？符と翻の仕組みをやさしく解説</h1>
+  <p class="post-meta">2026.07.07</p>
+
+  <p>麻雀を始めて最初につまずくのが、点数計算です。役を覚えて、牌の並びも読めるようになってきたのに、点数だけがいつまでもピンとこない。そんな人は多いと思います。この記事では、<strong>符と翻がなぜあるのか</strong>という根っこの部分から、できるだけやさしく説明します。</p>
+
+  <h2>なぜ点数計算は難しく感じるのか</h2>
+  <p>理由はシンプルで、<strong>覚えることが2段階ある</strong>からです。まず「符」という基礎点を数える必要があり、そのあとに「翻」という倍率をかけ合わせる必要があります。しかも符の数え方には細かい例外がいくつもあり、翻は役の組み合わせによって変動します。ひとつひとつは難しくなくても、組み合わせると覚えることが一気に増えるのが、点数計算がとっつきにくい正体です。</p>
+
+  <h2>符とは「手牌の複雑さ」を数えるもの</h2>
+  <p>符は、手牌がどれくらい難しい形をしているかを点数化したものだと考えるとわかりやすいです。基本の20符からスタートして、次のような要素があるたびに点数が加算されます。</p>
+  <ul>
+    <li>待ちの形が難しいほど加点（単騎・カンチャン・ペンチャン待ちなど）</li>
+    <li>雀頭が役牌だと加点</li>
+    <li>刻子・槓子（同じ牌を3枚・4枚そろえた面子）は、順子より作るのが難しいぶん加点。中でも字牌や1・9の牌を使った刻子は、さらに高い符がつく</li>
+    <li>面前でロンあがりすると加点（自分でツモらず、待っているだけであがったことへの加点）</li>
+  </ul>
+  <p>つまり符は、「手牌をどれだけ苦労して作ったか」に対するご褒美のようなものです。</p>
+
+  <h2>翻とは「役の価値」を数えるもの</h2>
+  <p>一方の翻は、成立した役1つ1つに割り当てられた価値（重み）です。リーチやタンヤオのような作りやすい役は1翻、清一色のような難しい役は5〜6翻というように、<strong>役の難易度と翻数はだいたい比例</strong>しています。</p>
+  <p>役は複数重なることもあるので、翻はその合計です。リーチ・タンヤオ・ツモが同時に成立すれば、1翻＋1翻＋1翻で合計3翻になります。</p>
+
+  <h2>符と翻を、なぜかけ合わせるのか</h2>
+  <p>符が「手牌の複雑さ」、翻が「役の価値」だとすると、点数はこの<strong>2つのかけ合わせ</strong>で決まります。同じ役でも、待ちが難しかったり、刻子が多かったりすると符が上がり、点数も高くなる。逆に、翻がとても大きくなると（5翻以上）、符の影響はほとんどなくなり、満貫・跳満といった<strong>固定点数</strong>に切り替わります。</p>
+  <p>実際の点数の早見表は、別記事「<a href="blog-score-table.html">麻雀の点数表（翻・符）完全早見表</a>」にまとめています。仕組みがわかったところで、実際の数字を見てみると理解が早いはずです。</p>
+
+  <h2>結局、覚えるべきことは何か</h2>
+  <p>すべてを暗記する必要はありません。実戦でよく出てくる範囲だけ押さえれば十分です。</p>
+  <ol>
+    <li>符は<strong>20符が基本</strong>で、待ちや面子の種類で加算される</li>
+    <li>翻は<strong>役の合計</strong>で、役の種類と数を覚えれば計算できる（役については「<a href="blog-yaku-list.html">麻雀の役一覧</a>」も参考にしてください）</li>
+    <li>5翻を超えると、符に関係なく<strong>満貫・跳満・倍満</strong>などの固定点数になる</li>
+  </ol>
+  <p>この3つを頭に入れておくだけで、点数計算の「全体像」が見えるようになります。あとは対局を重ねるうちに、自然と数字が体に入ってきます。</p>
+
+  <h2>1局の点数がわかっても、半荘の集計はまた別問題</h2>
+  <p>ここまでの話は、あくまで<strong>1局あがったときの点数</strong>の話です。実際の半荘では、これに加えて持ち点の増減を追いかけ、最後に返し点・ウマ・オカを使ってスコアを出す、という<strong>もうひとつの計算</strong>が必要になります。多くの人が本当に面倒だと感じているのは、実はこちらの集計作業だったりします。</p>
+  <p>「まじゃすこ」は、この半荘の集計部分を丸ごと自動化した無料のアプリです。各プレイヤーの表示点数を入れるだけで、返し点・ウマ・オカ・順位まで一瞬で計算してくれます。</p>
+
+  <div class="cta-wrap">
+    <p>1局の点数計算は自分で。半荘の集計は、まじゃすこで。</p>
+    <a href="index.html" class="cta-link">まじゃすこを無料で使ってみる</a>
+  </div>
+</article>
+
+<nav class="post-nav"><a href="blog.html">‹ ブログ一覧に戻る</a></nav>
+
+<footer class="site-foot">
+  <div class="links">
+    <a href="index.html">トップ</a>
+    <a href="blog.html">ブログ</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+  </div>
+  <div>© 2026 まじゃすこ</div>
+</footer>
+</body>
+</html>
