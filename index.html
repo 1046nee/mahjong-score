@@ -120,6 +120,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-close .cta-btn { margin-top: 8px; }
 .lp-close .lp-sub-link { color: #177083; }
 
+/* ヒーロー（案X: スコア集計係フック） */
+.hero { text-align: center; padding: 40px 20px 46px; background: #fff; }
+.hero h1 { font-size: 25px; line-height: 1.5; font-weight: 800; color: #1a1a1a; margin-bottom: 14px; }
+.hero h1 .accent { color: #E75620; }
+.hero-sub { font-size: 14px; color: #177083; font-weight: 700; line-height: 1.8; margin-bottom: 22px; }
+.hero-illust { margin: 0 auto 22px; width: 110px; height: 110px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #999; font-size: 13px; }
+.hero-desc { max-width: 520px; margin: 0 auto 24px; line-height: 2.0; color: #555; font-size: 13px; }
+.hero .cta-btn { margin-bottom: 16px; }
+
+/* 1行圧縮バンド（頷きの一撃） */
+.lp-oneliner { background: #EAF0FB; text-align: center; padding: 30px 20px; }
+.lp-oneliner p { font-size: 16px; font-weight: 700; color: #2c3e6b; line-height: 1.8; max-width: 560px; margin: 0 auto; }
+
+/* 短い物語（下部・情緒の補強） */
+.lp-story { background: #E4F3EC; text-align: center; }
+.lp-story p { font-size: 14px; color: #444; line-height: 2.1; margin: 0; }
+.lp-story .story-close { font-weight: 800; color: #177083; margin-top: 14px; display: block; }
+
 /* 参考コンテンツ（使い方・点数計算の基本） */
 .home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
@@ -354,53 +372,63 @@ details.log-details summary::-webkit-details-marker { display: none; }
 
 <!-- HOME -->
 <div id="view-home" class="view active">
-<!-- LP冒頭メッセージ（Walica風） -->
-<section style="text-align: center; padding: 44px 20px 50px; background: #fff;">
-  <h1 style="font-size: 1.5rem; line-height: 1.7; color: #177083; font-weight: 800; margin-bottom: 25px;">もうスコア計算で<br>誰も悩ませない、待たせない。</h1>
+<!-- ファーストビュー（案X: スコア集計係フック） -->
+<section class="hero">
+  <h1>麻雀の“スコア集計係”、<br><span class="accent">卒業</span>しませんか。</h1>
+  <p class="hero-sub">目の前の表示点数を入力するだけ。<br>順位もスコアも、まじゃすこが一瞬で。</p>
 
-  <div style="margin: 30px auto; width: 100px; height: 100px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #999;">イラスト</div>
+  <div class="hero-illust">イラスト</div>
 
-  <p style="max-width: 560px; margin: 0 auto; line-height: 2.0; color: #444; font-size: 0.95rem;">まじゃすこ / majascoは、電卓と紙の代わりにスマホ1台で、麻雀スコア計算のわずらわしさをシンプルに解決してくれる無料のサービスです</p>
+  <p class="hero-desc">まじゃすこ / majascoは、電卓と紙の代わりにスマホ1台で、麻雀スコア計算のわずらわしさをシンプルに解決してくれる無料のサービスです。</p>
 
-  <div style="margin-top: 30px;">
-    <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
-    <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
-    <div class="join-banner" id="join-banner" style="display:none">
-      <p>共有されたゲームがあります</p>
-      <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
-    </div>
+  <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
+  <div class="start-badges">
+    <span class="start-badge">完全無料</span>
+    <span class="start-badge">登録不要</span>
+    <span class="start-badge">インストール不要</span>
+  </div>
+  <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
+  <div class="join-banner" id="join-banner" style="display:none">
+    <p>共有されたゲームがあります</p>
+    <button class="join-btn" onclick="joinFromBanner()">このゲームに参加する</button>
   </div>
 </section>
 
-<!-- ここから下がLP本体 -->
-  <!-- ② 共感・アイデンティティ（薄緑: 安心・卓の連想） -->
-  <section class="lp-section lp-identity">
+<!-- ここから下がLP本体（逆ピラミッド型） -->
+
+  <!-- 1行圧縮A（頷きの一撃） -->
+  <section class="lp-oneliner">
+    <p>半荘が終わるたび、誰かが電卓で順位を出すあの時間。<br>——もう、いりません。</p>
+  </section>
+
+  <!-- ⑦ 始めやすさ（薄青: バッジ＋3ステップ） -->
+  <section class="lp-section lp-start">
     <div class="lp-inner">
-      <h2>アプリで麻雀が打てる時代に、<br>あえて「対面」で卓を囲む人へ。</h2>
-      <p class="lp-body">指先で牌をつまむ感触。相手の一瞬の間。読み合いのヒリヒリ。<br>画面の中では、決して手に入らないものがある。<br>——その時間が好きだから、あなたは今日も卓を囲む。</p>
+      <h2>始めるのに、<br>必要なものはありません。</h2>
+      <div class="steps">
+        <div class="step"><span class="step-num">1</span><span class="step-text">メンバーの名前を入れる</span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-text">URLを送る</span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-text">表示点数を入れるだけ</span></div>
+      </div>
+      <p class="start-note">たった <strong>10秒</strong> で、次の半荘から。</p>
     </div>
   </section>
 
-  <!-- ③ ペイン（薄い青: 論理・鎮静） -->
-  <section class="lp-section lp-pain">
+  <!-- ⑥ Before / After 比較（薄緑） -->
+  <section class="lp-section lp-compare">
     <div class="lp-inner">
-      <h2>なのに、その熱が<br>止まる瞬間がある。</h2>
-      <p class="lp-body">それは和了(アガ)った直後。全員の意識が、牌から“計算”に移るあの数十秒。</p>
-      <ul class="pain-list">
-        <li>「30符4翻は…」と電卓を回す沈黙。</li>
-        <li>途中から誰の字か読めない、手書きのメモ。</li>
-        <li>ウマ・オカの取り決めを、毎回思い出す手間。</li>
-        <li>「その点数、合ってる？」の一言で止まる空気。</li>
-      </ul>
-      <p class="lp-body lp-emphasis">麻雀は最高なのに、“計算”だけが、その熱を毎回少しずつ冷ましていく。</p>
-    </div>
-  </section>
-
-  <!-- ④ 中心コンセプト（白・大きな一文） -->
-  <section class="lp-concept">
-    <div class="lp-inner">
-      <h2>麻雀の“点数計算係”、<br><span class="accent">卒業</span>しませんか。</h2>
-      <p class="lp-body">対面の楽しさは、何ひとつ変えなくていい。<br>面倒な計算だけ、まじゃすこが引き受けます。</p>
+      <h2>紙とペンの集計は、もう卒業。</h2>
+      <table class="compare-table">
+        <thead>
+          <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="before">半荘ごとに集計で手が止まる</td><td class="after">入れた瞬間に順位が出る</td></tr>
+          <tr><td class="before">返し点・ウマ・オカを手計算</td><td class="after">ぜんぶ自動で集計</td></tr>
+          <tr><td class="before">手書きのスコア表で累計を管理</td><td class="after">累計もグラフも自動で記録</td></tr>
+          <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台だけ</td></tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -410,8 +438,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
       <h2>卓上に、電卓はいらない。</h2>
       <div class="feature">
         <div class="feature-icon fi-blue">🧮</div>
-        <h3>打てば、もう出ている。</h3>
-        <p>点数を入れるだけで、ウマ・オカ・pt換算まで一瞬で自動計算。あなたは計算から解放され、次の配牌に集中できます。</p>
+        <h3>入れれば、もう出ている。</h3>
+        <p>目の前の表示点数を入力するだけで、返し点・ウマ・オカ・pt換算まで一瞬で集計。あなたは集計役から解放されます。</p>
       </div>
       <div class="feature">
         <div class="feature-icon fi-green">📱</div>
@@ -426,39 +454,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
     </div>
   </section>
 
-  <!-- ⑥ Before / After 比較（薄緑） -->
-  <section class="lp-section lp-compare">
+  <!-- 短い物語（下部・情緒の補強） -->
+  <section class="lp-section lp-story">
     <div class="lp-inner">
-      <h2>紙とペンの麻雀は、もう卒業。</h2>
-      <table class="compare-table">
-        <thead>
-          <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="before">計算で毎回ゲームが止まる</td><td class="after">入れた瞬間に結果</td></tr>
-          <tr><td class="before">手書きで揉めることも</td><td class="after">全員が同じ画面を見る</td></tr>
-          <tr><td class="before">ルールを毎回説明</td><td class="after">保存して即再開</td></tr>
-          <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台だけ</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ⑦ 始めやすさ（薄青: バッジ＋3ステップ） -->
-  <section class="lp-section lp-start">
-    <div class="lp-inner">
-      <div class="start-badges">
-        <span class="start-badge">完全無料</span>
-        <span class="start-badge">登録不要</span>
-        <span class="start-badge">インストール不要</span>
-      </div>
-      <h2>始めるのに、<br>必要なものはありません。</h2>
-      <div class="steps">
-        <div class="step"><span class="step-num">1</span><span class="step-text">メンバーの名前を入れる</span></div>
-        <div class="step"><span class="step-num">2</span><span class="step-text">URLを送る</span></div>
-        <div class="step"><span class="step-num">3</span><span class="step-text">点数を打つだけ</span></div>
-      </div>
-      <p class="start-note">たった <strong>10秒</strong> で、次の半荘から。</p>
+      <p>牌をつまむ感触も、読み合いのヒリヒリも、対面でしか味わえない。<br>——その時間が好きだから、あなたは今日も卓を囲む。<br><br>でも半荘が終わるたび、誰かが電卓を握る。<br>返し点を引いて、ウマ・オカを足して、順位をつけて、累計に書き足す。<span class="story-close">その集計の数分だけ、まじゃすこが引き受けます。<br>あなたは、目の前の表示点数を入れるだけ。</span></p>
     </div>
   </section>
 
@@ -466,7 +465,7 @@ details.log-details summary::-webkit-details-marker { display: none; }
   <section class="lp-section lp-close">
     <div class="lp-inner">
       <h2>さあ、卓を囲むのは、人だけでいい。</h2>
-      <p class="lp-body" style="text-align:center">ダウンロードも会員登録も不要。次の半荘から、計算のない麻雀を。</p>
+      <p class="lp-body" style="text-align:center">ダウンロードも会員登録も不要。次の半荘から、集計いらずの麻雀を。</p>
       <button class="cta-btn" onclick="showView('setup')">今すぐスコアを記録する（無料）</button>
       <a class="lp-sub-link" onclick="showView('history')">過去の戦績を振り返る ›</a>
     </div>
