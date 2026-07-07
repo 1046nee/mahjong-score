@@ -7,7 +7,7 @@
 <meta name="description" content="対局後のスコア計算が面倒、紙のスコアシートは読みにくい、合計が合わない……。そんな不満から無料の麻雀スコア集計・共有アプリ『まじゃすこ』を作りました。開発の経緯とこだわりを紹介します。">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.9; -webkit-font-smoothing: antialiased; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.95; -webkit-font-smoothing: antialiased; }
 
 .site-head { border-bottom: 1px solid #eee; }
 .site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
@@ -19,19 +19,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .blog-post { max-width: 680px; margin: 0 auto; padding: 8px 20px 40px; }
 .blog-post h1 { font-size: 22px; font-weight: 800; line-height: 1.6; margin: 16px 0 6px; color: #222; }
 .post-meta { font-size: 12px; color: #999; margin-bottom: 28px; }
-.blog-post h2 { font-size: 18px; font-weight: 800; margin: 36px 0 12px; color: #222; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-.blog-post h3 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: #222; }
+.blog-post h2 { font-size: 18px; font-weight: 800; margin: 40px 0 14px; color: #177083; border-left: 5px solid #177083; padding-left: 12px; line-height: 1.5; }
+.blog-post h3 { font-size: 16px; font-weight: 700; margin: 26px 0 8px; color: #222; }
 .blog-post p { font-size: 15px; color: #222; margin-bottom: 18px; }
 .blog-post ul, .blog-post ol { margin: 0 0 18px; padding-left: 1.5em; }
-.blog-post li { font-size: 15px; color: #222; margin-bottom: 10px; line-height: 1.85; }
-.blog-post strong { font-weight: 700; color: #222; }
+.blog-post li { font-size: 15px; color: #222; margin-bottom: 12px; line-height: 1.9; }
+.blog-post strong { font-weight: 700; color: #177083; }
+.blog-post .hl { color: #E75620; font-weight: 700; }
 
 .cta-wrap { text-align: center; margin-top: 40px; padding-top: 28px; border-top: 1px solid #eee; }
 .cta-wrap p { font-size: 14px; color: #222; margin-bottom: 16px; }
-.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; }
+.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; box-shadow: 0 5px 16px rgba(231,86,32,0.28); }
 
 .post-nav { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
-.post-nav a { color: #555; font-size: 14px; text-decoration: none; }
+.post-nav a { color: #177083; font-weight: 700; font-size: 14px; text-decoration: none; }
 
 .site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; }
 .site-foot a { color: #555; margin: 0 8px; }
@@ -51,33 +52,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 
   <h2>はじめに</h2>
   <p>麻雀のスコア集計・共有アプリ「まじゃすこ」を作っている者です。</p>
-  <p>対面で打つ麻雀が好きなのですが、半荘が終わったあとのスコア計算だけは、正直ずっと面倒だと思っていました。この記事では、なぜこのアプリを作ったのかと、作るときに気をつけたことを書きます。</p>
+  <p>僕は、対面で卓を囲む麻雀が本当に好きです。牌を握る感触も、相手の一瞬の間も、あの場でしか味わえません。<strong>だからこそ</strong>、半荘が終わったあとのスコア計算だけは、どうしても好きになれませんでした。この記事では、そんな僕がなぜこのアプリを作ったのかを、正直に書いてみます。</p>
 
   <h2>対局後のスコア計算、こんなところが面倒でした</h2>
-  <p>麻雀自体は楽しいのに、計算の時間だけはいつも気が重い。理由を並べてみると、だいたい次の4つでした。</p>
+  <p>楽しく打った直後、全員がふっと黙って電卓を触りだす。あの時間が、昔からどうも苦手でした。何が嫌だったのか並べてみると、だいたいこの4つに行き着きます。</p>
   <ol>
-    <li>計算がめんどう。持ち点から返し点を引いて、ウマ・オカを足して、順位をつける。半荘ごとにやると、地味に時間がかかります。</li>
-    <li>紙のスコアシートが読みにくい。字が汚かったり、書き間違えたりして、「これ誰の点数だっけ？」となることがあります。</li>
-    <li>合計が合わないと、原因さがしが始まる。誰かの計算がずれると全体が合わなくなり、確認に時間がかかって、空気も少し微妙になります。</li>
-    <li>雀荘の時間を、計算に使いたくない。集まれる時間は限られているので、麻雀以外のことに取られるのはもったいないと感じていました。</li>
+    <li><strong>とにかく計算がめんどう。</strong>持ち点から返し点を引いて、ウマ・オカを足して、順位をつけて……。1半荘ならまだしも、何回も続くと地味に効いてきます。</li>
+    <li><strong>紙のスコアシートが読みにくい。</strong>走り書きの数字は誰の字かわからないし、書き写すときにポロっと間違える。「これ、誰の点数だっけ？」で手が止まります。</li>
+    <li><strong>合計が合わないと、犯人さがしが始まる。</strong>誰かひとりの計算がずれるだけで全体が合わなくなって、みんなで見直すことに。楽しいはずの場が、少しだけピリつく瞬間です。</li>
+    <li><strong>雀荘の時間を、計算に使いたくない。</strong>集まれる時間は限られています。その貴重な時間を、麻雀じゃない"作業"に取られるのが、ずっともったいなかった。</li>
   </ol>
 
   <h2>なぜ作ったか</h2>
-  <p>ネット麻雀では、スコアの計算は自動でやってくれます。「同じことを、対面の麻雀でもできればいいのに」。理由はそれだけです。麻雀の楽しさはそのままに、計算の手間だけをなくしたくて作りました。</p>
+  <p>ある日ふと思いました。<span class="hl">「この計算、スマホが全部やってくれたらいいのに」</span>と。</p>
+  <p>ネット麻雀なら当たり前にやってくれることを、目の前のリアルな卓でもやりたい。ただそれだけの気持ちで作り始めました。麻雀の楽しさは1ミリも削らずに、計算の面倒くささだけをゼロにする。その両方を叶えるのが目標でした。</p>
 
   <h2>作るときに気をつけたこと</h2>
 
   <h3>1. シンプルに使えること</h3>
-  <p>機能を増やしすぎると、かえって使いにくくなります。「表示点数を入れて、結果を見る」。基本はこれだけで使えるようにしました。説明を読まなくても操作できるはずです。</p>
+  <p>機能を盛りすぎると、結局は使われなくなります。まじゃすこは「表示点数を入れて、結果を見る」。まずはこれだけで成立するように、画面をとことん削ぎ落としました。説明書なしで、初めての人でも迷わないはずです。</p>
 
   <h3>2. 入力を早くすること</h3>
-  <p>麻雀の点数は下2桁がいつも「00」になるので、その入力は省きました。百の位から入れるだけで済みます（「250」と打てば25,000点）。また、点数の合計は決まっているので、3人分を入れれば残り1人は自動で計算されます。</p>
+  <p>いちばんこだわったのは、速さです。麻雀の点数は下2桁がいつも「00」になるので、そこは入力させません。<strong>百の位から打つだけ</strong>で済みます（「250」で25,000点）。しかも3人分を入れれば、残りひとりの点数は自動で出ます。1秒でも早く、次の局へ。</p>
 
   <h3>3. 結果を見やすくすること</h3>
-  <p>最終順位のほかに、スコアの推移グラフや着順の回数も自動で記録します。あとから見返すと、その日の対局を振り返る材料になります。</p>
+  <p>集計を"作業"だけで終わらせたくありませんでした。順位はもちろん、<strong>スコアの推移グラフ</strong>や着順の回数まで自動で残します。「あの半荘で捲られたなあ」と、あとで笑いながら振り返れるように。</p>
 
   <h3>4. 麻雀らしい見た目にすること</h3>
-  <p>雀卓をイメージした緑を基本の色にして、ボタンにはオレンジを使いました。読みやすさを優先しつつ、麻雀のアプリだと一目でわかる見た目にしています。</p>
+  <p>見た目にもこだわりました。雀卓を思わせる<strong>落ち着いた緑</strong>を基本に、ボタンには差し色の<strong>オレンジ</strong>を。派手にはせず、でも開いた瞬間に「麻雀のアプリだ」と伝わる。そんなトーンを目指しています。</p>
 
   <h2>使い方は3ステップ</h2>
   <ol>
@@ -88,7 +90,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   <p>URLを共有すれば、全員のスマホに同じスコアが同期されます。アプリのインストールも、会員登録もいりません。</p>
 
   <h2>おわりに</h2>
-  <p>計算で止まったり、待たせたり、合わなくて揉めたりせずに麻雀ができます。無料で使えるので、よかったら次の半荘から試してみてください。</p>
+  <p>まじゃすこがやりたいことは、たったひとつ。<span class="hl">あなたの麻雀の時間を、まるごと麻雀に返すこと</span>です。</p>
+  <p>計算で止まらない、待たせない、合わなくて揉めない。次の半荘から、よかったら試してみてください。もちろん無料です。</p>
 
   <div class="cta-wrap">
     <p>紙とペンなしで、スコア集計。</p>
