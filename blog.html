@@ -7,48 +7,80 @@
 <meta name="description" content="麻雀スコア集計・共有アプリ「まじゃすこ」の開発ストーリーや、麻雀のスコア計算・ウマ・オカに役立つ記事をお届けします。">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.9; -webkit-font-smoothing: antialiased; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #f4faf7; color: #1f2a28; line-height: 1.9; -webkit-font-smoothing: antialiased; }
 
-.site-head { border-bottom: 1px solid #eee; }
-.site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
-.brand { font-size: 16px; font-weight: 800; color: #177083; text-decoration: none; }
+/* ヘッダー（白＋濃い緑ロゴ） */
+.site-head { background: #fff; border-bottom: 1px solid #e6efeb; }
+.site-head-inner { max-width: 720px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: baseline; gap: 12px; }
+.brand { font-size: 17px; font-weight: 800; color: #177083; letter-spacing: 0.5px; text-decoration: none; }
+.brand-sub { font-size: 11px; color: #7a8a86; }
 
-.wrap { max-width: 680px; margin: 0 auto; padding: 28px 20px 48px; }
-.page-title { font-size: 20px; font-weight: 800; color: #222; margin-bottom: 4px; }
-.page-lead { font-size: 13px; color: #777; margin-bottom: 24px; }
+/* ヒーロー帯（薄緑） */
+.blog-hero { background: linear-gradient(180deg, #E4F3EC 0%, #D9EEE3 100%); text-align: center; padding: 38px 20px 34px; }
+.blog-hero h1 { font-size: 24px; font-weight: 800; color: #177083; margin-bottom: 8px; }
+.blog-hero p { font-size: 13px; color: #4a5a56; }
 
-.post-item { display: block; padding: 20px 0; border-top: 1px solid #eee; text-decoration: none; color: inherit; }
-.post-item:last-child { border-bottom: 1px solid #eee; }
-.post-item h2 { font-size: 16px; font-weight: 700; color: #222; line-height: 1.6; margin-bottom: 6px; }
-.post-item p { font-size: 13px; color: #555; line-height: 1.8; }
-.post-item .date { font-size: 12px; color: #999; margin-top: 8px; }
+/* カード一覧 */
+.wrap { max-width: 720px; margin: 0 auto; padding: 28px 20px 52px; display: flex; flex-direction: column; gap: 16px; }
+.post-card { display: block; background: #fff; border: 1px solid #e6efeb; border-radius: 16px; padding: 22px 20px; text-decoration: none; color: inherit; transition: transform .12s, box-shadow .12s, border-color .12s; }
+.post-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(23,112,131,0.12); border-color: #cfe3db; }
+.post-tag { display: inline-block; background: #E4F3EC; color: #177083; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 13px; margin-bottom: 12px; }
+.post-tag.orange { background: #FDEEE7; color: #E75620; }
+.post-card h2 { font-size: 17px; font-weight: 800; color: #1f2a28; line-height: 1.6; margin-bottom: 8px; }
+.post-card .excerpt { font-size: 13px; color: #5a6a66; line-height: 1.9; }
+.post-card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+.post-card .date { font-size: 12px; color: #9aa8a4; }
+.post-card .read-more { color: #E75620; font-weight: 800; font-size: 13px; }
 
-.site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; margin-top: 8px; }
-.site-foot a { color: #555; margin: 0 8px; }
-.site-foot .links { margin-bottom: 8px; }
+/* アプリ導線バナー */
+.app-banner { max-width: 720px; margin: 0 auto 40px; padding: 0 20px; }
+.app-banner-inner { background: #E4F3EC; border-radius: 16px; text-align: center; padding: 26px 20px; }
+.app-banner-inner p { font-size: 14px; font-weight: 700; color: #1f2a28; margin-bottom: 14px; }
+.app-btn { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 800; font-size: 15px; border-radius: 50px; padding: 14px 28px; box-shadow: 0 6px 18px rgba(231,86,32,0.30); transition: background .2s, transform .1s; }
+.app-btn:hover { background: #F0824F; }
+.app-btn:active { transform: scale(.97); }
+
+/* フッター（濃い緑） */
+.site-foot { background: #177083; color: rgba(255,255,255,0.85); text-align: center; font-size: 12px; padding: 26px 16px 34px; }
+.site-foot a { color: #fff; text-decoration: underline; margin: 0 10px; }
+.site-foot .links { margin-bottom: 10px; }
 </style>
 </head>
 <body>
 <header class="site-head">
-  <div class="site-head-inner"><a href="index.html" class="brand">まじゃすこ / majasco</a></div>
+  <div class="site-head-inner">
+    <a href="index.html" class="brand">まじゃすこ / majasco</a>
+    <span class="brand-sub">ブログ</span>
+  </div>
 </header>
 
-<main class="wrap">
-  <h1 class="page-title">ブログ</h1>
-  <p class="page-lead">開発の話や、麻雀のスコア計算に役立つ記事をお届けします。</p>
+<section class="blog-hero">
+  <h1>まじゃすこブログ</h1>
+  <p>開発の話や、麻雀のスコア計算に役立つ記事をお届けします。</p>
+</section>
 
-  <a class="post-item" href="blog-uma-oka.html">
+<main class="wrap">
+  <a class="post-card" href="blog-uma-oka.html">
+    <span class="post-tag">スコア計算入門</span>
     <h2>麻雀のウマ・オカとは？初心者向けスコア計算入門</h2>
-    <p>ウマ・オカ・返し点・素点とは何かを、具体的な数字の例つきで初心者向けに解説します。</p>
-    <div class="date">2026.07.06</div>
+    <p class="excerpt">ウマ・オカ・返し点・素点とは何かを、具体的な数字の例つきで初心者向けに解説します。</p>
+    <div class="foot"><span class="date">2026.07.06</span><span class="read-more">記事を読む ▶</span></div>
   </a>
 
-  <a class="post-item" href="blog-why-majasco.html">
+  <a class="post-card" href="blog-why-majasco.html">
+    <span class="post-tag orange">開発ストーリー</span>
     <h2>麻雀のスコア計算がめんどうで『まじゃすこ』を作った話</h2>
-    <p>対局後の計算が面倒、紙のスコアシートは読みにくい……。そんな不満から無料の麻雀スコア集計・共有アプリを作りました。</p>
-    <div class="date">2026.07.06</div>
+    <p class="excerpt">対局後の計算が面倒、紙のスコアシートは読みにくい……。そんな不満から無料の麻雀スコア集計・共有アプリを作りました。</p>
+    <div class="foot"><span class="date">2026.07.06</span><span class="read-more">記事を読む ▶</span></div>
   </a>
 </main>
+
+<div class="app-banner">
+  <div class="app-banner-inner">
+    <p>紙とペンなしで、麻雀のスコア集計。</p>
+    <a href="index.html" class="app-btn">まじゃすこを無料で使ってみる</a>
+  </div>
+</div>
 
 <footer class="site-foot">
   <div class="links">
