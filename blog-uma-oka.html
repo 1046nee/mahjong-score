@@ -7,7 +7,7 @@
 <meta name="description" content="麻雀のウマ・オカ、返し点、素点とは何かを初心者向けに解説。順位で決まるスコアの計算方法を、具体的な数字の例つきでわかりやすく説明します。">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.9; -webkit-font-smoothing: antialiased; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.95; -webkit-font-smoothing: antialiased; }
 
 .site-head { border-bottom: 1px solid #eee; }
 .site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
@@ -19,23 +19,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .blog-post { max-width: 680px; margin: 0 auto; padding: 8px 20px 40px; }
 .blog-post h1 { font-size: 22px; font-weight: 800; line-height: 1.6; margin: 16px 0 6px; color: #222; }
 .post-meta { font-size: 12px; color: #999; margin-bottom: 28px; }
-.blog-post h2 { font-size: 18px; font-weight: 800; margin: 36px 0 12px; color: #222; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-.blog-post h3 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: #222; }
+.blog-post h2 { font-size: 18px; font-weight: 800; margin: 40px 0 14px; color: #177083; border-left: 5px solid #177083; padding-left: 12px; line-height: 1.5; }
+.blog-post h3 { font-size: 16px; font-weight: 700; margin: 26px 0 8px; color: #222; }
 .blog-post p { font-size: 15px; color: #222; margin-bottom: 18px; }
 .blog-post ul, .blog-post ol { margin: 0 0 18px; padding-left: 1.5em; }
-.blog-post li { font-size: 15px; color: #222; margin-bottom: 10px; line-height: 1.85; }
-.blog-post strong { font-weight: 700; color: #222; }
+.blog-post li { font-size: 15px; color: #222; margin-bottom: 12px; line-height: 1.9; }
+.blog-post strong { font-weight: 700; color: #177083; }
+.blog-post .hl { color: #E75620; font-weight: 700; }
 .blog-post table { width: 100%; border-collapse: collapse; margin: 0 0 18px; font-size: 14px; }
 .blog-post th, .blog-post td { border: 1px solid #ddd; padding: 8px 10px; text-align: center; color: #222; }
-.blog-post th { background: #f5f5f5; font-weight: 700; }
-.blog-post .note { font-size: 13px; color: #666; }
+.blog-post th { background: #E4F3EC; color: #177083; font-weight: 700; }
 
 .cta-wrap { text-align: center; margin-top: 40px; padding-top: 28px; border-top: 1px solid #eee; }
 .cta-wrap p { font-size: 14px; color: #222; margin-bottom: 16px; }
-.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; }
+.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; box-shadow: 0 5px 16px rgba(231,86,32,0.28); }
 
 .post-nav { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
-.post-nav a { color: #555; font-size: 14px; text-decoration: none; }
+.post-nav a { color: #177083; font-weight: 700; font-size: 14px; text-decoration: none; }
 
 .site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; }
 .site-foot a { color: #555; margin: 0 8px; }
@@ -53,35 +53,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   <h1>麻雀のウマ・オカとは？初心者向けスコア計算入門</h1>
   <p class="post-meta">2026.07.06</p>
 
-  <p>麻雀を打ち始めると、必ず出てくるのが「ウマ」「オカ」「返し点」といった言葉です。名前は聞いたことがあっても、実際にどう計算するのかは分かりにくいものです。この記事では、対局終了後のスコアがどう決まるのかを、具体的な数字を使って順番に説明します。</p>
+  <p>麻雀を打ち始めると、必ずぶつかるのが「ウマ」「オカ」「返し点」といった言葉です。名前は知っていても、いざ自分で計算しようとすると、意外とつまずくところ。この記事では、対局が終わったあとスコアがどう決まるのかを、実際の数字を使いながら、ひとつずつ一緒に見ていきます。</p>
 
   <h2>麻雀のスコアは、持ち点そのままではない</h2>
-  <p>まず前提として、麻雀の最終的な勝ち負けは、対局終了時の持ち点をそのまま比べるわけではありません。持ち点に「返し点」「ウマ」「オカ」というルールを反映して、スコア（pt）に直してから比べるのが一般的です。順番に見ていきましょう。</p>
+  <p>まず前提として、麻雀の最終的な勝ち負けは、対局終了時の持ち点をそのまま比べるわけではありません。持ち点に「返し点」「ウマ」「オカ」というルールを反映して、<strong>スコア（pt）</strong>に直してから比べるのが一般的です。ひとつずつ見ていきましょう。</p>
 
   <h2>素点と返し点</h2>
-  <p>「返し点」とは、スコア計算の基準になる点数のことです。多くの場合、30,000点に設定されます。</p>
-  <p>この返し点を持ち点から引いて、1,000点を1ポイントとして換算したものが「素点」です。</p>
+  <p><strong>返し点</strong>とは、スコア計算の基準になる点数のこと。多くの場合、30,000点に設定されます。</p>
+  <p>この返し点を持ち点から引いて、1,000点を1ポイントとして換算したものが<strong>素点</strong>です。</p>
   <ul>
-    <li>持ち点が35,000点なら、35,000 − 30,000 = 5,000 → <strong>+5.0pt</strong></li>
-    <li>持ち点が22,000点なら、22,000 − 30,000 = −8,000 → <strong>−8.0pt</strong></li>
+    <li>持ち点が35,000点なら、35,000 − 30,000 = 5,000 → <span class="hl">+5.0pt</span></li>
+    <li>持ち点が22,000点なら、22,000 − 30,000 = −8,000 → <span class="hl">−8.0pt</span></li>
   </ul>
-  <p>持ち点が返し点より多ければプラス、少なければマイナスになる、というだけの計算です。</p>
+  <p>持ち点が返し点より多ければプラス、少なければマイナス。それだけの計算です。</p>
 
   <h2>ウマ（順位点）とは</h2>
-  <p>「ウマ」は、最終順位に応じて加えたり引いたりするポイントです。順位点とも呼ばれます。「10-30」のように書き、これは次の意味になります。</p>
+  <p><strong>ウマ</strong>は、最終順位に応じて加えたり引いたりするポイントです。順位点とも呼ばれます。「10-30」のように書き、これは次の意味になります。</p>
   <table>
     <thead><tr><th>順位</th><th>1位</th><th>2位</th><th>3位</th><th>4位</th></tr></thead>
     <tbody><tr><td>ウマ（10-30）</td><td>+30</td><td>+10</td><td>−10</td><td>−30</td></tr></tbody>
   </table>
-  <p>「5-10」や「5-15」など、グループによって設定はさまざまです。順位が1つ違うだけでスコアが大きく変わるので、4位を避ける「ラス回避」が大事だと言われるのは、このウマがあるためです。</p>
+  <p>「5-10」や「5-15」など、グループによって設定はさまざまです。順位が1つ違うだけでスコアが大きく変わるので、4位を避ける<strong>ラス回避</strong>が大事だと言われるのは、このウマがあるからなんです。</p>
 
   <h2>オカとは</h2>
-  <p>「オカ」は、1位の人だけが受け取るボーナスのようなものです。持ち点と返し点の差に人数をかけた分を、トップが総取りします。</p>
-  <p>たとえば25,000点持ち・30,000点返しの4人麻雀なら、差の5,000点 × 4人 = 20,000点 = 20pt。これが1位に加算されます。</p>
-  <p>なぜこんなルールがあるのかというと、返し点（30,000）が持ち点（25,000）より高いため、全員の素点を合計するとマイナスになります。その足りない分を1位がまとめて回収することで、全員のスコアの合計がちょうど0になる仕組みです。</p>
+  <p><strong>オカ</strong>は、1位の人だけが受け取るボーナスのようなものです。持ち点と返し点の差に人数をかけた分を、トップが総取りします。</p>
+  <p>たとえば25,000点持ち・30,000点返しの4人麻雀なら、差の5,000点 × 4人 = 20,000点 = <span class="hl">20pt</span>。これが1位に加算されます。</p>
+  <p>なぜこんなルールがあるのかというと、返し点（30,000）が持ち点（25,000）より高いぶん、全員の素点を合計するとマイナスになります。その足りない分を1位がまとめて回収することで、<strong>全員のスコアの合計がちょうど0になる</strong>仕組みなんです。</p>
 
   <h2>具体例で計算してみる</h2>
-  <p>4人麻雀、持ち点25,000・返し点30,000・ウマ10-30として、次の結果で計算してみます。</p>
+  <p>4人麻雀、持ち点25,000・返し点30,000・ウマ10-30として、次の結果で計算してみましょう。</p>
   <table>
     <thead><tr><th>プレイヤー</th><th>持ち点</th><th>順位</th></tr></thead>
     <tbody>
@@ -95,23 +95,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
   <table>
     <thead><tr><th></th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>A</td><td>+15</td><td>+30</td><td>+20</td><td><strong>+65</strong></td></tr>
-      <tr><td>B</td><td>−2</td><td>+10</td><td>−</td><td><strong>+8</strong></td></tr>
-      <tr><td>C</td><td>−15</td><td>−10</td><td>−</td><td><strong>−25</strong></td></tr>
-      <tr><td>D</td><td>−18</td><td>−30</td><td>−</td><td><strong>−48</strong></td></tr>
+      <tr><td>A</td><td>+15</td><td>+30</td><td>+20</td><td><span class="hl">+65</span></td></tr>
+      <tr><td>B</td><td>−2</td><td>+10</td><td>−</td><td><span class="hl">+8</span></td></tr>
+      <tr><td>C</td><td>−15</td><td>−10</td><td>−</td><td><span class="hl">−25</span></td></tr>
+      <tr><td>D</td><td>−18</td><td>−30</td><td>−</td><td><span class="hl">−48</span></td></tr>
     </tbody>
   </table>
-  <p>合計は +65 +8 −25 −48 = 0。きちんとゼロになりました。麻雀のスコアは、こうして全員の合計が0になるように作られています。</p>
+  <p>合計は +65 +8 −25 −48 = <strong>0</strong>。きちんとゼロになりました。麻雀のスコアは、こうして全員の合計が0になるように作られています。</p>
 
   <h2>同点のときはどうする？</h2>
-  <p>持ち点が同じで順位が並んだ場合は、同じ順位として扱い、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。たとえば1位が2人いるなら、1位と2位のウマ（+30と+10）を足して2で割り、それぞれ+20ずつ、といった具合です。</p>
+  <p>持ち点が同じで順位が並んだ場合は、同じ順位として扱い、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。たとえば1位が2人いるなら、1位と2位のウマ（+30と+10）を足して2で割り、それぞれ+20ずつ、といった具合ですね。</p>
 
   <h2>3人麻雀（サンマ）の場合</h2>
-  <p>3人麻雀では、持ち点35,000・返し点40,000のように、4人麻雀とは違う設定がよく使われます。ウマも3人用になり、「15-0-15」のように、2位を0として1位と3位が対称になる書き方をします。考え方は4人麻雀と同じです。</p>
+  <p>3人麻雀では、持ち点35,000・返し点40,000のように、4人麻雀とは違う設定がよく使われます。ウマも3人用になり、「15-0-15」のように、2位を0として1位と3位が対称になる書き方をします。考え方そのものは、4人麻雀と同じです。</p>
 
   <h2>計算がめんどうなら、アプリにまかせよう</h2>
-  <p>ここまで手で計算してきましたが、これを毎回、半荘ごとにやるのは正直大変です。</p>
-  <p>「まじゃすこ」は、各プレイヤーの表示点数を入れるだけで、返し点・ウマ・オカ・順位まで自動で集計してくれる無料のアプリです。ルールも自由に設定でき、3人麻雀にも対応しています。ウマやオカの計算に自信がなくても、正しいスコアがすぐに出ます。</p>
+  <p>ここまで手で計算してきましたが……正直、これを毎回、半荘ごとにやるのはなかなか骨が折れますよね。</p>
+  <p>「まじゃすこ」は、各プレイヤーの<strong>表示点数を入れるだけ</strong>で、返し点・ウマ・オカ・順位まで自動で集計してくれる無料のアプリです。ルールも自由に設定でき、3人麻雀にも対応しています。ウマやオカの計算にまだ自信がなくても大丈夫。正しいスコアが、すぐに出ます。</p>
 
   <div class="cta-wrap">
     <p>スコア計算は、まじゃすこにおまかせ。</p>
