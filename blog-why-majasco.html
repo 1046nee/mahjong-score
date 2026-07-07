@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「麻雀のスコア計算、もう疲れた」──紙とペンをなくすために『まじゃすこ』を作った話 | まじゃすこ</title>
+<meta name="description" content="試合後のスコア計算がめんどう。紙のスコアシートは読みにくいし、合計も合わない……。そんな不満から生まれた無料の麻雀スコア集計・共有アプリ『まじゃすこ』の開発経緯とこだわりを紹介します。">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #f4faf7; color: #1f2a28; line-height: 2.0; -webkit-font-smoothing: antialiased; }
+a { color: #177083; }
+
+/* ヘッダー */
+.site-head { background: #fff; border-bottom: 1px solid #e6efeb; }
+.site-head-inner { max-width: 680px; margin: 0 auto; padding: 16px 20px; display: flex; align-items: baseline; gap: 12px; }
+.brand { font-size: 17px; font-weight: 800; color: #177083; letter-spacing: 0.5px; text-decoration: none; }
+.brand-sub { font-size: 11px; color: #7a8a86; }
+
+/* パンくず */
+.crumbs { max-width: 680px; margin: 0 auto; padding: 14px 20px 0; font-size: 12px; color: #8a9a96; }
+.crumbs a { color: #177083; text-decoration: none; }
+
+/* 記事本体 */
+.blog-post { max-width: 680px; margin: 0 auto; padding: 8px 20px 48px; }
+.blog-post h1 { font-size: 23px; font-weight: 800; line-height: 1.55; color: #1f2a28; margin: 14px 0 10px; }
+.post-meta { font-size: 12px; color: #9aa8a4; margin-bottom: 8px; }
+.post-tag { display: inline-block; background: #E4F3EC; color: #177083; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 12px; margin-bottom: 26px; }
+.blog-post h2 { font-size: 19px; font-weight: 800; color: #177083; margin: 40px 0 14px; padding-left: 12px; border-left: 5px solid #177083; line-height: 1.5; }
+.blog-post h3 { font-size: 16px; font-weight: 800; color: #1f2a28; margin: 26px 0 8px; }
+.blog-post p { font-size: 15px; color: #2f3a37; margin-bottom: 18px; }
+.blog-post ul { margin: 0 0 20px; padding-left: 4px; list-style: none; }
+.blog-post li { font-size: 15px; color: #2f3a37; padding: 12px 16px; margin-bottom: 10px; background: #fff; border: 1px solid #e6efeb; border-left: 4px solid #177083; border-radius: 10px; line-height: 1.85; }
+.blog-post strong { color: #12525f; }
+
+/* CTA */
+.post-cta { text-align: center; margin: 40px 0 0; padding: 28px 20px; background: #E4F3EC; border-radius: 16px; }
+.post-cta p { font-size: 14px; color: #2f3a37; margin-bottom: 16px; }
+.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; border-radius: 50px; padding: 16px 30px; box-shadow: 0 6px 18px rgba(231,86,32,0.32); transition: background .2s, transform .1s; }
+.cta-link:hover { background: #F0824F; }
+.cta-link:active { transform: scale(.97); }
+
+/* 記事下ナビ */
+.post-nav { max-width: 680px; margin: 0 auto; padding: 0 20px 40px; }
+.post-nav a { color: #177083; font-weight: 700; font-size: 14px; text-decoration: none; }
+
+/* フッター */
+.site-foot { background: #177083; color: rgba(255,255,255,0.85); text-align: center; font-size: 12px; padding: 26px 16px 34px; }
+.site-foot a { color: #fff; text-decoration: underline; margin: 0 10px; }
+.site-foot .links { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="site-head-inner">
+    <a href="index.html" class="brand">まじゃすこ / majasco</a>
+    <span class="brand-sub">ブログ</span>
+  </div>
+</header>
+
+<nav class="crumbs"><a href="index.html">トップ</a> ＞ <a href="blog.html">ブログ</a> ＞ 開発ストーリー</nav>
+
+<article class="blog-post">
+  <span class="post-tag">開発ストーリー</span>
+  <h1>「麻雀のスコア計算、もう疲れた」──紙とペンをなくすために『まじゃすこ』を作った話</h1>
+  <p class="post-meta">2026.07.06</p>
+
+  <h2>はじめに｜麻雀は大好き。でも"あの時間"だけが苦手だった</h2>
+  <p>はじめまして。麻雀スコア集計・共有アプリ「まじゃすこ」を作っている開発者です。</p>
+  <p>僕は、対面で卓を囲む麻雀が本当に好きです。牌をつまむ感触、相手の一瞬の間、テンパイ気配の読み合い。画面越しのネット麻雀では決して味わえない熱が、あの場にはあります。</p>
+  <p>でも、正直に言うと——ずっと苦手な"あの時間"がありました。半荘が終わった直後、全員の意識が牌からスコア計算に移る、あの数分間です。</p>
+
+  <h2>対局後にやってくる、地味だけど確実なストレス</h2>
+  <p>麻雀そのものは最高なのに、スコア計算だけが毎回、その熱を少しずつ冷ましていく。振り返ると、僕が感じていた不満はいつも同じでした。</p>
+  <ul>
+    <li><strong>計算が、とにかく煩雑。</strong>持ち点から返し点を引いて、ウマ・オカを足して、順位をつけて……。半荘ごとに電卓を叩く時間が、地味に積み重なります。</li>
+    <li><strong>紙のスコアシートが読みにくい。</strong>字が汚かったり、書き写す時に転記ミスが起きたり。「これ、誰の点数だっけ？」と手が止まることもしばしば。</li>
+    <li><strong>合計が合わないと"犯人捜し"が始まる。</strong>誰かの計算がズレると全体が合わなくなり、「どこで間違えた？」と空気が微妙に。楽しいはずの卓が、少しだけギスギスします。</li>
+    <li><strong>限られた雀荘の時間を、麻雀以外に使いたくない。</strong>集まれる時間は有限です。その貴重な時間を"作業"に奪われるのは、やっぱりもったいない。</li>
+  </ul>
+
+  <h2>「メインの麻雀に集中したい」──それが出発点でした</h2>
+  <p>ある日ふと思いました。「この計算、スマホが全部やってくれればいいのに」と。</p>
+  <p>ネット麻雀では当たり前の"全自動計算"の快適さを、そのままリアルの卓へ持ち込めないか。麻雀の楽しさは1ミリも変えず、面倒な集計だけを消し去りたい。そうして生まれたのが「まじゃすこ」です。</p>
+
+  <h2>『まじゃすこ』で徹底的にこだわった4つのこと</h2>
+
+  <h3>① シンプルで直感的なUI</h3>
+  <p>機能を詰め込みすぎると、かえって使いにくくなります。まじゃすこは「表示点数を入れる」「結果を見る」というたった2つの動作だけで完結するよう、画面をとことん削ぎ落としました。説明書なしで、初めての人でも迷いません。</p>
+
+  <h3>② 徹底的な時短</h3>
+  <p>スピードにはこだわり抜きました。麻雀の点数は下2桁が必ず「00」になるので、その入力は不要。<strong>百の位から入力するだけ</strong>で済むようにしています（例：「250」と打てば25,000点）。</p>
+  <p>さらに、点数の合計は必ず決まっているため、<strong>ラスト1人の点数は自動で計算</strong>。3人分を入れれば、残り1人はワンタップで確定します。1秒でも早く、次の半荘へ。</p>
+
+  <h3>③ 見て楽しい、スコアの可視化</h3>
+  <p>集計は"作業"で終わらせたくありませんでした。まじゃすこでは、最終順位はもちろん、<strong>スコア推移グラフ</strong>や着順の回数まで自動で記録。「あの半荘で捲られたな」と、対局後に盛り上がれる振り返りの材料になります。</p>
+
+  <h3>④ 雀卓を想起させるデザイン</h3>
+  <p>雀士の心をくすぐる見た目にもこだわりました。ベースは、麻雀卓を思わせる<strong>落ち着いた緑</strong>。そして行動のきっかけになるボタンには、差し色として<strong>あたたかいオレンジ</strong>を。清潔感と読みやすさを最優先しつつ、"麻雀のアプリだ"と一目で伝わるトーンに仕上げています。</p>
+
+  <h2>使い方はかんたん、3ステップ</h2>
+  <ul>
+    <li><strong>1.</strong> メンバーの名前を入れる</li>
+    <li><strong>2.</strong> 発行されたURLを、LINE等でメンバーに送る</li>
+    <li><strong>3.</strong> 半荘が終わるたびに、表示点数を入れるだけ</li>
+  </ul>
+  <p>URLを共有すれば、全員のスマホにリアルタイムでスコアが同期。「いま誰がトップ？」がひと目で分かり、もう紙を覗き込む必要はありません。アプリのインストールも、会員登録も不要です。</p>
+
+  <h2>おわりに｜あなたの麻雀の時間を、麻雀だけに</h2>
+  <p>まじゃすこが目指しているのは、たったひとつ。<strong>あなたの大切な麻雀の時間を、麻雀そのものに取り戻すこと</strong>です。</p>
+  <p>計算で止まらない、揉めない、待たせない。次の半荘から、集計いらずの麻雀を体験してみてください。完全無料で、今すぐ始められます。</p>
+
+  <div class="post-cta">
+    <p>紙とペンは、もう卒業。</p>
+    <a href="index.html" class="cta-link">まじゃすこを無料で使ってみる ▶</a>
+  </div>
+</article>
+
+<nav class="post-nav"><a href="blog.html">‹ ブログ一覧に戻る</a></nav>
+
+<footer class="site-foot">
+  <div class="links">
+    <a href="index.html">トップ</a>
+    <a href="privacy.html">プライバシーポリシー</a>
+    <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+  </div>
+  <div>© 2026 まじゃすこ</div>
+</footer>
+</body>
+</html>
