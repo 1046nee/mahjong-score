@@ -1870,10 +1870,12 @@ function rankCountHtml(rounds, s) {
   const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
   const bestPct = validPcts.length ? Math.max(...validPcts) : null;
   const dash = '<span style="color:#ccc">—</span>';
-  // ベストの強調は絵文字ではなく、背景色と枠線の強弱で示す
-  const hl = slots === 3
-    ? 'background:#EAF0FB;box-shadow:inset 0 0 0 1.5px #4261AA;font-weight:800'
-    : 'background:#E4F3EC;box-shadow:inset 0 0 0 1.5px #177083;font-weight:800';
+  // ベスト（同値なら該当者全員）の強調は文字色のみオレンジに。背景・枠線は変えない
+  const hl = 'color:#E75620;font-weight:800';
+  // 1着回数の最多もハイライト対象（全員0回のときは対象外）
+  const topCounts = names.map((_, i) => gamesPlayed[i] ? counts[i][0] : null);
+  const validTops = topCounts.filter(v => v !== null);
+  const bestTop = validTops.length && Math.max(...validTops) > 0 ? Math.max(...validTops) : null;
   const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${slots === 3 ? '#4261AA' : '#177083'}">名前</th>${Array.from({length: slots}, (_, r) => `<th>${r + 1}着</th>`).join('')}<th>試合数</th><th>平均着順</th><th>ラス回避</th></tr></thead>`;
   // チーム戦はチームごとにメンバーをグループ化し、チーム単位で上から順に表示する
   let rowOrder = names.map((_, i) => i);
@@ -1898,7 +1900,8 @@ function rankCountHtml(rounds, s) {
     }
     const countTds = Array.from({length: slots}, (_, rank) => {
       const c = counts[i][rank];
-      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
+      const best = rank === 0 && bestTop !== null && c === bestTop;
+      return `<td style="${best ? hl : c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
     return head + `<tr>${nameTd}${countTds}<td>${gamesPlayed[i]}回</td>
       <td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>
