@@ -375,11 +375,10 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
-/* チップ入力（収支計算が有効なグループのみ表示）: 点数行の下に「終了時チップ数」と「チップ差」の連動入力を置く */
-.sheet-subrow { display: flex; align-items: center; gap: 8px; margin: -4px 0 2px 24px; }
-.chip-input { flex: 1; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding: 0 8px 0 8px; background: #fff; min-width: 0; }
-.chip-input .chip-pre { color: #999; font-size: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
-.chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 8px 2px 8px 4px; font-size: 14px; text-align: right; min-width: 0; background: transparent; }
+/* チップ入力（収支計算が有効なグループのみ）: 名前｜チップ（左）｜点数（右）を1行に収める */
+.sheet-row label.sheet-name-s { width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 86px; flex-shrink: 0; }
+.chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
 .chip-input:focus-within { border-color: #177083; }
 .sheet.sanma .chip-input:focus-within { border-color: #4261AA; }
@@ -410,8 +409,8 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .team-chip:active { cursor: grabbing; background: #E4F3EC; border-color: #177083; }
 /* チーム成績カードのメンバー名 */
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; }
-/* チームの色ドット（履歴・成績表・チーム成績で所属を示す） */
-.team-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; flex-shrink: 0; }
+/* チームの識別記号（履歴・成績表・チーム成績で所属を示す。色ではなく記号で区別） */
+.team-mark { font-size: 10px; font-weight: 700; margin-right: 3px; opacity: 0.85; }
 /* 回し打ちグループ用: 試合ごとのカード形式履歴（参加者のみ順位順に表示） */
 .round-list { display: flex; flex-direction: column; gap: 8px; }
 .round-item { border: 1px solid #eee; border-radius: 10px; padding: 10px 12px; cursor: pointer; background: #fff; }
@@ -569,7 +568,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>このアプリの使い方</h2>
       <p>「まじゃすこ」は、麻雀の対局結果を記録して自動でスコア計算し、メンバー全員とリアルタイムで共有できる無料のスコア管理アプリです。会員登録は不要で、スマートフォンのブラウザだけですぐに使えます。</p>
       <h3>1. グループを作る</h3>
-      <p>「新しい対局を始める」からグループ名とメンバー名（3〜40人）を登録します。持ち点・返し点・ウマ・スコア倍率も自由に設定でき、3人麻雀にも対応しています。メンバーが5人以上なら試合ごとに対局する人を選べるので、交代しながらの回し打ちもそのまま記録できます。チップの収支計算や焼き鳥の記録、メンバーをチームに分けて合計スコアで競う「チーム戦」もオプションで有効にできます。</p>
+      <p>「新しい対局を始める」からグループ名とメンバー名（3〜40人）を登録します。持ち点・返し点・ウマ・スコア倍率も自由に設定でき、3人麻雀にも対応しています。メンバーが5人以上なら試合ごとに対局する人を選べるので、交代しながらの回し打ちもそのまま記録できます。チップの収支計算や焼き鳥の記録、メンバーをチームに分けてスコアの合計で競う「チーム戦」もオプションで有効にできます。</p>
       <h3>2. URLをメンバーに共有する</h3>
       <p>グループを作成すると専用URLが発行されます。LINEなどでメンバーに送れば、全員が同じスコアをリアルタイムで確認できます。誰か1人が入力すれば全員の画面に反映されます。</p>
       <h3>3. 半荘ごとに点数を入力する</h3>
@@ -620,21 +619,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">メンバー名（3〜40人）</div>
+      <div class="card-title">対局形式</div>
+      <div class="toggle-group">
+        <button type="button" class="toggle-btn active" id="mode-4" onclick="setGameMode(4)">4人麻雀</button>
+        <button type="button" class="toggle-btn" id="mode-3" onclick="setGameMode(3)">3人麻雀</button>
+      </div>
+      <div class="chips-hint" style="margin-top:8px;margin-bottom:0">1試合あたりの人数です。メンバーが多い場合は、試合ごとに対局する人を選べます</div>
+    </div>
+    <div class="card">
+      <div class="card-title">対戦形式</div>
+      <div class="toggle-group">
+        <button type="button" class="toggle-btn active" id="vs-solo" onclick="setMatchType(false)">個人戦</button>
+        <button type="button" class="toggle-btn" id="vs-team" onclick="setMatchType(true)">チーム戦</button>
+      </div>
+      <div id="s-team-fields" style="display:none;margin-top:12px">
+        <div class="chips-hint" style="margin-bottom:8px">メンバーをチームに分けて、スコアの合計でチーム順位を競います（メンバー4人以上）。下の「メンバー名」で追加した人は自動でチームに振り分けられます</div>
+        <div id="s-team-editor"></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
+          <button type="button" class="edit-tab" onclick="randomizeTeams()">🎲 ランダム編成</button>
+        </div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をタップすると次のチームへ移動できます</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">メンバー名（最大40人）</div>
       <div style="display:flex;gap:8px">
         <input type="text" id="member-input" placeholder="名前を入力" list="saved-players"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
         <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
       </div>
       <div class="member-tags" id="member-tags"></div>
-      <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください（3人以上で作成できます）</div>
-      <div class="field" id="mode-field" style="display:none;margin-top:14px;margin-bottom:0">
-        <label>対局形式（1試合あたりの人数）</label>
-        <div class="toggle-group">
-          <button type="button" class="toggle-btn active" id="mode-4" onclick="setGameMode(4)">4人麻雀</button>
-          <button type="button" class="toggle-btn" id="mode-3" onclick="setGameMode(3)">3人麻雀</button>
-        </div>
-      </div>
+      <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください</div>
       <datalist id="saved-players"></datalist>
       <div id="saved-players-hint" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
         <span class="chips-hint" style="margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</span>
@@ -701,11 +717,28 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="rule-grid">
           <div class="field">
             <label>チップ倍率</label>
-            <input type="number" id="s-chip-rate" placeholder="例: 500">
+            <select id="s-chip-rate" onchange="onChipRateChange()">
+              <option value="10">×10</option>
+              <option value="20">×20</option>
+              <option value="30">×30</option>
+              <option value="50">×50</option>
+              <option value="100">×100</option>
+              <option value="200">×200</option>
+              <option value="500" selected>×500</option>
+              <option value="1000">×1000</option>
+              <option value="2000">×2000</option>
+              <option value="custom">カスタム</option>
+            </select>
           </div>
           <div class="field">
             <label>ゲーム開始時チップ数</label>
-            <input type="number" id="s-start-chips" placeholder="例: 20">
+            <input type="number" id="s-start-chips" value="20">
+          </div>
+        </div>
+        <div id="chip-rate-custom" style="display:none;margin-top:8px">
+          <div class="field">
+            <label>カスタムチップ倍率</label>
+            <input type="number" id="s-chip-rate-custom" placeholder="例: 300">
           </div>
         </div>
         <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
@@ -714,21 +747,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <input type="checkbox" id="s-yakitori"> 焼き鳥🐔を記録する
       </label>
       <div class="chips-hint" style="margin:6px 0 0 26px">1回もアガれなかった人に🐔マークを付けて記録できます</div>
-    </div>
-    <div class="card" id="team-setup-card" style="display:none">
-      <div class="card-title">チーム戦（オプション）</div>
-      <label class="opt-check">
-        <input type="checkbox" id="s-team" onchange="onTeamOptChange()"> チーム戦を有効にする
-      </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">メンバーをチームに分けて、個人スコアの合計でチーム順位を競います</div>
-      <div id="s-team-fields" style="display:none;margin-top:12px">
-        <div id="s-team-editor"></div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
-          <button type="button" class="edit-tab" onclick="randomizeTeams()">🎲 ランダム編成</button>
-        </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をドラッグ＆ドロップ、またはタップで次のチームへ移動できます</div>
-      </div>
     </div>
   </div>
   <button class="submit-btn" id="setup-submit" onclick="startGame()" disabled>グループを作成</button>
@@ -765,7 +783,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:0">合計スコア</div>
+        <div class="card-title" style="margin-bottom:0">スコア収支</div>
         <button class="edit-tab" id="bonus-toggle" onclick="toggleBonus()">収支換算</button>
       </div>
       <div class="score-cards" id="score-cards"></div>
@@ -826,6 +844,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="sheet-inputs" id="sheet-inputs"></div>
   <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
   <div class="total-check ng" id="total-check">点数を入力してください</div>
+  <div class="total-check ng" id="chip-check" style="display:none;margin-top:-8px"></div>
   <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
   <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px;display:none" onclick="closeSheet()">キャンセル</button>
 </div>
@@ -1055,7 +1074,6 @@ function initSetupForm() {
   setupMembers = [];
   document.getElementById('member-input').value = '';
   numPlayers = 4;
-  modeUserSet = false;
   document.getElementById('mode-4').classList.add('active');
   document.getElementById('mode-3').classList.remove('active');
   refreshUmaSelect();
@@ -1064,12 +1082,12 @@ function initSetupForm() {
   document.getElementById('s-rate').value = '100'; // デフォルト: ×100
   document.getElementById('s-bonus').checked = false;
   document.getElementById('s-yakitori').checked = false;
-  document.getElementById('s-chip-rate').value = '';
-  document.getElementById('s-start-chips').value = '';
-  onBonusOptChange();
+  document.getElementById('s-chip-rate').value = '500'; // デフォルト: ×500
+  document.getElementById('s-chip-rate-custom').value = '';
+  document.getElementById('s-start-chips').value = '20'; // チップ数の初期値は20
+  onBonusOptChange(); onChipRateChange();
   setupTeams = null;
-  document.getElementById('s-team').checked = false;
-  document.getElementById('s-team-fields').style.display = 'none';
+  setMatchType(false);
   renderMembers();
   renderPlayerOptions(); onUmaChange(); onRateChange();
 }
@@ -1082,18 +1100,34 @@ function renderPlayerOptions() {
   dl.innerHTML = has ? appState.players.map(name => `<option value="${esc(name)}"></option>`).join('') : '';
   hint.style.display = has ? 'flex' : 'none';
 }
-// 登録済みの名前を一覧表示し、個別に削除できるモーダル
+// 登録済みの名前を一覧表示するモーダル。[ゲームに追加]でそのままメンバーに追加できる（モバイルでdatalistが使いにくい場合の代替）
 function openPlayersManage() {
-  const list = appState.players.map((name, i) =>
-    `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid #eee">
-      <span style="font-size:14px">${esc(name)}</span>
-      <button class="round-del-btn" onclick="deleteSavedPlayer(${i})">削除</button>
-    </div>`).join('');
+  const list = appState.players.map((name, i) => {
+    const added = setupMembers.includes(name);
+    const addBtn = added
+      ? '<span style="flex-shrink:0;font-size:10px;color:#aaa;border:1px solid #e5e5e5;border-radius:5px;padding:4px 7px;white-space:nowrap">追加済み</span>'
+      : `<button class="edit-tab" style="flex-shrink:0;color:#177083;background:#e0f2f5" onclick="addSavedPlayerToGame(${i})">ゲームに追加</button>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid #eee">
+      <span style="font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
+      ${addBtn}
+      <button class="round-del-btn" style="flex-shrink:0" onclick="deleteSavedPlayer(${i})">削除</button>
+    </div>`;
+  }).join('');
   document.getElementById('form-modal-title').textContent = '登録済みの名前';
   document.getElementById('form-modal-body').innerHTML =
     (list || '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">登録された名前はありません</div>')
     + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
+}
+// 登録済みの名前をそのままゲームのメンバーに追加する
+function addSavedPlayerToGame(i) {
+  const name = appState.players[i];
+  if (!name) return;
+  if (setupMembers.length >= MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
+  if (setupMembers.includes(name)) { showToast('すでに追加されています'); return; }
+  setupMembers.push(name);
+  renderMembers();
+  openPlayersManage(); // 追加済み表示に更新（モーダルは開いたまま続けて追加できる）
 }
 function deleteSavedPlayer(i) {
   appState.players.splice(i, 1);
@@ -1125,8 +1159,7 @@ function removeMember(i) {
   setupMembers.splice(i, 1);
   renderMembers();
 }
-// 対局形式（1試合あたりの人数）の切り替え。メンバー数とは独立
-let modeUserSet = false; // ユーザーが明示的に対局形式を選んだか（自動切替と区別）
+// 対局形式（1試合あたりの人数）の切り替え。常時選択可能でメンバー数とは独立
 function applyMode(n) {
   numPlayers = n;
   document.getElementById('mode-4').classList.toggle('active', n === 4);
@@ -1137,41 +1170,38 @@ function applyMode(n) {
   onUmaChange();
 }
 function setGameMode(n) {
-  modeUserSet = true;
   applyMode(n);
-  renderMembers();
+  renderMembers(); // 開始条件（必要人数）のガイドを更新
+}
+// 対戦形式（個人戦/チーム戦）の切り替え
+let setupTeamMode = false;
+function setMatchType(team) {
+  setupTeamMode = team;
+  document.getElementById('vs-solo').classList.toggle('active', !team);
+  document.getElementById('vs-team').classList.toggle('active', team);
+  document.getElementById('s-team-fields').style.display = team ? 'block' : 'none';
+  if (team) initSetupTeamEditor();
 }
 function renderMembers() {
   document.getElementById('member-tags').innerHTML = setupMembers.map((m, i) =>
     `<span class="member-tag">${esc(m)}<button onclick="removeMember(${i})" aria-label="削除">✕</button></span>`
   ).join('');
   const n = setupMembers.length;
-  // メンバー3人ちょうどなら3人麻雀のみ。4人以上なら4人/3人麻雀を選択できる（回し打ち対応）
-  const modeField = document.getElementById('mode-field');
-  if (n === 3) {
-    modeField.style.display = 'none';
-    if (numPlayers !== 3) applyMode(3); // 3人しかいなければ自動で3人麻雀に
-  } else if (n >= 4) {
-    modeField.style.display = 'block';
-    // 3人経由の自動切替は、4人以上になったらデフォルト（4人麻雀）に戻す。ユーザーが選んだ場合は維持
-    if (!modeUserSet && numPlayers !== 4) applyMode(4);
-  } else {
-    modeField.style.display = 'none';
-  }
-  // チーム戦はメンバー4人以上で選択可能。エディタ表示中はメンバーの増減を編成に同期する
-  document.getElementById('team-setup-card').style.display = n >= 4 ? 'block' : 'none';
-  if (n >= 4 && document.getElementById('s-team').checked) initSetupTeamEditor();
-  const ok = n >= 3 && n <= MAX_MEMBERS;
+  // チーム戦のエディタ表示中はメンバーの増減を編成に同期する
+  if (setupTeamMode) initSetupTeamEditor();
+  // 開始条件: 3人麻雀は3名以上、4人麻雀は4名以上
+  const need = numPlayers - n;
+  const full = n >= MAX_MEMBERS;
+  const ok = need <= 0 && n <= MAX_MEMBERS;
   const btn = document.getElementById('setup-submit');
   btn.disabled = !ok;
   btn.textContent = ok ? `${numPlayers}人麻雀を開始（メンバー${n}人）` : 'グループを作成';
-  const full = n >= MAX_MEMBERS;
   document.getElementById('member-input').disabled = full;
   document.getElementById('member-add-btn').disabled = full;
   document.getElementById('member-count-hint').textContent =
-    ok ? `現在 ${n}人 / 最大${MAX_MEMBERS}人 — このメンバーでグループを作成できます`
-       : full ? `メンバーは${MAX_MEMBERS}人までです`
-       : `現在 ${n}人 — 3人以上で作成できます`;
+    need > 0 ? `ゲームを開始するにはあと${need}名必要です（${numPlayers}人麻雀）`
+    : full ? `メンバーは${MAX_MEMBERS}人までです`
+    : `現在 ${n}人 / 最大${MAX_MEMBERS}人 — このメンバーでグループを作成できます`;
 }
 // 人数に応じてウマの選択肢を差し替える（3人麻雀は「15-0-15」形式）
 function refreshUmaSelect() {
@@ -1198,13 +1228,11 @@ function onRateChange() {
 function onBonusOptChange() {
   document.getElementById('s-bonus-fields').style.display = document.getElementById('s-bonus').checked ? 'block' : 'none';
 }
-// チーム戦のON/OFFでチーム編成エディタを出し分ける
-let setupTeams = null;
-function onTeamOptChange() {
-  const on = document.getElementById('s-team').checked;
-  document.getElementById('s-team-fields').style.display = on ? 'block' : 'none';
-  if (on) initSetupTeamEditor();
+// チップ倍率のカスタム入力欄の出し分け（スコア倍率と同形式）
+function onChipRateChange() {
+  document.getElementById('chip-rate-custom').style.display = document.getElementById('s-chip-rate').value === 'custom' ? 'block' : 'none';
 }
+let setupTeams = null;
 function initSetupTeamEditor() {
   // 再初期化（メンバー追加・作成時）で入力中のチーム名が消えないよう、先にDOMから取り込む
   if (teamEditorCtx && teamEditorCtx.teams === setupTeams) captureTeamNames();
@@ -1219,8 +1247,9 @@ function getUmaArray() {
   return umaArrayFor(v, numPlayers);
 }
 async function startGame() {
-  if (setupMembers.length < 3 || setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは3〜${MAX_MEMBERS}人で登録してください`); return; }
-  if (numPlayers === 4 && setupMembers.length < 4) { showToast('4人麻雀にはメンバーが4人以上必要です'); return; }
+  // 開始条件: 3人麻雀は3名以上、4人麻雀は4名以上（最大40名）
+  if (setupMembers.length < numPlayers) { showToast(`ゲームを開始するにはあと${numPlayers - setupMembers.length}名必要です`); return; }
+  if (setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   const name = document.getElementById('s-name').value.trim() || todayStr();
   const playerNames = setupMembers.slice();
   const startPoints = Number(document.getElementById('s-start').value) || 25000;
@@ -1230,11 +1259,13 @@ async function startGame() {
   const rate = rateVal === 'custom' ? (Number(document.getElementById('s-rate-custom').value) || 1) : Number(rateVal);
   // 収支オプション（フェーズ2）: 未設定のチップ倍率は1倍・開始時チップ数は0として扱う
   const bonusEnabled = document.getElementById('s-bonus').checked;
-  const chipRate = Number(document.getElementById('s-chip-rate').value) || 1;
+  const chipRateVal = document.getElementById('s-chip-rate').value;
+  const chipRate = chipRateVal === 'custom' ? (Number(document.getElementById('s-chip-rate-custom').value) || 1) : Number(chipRateVal);
   const startChips = Number(document.getElementById('s-start-chips').value) || 0;
   const yakitori = document.getElementById('s-yakitori').checked;
   // チーム戦（フェーズ3）: 全員がいずれかのチームに所属していることを保証してから保存
-  const teamMode = setupMembers.length >= 4 && document.getElementById('s-team').checked;
+  const teamMode = setupTeamMode;
+  if (teamMode && setupMembers.length < 4) { showToast('チーム戦にはメンバーが4人以上必要です'); return; }
   let teams = null;
   if (teamMode) {
     initSetupTeamEditor();
@@ -1378,16 +1409,16 @@ function bonusTableHtml(g) {
   });
   const cells = order.map(i => {
     if (!played[i]) {
-      return `<div class="bonus-cell na"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val" style="color:#bbb">—</div></div>`;
+      return `<div class="bonus-cell na"><div class="bc-name">${teamMarkHtml(s, i)}${esc(names[i])}</div><div class="bc-val" style="color:#bbb">—</div></div>`;
     }
     const v = grand[i];
     const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
-    return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
+    return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamMarkHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
   }).join('');
   // 内訳: 補足情報として控えめな表にまとめる（タップで展開）
   const cell = (i, text, strong) => played[i] ? `<td style="${strong ? 'font-weight:700' : 'color:#889'}">${text}</td>` : '<td style="color:#ddd">—</td>';
   const row = (label, cellsHtml) => `<tr><td style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
-  let rows = row('スコア合計', names.map((_, i) => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
+  let rows = row('スコア（pts）', names.map((_, i) => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
   rows += row(`スコア収支（pts×${scoreRate}倍）`, names.map((_, i) => cell(i, signed(scoreBonus[i]))).join(''));
   rows += row('チップ差', names.map((_, i) => cell(i, `${signed(chips[i])}枚`)).join(''));
   rows += row(`チップ数（開始時${startChips}枚）`, names.map((_, i) => cell(i, `${(startChips + chips[i]).toLocaleString()}枚`)).join(''));
@@ -1399,7 +1430,7 @@ function bonusTableHtml(g) {
   return `<div class="bonus-grid">${cells}</div>
   <div class="bonus-table-wrap bonus-collapsed" style="overflow-x:auto;margin-top:10px">
     <table class="rounds-table bonus-detail-table" style="table-layout:fixed;min-width:${120 + N * 84}px">
-      <thead><tr><th style="width:120px;text-align:left;padding-left:8px">内訳</th>${names.map((nm, i) => `<th>${teamDotHtml(s, i)}${esc(nm)}</th>`).join('')}</tr></thead>
+      <thead><tr><th style="width:120px;text-align:left;padding-left:8px">内訳</th>${names.map((nm, i) => `<th>${teamMarkHtml(s, i)}${esc(nm)}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>
@@ -1421,16 +1452,20 @@ function normalizedTeams(s) {
   // Firebase経由でmembersが欠落するケースに備えて空配列で補完
   return (s.teams || []).map(t => ({ name: t.name || '', members: t.members || [] }));
 }
-// チームの識別色（チーム成績・対局履歴・個人成績で共通）
-const TEAM_COLORS = ['#E75620', '#177083', '#6a1b9a', '#f9a825', '#00838f', '#ad1457'];
+// チームの識別記号（チーム成績・対局履歴・個人成績で共通）。
+// 表ヘッダーの背景色と被るのを避けるため、色ではなく記号で区別する
+const TEAM_MARKS = ['◯', '△', '◻', '✕', '◇', '☆'];
 function memberTeamIndex(s, m) {
   if (!s.teamMode || !s.teams) return -1;
   return normalizedTeams(s).findIndex(t => t.members.includes(m));
 }
-// メンバー名の前に付けるチーム色ドット（チーム戦でないグループは空文字）
-function teamDotHtml(s, m) {
+function teamMarkOf(ti) {
+  return TEAM_MARKS[ti % TEAM_MARKS.length];
+}
+// メンバー名の前に付けるチーム記号（チーム戦でないグループは空文字）
+function teamMarkHtml(s, m) {
   const ti = memberTeamIndex(s, m);
-  return ti >= 0 ? `<span class="team-dot" style="background:${TEAM_COLORS[ti % TEAM_COLORS.length]}"></span>` : '';
+  return ti >= 0 ? `<span class="team-mark">${teamMarkOf(ti)}</span>` : '';
 }
 function teamStandingsHtml(g) {
   const s = g.settings;
@@ -1457,7 +1492,7 @@ function teamStandingsHtml(g) {
     return `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
       <div class="score-info">
-        <div class="score-name"><span class="team-dot" style="background:${TEAM_COLORS[ti % TEAM_COLORS.length]}"></span>${esc(t.name)}</div>
+        <div class="score-name"><span class="team-mark">${teamMarkOf(ti)}</span>${esc(t.name)}</div>
         <div class="team-members-line">${memberNames}</div>
         ${bonusLine}
       </div>
@@ -1486,7 +1521,7 @@ function renderTeamEditor() {
       </div>
       <div class="team-members-zone">
         ${t.members.map(id => `<span class="team-chip" draggable="true" ondragstart="onTeamDragStart(event, ${id})" onclick="tapMoveTeamMember(${id})">${esc(ctx.nameOf(id))}</span>`).join('')
-          || '<span style="font-size:11px;color:#bbb;align-self:center">ここに名前をドラッグ</span>'}
+          || '<span style="font-size:11px;color:#bbb;align-self:center">メンバーを追加するとここに表示されます</span>'}
       </div>
     </div>`).join('');
 }
@@ -1637,7 +1672,7 @@ function chartHtml(rounds, s) {
 const FIRST_COL_TH = '<th style="width:60px">';
 function roundsTheadHtml(s) {
   // チーム戦なら名前の前に所属チームの色ドットを付ける
-  return `<thead><tr>${FIRST_COL_TH}試合</th>${s.playerNames.map((n, i) => `<th>${teamDotHtml(s, i)}${esc(n)}</th>`).join('')}</tr></thead>`;
+  return `<thead><tr>${FIRST_COL_TH}試合</th>${s.playerNames.map((n, i) => `<th>${teamMarkHtml(s, i)}${esc(n)}</th>`).join('')}</tr></thead>`;
 }
 // 回し打ちグループ（メンバー数 > 1試合の人数）用のカード形式履歴。
 // 各試合に「参加者のみ」を順位順で表示するので、誰が対戦した試合かが一目で分かる
@@ -1657,7 +1692,7 @@ function roundListHtml(rounds, s, onclickOf) {
       const extra = [];
       if (r.chips && r.chips[k]) extra.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
       if (r.yakitori && r.yakitori[k]) extra.push('🐔');
-      return `<span class="round-p">${icon} ${teamDotHtml(s, m)}${esc(s.playerNames[m] || '')} <b style="${scStyle}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</b>${extra.length ? ` <span style="color:#b08968;font-size:10px">${extra.join(' ')}</span>` : ''}</span>`;
+      return `<span class="round-p">${icon} ${teamMarkHtml(s, m)}${esc(s.playerNames[m] || '')} <b style="${scStyle}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</b>${extra.length ? ` <span style="color:#b08968;font-size:10px">${extra.join(' ')}</span>` : ''}</span>`;
     }).join('');
     return `<div class="round-item" onclick="${onclickOf(idx)}">
       <div class="round-item-head">第${idx + 1}試合 <span>${fmtTime(r.at)}</span>${r.edited ? '<span class="round-edited">修正済</span>' : ''}</div>
@@ -1735,21 +1770,40 @@ function rankCountHtml(rounds, s) {
   const validPcts = pcts.filter(v => v !== null);
   const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
   const bestPct = validPcts.length ? Math.max(...validPcts) : null;
-  const crown = '<span style="font-size:11px;margin-right:2px">👑</span>'; // トップの識別は王冠マークで
   const dash = '<span style="color:#ccc">—</span>';
+  // ベストの強調は絵文字ではなく、背景色と枠線の強弱で示す
+  const hl = slots === 3
+    ? 'background:#EAF0FB;box-shadow:inset 0 0 0 1.5px #4261AA;font-weight:800'
+    : 'background:#E4F3EC;box-shadow:inset 0 0 0 1.5px #177083;font-weight:800';
   const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${slots === 3 ? '#4261AA' : '#177083'}">名前</th>${Array.from({length: slots}, (_, r) => `<th>${r + 1}着</th>`).join('')}<th>試合数</th><th>平均着順</th><th>ラス回避</th></tr></thead>`;
-  const rows = names.map((nm, i) => {
-    const nameTd = `<td class="sticky-col">${teamDotHtml(s, i)}${esc(nm)}</td>`;
+  // チーム戦はチームごとにメンバーをグループ化し、チーム単位で上から順に表示する
+  let rowOrder = names.map((_, i) => i);
+  const groupHeaderOf = {}; // この行の直前に挟むチーム見出し（先頭メンバーのindexで引く）
+  if (s.teamMode && s.teams) {
+    const teams = normalizedTeams(s);
+    const inTeam = new Set(teams.flatMap(t => t.members));
+    const rest = names.map((_, i) => i).filter(i => !inTeam.has(i));
+    rowOrder = teams.flatMap(t => t.members.filter(m => m < N)).concat(rest);
+    const headTd = `text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:#667;background:#f5f7f8`;
+    teams.forEach((t, ti) => {
+      const first = t.members.find(m => m < N);
+      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 4}" style="${headTd}">${teamMarkOf(ti)} ${esc(t.name)}</td></tr>`;
+    });
+    if (rest.length) groupHeaderOf[rest[0]] = `<tr><td colspan="${slots + 4}" style="${headTd}">（未所属）</td></tr>`;
+  }
+  const rows = rowOrder.map(i => {
+    const head = groupHeaderOf[i] || '';
+    const nameTd = `<td class="sticky-col">${teamMarkHtml(s, i)}${esc(names[i])}</td>`;
     if (!gamesPlayed[i]) {
-      return `<tr>${nameTd}${Array.from({length: slots + 3}, () => `<td>${dash}</td>`).join('')}</tr>`;
+      return head + `<tr>${nameTd}${Array.from({length: slots + 3}, () => `<td>${dash}</td>`).join('')}</tr>`;
     }
     const countTds = Array.from({length: slots}, (_, rank) => {
       const c = counts[i][rank];
       return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
-    return `<tr>${nameTd}${countTds}<td>${gamesPlayed[i]}回</td>
-      <td style="font-weight:700">${(avgs[i] === bestAvg ? crown : '') + avgs[i].toFixed(2)}</td>
-      <td style="font-weight:700">${(pcts[i] === bestPct ? crown : '') + pcts[i] + '%'}</td></tr>`;
+    return head + `<tr>${nameTd}${countTds}<td>${gamesPlayed[i]}回</td>
+      <td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>
+      <td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td></tr>`;
   }).join('');
   return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + (slots + 3) * 58}px">
     ${header}<tbody>${rows}</tbody>
@@ -2018,7 +2072,8 @@ function openSheetCtx(ctx, idx) {
     });
   }
 
-  document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : '点数入力';
+  // チップ入力ありの場合はタイトル表記を「点数 / チップ入力」に切り替える
+  document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : (s.bonusEnabled ? '点数 / チップ入力' : '点数入力');
   document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
   // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
   document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
@@ -2056,9 +2111,9 @@ function captureSheetValues() {
     const el = document.getElementById('si-' + k);
     if (el && el.value !== '') sheetPrefill[m] = el.value;
     else delete sheetPrefill[m];
-    const ci = document.getElementById('ci-' + k);
-    if (ci) {
-      if (ci.value !== '') sheetChips[m] = ci.value;
+    const ce = document.getElementById('ce-' + k);
+    if (ce) {
+      if (ce.value !== '') sheetChips[m] = (Number(ce.value) || 0) - chipBaseline(m);
       else delete sheetChips[m];
     }
   });
@@ -2076,43 +2131,43 @@ function renderSheetInputs() {
     document.getElementById('confirm-btn').disabled = true;
     document.getElementById('total-check').textContent = 'メンバーを選択してください';
     document.getElementById('total-check').className = 'total-check ng';
+    document.getElementById('chip-check').style.display = 'none';
     return;
   }
   sheetOrder = sheetSelected.slice();
   const withChips = !!s.bonusEnabled;
   const withYaki = !!s.yakitori;
-  inputs.innerHTML = sheetOrder.map((m, k) => {
-    const diff = sheetChips[m];
-    const hasDiff = diff != null && diff !== '';
-    const base = withChips ? chipBaseline(m) : 0;
+  // チップありのときは「名前｜チップ（左）｜点数（右）」を1行に収め、列見出しを1行入れる
+  const colLabel = 'font-size:10px;color:#999;font-weight:600';
+  const header = withChips
+    ? `<div class="sheet-row" style="margin-bottom:-4px">
+        <label class="sheet-name-s"></label>
+        <div style="width:86px;${colLabel};text-align:center;flex-shrink:0">チップ</div>
+        <div style="flex:1;${colLabel};text-align:right">点数</div>
+        ${withYaki ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">🐔</div>` : ''}
+      </div>`
+    : '';
+  inputs.innerHTML = header + sheetOrder.map((m, k) => {
+    // チップは「現在のチップ数」のみ入力。直前までの持ちチップ（自動参照）を初期値にする
+    const cur = withChips ? chipBaseline(m) + (sheetChips[m] != null ? Number(sheetChips[m]) || 0 : 0) : 0;
     return `<div class="sheet-row">
-      <label>${esc(s.playerNames[m])}</label>
+      <label${withChips ? ' class="sheet-name-s"' : ''}>${esc(s.playerNames[m])}</label>
+      ${withChips ? `<div class="chip-input">
+        <input type="number" id="ce-${k}" value="${cur}" oninput="onChipEndInput(${k})">
+        <span class="chip-suffix">枚</span>
+      </div>` : ''}
       <div class="pt-input">
         <input type="number" id="si-${k}" placeholder="250" oninput="updateTotal()"
           value="${sheetPrefill[m] != null ? sheetPrefill[m] : ''}">
         <span class="pt-suffix">00</span>
       </div>
       ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥">🐔</button>` : ''}
-    </div>
-    ${withChips ? `<div class="sheet-subrow">
-      <div class="chip-input">
-        <span class="chip-pre">終了時チップ</span>
-        <input type="number" id="ce-${k}" placeholder="${base}" oninput="onChipEndInput(${k})"
-          value="${hasDiff ? base + (Number(diff) || 0) : ''}">
-        <span class="chip-suffix">枚</span>
-      </div>
-      <div class="chip-input">
-        <span class="chip-pre">チップ差</span>
-        <input type="number" id="ci-${k}" placeholder="0" oninput="onChipDiffInput(${k})"
-          value="${hasDiff ? diff : ''}">
-        <span class="chip-suffix">枚</span>
-      </div>
-    </div>` : ''}`;
+    </div>`;
   }).join('');
   updateTotal();
 }
-// チップの基準値 = 開始時チップ数 + それまでの試合のチップ差の累計。
-// 修正時は修正対象より前の試合まで。終了時チップ数⇔チップ差の相互算出に使う
+// チップの基準値 = 開始時チップ数 + それまでの試合のチップ差の累計（最新の持ちチップを自動参照）。
+// 修正時は修正対象より前の試合まで
 function chipBaseline(m) {
   const s = sheetCtx.settings;
   let base = Number(s.startChips) || 0;
@@ -2124,24 +2179,13 @@ function chipBaseline(m) {
   }
   return base;
 }
-// 終了時チップ数を入力 → チップ差を自動算出
+// 現在のチップ数を入力 → 基準値との差をチップ差として内部記録
 function onChipEndInput(k) {
   const m = sheetOrder[k];
-  const ce = document.getElementById('ce-' + k);
-  const ci = document.getElementById('ci-' + k);
-  if (ce.value === '') { ci.value = ''; delete sheetChips[m]; return; }
-  const diff = (Number(ce.value) || 0) - chipBaseline(m);
-  ci.value = diff;
-  sheetChips[m] = diff;
-}
-// チップ差を入力 → 終了時チップ数を自動算出
-function onChipDiffInput(k) {
-  const m = sheetOrder[k];
-  const ce = document.getElementById('ce-' + k);
-  const ci = document.getElementById('ci-' + k);
-  if (ci.value === '') { ce.value = ''; delete sheetChips[m]; return; }
-  ce.value = chipBaseline(m) + (Number(ci.value) || 0);
-  sheetChips[m] = ci.value;
+  const el = document.getElementById('ce-' + k);
+  if (el.value === '') delete sheetChips[m];
+  else sheetChips[m] = (Number(el.value) || 0) - chipBaseline(m);
+  updateTotal();
 }
 // 焼き鳥🐔のON/OFF切り替え（メンバー単位で保持し、選択切替後も維持される）
 function toggleSheetYaki(k) {
@@ -2156,29 +2200,56 @@ function closeSheet() {
   editingIndex = -1;
 }
 function updateTotal() {
-  const n = sheetCtx.settings.numPlayers;
+  const s = sheetCtx.settings;
+  const n = s.numPlayers;
   if (sheetOrder.length !== n) return; // メンバー未確定時は何もしない
-  const expected = sheetCtx.settings.startPoints * n;
+  const expected = s.startPoints * n;
   const values = Array.from({length: n}, (_, i) => {
     const el = document.getElementById('si-' + i);
     return el.value === '' ? null : Number(el.value) * 100; // 入力は百の位以上のみ
   });
   const emptyIndices = values.map((v,i) => v === null ? i : -1).filter(i => i >= 0);
-  const filled = values.filter(v => v !== null).reduce((s,v) => s+v, 0);
-  const total = values.reduce((s, v) => s + (v ?? 0), 0);
+  const filled = values.filter(v => v !== null).reduce((s2,v) => s2+v, 0);
+  const total = values.reduce((s2, v) => s2 + (v ?? 0), 0);
   document.getElementById('auto-btn').disabled = emptyIndices.length !== 1;
   const el = document.getElementById('total-check');
   const btn = document.getElementById('confirm-btn');
+  let pointsOk = false;
   if (emptyIndices.length === 0 && total === expected) {
     el.textContent = `入力合計: ${total.toLocaleString()} ✓`;
-    el.className = 'total-check ok'; btn.disabled = false;
+    el.className = 'total-check ok'; pointsOk = true;
   } else if (emptyIndices.length === n) {
     el.textContent = '点数を入力してください';
-    el.className = 'total-check ng'; btn.disabled = true;
+    el.className = 'total-check ng';
   } else {
     el.textContent = `入力合計: ${filled.toLocaleString()}`;
-    el.className = 'total-check ng'; btn.disabled = true;
+    el.className = 'total-check ng';
   }
+  // チップの整合性チェック: チップは参加者間でやり取りするだけなので、合計枚数は変わらないはず。
+  // 合計が合わない入力は完了をブロックする（空欄は変化なし=基準値のまま扱い）
+  const chipEl = document.getElementById('chip-check');
+  let chipsOk = true;
+  if (s.bonusEnabled) {
+    let entered = 0, expectedChips = 0;
+    sheetOrder.forEach((m, k) => {
+      const base = chipBaseline(m);
+      expectedChips += base;
+      const ce = document.getElementById('ce-' + k);
+      entered += (ce && ce.value !== '') ? (Number(ce.value) || 0) : base;
+    });
+    chipsOk = entered === expectedChips;
+    chipEl.style.display = 'block';
+    if (chipsOk) {
+      chipEl.textContent = `チップ合計: ${entered.toLocaleString()}枚 ✓`;
+      chipEl.className = 'total-check ok';
+    } else {
+      chipEl.textContent = `チップ合計: ${entered.toLocaleString()}枚 — 参加者の合計が${expectedChips.toLocaleString()}枚になるよう入力してください`;
+      chipEl.className = 'total-check ng';
+    }
+  } else {
+    chipEl.style.display = 'none';
+  }
+  btn.disabled = !(pointsOk && chipsOk);
 }
 function autoFill() {
   const n = sheetCtx.settings.numPlayers;
@@ -2202,7 +2273,12 @@ async function submitRound() {
   const now = new Date().toISOString();
   const extras = {}; // チップ差・焼き鳥（有効なグループのみ保存）
   if (ctx.settings.bonusEnabled) {
-    extras.chips = Array.from({length: n}, (_, i) => Number(document.getElementById('ci-'+i).value) || 0);
+    // 入力された「現在のチップ数」と基準値（自動参照）の差をチップ差として保存。空欄は変化なし
+    extras.chips = sheetOrder.map((m, k) => {
+      const el = document.getElementById('ce-' + k);
+      if (!el || el.value === '') return 0;
+      return (Number(el.value) || 0) - chipBaseline(m);
+    });
   }
   if (ctx.settings.yakitori) {
     extras.yakitori = sheetOrder.map(m => sheetYaki[m] ? 1 : 0);
@@ -2248,6 +2324,7 @@ function umaKeyOf(uma, n) {
   return 'custom';
 }
 const RATE_PRESETS = ['10','20','30','50','100','200','500','1000','2000','0'];
+const CHIP_RATE_PRESETS = ['10','20','30','50','100','200','500','1000','2000'];
 // 1試合でも参加したメンバーのindex集合（削除可否の判定に使う）
 function participatedSet(g) {
   const set = new Set();
@@ -2318,6 +2395,7 @@ function settingsFormHtml(name, s) {
   const n = s.numPlayers;
   const umaKey = umaKeyOf(s.uma, n);
   const rateKey = RATE_PRESETS.includes(String(s.rate)) ? String(s.rate) : 'custom';
+  const chipRateKey = CHIP_RATE_PRESETS.includes(String(s.chipRate)) ? String(s.chipRate) : 'custom';
   const umaOpts = umaOptionsFor(n)
     .map(([v,l]) => `<option value="${v}" ${v===umaKey?'selected':''}>${l}</option>`).join('');
   const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
@@ -2353,10 +2431,16 @@ function settingsFormHtml(name, s) {
       </label>
       <div id="e-bonus-fields" style="display:${s.bonusEnabled ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin-bottom:0"><label>チップ倍率</label>
-          <input type="number" id="e-chip-rate" value="${s.chipRate != null ? s.chipRate : ''}" placeholder="例: 500">
+          <select id="e-chip-rate" onchange="document.getElementById('e-chip-rate-custom-wrap').style.display=this.value==='custom'?'block':'none'">
+            ${[['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['custom','カスタム']]
+              .map(([v,l]) => `<option value="${v}" ${v === chipRateKey ? 'selected' : ''}>${l}</option>`).join('')}
+          </select>
+          <div id="e-chip-rate-custom-wrap" style="display:${chipRateKey === 'custom' ? 'block' : 'none'};margin-top:6px">
+            <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="カスタムチップ倍率（例: 300）">
+          </div>
         </div>
         <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
-          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : ''}" placeholder="例: 20">
+          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="例: 20">
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
       </div>
@@ -2375,7 +2459,7 @@ function settingsFormHtml(name, s) {
           <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
           <button type="button" class="edit-tab" onclick="randomizeTeams()">🎲 ランダム編成</button>
         </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をドラッグ＆ドロップ、またはタップで次のチームへ移動できます</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をタップすると次のチームへ移動できます</div>
       </div>
     </div>`;
 }
@@ -2433,7 +2517,8 @@ async function saveGameEdit() {
   const rateKey = document.getElementById('e-rate').value;
   const rate = rateKey === 'custom' ? (Number(document.getElementById('e-rate-c').value) || 0) : Number(rateKey);
   const bonusEnabled = document.getElementById('e-bonus').checked;
-  const chipRate = Number(document.getElementById('e-chip-rate').value) || 1;
+  const chipRateKey = document.getElementById('e-chip-rate').value;
+  const chipRate = chipRateKey === 'custom' ? (Number(document.getElementById('e-chip-rate-c').value) || 1) : Number(chipRateKey);
   const startChips = Number(document.getElementById('e-start-chips').value) || 0;
   const yakitori = document.getElementById('e-yakitori').checked;
   // チーム戦: 有効時は全員所属＋空チームなしを保証。無効化しても編成は保持し、再度ONにしたとき復元する
