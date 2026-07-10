@@ -386,8 +386,20 @@ details.log-details summary::-webkit-details-marker { display: none; }
 /* 焼き鳥🐔トグル（OFFはグレー表示） */
 .yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; padding: 8px 7px; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
 .yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
-/* 収支集計テーブル: 内訳行は折りたたみ（タップで展開） */
-.bonus-table-wrap.bonus-collapsed tr.bonus-detail { display: none; }
+/* 収支集計: 主役の「合計収支」はミニカードで大きく、内訳は控えめな表でメリハリをつける */
+.bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bonus-cell { background: #f6f9fa; border: 1px solid #e3edf0; border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.bonus-cell .bc-name { font-size: 11px; color: #789; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bonus-cell .bc-val { font-size: 19px; font-weight: 800; white-space: nowrap; }
+.bonus-cell .bc-unit { font-size: 10px; font-weight: 600; color: #9ab; margin-left: 2px; }
+.bonus-cell.pos .bc-val { color: #1a237e; }
+.bonus-cell.neg .bc-val { color: #c62828; }
+.bonus-cell.zero .bc-val { color: #667; }
+.bonus-cell.na { opacity: 0.5; }
+/* 内訳テーブル: タップで展開。文字は小さくグレーで補足情報らしく */
+.bonus-table-wrap.bonus-collapsed { display: none; }
+.bonus-detail-table th { font-size: 10px; }
+.bonus-detail-table td { font-size: 11px; }
 /* チーム戦（フェーズ3）: チーム編成エディタ */
 .team-box { border: 1.5px solid #ddd; border-radius: 10px; padding: 10px; margin-bottom: 8px; background: #fff; }
 .team-box.drag-over { border-color: #177083; background: #E4F3EC; }
@@ -576,7 +588,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h3>オカ</h3>
       <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
       <h3>スコア倍率（収支換算）</h3>
-      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをスコア収支に換算して表示できます。このアプリではスコア表示と収支表示をワンタップで切り替えられます。</p>
+      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントを「bonus」という単位のスコア収支に換算して表示できます（例：スコア倍率が10倍なら 1.0pt → 10bonus）。このアプリではスコア表示と収支表示をワンタップで切り替えられます。</p>
       <h3>同点のときは？</h3>
       <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
       <h3>3人麻雀（サンマ）の場合</h3>
@@ -677,7 +689,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <input type="number" id="s-rate-custom" placeholder="例: 150">
         </div>
       </div>
-      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコア収支</div>
+      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。<br>例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
     </div>
     <div class="card">
       <div class="card-title">収支オプション</div>
@@ -696,7 +708,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" id="s-start-chips" placeholder="例: 20">
           </div>
         </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差 = 終了時チップ数 − 開始時チップ数<br>例：チップ差3枚 × チップ倍率500倍 → 1500チップ収支</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
       </div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-yakitori"> 焼き鳥🐔を記録する
@@ -1358,23 +1370,36 @@ function bonusTableHtml(g) {
   const chipBonus = chips.map(c => Math.round(c * chipRate));
   const grand = totals.map((_, i) => scoreBonus[i] + chipBonus[i]);
   const signed = v => `${v > 0 ? '+' : ''}${v.toLocaleString()}`;
-  const styleOf = v => v > 0 ? 'color:#1a237e;font-weight:700' : v < 0 ? 'color:#c62828;font-weight:700' : 'color:#888;font-weight:700';
-  const labelTd = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
-  const cell = (i, text, style) => played[i] ? `<td style="${style}">${text}</td>` : '<td style="color:#ddd">—</td>';
-  const row = (label, cellsHtml, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td style="${labelTd}">${label}</td>${cellsHtml}</tr>`;
   const startChips = Number(s.startChips) || 0;
-  let rows = row('合計収支', names.map((_, i) => cell(i, signed(grand[i]), styleOf(grand[i]) + ';font-size:14px')).join(''));
-  rows += row('スコア合計', names.map((_, i) => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`, 'color:#777')).join(''), 'bonus-detail');
-  rows += row(`スコア収支（×${scoreRate}）`, names.map((_, i) => cell(i, signed(scoreBonus[i]), 'color:#777')).join(''), 'bonus-detail');
-  rows += row('チップ差', names.map((_, i) => cell(i, `${signed(chips[i])}枚`, 'color:#777')).join(''), 'bonus-detail');
-  rows += row(`チップ数（開始時${startChips}枚）`, names.map((_, i) => cell(i, `${(startChips + chips[i]).toLocaleString()}枚`, 'color:#777')).join(''), 'bonus-detail');
-  rows += row(`チップ収支（×${chipRate}）`, names.map((_, i) => cell(i, signed(chipBonus[i]), 'color:#777')).join(''), 'bonus-detail');
+  // 主役: メンバーごとの合計収支（bonus単位）を大きなミニカードで表示。値の大きい順、未参加は最後
+  const order = names.map((_, i) => i).sort((a, b) => {
+    if (played[a] !== played[b]) return played[a] ? -1 : 1;
+    return grand[b] - grand[a];
+  });
+  const cells = order.map(i => {
+    if (!played[i]) {
+      return `<div class="bonus-cell na"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val" style="color:#bbb">—</div></div>`;
+    }
+    const v = grand[i];
+    const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
+    return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
+  }).join('');
+  // 内訳: 補足情報として控えめな表にまとめる（タップで展開）
+  const cell = (i, text, strong) => played[i] ? `<td style="${strong ? 'font-weight:700' : 'color:#889'}">${text}</td>` : '<td style="color:#ddd">—</td>';
+  const row = (label, cellsHtml) => `<tr><td style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
+  let rows = row('スコア合計', names.map((_, i) => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
+  rows += row(`スコア収支（pts×${scoreRate}倍）`, names.map((_, i) => cell(i, signed(scoreBonus[i]))).join(''));
+  rows += row('チップ差', names.map((_, i) => cell(i, `${signed(chips[i])}枚`)).join(''));
+  rows += row(`チップ数（開始時${startChips}枚）`, names.map((_, i) => cell(i, `${(startChips + chips[i]).toLocaleString()}枚`)).join(''));
+  rows += row(`チップ収支（枚×${chipRate}倍）`, names.map((_, i) => cell(i, signed(chipBonus[i]))).join(''));
+  rows += row('合計収支', names.map((_, i) => cell(i, `${signed(grand[i])}bonus`, true)).join(''));
   if (s.yakitori) {
-    rows += row('焼き鳥🐔', names.map((_, i) => cell(i, yaki[i] ? `${yaki[i]}回` : '0回', yaki[i] ? 'font-weight:700' : 'color:#ccc')).join(''), 'bonus-detail');
+    rows += row('焼き鳥🐔', names.map((_, i) => cell(i, yaki[i] ? `${yaki[i]}回` : '0回', yaki[i] > 0)).join(''));
   }
-  return `<div class="bonus-table-wrap bonus-collapsed" style="overflow-x:auto">
-    <table class="rounds-table" style="${tableStyleFor(N)}">
-      <thead><tr>${FIRST_COL_TH}項目</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
+  return `<div class="bonus-grid">${cells}</div>
+  <div class="bonus-table-wrap bonus-collapsed" style="overflow-x:auto;margin-top:10px">
+    <table class="rounds-table bonus-detail-table" style="table-layout:fixed;min-width:${120 + N * 84}px">
+      <thead><tr><th style="width:120px;text-align:left;padding-left:8px">内訳</th>${names.map((nm, i) => `<th>${teamDotHtml(s, i)}${esc(nm)}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>
@@ -1426,7 +1451,7 @@ function teamStandingsHtml(g) {
     if (s.bonusEnabled) {
       // メンバーごとの収支（表示と同じ丸め）を合算してチーム合計収支にする
       const grand = t.members.reduce((a, m) => a + Math.round((totals[m] || 0) * scoreRate) + Math.round((chips[m] || 0) * chipRate), 0);
-      bonusLine = `<div class="score-bonus">合計収支 ${grand > 0 ? '+' : ''}${grand.toLocaleString()}</div>`;
+      bonusLine = `<div class="score-bonus">合計収支 ${grand > 0 ? '+' : ''}${grand.toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span></div>`;
     }
     const cls = pts[ti] >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
@@ -1803,7 +1828,7 @@ function renderGame() {
   const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
   let cardsHtml = ranked.map(p => {
     const g = totalGroups[p.k];
-    const bonusStr = (showBonus && s.rate) ? `スコア収支 ${(p.t * s.rate).toLocaleString()}` : '';
+    const bonusStr = (showBonus && s.rate) ? `スコア収支 ${(p.t * s.rate).toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span>` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
       ${rankBadgeHtml(g.start, g.size > 1, g.isLast)}
@@ -2319,7 +2344,7 @@ function settingsFormHtml(name, s) {
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
         <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
       </div>
-      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコア収支</div>
+      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
     </div>
     <div class="field"><label>収支オプション</label>
       <label class="opt-check" style="margin-top:2px">
@@ -2333,7 +2358,7 @@ function settingsFormHtml(name, s) {
         <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
           <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : ''}" placeholder="例: 20">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差 = 終了時チップ数 − 開始時チップ数<br>例：チップ差3枚 × チップ倍率500倍 → 1500チップ収支</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
       </div>
       ${s.bonusEnabled ? '<div class="chips-hint" style="margin:6px 0 0 26px">OFFにしても記録済みのチップ差は消えません（表示されなくなるだけで、再度ONにすると集計に戻ります）</div>' : ''}
       <label class="opt-check" style="margin-top:8px">
@@ -2531,7 +2556,7 @@ function viewDetail(g) {
   html += '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
   ranked.forEach(p => {
     const grp = totalGroups[p.k];
-    const bonusStr = s.rate ? `スコア収支 ${(p.t * s.rate).toLocaleString()}` : '';
+    const bonusStr = s.rate ? `スコア収支 ${(p.t * s.rate).toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span>` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
