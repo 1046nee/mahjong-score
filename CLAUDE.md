@@ -18,6 +18,11 @@
 - `blog.html` — ブログ一覧（カード型、緑/オレンジのキャッチーなデザイン）
 - `blog-*.html` — 個別記事（本文はシンプルな黒文字＋緑の見出し・左バー、オレンジのハイライト）
 - `sitemap.xml` / `robots.txt` — SEO用。**新しいページ（記事・固定ページ）を追加したら sitemap.xml にも `<url>` を1件追加すること**
+- `terms.html` — 利用規約（禁止事項・賭博否定・免責・サービス変更等。2026.07.08追加）
+- `favicon.svg` — 絵文字🀄ベースの暫定favicon（実画像素材ができ次第、正式なfavicon一式に差し替える）
+- `manifest.json` — PWA用の最小構成（アイコンはfavicon.svgを暫定流用）
+- 新しいページを追加したら、`<head>`に以下を必ず入れる（index.htmlを参照）: meta description, canonical, favicon/manifest link, OGP（og:title/description/url/type/site_name/locale）, twitter:card。og:imageは画像素材待ちのため未設定（用意でき次第、全ページに一括追加すること）
+- GA4（Google Analytics）は測定ID取得待ちで未導入。導入時はprivacy.htmlの「3. アクセス解析ツールについて」の文言も実態に合わせて更新すること
 - `privacy.html` — プライバシーポリシー（AdSense審査用の必須文言を含む）
 
 ## デザインシステム
