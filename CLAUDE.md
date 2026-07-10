@@ -30,10 +30,17 @@
   イベント: `group_create`（num_players/member_count/team_mode/bonus_enabled）/ `group_join` / `round_submit`（is_edit/round_no）/ `share_copy`（from）。
   集計するにはGTM管理画面でカスタムイベントトリガー＋GA4イベントタグを作成する
 - `404.html` — Firebase Hostingが未存在URLで自動配信するカスタム404（noindex・広告ローダーなし）
-- **Google AdSense導入済み（2026.07.10）**: パブリッシャーID `ca-pub-9998035509478799`。
-  全16ページのheadにメタタグ＋adsbygoogle.jsスクリプト設置済み、ルートに `ads.txt` 設置済み。
-  **審査待ちの状態**。合格したら手動広告ユニットで広告枠を実装する（配置方針: ブログ記事内・記事末尾CTA上・LP下部。
-  スコア入力シート・ゲーム画面・設定モーダル周辺とprivacy/termsには置かない。CLS対策でmin-height確保）
+- `tests.html` — 計算ロジックの単体テスト（noindex）。index.htmlをiframeで読み込み、実物の
+  rankGroups/calcScores/gameTotals/playedFlags/chipTotals/buildCsv を17ケース検証する。
+  **計算ロジックを変更したら /tests.html を開いて ALL PASS を確認してからコミットすること**
+- 構造化データ: 全記事にArticle JSON-LD（headline/description/datePublished等）、LPにFAQPage JSON-LD＋「よくある質問」セクション（4問。JSON-LDと本文の内容は一致させること）
+- **Google AdSense: 審査合格済み（2026.07.10）**: パブリッシャーID `ca-pub-9998035509478799`。
+  全ページのheadにメタタグ＋adsbygoogle.js、ルートに `ads.txt` 設置済み
+- **広告枠は `/assets/ads.js` の `AD_SLOTS` で管理**: 枠は article_top（記事の導入直後）/ article_bottom（記事末尾CTA上）/
+  list_bottom（一覧ページのリスト下）/ lp_bottom（LP解説セクション間）。
+  **スロットIDが空の枠は非表示（レイアウト影響なし）**。AdSense管理画面で「ディスプレイ広告」ユニットを作成し、
+  スロットID（数字）をAD_SLOTSに入れるとその枠だけ配信開始（min-height:280pxを自動確保しCLS対策）。
+  スコア入力シート・ゲーム画面・設定モーダル・privacy/terms・404には枠を置かない（誤クリック防止）
 - GA4の直書きgtagは未導入（実測定ID `G-...` が未取得のため）。**推奨はGTM経由でGA4を配信する構成**（GTM管理画面でGA4設定タグを追加すればコード変更不要）。直書きする場合は実IDを取得後、GTMスクリプトの直前に挿入すること
 - `privacy.html` — プライバシーポリシー（AdSense審査用の必須文言を含む）
 
@@ -98,7 +105,9 @@
 ### 記事の追加手順（チェックリスト）
 1. 既存の `blog-*.html`（お知らせなら `news/update-2026-07.html`）をコピーして執筆。
    head一式・パンくず（トップ＞ブログ＞カテゴリ＞記事名）・`.post-layout`＋`<aside class="side" data-sidebar>`・
-   末尾CTA（`.cta-link`）・`/assets/blog.css`と`/assets/blog-site.js`の読み込みを維持する
+   広告枠（article_top/article_bottomの`.ad-slot`）・末尾CTA（`.cta-link`）・
+   `/assets/blog.css`と`/assets/blog-site.js`と`/assets/ads.js`の読み込みを維持する。
+   **Article JSON-LDのheadline/description/datePublished/mainEntityOfPageを新記事の内容に書き換えること**
 2. `/assets/blog-site.js` の BLOG_POSTS の**先頭**に1件追加（url/cat/date/tag/title/desc、推したい記事はrecommended: true）
 3. `sitemap.xml` に `<url>` を1件追加
 4. お知らせ記事の場合は `/news/feed.xml` に `<item>` を1件追加（lastBuildDateも更新）
@@ -172,6 +181,11 @@
   チーム戦はチームごとにグループ化（チーム見出し行つき）
 - チーム識別は記号 `TEAM_MARKS = ['◯','△','◻','✕','◇','☆']`（色ドットは使わない。ヘッダー背景色と被るため）
 - 未参加メンバー: スコアカード「未参加」・表「—」・グラフから除外
+
+### その他のアプリ機能
+- **CSVエクスポート**: 対局履歴カードの「CSV」ボタン（ゲーム画面・結果詳細）。`buildCsv(g)`が
+  試合ごとのpts（未参加は空欄）＋収支ONならチップ差列・合計収支行を生成、BOM付きUTF-8でダウンロード
+- **過去の戦績の絞り込み**: グループ名・メンバー名のキーワード検索＋対局形式（すべて/4人/3人）。`renderHistory()`内でフィルタ
 
 ### 設定変更モーダル（ゲーム中の「変更」）
 - 対局形式（3人/4人）は変更不可（モーダルに明記）。ルール変更は過去試合を全再計算（⚠警告を表示）

@@ -34,6 +34,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@majasco_jp">
 <meta name="twitter:image" content="https://majasco.jp/assets/ogp.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"まじゃすこは無料ですか？","acceptedAnswer":{"@type":"Answer","text":"はい、すべての機能を無料でご利用いただけます。運営費は広告収入でまかなっています。"}},{"@type":"Question","name":"会員登録やアプリのインストールは必要ですか？","acceptedAnswer":{"@type":"Answer","text":"不要です。スマートフォンやPCのブラウザだけで、すぐに使い始められます。グループを作成すると発行されるURLをメンバーに共有するだけで、全員が同じスコアをリアルタイムで見られます。"}},{"@type":"Question","name":"3人麻雀（サンマ）でも使えますか？","acceptedAnswer":{"@type":"Answer","text":"使えます。グループ作成時に「3人麻雀」を選ぶと、持ち点・返し点の初期値や「15-0-15」のような3人用のウマ形式に切り替わります。チーム戦やチップの収支計算もオプションで利用できます。"}},{"@type":"Question","name":"過去の対局データは消えませんか？","acceptedAnswer":{"@type":"Answer","text":"対局データはグループの共有URLに紐づいて保存されるため、URLを開けばいつでも確認・再開できます。端末の「過去の戦績」一覧はブラウザに保存されているため、端末を変えるときは共有URLを控えておくのがおすすめです。"}}]}</script>
 <meta name="twitter:title" content="まじゃすこ / majasco｜麻雀のスコア計算・URL共有がスマホで一瞬">
 <meta name="twitter:description" content="電卓と紙の代わりにスマホ1台で、麻雀のスコア計算のわずらわしさをシンプルに解決してくれる無料の共有型スコア記録ツールです。">
 <style>
@@ -561,6 +562,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h3>3人麻雀（サンマ）の場合</h3>
       <p>3人麻雀では持ち点35,000点・返し点40,000点など、4人麻雀と異なる設定がよく使われます。このアプリは3人麻雀にも対応しており、ウマも「15-0-15」のような3人用の形式で設定できます。</p>
     </section>
+
+    <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
+
+    <section class="info-card">
+      <h2>よくある質問</h2>
+      <h3>Q. まじゃすこは無料ですか？</h3>
+      <p>はい、すべての機能を無料でご利用いただけます。運営費は広告収入でまかなっています。</p>
+      <h3>Q. 会員登録やアプリのインストールは必要ですか？</h3>
+      <p>不要です。スマートフォンやPCのブラウザだけで、すぐに使い始められます。グループを作成すると発行されるURLをメンバーに共有するだけで、全員が同じスコアをリアルタイムで見られます。</p>
+      <h3>Q. 3人麻雀（サンマ）でも使えますか？</h3>
+      <p>使えます。グループ作成時に「3人麻雀」を選ぶと、持ち点・返し点の初期値や「15-0-15」のような3人用のウマ形式に切り替わります。チーム戦やチップの収支計算もオプションで利用できます。</p>
+      <h3>Q. 過去の対局データは消えませんか？</h3>
+      <p>対局データはグループの共有URLに紐づいて保存されるため、URLを開けばいつでも確認・再開できます。端末の「過去の戦績」一覧はブラウザに保存されているため、端末を変えるときは共有URLを控えておくのがおすすめです。</p>
+    </section>
   </div>
 
   <footer class="site-footer">
@@ -758,7 +773,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">対局履歴</div>
-        <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
+        <div style="display:flex;gap:6px">
+          <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
+          <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
+        </div>
       </div>
       <div style="overflow-x:auto" id="rounds-wrap">
         <table class="rounds-table" id="rounds-table"></table>
@@ -782,6 +800,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h1>過去の戦績</h1>
   </div>
   <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:11px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。</div>
+  <div style="display:flex;gap:8px;margin:10px 16px 0">
+    <input type="text" id="hist-search" placeholder="グループ名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
+    <select id="hist-mode" onchange="renderHistory()" style="width:112px;flex-shrink:0">
+      <option value="all">すべて</option>
+      <option value="4">4人麻雀</option>
+      <option value="3">3人麻雀</option>
+    </select>
+  </div>
   <div class="history-body" id="history-body"></div>
 </div>
 
@@ -1509,6 +1535,47 @@ function toggleBonusSection(btn) {
   if (arrow) arrow.textContent = bonusSectionOpen ? '▴' : '▾';
 }
 
+// ---- CSVエクスポート ----
+// 対局履歴（試合ごとのスコア・チップ差）と合計をCSV文字列にする。未参加のセルは空欄
+function buildCsv(g) {
+  const s = g.settings;
+  const names = s.playerNames;
+  const esc2 = v => { const str = String(v); return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str; };
+  const rows = [];
+  rows.push(['試合', '時刻'].concat(names.map(n => `${n}（pts）`)).concat(s.bonusEnabled ? names.map(n => `${n}（チップ差）`) : []));
+  (g.rounds || []).forEach((r, idx) => {
+    const mem = roundMembers(r, s);
+    const slotOf = {};
+    mem.forEach((m, k) => { slotOf[m] = k; });
+    const scores = names.map((_, i) => slotOf[i] != null ? r.scores[slotOf[i]].toFixed(1) : '');
+    const chipCells = s.bonusEnabled
+      ? names.map((_, i) => (slotOf[i] != null && r.chips) ? (r.chips[slotOf[i]] != null ? r.chips[slotOf[i]] : 0) : '')
+      : [];
+    rows.push([idx + 1, fmtTime(r.at)].concat(scores).concat(chipCells));
+  });
+  const totals = gameTotals(g);
+  const { chips } = chipTotals(g);
+  rows.push(['合計', ''].concat(totals.map(t => t.toFixed(1))).concat(s.bonusEnabled ? chips : []));
+  if (s.bonusEnabled) {
+    const rate = Number(s.rate) || 1;
+    const cRate = Number(s.chipRate) || 1;
+    rows.push(['合計収支（bonus）', ''].concat(totals.map((t, i) => Math.round(t * rate) + Math.round((chips[i] || 0) * cRate))).concat(names.map(() => '')));
+  }
+  return rows.map(r => r.map(esc2).join(',')).join('\r\n');
+}
+function exportCsv(g) {
+  if (!g || !(g.rounds || []).length) { showToast('まだ試合がありません'); return; }
+  // Excelで文字化けしないようBOM付きUTF-8で出力する
+  const blob = new Blob(['﻿' + buildCsv(g)], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `majasco_${String(g.name || 'game').replace(/[\\/:*?"<>|]/g, '_')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  track('csv_export');
+}
+
 // ---- チーム戦（フェーズ3） ----
 // 各チームは settings.teams = [{ name, members: [playerNamesへのindex...] }] で保存する。
 // 順位はチーム所属メンバーの合計スコア（pts）で決める。収支計算ONならチーム合計収支も表示。
@@ -1978,6 +2045,7 @@ function renderGame() {
   }
   logEl.innerHTML = hasRounds ? `<div style="font-size:11px;color:#aaa;margin-top:6px">${useCards ? '試合をタップすると' : '行をタップすると'}修正・削除できます</div>` : '';
   document.getElementById('log-btn').style.display = logEvents(activeGame.log).length > 0 ? 'inline-block' : 'none';
+  document.getElementById('csv-btn').style.display = hasRounds ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
@@ -2644,11 +2712,21 @@ function renderHistory() {
   if (!appState.games || appState.games.length === 0) {
     body.innerHTML = '<div class="empty-msg">まだ戦績の履歴がありません</div>'; return;
   }
+  // 絞り込み: グループ名・メンバー名のキーワード検索 ＋ 対局形式（4人/3人）
+  const q = (document.getElementById('hist-search').value || '').trim().toLowerCase();
+  const mode = document.getElementById('hist-mode').value;
   // 最終アクセスの新しい順・最大20件で表示
   const sorted = [...appState.games]
     .sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt))
-    .slice(0, 20);
-  body.innerHTML = sorted.map(historyItemHtml).join('');
+    .slice(0, 20)
+    .filter(g => {
+      if (mode !== 'all' && String(g.settings && g.settings.numPlayers) !== mode) return false;
+      if (!q) return true;
+      const hay = (String(g.name || '') + ' ' + ((g.settings && g.settings.playerNames) || []).join(' ')).toLowerCase();
+      return hay.includes(q);
+    });
+  body.innerHTML = sorted.map(historyItemHtml).join('')
+    || '<div class="empty-msg">条件に一致する戦績がありません</div>';
 }
 
 let detailGame = null;
@@ -2677,6 +2755,7 @@ function renderDetailBody(g) {
   html += `<div class="card">${scoreMainHtml(g)}</div>`;
 
   const useCards = s.playerNames.length > s.numPlayers;
+  const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   let roundsHtml;
@@ -2691,7 +2770,8 @@ function renderDetailBody(g) {
   }
   html += `<div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="card-title" style="margin-bottom:0">対局履歴</div>${logBtn}
+      <div class="card-title" style="margin-bottom:0">対局履歴</div>
+      <div style="display:flex;gap:6px">${csvBtn}${logBtn}</div>
     </div>
     ${roundsHtml}
     ${g.rounds.length ? `<div style="font-size:11px;color:#aaa;margin-top:6px">${useCards ? '試合をタップすると' : '行をタップすると'}点数を修正できます</div>` : ''}</div>`;
@@ -2772,5 +2852,6 @@ if (urlHash && urlHash.length > 5) {
   joinSession(urlHash);
 }
 </script>
+<script src="assets/ads.js" defer></script>
 </body>
 </html>
