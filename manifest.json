@@ -1,7 +1,7 @@
 {
   "name": "まじゃすこ / majasco",
   "short_name": "まじゃすこ",
-  "description": "電卓と紙の代わりにスマホ1台で、麻雀のスコア計算のわずらわしさをシンプルに解決する無料の共有型スコア記録ツール",
+  "description": "紙とペンの代わりにスマホ1台で、麻雀のスコア計算のわずらわしさをシンプルに解決する無料のスコア記録アプリ",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

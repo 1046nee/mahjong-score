@@ -71,6 +71,16 @@ function buildCases(w) {
       const r = w.calcScores([45000, 40000, 20000], S3);
       return arrEq(r, [35, 0, -35]) && approx(r.reduce((a, b) => a + b, 0), 0);
     }],
+    // ---- チョンボ罰符 ----
+    ['applyChombo: 罰符ptsをチェック者から減算（55/8/-18/-45で4人目チョンボ→-65）', () => {
+      return arrEq(w.applyChombo([55, 8, -18, -45], [0, 0, 0, 1], { chombo: true, chomboPenalty: 20 }), [55, 8, -18, -65]);
+    }],
+    ['applyChombo: マークのみ（罰符0）はスコアに影響しない', () => {
+      return arrEq(w.applyChombo([55, 8, -18, -45], [1, 0, 0, 0], { chombo: true, chomboPenalty: 0 }), [55, 8, -18, -45]);
+    }],
+    ['applyChombo: chombo設定なしの旧データはそのまま', () => {
+      return arrEq(w.applyChombo([55, 8, -18, -45], null, {}), [55, 8, -18, -45]);
+    }],
     // ---- 集計と旧データ互換 ----
     ['roundMembers: members無しの旧ラウンドは先頭numPlayers人扱い', () => {
       const mem = w.roundMembers({ scores: [1, 2, 3, 4] }, { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D', 'E'] });
