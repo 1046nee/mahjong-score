@@ -372,16 +372,18 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
-/* ボーナス枚数入力（ボーナス計算が有効なグループのみ表示） */
-.chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 74px; flex-shrink: 0; }
-.chip-input input { width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
-.chip-input .chip-suffix { color: #aaa; font-size: 12px; font-weight: 600; }
+/* チップ入力（収支計算が有効なグループのみ表示）: 点数行の下に「終了時チップ数」と「チップ差」の連動入力を置く */
+.sheet-subrow { display: flex; align-items: center; gap: 8px; margin: -4px 0 2px 24px; }
+.chip-input { flex: 1; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding: 0 8px 0 8px; background: #fff; min-width: 0; }
+.chip-input .chip-pre { color: #999; font-size: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+.chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 8px 2px 8px 4px; font-size: 14px; text-align: right; min-width: 0; background: transparent; }
+.chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
 .chip-input:focus-within { border-color: #177083; }
 .sheet.sanma .chip-input:focus-within { border-color: #4261AA; }
 /* 焼き鳥🐔トグル（OFFはグレー表示） */
 .yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; padding: 8px 7px; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
 .yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
-/* ボーナス集計テーブル: 内訳行は折りたたみ（タップで展開） */
+/* 収支集計テーブル: 内訳行は折りたたみ（タップで展開） */
 .bonus-table-wrap.bonus-collapsed tr.bonus-detail { display: none; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
@@ -544,11 +546,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h3>素点と返し点</h3>
       <p>対局終了時の持ち点から基準となる「返し点」（例: 30,000点）を引き、1,000点＝1ポイントに換算したものが素点です。例えば35,000点で終了した場合、素点は +5.0pts になります。</p>
       <h3>ウマ（順位点）</h3>
-      <p>最終順位に応じて加減されるボーナスです。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
+      <p>最終順位に応じて加減される順位点です。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
       <h3>オカ</h3>
       <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
-      <h3>スコア倍率（ボーナス換算）</h3>
-      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをスコアボーナスに換算して表示できます。このアプリではスコア表示とボーナス表示をワンタップで切り替えられます。</p>
+      <h3>スコア倍率（収支換算）</h3>
+      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをスコア収支に換算して表示できます。このアプリではスコア表示と収支表示をワンタップで切り替えられます。</p>
       <h3>同点のときは？</h3>
       <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
       <h3>3人麻雀（サンマ）の場合</h3>
@@ -649,20 +651,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <input type="number" id="s-rate-custom" placeholder="例: 150">
         </div>
       </div>
-      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコアボーナス</div>
+      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコア収支</div>
     </div>
     <div class="card">
-      <div class="card-title">ボーナスオプション</div>
+      <div class="card-title">収支オプション</div>
       <label class="opt-check">
-        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> ボーナス計算を有効にする
+        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップの収支計算を有効にする
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとに「ボーナス枚数」を記録して、総合ボーナスを集計します</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとにチップ差を記録して、合計収支（スコア収支＋チップ収支）を集計します</div>
       <div id="s-bonus-fields" style="display:none;margin:10px 0 0 26px">
-        <div class="field">
-          <label>チップ倍率</label>
-          <input type="number" id="s-chip-rate" placeholder="例: 500">
+        <div class="rule-grid">
+          <div class="field">
+            <label>チップ倍率</label>
+            <input type="number" id="s-chip-rate" placeholder="例: 500">
+          </div>
+          <div class="field">
+            <label>ゲーム開始時チップ数</label>
+            <input type="number" id="s-start-chips" placeholder="例: 20">
+          </div>
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">例：3枚 × チップ倍率500倍 → 1500チップボーナス</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差 = 終了時チップ数 − 開始時チップ数<br>例：チップ差3枚 × チップ倍率500倍 → 1500チップ収支</div>
       </div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-yakitori"> 焼き鳥🐔を記録する
@@ -701,12 +709,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">合計スコア</div>
-        <button class="edit-tab" id="bonus-toggle" onclick="toggleBonus()">ボーナス換算</button>
+        <button class="edit-tab" id="bonus-toggle" onclick="toggleBonus()">収支換算</button>
       </div>
       <div class="score-cards" id="score-cards"></div>
     </div>
     <div class="card" id="bonus-card" style="display:none">
-      <div class="card-title">ボーナス集計</div>
+      <div class="card-title">収支集計</div>
       <div id="bonus-body"></div>
     </div>
     <div class="card">
@@ -847,7 +855,7 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
-let showBonus = false; // 合計スコアのボーナス換算表示ON/OFF（初期はスコア表示）
+let showBonus = false; // 合計スコアの収支換算表示ON/OFF（初期はスコア表示）
 function toggleBonus() { showBonus = !showBonus; renderGame(); }
 
 // ---- Storage ----
@@ -1000,6 +1008,7 @@ function initSetupForm() {
   document.getElementById('s-bonus').checked = false;
   document.getElementById('s-yakitori').checked = false;
   document.getElementById('s-chip-rate').value = '';
+  document.getElementById('s-start-chips').value = '';
   onBonusOptChange();
   renderMembers();
   renderPlayerOptions(); onUmaChange(); onRateChange();
@@ -1122,7 +1131,7 @@ function onUmaChange() {
 function onRateChange() {
   document.getElementById('rate-custom').style.display = document.getElementById('s-rate').value === 'custom' ? 'block' : 'none';
 }
-// ボーナス計算のON/OFFでチップ倍率の入力欄を出し分ける
+// 収支計算のON/OFFでチップ倍率などの入力欄を出し分ける
 function onBonusOptChange() {
   document.getElementById('s-bonus-fields').style.display = document.getElementById('s-bonus').checked ? 'block' : 'none';
 }
@@ -1141,13 +1150,14 @@ async function startGame() {
   const uma = getUmaArray();
   const rateVal = document.getElementById('s-rate').value;
   const rate = rateVal === 'custom' ? (Number(document.getElementById('s-rate-custom').value) || 1) : Number(rateVal);
-  // ボーナスオプション（フェーズ2）: 未設定のチップ倍率は1倍として扱う
+  // 収支オプション（フェーズ2）: 未設定のチップ倍率は1倍・開始時チップ数は0として扱う
   const bonusEnabled = document.getElementById('s-bonus').checked;
   const chipRate = Number(document.getElementById('s-chip-rate').value) || 1;
+  const startChips = Number(document.getElementById('s-start-chips').value) || 0;
   const yakitori = document.getElementById('s-yakitori').checked;
   savePlayerNames(playerNames);
   sessionId = generateSessionId();
-  const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, yakitori }, rounds: [] };
+  const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori }, rounds: [] };
   showLoading(true);
   try {
     await db.ref('sessions/' + sessionId).set(game);
@@ -1240,9 +1250,10 @@ function getTotals() {
   return gameTotals(activeGame);
 }
 
-// ---- ボーナス集計（フェーズ2） ----
-// スコアボーナス = 合計pts × スコア倍率、チップボーナス = ボーナス枚数の合計 × チップ倍率、
-// 総合ボーナス = スコアボーナス + チップボーナス。
+// ---- 収支集計（フェーズ2） ----
+// スコア収支 = 合計pts × スコア倍率、チップ収支 = チップ差の合計 × チップ倍率、
+// 合計収支 = スコア収支 + チップ収支。チップ差 = 終了時チップ数 − 開始時チップ数（settings.startChips、未設定は0）。
+// 保存するのは試合ごとのチップ差（round.chips）のみ。
 // 旧データ互換: 倍率未設定は1倍、chips/yakitoriが無い試合は0枚・記録なしとして扱う
 function bonusTableHtml(g) {
   const s = g.settings;
@@ -1269,11 +1280,13 @@ function bonusTableHtml(g) {
   const labelTd = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
   const cell = (i, text, style) => played[i] ? `<td style="${style}">${text}</td>` : '<td style="color:#ddd">—</td>';
   const row = (label, cellsHtml, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td style="${labelTd}">${label}</td>${cellsHtml}</tr>`;
-  let rows = row('総合ボーナス', names.map((_, i) => cell(i, signed(grand[i]), styleOf(grand[i]) + ';font-size:14px')).join(''));
+  const startChips = Number(s.startChips) || 0;
+  let rows = row('合計収支', names.map((_, i) => cell(i, signed(grand[i]), styleOf(grand[i]) + ';font-size:14px')).join(''));
   rows += row('スコア合計', names.map((_, i) => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`, 'color:#777')).join(''), 'bonus-detail');
-  rows += row(`スコアボーナス（×${scoreRate}）`, names.map((_, i) => cell(i, signed(scoreBonus[i]), 'color:#777')).join(''), 'bonus-detail');
-  rows += row('ボーナス枚数', names.map((_, i) => cell(i, `${signed(chips[i])}枚`, 'color:#777')).join(''), 'bonus-detail');
-  rows += row(`チップボーナス（×${chipRate}）`, names.map((_, i) => cell(i, signed(chipBonus[i]), 'color:#777')).join(''), 'bonus-detail');
+  rows += row(`スコア収支（×${scoreRate}）`, names.map((_, i) => cell(i, signed(scoreBonus[i]), 'color:#777')).join(''), 'bonus-detail');
+  rows += row('チップ差', names.map((_, i) => cell(i, `${signed(chips[i])}枚`, 'color:#777')).join(''), 'bonus-detail');
+  rows += row(`チップ数（開始時${startChips}枚）`, names.map((_, i) => cell(i, `${(startChips + chips[i]).toLocaleString()}枚`, 'color:#777')).join(''), 'bonus-detail');
+  rows += row(`チップ収支（×${chipRate}）`, names.map((_, i) => cell(i, signed(chipBonus[i]), 'color:#777')).join(''), 'bonus-detail');
   if (s.yakitori) {
     rows += row('焼き鳥🐔', names.map((_, i) => cell(i, yaki[i] ? `${yaki[i]}回` : '0回', yaki[i] ? 'font-weight:700' : 'color:#ccc')).join(''), 'bonus-detail');
   }
@@ -1285,7 +1298,7 @@ function bonusTableHtml(g) {
   </div>
   <button class="edit-tab" style="margin-top:8px" onclick="toggleBonusDetail(this)">内訳を表示</button>`;
 }
-// 内訳行（スコア合計・各ボーナス・焼き鳥）の表示/非表示をタップで切り替える
+// 内訳行（スコア合計・各収支・チップ・焼き鳥）の表示/非表示をタップで切り替える
 function toggleBonusDetail(btn) {
   const wrap = btn.parentElement.querySelector('.bonus-table-wrap');
   if (!wrap) return;
@@ -1389,7 +1402,7 @@ function roundRowHtml(r, idx, onclickJs, s) {
     const raw = (r.points && r.points[k] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
-    // ボーナス枚数・焼き鳥🐔（記録がある試合のみ小さく表示）
+    // チップ差・焼き鳥🐔（記録がある試合のみ小さく表示）
     const marks = [];
     if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
     if (r.yakitori && r.yakitori[k]) marks.push('🐔');
@@ -1528,7 +1541,7 @@ function renderGame() {
   document.getElementById('game-title').textContent = activeGame.name;
 
   // スコアカード（参加済みメンバーを順位付け。未参加メンバーは下に「未参加」で表示）
-  document.getElementById('bonus-toggle').textContent = showBonus ? 'ボーナス換算' : 'スコア表示';
+  document.getElementById('bonus-toggle').textContent = showBonus ? '収支換算' : 'スコア表示';
   const totals = getTotals();
   const hasRounds = activeGame.rounds.length > 0;
   const played = playedFlags(activeGame);
@@ -1539,7 +1552,7 @@ function renderGame() {
   const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
   let cardsHtml = ranked.map(p => {
     const g = totalGroups[p.k];
-    const bonusStr = (showBonus && s.rate) ? `スコアボーナス ${(p.t * s.rate).toLocaleString()}` : '';
+    const bonusStr = (showBonus && s.rate) ? `スコア収支 ${(p.t * s.rate).toLocaleString()}` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
       ${rankBadgeHtml(g.start, g.size > 1, g.isLast)}
@@ -1557,7 +1570,7 @@ function renderGame() {
     </div>`).join('');
   document.getElementById('score-cards').innerHTML = cardsHtml;
 
-  // ボーナス集計（ボーナス計算が有効なグループのみ）
+  // 収支集計（収支計算が有効なグループのみ）
   const bonusCard = document.getElementById('bonus-card');
   if (s.bonusEnabled && hasRounds) {
     bonusCard.style.display = 'block';
@@ -1676,7 +1689,7 @@ function openSheet(idx) {
 let sheetSelected = []; // 選択中メンバーindex（昇順）
 let sheetOrder = [];    // 入力欄k → memberIndex の対応
 let sheetPrefill = {};  // memberIndex → 入力値（修正時のプレフィル・選択切替時の値保持）
-let sheetChips = {};    // memberIndex → ボーナス枚数（ボーナス計算が有効なグループのみ）
+let sheetChips = {};    // memberIndex → チップ差（収支計算が有効なグループのみ）
 let sheetYaki = {};     // memberIndex → 焼き鳥🐔フラグ
 // 新規入力のデフォルト参加者: 直前の試合のメンバー、なければ先頭からnumPlayers人
 function defaultParticipants(ctx) {
@@ -1776,32 +1789,67 @@ function renderSheetInputs() {
   sheetOrder = sheetSelected.slice();
   const withChips = !!s.bonusEnabled;
   const withYaki = !!s.yakitori;
-  // ボーナス計算ONのときは列見出し（点数/ボーナス枚数）を1行入れる
-  const colLabel = 'font-size:10px;color:#999;font-weight:600';
-  const header = (withChips || withYaki)
-    ? `<div class="sheet-row" style="margin-bottom:-4px">
-        <label></label>
-        <div style="flex:1;${colLabel};text-align:right">点数</div>
-        ${withChips ? `<div style="width:74px;${colLabel};text-align:center;flex-shrink:0">ボーナス枚数</div>` : ''}
-        ${withYaki ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">🐔</div>` : ''}
-      </div>`
-    : '';
-  inputs.innerHTML = header + sheetOrder.map((m, k) =>
-    `<div class="sheet-row">
+  inputs.innerHTML = sheetOrder.map((m, k) => {
+    const diff = sheetChips[m];
+    const hasDiff = diff != null && diff !== '';
+    const base = withChips ? chipBaseline(m) : 0;
+    return `<div class="sheet-row">
       <label>${esc(s.playerNames[m])}</label>
       <div class="pt-input">
         <input type="number" id="si-${k}" placeholder="250" oninput="updateTotal()"
           value="${sheetPrefill[m] != null ? sheetPrefill[m] : ''}">
         <span class="pt-suffix">00</span>
       </div>
-      ${withChips ? `<div class="chip-input">
-        <input type="number" id="ci-${k}" placeholder="0" value="${sheetChips[m] != null ? sheetChips[m] : ''}">
-        <span class="chip-suffix">枚</span>
-      </div>` : ''}
       ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥">🐔</button>` : ''}
-    </div>`
-  ).join('');
+    </div>
+    ${withChips ? `<div class="sheet-subrow">
+      <div class="chip-input">
+        <span class="chip-pre">終了時チップ</span>
+        <input type="number" id="ce-${k}" placeholder="${base}" oninput="onChipEndInput(${k})"
+          value="${hasDiff ? base + (Number(diff) || 0) : ''}">
+        <span class="chip-suffix">枚</span>
+      </div>
+      <div class="chip-input">
+        <span class="chip-pre">チップ差</span>
+        <input type="number" id="ci-${k}" placeholder="0" oninput="onChipDiffInput(${k})"
+          value="${hasDiff ? diff : ''}">
+        <span class="chip-suffix">枚</span>
+      </div>
+    </div>` : ''}`;
+  }).join('');
   updateTotal();
+}
+// チップの基準値 = 開始時チップ数 + それまでの試合のチップ差の累計。
+// 修正時は修正対象より前の試合まで。終了時チップ数⇔チップ差の相互算出に使う
+function chipBaseline(m) {
+  const s = sheetCtx.settings;
+  let base = Number(s.startChips) || 0;
+  const upto = editingIndex >= 0 ? editingIndex : sheetCtx.rounds.length;
+  for (let j = 0; j < upto; j++) {
+    const r = sheetCtx.rounds[j];
+    if (!r.chips) continue;
+    roundMembers(r, s).forEach((mm, k) => { if (mm === m && r.chips[k] != null) base += Number(r.chips[k]) || 0; });
+  }
+  return base;
+}
+// 終了時チップ数を入力 → チップ差を自動算出
+function onChipEndInput(k) {
+  const m = sheetOrder[k];
+  const ce = document.getElementById('ce-' + k);
+  const ci = document.getElementById('ci-' + k);
+  if (ce.value === '') { ci.value = ''; delete sheetChips[m]; return; }
+  const diff = (Number(ce.value) || 0) - chipBaseline(m);
+  ci.value = diff;
+  sheetChips[m] = diff;
+}
+// チップ差を入力 → 終了時チップ数を自動算出
+function onChipDiffInput(k) {
+  const m = sheetOrder[k];
+  const ce = document.getElementById('ce-' + k);
+  const ci = document.getElementById('ci-' + k);
+  if (ci.value === '') { ce.value = ''; delete sheetChips[m]; return; }
+  ce.value = chipBaseline(m) + (Number(ci.value) || 0);
+  sheetChips[m] = ci.value;
 }
 // 焼き鳥🐔のON/OFF切り替え（メンバー単位で保持し、選択切替後も維持される）
 function toggleSheetYaki(k) {
@@ -1860,7 +1908,7 @@ async function submitRound() {
   const scores = calcScores(points, ctx.settings);
   const members = sheetOrder.slice(); // この試合の参加メンバー（playerNamesへのindex）
   const now = new Date().toISOString();
-  const extras = {}; // ボーナス枚数・焼き鳥（有効なグループのみ保存）
+  const extras = {}; // チップ差・焼き鳥（有効なグループのみ保存）
   if (ctx.settings.bonusEnabled) {
     extras.chips = Array.from({length: n}, (_, i) => Number(document.getElementById('ci-'+i).value) || 0);
   }
@@ -1971,18 +2019,21 @@ function settingsFormHtml(name, s) {
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
         <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
       </div>
-      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコアボーナス</div>
+      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">例：100.0pts × スコア倍率10倍 → 1000スコア収支</div>
     </div>
-    <div class="field"><label>ボーナスオプション</label>
+    <div class="field"><label>収支オプション</label>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="e-bonus" ${s.bonusEnabled ? 'checked' : ''}
-          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> ボーナス計算を有効にする
+          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップの収支計算を有効にする
       </label>
       <div id="e-bonus-fields" style="display:${s.bonusEnabled ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin-bottom:0"><label>チップ倍率</label>
           <input type="number" id="e-chip-rate" value="${s.chipRate != null ? s.chipRate : ''}" placeholder="例: 500">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">例：3枚 × チップ倍率500倍 → 1500チップボーナス</div>
+        <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
+          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : ''}" placeholder="例: 20">
+        </div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差 = 終了時チップ数 − 開始時チップ数<br>例：チップ差3枚 × チップ倍率500倍 → 1500チップ収支</div>
       </div>
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥🐔を記録する
@@ -2017,8 +2068,9 @@ async function saveGameEdit() {
   const rate = rateKey === 'custom' ? (Number(document.getElementById('e-rate-c').value) || 0) : Number(rateKey);
   const bonusEnabled = document.getElementById('e-bonus').checked;
   const chipRate = Number(document.getElementById('e-chip-rate').value) || 1;
+  const startChips = Number(document.getElementById('e-start-chips').value) || 0;
   const yakitori = document.getElementById('e-yakitori').checked;
-  const settings = { ...s, playerNames, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, yakitori };
+  const settings = { ...s, playerNames, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori };
   // メンバーの削除・並び替えに合わせて、各試合のmembers indexを旧→新に振り直す
   // （対局済みメンバーは削除できないため、旧indexは必ず新indexに対応する）
   const mapOldToNew = {};
@@ -2118,7 +2170,7 @@ function viewDetail(g) {
   let html = '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
   ranked.forEach(p => {
     const grp = totalGroups[p.k];
-    const bonusStr = s.rate ? `スコアボーナス ${(p.t * s.rate).toLocaleString()}` : '';
+    const bonusStr = s.rate ? `スコア収支 ${(p.t * s.rate).toLocaleString()}` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
@@ -2136,9 +2188,9 @@ function viewDetail(g) {
     </div>`).join('');
   html += '</div></div>';
 
-  // ボーナス集計（ボーナス計算が有効なグループのみ）
+  // 収支集計（収支計算が有効なグループのみ）
   if (s.bonusEnabled && hasRounds) {
-    html += `<div class="card"><div class="card-title">ボーナス集計</div>${bonusTableHtml(g)}</div>`;
+    html += `<div class="card"><div class="card-title">収支集計</div>${bonusTableHtml(g)}</div>`;
   }
 
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
@@ -2167,7 +2219,7 @@ function viewDetail(g) {
     <div style="font-size:13px;color:#555;line-height:2.2">
       ${s.numPlayers}人麻雀 ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>ボーナス計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1}` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}
+      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 開始時チップ数: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
