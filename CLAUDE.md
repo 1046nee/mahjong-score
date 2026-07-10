@@ -2,10 +2,13 @@
 
 麻雀のスコア集計・共有ができる無料のWebアプリ。ビルド不要の静的サイト（Vanilla JS + Firebase Realtime Database）。
 
-## 公開URL
+## 公開URL・公式アカウント
 - 本番: https://majasco.jp （Firebase Hosting）
 - Firebaseデフォルト: https://mahjong-score-2e8aa.web.app
 - 旧URL（現在は使わない）: https://1046nee.github.io/mahjong-score/
+- **X（公式）: @majasco_jp** https://x.com/majasco_jp （2026.07.10開設。
+  全ページのtwitter:cardに `twitter:site` 設置済み・各フッターに「X（公式）」リンク済み。
+  新しいページを作るときは twitter:card の直後に `<meta name="twitter:site" content="@majasco_jp">` を入れること）
 
 ## リポジトリ
 - https://github.com/1046nee/mahjong-score （ブランチ: main）
