@@ -19,12 +19,11 @@
 - `blog-*.html` — 個別記事（本文はシンプルな黒文字＋緑の見出し・左バー、オレンジのハイライト）
 - `sitemap.xml` / `robots.txt` — SEO用。**新しいページ（記事・固定ページ）を追加したら sitemap.xml にも `<url>` を1件追加すること**
 - `terms.html` — 利用規約（禁止事項・賭博否定・免責・サービス変更等。2026.07.08追加）
-- `favicon.svg` — 絵文字🀄ベースの暫定favicon（実画像素材ができ次第、正式なfavicon一式に差し替える）
-- `manifest.json` — PWA用の最小構成（アイコンはfavicon.svgを暫定流用）
-- 新しいページを追加したら、`<head>`に以下を必ず入れる（index.htmlを参照）: **GTMスクリプト（viewport直後・titleより上）**, meta description, canonical, favicon/manifest link, OGP（og:title/description/url/type/site_name/locale）, twitter:card。さらに`<body>`直後に**GTMのnoscript**を入れること。og:imageは画像素材待ちのため未設定（用意でき次第、全ページに一括追加すること）
+- `assets/` — 画像素材ディレクトリ（2026.07.10導入）: `favicon.png`（512×512、favicon/apple-touch-icon/manifest共用）、`logo.png`（透過ロゴ800×250、全ページのヘッダーで使用）、`ogp.png`（OGP画像2100×1103）。素材の元データはリポジトリ直下の`まじゃすこ素材/`（.gitignore済み・コミットされない）
+- `manifest.json` — PWA用の最小構成（アイコンは/assets/favicon.png）
+- 新しいページを追加したら、`<head>`に以下を必ず入れる（blog記事のheadを参照）: **GTMスクリプト（viewport直後・titleより上）**, meta description, canonical, favicon（/assets/favicon.png）+apple-touch-icon+manifest link, OGP（og:title/description/url/type/site_name/locale/**image+width+height**）, twitter:card（summary_large_image）+twitter:image。さらに`<body>`直後に**GTMのnoscript**を入れること
 - **GTM（Googleタグマネージャー）導入済み（2026.07.10）**: コンテナID `GTM-KMRMGKKV`。全16ページに設置済み
 - GA4の直書きgtagは未導入（実測定ID `G-...` が未取得のため）。**推奨はGTM経由でGA4を配信する構成**（GTM管理画面でGA4設定タグを追加すればコード変更不要）。直書きする場合は実IDを取得後、GTMスクリプトの直前に挿入すること
-- 画像素材（ロゴ・OGP画像等）は今後 **`/assets/` ディレクトリ**に配置する方針（favicon.svgのみブラウザ慣例のためルート直下を維持）
 - `privacy.html` — プライバシーポリシー（AdSense審査用の必須文言を含む）
 
 ## デザインシステム
