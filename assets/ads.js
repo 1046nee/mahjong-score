@@ -13,10 +13,10 @@
 
 const AD_CLIENT = 'ca-pub-9998035509478799';
 const AD_SLOTS = {
-  article_top: '',    // 記事の導入文直後
-  article_bottom: '', // 記事の末尾（CTAの上）
-  list_bottom: '',    // 一覧ページのリスト下
-  lp_bottom: ''       // LPの解説セクション間
+  article_top: '3816971981',    // 記事の導入文直後
+  article_bottom: '3942084742', // 記事の末尾（CTAの上）
+  list_bottom: '8811268042',    // 一覧ページのリスト下
+  lp_bottom: '4872023032'       // LPの解説セクション間
 };
 
 document.addEventListener('DOMContentLoaded', () => {
