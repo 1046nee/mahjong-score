@@ -781,6 +781,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="page-title-row">
     <h1>過去の戦績</h1>
   </div>
+  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:11px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。</div>
   <div class="history-body" id="history-body"></div>
 </div>
 
@@ -1014,8 +1015,14 @@ function goHome() {
 function checkPendingSession() {
   document.getElementById('join-banner').style.display = pendingSessionId ? 'block' : 'none';
 }
+// GTM(dataLayer)への行動イベント送信。GTM管理画面でカスタムイベントトリガーを作ると集計できる。
+// 送信イベント: group_create / group_join / round_submit / share_copy
+function track(event, params) {
+  try { (window.dataLayer = window.dataLayer || []).push(Object.assign({ event }, params || {})); } catch (e) {}
+}
 function copyUrl() {
   const url = location.href;
+  track('share_copy', { from: 'game' });
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('URLをコピーしました'); }
 }
@@ -1039,6 +1046,7 @@ async function joinSession(id) {
     sessionId = id;
     history.replaceState(null, '', '#' + id);
     startListening(); showView('game');
+    track('group_join');
   } catch(e) { alert('接続エラーが発生しました。'); } finally { showLoading(false); }
 }
 function joinFromBanner() { if (pendingSessionId) joinSession(pendingSessionId); }
@@ -1264,10 +1272,12 @@ async function startGame() {
     // Walica風: まずURL共有画面を表示してからスコア入力へ
     document.getElementById('share-url').value = location.href;
     showView('share');
+    track('group_create', { num_players: numPlayers, member_count: playerNames.length, team_mode: !!teamMode, bonus_enabled: bonusEnabled });
   } catch(e) { alert('ゲームの作成に失敗しました。'); } finally { showLoading(false); }
 }
 function copyShareUrl() {
   const url = document.getElementById('share-url').value;
+  track('share_copy', { from: 'share' });
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('コピーしました'));
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('コピーしました'); }
 }
@@ -2328,9 +2338,11 @@ async function submitRound() {
     newRounds.push({ points, scores, members, ...extras, at: now }); // 新規
     logEntry = { type: 'add', at: now, no: newRounds.length, points };
   }
+  const isEdit = editingIndex >= 0;
   closeSheet();
   try {
     await ctx.save(newRounds, logEntry);
+    track('round_submit', { is_edit: isEdit, round_no: logEntry.no });
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
