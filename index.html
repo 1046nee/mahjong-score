@@ -251,7 +251,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rank-badge { font-size: 20px; font-weight: 800; color: #177083; min-width: 48px; text-align: center; flex-shrink: 0; }
 .score-info { flex: 1; }
 .score-name { font-size: 14px; font-weight: 700; }
-.score-yen { font-size: 12px; color: #888; }
+.score-bonus { font-size: 12px; color: #888; }
 .score-val { font-size: 22px; font-weight: 800; }
 .score-val.pos { color: #1a237e; }
 .score-val.neg { color: #c62828; }
@@ -354,6 +354,14 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .sheet-handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 16px; }
 .sheet-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
 .sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+/* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
+.sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
+.sheet-members-label span { font-weight: 600; color: #999; }
+.sheet-members { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; max-height: 130px; overflow-y: auto; }
+.sel-chip { border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.sel-chip.on { border-color: #177083; background: #E4F3EC; color: #177083; }
+.sheet.sanma .sel-chip.on { border-color: #4261AA; background: #EAF0FB; color: #4261AA; }
+.sheet-members-hint { text-align: center; font-size: 13px; color: #999; padding: 14px 0; }
 .sheet-row { display: flex; align-items: center; gap: 10px; }
 .sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
@@ -480,7 +488,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="feature">
         <div class="feature-icon fi-blue">⚙️</div>
         <h3>ルールは、いつもの仲間内で使ってるやつで。</h3>
-        <p>3人・4人の切り替え、グループ独自のウマ・オカ、スコア係数もそのまま。慣れた卓のルールを一切変えずに使えます。</p>
+        <p>3人・4人の切り替え、グループ独自のウマ・オカ、スコア倍率もそのまま。慣れた卓のルールを一切変えずに使えます。</p>
       </div>
     </div>
   </section>
@@ -507,11 +515,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>このアプリの使い方</h2>
       <p>「まじゃすこ」は、麻雀の対局結果を記録して自動でスコア計算し、メンバー全員とリアルタイムで共有できる無料のスコア管理アプリです。会員登録は不要で、スマートフォンのブラウザだけですぐに使えます。</p>
       <h3>1. グループを作る</h3>
-      <p>「新しい対局を始める」からグループ名とメンバー名（3人または4人）を登録します。持ち点・返し点・ウマ・スコア係数も自由に設定でき、3人麻雀にも対応しています。</p>
+      <p>「新しい対局を始める」からグループ名とメンバー名（3人または4人）を登録します。持ち点・返し点・ウマ・スコア倍率も自由に設定でき、3人麻雀にも対応しています。</p>
       <h3>2. URLをメンバーに共有する</h3>
       <p>グループを作成すると専用URLが発行されます。LINEなどでメンバーに送れば、全員が同じスコアをリアルタイムで確認できます。誰か1人が入力すれば全員の画面に反映されます。</p>
       <h3>3. 半荘ごとに点数を入力する</h3>
-      <p>対局が終わるたびに各プレイヤーの持ち点を入力するだけで、ウマ・オカ・スコア係数を反映したスコアを自動計算します。点数の下2桁は自動で補完されるので、百の位までの入力だけでスピーディーに記録できます。入力ミスはあとから修正・削除でき、変更履歴も残ります。</p>
+      <p>対局が終わるたびに各プレイヤーの持ち点を入力するだけで、ウマ・オカ・スコア倍率を反映したスコアを自動計算します。点数の下2桁は自動で補完されるので、百の位までの入力だけでスピーディーに記録できます。入力ミスはあとから修正・削除でき、変更履歴も残ります。</p>
       <h3>4. 戦績を振り返る</h3>
       <p>「過去の戦績を振り返る」から、これまでの対局結果・順位・スコア推移グラフ・着順回数などをいつでも確認できます。</p>
     </section>
@@ -525,8 +533,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p>最終順位に応じて加減されるボーナスです。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
       <h3>オカ</h3>
       <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
-      <h3>スコア係数（チップ換算）</h3>
-      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをチップ数に換算して表示できます。このアプリではスコアとチップ換算をワンタップで切り替えられます。</p>
+      <h3>スコア倍率（ボーナス換算）</h3>
+      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントをスコアボーナスに換算して表示できます。このアプリではスコア表示とボーナス表示をワンタップで切り替えられます。</p>
       <h3>同点のときは？</h3>
       <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
       <h3>3人麻雀（サンマ）の場合</h3>
@@ -558,14 +566,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">メンバー名（3人または4人）</div>
+      <div class="card-title">メンバー名（3〜40人）</div>
       <div style="display:flex;gap:8px">
         <input type="text" id="member-input" placeholder="名前を入力" list="saved-players"
           onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
         <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
       </div>
       <div class="member-tags" id="member-tags"></div>
-      <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください（3人または4人で作成できます）</div>
+      <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください（3人以上で作成できます）</div>
+      <div class="field" id="mode-field" style="display:none;margin-top:14px;margin-bottom:0">
+        <label>対局形式（1試合あたりの人数）</label>
+        <div class="toggle-group">
+          <button type="button" class="toggle-btn active" id="mode-4" onclick="setGameMode(4)">4人麻雀</button>
+          <button type="button" class="toggle-btn" id="mode-3" onclick="setGameMode(3)">3人麻雀</button>
+        </div>
+      </div>
       <datalist id="saved-players"></datalist>
       <div id="saved-players-hint" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
         <span class="chips-hint" style="margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</span>
@@ -595,7 +610,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </select>
         </div>
         <div class="field">
-          <label>スコア係数</label>
+          <label>スコア倍率</label>
           <select id="s-rate" onchange="onRateChange()">
             <option value="10">×10</option>
             <option value="20">×20</option>
@@ -653,7 +668,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">合計スコア</div>
-        <button class="edit-tab" id="yen-toggle" onclick="toggleYen()">チップ換算</button>
+        <button class="edit-tab" id="bonus-toggle" onclick="toggleBonus()">ボーナス換算</button>
       </div>
       <div class="score-cards" id="score-cards"></div>
     </div>
@@ -702,6 +717,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="sheet" id="score-sheet">
   <div class="sheet-handle"></div>
   <div class="sheet-title" id="sheet-title">点数入力</div>
+  <div id="sheet-members-area" style="display:none">
+    <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
+    <div class="sheet-members" id="sheet-members"></div>
+  </div>
   <div class="sheet-inputs" id="sheet-inputs"></div>
   <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
   <div class="total-check ng" id="total-check">点数を入力してください</div>
@@ -791,8 +810,8 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
-let showYen = false; // 合計スコアのチップ換算表示ON/OFF（初期はスコア表示）
-function toggleYen() { showYen = !showYen; renderGame(); }
+let showBonus = false; // 合計スコアのボーナス換算表示ON/OFF（初期はスコア表示）
+function toggleBonus() { showBonus = !showBonus; renderGame(); }
 
 // ---- Storage ----
 function loadStorage() {
@@ -934,6 +953,9 @@ function initSetupForm() {
   setupMembers = [];
   document.getElementById('member-input').value = '';
   numPlayers = 4;
+  modeUserSet = false;
+  document.getElementById('mode-4').classList.add('active');
+  document.getElementById('mode-3').classList.remove('active');
   refreshUmaSelect();
   document.getElementById('s-start').value = 25000;
   document.getElementById('s-return').value = 30000;
@@ -977,11 +999,12 @@ function savePlayerNames(names) {
 }
 // ---- メンバーのタグ入力（Walica風） ----
 let setupMembers = [];
+const MAX_MEMBERS = 40;
 function addMember() {
   const input = document.getElementById('member-input');
   const name = input.value.trim();
   if (!name) return;
-  if (setupMembers.length >= 4) { showToast('メンバーは4人までです'); return; }
+  if (setupMembers.length >= MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   if (setupMembers.includes(name)) { showToast('同じ名前がすでに追加されています'); return; }
   setupMembers.push(name);
   input.value = '';
@@ -992,30 +1015,50 @@ function removeMember(i) {
   setupMembers.splice(i, 1);
   renderMembers();
 }
+// 対局形式（1試合あたりの人数）の切り替え。メンバー数とは独立
+let modeUserSet = false; // ユーザーが明示的に対局形式を選んだか（自動切替と区別）
+function applyMode(n) {
+  numPlayers = n;
+  document.getElementById('mode-4').classList.toggle('active', n === 4);
+  document.getElementById('mode-3').classList.toggle('active', n === 3);
+  refreshUmaSelect();
+  document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
+  document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
+  onUmaChange();
+}
+function setGameMode(n) {
+  modeUserSet = true;
+  applyMode(n);
+  renderMembers();
+}
 function renderMembers() {
   document.getElementById('member-tags').innerHTML = setupMembers.map((m, i) =>
     `<span class="member-tag">${esc(m)}<button onclick="removeMember(${i})" aria-label="削除">✕</button></span>`
   ).join('');
   const n = setupMembers.length;
-  const ok = n === 3 || n === 4;
+  // メンバー3人ちょうどなら3人麻雀のみ。4人以上なら4人/3人麻雀を選択できる（回し打ち対応）
+  const modeField = document.getElementById('mode-field');
+  if (n === 3) {
+    modeField.style.display = 'none';
+    if (numPlayers !== 3) applyMode(3); // 3人しかいなければ自動で3人麻雀に
+  } else if (n >= 4) {
+    modeField.style.display = 'block';
+    // 3人経由の自動切替は、4人以上になったらデフォルト（4人麻雀）に戻す。ユーザーが選んだ場合は維持
+    if (!modeUserSet && numPlayers !== 4) applyMode(4);
+  } else {
+    modeField.style.display = 'none';
+  }
+  const ok = n >= 3 && n <= MAX_MEMBERS;
   const btn = document.getElementById('setup-submit');
   btn.disabled = !ok;
-  // 人数が確定したらルール初期値とウマ選択肢を切り替える（3人麻雀は30000/35000）
-  if (ok && n !== numPlayers) {
-    numPlayers = n;
-    refreshUmaSelect();
-    document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
-    document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
-    onUmaChange();
-  }
-  btn.textContent = ok ? `${n}人麻雀を開始` : 'グループを作成';
-  const full = n >= 4;
+  btn.textContent = ok ? `${numPlayers}人麻雀を開始（メンバー${n}人）` : 'グループを作成';
+  const full = n >= MAX_MEMBERS;
   document.getElementById('member-input').disabled = full;
   document.getElementById('member-add-btn').disabled = full;
   document.getElementById('member-count-hint').textContent =
-    ok ? `現在 ${n}人 — このメンバーでグループを作成できます`
-       : full ? 'メンバーは4人までです'
-       : `現在 ${n}人 — 3人または4人で作成できます`;
+    ok ? `現在 ${n}人 / 最大${MAX_MEMBERS}人 — このメンバーでグループを作成できます`
+       : full ? `メンバーは${MAX_MEMBERS}人までです`
+       : `現在 ${n}人 — 3人以上で作成できます`;
 }
 // 人数に応じてウマの選択肢を差し替える（3人麻雀は「15-0-15」形式）
 function refreshUmaSelect() {
@@ -1044,10 +1087,10 @@ function getUmaArray() {
   return umaArrayFor(v, numPlayers);
 }
 async function startGame() {
-  if (setupMembers.length !== 3 && setupMembers.length !== 4) { showToast('メンバーは3人または4人で登録してください'); return; }
+  if (setupMembers.length < 3 || setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは3〜${MAX_MEMBERS}人で登録してください`); return; }
+  if (numPlayers === 4 && setupMembers.length < 4) { showToast('4人麻雀にはメンバーが4人以上必要です'); return; }
   const name = document.getElementById('s-name').value.trim() || todayStr();
   const playerNames = setupMembers.slice();
-  numPlayers = playerNames.length;
   const startPoints = Number(document.getElementById('s-start').value) || 25000;
   const returnPoints = Number(document.getElementById('s-return').value) || 30000;
   const uma = getUmaArray();
@@ -1113,37 +1156,76 @@ function calcScores(points, settings) {
     return Math.round((diffs[i] + share) * 10) / 10;
   });
 }
+// ---- 対局メンバー（可変長メンバー対応） ----
+// 各試合の参加メンバー（playerNamesへのindex配列）を返す。
+// 旧データ互換: members配列が無い旧ラウンドは「先頭numPlayers人が参加」とみなす
+function roundMembers(r, s) {
+  return r.members || Array.from({ length: s.numPlayers }, (_, i) => i);
+}
+// 全メンバー分の合計スコア（未参加の試合は加算されない）
+function gameTotals(g) {
+  const s = g.settings;
+  const totals = new Array(s.playerNames.length).fill(0);
+  (g.rounds || []).forEach(r => {
+    const mem = roundMembers(r, s);
+    r.scores.forEach((sc, k) => {
+      const m = mem[k];
+      if (m != null && m < totals.length) totals[m] += sc;
+    });
+  });
+  return totals.map(t => Math.round(t * 10) / 10);
+}
+// 1試合でも参加したメンバーのフラグ
+function playedFlags(g) {
+  const s = g.settings;
+  const played = new Array(s.playerNames.length).fill(false);
+  (g.rounds || []).forEach(r => roundMembers(r, s).forEach(m => { if (m < played.length) played[m] = true; }));
+  return played;
+}
+// メンバー数が多い場合は横スクロールできるようテーブルに最小幅を与える
+function tableStyleFor(memberCount) {
+  return memberCount > 4 ? `table-layout:fixed;min-width:${60 + memberCount * 84}px` : 'table-layout:fixed';
+}
 function getTotals() {
   if (!activeGame) return [];
-  const n = activeGame.settings.numPlayers;
-  const totals = new Array(n).fill(0);
-  activeGame.rounds.forEach(r => r.scores.forEach((s, i) => totals[i] += s));
-  return totals.map(t => Math.round(t * 10) / 10);
+  return gameTotals(activeGame);
 }
 
 // ---- 順位バッジ（メダル） ----
-// 1〜3位は金銀銅メダル、4位は最下位カラー（👿）
+// 1〜3位は金銀銅メダル、最下位グループは👿、中間順位は数字のみ（メンバー5人以上のグループで発生）
 // 同点グループはグループ先頭の順位で表示し「〜位タイ」を付ける
-function rankBadgeHtml(rank, isTie) {
+function rankBadgeHtml(rank, isTie, isLast) {
   const emojis = ['🥇', '🥈', '🥉'];
   const label = `${rank+1}位${isTie ? 'タイ' : ''}`;
   if (rank < 3) {
     return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${label}</span></div>`;
   }
-  return `<div class="rank-badge rank-last"><span class="rank-emoji">👿</span><span class="rank-num">${label}</span></div>`;
+  if (isLast !== false) {
+    return `<div class="rank-badge rank-last"><span class="rank-emoji">👿</span><span class="rank-num">${label}</span></div>`;
+  }
+  return `<div class="rank-badge" style="color:#8a9aa5"><span class="rank-num" style="font-size:13px">${label}</span></div>`;
 }
 
 // ---- スコア推移グラフ（SVG） ----
-const CHART_COLORS = ['#1a237e', '#c62828', '#2e7d32', '#f9a825'];
-function chartHtml(rounds, playerNames) {
+const CHART_COLORS = ['#1a237e', '#c62828', '#2e7d32', '#f9a825', '#6a1b9a', '#00838f', '#e65100', '#37474f', '#ad1457', '#558b2f'];
+function chartHtml(rounds, s) {
   if (!rounds || rounds.length === 0) return '';
-  const n = playerNames.length;
-  // 0局目=全員0から始まる累積スコア
-  const series = Array.from({length: n}, () => [0]);
-  rounds.forEach(r => r.scores.forEach((sc, i) => {
-    series[i].push(Math.round((series[i][series[i].length-1] + sc) * 10) / 10);
-  }));
-  const all = series.flat();
+  const playerNames = s.playerNames;
+  const N = playerNames.length;
+  // 0局目=全員0から始まる累積スコア。未参加の試合は前回値を維持（横ばい）
+  const series = Array.from({length: N}, () => [0]);
+  const played = new Array(N).fill(false);
+  rounds.forEach(r => {
+    const mem = roundMembers(r, s);
+    const delta = new Array(N).fill(0);
+    mem.forEach((m, k) => { if (m < N) { delta[m] = r.scores[k]; played[m] = true; } });
+    for (let i = 0; i < N; i++) {
+      series[i].push(Math.round((series[i][series[i].length-1] + delta[i]) * 10) / 10);
+    }
+  });
+  // 1試合も参加していないメンバーはグラフから除外
+  const showIdx = Array.from({length: N}, (_, i) => i).filter(i => played[i]);
+  const all = showIdx.flatMap(i => series[i]);
   let min = Math.min(...all), max = Math.max(...all);
   if (min === max) { min -= 10; max += 10; }
   const range = max - min;
@@ -1169,17 +1251,18 @@ function chartHtml(rounds, playerNames) {
   for (let i = 0; i <= R; i++) {
     svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
   }
-  // 折れ線
-  series.forEach((s, i) => {
+  // 折れ線（参加メンバーのみ）
+  showIdx.forEach(i => {
+    const line = series[i];
     const color = CHART_COLORS[i % CHART_COLORS.length];
-    const pts = s.map((v, x) => `${px(x)},${py(v)}`).join(' ');
+    const pts = line.map((v, x) => `${px(x)},${py(v)}`).join(' ');
     svg += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-    s.forEach((v, x) => { svg += `<circle cx="${px(x)}" cy="${py(v)}" r="3" fill="${color}"/>`; });
+    line.forEach((v, x) => { svg += `<circle cx="${px(x)}" cy="${py(v)}" r="3" fill="${color}"/>`; });
   });
   svg += '</svg>';
 
-  const legend = '<div class="chart-legend">' + playerNames.map((nm, i) =>
-    `<span><span class="legend-dot" style="background:${CHART_COLORS[i % CHART_COLORS.length]}"></span>${esc(nm)}</span>`
+  const legend = '<div class="chart-legend">' + showIdx.map(i =>
+    `<span><span class="legend-dot" style="background:${CHART_COLORS[i % CHART_COLORS.length]}"></span>${esc(playerNames[i])}</span>`
   ).join('') + '</div>';
   return svg + legend;
 }
@@ -1190,12 +1273,19 @@ const FIRST_COL_TH = '<th style="width:60px">';
 function roundsTheadHtml(names) {
   return `<thead><tr>${FIRST_COL_TH}試合</th>${names.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>`;
 }
-// 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示
-function roundRowHtml(r, idx, onclickJs) {
-  const cells = r.scores.map((sc, i) => {
+// 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
+// 列は全メンバー分。その試合に参加していないメンバーは「—」表示
+function roundRowHtml(r, idx, onclickJs, s) {
+  const mem = roundMembers(r, s);
+  const slotOf = {}; // memberIndex → r.scores内の位置
+  mem.forEach((m, k) => { slotOf[m] = k; });
+  const cells = s.playerNames.map((_, i) => {
+    const k = slotOf[i];
+    if (k == null) return '<td style="color:#ddd">—</td>';
+    const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-    const raw = (r.points && r.points[i] != null)
-      ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[i].toLocaleString()}</div>`
+    const raw = (r.points && r.points[k] != null)
+      ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
     return `<td style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}</td>`;
   }).join('');
@@ -1206,57 +1296,63 @@ function roundRowHtml(r, idx, onclickJs) {
   </tr>`;
 }
 
-// ---- 順位取得回数 ----
-function rankCountHtml(rounds, names) {
+// ---- 順位取得回数（個人成績） ----
+// メンバーごとに「参加した試合」だけを集計する（可変長メンバー対応）
+function rankCountHtml(rounds, s) {
   if (!rounds || rounds.length === 0) return '';
-  const n = names.length;
+  const names = s.playerNames;
+  const N = names.length;
+  const slots = s.numPlayers; // 1試合の着順数（3 or 4）
   // 平均順位方式: 同点グループが占める順位に 1/人数 ずつ配分して集計する。
-  // 内部では丸めず正確な値を保持し、表示時のみ小数第2位に丸める。
-  const counts = Array.from({length: n}, () => new Array(n).fill(0));
-  const avgRankSum = new Array(n).fill(0);
-  const lastCount = new Array(n).fill(0);
+  // 内部では丸めず正確な値を保持し、表示時のみ丸める。
+  const counts = Array.from({length: N}, () => new Array(slots).fill(0));
+  const avgRankSum = new Array(N).fill(0);
+  const lastCount = new Array(N).fill(0);
+  const gamesPlayed = new Array(N).fill(0);
   rounds.forEach(r => {
-    const groups = rankGroups((r.points || r.scores).slice(0, n));
-    for (let i = 0; i < n; i++) {
-      const g = groups[i];
-      for (let rank = g.start; rank <= g.end; rank++) counts[i][rank] += 1 / g.size;
-      avgRankSum[i] += g.avgRank;
-      if (g.isLast) lastCount[i] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
-    }
+    const mem = roundMembers(r, s);
+    const groups = rankGroups((r.points || r.scores).slice(0, mem.length));
+    mem.forEach((m, k) => {
+      if (m >= N) return;
+      const g = groups[k];
+      for (let rank = g.start; rank <= g.end; rank++) counts[m][rank] += 1 / g.size;
+      avgRankSum[m] += g.avgRank;
+      if (g.isLast) lastCount[m] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
+      gamesPlayed[m]++;
+    });
   });
   // 整数はそのまま、同点配分などで小数になる場合のみ小数第1位まで表示
   const fmtCount = v => {
     const r = Math.round(v * 10) / 10;
     return Number.isInteger(r) ? `${r}回` : `${r.toFixed(1)}回`;
   };
-  let rows = Array.from({length: n}, (_, rank) => {
+  let rows = Array.from({length: slots}, (_, rank) => {
     const cells = names.map((_, i) => {
       const c = counts[i][rank];
       return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
     return `<tr><td style="color:#555">${rank+1}着</td>${cells}</tr>`;
   }).join('');
-  // 総試合数（着順回数の合計）・平均着順・ラス回避
-  // 意味のまとまりを控えめに区別する:
-  //   1〜4着 … 通常の薄い実線 / 総試合数 … 少し濃いめの実線で区切り / 平均着順・ラス回避 … 破線で区切った別グループ
+  // 総試合数（メンバーごとの参加数）・平均着順・ラス回避
   const statLabel = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
   // 3人麻雀は区切り線も青系に
-  const totalRowTd = `border-top:1.5px solid ${n === 3 ? '#c3cfe8' : '#c8d6da'}`;
-  const statGroupTd = `border-top:1px dashed ${n === 3 ? '#dbe3f2' : '#d5dde0'}`;
-  const games = rounds.length;
-  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員）
-  const avgs = names.map((_, i) => avgRankSum[i] / games);
-  const pcts = names.map((_, i) => Math.round((games - lastCount[i]) / games * 100));
-  const bestAvg = Math.min(...avgs);
-  const bestPct = Math.max(...pcts);
+  const totalRowTd = `border-top:1.5px solid ${slots === 3 ? '#c3cfe8' : '#c8d6da'}`;
+  const statGroupTd = `border-top:1px dashed ${slots === 3 ? '#dbe3f2' : '#d5dde0'}`;
+  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
+  const avgs = names.map((_, i) => gamesPlayed[i] ? avgRankSum[i] / gamesPlayed[i] : null);
+  const pcts = names.map((_, i) => gamesPlayed[i] ? Math.round((gamesPlayed[i] - lastCount[i]) / gamesPlayed[i] * 100) : null);
+  const validAvgs = avgs.filter(v => v !== null);
+  const validPcts = pcts.filter(v => v !== null);
+  const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
+  const bestPct = validPcts.length ? Math.max(...validPcts) : null;
   const crown = '<span style="font-size:11px;margin-right:2px">👑</span>'; // トップの識別は王冠マークで
   rows += `<tr>${[`<td style="${statLabel};${totalRowTd}">総試合数</td>`]
-    .concat(names.map(() => `<td style="${totalRowTd}">${games}回</td>`)).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="${totalRowTd}">${gamesPlayed[i]}回</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel};${statGroupTd}">平均着順</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${avgs[i] === bestAvg ? crown : ''}${avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
+    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${avgs[i] === null ? '<span style="color:#ccc">—</span>' : (avgs[i] === bestAvg ? crown : '') + avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
   rows += `<tr>${[`<td style="${statLabel}">ラス回避</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700">${pcts[i] === bestPct ? crown : ''}${pcts[i]}%</td>`)).join('')}</tr>`;
-  return `<div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
+    .concat(names.map((_, i) => `<td style="font-weight:700">${pcts[i] === null ? '<span style="color:#ccc">—</span>' : (pcts[i] === bestPct ? crown : '') + pcts[i] + '%'}</td>`)).join('')}</tr>`;
+  return `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(N)}">
     <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
@@ -1322,36 +1418,46 @@ function renderGame() {
   const s = activeGame.settings;
   document.getElementById('game-title').textContent = activeGame.name;
 
-  // スコアカード
-  document.getElementById('yen-toggle').textContent = showYen ? 'チップ換算' : 'スコア表示';
+  // スコアカード（参加済みメンバーを順位付け。未参加メンバーは下に「未参加」で表示）
+  document.getElementById('bonus-toggle').textContent = showBonus ? 'ボーナス換算' : 'スコア表示';
   const totals = getTotals();
-  const totalGroups = rankGroups(totals);
-  const ranked = totals.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
-  document.getElementById('score-cards').innerHTML = ranked.map(p => {
-    const g = totalGroups[p.i];
-    const yenStr = (showYen && s.rate) ? `${(p.t * s.rate).toLocaleString()}チップ` : '';
+  const hasRounds = activeGame.rounds.length > 0;
+  const played = playedFlags(activeGame);
+  const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
+  const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
+  const activeTotals = activeIdx.map(i => totals[i]);
+  const totalGroups = rankGroups(activeTotals);
+  const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
+  let cardsHtml = ranked.map(p => {
+    const g = totalGroups[p.k];
+    const bonusStr = (showBonus && s.rate) ? `スコアボーナス ${(p.t * s.rate).toLocaleString()}` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
-      ${rankBadgeHtml(g.start, g.size > 1)}
+      ${rankBadgeHtml(g.start, g.size > 1, g.isLast)}
       <div class="score-info">
-        <div class="score-name">${esc(p.name)}</div>
-        ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
+        <div class="score-name">${esc(s.playerNames[p.mi])}</div>
+        ${bonusStr ? `<div class="score-bonus">${bonusStr}</div>` : ''}
       </div>
       <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
     </div>`;
   }).join('');
+  cardsHtml += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
+      <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
+      <div class="score-info"><div class="score-name">${esc(s.playerNames[mi])}</div></div>
+      <div class="score-val" style="color:#ccc">—</div>
+    </div>`).join('');
+  document.getElementById('score-cards').innerHTML = cardsHtml;
 
   // 対局履歴（行タップで編集メニュー）
-  const hasRounds = activeGame.rounds.length > 0;
   let tableHtml = roundsTheadHtml(s.playerNames) + '<tbody>';
   if (hasRounds) {
-    tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`)).join('');
+    tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`, s)).join('');
   } else {
-    tableHtml += `<tr><td colspan="${s.numPlayers + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
+    tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
   }
   tableHtml += '</tbody>';
   const table = document.getElementById('rounds-table');
-  table.style.tableLayout = 'fixed';
+  table.setAttribute('style', tableStyleFor(s.playerNames.length));
   table.innerHTML = tableHtml;
 
   // 履歴（対局履歴カード内）
@@ -1367,11 +1473,11 @@ function renderGame() {
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
 
-  // その他成績（別カード）
+  // 個人成績（別カード）
   const rankCard = document.getElementById('rank-card');
   if (hasRounds) {
     rankCard.style.display = 'block';
-    document.getElementById('rank-body').innerHTML = rankCountHtml(activeGame.rounds, s.playerNames);
+    document.getElementById('rank-body').innerHTML = rankCountHtml(activeGame.rounds, s);
   } else {
     rankCard.style.display = 'none';
   }
@@ -1380,7 +1486,7 @@ function renderGame() {
   const chartCard = document.getElementById('chart-card');
   if (hasRounds) {
     chartCard.style.display = 'block';
-    document.getElementById('chart-body').innerHTML = chartHtml(activeGame.rounds, s.playerNames);
+    document.getElementById('chart-body').innerHTML = chartHtml(activeGame.rounds, s);
   } else {
     chartCard.style.display = 'none';
   }
@@ -1448,41 +1554,106 @@ function liveSheetCtx() {
 function openSheet(idx) {
   openSheetCtx(liveSheetCtx(), idx);
 }
+// 対局メンバー選択の状態
+let sheetSelected = []; // 選択中メンバーindex（昇順）
+let sheetOrder = [];    // 入力欄k → memberIndex の対応
+let sheetPrefill = {};  // memberIndex → 入力値（修正時のプレフィル・選択切替時の値保持）
+// 新規入力のデフォルト参加者: 直前の試合のメンバー、なければ先頭からnumPlayers人
+function defaultParticipants(ctx) {
+  const s = ctx.settings;
+  const n = s.numPlayers;
+  const N = s.playerNames.length;
+  const last = ctx.rounds[ctx.rounds.length - 1];
+  if (last) {
+    const mem = roundMembers(last, s).filter(m => m < N);
+    if (mem.length === n) return mem.slice().sort((a, b) => a - b);
+  }
+  return Array.from({ length: Math.min(n, N) }, (_, i) => i);
+}
 function openSheetCtx(ctx, idx) {
   sheetCtx = ctx;
   editingIndex = idx;
   // 3人麻雀の点数入力シートは配色を反転
   document.getElementById('score-sheet').classList.toggle('sanma', ctx.settings.numPlayers === 3);
   const s = ctx.settings;
-  const n = s.numPlayers;
   const isEdit = idx >= 0;
-  const existingPoints = isEdit ? ctx.rounds[idx].points : null;
+
+  sheetSelected = isEdit
+    ? roundMembers(ctx.rounds[idx], s).slice().sort((a, b) => a - b)
+    : defaultParticipants(ctx);
+  sheetPrefill = {};
+  if (isEdit) {
+    const r = ctx.rounds[idx];
+    roundMembers(r, s).forEach((m, k) => { sheetPrefill[m] = r.points[k] / 100; });
+  }
 
   document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : '点数入力';
   document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
+  // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
+  document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
+  renderSheetMembers();
+
+  document.getElementById('backdrop').classList.add('open');
+  document.getElementById('score-sheet').classList.add('open');
+  if (!isEdit) setTimeout(() => { const el = document.getElementById('si-0'); if (el) el.focus(); }, 350);
+}
+function renderSheetMembers() {
+  const s = sheetCtx.settings;
+  document.getElementById('sheet-members').innerHTML = s.playerNames.map((nm, i) =>
+    `<button type="button" class="sel-chip${sheetSelected.includes(i) ? ' on' : ''}" onclick="toggleSheetMember(${i})">${esc(nm)}</button>`
+  ).join('');
+  document.getElementById('sheet-members-count').textContent = `（${sheetSelected.length}/${s.numPlayers}人）`;
+  renderSheetInputs();
+}
+function toggleSheetMember(i) {
+  const s = sheetCtx.settings;
+  captureSheetValues(); // 入力途中の値を保持してから選択を切り替える
+  const pos = sheetSelected.indexOf(i);
+  if (pos >= 0) {
+    sheetSelected.splice(pos, 1);
+  } else if (sheetSelected.length >= s.numPlayers) {
+    showToast(`対局メンバーは${s.numPlayers}人です。先に他のメンバーの選択を外してください`);
+    return;
+  } else {
+    sheetSelected.push(i);
+    sheetSelected.sort((a, b) => a - b);
+  }
+  renderSheetMembers();
+}
+function captureSheetValues() {
+  sheetOrder.forEach((m, k) => {
+    const el = document.getElementById('si-' + k);
+    if (el && el.value !== '') sheetPrefill[m] = el.value;
+    else delete sheetPrefill[m];
+  });
+}
+// 点数の下2桁は必ず00なので、百の位以上だけ入力する（例: 25000点 → 250）
+function renderSheetInputs() {
+  const s = sheetCtx.settings;
+  const n = s.numPlayers;
   const inputs = document.getElementById('sheet-inputs');
-  // 点数の下2桁は必ず00なので、百の位以上だけ入力する（例: 25000点 → 250）
-  inputs.innerHTML = s.playerNames.map((name, i) =>
+  if (sheetSelected.length !== n) {
+    sheetOrder = [];
+    const remain = n - sheetSelected.length;
+    inputs.innerHTML = `<div class="sheet-members-hint">対局する${n}人を選択してください${remain > 0 ? `（あと${remain}人）` : ''}</div>`;
+    document.getElementById('auto-btn').disabled = true;
+    document.getElementById('confirm-btn').disabled = true;
+    document.getElementById('total-check').textContent = 'メンバーを選択してください';
+    document.getElementById('total-check').className = 'total-check ng';
+    return;
+  }
+  sheetOrder = sheetSelected.slice();
+  inputs.innerHTML = sheetOrder.map((m, k) =>
     `<div class="sheet-row">
-      <label>${esc(name)}</label>
+      <label>${esc(s.playerNames[m])}</label>
       <div class="pt-input">
-        <input type="number" id="si-${i}" placeholder="250" oninput="updateTotal()"
-          value="${isEdit ? existingPoints[i] / 100 : ''}">
+        <input type="number" id="si-${k}" placeholder="250" oninput="updateTotal()"
+          value="${sheetPrefill[m] != null ? sheetPrefill[m] : ''}">
         <span class="pt-suffix">00</span>
       </div>
     </div>`
   ).join('');
-
-  document.getElementById('total-check').textContent = '点数を入力してください';
-  document.getElementById('total-check').className = 'total-check ng';
-  document.getElementById('auto-btn').disabled = true;
-  document.getElementById('confirm-btn').disabled = true;
-  document.getElementById('backdrop').classList.add('open');
-  document.getElementById('score-sheet').classList.add('open');
-
-  // 修正モードでは初期値があるので合計を計算
-  if (isEdit) updateTotal();
-  else setTimeout(() => { const el = document.getElementById('si-0'); if(el) el.focus(); }, 350);
+  updateTotal();
 }
 function closeSheet() {
   document.getElementById('backdrop').classList.remove('open');
@@ -1491,6 +1662,7 @@ function closeSheet() {
 }
 function updateTotal() {
   const n = sheetCtx.settings.numPlayers;
+  if (sheetOrder.length !== n) return; // メンバー未確定時は何もしない
   const expected = sheetCtx.settings.startPoints * n;
   const values = Array.from({length: n}, (_, i) => {
     const el = document.getElementById('si-' + i);
@@ -1505,6 +1677,9 @@ function updateTotal() {
   if (emptyIndices.length === 0 && total === expected) {
     el.textContent = `入力合計: ${total.toLocaleString()} ✓`;
     el.className = 'total-check ok'; btn.disabled = false;
+  } else if (emptyIndices.length === n) {
+    el.textContent = '点数を入力してください';
+    el.className = 'total-check ng'; btn.disabled = true;
   } else {
     el.textContent = `入力合計: ${filled.toLocaleString()}`;
     el.className = 'total-check ng'; btn.disabled = true;
@@ -1525,17 +1700,19 @@ function autoFill() {
 async function submitRound() {
   const ctx = sheetCtx;
   const n = ctx.settings.numPlayers;
+  if (sheetOrder.length !== n) { showToast('対局メンバーを選択してください'); return; }
   const points = Array.from({length: n}, (_, i) => (Number(document.getElementById('si-'+i).value) || 0) * 100);
   const scores = calcScores(points, ctx.settings);
+  const members = sheetOrder.slice(); // この試合の参加メンバー（playerNamesへのindex）
   const now = new Date().toISOString();
   const newRounds = [...ctx.rounds];
   let logEntry;
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
-    newRounds[editingIndex] = { points, scores, at: orig.at || now, edited: true }; // 修正
+    newRounds[editingIndex] = { points, scores, members, at: orig.at || now, edited: true }; // 修正
     logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points };
   } else {
-    newRounds.push({ points, scores, at: now }); // 新規
+    newRounds.push({ points, scores, members, at: now }); // 新規
     logEntry = { type: 'add', at: now, no: newRounds.length, points };
   }
   closeSheet();
@@ -1557,7 +1734,54 @@ function umaKeyOf(uma, n) {
   return 'custom';
 }
 const RATE_PRESETS = ['10','20','30','50','100','200','500','1000','2000','0'];
-function settingsFormHtml(name, s, prefix) {
+// 1試合でも参加したメンバーのindex集合（削除可否の判定に使う）
+function participatedSet(g) {
+  const set = new Set();
+  (g.rounds || []).forEach(r => roundMembers(r, g.settings).forEach(m => set.add(m)));
+  return set;
+}
+// 設定変更モーダルのメンバー編集状態: [{orig: 元のindex|null(新規), name: 表示名}]
+let editMembersState = null;
+function renderEditMembers() {
+  const wrap = document.getElementById('e-members');
+  if (!wrap) return;
+  const played = participatedSet(activeGame);
+  const minMembers = Math.max(activeGame.settings.numPlayers, 3);
+  const rows = editMembersState.map((m, pos) => {
+    const locked = m.orig !== null && played.has(m.orig);
+    const tooFew = editMembersState.length <= minMembers;
+    const canDelete = !locked && !tooFew;
+    const reason = locked ? '対局済みのため削除不可' : tooFew ? `メンバーは最低${minMembers}人必要` : '';
+    return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+      <input type="text" id="e-p-${pos}" value="${esc(m.name)}" style="flex:1;min-width:0">
+      <button type="button" class="round-del-btn" style="flex-shrink:0;${canDelete ? '' : 'opacity:0.35;cursor:not-allowed'}"
+        onclick="${canDelete ? `removeEditMember(${pos})` : `showToast('${reason}')`}">削除</button>
+    </div>`;
+  }).join('');
+  const addBtn = editMembersState.length < MAX_MEMBERS
+    ? `<button type="button" class="edit-tab" style="margin-top:4px" onclick="addEditMember()">＋ メンバーを追加</button>`
+    : '';
+  wrap.innerHTML = rows + addBtn;
+}
+function captureEditMembers() {
+  editMembersState.forEach((m, pos) => {
+    const el = document.getElementById('e-p-' + pos);
+    if (el) m.name = el.value;
+  });
+}
+function addEditMember() {
+  captureEditMembers();
+  editMembersState.push({ orig: null, name: '' });
+  renderEditMembers();
+  const el = document.getElementById('e-p-' + (editMembersState.length - 1));
+  if (el) el.focus();
+}
+function removeEditMember(pos) {
+  captureEditMembers();
+  editMembersState.splice(pos, 1);
+  renderEditMembers();
+}
+function settingsFormHtml(name, s) {
   const n = s.numPlayers;
   const umaKey = umaKeyOf(s.uma, n);
   const rateKey = RATE_PRESETS.includes(String(s.rate)) ? String(s.rate) : 'custom';
@@ -1566,54 +1790,63 @@ function settingsFormHtml(name, s, prefix) {
   const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
-    <div class="field"><label>ゲーム名</label><input type="text" id="${prefix}-name" value="${esc(name)}"></div>
-    <div class="field"><label>プレイヤー名</label>
-      ${s.playerNames.map((nm, i) => `<input type="text" id="${prefix}-p-${i}" value="${esc(nm)}" style="margin-bottom:6px">`).join('')}
+    <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}"></div>
+    <div class="field"><label>メンバー（対局済みのメンバーは削除できません）</label>
+      <div id="e-members"></div>
     </div>
-    <div class="field"><label>持ち点</label><input type="number" id="${prefix}-start" value="${s.startPoints}"></div>
-    <div class="field"><label>返し点</label><input type="number" id="${prefix}-return" value="${s.returnPoints}"></div>
+    <div class="field"><label>持ち点</label><input type="number" id="e-start" value="${s.startPoints}"></div>
+    <div class="field"><label>返し点</label><input type="number" id="e-return" value="${s.returnPoints}"></div>
     <div class="field"><label>ウマ</label>
-      <select id="${prefix}-uma" onchange="document.getElementById('${prefix}-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOpts}</select>
-      <div id="${prefix}-uma-custom" style="display:${umaKey==='custom'?'block':'none'};margin-top:6px">
+      <select id="e-uma" onchange="document.getElementById('e-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOpts}</select>
+      <div id="e-uma-custom" style="display:${umaKey==='custom'?'block':'none'};margin-top:6px">
         <div class="custom-uma-grid">
-          ${Array.from({length: n}, (_, i) => `<div class="field"><label>${i+1}位</label><input type="number" id="${prefix}-uma-c-${i}" value="${s.uma[i] ?? 0}"></div>`).join('')}
+          ${Array.from({length: n}, (_, i) => `<div class="field"><label>${i+1}位</label><input type="number" id="e-uma-c-${i}" value="${s.uma[i] ?? 0}"></div>`).join('')}
         </div>
       </div>
     </div>
-    <div class="field"><label>スコア係数</label>
-      <select id="${prefix}-rate" onchange="document.getElementById('${prefix}-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
-      <div id="${prefix}-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
-        <input type="number" id="${prefix}-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
+    <div class="field"><label>スコア倍率</label>
+      <select id="e-rate" onchange="document.getElementById('e-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
+      <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
+        <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
       </div>
     </div>`;
 }
-function readSettingsForm(s, prefix) {
-  const n = s.numPlayers;
-  const name = document.getElementById(prefix+'-name').value.trim() || todayStr();
-  const playerNames = Array.from({length: n}, (_, i) => document.getElementById(`${prefix}-p-${i}`).value.trim() || ('プレイヤー'+(i+1)));
-  const startPoints = Number(document.getElementById(prefix+'-start').value) || 25000;
-  const returnPoints = Number(document.getElementById(prefix+'-return').value) || 30000;
-  const umaKey = document.getElementById(prefix+'-uma').value;
-  let uma;
-  if (umaKey === 'custom') uma = Array.from({length: n}, (_, i) => Number(document.getElementById(`${prefix}-uma-c-${i}`).value) || 0);
-  else uma = umaArrayFor(umaKey, n);
-  const rateKey = document.getElementById(prefix+'-rate').value;
-  const rate = rateKey === 'custom' ? (Number(document.getElementById(prefix+'-rate-c').value) || 0) : Number(rateKey);
-  return { name, settings: { ...s, playerNames, startPoints, returnPoints, uma, rate } };
-}
 function openGameEdit() {
   if (!activeGame) return;
+  editMembersState = activeGame.settings.playerNames.map((nm, i) => ({ orig: i, name: nm }));
   document.getElementById('form-modal-title').textContent = 'ゲーム設定を編集';
   document.getElementById('form-modal-body').innerHTML =
-    settingsFormHtml(activeGame.name, activeGame.settings, 'e') +
+    settingsFormHtml(activeGame.name, activeGame.settings) +
     `<button class="confirm-btn" style="margin-top:10px" onclick="saveGameEdit()">保存する</button>
      <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
+  renderEditMembers();
   document.getElementById('form-modal').classList.add('open');
 }
 async function saveGameEdit() {
-  const { name, settings } = readSettingsForm(activeGame.settings, 'e');
-  // 設定変更に合わせて全局のスコアを再計算
-  const rounds = activeGame.rounds.map(r => ({ ...r, scores: calcScores(r.points, settings) }));
+  const s = activeGame.settings;
+  const n = s.numPlayers;
+  captureEditMembers();
+  const playerNames = editMembersState.map((m, pos) => m.name.trim() || ('プレイヤー' + (pos + 1)));
+  if (playerNames.length < n) { showToast(`メンバーは最低${n}人必要です`); return; }
+  const name = document.getElementById('e-name').value.trim() || todayStr();
+  const startPoints = Number(document.getElementById('e-start').value) || 25000;
+  const returnPoints = Number(document.getElementById('e-return').value) || 30000;
+  const umaKey = document.getElementById('e-uma').value;
+  let uma;
+  if (umaKey === 'custom') uma = Array.from({length: n}, (_, i) => Number(document.getElementById(`e-uma-c-${i}`).value) || 0);
+  else uma = umaArrayFor(umaKey, n);
+  const rateKey = document.getElementById('e-rate').value;
+  const rate = rateKey === 'custom' ? (Number(document.getElementById('e-rate-c').value) || 0) : Number(rateKey);
+  const settings = { ...s, playerNames, startPoints, returnPoints, uma, rate };
+  // メンバーの削除・並び替えに合わせて、各試合のmembers indexを旧→新に振り直す
+  // （対局済みメンバーは削除できないため、旧indexは必ず新indexに対応する）
+  const mapOldToNew = {};
+  editMembersState.forEach((m, pos) => { if (m.orig !== null) mapOldToNew[m.orig] = pos; });
+  const rounds = activeGame.rounds.map(r => ({
+    ...r,
+    members: roundMembers(r, s).map(m => mapOldToNew[m]),
+    scores: calcScores(r.points, settings)
+  }));
   const logEntry = { type: 'edit', at: new Date().toISOString(), label: 'ゲーム設定を変更' };
   closeFormModal();
   try {
@@ -1627,28 +1860,28 @@ async function saveGameEdit() {
 function historyItemHtml(g) {
   const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
   const n = g.settings ? g.settings.numPlayers : '?';
+  const memberCount = g.settings ? g.settings.playerNames.length : 0;
   const rounds = g.rounds ? g.rounds.length : 0;
-  // 最終順位とプレイヤー名（同点は同順位で表示）
+  // 最終順位とプレイヤー名（同点は同順位で表示。1試合も参加していないメンバーは省略）
   let rankLine = '';
   if (g.settings && g.rounds && g.rounds.length > 0) {
-    const totals = new Array(g.settings.numPlayers).fill(0);
-    g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
-    const tRounded = totals.map(t => Math.round(t * 10) / 10);
-    // 対局履歴と同様の表形式: 1位から左に並べ、ヘッダーにプレイヤー名、下の行に順位絵文字＋合計スコア
-    const groups = rankGroups(tRounded);
+    const tRounded = gameTotals(g);
+    const played = playedFlags(g);
+    const activeIdx = tRounded.map((_, i) => i).filter(i => played[i]);
+    const groups = rankGroups(activeIdx.map(i => tRounded[i]));
     const medals = ['🥇', '🥈', '🥉'];
-    const ranked = tRounded.map((t, i) => ({t, i})).sort((a, b) => b.t - a.t);
+    const ranked = activeIdx.map((mi, k) => ({t: tRounded[mi], mi, k})).sort((a, b) => b.t - a.t);
     const thBg = g.settings.numPlayers === 3 ? 'background:#4261AA;' : '';
     const ths = ranked.map(p =>
-      `<th style="font-size:11px;padding:6px 4px;${thBg}">${esc(g.settings.playerNames[p.i])}</th>`).join('');
+      `<th style="font-size:11px;padding:6px 4px;${thBg}">${esc(g.settings.playerNames[p.mi])}</th>`).join('');
     const tds = ranked.map(p => {
-      const grp = groups[p.i];
-      const icon = grp.start < 3 ? medals[grp.start] : '👿';
+      const grp = groups[p.k];
+      const icon = grp.start < 3 ? medals[grp.start] : (grp.isLast ? '👿' : '');
       const scoreCls = p.t > 0 ? 'color:#1a237e' : p.t < 0 ? 'color:#c62828' : '';
       return `<td style="padding:7px 4px;white-space:nowrap">${icon}<b style="${scoreCls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</b></td>`;
     }).join('');
     rankLine = `<div style="overflow-x:auto;margin-top:8px">
-      <table class="rounds-table" style="table-layout:fixed;font-size:12px">
+      <table class="rounds-table" style="${tableStyleFor(ranked.length)};font-size:12px">
         <thead><tr>${ths}</tr></thead>
         <tbody><tr>${tds}</tr></tbody>
       </table>
@@ -1662,7 +1895,7 @@ function historyItemHtml(g) {
         <div class="history-name">${esc(g.name)}</div>
         <button class="edit-tab" style="flex-shrink:0" onclick="event.stopPropagation();rejoinGame('${esc(g.id)}')">再開</button>
       </div>
-      <div class="history-meta">${date} · ${n}人 · 計${rounds}試合${lastAccess}</div>
+      <div class="history-meta">${date} · ${n}人麻雀 · メンバー${memberCount}人 · 計${rounds}試合${lastAccess}</div>
       ${rankLine}
     </div>
     <div class="history-arrow">›</div>
@@ -1692,59 +1925,67 @@ function viewDetailById(id) {
 function viewDetail(g) {
   detailGame = g;
   document.getElementById('detail-title').textContent = g.name;
-  const s = g.settings; const n = s.numPlayers;
-  const totals = new Array(n).fill(0);
-  g.rounds.forEach(r => r.scores.forEach((sc, i) => totals[i] += sc));
-  const tRounded = totals.map(t => Math.round(t*10)/10);
-  const totalGroups = rankGroups(tRounded);
-  const ranked = tRounded.map((t,i) => ({t, i, name: s.playerNames[i]})).sort((a,b) => b.t - a.t);
+  const s = g.settings;
+  const totals = gameTotals(g);
+  const hasRounds = g.rounds.length > 0;
+  const played = playedFlags(g);
+  const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
+  const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
+  const totalGroups = rankGroups(activeIdx.map(i => totals[i]));
+  const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
 
   let html = '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
   ranked.forEach(p => {
-    const grp = totalGroups[p.i];
-    const yenStr = s.rate ? `${(p.t * s.rate).toLocaleString()}チップ` : '';
+    const grp = totalGroups[p.k];
+    const bonusStr = s.rate ? `スコアボーナス ${(p.t * s.rate).toLocaleString()}` : '';
     const cls = p.t >= 0 ? 'pos' : 'neg';
     html += `<div class="score-card">
-      ${rankBadgeHtml(grp.start, grp.size > 1)}
+      ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
       <div class="score-info">
-        <div class="score-name">${esc(p.name)}</div>
-        ${yenStr ? `<div class="score-yen">${yenStr}</div>` : ''}
+        <div class="score-name">${esc(s.playerNames[p.mi])}</div>
+        ${bonusStr ? `<div class="score-bonus">${bonusStr}</div>` : ''}
       </div>
       <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
     </div>`;
   });
+  html += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
+      <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
+      <div class="score-info"><div class="score-name">${esc(s.playerNames[mi])}</div></div>
+      <div class="score-val" style="color:#ccc">—</div>
+    </div>`).join('');
   html += '</div></div>';
 
-  const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`)).join('');
+  const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   html += `<div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div class="card-title" style="margin-bottom:0">対局履歴</div>${logBtn}
     </div>
-    <div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed">
+    <div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s.playerNames)}
       <tbody>${rows}</tbody>
     </table></div>
     ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
-    html += `<div class="card"><div class="card-title">個人成績</div>${rankCountHtml(g.rounds, s.playerNames)}</div>`;
+    html += `<div class="card"><div class="card-title">個人成績</div>${rankCountHtml(g.rounds, s)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
     html += `<div class="card"><div class="card-title">スコア推移</div>
-      <div class="chart-wrap">${chartHtml(g.rounds, s.playerNames)}</div></div>`;
+      <div class="chart-wrap">${chartHtml(g.rounds, s)}</div></div>`;
   }
 
   html += `<div class="card"><div class="card-title">設定</div>
     <div style="font-size:13px;color:#555;line-height:2.2">
+      ${s.numPlayers}人麻雀 ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')} ／ スコア係数: ×${s.rate}
+      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
-  document.getElementById('view-detail').classList.toggle('sanma', n === 3);
-  document.body.classList.toggle('sanma-mode', n === 3);
+  document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
+  document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
   showView('detail');
 }
 
