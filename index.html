@@ -395,6 +395,19 @@ details.log-details summary::-webkit-details-marker { display: none; }
 .team-chip:active { cursor: grabbing; background: #E4F3EC; border-color: #177083; }
 /* チーム成績カードのメンバー名 */
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; }
+/* チームの色ドット（履歴・成績表・チーム成績で所属を示す） */
+.team-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; flex-shrink: 0; }
+/* 回し打ちグループ用: 試合ごとのカード形式履歴（参加者のみ順位順に表示） */
+.round-list { display: flex; flex-direction: column; gap: 8px; }
+.round-item { border: 1px solid #eee; border-radius: 10px; padding: 10px 12px; cursor: pointer; background: #fff; }
+.round-item:active { background: #f7f7f7; }
+.round-item-head { font-size: 11px; color: #999; font-weight: 700; margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
+.round-item-head .round-edited { color: #c0c4cc; font-weight: 400; }
+.round-item-body { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.round-p { font-size: 13px; color: #444; white-space: nowrap; }
+/* 個人成績（転置版）: 名前列は横スクロール時も固定表示 */
+.stats-table th.sticky-col, .stats-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
+.stats-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
@@ -751,7 +764,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">対局履歴</div>
         <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
       </div>
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto" id="rounds-wrap">
         <table class="rounds-table" id="rounds-table"></table>
       </div>
     </div>
@@ -1380,6 +1393,17 @@ function normalizedTeams(s) {
   // Firebase経由でmembersが欠落するケースに備えて空配列で補完
   return (s.teams || []).map(t => ({ name: t.name || '', members: t.members || [] }));
 }
+// チームの識別色（チーム成績・対局履歴・個人成績で共通）
+const TEAM_COLORS = ['#E75620', '#177083', '#6a1b9a', '#f9a825', '#00838f', '#ad1457'];
+function memberTeamIndex(s, m) {
+  if (!s.teamMode || !s.teams) return -1;
+  return normalizedTeams(s).findIndex(t => t.members.includes(m));
+}
+// メンバー名の前に付けるチーム色ドット（チーム戦でないグループは空文字）
+function teamDotHtml(s, m) {
+  const ti = memberTeamIndex(s, m);
+  return ti >= 0 ? `<span class="team-dot" style="background:${TEAM_COLORS[ti % TEAM_COLORS.length]}"></span>` : '';
+}
 function teamStandingsHtml(g) {
   const s = g.settings;
   const teams = normalizedTeams(s);
@@ -1405,7 +1429,7 @@ function teamStandingsHtml(g) {
     return `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
       <div class="score-info">
-        <div class="score-name">${esc(t.name)}</div>
+        <div class="score-name"><span class="team-dot" style="background:${TEAM_COLORS[ti % TEAM_COLORS.length]}"></span>${esc(t.name)}</div>
         <div class="team-members-line">${memberNames}</div>
         ${bonusLine}
       </div>
@@ -1583,8 +1607,35 @@ function chartHtml(rounds, s) {
 // ---- 局履歴テーブルの共通パーツ ----
 // 局履歴と順位取得回数で列幅を揃えるため、先頭列は固定幅・table-layout:fixed を共用
 const FIRST_COL_TH = '<th style="width:60px">';
-function roundsTheadHtml(names) {
-  return `<thead><tr>${FIRST_COL_TH}試合</th>${names.map(n=>`<th>${esc(n)}</th>`).join('')}</tr></thead>`;
+function roundsTheadHtml(s) {
+  // チーム戦なら名前の前に所属チームの色ドットを付ける
+  return `<thead><tr>${FIRST_COL_TH}試合</th>${s.playerNames.map((n, i) => `<th>${teamDotHtml(s, i)}${esc(n)}</th>`).join('')}</tr></thead>`;
+}
+// 回し打ちグループ（メンバー数 > 1試合の人数）用のカード形式履歴。
+// 各試合に「参加者のみ」を順位順で表示するので、誰が対戦した試合かが一目で分かる
+function roundListHtml(rounds, s, onclickOf) {
+  const medals = ['🥇', '🥈', '🥉'];
+  return '<div class="round-list">' + rounds.map((r, idx) => {
+    const mem = roundMembers(r, s);
+    const vals = (r.points || r.scores).slice(0, mem.length);
+    const groups = rankGroups(vals);
+    const order = mem.map((_, k) => k).sort((a, b) => vals[b] - vals[a]);
+    const parts = order.map(k => {
+      const m = mem[k];
+      const g = groups[k];
+      const icon = g.start < 3 ? medals[g.start] : (g.isLast ? '👿' : `<span style="color:#8a9aa5;font-size:11px">${g.start + 1}位</span>`);
+      const sc = r.scores[k];
+      const scStyle = sc > 0 ? 'color:#1a237e' : sc < 0 ? 'color:#c62828' : 'color:#555';
+      const extra = [];
+      if (r.chips && r.chips[k]) extra.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
+      if (r.yakitori && r.yakitori[k]) extra.push('🐔');
+      return `<span class="round-p">${icon} ${teamDotHtml(s, m)}${esc(s.playerNames[m] || '')} <b style="${scStyle}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</b>${extra.length ? ` <span style="color:#b08968;font-size:10px">${extra.join(' ')}</span>` : ''}</span>`;
+    }).join('');
+    return `<div class="round-item" onclick="${onclickOf(idx)}">
+      <div class="round-item-head">第${idx + 1}試合 <span>${fmtTime(r.at)}</span>${r.edited ? '<span class="round-edited">修正済</span>' : ''}</div>
+      <div class="round-item-body">${parts}</div>
+    </div>`;
+  }).join('') + '</div>';
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示
@@ -1646,35 +1697,34 @@ function rankCountHtml(rounds, s) {
     const r = Math.round(v * 10) / 10;
     return Number.isInteger(r) ? `${r}回` : `${r.toFixed(1)}回`;
   };
-  let rows = Array.from({length: slots}, (_, rank) => {
-    const cells = names.map((_, i) => {
-      const c = counts[i][rank];
-      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
-    }).join('');
-    return `<tr><td style="color:#555">${rank+1}着</td>${cells}</tr>`;
-  }).join('');
-  // 総試合数（メンバーごとの参加数）・平均着順・ラス回避
-  const statLabel = 'color:#555;font-size:10px;white-space:nowrap;padding-left:2px;padding-right:2px';
-  // 3人麻雀は区切り線も青系に
-  const totalRowTd = `border-top:1.5px solid ${slots === 3 ? '#c3cfe8' : '#c8d6da'}`;
-  const statGroupTd = `border-top:1px dashed ${slots === 3 ? '#dbe3f2' : '#d5dde0'}`;
-  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
+  // 表は「行=メンバー、列=成績項目」。メンバーが増えても下に伸びるだけなので
+  // モバイルでは縦スクロールだけで各メンバーの成績を追える。
+  // 横スクロールが必要な場合も名前列（sticky）が固定されるので、誰の行か見失わない
   const avgs = names.map((_, i) => gamesPlayed[i] ? avgRankSum[i] / gamesPlayed[i] : null);
   const pcts = names.map((_, i) => gamesPlayed[i] ? Math.round((gamesPlayed[i] - lastCount[i]) / gamesPlayed[i] * 100) : null);
+  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
   const validAvgs = avgs.filter(v => v !== null);
   const validPcts = pcts.filter(v => v !== null);
   const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
   const bestPct = validPcts.length ? Math.max(...validPcts) : null;
   const crown = '<span style="font-size:11px;margin-right:2px">👑</span>'; // トップの識別は王冠マークで
-  rows += `<tr>${[`<td style="${statLabel};${totalRowTd}">総試合数</td>`]
-    .concat(names.map((_, i) => `<td style="${totalRowTd}">${gamesPlayed[i]}回</td>`)).join('')}</tr>`;
-  rows += `<tr>${[`<td style="${statLabel};${statGroupTd}">平均着順</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700;${statGroupTd}">${avgs[i] === null ? '<span style="color:#ccc">—</span>' : (avgs[i] === bestAvg ? crown : '') + avgs[i].toFixed(2)}</td>`)).join('')}</tr>`;
-  rows += `<tr>${[`<td style="${statLabel}">ラス回避</td>`]
-    .concat(names.map((_, i) => `<td style="font-weight:700">${pcts[i] === null ? '<span style="color:#ccc">—</span>' : (pcts[i] === bestPct ? crown : '') + pcts[i] + '%'}</td>`)).join('')}</tr>`;
-  return `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(N)}">
-    <thead><tr>${FIRST_COL_TH}着順</th>${names.map(nm => `<th>${esc(nm)}</th>`).join('')}</tr></thead>
-    <tbody>${rows}</tbody>
+  const dash = '<span style="color:#ccc">—</span>';
+  const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${slots === 3 ? '#4261AA' : '#177083'}">名前</th>${Array.from({length: slots}, (_, r) => `<th>${r + 1}着</th>`).join('')}<th>試合数</th><th>平均着順</th><th>ラス回避</th></tr></thead>`;
+  const rows = names.map((nm, i) => {
+    const nameTd = `<td class="sticky-col">${teamDotHtml(s, i)}${esc(nm)}</td>`;
+    if (!gamesPlayed[i]) {
+      return `<tr>${nameTd}${Array.from({length: slots + 3}, () => `<td>${dash}</td>`).join('')}</tr>`;
+    }
+    const countTds = Array.from({length: slots}, (_, rank) => {
+      const c = counts[i][rank];
+      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
+    }).join('');
+    return `<tr>${nameTd}${countTds}<td>${gamesPlayed[i]}回</td>
+      <td style="font-weight:700">${(avgs[i] === bestAvg ? crown : '') + avgs[i].toFixed(2)}</td>
+      <td style="font-weight:700">${(pcts[i] === bestPct ? crown : '') + pcts[i] + '%'}</td></tr>`;
+  }).join('');
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + (slots + 3) * 58}px">
+    ${header}<tbody>${rows}</tbody>
   </table></div>`;
 }
 
@@ -1787,24 +1837,31 @@ function renderGame() {
   }
 
   // 対局履歴（行タップで編集メニュー）
-  let tableHtml = roundsTheadHtml(s.playerNames) + '<tbody>';
-  if (hasRounds) {
-    tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`, s)).join('');
+  // 回し打ちグループはカード形式、メンバー数=1試合の人数の通常グループは従来の表形式
+  const wrap = document.getElementById('rounds-wrap');
+  const useCards = s.playerNames.length > s.numPlayers;
+  if (hasRounds && useCards) {
+    wrap.style.overflowX = 'visible';
+    wrap.innerHTML = roundListHtml(activeGame.rounds, s, idx => `openRoundMenu(${idx})`);
   } else {
-    tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
+    wrap.style.overflowX = 'auto';
+    let tableHtml = roundsTheadHtml(s) + '<tbody>';
+    if (hasRounds) {
+      tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`, s)).join('');
+    } else {
+      tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
+    }
+    tableHtml += '</tbody>';
+    wrap.innerHTML = `<table class="rounds-table" id="rounds-table" style="${tableStyleFor(s.playerNames.length)}">${tableHtml}</table>`;
   }
-  tableHtml += '</tbody>';
-  const table = document.getElementById('rounds-table');
-  table.setAttribute('style', tableStyleFor(s.playerNames.length));
-  table.innerHTML = tableHtml;
 
   // 履歴（対局履歴カード内）
   let logEl = document.getElementById('game-log');
   if (!logEl) {
     logEl = document.createElement('div'); logEl.id = 'game-log';
-    table.closest('.card').appendChild(logEl);
+    wrap.closest('.card').appendChild(logEl);
   }
-  logEl.innerHTML = hasRounds ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
+  logEl.innerHTML = hasRounds ? `<div style="font-size:11px;color:#aaa;margin-top:6px">${useCards ? '試合をタップすると' : '行をタップすると'}修正・削除できます</div>` : '';
   document.getElementById('log-btn').style.display = logEvents(activeGame.log).length > 0 ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
@@ -2126,6 +2183,18 @@ async function submitRound() {
   let logEntry;
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
+    // 収支計算・焼き鳥をOFFにした後の修正でも、記録済みの値は消さずに引き継ぐ（メンバー対応で再配置）
+    const origMem = roundMembers(orig, ctx.settings);
+    if (!ctx.settings.bonusEnabled && orig.chips) {
+      const chipOf = {};
+      origMem.forEach((m, k) => { chipOf[m] = orig.chips[k]; });
+      extras.chips = members.map(m => Number(chipOf[m]) || 0);
+    }
+    if (!ctx.settings.yakitori && orig.yakitori) {
+      const yakiOf = {};
+      origMem.forEach((m, k) => { yakiOf[m] = orig.yakitori[k]; });
+      extras.yakitori = members.map(m => yakiOf[m] ? 1 : 0);
+    }
     newRounds[editingIndex] = { points, scores, members, ...extras, at: orig.at || now, edited: true }; // 修正
     logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points };
   } else {
@@ -2168,17 +2237,25 @@ function renderEditMembers() {
     const locked = m.orig !== null && played.has(m.orig);
     const tooFew = editMembersState.length <= minMembers;
     const canDelete = !locked && !tooFew;
-    const reason = locked ? '対局済みのため削除不可' : tooFew ? `メンバーは最低${minMembers}人必要` : '';
+    // 削除できない場合はボタンではなく理由ラベルを表示し、タップで詳しい説明を出す
+    const label = locked ? '対局済み' : `最低${minMembers}人`;
+    const reason = locked
+      ? '対局済みのメンバーを削除すると入力した結果が消えてしまうため、削除できません'
+      : `メンバーが${minMembers}人を下回ると試合が成立しなくなるため、削除できません`;
+    const action = canDelete
+      ? `<button type="button" class="round-del-btn" style="flex-shrink:0" onclick="removeEditMember(${pos})">削除</button>`
+      : `<span style="flex-shrink:0;font-size:10px;color:#aaa;border:1px solid #e5e5e5;border-radius:5px;padding:4px 7px;white-space:nowrap;cursor:help"
+          onclick="showToast('${reason}')">${label}</span>`;
     return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <input type="text" id="e-p-${pos}" value="${esc(m.name)}" style="flex:1;min-width:0">
-      <button type="button" class="round-del-btn" style="flex-shrink:0;${canDelete ? '' : 'opacity:0.35;cursor:not-allowed'}"
-        onclick="${canDelete ? `removeEditMember(${pos})` : `showToast('${reason}')`}">削除</button>
+      ${action}
     </div>`;
   }).join('');
   const addBtn = editMembersState.length < MAX_MEMBERS
     ? `<button type="button" class="edit-tab" style="margin-top:4px" onclick="addEditMember()">＋ メンバーを追加</button>`
     : '';
-  wrap.innerHTML = rows + addBtn;
+  const hint = `<div class="chips-hint" style="margin:8px 0 0">・対局済みのメンバーは、結果が消えてしまうため削除できません（名前の変更は可能です）<br>・1試合の人数（${activeGame.settings.numPlayers}人）を下回る削除はできません</div>`;
+  wrap.innerHTML = rows + addBtn + hint;
 }
 function captureEditMembers() {
   editMembersState.forEach((m, pos) => {
@@ -2219,9 +2296,11 @@ function settingsFormHtml(name, s) {
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
     <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}"></div>
-    <div class="field"><label>メンバー（対局済みのメンバーは削除できません）</label>
+    <div class="chips-hint" style="margin-bottom:10px">対局形式（${n}人麻雀）は、過去の試合と整合が取れなくなるため作成後に変更できません。</div>
+    <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
+    <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">⚠ 持ち点・返し点・ウマ・スコア倍率を変更すると、<b>過去の試合もすべて新しいルールで再計算</b>されます。入力済みの点数はそのまま残ります。</div>
     <div class="field"><label>持ち点</label><input type="number" id="e-start" value="${s.startPoints}"></div>
     <div class="field"><label>返し点</label><input type="number" id="e-return" value="${s.returnPoints}"></div>
     <div class="field"><label>ウマ</label>
@@ -2253,6 +2332,7 @@ function settingsFormHtml(name, s) {
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差 = 終了時チップ数 − 開始時チップ数<br>例：チップ差3枚 × チップ倍率500倍 → 1500チップ収支</div>
       </div>
+      ${s.bonusEnabled ? '<div class="chips-hint" style="margin:6px 0 0 26px">OFFにしても記録済みのチップ差は消えません（表示されなくなるだけで、再度ONにすると集計に戻ります）</div>' : ''}
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥🐔を記録する
       </label>
@@ -2329,7 +2409,9 @@ async function saveGameEdit() {
   const startChips = Number(document.getElementById('e-start-chips').value) || 0;
   const yakitori = document.getElementById('e-yakitori').checked;
   // チーム戦: 有効時は全員所属＋空チームなしを保証。無効化しても編成は保持し、再度ONにしたとき復元する
-  const teamMode = document.getElementById('e-team').checked && playerNames.length >= 4;
+  const teamChecked = document.getElementById('e-team').checked;
+  if (teamChecked && playerNames.length < 4) { showToast('チーム戦にはメンバーが4人以上必要です'); return; }
+  const teamMode = teamChecked;
   let teams = null;
   if (teamMode) {
     initEditTeamEditor();
@@ -2469,18 +2551,25 @@ function viewDetail(g) {
     html += `<div class="card"><div class="card-title">収支集計</div>${bonusTableHtml(g)}</div>`;
   }
 
-  const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
+  const useCards = s.playerNames.length > s.numPlayers;
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
+  let roundsHtml;
+  if (hasRounds && useCards) {
+    roundsHtml = roundListHtml(g.rounds, s, ridx => `editDetailRound(${ridx})`);
+  } else {
+    const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
+    roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
+      ${roundsTheadHtml(s)}
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  }
   html += `<div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
       <div class="card-title" style="margin-bottom:0">対局履歴</div>${logBtn}
     </div>
-    <div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
-      ${roundsTheadHtml(s.playerNames)}
-      <tbody>${rows}</tbody>
-    </table></div>
-    ${g.rounds.length ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
+    ${roundsHtml}
+    ${g.rounds.length ? `<div style="font-size:11px;color:#aaa;margin-top:6px">${useCards ? '試合をタップすると' : '行をタップすると'}点数を修正できます</div>` : ''}</div>`;
   if (g.rounds.length > 0) {
     html += `<div class="card"><div class="card-title">個人成績</div>${rankCountHtml(g.rounds, s)}</div>`;
   }
