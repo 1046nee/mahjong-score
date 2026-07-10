@@ -1,0 +1,66 @@
+/* ==========================================================
+   まじゃすこ ブログ共通スタイル（/assets/blog.css）
+   - body.bs-list を持つページ（blog.html / /mahjong/ /news/ /blog/）: 一覧レイアウト一式
+   - 記事ページ: 共通コンポーネント（.cat-nav / .post-layout / .side）のみ利用
+   ========================================================== */
+
+/* ---- 一覧ページ（body.bs-list）の基本レイアウト ---- */
+body.bs-list { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #f4faf7; color: #1f2a28; line-height: 1.9; -webkit-font-smoothing: antialiased; margin: 0; }
+body.bs-list * { box-sizing: border-box; }
+.bs-list .site-head { background: #fff; border-bottom: 1px solid #e6efeb; }
+.bs-list .site-head-inner { max-width: 960px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: baseline; gap: 12px; }
+.bs-list .brand { font-size: 17px; font-weight: 800; color: #177083; letter-spacing: 0.5px; text-decoration: none; }
+.bs-list .brand-sub { font-size: 11px; color: #7a8a86; }
+.bs-list .blog-hero { background: linear-gradient(180deg, #E4F3EC 0%, #D9EEE3 100%); text-align: center; padding: 32px 20px 28px; }
+.bs-list .blog-hero h1 { font-size: 22px; font-weight: 800; color: #177083; margin: 0 0 8px; }
+.bs-list .blog-hero p { font-size: 13px; color: #4a5a56; margin: 0; }
+.bs-list .crumbs { max-width: 960px; margin: 0 auto; padding: 14px 20px 0; font-size: 12px; color: #999; }
+.bs-list .crumbs a { color: #555; text-decoration: none; }
+.bs-list .post-list { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---- 記事カード（一覧・カテゴリページ共通） ---- */
+.post-card { display: block; background: #fff; border: 1px solid #e6efeb; border-radius: 16px; padding: 20px; text-decoration: none; color: inherit; transition: transform .12s, box-shadow .12s, border-color .12s; }
+.post-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(23,112,131,0.12); border-color: #cfe3db; }
+.post-tag { display: inline-block; background: #E4F3EC; color: #177083; font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 13px; margin-bottom: 12px; }
+.post-tag.orange { background: #FDEEE7; color: #E75620; }
+.post-card h2 { font-size: 16px; font-weight: 800; color: #1f2a28; line-height: 1.6; margin: 0 0 8px; }
+.post-card .excerpt { font-size: 13px; color: #5a6a66; line-height: 1.9; margin: 0; }
+.post-card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+.post-card .date { font-size: 12px; color: #9aa8a4; }
+.post-card .read-more { color: #E75620; font-weight: 800; font-size: 13px; }
+.bs-empty { font-size: 13px; color: #888; margin: 0; }
+
+/* ---- カテゴリナビ（すべて/麻雀攻略/お知らせ/雑記） ---- */
+.cat-nav { max-width: 960px; margin: 0 auto; padding: 18px 20px 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-chip { text-decoration: none; font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 6px 14px; }
+.cat-chip.on { background: #177083; color: #fff; }
+
+/* ---- 2カラムレイアウト（PC: 本文＋右サイドバー / モバイル: 縦積み） ---- */
+.post-layout { max-width: 960px; margin: 0 auto; padding: 8px 20px 44px; display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 28px; align-items: start; }
+.post-layout > .blog-post { max-width: 680px; margin: 0; padding: 8px 0 20px; }
+@media (max-width: 900px) {
+  .post-layout { grid-template-columns: 1fr; }
+}
+
+/* ---- サイドバー（今月のおすすめ記事・最新のアップデート） ---- */
+.side { display: flex; flex-direction: column; gap: 16px; }
+.side-box { background: #fff; border: 1px solid #e6efeb; border-radius: 14px; padding: 16px 16px 14px; }
+.side-box h2 { font-size: 13px; color: #177083; font-weight: 800; margin: 0 0 12px; padding-left: 9px; border-left: 4px solid #177083; line-height: 1.4; }
+.side-box ul { list-style: none; margin: 0; padding: 0; }
+.side-box li { margin: 0 0 12px; }
+.side-box li:last-child { margin-bottom: 0; }
+.side-box .sb-link { font-size: 13px; color: #222; text-decoration: none; font-weight: 600; line-height: 1.6; display: block; }
+.side-box .sb-link:hover { color: #177083; }
+.side-box .sb-date { font-size: 11px; color: #9aa8a4; }
+.side-box .sb-more { display: inline-block; margin-top: 6px; font-size: 12px; color: #E75620; font-weight: 700; text-decoration: none; }
+
+/* ---- アプリ導線バナー・フッター（一覧ページ） ---- */
+.bs-list .app-banner { max-width: 960px; margin: 0 auto 40px; padding: 0 20px; }
+.bs-list .app-banner-inner { background: #E4F3EC; border-radius: 16px; text-align: center; padding: 26px 20px; }
+.bs-list .app-banner-inner p { font-size: 14px; font-weight: 700; color: #1f2a28; margin: 0 0 14px; }
+.bs-list .app-btn { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 800; font-size: 15px; border-radius: 50px; padding: 14px 28px; box-shadow: 0 6px 18px rgba(231,86,32,0.30); transition: background .2s, transform .1s; }
+.bs-list .app-btn:hover { background: #F0824F; }
+.bs-list .app-btn:active { transform: scale(.97); }
+.bs-list .site-foot { background: #177083; color: rgba(255,255,255,0.85); text-align: center; font-size: 12px; padding: 26px 16px 34px; }
+.bs-list .site-foot a { color: #fff; text-decoration: underline; margin: 0 10px; }
+.bs-list .site-foot .links { margin-bottom: 10px; }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>まじゃすこ お知らせ</title>
+  <link>https://majasco.jp/news/</link>
+  <atom:link href="https://majasco.jp/news/feed.xml" rel="self" type="application/rss+xml"/>
+  <description>麻雀スコア集計・共有アプリ「まじゃすこ / majasco」のアップデート情報・お知らせ</description>
+  <language>ja</language>
+  <lastBuildDate>Fri, 10 Jul 2026 12:00:00 +0900</lastBuildDate>
+  <item>
+    <title>大型アップデートのお知らせ｜チーム戦・チップ収支・最大40人の回し打ちに対応しました</title>
+    <link>https://majasco.jp/news/update-2026-07.html</link>
+    <guid>https://majasco.jp/news/update-2026-07.html</guid>
+    <pubDate>Fri, 10 Jul 2026 12:00:00 +0900</pubDate>
+    <description>チーム戦モード、チップの収支計算、メンバー3〜40人の回し打ち対応、モバイルUIの刷新など、2026年7月の大型アップデート内容を紹介します。</description>
+  </item>
+</channel>
+</rss>
