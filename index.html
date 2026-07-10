@@ -385,6 +385,21 @@ details.log-details summary::-webkit-details-marker { display: none; }
 /* 焼き鳥🐔トグル（OFFはグレー表示） */
 .yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; padding: 8px 7px; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
 .yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
+/* スコア収支カード: スコア/チップ枚数の切替トグルと、順位エリアのスムーズな置き換え */
+.mini-toggle { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.mini-toggle button { border: none; background: #fff; color: #888; font-size: 11px; font-weight: 700; padding: 6px 11px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.mini-toggle button.on { background: #177083; color: #fff; }
+.sanma .mini-toggle button.on { background: #4261AA; }
+.metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
+.score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
+.score-swap.swapping { opacity: 0; transform: translateY(4px); }
+/* 合計収支セクション: スコア収支カード内の大きめトグルで開閉（「詳細を見る」感覚） */
+.bonus-section-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 12px 14px; border: 1.5px solid #dfe9ec; background: #f2f8f9; color: #177083; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.bonus-section-toggle .bst-arrow { font-size: 12px; }
+.bonus-section-toggle.open { border-radius: 10px 10px 0 0; }
+.bonus-section { border: 1.5px solid #dfe9ec; border-top: none; border-radius: 0 0 10px 10px; padding: 12px; background: #fff; }
+.sanma .bonus-section-toggle { color: #4261AA; background: #eef2fa; border-color: #dbe3f2; }
+.sanma .bonus-section { border-color: #dbe3f2; }
 /* 収支集計: 主役の「合計収支」はミニカードで大きく、内訳は控えめな表でメリハリをつける */
 .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .bonus-cell { background: #f6f9fa; border: 1px solid #e3edf0; border-radius: 10px; padding: 10px 12px; min-width: 0; }
@@ -782,15 +797,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="team-body"></div>
     </div>
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:0">スコア収支</div>
-        <button class="edit-tab" id="bonus-toggle" onclick="toggleBonus()">収支換算</button>
-      </div>
-      <div class="score-cards" id="score-cards"></div>
-    </div>
-    <div class="card" id="bonus-card" style="display:none">
-      <div class="card-title">収支集計</div>
-      <div id="bonus-body"></div>
+      <div id="score-main-body"></div>
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -931,8 +938,23 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
-let showBonus = false; // 合計スコアの収支換算表示ON/OFF（初期はスコア表示）
-function toggleBonus() { showBonus = !showBonus; renderGame(); }
+// スコア収支カードの表示指標: 'score'（合計スコアの順位・デフォルト） / 'chips'（チップ最終枚数の順位）
+let scoreMetric = 'score';
+// 合計収支セクションの開閉状態（再描画してもリセットされないよう保持する）
+let bonusSectionOpen = false;
+function setMetric(m) {
+  if (scoreMetric === m) return;
+  scoreMetric = m;
+  // 順位エリアをフェードさせてから数値を置き換える（スムーズな切り替え）
+  document.querySelectorAll('.score-swap').forEach(el => el.classList.add('swapping'));
+  setTimeout(() => {
+    if (document.getElementById('view-detail').classList.contains('active') && detailGame) {
+      renderDetailBody(detailGame);
+    } else {
+      renderGame();
+    }
+  }, 170);
+}
 
 // ---- Storage ----
 function loadStorage() {
@@ -961,6 +983,8 @@ function generateSessionId() {
 }
 function startListening() {
   stopListening();
+  scoreMetric = 'score'; // 新しいグループを開いたときはデフォルト（スコア順位）に戻す
+  bonusSectionOpen = false;
   sessionRef = db.ref('sessions/' + sessionId);
   sessionCallback = sessionRef.on('value', snapshot => {
     const data = snapshot.val();
@@ -1363,11 +1387,6 @@ function playedFlags(g) {
 function tableStyleFor(memberCount) {
   return memberCount > 4 ? `table-layout:fixed;min-width:${60 + memberCount * 84}px` : 'table-layout:fixed';
 }
-function getTotals() {
-  if (!activeGame) return [];
-  return gameTotals(activeGame);
-}
-
 // ---- 収支集計（フェーズ2） ----
 // スコア収支 = 合計pts × スコア倍率、チップ収支 = チップ差の合計 × チップ倍率、
 // 合計収支 = スコア収支 + チップ収支。チップ差 = 終了時チップ数 − 開始時チップ数（settings.startChips、未設定は0）。
@@ -1442,6 +1461,86 @@ function toggleBonusDetail(btn) {
   if (!wrap) return;
   const collapsed = wrap.classList.toggle('bonus-collapsed');
   btn.textContent = collapsed ? '内訳を表示' : '内訳を閉じる';
+}
+
+// ---- スコア収支カード（ゲーム画面・結果詳細で共用） ----
+// デフォルトは合計スコアの順位。右上のトグルで「チップ最終枚数」の順位に切り替えられる。
+// 収支計算ONのグループは、カード内の大きめトグル「合計収支」から内訳を展開できる
+function metricToggleHtml(s) {
+  if (!s.bonusEnabled) return '';
+  return `<div class="mini-toggle">
+    <button type="button" class="${scoreMetric === 'score' ? 'on' : ''}" onclick="setMetric('score')">スコア</button>
+    <button type="button" class="${scoreMetric === 'chips' ? 'on' : ''}" onclick="setMetric('chips')">チップ枚数</button>
+  </div>`;
+}
+// 順位リスト本体。metric = 'score'（pts） / 'chips'（チップ最終枚数）
+function scoreCardsListHtml(g) {
+  const s = g.settings;
+  const totals = gameTotals(g);
+  const hasRounds = (g.rounds || []).length > 0;
+  const played = playedFlags(g);
+  const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
+  const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
+  const chipsMode = scoreMetric === 'chips' && s.bonusEnabled;
+  const { chips } = chipsMode ? chipTotals(g) : { chips: [] };
+  const startChips = Number(s.startChips) || 0;
+  const vals = activeIdx.map(i => chipsMode ? startChips + (chips[i] || 0) : totals[i]);
+  const groups = rankGroups(vals);
+  const ranked = activeIdx.map((mi, k) => ({ v: vals[k], mi, k })).sort((a, b) => b.v - a.v);
+  let html = ranked.map(p => {
+    const grp = groups[p.k];
+    let valHtml, sub = '';
+    if (chipsMode) {
+      const diff = chips[p.mi] || 0;
+      const cls = diff > 0 ? 'pos' : diff < 0 ? 'neg' : '';
+      valHtml = `<div class="score-val ${cls}">${p.v.toLocaleString()}<span style="font-size:10px;vertical-align:sub;margin-left:1px">枚</span></div>`;
+      sub = `<div class="score-bonus">チップ差 ${diff > 0 ? '+' : ''}${diff}枚</div>`;
+    } else {
+      const cls = p.v >= 0 ? 'pos' : 'neg';
+      valHtml = `<div class="score-val ${cls}">${p.v >= 0 ? '+' : ''}${p.v.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>`;
+    }
+    return `<div class="score-card">
+      ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
+      <div class="score-info">
+        <div class="score-name">${esc(s.playerNames[p.mi])}</div>
+        ${sub}
+      </div>
+      ${valHtml}
+    </div>`;
+  }).join('');
+  html += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
+      <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
+      <div class="score-info"><div class="score-name">${esc(s.playerNames[mi])}</div></div>
+      <div class="score-val" style="color:#ccc">—</div>
+    </div>`).join('');
+  return html;
+}
+// カード全体（タイトル＋トグル＋モードラベル＋順位リスト＋合計収支セクション）
+function scoreMainHtml(g) {
+  const s = g.settings;
+  const hasRounds = (g.rounds || []).length > 0;
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${s.bonusEnabled ? '6px' : '12px'}">
+    <div class="card-title" style="margin-bottom:0">スコア収支</div>${metricToggleHtml(s)}
+  </div>`;
+  if (s.bonusEnabled) {
+    html += `<div class="metric-label">${scoreMetric === 'chips' ? `順位（チップ最終枚数・開始時${Number(s.startChips) || 0}枚）` : '順位（スコア）'}</div>`;
+  }
+  html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
+  if (s.bonusEnabled && hasRounds) {
+    html += `<button type="button" class="bonus-section-toggle${bonusSectionOpen ? ' open' : ''}" onclick="toggleBonusSection(this)">
+      <span>合計収支</span><span class="bst-arrow">${bonusSectionOpen ? '▴' : '▾'}</span>
+    </button>
+    <div class="bonus-section" style="display:${bonusSectionOpen ? 'block' : 'none'}">${bonusTableHtml(g)}</div>`;
+  }
+  return html;
+}
+function toggleBonusSection(btn) {
+  bonusSectionOpen = !bonusSectionOpen;
+  const sec = btn.nextElementSibling;
+  if (sec) sec.style.display = bonusSectionOpen ? 'block' : 'none';
+  btn.classList.toggle('open', bonusSectionOpen);
+  const arrow = btn.querySelector('.bst-arrow');
+  if (arrow) arrow.textContent = bonusSectionOpen ? '▴' : '▾';
 }
 
 // ---- チーム戦（フェーズ3） ----
@@ -1870,35 +1969,9 @@ function renderGame() {
   const s = activeGame.settings;
   document.getElementById('game-title').textContent = activeGame.name;
 
-  // スコアカード（参加済みメンバーを順位付け。未参加メンバーは下に「未参加」で表示）
-  document.getElementById('bonus-toggle').textContent = showBonus ? '収支換算' : 'スコア表示';
-  const totals = getTotals();
+  // スコア収支カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   const hasRounds = activeGame.rounds.length > 0;
-  const played = playedFlags(activeGame);
-  const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
-  const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
-  const activeTotals = activeIdx.map(i => totals[i]);
-  const totalGroups = rankGroups(activeTotals);
-  const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
-  let cardsHtml = ranked.map(p => {
-    const g = totalGroups[p.k];
-    const bonusStr = (showBonus && s.rate) ? `スコア収支 ${(p.t * s.rate).toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span>` : '';
-    const cls = p.t >= 0 ? 'pos' : 'neg';
-    return `<div class="score-card">
-      ${rankBadgeHtml(g.start, g.size > 1, g.isLast)}
-      <div class="score-info">
-        <div class="score-name">${esc(s.playerNames[p.mi])}</div>
-        ${bonusStr ? `<div class="score-bonus">${bonusStr}</div>` : ''}
-      </div>
-      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div>`;
-  }).join('');
-  cardsHtml += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
-      <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
-      <div class="score-info"><div class="score-name">${esc(s.playerNames[mi])}</div></div>
-      <div class="score-val" style="color:#ccc">—</div>
-    </div>`).join('');
-  document.getElementById('score-cards').innerHTML = cardsHtml;
+  document.getElementById('score-main-body').innerHTML = scoreMainHtml(activeGame);
 
   // チーム成績（チーム戦が有効なグループのみ）
   const teamCard = document.getElementById('team-card');
@@ -1907,15 +1980,6 @@ function renderGame() {
     document.getElementById('team-body').innerHTML = teamStandingsHtml(activeGame);
   } else {
     teamCard.style.display = 'none';
-  }
-
-  // 収支集計（収支計算が有効なグループのみ）
-  const bonusCard = document.getElementById('bonus-card');
-  if (s.bonusEnabled && hasRounds) {
-    bonusCard.style.display = 'block';
-    document.getElementById('bonus-body').innerHTML = bonusTableHtml(activeGame);
-  } else {
-    bonusCard.style.display = 'none';
   }
 
   // 対局履歴（行タップで編集メニュー）
@@ -2622,47 +2686,24 @@ function viewDetailById(id) {
   if (g) viewDetail(g);
 }
 function viewDetail(g) {
+  scoreMetric = 'score'; // 詳細を開いたときはデフォルト（スコア順位）に戻す
+  renderDetailBody(g);
+  showView('detail');
+}
+// 結果詳細の本文だけを再描画する（スコア/チップ切替時に履歴を汚さないためshowViewとは分離）
+function renderDetailBody(g) {
   detailGame = g;
   document.getElementById('detail-title').textContent = g.name;
   const s = g.settings;
-  const totals = gameTotals(g);
   const hasRounds = g.rounds.length > 0;
-  const played = playedFlags(g);
-  const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
-  const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
-  const totalGroups = rankGroups(activeIdx.map(i => totals[i]));
-  const ranked = activeIdx.map((mi, k) => ({t: totals[mi], mi, k})).sort((a, b) => b.t - a.t);
 
   let html = '';
-  // チーム成績（チーム戦が有効なグループのみ・最終スコアの上）
+  // チーム成績（チーム戦が有効なグループのみ・スコア収支の上）
   if (s.teamMode && s.teams && hasRounds) {
     html += `<div class="card"><div class="card-title">チーム成績</div>${teamStandingsHtml(g)}</div>`;
   }
-  html += '<div class="card"><div class="card-title">最終スコア</div><div class="score-cards">';
-  ranked.forEach(p => {
-    const grp = totalGroups[p.k];
-    const bonusStr = s.rate ? `スコア収支 ${(p.t * s.rate).toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span>` : '';
-    const cls = p.t >= 0 ? 'pos' : 'neg';
-    html += `<div class="score-card">
-      ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
-      <div class="score-info">
-        <div class="score-name">${esc(s.playerNames[p.mi])}</div>
-        ${bonusStr ? `<div class="score-bonus">${bonusStr}</div>` : ''}
-      </div>
-      <div class="score-val ${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div>`;
-  });
-  html += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
-      <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
-      <div class="score-info"><div class="score-name">${esc(s.playerNames[mi])}</div></div>
-      <div class="score-val" style="color:#ccc">—</div>
-    </div>`).join('');
-  html += '</div></div>';
-
-  // 収支集計（収支計算が有効なグループのみ）
-  if (s.bonusEnabled && hasRounds) {
-    html += `<div class="card"><div class="card-title">収支集計</div>${bonusTableHtml(g)}</div>`;
-  }
+  // スコア収支カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
+  html += `<div class="card">${scoreMainHtml(g)}</div>`;
 
   const useCards = s.playerNames.length > s.numPlayers;
   const logBtn = logEvents(g.log).length > 0
@@ -2702,7 +2743,6 @@ function viewDetail(g) {
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
-  showView('detail');
 }
 
 // ---- 過去の結果の編集 ----
