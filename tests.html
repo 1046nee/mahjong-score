@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>計算ロジックテスト | まじゃすこ</title>
+<style>
+body { font-family: -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif; max-width: 760px; margin: 0 auto; padding: 24px 16px; color: #222; }
+h1 { font-size: 18px; color: #177083; }
+#summary { font-size: 15px; font-weight: 700; margin: 12px 0; padding: 10px 14px; border-radius: 10px; }
+#summary.pass { background: #e8f5e9; color: #2e7d32; }
+#summary.fail { background: #ffebee; color: #c62828; }
+.case { font-size: 13px; padding: 6px 10px; border-bottom: 1px solid #eee; }
+.case.ok::before { content: "✔ "; color: #2e7d32; font-weight: 700; }
+.case.ng::before { content: "✘ "; color: #c62828; font-weight: 700; }
+.case .detail { color: #c62828; font-size: 12px; display: block; margin-top: 2px; }
+p.note { font-size: 12px; color: #888; }
+</style>
+</head>
+<body>
+<h1>まじゃすこ 計算ロジックテスト</h1>
+<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / gameTotals / chipTotals / buildCsv）をそのまま検証します。このページは検証用でnoindexです。</p>
+<div id="summary">実行中...</div>
+<div id="out"></div>
+<iframe id="app" src="/index.html" style="width:1px;height:1px;opacity:0;position:absolute"></iframe>
+<script>
+function approx(a, b) { return Math.abs(a - b) < 1e-9; }
+function arrEq(a, b) { return a.length === b.length && a.every((v, i) => approx(v, b[i])); }
+
+function buildCases(w) {
+  const S4 = { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] };
+  const S3 = { numPlayers: 3, startPoints: 35000, returnPoints: 40000, uma: [15, 0, -15] };
+  return [
+    // ---- rankGroups: 同点処理の一元ロジック ----
+    ['rankGroups: 全員バラバラなら順位1-4', () => {
+      const g = w.rankGroups([40, 30, 20, 10]);
+      return arrEq(g.map(x => x.avgRank), [1, 2, 3, 4]) && g[0].isTop && !g[1].isTop && g[3].isLast && !g[2].isLast;
+    }],
+    ['rankGroups: トップ2人同点は平均1.5位・両方isTop', () => {
+      const g = w.rankGroups([30, 30, 20, 10]);
+      return g[0].avgRank === 1.5 && g[1].avgRank === 1.5 && g[0].isTop && g[1].isTop && g[0].size === 2 && g[3].isLast;
+    }],
+    ['rankGroups: 中間2人同点は平均2.5位', () => {
+      const g = w.rankGroups([40, 20, 20, 10]);
+      return g[1].avgRank === 2.5 && g[2].avgRank === 2.5 && !g[1].isTop && !g[1].isLast;
+    }],
+    ['rankGroups: ラス2人同点は平均3.5位・両方isLast', () => {
+      const g = w.rankGroups([40, 30, 10, 10]);
+      return g[2].avgRank === 3.5 && g[3].avgRank === 3.5 && g[2].isLast && g[3].isLast;
+    }],
+    ['rankGroups: 全員同点は全員2.5位・isTopかつisLast', () => {
+      const g = w.rankGroups([25, 25, 25, 25]);
+      return g.every(x => x.avgRank === 2.5 && x.isTop && x.isLast && x.size === 4);
+    }],
+    // ---- calcScores: 返し点・ウマ・オカ ----
+    ['calcScores: 標準4人（35000/28000/22000/15000 → +55/+8/-18/-45）', () => {
+      return arrEq(w.calcScores([35000, 28000, 22000, 15000], S4), [55, 8, -18, -45]);
+    }],
+    ['calcScores: 合計は常にゼロサム（標準4人）', () => {
+      const r = w.calcScores([35000, 28000, 22000, 15000], S4);
+      return approx(r.reduce((a, b) => a + b, 0), 0);
+    }],
+    ['calcScores: トップ同点はウマ+オカを山分け（30000×2/20000×2 → +30/+30/-30/-30）', () => {
+      return arrEq(w.calcScores([30000, 30000, 20000, 20000], S4), [30, 30, -30, -30]);
+    }],
+    ['calcScores: 小数を含む点数（35400/28300/21300/15000 → +55.4/+8.3/-18.7/-45）', () => {
+      return arrEq(w.calcScores([35400, 28300, 21300, 15000], S4), [55.4, 8.3, -18.7, -45]);
+    }],
+    ['calcScores: 3人麻雀（45000/40000/20000 → +35/0/-35）', () => {
+      const r = w.calcScores([45000, 40000, 20000], S3);
+      return arrEq(r, [35, 0, -35]) && approx(r.reduce((a, b) => a + b, 0), 0);
+    }],
+    // ---- 集計と旧データ互換 ----
+    ['roundMembers: members無しの旧ラウンドは先頭numPlayers人扱い', () => {
+      const mem = w.roundMembers({ scores: [1, 2, 3, 4] }, { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D', 'E'] });
+      return arrEq(mem, [0, 1, 2, 3]);
+    }],
+    ['gameTotals: members指定ありの試合は該当メンバーだけに加算', () => {
+      const g = {
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D', 'E'] },
+        rounds: [
+          { scores: [10, 5, -5, -10], members: [0, 1, 2, 3] },
+          { scores: [20, -5, -5, -10], members: [1, 2, 3, 4] }
+        ]
+      };
+      return arrEq(w.gameTotals(g), [10, 25, -10, -15, -10]);
+    }],
+    ['gameTotals: 旧形式（members無し）も正しく合算', () => {
+      const g = {
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D'] },
+        rounds: [{ scores: [45, 6, -18, -33] }, { scores: [-10, 20, -5, -5] }]
+      };
+      return arrEq(w.gameTotals(g), [35, 26, -23, -38]);
+    }],
+    ['playedFlags: 未参加メンバーはfalse', () => {
+      const g = {
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D', 'E'] },
+        rounds: [{ scores: [1, 2, 3, 4], members: [0, 1, 2, 3] }]
+      };
+      const f = w.playedFlags(g);
+      return f[0] && f[1] && f[2] && f[3] && !f[4];
+    }],
+    ['chipTotals: チップ差の累計と焼き鳥回数', () => {
+      const g = {
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D'] },
+        rounds: [
+          { scores: [1, 2, 3, 4], members: [0, 1, 2, 3], chips: [3, -1, 0, -2], yakitori: [0, 0, 0, 1] },
+          { scores: [1, 2, 3, 4], members: [0, 1, 2, 3], chips: [-1, 1, 0, 0], yakitori: [0, 0, 0, 1] }
+        ]
+      };
+      const { chips, yaki } = w.chipTotals(g);
+      return arrEq(chips, [2, 0, 0, -2]) && arrEq(yaki, [0, 0, 0, 2]);
+    }],
+    ['buildCsv: ヘッダー・合計行・未参加の空欄', () => {
+      const g = {
+        name: 'テスト',
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D', 'E'], rate: 100, bonusEnabled: false },
+        rounds: [{ scores: [10, 5, -5, -10], members: [0, 1, 2, 3], at: '2026-07-10T12:00:00.000Z' }]
+      };
+      const csv = w.buildCsv(g);
+      const lines = csv.split('\r\n');
+      return lines[0].indexOf('A（pts）') > 0 && lines[1].split(',')[2] === '10.0'
+        && lines[1].split(',')[6] === '' && lines[2].indexOf('合計') === 0;
+    }],
+    ['buildCsv: 収支ONならチップ差列と合計収支行が付く', () => {
+      const g = {
+        name: 'テスト2',
+        settings: { numPlayers: 4, playerNames: ['A', 'B', 'C', 'D'], rate: 100, chipRate: 500, bonusEnabled: true },
+        rounds: [{ scores: [55, 8, -18, -45], members: [0, 1, 2, 3], chips: [3, -3, 0, 0], at: '' }]
+      };
+      const lines = w.buildCsv(g).split('\r\n');
+      const grand = lines[lines.length - 1].split(',');
+      return lines[0].indexOf('A（チップ差）') > 0 && grand[0] === '合計収支（bonus）'
+        && grand[2] === '7000' && grand[3] === '-700';
+    }]
+  ];
+}
+
+window.addEventListener('load', () => {
+  const frame = document.getElementById('app');
+  let tries = 0;
+  const wait = () => {
+    let w = null;
+    try { w = frame.contentWindow; } catch (e) {}
+    if (!w || typeof w.rankGroups !== 'function' || typeof w.buildCsv !== 'function') {
+      if (++tries > 100) return done(null, 'アプリの読み込みに失敗しました（関数が見つかりません）');
+      return setTimeout(wait, 100);
+    }
+    run(w);
+  };
+  wait();
+});
+
+function run(w) {
+  const out = document.getElementById('out');
+  let pass = 0, fail = 0;
+  buildCases(w).forEach(([name, fn]) => {
+    let ok = false, err = '';
+    try { ok = !!fn(); } catch (e) { err = String(e); }
+    const div = document.createElement('div');
+    div.className = 'case ' + (ok ? 'ok' : 'ng');
+    div.textContent = name;
+    if (!ok && err) {
+      const d = document.createElement('span');
+      d.className = 'detail'; d.textContent = err;
+      div.appendChild(d);
+    }
+    out.appendChild(div);
+    ok ? pass++ : fail++;
+  });
+  done(fail === 0, `${pass + fail}件中 ${pass}件成功 / ${fail}件失敗`);
+}
+
+function done(allPass, msg) {
+  const s = document.getElementById('summary');
+  s.textContent = (allPass === null ? 'ERROR: ' : allPass ? 'ALL PASS — ' : 'FAIL — ') + msg;
+  s.className = allPass ? 'pass' : 'fail';
+  document.title = (allPass ? '[PASS] ' : '[FAIL] ') + '計算ロジックテスト';
+}
+</script>
+</body>
+</html>
