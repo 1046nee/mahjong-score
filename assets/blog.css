@@ -36,7 +36,7 @@ body.bs-list * { box-sizing: border-box; }
 .cat-chip.on { background: #177083; color: #fff; }
 
 /* ---- 2カラムレイアウト（PC: 本文＋右サイドバー / モバイル: 縦積み） ---- */
-.post-layout { max-width: 960px; margin: 0 auto; padding: 8px 20px 44px; display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 28px; align-items: start; }
+.post-layout { max-width: 960px; margin: 0 auto; padding: 8px 26px 44px; display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 28px; align-items: start; }
 .post-layout > .blog-post { max-width: 680px; margin: 0; padding: 8px 0 20px; }
 @media (max-width: 900px) {
   .post-layout { grid-template-columns: 1fr; }
@@ -85,3 +85,7 @@ body { overflow-x: hidden; }
 .blog-post img, .blog-post svg { max-width: 100%; height: auto; }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 18px; }
 .table-scroll > table { margin-bottom: 0; }
+
+/* CTAボタンはLPのCTAと同じ形（影なし・横長ピル・オレンジ・中央寄せ）。各記事のインラインCSSより優先させる */
+.cta-link, .app-btn { display: block !important; width: 100% !important; max-width: 380px !important; margin: 22px auto !important; background: #E75620 !important; color: #fff !important; border: none !important; border-radius: 50px !important; box-shadow: none !important; padding: 17px 20px !important; font-size: 16px !important; font-weight: 800 !important; text-align: center !important; text-decoration: none !important; }
+.cta-link:hover, .app-btn:hover { background: #F0824F !important; }
