@@ -2199,6 +2199,12 @@ function rankCountHtml(rounds, s) {
   const avgRankSum = new Array(N).fill(0);
   const lastCount = new Array(N).fill(0);
   const gamesPlayed = new Array(N).fill(0);
+  // 素点＝(持ち点−返し点)÷1000 の合計。順位点＝スコア−素点（ウマ・オカ・罰符の分）
+  const rawSum = new Array(N).fill(0);
+  const ptsSum = new Array(N).fill(0);
+  const ptsCnt = new Array(N).fill(0);
+  const ptsMax = new Array(N).fill(null);
+  const ptsMin = new Array(N).fill(null);
   rounds.forEach(r => {
     const mem = roundMembers(r, s);
     const groups = rankGroups((r.points || r.scores).slice(0, mem.length));
@@ -2209,6 +2215,14 @@ function rankCountHtml(rounds, s) {
       avgRankSum[m] += g.avgRank;
       if (g.isLast) lastCount[m] += 1 / g.size; // ラス数 = 1 ÷ 同順位人数
       gamesPlayed[m]++;
+      if (r.points && r.points[k] != null) {
+        const pt = Number(r.points[k]);
+        rawSum[m] += (pt - s.returnPoints) / 1000;
+        ptsSum[m] += pt;
+        ptsCnt[m]++;
+        if (ptsMax[m] == null || pt > ptsMax[m]) ptsMax[m] = pt;
+        if (ptsMin[m] == null || pt < ptsMin[m]) ptsMin[m] = pt;
+      }
     });
   });
   // 整数はそのまま、同点配分などで小数になる場合のみ小数第1位まで表示
@@ -2221,18 +2235,22 @@ function rankCountHtml(rounds, s) {
   // 横スクロールが必要な場合も名前列（sticky）が固定されるので、誰の行か見失わない
   const avgs = names.map((_, i) => gamesPlayed[i] ? avgRankSum[i] / gamesPlayed[i] : null);
   const pcts = names.map((_, i) => gamesPlayed[i] ? Math.round((gamesPlayed[i] - lastCount[i]) / gamesPlayed[i] * 100) : null);
-  // 平均着順が最小・ラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
+  // 連対率 = (1着＋2着の回数) ÷ 試合数
+  const rentais = names.map((_, i) => gamesPlayed[i] ? Math.round((counts[i][0] + (counts[i][1] || 0)) / gamesPlayed[i] * 100) : null);
+  // 平均着順が最小・連対率とラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
   const validAvgs = avgs.filter(v => v !== null);
   const validPcts = pcts.filter(v => v !== null);
+  const validRentais = rentais.filter(v => v !== null);
   const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
   const bestPct = validPcts.length ? Math.max(...validPcts) : null;
+  const bestRentai = validRentais.length ? Math.max(...validRentais) : null;
   const dash = '<span style="color:#ccc">—</span>';
   // ベスト（同値なら該当者全員）の強調は文字色のみオレンジに。背景・枠線は変えない
   const hl = 'color:#E75620;font-weight:800';
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
-  const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${thBg}">名前</th><th${thS}>スコア</th>${Array.from({length: slots}, (_, r) => `<th${thS}>${r + 1}着</th>`).join('')}<th${thS}>試合数</th><th${thS}>平均着順</th><th${thS}>ラス回避</th></tr></thead>`;
+  const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${thBg}">名前</th><th${thS}>スコア</th><th${thS}>素点</th><th${thS}>順位点</th>${Array.from({length: slots}, (_, r) => `<th${thS}>${r + 1}着</th>`).join('')}<th${thS}>試合数</th><th${thS}>平均着順</th><th${thS}>連対率</th><th${thS}>ラス回避</th><th${thS}>平均点数</th><th${thS}>最高点数</th><th${thS}>最低点数</th></tr></thead>`;
   // チーム戦はチームごとにメンバーをグループ化し、チーム単位で上から順に表示する
   let rowOrder = names.map((_, i) => i);
   const groupHeaderOf = {}; // この行の直前に挟むチーム見出し（先頭メンバーのindexで引く）
@@ -2244,27 +2262,37 @@ function rankCountHtml(rounds, s) {
     const headTd = `text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:#667;background:#f5f7f8`;
     teams.forEach((t, ti) => {
       const first = t.members.find(m => m < N);
-      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 5}" style="${headTd}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span><span style="color:${teamColorOf(ti)};font-weight:800">${esc(t.name)}</span></td></tr>`;
+      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 11}" style="${headTd}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span><span style="color:${teamColorOf(ti)};font-weight:800">${esc(t.name)}</span></td></tr>`;
     });
-    if (rest.length) groupHeaderOf[rest[0]] = `<tr><td colspan="${slots + 5}" style="${headTd}">（未所属）</td></tr>`;
+    if (rest.length) groupHeaderOf[rest[0]] = `<tr><td colspan="${slots + 11}" style="${headTd}">（未所属）</td></tr>`;
   }
   const rows = rowOrder.map(i => {
     const head = groupHeaderOf[i] || '';
     const nameTd = `<td class="sticky-col">${teamDotHtml(s, i)}${esc(names[i])}</td>`;
     if (!gamesPlayed[i]) {
-      return head + `<tr>${nameTd}${Array.from({length: slots + 4}, () => `<td>${dash}</td>`).join('')}</tr>`;
+      return head + `<tr>${nameTd}${Array.from({length: slots + 10}, () => `<td>${dash}</td>`).join('')}</tr>`;
     }
+    const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
+    const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
     const sv = totals[i];
-    const scoreTd = `<td style="font-weight:700;color:${sv > 0 ? '#1a237e' : sv < 0 ? '#c62828' : '#1a1a1a'}">${sv > 0 ? '+' : ''}${sv.toFixed(1)}</td>`;
+    const raw = Math.round(rawSum[i] * 10) / 10;
+    const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
+    const scoreTd = `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`;
+    const rawTd = `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`;
+    const rankPtTd = `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`;
+    const ptsTds = ptsCnt[i]
+      ? `<td>${Math.round(ptsSum[i] / ptsCnt[i]).toLocaleString()}</td><td>${ptsMax[i].toLocaleString()}</td><td>${ptsMin[i].toLocaleString()}</td>`
+      : `<td>${dash}</td><td>${dash}</td><td>${dash}</td>`;
     const countTds = Array.from({length: slots}, (_, rank) => {
       const c = counts[i][rank];
       return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
     }).join('');
-    return head + `<tr>${nameTd}${scoreTd}${countTds}<td>${gamesPlayed[i]}回</td>
+    return head + `<tr>${nameTd}${scoreTd}${rawTd}${rankPtTd}${countTds}<td>${gamesPlayed[i]}回</td>
       <td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>
-      <td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td></tr>`;
+      <td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>
+      <td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>${ptsTds}</tr>`;
   }).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + (slots + 4) * 58}px">
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + (slots + 10) * 58}px">
     ${header}<tbody>${rows}</tbody>
   </table></div>`;
 }
