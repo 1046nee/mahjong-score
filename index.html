@@ -489,13 +489,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <g opacity="0.55">
         <path d="M70 128 L138 128 L130 186 L78 186 Z" fill="#c9d6d4"/>
         <rect x="64" y="120" width="80" height="10" rx="5" fill="#b3c4c1"/>
-        <!-- 鉛筆（消しゴムなし・ゴミ箱の真上に落ちていく。電卓の背面に重ねる） -->
-        <g transform="translate(38 4) rotate(38 50 92)">
-          <rect x="31" y="86" width="34" height="10" fill="#8fa6a3"/>
-          <path d="M31 89.3 L65 89.3 M31 92.6 L65 92.6" stroke="#7d9491" stroke-width="1" fill="none"/>
-          <path d="M65 86 L76 91 L65 96 Z" fill="#d9d2c5"/>
-          <path d="M72 89.2 L76 91 L72 92.8 Z" fill="#5f7370"/>
-        </g>
         <!-- 電卓（傾いて落ちていく） -->
         <g transform="rotate(-22 78 84)">
           <rect x="58" y="60" width="40" height="52" rx="6" fill="#8fa6a3"/>
@@ -504,6 +497,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <rect x="63" y="81" width="8" height="7" rx="2"/><rect x="74" y="81" width="8" height="7" rx="2"/><rect x="85" y="81" width="8" height="7" rx="2"/>
             <rect x="63" y="92" width="8" height="7" rx="2"/><rect x="74" y="92" width="8" height="7" rx="2"/><rect x="85" y="92" width="8" height="7" rx="2"/>
           </g>
+        </g>
+        <!-- 鉛筆（消しゴムなし・ゴミ箱の真上に落ちていく。電卓より後に描いて前面に重ねる） -->
+        <g transform="translate(38 4) rotate(38 50 92)">
+          <rect x="31" y="86" width="34" height="10" fill="#8fa6a3"/>
+          <path d="M31 89.3 L65 89.3 M31 92.6 L65 92.6" stroke="#7d9491" stroke-width="1" fill="none"/>
+          <path d="M65 86 L76 91 L65 96 Z" fill="#d9d2c5"/>
+          <path d="M72 89.2 L76 91 L72 92.8 Z" fill="#5f7370"/>
         </g>
         <!-- くしゃくしゃの紙 -->
         <path d="M118 96 L131 88 L142 95 L146 108 L138 119 L123 117 L114 106 Z" fill="#eef2f1" stroke="#c9d6d4" stroke-width="2" transform="rotate(14 130 104)"/>
@@ -3009,7 +3009,7 @@ function settingsFormHtml(name, s) {
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
     <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}"></div>
-    <div class="chips-hint" style="margin-bottom:10px">対局形式（${n === 3 ? '三麻' : '四麻'}）は、過去の試合と整合が取れなくなるため作成後に変更できません。</div>
+    <div class="chips-hint" style="margin-bottom:10px">試合形式（${n === 3 ? '三麻' : '四麻'}）は、過去の試合と整合が取れなくなるため作成後に変更できません。</div>
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
@@ -3029,7 +3029,7 @@ function settingsFormHtml(name, s) {
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
         <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="150">
       </div>
-      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
+      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」（単位はbonus）として集計します。例：スコア倍率が×100の場合、+123.0pts → +12,300bonus</div>
     </div>
     <div class="field"><label>収支オプション</label>
       <label class="opt-check" style="margin-top:2px">
