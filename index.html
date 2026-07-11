@@ -1032,7 +1032,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- Form modal (settings / detail edit) -->
 <div class="modal-backdrop" id="form-modal" onclick="if(event.target===this)closeFormModal()">
   <div class="form-modal-box">
-    <div class="form-modal-title" id="form-modal-title">編集</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+      <div class="form-modal-title" id="form-modal-title" style="margin-bottom:0;text-align:left">編集</div>
+      <div id="form-modal-actions" style="display:flex;gap:6px;flex-shrink:0"></div>
+    </div>
     <div id="form-modal-body"></div>
   </div>
 </div>
@@ -1349,7 +1352,7 @@ function todayStr() {
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${youbi}）`;
 }
 function initSetupForm() {
-  document.getElementById('s-name').value = todayStr();
+  document.getElementById('s-name').value = ''; // 初期値は空（未入力ならstartGameで日付名にフォールバック）
   setupMembers = [];
   document.getElementById('member-input').value = '';
   numPlayers = 4;
@@ -1939,9 +1942,10 @@ function renderTeamEditor() {
   if (!wrap) return;
   const minTeams = ctx.minTeams || 2;
   wrap.innerHTML = ctx.teams.map((t, ti) => `
-    <div class="team-box" ondragover="event.preventDefault();this.classList.add('drag-over')"
+    <div class="team-box" style="border-left:5px solid ${teamColorOf(ti)}" ondragover="event.preventDefault();this.classList.add('drag-over')"
       ondragleave="this.classList.remove('drag-over')" ondrop="onTeamDrop(event, ${ti})">
       <div class="team-box-head">
+        <span class="team-dot" style="background:${teamColorOf(ti)};width:12px;height:12px;flex-shrink:0"></span>
         <input type="text" id="${ctx.idPrefix}-team-name-${ti}" value="${esc(t.name)}" placeholder="${defaultTeamName(ti)}">
         ${ctx.teams.length > minTeams ? `<button type="button" class="round-del-btn" style="flex-shrink:0" onclick="removeTeam(${ti})">削除</button>` : ''}
       </div>
@@ -2316,8 +2320,10 @@ function setLogFilter(f) {
 function renderLogModal() {
   const g = logSrc === 'detail' ? detailGame : activeGame;
   if (!g) return;
+  // タブの色は履歴タグ（.log-tag）と同じ配色: 入力=緑 / 修正=オレンジ / 削除=赤
+  const TAB_COLORS = { all: '#555', add: '#177083', edit: '#E75620', delete: '#c62828' };
   const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除']].map(([k, l]) =>
-    `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? 'background:#177083;color:#fff' : ''}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
+    `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML =
     `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
@@ -2863,6 +2869,7 @@ async function submitRound() {
 // ---- 設定編集（ゲーム中） ----
 function closeFormModal() {
   document.getElementById('form-modal').classList.remove('open');
+  document.getElementById('form-modal-actions').innerHTML = ''; // ヘッダーのボタンは開くモーダルごとにセットし直す
 }
 function umaKeyOf(uma, n) {
   const map = n === 3 ? UMA3_MAP : UMA_MAP;
@@ -3060,6 +3067,10 @@ function openGameEdit() {
   // 現在のチーム編成を編集用にコピー（origのindexは初期状態では位置と一致する）
   editTeams = s.teams ? normalizedTeams(s).map(t => ({ name: t.name, members: t.members.slice() })) : null;
   document.getElementById('form-modal-title').textContent = 'ゲーム設定を編集';
+  // フォームが長いので、ヘッダー右にも小さい保存/キャンセルを置く
+  document.getElementById('form-modal-actions').innerHTML =
+    `<button type="button" class="edit-tab" onclick="closeFormModal()">キャンセル</button>
+     <button type="button" class="edit-tab" style="background:#177083;color:#fff" onclick="saveGameEdit()">保存</button>`;
   document.getElementById('form-modal-body').innerHTML =
     settingsFormHtml(activeGame.name, s) +
     `<button class="confirm-btn" style="margin-top:10px" onclick="saveGameEdit()">保存する</button>
