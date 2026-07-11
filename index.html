@@ -822,7 +822,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」（単位はbonus）として記録します。<br>例：スコア倍率が×100の場合、+123.0pts → +12,300bonus</div>
     </div>
     <div class="card">
-      <div class="card-title">オプション</div>
+      <!-- オプションはデフォルトで閉じた状態。右上のトグルで開閉する -->
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">オプション</div>
+        <button type="button" class="card-collapse" id="setup-options-toggle" onclick="toggleSetupOptions()" aria-label="表示切替">▸</button>
+      </div>
+      <div id="setup-options-body" style="display:none;margin-top:12px">
       <label class="opt-check">
         <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり🍪
       </label>
@@ -884,6 +889,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアを記録後、罰符分をマイナスします。<br>※チョンボ罰符0の場合、マークのみ。</div>
+      </div>
       </div>
     </div>
   </div>
@@ -1356,7 +1362,16 @@ function todayStr() {
   const youbi = ['日','月','火','水','木','金','土'][d.getDay()];
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}（${youbi}）`;
 }
+// セットアップ画面「オプション」カードの開閉（デフォルトは閉じた状態・右上トグル）
+function setSetupOptions(open) {
+  document.getElementById('setup-options-body').style.display = open ? '' : 'none';
+  document.getElementById('setup-options-toggle').textContent = open ? '▾' : '▸';
+}
+function toggleSetupOptions() {
+  setSetupOptions(document.getElementById('setup-options-body').style.display === 'none');
+}
 function initSetupForm() {
+  setSetupOptions(false); // 画面を開くたびに閉じた状態へ戻す
   document.getElementById('s-name').value = ''; // 初期値は空（未入力ならstartGameで日付名にフォールバック）
   setupMembers = [];
   document.getElementById('member-input').value = '';
