@@ -96,11 +96,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
 .lp-solution { background: #fff; }
 .lp-solution h2 { font-size: 25px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
-/* 無限ループのカルーセル。1周すると最初の項目に戻る（スクロールバーは位置の意味を持たないため非表示） */
+/* 特徴カードのカルーセル（横スクロール＋スナップ。常に次のカードが見える幅にする） */
 .features-wrap { position: relative; max-width: 960px; margin: 0 auto; }
 .features-row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .features-row::-webkit-scrollbar { display: none; }
-.feature { flex: 0 0 76%; max-width: 300px; scroll-snap-align: center; background: #f6faf9; border: 1px solid #e2ece7; border-radius: 16px; padding: 20px 18px; margin-bottom: 0; }
+.feature { flex: 0 0 62%; max-width: 300px; scroll-snap-align: start; background: #f6faf9; border: 1px solid #e2ece7; border-radius: 16px; padding: 20px 16px; margin-bottom: 0; }
 .features-nav { display: none; position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e2ece7; background: #fff; color: #177083; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 .features-nav.prev { left: -14px; }
 .features-nav.next { right: -14px; }
@@ -116,7 +116,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .fi-green { background: #E4F3EC; }
 .fi-blue { background: #EAF0FB; }
-.feature h3 { font-size: 17px; color: #177083; margin-bottom: 8px; }
+.feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
 .feature p { font-size: 14.5px; color: #444; line-height: 1.8; }
 
 /* ⑥ Before / After 比較表 */
@@ -157,8 +157,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hero-illust svg { width: 100%; height: auto; display: block; }
 .hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
 .hero .cta-btn { margin-bottom: 14px; }
-/* CTA下の補足（バッジではなく普通の文章） */
-.start-note-plain { font-size: 15px; color: #177083; font-weight: 700; line-height: 1.9; max-width: 420px; margin: 0 auto; }
 
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
@@ -170,14 +168,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* 使い方（Walica風: スマホ画面イラスト＋短い説明。カードにはせずシンプルに置く） */
 .howto { padding: 14px 2px 4px; line-height: 1.9; }
-.howto h2 { font-size: 25px; font-weight: 900; text-align: center; color: #1a1a1a; margin-bottom: 12px; }
-.howto > p { font-size: 14px; color: #444; }
+.howto h2 { font-size: 22px; font-weight: 900; text-align: center; color: #1a1a1a; margin-bottom: 12px; }
+.howto > p { font-size: 15px; color: #444; }
 .howto-step { margin: 36px 0 40px; }
 .howto-step:last-of-type { margin-bottom: 8px; }
 .howto-step h3 { font-size: 20px; font-weight: 900; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
 .howto-shot { background: #177083; border-radius: 26px; padding: 24px 16px; display: flex; justify-content: center; }
 .howto-shot svg { width: 200px; height: auto; display: block; }
-.howto-step p { margin-top: 12px; font-size: 14px; color: #444; }
+.howto-step p { margin-top: 12px; font-size: 15px; color: #444; }
 
 /* フッター（濃い緑背景・リンクは2列で揃える） */
 .site-footer { background: #177083; text-align: center; padding: 34px 20px 44px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }
@@ -539,7 +537,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p class="hero-desc">「まじゃすこ」は、表示点数を入力するだけでウマ・オカ込みのスコアを自動計算して、URLひとつで全員のスマホに共有できる無料のサービスです。</p>
 
   <button class="cta-btn" onclick="showView('setup')">スコア記録をはじめる</button>
-  <p class="start-note-plain">面倒な登録やアプリのインストールは一切不要！<br>たった10秒で、次の対局スタート！</p>
+  <div class="close-badges" style="margin-top:14px;margin-bottom:0">
+    <span>登録不要</span><span>完全無料</span><span>スコアを共有</span>
+  </div>
   <div class="join-banner" id="join-banner" style="display:none">
     <p>最近の試合</p>
     <button class="join-btn" onclick="joinFromBanner()"><span class="join-name" id="join-name">共有された試合に参加する</span><span class="join-arrow">›</span></button>
@@ -577,7 +577,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台のみ</td></tr>
         </tbody>
       </table>
-      <p class="start-note" style="margin-top:22px;text-align:center">めんどうな計算は、<strong>ぜんぶ</strong>まじゃすこへ。</p>
+      <p class="start-note" style="margin-top:22px;text-align:center">めんどうな計算は、<strong>ぜんぶ</strong> まじゃすこへ。</p>
     </div>
   </section>
 
@@ -665,7 +665,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>麻雀のスコア記録は、<br><span class="brand-green">まじゃすこ</span>で。</h2>
       <p class="lp-body" style="text-align:center">紙とペンを片付けたら、あとは打つだけ。<br>今日の対局から、記録はぜんぶスマホにおまかせ。</p>
       <div class="close-badges">
-        <span>登録不要</span><span>完全無料</span><span>10秒でスタート</span>
+        <span>登録不要</span><span>完全無料</span><span>スコアを共有</span>
       </div>
       <button class="cta-btn" onclick="showView('setup')">スコア記録をはじめる</button>
     </div>
@@ -674,7 +674,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="home-content">
     <section class="howto" id="howto">
       <h2>1分でわかる「まじゃすこ」の使い方</h2>
-      <p style="text-align:center">会員登録もインストールも不要。ブラウザだけで、この4ステップです。</p>
+      <p style="text-align:center">会員登録もインストールも不要。<br>ブラウザだけで、この4ステップです。</p>
 
       <div class="howto-step">
         <h3>1. グループを作る</h3>
@@ -731,12 +731,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div class="field">
         <label>グループ名</label>
-        <input type="text" id="s-name" placeholder="（例）まじゃすこ学園サッカー部">
+        <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部">
       </div>
       <div class="field">
         <label>メンバー名（最大40人）</label>
         <div style="display:flex;gap:8px">
-          <input type="text" id="member-input" placeholder="（例）山田" list="saved-players"
+          <input type="text" id="member-input" placeholder="山田" list="saved-players"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
           <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
         </div>
@@ -814,7 +814,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="rate-custom" style="display:none;margin-top:10px">
         <div class="field">
           <label>カスタム倍率</label>
-          <input type="number" id="s-rate-custom" placeholder="（例）150">
+          <input type="number" id="s-rate-custom" placeholder="150">
         </div>
       </div>
       <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。<br>例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
@@ -850,7 +850,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="chip-rate-custom" style="display:none;margin-top:8px">
           <div class="field">
             <label>カスタムチップ倍率</label>
-            <input type="number" id="s-chip-rate-custom" placeholder="（例）300">
+            <input type="number" id="s-chip-rate-custom" placeholder="300">
           </div>
         </div>
         <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
@@ -878,7 +878,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="chombo-pen-custom" style="display:none;margin-top:8px">
           <div class="field">
             <label>カスタム罰符（pts）</label>
-            <input type="number" id="s-chombo-pen-custom" placeholder="（例）40">
+            <input type="number" id="s-chombo-pen-custom" placeholder="40">
           </div>
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアから、選んだ分をマイナスします（0はマークのみ）</div>
@@ -1262,19 +1262,13 @@ function checkPendingSession() {
     if (name) document.getElementById('join-name').textContent = name;
   }).catch(() => {});
 }
-// ---- LP: 特徴カードの無限ループカルーセル ----
-// 前後に1セットずつ複製し、複製側へスクロールしたら同じ見た目になる本物側の位置へ瞬間移動する
-let featuresLoopW = 0;
-function initFeaturesLoop() {
+// ---- LP: 特徴カードのカルーセル ----
+// 横スクロール＋スナップ（ループはしない）。現在位置はドットで示す
+function initFeaturesCarousel() {
   const row = document.getElementById('features-row');
   if (!row || row.children.length < 2) return;
-  const count = row.children.length;
-  const items = Array.from(row.children);
-  items.forEach(el => row.appendChild(el.cloneNode(true)));
-  for (let i = items.length - 1; i >= 0; i--) row.insertBefore(items[i].cloneNode(true), row.firstChild);
-  // 現在位置ドット: 画面中央にいちばん近いカードを算出して点灯（複製分はmoduloで正規化）
   const dots = document.getElementById('features-dots');
-  if (dots) dots.innerHTML = items.map(() => '<span class="fdot"></span>').join('');
+  if (dots) dots.innerHTML = Array.from(row.children).map(() => '<span class="fdot"></span>').join('');
   const updateDots = () => {
     if (!dots) return;
     const center = row.scrollLeft + row.clientWidth / 2;
@@ -1283,24 +1277,10 @@ function initFeaturesLoop() {
       const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - center);
       if (d < bd) { bd = d; best = i; }
     });
-    Array.from(dots.children).forEach((el, i) => el.classList.toggle('on', i === best % count));
+    Array.from(dots.children).forEach((el, i) => el.classList.toggle('on', i === best));
   };
-  const position = () => {
-    featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
-    if (featuresLoopW > 0) row.scrollLeft = featuresLoopW;
-  };
-  position();
   updateDots();
-  // リサイズでは幅だけ測り直す（スマホのアドレスバー開閉で位置が飛ばないように）
-  window.addEventListener('resize', () => {
-    featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
-  });
-  row.addEventListener('scroll', () => {
-    if (featuresLoopW <= 0) { position(); return; }
-    if (row.scrollLeft < featuresLoopW * 0.5) row.scrollLeft += featuresLoopW;
-    else if (row.scrollLeft >= featuresLoopW * 1.5) row.scrollLeft -= featuresLoopW;
-    updateDots();
-  }, { passive: true });
+  row.addEventListener('scroll', updateDots, { passive: true });
 }
 // PC用の矢印: カード1枚分だけスクロール
 function featuresScroll(dir) {
@@ -2977,7 +2957,7 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>スコア倍率</label>
       <select id="e-rate" onchange="document.getElementById('e-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
-        <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="（例）150">
+        <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="150">
       </div>
       <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
     </div>
@@ -2993,11 +2973,11 @@ function settingsFormHtml(name, s) {
               .map(([v,l]) => `<option value="${v}" ${v === chipRateKey ? 'selected' : ''}>${l}</option>`).join('')}
           </select>
           <div id="e-chip-rate-custom-wrap" style="display:${chipRateKey === 'custom' ? 'block' : 'none'};margin-top:6px">
-            <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="（例）300">
+            <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="300">
           </div>
         </div>
         <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
-          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="（例）20">
+          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="20">
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
       </div>
@@ -3016,7 +2996,7 @@ function settingsFormHtml(name, s) {
               .map(([v,l]) => `<option value="${v}" ${v === chomboPenKey ? 'selected' : ''}>${l}</option>`).join('')}
           </select>
           <div id="e-chombo-pen-custom-wrap" style="display:${chomboPenKey === 'custom' ? 'block' : 'none'};margin-top:6px">
-            <input type="number" id="e-chombo-pen-c" value="${chomboPenKey === 'custom' ? Number(s.chomboPenalty) : ''}" placeholder="（例）40">
+            <input type="number" id="e-chombo-pen-c" value="${chomboPenKey === 'custom' ? Number(s.chomboPenalty) : ''}" placeholder="40">
           </div>
         </div>
       </div>
@@ -3306,7 +3286,7 @@ function esc(s) {
 // ---- 起動 ----
 loadStorage();
 initSetupForm();
-initFeaturesLoop();
+initFeaturesCarousel();
 const urlHash = location.hash.slice(1);
 // セッションIDは10文字。#howto などページ内アンカーはセッション扱いしない
 if (urlHash && urlHash.length >= 8) {
