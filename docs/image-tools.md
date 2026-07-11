@@ -14,12 +14,16 @@
 - 4方向に尖った✨スパークル（Q曲線 or 8頂点ポリゴン、waist≈R×0.22）・淡い光の円・小さなドット
 - majasco.jp 表記（薄グレー・隅）
 
-## スクリプト（tools/。出力先はすべて「まじゃすこ素材/」＝コミットされない）
+## スクリプト（tools/。出力先はすべて「まじゃすこ素材/」）
 - `tools/make_ogp.py` — OGP画像 2100×1103
 - `tools/make_xheader.py` — Xヘッダー 1500×500
 - `tools/make_ig1.py` — Instagram初投稿 1080×1080
 - `tools/make_ig_series.py` — IG使い方カルーセル6枚＋機能紹介6枚（共通ヘルパー: phone_frame/screen_*/sparkle/slide）
+- `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - 新しい画像は既存スクリプトをコピーして作る。**サイトで使う画像だけ assets/ にコピーしてコミット**
+- **「まじゃすこ素材/」は本体リポジトリに入れない**（.gitignore済み。公開リポジトリで画像を見られないように、
+  **privateリポジトリ `1046nee/majasco-assets` にネストしたgitとして管理**。素材を作ったら まじゃすこ素材/ 内で add→commit→push。
+  別PCでは mahjong/ 直下に `git clone https://github.com/1046nee/majasco-assets "まじゃすこ素材"`）
 
 ## サイト画像のルール
 - favicon: `/favicon.ico`（16/32/48。favicon.pngからPIL生成）＋ `/assets/favicon.png`（512）
