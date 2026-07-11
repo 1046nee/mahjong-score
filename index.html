@@ -347,13 +347,15 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
 .sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
 .sheet-members-label span { font-weight: 600; color: #999; }
-.sheet-members { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; max-height: 130px; overflow-y: auto; }
+/* 別スクロールにはしない（名前が隠れるため）。パネル全体のスクロールに任せて全員分を表示する */
+.sheet-members { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .sel-chip { border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 .sel-chip.on { border-color: #177083; background: #E4F3EC; color: #177083; }
 .sheet.sanma .sel-chip.on { border-color: #4261AA; background: #EAF0FB; color: #4261AA; }
 .sheet-members-hint { text-align: center; font-size: 13px; color: #999; padding: 14px 0; }
-.sheet-row { display: flex; align-items: center; gap: 8px; }
-.sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
+.sheet-row { display: flex; align-items: center; gap: 6px; }
+/* 名前が可変幅（残り全部）、入力欄・ボタンは固定幅で右詰 */
+.sheet-row label { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #555; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
 .sheet-row input:focus { border-color: #177083; }
 /* 点数入力: 下2桁（00）は固定表示し、百の位以上だけ入力する */
@@ -362,15 +364,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
-/* チップ入力（収支計算が有効なグループのみ）: 名前｜チップ（左）｜点数（右）を1行に収める */
-.sheet-row label.sheet-name-s { width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* チップ入力（収支計算が有効なグループのみ）。列順は 名前｜焼き鳥｜チョンボ｜チップ｜点数 */
 .chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 68px; flex-shrink: 0; }
 .chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
 .chip-input:focus-within { border-color: #177083; }
 .sheet.sanma .chip-input:focus-within { border-color: #4261AA; }
 /* 焼き鳥🐔トグル（OFFはグレー表示） */
-.yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; padding: 8px 7px; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
+.yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; width: 42px; padding: 8px 0; text-align: center; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
 .yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
 /* 総合成績カード: スコア/チップの切替トグルと、順位エリアのスムーズな置き換え */
 .mini-toggle { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
@@ -1013,8 +1014,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="sheet-inputs" id="sheet-inputs"></div>
     <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
+    <div class="total-check ng" id="chip-check" style="display:none;margin-bottom:8px"></div>
     <div class="total-check ng" id="total-check">点数を入力してください</div>
-    <div class="total-check ng" id="chip-check" style="display:none;margin-top:-8px"></div>
     <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
     <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px" onclick="closeSheet()">キャンセル</button>
   </div>
@@ -2671,22 +2672,25 @@ function renderSheetInputs() {
   const withChips = !!s.bonusEnabled;
   const withYaki = !!s.yakitori;
   const withChombo = !!s.chombo;
-  // チップありのときは「名前｜チップ（左）｜点数（右）」を1行に収め、列見出しを1行入れる
-  const colLabel = 'font-size:10px;color:#999;font-weight:600';
-  const header = withChips
+  // 列順は左から 焼き鳥｜チョンボ｜チップ｜点数（すべて固定幅・右詰。名前が残り幅を使う）
+  // オプションが1つでも有効なら文字の列見出しを1行入れる（見出しは文字、ボタンは絵文字のまま）
+  const colLabel = 'font-size:10px;color:#999;font-weight:600;text-align:center;flex-shrink:0;white-space:nowrap';
+  const header = (withChips || withYaki || withChombo)
     ? `<div class="sheet-row" style="margin-bottom:-4px">
-        <label class="sheet-name-s"></label>
-        <div style="width:68px;${colLabel};text-align:center;flex-shrink:0">チップ</div>
-        <div style="width:104px;${colLabel};text-align:center;flex-shrink:0">点数</div>
-        ${withYaki ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">🐔</div>` : ''}
-        ${withChombo ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">💩</div>` : ''}
+        <label></label>
+        ${withYaki ? `<div style="width:42px;${colLabel}">焼き鳥</div>` : ''}
+        ${withChombo ? `<div style="width:42px;${colLabel}">チョンボ</div>` : ''}
+        ${withChips ? `<div style="width:68px;${colLabel}">チップ</div>` : ''}
+        <div style="width:104px;${colLabel}">点数</div>
       </div>`
     : '';
   inputs.innerHTML = header + sheetOrder.map((m, k) => {
     // チップは「現在のチップ数」のみ入力。直前までの持ちチップ（自動参照）を初期値にする
     const cur = withChips ? chipBaseline(m) + (sheetChips[m] != null ? Number(sheetChips[m]) || 0 : 0) : 0;
     return `<div class="sheet-row">
-      <label${withChips ? ' class="sheet-name-s"' : ''}>${teamDotHtml(s, m)}${esc(s.playerNames[m])}</label>
+      <label>${teamDotHtml(s, m)}${esc(s.playerNames[m])}</label>
+      ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥">🐔</button>` : ''}
+      ${withChombo ? `<button type="button" class="yaki-btn${sheetChombo[m] ? ' on' : ''}" id="pi-${k}" onclick="toggleSheetChombo(${k})" aria-label="チョンボ">💩</button>` : ''}
       ${withChips ? `<div class="chip-input">
         <input type="number" id="ce-${k}" value="${cur}" step="1" onkeydown="blockNonInt(event)" oninput="onChipEndInput(${k})">
         <span class="chip-suffix">枚</span>
@@ -2696,8 +2700,6 @@ function renderSheetInputs() {
           value="${sheetPrefill[m] != null ? sheetPrefill[m] : ''}">
         <span class="pt-suffix">00</span>
       </div>
-      ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥">🐔</button>` : ''}
-      ${withChombo ? `<button type="button" class="yaki-btn${sheetChombo[m] ? ' on' : ''}" id="pi-${k}" onclick="toggleSheetChombo(${k})" aria-label="チョンボ">💩</button>` : ''}
     </div>`;
   }).join('');
   updateTotal();
