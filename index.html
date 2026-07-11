@@ -432,7 +432,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; }
 /* チームの識別記号（履歴・成績表・チーム成績で所属を示す。色ではなく記号で区別） */
 .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
-/* その他成績（転置版）: 名前列は横スクロール時も固定表示 */
+/* その他成績（列=メンバー・行=成績項目）: 先頭の項目列は横スクロール時も固定表示 */
 .stats-table th.sticky-col, .stats-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
 .stats-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* チェックボックス付きオプション行 */
@@ -961,6 +961,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
       <div class="chart-wrap" id="chart-body" style="margin-top:10px"></div>
+    </div>
+    <div class="card" id="ichart-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab" id="ichart-more-btn" onclick="openChartModal(activeGame, true)" style="display:none">もっと見る</button>
+          <span id="ichart-collapse"></span>
+        </div>
+      </div>
+      <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
@@ -1875,8 +1885,15 @@ function normalizedTeams(s) {
 }
 // チームの識別カラー（チーム成績・対局履歴・その他成績・グラフで共通）。
 // チームAから順に赤・青・緑・オレンジ・紫・黄・ピンク・茶の原色系を割り当てる。
+// 9色目以降も白以外の互いに異なる40色（先頭に近いほど判別しやすい色を配置）
 // 表の1行目はチーム戦では灰色背景（名前の前に色ドットを付けるので文字は白のまま）
-const TEAM_COLORS = ['#e60012', '#0075c2', '#00a040', '#f39800', '#9b26b6', '#e6b400', '#ff5ca8', '#8b5a2b'];
+const TEAM_COLORS = [
+  '#e60012', '#0075c2', '#00a040', '#f39800', '#9b26b6', '#e6b400', '#ff5ca8', '#8b5a2b', // 1-8: 既存（変更不可）
+  '#00b5cc', '#5f3dc4', '#7a0f2b', '#94c11f', '#ff7043', '#003f8a', '#d81b8c', '#607d8b', // 9-16: シアン/青紫/ワイン/黄緑/コーラル/ネイビー/マゼンタ/ブルーグレー
+  '#145a32', '#808000', '#38b6ff', '#006d77', '#9575cd', '#37474f', '#3ddc97', '#8d8d8d', // 17-24: 深緑/オリーブ/スカイ/ダークティール/ラベンダー/チャコール/ミント/グレー
+  '#4b0082', '#c19a6b', '#ffd43b', '#0ca678', '#ffa94d', '#4263eb', '#5c940d', '#f783ac', // 25-32: インディゴ/キャメル/イエロー/ジェード/アプリコット/ロイヤルブルー/ダークライム/ライトピンク
+  '#a61e4d', '#66d9e8', '#b197fc', '#d9480f', '#2b8a3e', '#748ffc', '#5d3a00', '#c92a2a'  // 33-40: ラズベリー/ライトシアン/ライトパープル/ラスト/グラス/ペリウィンクル/ダークブラウン/ダークレッド
+];
 const TEAM_HEAD_BG = '#5f6e6b';
 function memberTeamIndex(s, m) {
   if (!s.teamMode || !s.teams) return -1;
@@ -2030,13 +2047,13 @@ function openTableModal(g) {
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
 }
-// スコア推移グラフを全画面で見る（対局履歴と同じモーダル・ズーム共用）
-function openChartModal(g) {
+// スコア推移グラフを全画面で見る（対局履歴と同じモーダル・ズーム共用。indiv=trueで個人スコア推移）
+function openChartModal(g, indiv = false) {
   if (!g || !(g.rounds || []).length) return;
   const s = g.settings;
-  document.getElementById('table-modal-title').textContent = `${g.name} の${s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移'}`;
+  document.getElementById('table-modal-title').textContent = `${g.name} の${s.teamMode && s.teams ? (indiv ? '個人スコア推移' : 'チームスコア推移') : 'スコア推移'}`;
   document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><div class="chart-wrap">${chartHtml(g.rounds, s)}</div></div>`;
+    `<div id="table-zoom-wrap"><div class="chart-wrap">${chartHtml(g.rounds, s, indiv)}</div></div>`;
   tableModalZoom = 1;
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
@@ -2078,9 +2095,14 @@ function rankBadgeHtml(rank, isTie, isLast) {
 
 // ---- スコア推移グラフ（SVG） ----
 // 個人戦はメンバーごとの累積スコア。チーム戦は所属メンバーを合算した
-// 「チームスコア推移」をチームカラーで描画する
-const CHART_COLORS = ['#1a237e', '#c62828', '#2e7d32', '#f9a825', '#6a1b9a', '#00838f', '#e65100', '#37474f', '#ad1457', '#558b2f'];
-function chartHtml(rounds, s) {
+// 「チームスコア推移」をチームカラーで描画する。
+// indiv=true ならチーム戦でも個人ごとの線を描く（「個人スコア推移」カード用。
+// 色はチームカラーとは独立に CHART_COLORS を個人単位で割り当てる）
+const CHART_COLORS = [
+  '#1a237e', '#c62828', '#2e7d32', '#f9a825', '#6a1b9a', '#00838f', '#e65100', '#37474f', '#ad1457', '#558b2f',
+  '#0075c2', '#ff5ca8', '#795548', '#00b5cc', '#94c11f', '#607d8b', '#ff7043', '#9575cd', '#808000', '#38b6ff'
+];
+function chartHtml(rounds, s, indiv = false) {
   if (!rounds || rounds.length === 0) return '';
   const N = s.playerNames.length;
   // 0局目=全員0から始まる累積スコア。未参加の試合は前回値を維持（横ばい）
@@ -2094,9 +2116,9 @@ function chartHtml(rounds, s) {
       series[i].push(Math.round((series[i][series[i].length-1] + delta[i]) * 10) / 10);
     }
   });
-  // 描画する線。チーム戦=チーム合算（チームカラー）、個人戦=参加メンバーのみ
+  // 描画する線。チーム戦=チーム合算（チームカラー）、個人戦・indiv=参加メンバーのみ
   let lines;
-  if (s.teamMode && s.teams) {
+  if (s.teamMode && s.teams && !indiv) {
     lines = normalizedTeams(s).map((tm, ti) => ({
       label: tm.name, color: teamColorOf(ti),
       on: tm.members.some(m => m < N && played[m]),
@@ -2240,9 +2262,8 @@ function rankCountHtml(rounds, s) {
     const r = Math.round(v * 10) / 10;
     return Number.isInteger(r) ? `${r}回` : `${r.toFixed(1)}回`;
   };
-  // 表は「行=メンバー、列=成績項目」。メンバーが増えても下に伸びるだけなので
-  // モバイルでは縦スクロールだけで各メンバーの成績を追える。
-  // 横スクロールが必要な場合も名前列（sticky）が固定されるので、誰の行か見失わない
+  // 表は対局履歴と同じ「列=メンバー、行=成績項目」の転置レイアウト（1行目にプレイヤー名）。
+  // 横スクロールしても項目列（sticky）が固定されるので、何の成績か見失わない
   const avgs = names.map((_, i) => gamesPlayed[i] ? avgRankSum[i] / gamesPlayed[i] : null);
   const pcts = names.map((_, i) => gamesPlayed[i] ? Math.round((gamesPlayed[i] - lastCount[i]) / gamesPlayed[i] * 100) : null);
   // 連対率 = (1着＋2着の回数) ÷ 試合数
@@ -2260,50 +2281,57 @@ function rankCountHtml(rounds, s) {
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
-  const header = `<thead><tr><th class="sticky-col" style="width:86px;background:${thBg}">名前</th><th${thS}>スコア</th><th${thS}>素点</th><th${thS}>順位点</th>${Array.from({length: slots}, (_, r) => `<th${thS}>${r + 1}着</th>`).join('')}<th${thS}>試合数</th><th${thS}>平均着順</th><th${thS}>連対率</th><th${thS}>ラス回避</th><th${thS}>平均点数</th><th${thS}>最高点数</th><th${thS}>最低点数</th></tr></thead>`;
-  // チーム戦はチームごとにメンバーをグループ化し、チーム単位で上から順に表示する
-  let rowOrder = names.map((_, i) => i);
-  const groupHeaderOf = {}; // この行の直前に挟むチーム見出し（先頭メンバーのindexで引く）
-  if (s.teamMode && s.teams) {
+  // 列順は対局履歴と同じ（チームA→B…→未所属）
+  const colOrder = memberDisplayOrder(s);
+  // チーム戦はプレイヤー名の上にチーム名の行を挟む（チーム名はプレイヤー名と同じ文字サイズ・太字）
+  let teamRow = '';
+  if (teamMode) {
     const teams = normalizedTeams(s);
     const inTeam = new Set(teams.flatMap(t => t.members));
-    const rest = names.map((_, i) => i).filter(i => !inTeam.has(i));
-    rowOrder = teams.flatMap(t => t.members.filter(m => m < N)).concat(rest);
-    const headTd = `text-align:left;padding:5px 8px;font-size:10.5px;font-weight:700;color:#667;background:#f5f7f8`;
-    teams.forEach((t, ti) => {
-      const first = t.members.find(m => m < N);
-      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 11}" style="${headTd}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</td></tr>`;
-    });
-    if (rest.length) groupHeaderOf[rest[0]] = `<tr><td colspan="${slots + 11}" style="${headTd}">（未所属）</td></tr>`;
+    const restCount = names.filter((_, i) => !inTeam.has(i)).length;
+    const headTh = 'text-align:left;padding:5px 8px;font-weight:700;color:#667;background:#f5f7f8';
+    const cells = teams.map((t, ti) => {
+      const cnt = t.members.filter(m => m < N).length;
+      return cnt ? `<th colspan="${cnt}" style="${headTh}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</th>` : '';
+    }).join('') + (restCount ? `<th colspan="${restCount}" style="${headTh}">（未所属）</th>` : '');
+    teamRow = `<tr><th class="sticky-col" style="background:#f5f7f8"></th>${cells}</tr>`;
   }
-  const rows = rowOrder.map(i => {
-    const head = groupHeaderOf[i] || '';
-    const nameTd = `<td class="sticky-col">${teamDotHtml(s, i)}${esc(names[i])}</td>`;
-    if (!gamesPlayed[i]) {
-      return head + `<tr>${nameTd}${Array.from({length: slots + 10}, () => `<td>${dash}</td>`).join('')}</tr>`;
-    }
-    const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
-    const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
+  const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map(i =>
+    `<th${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
+  // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
+  const statLabels = ['スコア', '素点', '順位点', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
+    '試合数', '平均着順', '連対率', 'ラス回避', '平均点数', '最高点数', '最低点数'];
+  const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
+  const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
+  const cellsOf = colOrder.map(i => {
+    if (!gamesPlayed[i]) return statLabels.map(() => `<td>${dash}</td>`);
     const sv = totals[i];
     const raw = Math.round(rawSum[i] * 10) / 10;
     const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
-    const scoreTd = `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`;
-    const rawTd = `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`;
-    const rankPtTd = `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`;
-    const ptsTds = ptsCnt[i]
-      ? `<td>${Math.round(ptsSum[i] / ptsCnt[i]).toLocaleString()}</td><td>${ptsMax[i].toLocaleString()}</td><td>${ptsMin[i].toLocaleString()}</td>`
-      : `<td>${dash}</td><td>${dash}</td><td>${dash}</td>`;
-    const countTds = Array.from({length: slots}, (_, rank) => {
+    const cells = [
+      `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
+      `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
+      `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`
+    ];
+    for (let rank = 0; rank < slots; rank++) {
       const c = counts[i][rank];
-      return `<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`;
-    }).join('');
-    return head + `<tr>${nameTd}${scoreTd}${rawTd}${rankPtTd}${countTds}<td>${gamesPlayed[i]}回</td>
-      <td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>
-      <td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>
-      <td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>${ptsTds}</tr>`;
-  }).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + (slots + 10) * 58}px">
-    ${header}<tbody>${rows}</tbody>
+      cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
+    }
+    cells.push(`<td>${gamesPlayed[i]}回</td>`,
+      `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`,
+      `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
+      `<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`);
+    if (ptsCnt[i]) {
+      cells.push(`<td>${Math.round(ptsSum[i] / ptsCnt[i]).toLocaleString()}</td>`, `<td>${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+    } else {
+      cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`);
+    }
+    return cells;
+  });
+  const rows = statLabels.map((label, ri) =>
+    `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + N * 58}px">
+    <thead>${teamRow}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
 
@@ -2464,6 +2492,19 @@ function renderGame() {
     chartBody.innerHTML = collapsedCards.chart ? '' : chartHtml(activeGame.rounds, s);
   } else {
     chartCard.style.display = 'none';
+  }
+
+  // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
+  const ichartCard = document.getElementById('ichart-card');
+  if (hasRounds && s.teamMode && s.teams) {
+    ichartCard.style.display = 'block';
+    document.getElementById('ichart-more-btn').style.display = collapsedCards.ichart ? 'none' : 'inline-block';
+    document.getElementById('ichart-collapse').innerHTML = collapseBtnHtml('ichart');
+    const ichartBody = document.getElementById('ichart-body');
+    ichartBody.style.display = collapsedCards.ichart ? 'none' : '';
+    ichartBody.innerHTML = collapsedCards.ichart ? '' : chartHtml(activeGame.rounds, s, true);
+  } else {
+    ichartCard.style.display = 'none';
   }
 }
 
@@ -3254,6 +3295,11 @@ function renderDetailBody(g) {
   if (g.rounds.length > 0) {
     const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
+    // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
+    if (s.teamMode && s.teams) {
+      const ichartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame, true)">もっと見る</button>`;
+      html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
+    }
   }
 
   html += `<div class="card">${detailCardHead('設定', 'settings')}
