@@ -105,7 +105,6 @@ const BLOG_POSTS = [
     const foot = document.querySelector('.site-foot');
     if (foot) {
       foot.innerHTML = `<div class="links">
-        <a href="/#howto">使い方</a>
         <a href="/score-basics.html">スコア計算の基本</a>
         <a href="/faq.html">よくある質問</a>
         <a href="/blog.html">ブログ</a>
