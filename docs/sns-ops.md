@@ -2,7 +2,7 @@
 
 ## アカウント
 - X: **@majasco_jp**（プロフィール文・固定ポスト設定済み。twitter:site全ページ設置済み）
-- Instagram: まじゃすこ公式（名前欄「まじゃすこ｜麻雀スコア記録アプリ」・ウェブサイト欄 https://majasco.jp）
+- Instagram: **@majasco_jp**（https://www.instagram.com/majasco_jp/ ・名前欄「まじゃすこ｜麻雀スコア記録アプリ」・ウェブサイト欄 https://majasco.jp）
 - **投稿の実行は必ずユーザーが手動**。Claudeは画像と文面を用意して渡すだけ
 
 ## 共通ルール

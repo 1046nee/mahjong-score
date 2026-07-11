@@ -523,8 +523,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <path d="M332 22 Q334 30 342 32 Q334 34 332 42 Q330 34 322 32 Q330 30 332 22 Z" fill="#E75620"/>
       <path d="M206 27 Q207.5 32.5 213 34 Q207.5 35.5 206 41 Q204.5 35.5 199 34 Q204.5 32.5 206 27 Z" fill="#177083"/>
       <path d="M338 149 Q339.5 154.5 345 156 Q339.5 157.5 338 163 Q336.5 157.5 331 156 Q336.5 154.5 338 149 Z" fill="#177083"/>
-      <circle cx="316" cy="12" r="2.5" fill="#E75620"/>
-      <circle cx="200" cy="60" r="2" fill="#9fc3bd"/>
       <g>
         <rect x="220" y="4" width="100" height="192" rx="17" fill="#1f2a28"/>
         <rect x="224" y="8" width="92" height="184" rx="12" fill="#ffffff"/>
@@ -713,7 +711,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <footer class="site-footer">
     <div class="footer-links">
-      <a href="#howto">使い方</a>
       <a href="score-basics.html">スコア計算の基本</a>
       <a href="faq.html">よくある質問</a>
       <a href="blog.html">ブログ</a>
@@ -2269,15 +2266,17 @@ function rankCountHtml(rounds, s) {
   // 連対率 = (1着＋2着の回数) ÷ 試合数、トップ率 = 1着の回数 ÷ 試合数
   const rentais = names.map((_, i) => gamesPlayed[i] ? Math.round((counts[i][0] + (counts[i][1] || 0)) / gamesPlayed[i] * 100) : null);
   const tops = names.map((_, i) => gamesPlayed[i] ? Math.round(counts[i][0] / gamesPlayed[i] * 100) : null);
-  // 平均着順が最小・連対率/トップ率/ラス回避が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
+  // 平均着順が最小・連対率/トップ率/ラス回避/最高点数が最大のプレイヤーをハイライト（同値なら全員。未参加者は対象外）
   const validAvgs = avgs.filter(v => v !== null);
   const validPcts = pcts.filter(v => v !== null);
   const validRentais = rentais.filter(v => v !== null);
   const validTops = tops.filter(v => v !== null);
+  const validPtMaxes = ptsMax.filter(v => v != null);
   const bestAvg = validAvgs.length ? Math.min(...validAvgs) : null;
   const bestPct = validPcts.length ? Math.max(...validPcts) : null;
   const bestRentai = validRentais.length ? Math.max(...validRentais) : null;
   const bestTop = validTops.length ? Math.max(...validTops) : null;
+  const bestPtMax = validPtMaxes.length ? Math.max(...validPtMaxes) : null;
   const dash = '<span style="color:#ccc">—</span>';
   // ベスト（同値なら該当者全員）の強調は文字色のみオレンジに。背景・枠線は変えない
   const hl = 'color:#E75620;font-weight:800';
@@ -2289,7 +2288,7 @@ function rankCountHtml(rounds, s) {
   const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map(i =>
     `<th${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
-  const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`),
+  const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`), '試合数',
     '平均着順', '連対率', 'トップ率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数'];
   const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
   const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
@@ -2303,7 +2302,7 @@ function rankCountHtml(rounds, s) {
       const c = counts[i][rank];
       cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
     }
-    cells.push(
+    cells.push(`<td>${gamesPlayed[i]}回</td>`,
       `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`,
       `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
       `<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
@@ -2312,7 +2311,7 @@ function rankCountHtml(rounds, s) {
       `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
       `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
     if (ptsCnt[i]) {
-      cells.push(`<td>${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+      cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
     } else {
       cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
     }
