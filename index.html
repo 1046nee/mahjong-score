@@ -140,8 +140,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .start-note { font-size: 19px; font-weight: 900; color: #177083; }
 .start-note strong { color: #E75620; font-size: 24px; }
 
-/* ⑧ クロージング: 薄緑＋オレンジCTA */
+/* ⑧ クロージング: 薄緑＋ミニイラスト＋バッジ＋オレンジCTA */
 .lp-close { background: #E4F3EC; text-align: center; }
+.lp-close .close-illust { margin: 0 auto 10px; max-width: 210px; }
+.lp-close .close-illust svg { width: 100%; height: auto; display: block; }
+.close-badges { display: flex; justify-content: center; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+.close-badges span { background: #fff; border: 1.5px solid #177083; color: #177083; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 700; }
 .lp-close h2 { font-size: 25px; font-weight: 900; color: #1a1a1a; margin-bottom: 16px; line-height: 1.6; }
 .lp-close h2 .brand-green { color: #177083; }
 .lp-close .cta-btn { margin-top: 8px; }
@@ -164,14 +168,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .info-card p, .info-card li { font-size: 14px; color: #444; }
 .info-card ol, .info-card ul { padding-left: 20px; }
 
-/* 使い方（Walica風: スマホ画面イラスト＋短い説明） */
-.howto h2 { text-align: center; border-left: none; padding-left: 0; }
-.howto-step { margin: 28px 0 34px; }
+/* 使い方（Walica風: スマホ画面イラスト＋短い説明。カードにはせずシンプルに置く） */
+.howto { padding: 14px 2px 4px; line-height: 1.9; }
+.howto h2 { font-size: 25px; font-weight: 900; text-align: center; color: #1a1a1a; margin-bottom: 12px; }
+.howto > p { font-size: 14px; color: #444; }
+.howto-step { margin: 36px 0 40px; }
 .howto-step:last-of-type { margin-bottom: 8px; }
-.howto-step h3 { font-size: 16px; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
+.howto-step h3 { font-size: 20px; font-weight: 900; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
 .howto-shot { background: #177083; border-radius: 26px; padding: 24px 16px; display: flex; justify-content: center; }
 .howto-shot svg { width: 200px; height: auto; display: block; }
-.howto-step p { margin-top: 12px; }
+.howto-step p { margin-top: 12px; font-size: 14px; color: #444; }
 
 /* フッター（濃い緑背景・リンクは2列で揃える） */
 .site-footer { background: #177083; text-align: center; padding: 34px 20px 44px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }
@@ -571,6 +577,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台のみ</td></tr>
         </tbody>
       </table>
+      <p class="start-note" style="margin-top:22px;text-align:center">めんどうな計算は、<strong>ぜんぶ</strong>まじゃすこへ。</p>
     </div>
   </section>
 
@@ -625,26 +632,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
       </div>
       <div class="features-dots" id="features-dots" aria-hidden="true"></div>
+      <p class="start-note" style="margin-top:22px;text-align:center">そしてこの全部が、<strong>無料</strong>。</p>
     </div>
   </section>
 
-  <!-- ⑧ クロージング（薄緑＋オレンジCTA） -->
+  <!-- ⑧ クロージング（薄緑＋ミニイラスト＋バッジ＋オレンジCTA） -->
   <section class="lp-section lp-close">
     <div class="lp-inner">
+      <div class="close-illust" aria-hidden="true">
+        <svg viewBox="0 0 220 120" xmlns="http://www.w3.org/2000/svg" role="img">
+          <circle cx="110" cy="62" r="52" fill="#ffffff" opacity="0.65"/>
+          <path d="M158 16 Q160.4 25.6 170 28 Q160.4 30.4 158 40 Q155.6 30.4 146 28 Q155.6 25.6 158 16 Z" fill="#E75620"/>
+          <path d="M62 28 Q63.6 34.4 70 36 Q63.6 37.6 62 44 Q60.4 37.6 54 36 Q60.4 34.4 62 28 Z" fill="#177083"/>
+          <path d="M160 88 Q161.6 94.4 168 96 Q161.6 97.6 160 104 Q158.4 97.6 152 96 Q158.4 94.4 160 88 Z" fill="#177083"/>
+          <circle cx="146" cy="12" r="3" fill="#E75620"/>
+          <circle cx="70" cy="76" r="2.5" fill="#9fc3bd"/>
+          <rect x="86" y="12" width="48" height="98" rx="11" fill="#1f2a28"/>
+          <rect x="89.5" y="15.5" width="41" height="91" rx="8" fill="#ffffff"/>
+          <rect x="103" y="18" width="14" height="3.5" rx="1.75" fill="#1f2a28"/>
+          <g>
+            <rect x="93" y="28" width="34" height="14" rx="4" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/>
+            <circle cx="99" cy="35" r="3" fill="#f0b429"/><rect x="104" y="33" width="14" height="3.6" rx="1.8" fill="#c9d6d4"/>
+            <rect x="93" y="46" width="34" height="14" rx="4" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/>
+            <circle cx="99" cy="53" r="3" fill="#b8c0c8"/><rect x="104" y="51" width="12" height="3.6" rx="1.8" fill="#c9d6d4"/>
+            <rect x="93" y="64" width="34" height="14" rx="4" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/>
+            <circle cx="99" cy="71" r="3" fill="#cd9668"/><rect x="104" y="69" width="13" height="3.6" rx="1.8" fill="#c9d6d4"/>
+          </g>
+          <rect x="93" y="84" width="34" height="18" rx="4" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.2"/>
+          <polyline points="97,98 104,92 111,95 118,89 124,92" fill="none" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
       <h2>麻雀のスコア記録は、<br><span class="brand-green">まじゃすこ</span>で。</h2>
-      <p class="lp-body" style="text-align:center">ダウンロードや会員登録は一切不要。すぐに始められます。</p>
+      <p class="lp-body" style="text-align:center">紙とペンを片付けたら、あとは打つだけ。<br>今日の対局から、記録はぜんぶスマホにおまかせ。</p>
+      <div class="close-badges">
+        <span>登録不要</span><span>完全無料</span><span>10秒でスタート</span>
+      </div>
       <button class="cta-btn" onclick="showView('setup')">スコア記録をはじめる</button>
     </div>
   </section>
 
   <div class="home-content">
-    <section class="info-card howto" id="howto">
+    <section class="howto" id="howto">
       <h2>1分でわかる「まじゃすこ」の使い方</h2>
       <p style="text-align:center">会員登録もインストールも不要。ブラウザだけで、この4ステップです。</p>
 
       <div class="howto-step">
         <h3>1. グループを作る</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">2026.07.11（金）</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">対局形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><text x="32" y="284" font-size="9" fill="#9aa8a4" font-family="sans-serif">対戦形式</text><rect x="30" y="291" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="307" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="291" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="307" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">まじゃすこ学園サッカー部</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">対局形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><text x="32" y="284" font-size="9" fill="#9aa8a4" font-family="sans-serif">対戦形式</text><rect x="30" y="291" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="307" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="291" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="307" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
         <p>グループ名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
       </div>
 
@@ -668,12 +702,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </section>
 
     <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
-
-    <section class="info-card">
-      <h2>もっと詳しく</h2>
-      <p style="margin-bottom:10px"><a href="score-basics.html">▶ 麻雀のスコア計算の基本（初心者向け）</a></p>
-      <p><a href="faq.html">▶ よくある質問（FAQ）</a></p>
-    </section>
 
   </div>
 
@@ -703,12 +731,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div class="field">
         <label>グループ名</label>
-        <input type="text" id="s-name" placeholder="例: 2026.07.05（日）">
+        <input type="text" id="s-name" placeholder="（例）まじゃすこ学園サッカー部">
       </div>
       <div class="field">
         <label>メンバー名（最大40人）</label>
         <div style="display:flex;gap:8px">
-          <input type="text" id="member-input" placeholder="名前を入力" list="saved-players"
+          <input type="text" id="member-input" placeholder="（例）山田" list="saved-players"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
           <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
         </div>
@@ -786,7 +814,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="rate-custom" style="display:none;margin-top:10px">
         <div class="field">
           <label>カスタム倍率</label>
-          <input type="number" id="s-rate-custom" placeholder="例: 150">
+          <input type="number" id="s-rate-custom" placeholder="（例）150">
         </div>
       </div>
       <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。<br>例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
@@ -822,7 +850,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="chip-rate-custom" style="display:none;margin-top:8px">
           <div class="field">
             <label>カスタムチップ倍率</label>
-            <input type="number" id="s-chip-rate-custom" placeholder="例: 300">
+            <input type="number" id="s-chip-rate-custom" placeholder="（例）300">
           </div>
         </div>
         <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
@@ -850,7 +878,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="chombo-pen-custom" style="display:none;margin-top:8px">
           <div class="field">
             <label>カスタム罰符（pts）</label>
-            <input type="number" id="s-chombo-pen-custom" placeholder="例: 40 → −40pts">
+            <input type="number" id="s-chombo-pen-custom" placeholder="（例）40">
           </div>
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアから、選んだ分をマイナスします（0はマークのみ）</div>
@@ -879,7 +907,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- GAME -->
 <div id="view-game" class="view">
   <div class="page-title-row">
-    <h1 id="game-title">ゲーム中</h1>
+    <div style="min-width:0">
+      <h1 id="game-title">ゲーム中</h1>
+      <div id="game-date" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
+    </div>
     <div class="title-actions">
       <button class="edit-tab title-edit-btn" onclick="openGameEdit()">変更</button>
     </div>
@@ -949,7 +980,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- DETAIL -->
 <div id="view-detail" class="view">
   <div class="page-title-row">
-    <h1 id="detail-title">結果詳細</h1>
+    <div style="min-width:0">
+      <h1 id="detail-title">結果詳細</h1>
+      <div id="detail-date" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
+    </div>
     <div class="title-actions">
       <button class="edit-tab title-edit-btn" onclick="openDetailEdit()">変更</button>
     </div>
@@ -2239,20 +2273,42 @@ function rankCountHtml(rounds, s) {
 function logEvents(log) {
   return (log || []).filter(e => e.type === 'add' || e.type === 'edit' || e.type === 'delete');
 }
-// 「履歴」ボタンから画面上にモーダルで表示する
+// 「履歴」ボタンから画面上にモーダルで表示する（すべて/入力/修正/削除で絞り込みできる）
+let logFilter = 'all';
+let logSrc = 'game';
 function showLogModal(src) {
-  const g = src === 'detail' ? detailGame : activeGame;
+  logSrc = src;
+  logFilter = 'all';
+  renderLogModal();
+}
+function setLogFilter(f) {
+  logFilter = f;
+  renderLogModal();
+}
+function renderLogModal() {
+  const g = logSrc === 'detail' ? detailGame : activeGame;
   if (!g) return;
+  const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除']].map(([k, l]) =>
+    `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? 'background:#177083;color:#fff' : ''}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML =
-    renderLogList(g.log)
+    `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
+    + renderLogList(g.log, g)
     + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
-function renderLogList(log) {
-  const events = logEvents(log);
-  if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">履歴はありません</div>';
-  const fmtPts = pts => pts ? pts.map(p => p.toLocaleString()).join(' / ') : '';
+function renderLogList(log, g) {
+  let events = logEvents(log);
+  if (logFilter !== 'all') events = events.filter(e => e.type === logFilter);
+  if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">該当する履歴はありません</div>';
+  // 対戦相手が分かるよう「名前 点数」のペアで表示（旧ログはe.namesが無いので現在の試合から補完）
+  const fmtPts = (pts, names) => {
+    if (!pts) return '';
+    if (names && names.length === pts.length) {
+      return pts.map((pt, i) => `${esc(names[i] || '')} ${pt.toLocaleString()}`).join('　');
+    }
+    return pts.map(pt => pt.toLocaleString()).join(' / ');
+  };
   const sub = 'font-size:11px;color:#999;margin-top:2px';
   const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'] };
   // 日付ごとに区切り、更新の順番が矢印で追えるタイムラインにする
@@ -2272,14 +2328,16 @@ function renderLogList(log) {
     const label = typeof e.no === 'number'
       ? `（${e.old ? '旧' : '現'}）第${e.no}試合を${verb}`
       : (e.label || '');
+    const round = (!e.old && typeof e.no === 'number' && g && g.rounds) ? g.rounds[e.no - 1] : null;
+    const names = e.names || (round ? roundMembers(round, g.settings).map(m => g.settings.playerNames[m]) : null);
     let body = '';
     if (e.type === 'add' && e.points) {
-      body = `<div style="${sub}">${fmtPts(e.points)}</div>`;
+      body = `<div style="${sub}">${fmtPts(e.points, names)}</div>`;
     } else if (e.type === 'edit') {
-      if (e.prev) body += `<div style="${sub}">${fmtPts(e.prev)}（修正前）</div>`;
-      if (e.points) body += `<div style="${sub}">${fmtPts(e.points)}（修正後）</div>`;
+      if (e.prev) body += `<div style="${sub}">${fmtPts(e.prev, names)}（修正前）</div>`;
+      if (e.points) body += `<div style="${sub}">${fmtPts(e.points, names)}（修正後）</div>`;
     } else if (e.type === 'delete' && e.points) {
-      body = `<div style="${sub}">${fmtPts(e.points)}（削除前）</div>`;
+      body = `<div style="${sub}">${fmtPts(e.points, names)}（削除前）</div>`;
     }
     rows += `<div class="log-row">
       <span class="log-time">${fmtTime(e.at)}</span>
@@ -2294,6 +2352,8 @@ function renderGame() {
   if (!activeGame) return;
   const s = activeGame.settings;
   document.getElementById('game-title').textContent = activeGame.name;
+  // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
+  document.getElementById('game-date').textContent = activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
   // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   const hasRounds = activeGame.rounds.length > 0;
@@ -2407,7 +2467,8 @@ async function deleteRound(idx) {
     if (e.no > idx + 1) return { ...e, no: e.no - 1 };
     return e;
   });
-  newLog.push({ type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null });
+  newLog.push({ type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null,
+    names: old ? roundMembers(old, activeGame.settings).map(m => activeGame.settings.playerNames[m]) : null });
   try {
     await db.ref('sessions/' + sessionId).update({ rounds: newRounds.length ? newRounds : null, log: newLog });
     showToast('削除しました');
@@ -2758,10 +2819,10 @@ async function submitRound() {
       extras.chombo = members.map(m => chomboOf[m] ? 1 : 0);
     }
     newRounds[editingIndex] = { points, scores, members, ...extras, at: orig.at || now, edited: true }; // 修正
-    logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points };
+    logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points, names: members.map(m => ctx.settings.playerNames[m]) };
   } else {
     newRounds.push({ points, scores, members, ...extras, at: now }); // 新規
-    logEntry = { type: 'add', at: now, no: newRounds.length, points };
+    logEntry = { type: 'add', at: now, no: newRounds.length, points, names: members.map(m => ctx.settings.playerNames[m]) };
   }
   const isEdit = editingIndex >= 0;
   closeSheet();
@@ -2881,7 +2942,7 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>スコア倍率</label>
       <select id="e-rate" onchange="document.getElementById('e-rate-custom').style.display=this.value==='custom'?'block':'none'">${rateOpts}</select>
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
-        <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="倍率">
+        <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="（例）150">
       </div>
       <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
     </div>
@@ -2897,11 +2958,11 @@ function settingsFormHtml(name, s) {
               .map(([v,l]) => `<option value="${v}" ${v === chipRateKey ? 'selected' : ''}>${l}</option>`).join('')}
           </select>
           <div id="e-chip-rate-custom-wrap" style="display:${chipRateKey === 'custom' ? 'block' : 'none'};margin-top:6px">
-            <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="カスタムチップ倍率（例: 300）">
+            <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="（例）300">
           </div>
         </div>
         <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
-          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="例: 20">
+          <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="（例）20">
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
       </div>
@@ -2920,7 +2981,7 @@ function settingsFormHtml(name, s) {
               .map(([v,l]) => `<option value="${v}" ${v === chomboPenKey ? 'selected' : ''}>${l}</option>`).join('')}
           </select>
           <div id="e-chombo-pen-custom-wrap" style="display:${chomboPenKey === 'custom' ? 'block' : 'none'};margin-top:6px">
-            <input type="number" id="e-chombo-pen-c" value="${chomboPenKey === 'custom' ? Number(s.chomboPenalty) : ''}" placeholder="例: 40 → −40pts">
+            <input type="number" id="e-chombo-pen-c" value="${chomboPenKey === 'custom' ? Number(s.chomboPenalty) : ''}" placeholder="（例）40">
           </div>
         </div>
       </div>
@@ -3049,21 +3110,15 @@ function historyItemHtml(g) {
     const groups = rankGroups(activeIdx.map(i => tRounded[i]));
     const medals = ['🥇', '🥈', '🥉'];
     const ranked = activeIdx.map((mi, k) => ({t: tRounded[mi], mi, k})).sort((a, b) => b.t - a.t);
-    const thBg = g.settings.numPlayers === 3 ? 'background:#4261AA;' : '';
-    const ths = ranked.map(p =>
-      `<th style="font-size:11px;padding:6px 4px;${thBg}">${esc(g.settings.playerNames[p.mi])}</th>`).join('');
-    const tds = ranked.map(p => {
+    // 概要だけ1行で見せる（トップ3＋ほかN人）。全員分はタップして結果詳細で見る
+    const top = ranked.slice(0, 3).map(p => {
       const grp = groups[p.k];
       const icon = grp.start < 3 ? medals[grp.start] : '';
-      const scoreCls = p.t > 0 ? 'color:#1a237e' : p.t < 0 ? 'color:#c62828' : '';
-      return `<td style="padding:7px 4px;white-space:nowrap">${icon}<b style="${scoreCls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</b></td>`;
-    }).join('');
-    rankLine = `<div style="overflow-x:auto;margin-top:8px">
-      <table class="rounds-table" style="${tableStyleFor(ranked.length)};font-size:12px">
-        <thead><tr>${ths}</tr></thead>
-        <tbody><tr>${tds}</tr></tbody>
-      </table>
-    </div>`;
+      const cls = p.t > 0 ? 'color:#1a237e' : p.t < 0 ? 'color:#c62828' : '';
+      return `<span style="white-space:nowrap">${icon}${esc(g.settings.playerNames[p.mi])} <b style="${cls}">${p.t >= 0 ? '+' : ''}${p.t.toFixed(1)}</b></span>`;
+    }).join('<span style="color:#d5dedb;margin:0 5px">|</span>');
+    const rest = ranked.length > 3 ? `<span style="color:#9aa8a4;margin-left:6px">ほか${ranked.length - 3}人</span>` : '';
+    rankLine = `<div style="margin-top:8px;font-size:12px;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${top}${rest}</div>`;
   }
   return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
     <div class="history-info">
@@ -3118,6 +3173,7 @@ function viewDetail(g) {
 function renderDetailBody(g) {
   detailGame = g;
   document.getElementById('detail-title').textContent = g.name;
+  document.getElementById('detail-date').textContent = g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
 
