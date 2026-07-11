@@ -31,7 +31,11 @@
   index.htmlのheadに `<link rel="icon" href="/favicon.ico">` とWebSite/OrganizationのJSON-LD（検索でのサイト名・ロゴ向け）を設置済み。
   検索結果のfavicon反映とサイトリンク（検索結果下の内部リンク）はGoogle側のクロール・アルゴリズム依存で、コード側からは強制できない
 - `manifest.json` — PWA用の最小構成（アイコンは/assets/favicon.png）
-- 新しいページを追加したら、`<head>`に以下を必ず入れる（blog記事のheadを参照）: **GTMスクリプト（viewport直後・titleより上）**, **AdSenseメタタグ＋スクリプト（GTMの直後）**, meta description, canonical, favicon（/assets/favicon.png）+apple-touch-icon+manifest link, OGP（og:title/description/url/type/site_name/locale/**image+width+height**）, twitter:card（summary_large_image）+twitter:image。さらに`<body>`直後に**GTMのnoscript**を入れること
+- 新しいページを追加したら、`<head>`に以下を必ず入れる（blog記事のheadを参照）: **GTMスクリプト（viewport直後・titleより上）**, **AdSenseメタタグ＋スクリプト（GTMの直後）**, meta description, canonical, favicon（/assets/favicon.png）+apple-touch-icon+manifest link, OGP（og:title/description/url/type/site_name/locale/**image+width+height**）, twitter:card（summary_large_image）+twitter:image+**twitter:title+twitter:description**。さらに`<body>`直後に**GTMのnoscript**を入れること
+- **ブログ系ページのヘッダー/フッターは `/assets/blog-site.js` の `renderChrome()` が一元描画**（2026.07.11導入。
+  LPと同じ見た目＝中央ロゴ64px・右上「使い方」ピル・緑背景の2列リンクフッター。
+  各HTMLの静的な`.site-head`/`.site-foot`はJS無効時のフォールバックで、**デザイン変更はrenderChromeだけ直せば全ページに反映**。
+  404.htmlもblog-site.jsを読み込む）
 - **GTM（Googleタグマネージャー）導入済み（2026.07.10）**: コンテナID `GTM-KMRMGKKV`。全ページに設置済み
 - **行動イベント計測（2026.07.10）**: index.htmlの `track(event, params)` がdataLayerへ送信。
   イベント: `group_create`（num_players/member_count/team_mode/bonus_enabled）/ `group_join` / `round_submit`（is_edit/round_no）/ `share_copy`（from）。
