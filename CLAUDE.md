@@ -5,6 +5,8 @@
 - 本番: https://majasco.jp ／ リポジトリ: https://github.com/1046nee/mahjong-score（ブランチ: main）
 - mainへpush → GitHub Actionsが自動デプロイ（追加作業不要）
 - X公式: @majasco_jp ／ Instagram公式あり（詳細は docs/sns-ops.md）
+- 運用ハブ（Notion・ユーザー管理）: https://app.notion.com/p/39afc00e6ad081f2b1ccc874b1818eee
+  （資産/アカウント一覧・公開ページ一覧・運用タスク。記事公開時はNotionの一覧にも1行追加。仕様の正はあくまでdocs/）
 
 ## このファイルの使い方（最初に読む）
 ここには**全作業で守るルールだけ**を置く。仕様の詳細は docs/ に分割してある。
