@@ -82,7 +82,47 @@ const BLOG_POSTS = [
     return `<li><a class="sb-link" href="${p.url}">${escHtml(p.title)}</a><span class="sb-date">${p.date}・${BLOG_CATS[p.cat].name}</span></li>`;
   }
 
+  // 全ブログ/固定ページ共通: LP（トップ）と同じ見た目のヘッダー・フッターに差し替える。
+  // 各HTMLに書かれた静的なヘッダー/フッターはJS無効時のフォールバック。
+  // デザインを変えるときはこの関数だけ直せば全ページに反映される
+  function renderChrome() {
+    const st = document.createElement('style');
+    st.textContent = `
+      .site-head { background: #fff; border-bottom: 1px solid #eef3f2; }
+      .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 10px 56px; display: flex; align-items: center; justify-content: center; }
+      .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
+      .site-foot { background: #177083 !important; border-top: none !important; text-align: center; padding: 34px 20px 44px !important; color: rgba(255,255,255,0.85) !important; font-size: 12px; }
+      .site-foot a { color: #fff !important; text-decoration: underline; margin: 0 !important; font-size: 13px; line-height: 1.6; }
+      .site-foot .links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; max-width: 440px; margin: 0 auto 18px; text-align: left; }`;
+    document.head.appendChild(st);
+    const head = document.querySelector('.site-head');
+    if (head) {
+      head.innerHTML = `<div class="site-head-inner">
+        <a href="/index.html" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:64px;vertical-align:middle"></a>
+        <a class="head-app-link" href="/#howto">使い方</a>
+      </div>`;
+    }
+    const foot = document.querySelector('.site-foot');
+    if (foot) {
+      foot.innerHTML = `<div class="links">
+        <a href="/#howto">使い方</a>
+        <a href="/score-basics.html">スコア計算の基本</a>
+        <a href="/faq.html">よくある質問</a>
+        <a href="/blog.html">ブログ</a>
+        <a href="/news/">お知らせ</a>
+        <a href="/news/feed.xml">お知らせRSS</a>
+        <a href="/terms.html">利用規約</a>
+        <a href="/privacy.html">プライバシーポリシー</a>
+        <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
+        <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+      </div>
+      <div>© 2026 まじゃすこ</div>`;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    renderChrome();
+
     // 記事一覧（カテゴリ別・新しい順）
     document.querySelectorAll('[data-post-list]').forEach(el => {
       const cat = el.getAttribute('data-post-list');
