@@ -335,11 +335,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* Sheet */
 .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
 .backdrop.open { display: block; }
-/* 点数入力は全画面ページ形式（下からのスライド式はiOSでtransform＋fixed＋inputのタップ不良を起こすため廃止） */
-.sheet { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 560px; background: #fff; padding: 16px 16px 40px; z-index: 201; overflow-y: auto; }
+/* 点数入力は全画面ページ形式（下からのスライド式はiOSでtransform＋fixed＋inputのタップ不良を起こすため廃止）。
+   ブランドカラーのヘッダー＋カード化した入力欄で、アプリの他画面と同じトーンにする */
+.sheet { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 560px; background: #f6fbf9; z-index: 201; overflow-y: auto; }
 .sheet.open { display: block; }
-.sheet-close { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f2f7f6; color: #555; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
-.sheet-title { font-size: 17px; font-weight: 700; }
+.sheet-head { position: sticky; top: 0; z-index: 2; background: #177083; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sheet.sanma .sheet-head { background: #4261AA; }
+.sheet-title { font-size: 17px; font-weight: 800; color: #fff; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-close { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
+.sheet-body { padding: 16px 16px 40px; }
+.sheet-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 14px 12px; margin-bottom: 14px; }
 .sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 /* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
 .sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
@@ -391,7 +396,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 対局履歴の全画面表示 */
 .table-modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 400; flex-direction: column; }
 .table-modal.open { display: flex; }
-.table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px; flex-shrink: 0; }
+.table-modal-note { font-size: 10.5px; color: #9aa8a4; padding: 0 16px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
 .table-modal-title { font-size: 15px; font-weight: 800; color: #177083; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .table-modal-body { flex: 1; overflow: auto; padding: 12px 16px 28px; }
 .table-modal-body table { font-size: 13px; }
@@ -739,7 +745,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0">登録名の管理</button>
         </div>
         <div style="display:flex;gap:8px">
-          <input type="text" id="member-input" placeholder="山田" list="saved-players"
+          <input type="text" id="member-input" placeholder="山田先輩" list="saved-players"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
           <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
         </div>
@@ -951,7 +957,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" id="chart-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
-        <span id="chart-collapse"></span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab" id="chart-more-btn" onclick="openChartModal(activeGame)" style="display:none">もっと見る</button>
+          <span id="chart-collapse"></span>
+        </div>
       </div>
       <div class="chart-wrap" id="chart-body" style="margin-top:10px"></div>
     </div>
@@ -993,20 +1002,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- Bottom sheet -->
 <div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
 <div class="sheet" id="score-sheet">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+  <div class="sheet-head">
     <div class="sheet-title" id="sheet-title">点数入力</div>
     <button type="button" class="sheet-close" onclick="closeSheet()" aria-label="閉じる">✕</button>
   </div>
-  <div id="sheet-members-area" style="display:none">
-    <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
-    <div class="sheet-members" id="sheet-members"></div>
+  <div class="sheet-body">
+    <div id="sheet-members-area" style="display:none" class="sheet-card">
+      <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
+      <div class="sheet-members" id="sheet-members" style="margin-bottom:0"></div>
+    </div>
+    <div class="sheet-card">
+      <div class="sheet-inputs" id="sheet-inputs" style="margin-bottom:0"></div>
+    </div>
+    <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
+    <div class="total-check ng" id="total-check">点数を入力してください</div>
+    <div class="total-check ng" id="chip-check" style="display:none;margin-top:-8px"></div>
+    <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
+    <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px;display:none" onclick="closeSheet()">キャンセル</button>
   </div>
-  <div class="sheet-inputs" id="sheet-inputs"></div>
-  <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
-  <div class="total-check ng" id="total-check">点数を入力してください</div>
-  <div class="total-check ng" id="chip-check" style="display:none;margin-top:-8px"></div>
-  <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
-  <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px;display:none" onclick="closeSheet()">キャンセル</button>
 </div>
 
 <!-- Confirm modal -->
@@ -1052,6 +1065,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <button class="edit-tab" onclick="closeTableModal()" style="font-size:13px;padding:7px 16px;flex-shrink:0">閉じる</button>
   </div>
+  <div class="table-modal-note">※拡大・縮小の倍率によっては、文字やレイアウトが崩れて表示される場合があります</div>
   <div class="table-modal-body" id="table-modal-body"></div>
 </div>
 
@@ -2015,6 +2029,17 @@ function openTableModal(g) {
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
 }
+// スコア推移グラフを全画面で見る（対局履歴と同じモーダル・ズーム共用）
+function openChartModal(g) {
+  if (!g || !(g.rounds || []).length) return;
+  const s = g.settings;
+  document.getElementById('table-modal-title').textContent = `${g.name} の${s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移'}`;
+  document.getElementById('table-modal-body').innerHTML =
+    `<div id="table-zoom-wrap"><div class="chart-wrap">${chartHtml(g.rounds, s)}</div></div>`;
+  tableModalZoom = 1;
+  applyTableModalZoom();
+  document.getElementById('table-modal').classList.add('open');
+}
 // その他成績を全画面で見る（対局履歴と同じモーダル・ズーム共用）
 function openStatsModal(g) {
   if (!g || !(g.rounds || []).length) return;
@@ -2431,6 +2456,7 @@ function renderGame() {
   if (hasRounds) {
     chartCard.style.display = 'block';
     document.getElementById('chart-title').textContent = s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移';
+    document.getElementById('chart-more-btn').style.display = collapsedCards.chart ? 'none' : 'inline-block';
     document.getElementById('chart-collapse').innerHTML = collapseBtnHtml('chart');
     const chartBody = document.getElementById('chart-body');
     chartBody.style.display = collapsedCards.chart ? 'none' : '';
@@ -2569,7 +2595,9 @@ function openSheetCtx(ctx, idx) {
   }
 
   // チップ入力ありの場合はタイトル表記を「点数 / チップ入力」に切り替える
-  document.getElementById('sheet-title').textContent = isEdit ? `第${idx+1}試合を修正` : (s.bonusEnabled ? '点数 / チップ入力' : '点数入力');
+  document.getElementById('sheet-title').textContent = isEdit
+    ? `第${idx+1}試合を修正`
+    : `第${ctx.rounds.length + 1}試合の${s.bonusEnabled ? '点数 / チップ入力' : '点数入力'}`;
   document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
   // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
   document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
@@ -3223,7 +3251,8 @@ function renderDetailBody(g) {
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart')}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
+    const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`;
+    html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
   }
 
   html += `<div class="card">${detailCardHead('設定', 'settings')}
