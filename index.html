@@ -202,6 +202,7 @@ input:focus, select:focus { border-color: #177083; }
 .toggle-group { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; }
 .toggle-btn { flex: 1; padding: 10px; background: #fff; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #555; transition: background 0.2s, color 0.2s; }
 .toggle-btn.active { background: #177083; color: #fff; }
+.sanma .toggle-btn.active { background: #4261AA; }
 /* 3人麻雀（サンマ）テーマ: もともと緑（ティール）の部分を青（#4261AA）に置き換える */
 .sanma .rounds-table th { background: #4261AA; }
 #view-game.sanma, #view-detail.sanma { background: #EAF0FB; }
@@ -334,10 +335,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* Sheet */
 .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
 .backdrop.open { display: block; }
-.sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 20px 20px 0 0; padding: 20px 16px 32px; z-index: 201; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); max-height: 90vh; overflow-y: auto; }
-.sheet.open { transform: translateY(0); }
-.sheet-handle { width: 40px; height: 4px; background: #ddd; border-radius: 2px; margin: 0 auto 16px; }
-.sheet-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+/* 点数入力は全画面ページ形式（下からのスライド式はiOSでtransform＋fixed＋inputのタップ不良を起こすため廃止） */
+.sheet { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 560px; background: #fff; padding: 16px 16px 40px; z-index: 201; overflow-y: auto; }
+.sheet.open { display: block; }
+.sheet-close { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f2f7f6; color: #555; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
+.sheet-title { font-size: 17px; font-weight: 700; }
 .sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 /* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
 .sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
@@ -352,7 +354,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
 .sheet-row input:focus { border-color: #177083; }
 /* 点数入力: 下2桁（00）は固定表示し、百の位以上だけ入力する */
-.pt-input { flex: none; width: 108px; margin-left: auto; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 10px; transition: border-color 0.2s; background: #fff; }
+.pt-input { flex: none; width: 108px; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 10px; transition: border-color 0.2s; background: #fff; }
 .pt-input input { flex: 1; border: none; outline: none; padding: 10px; font-size: 16px; text-align: right; min-width: 0; background: transparent; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
@@ -430,14 +432,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
-.auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
+.auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 .total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
 .total-check.ok { background: #e8f5e9; color: #2e7d32; }
 .total-check.ng { background: #ffebee; color: #c62828; }
-/* チップの整合チェックは補足情報なので、点数の合計チェックより控えめな文字サイズに */
-#chip-check { font-size: 11.5px; padding: 6px 8px; font-weight: 600; line-height: 1.6; }
-.confirm-btn { background: #177083; color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; width: 100%; }
+.confirm-btn { background: #177083; color: #fff; border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
 .confirm-btn:disabled { background: #aaa; cursor: not-allowed; }
 
 /* History */
@@ -734,7 +734,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部">
       </div>
       <div class="field">
-        <label>メンバー名（最大40人）</label>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <label>メンバー名（最大40人）</label>
+          <button type="button" class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0">登録名の管理</button>
+        </div>
         <div style="display:flex;gap:8px">
           <input type="text" id="member-input" placeholder="山田" list="saved-players"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
@@ -743,10 +746,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="member-tags" id="member-tags"></div>
         <div class="chips-hint" id="member-count-hint" style="margin-top:10px;margin-bottom:0">メンバーを追加してください</div>
         <datalist id="saved-players"></datalist>
-        <div id="saved-players-hint" style="display:none;margin-top:8px;align-items:center;justify-content:space-between">
-          <span class="chips-hint" style="margin-bottom:0">入力欄をタップすると登録済みの名前から選べます</span>
-          <button class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0;margin-left:8px">登録名の管理</button>
-        </div>
       </div>
       <div class="field" style="margin-bottom:0">
         <label>試合形式</label>
@@ -817,16 +816,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <input type="number" id="s-rate-custom" placeholder="150">
         </div>
       </div>
-      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」として、bonus単位で集計します。<br>例：スコア倍率が10倍なら、1.0pt → 10bonus</div>
+      <div class="chips-hint" style="margin-top:10px;margin-bottom:0">スコアに倍率を掛けた値を「スコア収支」（単位はbonus）として記録します。<br>例：スコア倍率が×100の場合、+123.0pts → +12,300bonus</div>
     </div>
     <div class="card">
       <div class="card-title">オプション</div>
       <label class="opt-check">
-        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり
+        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり🍪
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとにチップ差を記録して、合計収支（スコア収支＋チップ収支）を集計します</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとにチップを入力でき、チップ収支を記録します。</div>
       <div id="s-bonus-fields" style="display:none;margin:10px 0 0 26px">
         <div class="rule-grid">
+          <div class="field">
+            <label>持ちチップ（枚）</label>
+            <input type="number" id="s-start-chips" value="20">
+          </div>
           <div class="field">
             <label>チップ倍率</label>
             <select id="s-chip-rate" onchange="onChipRateChange()">
@@ -842,10 +845,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
               <option value="custom">カスタム</option>
             </select>
           </div>
-          <div class="field">
-            <label>ゲーム開始時チップ数</label>
-            <input type="number" id="s-start-chips" value="20">
-          </div>
         </div>
         <div id="chip-rate-custom" style="display:none;margin-top:8px">
           <div class="field">
@@ -853,16 +852,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" id="s-chip-rate-custom" placeholder="300">
           </div>
         </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップ差に倍率を掛けた値を「チップ収支」（単位はbonus）として記録します。<br>※チップ差＝終了時チップ − 開始時チップ<br>例：チップ倍率が×500の場合、+5枚 → +2,500bonus</div>
       </div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-yakitori"> 焼き鳥あり🐔
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">1回もアガれなかった人に🐔マークが付きます（マークのみで、スコアには影響しません）</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">1試合で一度もアガれなかった人に🐔マークがつきます。<br>※マークのみでスコアには影響しません。</div>
       <label class="opt-check" style="margin-top:14px">
-        <input type="checkbox" id="s-chombo" onchange="onChomboOptChange()"> チョンボ罰符あり💩
+        <input type="checkbox" id="s-chombo" onchange="onChomboOptChange()"> チョンボあり💩
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に💩マークが付き、合計スコアから罰符分がマイナスされます</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に💩マークがつきます。<br>※合計スコアからチョンボ罰符分がマイナスされます。</div>
       <div id="s-chombo-fields" style="display:none;margin:10px 0 0 26px">
         <div class="field">
           <label>チョンボ罰符</label>
@@ -881,7 +880,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" id="s-chombo-pen-custom" placeholder="40">
           </div>
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアから、選んだ分をマイナスします（0はマークのみ）</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアを記録後、罰符分をマイナスします。<br>※チョンボ罰符0の場合、マークのみ。</div>
       </div>
     </div>
   </div>
@@ -994,8 +993,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- Bottom sheet -->
 <div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
 <div class="sheet" id="score-sheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title" id="sheet-title">点数入力</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="sheet-title" id="sheet-title">点数入力</div>
+    <button type="button" class="sheet-close" onclick="closeSheet()" aria-label="閉じる">✕</button>
+  </div>
   <div id="sheet-members-area" style="display:none">
     <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
     <div class="sheet-members" id="sheet-members"></div>
@@ -1361,10 +1362,8 @@ function initSetupForm() {
 // 保存済みの名前はdatalistに入れておき、入力欄タップで候補から選ぶか自由入力できる
 function renderPlayerOptions() {
   const dl = document.getElementById('saved-players');
-  const hint = document.getElementById('saved-players-hint');
   const has = appState.players && appState.players.length > 0;
   dl.innerHTML = has ? appState.players.map(name => `<option value="${esc(name)}"></option>`).join('') : '';
-  hint.style.display = has ? 'flex' : 'none';
 }
 // 登録済みの名前を一覧表示するモーダル。[ゲームに追加]/[取り消し]でメンバーの出し入れ、
 // 右上の[編集]で並び替え（↑↓）と削除ができる
@@ -1464,6 +1463,7 @@ function applyMode(n) {
   document.getElementById('mode-4').classList.toggle('active', n === 4);
   document.getElementById('mode-3').classList.toggle('active', n === 3);
   refreshUmaSelect();
+  document.getElementById('view-setup').classList.toggle('sanma', n === 3); // 三麻はサンマカラー（青）に
   document.getElementById('s-start').value = n === 3 ? 30000 : 25000;
   document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
   onUmaChange();
@@ -2650,7 +2650,7 @@ function renderSheetInputs() {
     ? `<div class="sheet-row" style="margin-bottom:-4px">
         <label class="sheet-name-s"></label>
         <div style="width:72px;${colLabel};text-align:center;flex-shrink:0">チップ</div>
-        <div style="width:108px;${colLabel};text-align:center;flex-shrink:0;margin-left:auto">点数</div>
+        <div style="width:108px;${colLabel};text-align:center;flex-shrink:0">点数</div>
         ${withYaki ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">🐔</div>` : ''}
         ${withChombo ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">💩</div>` : ''}
       </div>`
@@ -2964,7 +2964,7 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>収支オプション</label>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="e-bonus" ${s.bonusEnabled ? 'checked' : ''}
-          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップあり
+          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップあり🍪
       </label>
       <div id="e-bonus-fields" style="display:${s.bonusEnabled ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin-bottom:0"><label>チップ倍率</label>
@@ -2976,10 +2976,10 @@ function settingsFormHtml(name, s) {
             <input type="number" id="e-chip-rate-c" value="${chipRateKey === 'custom' ? (s.chipRate != null ? s.chipRate : '') : ''}" placeholder="300">
           </div>
         </div>
-        <div class="field" style="margin:8px 0 0"><label>ゲーム開始時チップ数</label>
+        <div class="field" style="margin:8px 0 0"><label>持ちチップ（枚）</label>
           <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="20">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差（終了時チップ数 − 開始時チップ数）に倍率を掛けた値を「チップ収支」として集計します。<br>例：チップ倍率が500倍なら、チップ1枚 → 500bonus</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップ差に倍率を掛けた値を「チップ収支」（単位はbonus）として記録します。<br>※チップ差＝終了時チップ − 開始時チップ<br>例：チップ倍率が×500の場合、+5枚 → +2,500bonus</div>
       </div>
       ${s.bonusEnabled ? '<div class="chips-hint" style="margin:6px 0 0 26px">OFFにしても記録済みのチップ差は消えません（表示されなくなるだけで、再度ONにすると集計に戻ります）</div>' : ''}
       <label class="opt-check" style="margin-top:8px">
@@ -2987,7 +2987,7 @@ function settingsFormHtml(name, s) {
       </label>
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-chombo" ${s.chombo ? 'checked' : ''}
-          onchange="document.getElementById('e-chombo-fields').style.display=this.checked?'block':'none'"> チョンボ罰符あり💩（合計スコアからマイナス）
+          onchange="document.getElementById('e-chombo-fields').style.display=this.checked?'block':'none'"> チョンボあり💩（合計スコアからマイナス）
       </label>
       <div id="e-chombo-fields" style="display:${s.chombo ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin-bottom:0"><label>チョンボ罰符</label>
@@ -3230,7 +3230,7 @@ function renderDetailBody(g) {
     <div style="font-size:13px;color:#555;line-height:2.2;${collapsedCards.settings ? 'display:none' : ''}">
       ${s.numPlayers === 3 ? '三麻' : '四麻'} ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 開始時チップ数: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
+      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
