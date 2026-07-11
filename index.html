@@ -2095,12 +2095,9 @@ function rankBadgeHtml(rank, isTie, isLast) {
 // ---- スコア推移グラフ（SVG） ----
 // 個人戦はメンバーごとの累積スコア。チーム戦は所属メンバーを合算した
 // 「チームスコア推移」をチームカラーで描画する。
-// indiv=true ならチーム戦でも個人ごとの線を描く（「個人スコア推移」カード用。
-// 色はチームカラーとは独立に CHART_COLORS を個人単位で割り当てる）
-const CHART_COLORS = [
-  '#1a237e', '#c62828', '#2e7d32', '#f9a825', '#6a1b9a', '#00838f', '#e65100', '#37474f', '#ad1457', '#558b2f',
-  '#0075c2', '#ff5ca8', '#795548', '#00b5cc', '#94c11f', '#607d8b', '#ff7043', '#9575cd', '#808000', '#38b6ff'
-];
+// indiv=true ならチーム戦でも個人ごとの線を描く（「個人スコア推移」カード用）。
+// 個人の線の色は、表示順（memberDisplayOrder＝チームA→B…・個人戦は登録順）の
+// n番目の人にTEAM_COLORSのn色目を割り当てる（並び順と色の番号が一致する）
 function chartHtml(rounds, s, indiv = false) {
   if (!rounds || rounds.length === 0) return '';
   const N = s.playerNames.length;
@@ -2124,8 +2121,9 @@ function chartHtml(rounds, s, indiv = false) {
       values: series[0].map((_, x) => Math.round(tm.members.reduce((a, m) => a + (m < N ? series[m][x] : 0), 0) * 10) / 10)
     })).filter(l => l.on);
   } else {
-    lines = series.map((values, i) => ({
-      label: s.playerNames[i], color: CHART_COLORS[i % CHART_COLORS.length], on: played[i], values
+    // 色は参加有無でずらさず、表示順の位置で固定する（k番目の人は常にTEAM_COLORS[k]）
+    lines = memberDisplayOrder(s).map((m, k) => ({
+      label: s.playerNames[m], color: TEAM_COLORS[k % TEAM_COLORS.length], on: played[m], values: series[m]
     })).filter(l => l.on);
   }
   if (!lines.length) return '';
