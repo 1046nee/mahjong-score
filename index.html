@@ -38,7 +38,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@majasco_jp">
 <meta name="twitter:image" content="https://majasco.jp/assets/ogp.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"まじゃすこは無料ですか？","acceptedAnswer":{"@type":"Answer","text":"はい、すべての機能を無料でご利用いただけます。運営費は広告収入でまかなっています。"}},{"@type":"Question","name":"会員登録やアプリのインストールは必要ですか？","acceptedAnswer":{"@type":"Answer","text":"不要です。スマートフォンやPCのブラウザだけで、すぐに使い始められます。グループを作成すると発行されるURLをメンバーに共有するだけで、全員が同じスコアをリアルタイムで見られます。"}},{"@type":"Question","name":"三麻（3人麻雀）でも使えますか？","acceptedAnswer":{"@type":"Answer","text":"使えます。グループ作成時に「三麻」を選ぶと、持ち点・返し点の初期値や「15-0-15」のような3人用のウマ形式に切り替わります。チーム戦やチップの収支計算もオプションで利用できます。"}},{"@type":"Question","name":"過去の試合のデータは消えませんか？","acceptedAnswer":{"@type":"Answer","text":"対局データはグループの共有URLに紐づいて保存されるため、URLを開けばいつでも確認・再開できます。端末の「過去の試合」一覧はブラウザに保存されているため、端末を変えるときは共有URLを控えておくのがおすすめです。"}}]}</script>
 <meta name="twitter:title" content="まじゃすこ / majasco｜麻雀のスコア計算・URL共有がスマホで一瞬">
 <meta name="twitter:description" content="紙とペンの代わりにスマホ1台で、麻雀のスコア計算のわずらわしさをシンプルに解決してくれる無料のスコア記録アプリです。">
 <style>
@@ -77,7 +76,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .global-logo { cursor: pointer; user-select: none; display: inline-flex; align-items: center; min-width: 0; }
 .global-nav-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border: none; border-radius: 20px; padding: 7px 14px; cursor: pointer; text-decoration: none; }
 /* ゲーム設定画面だけ左上に表示する「戻る」ボタン */
-.header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #f0f5f4; border: none; border-radius: 20px; padding: 7px 12px; cursor: pointer; }
+.header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: none; background: #f0f5f4; color: #177083; font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
 
 /* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
 .page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
@@ -105,6 +104,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .features-nav { display: none; position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e2ece7; background: #fff; color: #177083; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 .features-nav.prev { left: -14px; }
 .features-nav.next { right: -14px; }
+/* 端のフェード＝「続きがある」ことを示す。ドット＝現在位置インジケーター */
+.features-wrap::before, .features-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 1; pointer-events: none; }
+.features-wrap::before { left: 0; background: linear-gradient(90deg, #fff 15%, rgba(255,255,255,0)); }
+.features-wrap::after { right: 0; background: linear-gradient(270deg, #fff 15%, rgba(255,255,255,0)); }
+.features-dots { display: flex; justify-content: center; gap: 7px; margin-top: 16px; }
+.fdot { width: 7px; height: 7px; border-radius: 4px; background: #d3e2dc; transition: width 0.25s, background 0.25s; }
+.fdot.on { width: 22px; background: #177083; }
+.feature-icon svg { display: block; }
 @media (min-width: 700px) { .feature { flex: 0 0 300px; } .features-nav { display: block; } }
 .feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .fi-green { background: #E4F3EC; }
@@ -448,7 +455,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- 全画面共通ヘッダー -->
 <div class="global-header-wrap">
   <div class="global-header">
-    <button type="button" class="header-back" id="header-back" onclick="showView('home')">‹ 戻る</button>
+    <button type="button" class="header-back" id="header-back" onclick="showView('home')" aria-label="前のページに戻る">‹</button>
     <span class="global-logo" onclick="goHome()"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:64px;vertical-align:middle"></span>
     <button type="button" class="global-nav-link" onclick="goUsage()">使い方</button>
   </div>
@@ -493,13 +500,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </g>
       <!-- 現在: まじゃすこのスコア画面。淡い光と輝きで「これからはこっち」を演出 -->
       <circle cx="270" cy="100" r="90" fill="#E4F3EC" opacity="0.75"/>
-      <!-- 乗り換えの矢印（過去 → スマホ） -->
-      <path d="M150 84 Q180 62 208 78" stroke="#9fbcb7" stroke-width="3" fill="none" stroke-dasharray="5 6" stroke-linecap="round"/>
-      <path d="M208 78 L197 74 M208 78 L201 86" stroke="#9fbcb7" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <!-- 輝き -->
-      <path d="M332 26 v14 M325 33 h14" stroke="#E75620" stroke-width="2.5" stroke-linecap="round"/>
-      <path d="M206 30 v10 M201 35 h10" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
-      <path d="M338 152 v10 M333 157 h10" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
+      <!-- 乗り換えの矢印（過去 → スマホ）: 点線の軌跡＋進行方向に沿った矢じり -->
+      <path d="M148 86 Q176 62 202 74" stroke="#9fbcb7" stroke-width="3.5" fill="none" stroke-dasharray="1 7" stroke-linecap="round"/>
+      <path d="M212 79 L199.9 78.5 L204.1 69.5 Z" fill="#9fbcb7"/>
+      <!-- 輝き（4方向に尖ったキラキラ✨） -->
+      <path d="M332 22 Q334 30 342 32 Q334 34 332 42 Q330 34 322 32 Q330 30 332 22 Z" fill="#E75620"/>
+      <path d="M206 27 Q207.5 32.5 213 34 Q207.5 35.5 206 41 Q204.5 35.5 199 34 Q204.5 32.5 206 27 Z" fill="#177083"/>
+      <path d="M338 149 Q339.5 154.5 345 156 Q339.5 157.5 338 163 Q336.5 157.5 331 156 Q336.5 154.5 338 149 Z" fill="#177083"/>
       <circle cx="316" cy="12" r="2.5" fill="#E75620"/>
       <circle cx="200" cy="60" r="2" fill="#9fc3bd"/>
       <g>
@@ -569,48 +576,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button type="button" class="features-nav prev" onclick="featuresScroll(-1)" aria-label="前の項目へ">‹</button>
         <div class="features-row" id="features-row">
         <div class="feature">
-          <div class="feature-icon fi-blue">🧮</div>
-          <h3>点数からスコアを一瞬で計算。</h3>
-          <p>目の前の表示点数を入力するだけで、ウマ・オカ込みのスコアがすぐにわかる。</p>
+          <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="12" y="6" width="24" height="36" rx="5" fill="#177083"/><rect x="16" y="11" width="16" height="7" rx="2" fill="#E4F3EC"/><g fill="#E4F3EC"><rect x="16" y="22" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="22" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="22" width="4.5" height="4" rx="1.2"/><rect x="16" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="28.5" width="4.5" height="4" rx="1.2"/></g></svg></div>
+          <h3>スコアを一瞬で計算</h3>
+          <p>目の前の表示点数をそのまま入力するだけで、返し点・ウマ・オカ込みのスコアを自動計算。同点のときのウマ・オカの山分けなど、ややこしい処理もすべて自動です。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-green">📱</div>
-          <h3>全員のスマホが、同じスコア表。</h3>
-          <p>URLを共有するだけで、「いま誰がトップ？」が一目でわかる。</p>
+          <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="13" y="12" width="17" height="30" rx="4.5" fill="#177083"/><rect x="16" y="16" width="11" height="18" rx="2" fill="#E4F3EC"/><path d="M34 18 a7 7 0 0 1 5 7" stroke="#E75620" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M34 11 a13 13 0 0 1 10 13" stroke="#E75620" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></div>
+          <h3>全員のスマホに共有</h3>
+          <p>URLをLINEなどで送るだけで、全員が同じスコア表を見られます。誰かが入力した結果は一瞬で全員のスマホに反映。「いま誰がトップ？」で毎試合盛り上がれます。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-blue">📈</div>
-          <h3>スコア推移は、グラフで自動記録。</h3>
-          <p>試合ごとの積み上げを自動でグラフに。逆転のドラマもあとから振り返れる。</p>
+          <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="8" width="32" height="32" rx="6" fill="#ffffff"/><polyline points="14,32 21,25 27,29 34,17" stroke="#177083" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="17" r="3.2" fill="#E75620"/></svg></div>
+          <h3>推移グラフも自動</h3>
+          <p>試合ごとの累積スコアを自動でグラフ化。誰がいつ抜け出したのか、最終戦の大逆転まで、その日のドラマをあとから何度でも振り返れます。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-green">👥</div>
-          <h3>最大40人の回し打ちにも対応。</h3>
-          <p>試合ごとに対局する人を選ぶだけ。抜け番がいても集計はすべて自動。</p>
+          <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="13" cy="18" r="5" fill="#9fc3bd"/><path d="M5 34 Q13 25 21 34 Z" fill="#9fc3bd"/><circle cx="35" cy="18" r="5" fill="#9fc3bd"/><path d="M27 34 Q35 25 43 34 Z" fill="#9fc3bd"/><circle cx="24" cy="21" r="6" fill="#177083"/><path d="M14 39 Q24 28 34 39 Z" fill="#177083"/></svg></div>
+          <h3>最大40人で回し打ち</h3>
+          <p>メンバーは最大40人まで登録OK。試合ごとに対局する人を選ぶだけで、抜け番がいても一人ひとりの成績を自動で集計し続けます。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-blue">🏆</div>
-          <h3>Mリーグのような、チーム戦。</h3>
-          <p>チームカラーで色分けして、チーム合計のスコアと推移グラフで団体戦ができる。</p>
+          <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M16 8 H32 V17 A8 8 0 0 1 16 17 Z" fill="#177083"/><path d="M16 10 H10 A6.5 6.5 0 0 0 17 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><path d="M32 10 H38 A6.5 6.5 0 0 1 31 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><rect x="21.5" y="24" width="5" height="7" fill="#177083"/><rect x="15" y="31" width="18" height="5" rx="2" fill="#9fc3bd"/><circle cx="24" cy="14" r="2.6" fill="#E4F3EC"/></svg></div>
+          <h3>チーム戦にも対応</h3>
+          <p>メンバーをチームに分ければ、Mリーグのような団体戦に。チームカラーで色分けされた成績表と推移グラフで、チームの合計スコアを競えます。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-green">🀄</div>
-          <h3>三麻も四麻も、いつものルールで。</h3>
-          <p>持ち点・返し点・ウマ・スコア倍率を自由に設定。独自ルールもそのまま再現。</p>
+          <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><g stroke="#9fc3bd" stroke-width="3" stroke-linecap="round"><path d="M10 15 H38"/><path d="M10 24 H38"/><path d="M10 33 H38"/></g><circle cx="18" cy="15" r="4.2" fill="#177083"/><circle cx="31" cy="24" r="4.2" fill="#177083"/><circle cx="22" cy="33" r="4.2" fill="#177083"/></svg></div>
+          <h3>ルールは自由自在</h3>
+          <p>三麻・四麻はもちろん、持ち点・返し点・ウマ・スコア倍率まで細かく設定OK。いつもの仲間内ルールを、そのまま再現できます。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-blue">🐔</div>
-          <h3>チップも焼き鳥も、まとめて記録。</h3>
-          <p>チップの収支計算に、焼き鳥🐔やチョンボ💩のマークもオプションで追加できる。</p>
+          <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><ellipse cx="24" cy="31" rx="13" ry="5.5" fill="#177083"/><ellipse cx="24" cy="24.5" rx="13" ry="5.5" fill="#9fc3bd"/><ellipse cx="24" cy="18" rx="13" ry="5.5" fill="#ffffff" stroke="#9fc3bd" stroke-width="1.6"/><ellipse cx="24" cy="18" rx="6.5" ry="2.6" fill="none" stroke="#9fc3bd" stroke-width="1.6"/></svg></div>
+          <h3>チップや焼き鳥も記録</h3>
+          <p>オプションをONにすれば、チップの枚数から収支まで自動で計算。焼き鳥🐔やチョンボ💩のマーク、罰符の減点にも対応しています。</p>
         </div>
         <div class="feature">
-          <div class="feature-icon fi-green">📊</div>
-          <h3>平均着順まで、自動で成績表に。</h3>
-          <p>1着の回数・平均着順・ラス回避率まで、試合を重ねるほど成績が見えてくる。</p>
+          <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div>
+          <h3>成績表も自動で作成</h3>
+          <p>1着〜ラスの回数、平均着順、ラス回避率まで自動で集計。試合を重ねるほどデータが貯まり、実力がはっきり見えてきます。</p>
         </div>
         </div>
         <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
       </div>
+      <div class="features-dots" id="features-dots" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -625,7 +633,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <div class="home-content">
     <section class="info-card howto" id="howto">
-      <h2>1分でわかるまじゃすこ（majasco）の使い方</h2>
+      <h2>1分でわかる「まじゃすこ」の使い方</h2>
       <p style="text-align:center">会員登録もインストールも不要。ブラウザだけで、この4ステップです。</p>
 
       <div class="howto-step">
@@ -653,43 +661,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </section>
 
-    <section class="info-card" id="basics">
-      <h2>麻雀のスコア計算の基本（初心者向け）</h2>
-      <p>麻雀の最終的な勝ち負けは、対局終了時の持ち点をそのまま比べるのではなく、いくつかのルールを反映した「スコア（ポイント）」で計算するのが一般的です。ここでは代表的な用語を紹介します。</p>
-      <h3>素点と返し点</h3>
-      <p>対局終了時の持ち点から基準となる「返し点」（例: 30,000点）を引き、1,000点＝1ポイントに換算したものが素点です。例えば35,000点で終了した場合、素点は +5.0pts になります。</p>
-      <h3>ウマ（順位点）</h3>
-      <p>最終順位に応じて加減される順位点です。例えば「10-30」なら、1位 +30／2位 +10／3位 −10／4位 −30 が素点に加算されます。順位が1つ違うだけでスコアが大きく変わるため、ラス回避（4位を避けること）が重要と言われます。</p>
-      <h3>オカ</h3>
-      <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
-      <h3>スコア倍率（収支換算）</h3>
-      <p>ポイントに掛ける倍率です。仲間内のルールに合わせて設定すると、ポイントを「bonus」という単位のスコア収支に換算して表示できます（例：スコア倍率が10倍なら 1.0pt → 10bonus）。このアプリではスコア表示と収支表示をワンタップで切り替えられます。</p>
-      <h3>同点のときは？</h3>
-      <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。このアプリでは同点処理も自動で計算されます。</p>
-      <h3>三麻（3人麻雀）の場合</h3>
-      <p>三麻では持ち点35,000点・返し点40,000点など、四麻と異なる設定がよく使われます。このアプリは三麻にも対応しており、ウマも「15-0-15」のような3人用の形式で設定できます。</p>
-    </section>
-
     <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
 
-    <section class="info-card" id="faq">
-      <h2>よくある質問</h2>
-      <h3>Q. まじゃすこは無料ですか？</h3>
-      <p>はい、すべての機能を無料でご利用いただけます。運営費は広告収入でまかなっています。</p>
-      <h3>Q. 会員登録やアプリのインストールは必要ですか？</h3>
-      <p>不要です。スマートフォンやPCのブラウザだけで、すぐに使い始められます。グループを作成すると発行されるURLをメンバーに共有するだけで、全員が同じスコアをリアルタイムで見られます。</p>
-      <h3>Q. 三麻（3人麻雀）でも使えますか？</h3>
-      <p>使えます。グループ作成時に「三麻」を選ぶと、持ち点・返し点の初期値や「15-0-15」のような3人用のウマ形式に切り替わります。チーム戦やチップの収支計算もオプションで利用できます。</p>
-      <h3>Q. 過去の試合のデータは消えませんか？</h3>
-      <p>対局データはグループの共有URLに紐づいて保存されるため、URLを開けばいつでも確認・再開できます。端末の「過去の試合」一覧はブラウザに保存されているため、端末を変えるときは共有URLを控えておくのがおすすめです。</p>
+    <section class="info-card">
+      <h2>もっと詳しく</h2>
+      <p style="margin-bottom:10px"><a href="score-basics.html">▶ 麻雀のスコア計算の基本（初心者向け）</a></p>
+      <p><a href="faq.html">▶ よくある質問（FAQ）</a></p>
     </section>
+
   </div>
 
   <footer class="site-footer">
     <div class="footer-links">
       <a href="#howto">使い方</a>
-      <a href="#basics">スコア計算の基本</a>
-      <a href="#faq">よくある質問</a>
+      <a href="score-basics.html">スコア計算の基本</a>
+      <a href="faq.html">よくある質問</a>
       <a href="blog.html">ブログ</a>
       <a href="news/">お知らせ</a>
       <a href="news/feed.xml">お知らせRSS</a>
@@ -1212,11 +1198,25 @@ function initFeaturesLoop() {
   const items = Array.from(row.children);
   items.forEach(el => row.appendChild(el.cloneNode(true)));
   for (let i = items.length - 1; i >= 0; i--) row.insertBefore(items[i].cloneNode(true), row.firstChild);
+  // 現在位置ドット: 画面中央にいちばん近いカードを算出して点灯（複製分はmoduloで正規化）
+  const dots = document.getElementById('features-dots');
+  if (dots) dots.innerHTML = items.map(() => '<span class="fdot"></span>').join('');
+  const updateDots = () => {
+    if (!dots) return;
+    const center = row.scrollLeft + row.clientWidth / 2;
+    let best = 0, bd = Infinity;
+    Array.from(row.children).forEach((el, i) => {
+      const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - center);
+      if (d < bd) { bd = d; best = i; }
+    });
+    Array.from(dots.children).forEach((el, i) => el.classList.toggle('on', i === best % count));
+  };
   const position = () => {
     featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
     if (featuresLoopW > 0) row.scrollLeft = featuresLoopW;
   };
   position();
+  updateDots();
   // リサイズでは幅だけ測り直す（スマホのアドレスバー開閉で位置が飛ばないように）
   window.addEventListener('resize', () => {
     featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
@@ -1225,6 +1225,7 @@ function initFeaturesLoop() {
     if (featuresLoopW <= 0) { position(); return; }
     if (row.scrollLeft < featuresLoopW * 0.5) row.scrollLeft += featuresLoopW;
     else if (row.scrollLeft >= featuresLoopW * 1.5) row.scrollLeft -= featuresLoopW;
+    updateDots();
   }, { passive: true });
 }
 // PC用の矢印: カード1枚分だけスクロール
@@ -3144,7 +3145,7 @@ loadStorage();
 initSetupForm();
 initFeaturesLoop();
 const urlHash = location.hash.slice(1);
-// セッションIDは10文字。#howto・#basics・#faq などページ内アンカーはセッション扱いしない
+// セッションIDは10文字。#howto などページ内アンカーはセッション扱いしない
 if (urlHash && urlHash.length >= 8) {
   pendingSessionId = urlHash;
   document.getElementById('join-banner').style.display = 'block';

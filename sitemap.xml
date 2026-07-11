@@ -11,6 +11,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://majasco.jp/score-basics.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://majasco.jp/faq.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://majasco.jp/mahjong/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
