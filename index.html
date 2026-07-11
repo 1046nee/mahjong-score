@@ -335,16 +335,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* Sheet */
 .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
 .backdrop.open { display: block; }
-/* 点数入力は全画面ページ形式（下からのスライド式はiOSでtransform＋fixed＋inputのタップ不良を起こすため廃止）。
-   ブランドカラーのヘッダー＋カード化した入力欄で、アプリの他画面と同じトーンにする */
-.sheet { display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 560px; background: #f6fbf9; z-index: 201; overflow-y: auto; }
-.sheet.open { display: block; }
-.sheet-head { position: sticky; top: 0; z-index: 2; background: #177083; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.sheet.sanma .sheet-head { background: #4261AA; }
-.sheet-title { font-size: 17px; font-weight: 800; color: #fff; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sheet-close { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: #fff; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
-.sheet-body { padding: 16px 16px 40px; }
-.sheet-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 14px 12px; margin-bottom: 14px; }
+/* 点数入力は「設定の編集」と同じ中央モーダル形式（パネル内スクロール・transformなし） */
+.sheet { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 201; align-items: center; justify-content: center; padding: 20px 8px; }
+.sheet.open { display: flex; }
+.sheet-box { background: #fff; border-radius: 16px; padding: 18px 12px; width: 100%; max-width: 430px; max-height: 88vh; overflow-y: auto; }
+.sheet-title { font-size: 16px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet-ok { background: #177083; color: #fff; }
+.sheet.sanma .sheet-ok { background: #4261AA; }
+.edit-tab:disabled { opacity: 0.45; cursor: default; }
 .sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 /* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
 .sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
@@ -354,19 +352,19 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sel-chip.on { border-color: #177083; background: #E4F3EC; color: #177083; }
 .sheet.sanma .sel-chip.on { border-color: #4261AA; background: #EAF0FB; color: #4261AA; }
 .sheet-members-hint { text-align: center; font-size: 13px; color: #999; padding: 14px 0; }
-.sheet-row { display: flex; align-items: center; gap: 10px; }
+.sheet-row { display: flex; align-items: center; gap: 8px; }
 .sheet-row label { width: 90px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .sheet-row input { flex: 1; border: 1.5px solid #ddd; border-radius: 8px; padding: 10px; font-size: 16px; text-align: right; outline: none; }
 .sheet-row input:focus { border-color: #177083; }
 /* 点数入力: 下2桁（00）は固定表示し、百の位以上だけ入力する */
-.pt-input { flex: none; width: 108px; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 10px; transition: border-color 0.2s; background: #fff; }
+.pt-input { flex: none; width: 104px; display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 10px; transition: border-color 0.2s; background: #fff; }
 .pt-input input { flex: 1; border: none; outline: none; padding: 10px; font-size: 16px; text-align: right; min-width: 0; background: transparent; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
 /* チップ入力（収支計算が有効なグループのみ）: 名前｜チップ（左）｜点数（右）を1行に収める */
-.sheet-row label.sheet-name-s { width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 72px; flex-shrink: 0; }
+.sheet-row label.sheet-name-s { width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 68px; flex-shrink: 0; }
 .chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
 .chip-input:focus-within { border-color: #177083; }
@@ -397,12 +395,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .table-modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 400; flex-direction: column; }
 .table-modal.open { display: flex; }
 .table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px; flex-shrink: 0; }
-.table-modal-note { font-size: 10.5px; color: #9aa8a4; padding: 0 16px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
-.table-modal-title { font-size: 15px; font-weight: 800; color: #177083; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.table-modal-sub { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.table-modal-note { font-size: 10px; color: #9aa8a4; line-height: 1.5; flex: 1; }
+.table-modal-title { font-size: 15px; font-weight: 800; color: #177083; min-width: 0; line-height: 1.5; }
 .table-modal-body { flex: 1; overflow: auto; padding: 12px 16px 28px; }
 .table-modal-body table { font-size: 13px; }
 .table-modal-body th, .table-modal-body td { padding: 8px 4px; }
-.table-zoom-ctrl { display: flex; align-items: center; gap: 2px; flex-shrink: 0; margin-left: auto; }
+.table-zoom-ctrl { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
 .table-zoom-ctrl button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #177083; font-size: 18px; font-weight: 700; line-height: 1; cursor: pointer; }
 .table-zoom-ctrl span { font-size: 11px; color: #888; min-width: 40px; text-align: center; }
 
@@ -917,7 +916,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="game-date" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
     </div>
     <div class="title-actions">
-      <button class="edit-tab title-edit-btn" onclick="openGameEdit()">変更</button>
+      <button class="edit-tab title-edit-btn" onclick="openGameEdit()">設定の編集</button>
     </div>
   </div>
   <div class="game-body">
@@ -973,7 +972,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="page-title-row">
     <h1>過去の試合</h1>
   </div>
-  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:11px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。</div>
+  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。</div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
     <input type="text" id="hist-search" placeholder="グループ名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
     <select id="hist-mode" onchange="renderHistory()" style="width:112px;flex-shrink:0">
@@ -993,7 +992,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="detail-date" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
     </div>
     <div class="title-actions">
-      <button class="edit-tab title-edit-btn" onclick="openDetailEdit()">変更</button>
+      <button class="edit-tab title-edit-btn" onclick="openDetailEdit()">設定の編集</button>
     </div>
   </div>
   <div class="detail-body" id="detail-body"></div>
@@ -1001,24 +1000,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- Bottom sheet -->
 <div class="backdrop" id="backdrop" onclick="closeSheet()"></div>
-<div class="sheet" id="score-sheet">
-  <div class="sheet-head">
-    <div class="sheet-title" id="sheet-title">点数入力</div>
-    <button type="button" class="sheet-close" onclick="closeSheet()" aria-label="閉じる">✕</button>
-  </div>
-  <div class="sheet-body">
-    <div id="sheet-members-area" style="display:none" class="sheet-card">
+<div class="sheet" id="score-sheet" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
+      <div class="sheet-title" id="sheet-title">点数入力</div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button type="button" class="edit-tab" onclick="closeSheet()">キャンセル</button>
+        <button type="button" class="edit-tab sheet-ok" id="confirm-btn-top" onclick="submitRound()" disabled>完了</button>
+      </div>
+    </div>
+    <div id="sheet-members-area" style="display:none">
       <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
-      <div class="sheet-members" id="sheet-members" style="margin-bottom:0"></div>
+      <div class="sheet-members" id="sheet-members"></div>
     </div>
-    <div class="sheet-card">
-      <div class="sheet-inputs" id="sheet-inputs" style="margin-bottom:0"></div>
-    </div>
+    <div class="sheet-inputs" id="sheet-inputs"></div>
     <button class="auto-btn" id="auto-btn" onclick="autoFill()" disabled>残り1人を自動入力</button>
     <div class="total-check ng" id="total-check">点数を入力してください</div>
     <div class="total-check ng" id="chip-check" style="display:none;margin-top:-8px"></div>
     <button class="confirm-btn" id="confirm-btn" onclick="submitRound()" disabled>入力完了</button>
-    <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px;display:none" onclick="closeSheet()">キャンセル</button>
+    <button class="modal-cancel" id="sheet-cancel" style="width:100%;margin-top:8px" onclick="closeSheet()">キャンセル</button>
   </div>
 </div>
 
@@ -1058,14 +1058,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="table-modal" id="table-modal">
   <div class="table-modal-head">
     <div class="table-modal-title" id="table-modal-title">対局履歴</div>
+    <button class="edit-tab" onclick="closeTableModal()" style="font-size:13px;padding:7px 16px;flex-shrink:0">閉じる</button>
+  </div>
+  <div class="table-modal-sub">
     <div class="table-zoom-ctrl">
       <button type="button" onclick="tableModalZoomBy(-0.1)" aria-label="縮小">−</button>
       <span id="table-zoom-label">100%</span>
       <button type="button" onclick="tableModalZoomBy(0.1)" aria-label="拡大">＋</button>
     </div>
-    <button class="edit-tab" onclick="closeTableModal()" style="font-size:13px;padding:7px 16px;flex-shrink:0">閉じる</button>
+    <div class="table-modal-note">※拡大・縮小の倍率によっては、文字やレイアウトが崩れる場合があります</div>
   </div>
-  <div class="table-modal-note">※拡大・縮小の倍率によっては、文字やレイアウトが崩れて表示される場合があります</div>
   <div class="table-modal-body" id="table-modal-body"></div>
 </div>
 
@@ -2268,10 +2270,10 @@ function rankCountHtml(rounds, s) {
     const inTeam = new Set(teams.flatMap(t => t.members));
     const rest = names.map((_, i) => i).filter(i => !inTeam.has(i));
     rowOrder = teams.flatMap(t => t.members.filter(m => m < N)).concat(rest);
-    const headTd = `text-align:left;padding:7px 8px;font-size:11px;font-weight:700;color:#667;background:#f5f7f8`;
+    const headTd = `text-align:left;padding:5px 8px;font-size:10.5px;font-weight:700;color:#667;background:#f5f7f8`;
     teams.forEach((t, ti) => {
       const first = t.members.find(m => m < N);
-      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 11}" style="${headTd}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span><span style="color:${teamColorOf(ti)};font-weight:800">${esc(t.name)}</span></td></tr>`;
+      if (first != null) groupHeaderOf[first] = `<tr><td colspan="${slots + 11}" style="${headTd}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</td></tr>`;
     });
     if (rest.length) groupHeaderOf[rest[0]] = `<tr><td colspan="${slots + 11}" style="${headTd}">（未所属）</td></tr>`;
   }
@@ -2598,14 +2600,12 @@ function openSheetCtx(ctx, idx) {
   document.getElementById('sheet-title').textContent = isEdit
     ? `第${idx+1}試合を修正`
     : `第${ctx.rounds.length + 1}試合の${s.bonusEnabled ? '点数 / チップ入力' : '点数入力'}`;
-  document.getElementById('sheet-cancel').style.display = isEdit ? 'block' : 'none';
   // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
   document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
   renderSheetMembers();
 
-  document.getElementById('backdrop').classList.add('open');
   document.getElementById('score-sheet').classList.add('open');
-  if (!isEdit) setTimeout(() => { const el = document.getElementById('si-0'); if (el) el.focus(); }, 350);
+  if (!isEdit) setTimeout(() => { const el = document.getElementById('si-0'); if (el) el.focus(); }, 80);
 }
 function renderSheetMembers() {
   const s = sheetCtx.settings;
@@ -2663,6 +2663,7 @@ function renderSheetInputs() {
     inputs.innerHTML = `<div class="sheet-members-hint">対局する${n}人を選択してください${remain > 0 ? `（あと${remain}人）` : ''}</div>`;
     document.getElementById('auto-btn').disabled = true;
     document.getElementById('confirm-btn').disabled = true;
+    document.getElementById('confirm-btn-top').disabled = true;
     document.getElementById('total-check').textContent = 'メンバーを選択してください';
     document.getElementById('total-check').className = 'total-check ng';
     document.getElementById('chip-check').style.display = 'none';
@@ -2677,8 +2678,8 @@ function renderSheetInputs() {
   const header = withChips
     ? `<div class="sheet-row" style="margin-bottom:-4px">
         <label class="sheet-name-s"></label>
-        <div style="width:72px;${colLabel};text-align:center;flex-shrink:0">チップ</div>
-        <div style="width:108px;${colLabel};text-align:center;flex-shrink:0">点数</div>
+        <div style="width:68px;${colLabel};text-align:center;flex-shrink:0">チップ</div>
+        <div style="width:104px;${colLabel};text-align:center;flex-shrink:0">点数</div>
         ${withYaki ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">🐔</div>` : ''}
         ${withChombo ? `<div style="width:33px;${colLabel};text-align:center;flex-shrink:0">💩</div>` : ''}
       </div>`
@@ -2739,7 +2740,6 @@ function toggleSheetChombo(k) {
   document.getElementById('pi-' + k).classList.toggle('on', !!sheetChombo[m]);
 }
 function closeSheet() {
-  document.getElementById('backdrop').classList.remove('open');
   document.getElementById('score-sheet').classList.remove('open');
   editingIndex = -1;
 }
@@ -2794,6 +2794,7 @@ function updateTotal() {
     chipEl.style.display = 'none';
   }
   btn.disabled = !(pointsOk && chipsOk);
+  document.getElementById('confirm-btn-top').disabled = btn.disabled;
 }
 function autoFill() {
   const n = sheetCtx.settings.numPlayers;
