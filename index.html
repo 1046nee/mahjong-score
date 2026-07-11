@@ -500,16 +500,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <rect x="63" y="92" width="8" height="7" rx="2"/><rect x="74" y="92" width="8" height="7" rx="2"/><rect x="85" y="92" width="8" height="7" rx="2"/>
           </g>
         </g>
-        <!-- 鉛筆（消しゴムなし・ゴミ箱の真上に落ちていく。電卓より後に描いて前面に重ねる） -->
-        <g transform="translate(38 4) rotate(38 50 92)">
+        <!-- くしゃくしゃの紙 -->
+        <path d="M118 96 L131 88 L142 95 L146 108 L138 119 L123 117 L114 106 Z" fill="#eef2f1" stroke="#c9d6d4" stroke-width="2" transform="rotate(14 130 104)"/>
+        <path d="M124 100 L136 104 M121 110 L134 112 M130 94 L133 103" stroke="#c9d6d4" stroke-width="1.6" fill="none" transform="rotate(14 130 104)"/>
+        <!-- 鉛筆（消しゴムなし・くしゃくしゃの紙に重なる位置。紙より後に描いて前面に重ねる） -->
+        <g transform="translate(62 4) rotate(38 50 92)">
           <rect x="31" y="86" width="34" height="10" fill="#8fa6a3"/>
           <path d="M31 89.3 L65 89.3 M31 92.6 L65 92.6" stroke="#7d9491" stroke-width="1" fill="none"/>
           <path d="M65 86 L76 91 L65 96 Z" fill="#d9d2c5"/>
           <path d="M72 89.2 L76 91 L72 92.8 Z" fill="#5f7370"/>
         </g>
-        <!-- くしゃくしゃの紙 -->
-        <path d="M118 96 L131 88 L142 95 L146 108 L138 119 L123 117 L114 106 Z" fill="#eef2f1" stroke="#c9d6d4" stroke-width="2" transform="rotate(14 130 104)"/>
-        <path d="M124 100 L136 104 M121 110 L134 112 M130 94 L133 103" stroke="#c9d6d4" stroke-width="1.6" fill="none" transform="rotate(14 130 104)"/>
         <!-- ポイっと落ちる動き -->
         <path d="M116 52 Q102 66 96 80" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
         <path d="M138 62 Q134 74 134 86" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
@@ -2284,21 +2284,8 @@ function rankCountHtml(rounds, s) {
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
-  // 列順は対局履歴と同じ（チームA→B…→未所属）
+  // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム名の行は置かず、所属はプレイヤー名のチームカラー●で示す
   const colOrder = memberDisplayOrder(s);
-  // チーム戦はプレイヤー名の上にチーム名の行を挟む（チーム名はプレイヤー名と同じ文字サイズ・太字）
-  let teamRow = '';
-  if (teamMode) {
-    const teams = normalizedTeams(s);
-    const inTeam = new Set(teams.flatMap(t => t.members));
-    const restCount = names.filter((_, i) => !inTeam.has(i)).length;
-    const headTh = 'text-align:left;padding:5px 8px;font-weight:700;color:#667;background:#f5f7f8';
-    const cells = teams.map((t, ti) => {
-      const cnt = t.members.filter(m => m < N).length;
-      return cnt ? `<th colspan="${cnt}" style="${headTh}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</th>` : '';
-    }).join('') + (restCount ? `<th colspan="${restCount}" style="${headTh}">（未所属）</th>` : '');
-    teamRow = `<tr><th class="sticky-col" style="background:#f5f7f8"></th>${cells}</tr>`;
-  }
   const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map(i =>
     `<th${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
@@ -2334,7 +2321,7 @@ function rankCountHtml(rounds, s) {
   const rows = statLabels.map((label, ri) =>
     `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
   return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + N * 58}px">
-    <thead>${teamRow}${nameRow}</thead><tbody>${rows}</tbody>
+    <thead>${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
 
