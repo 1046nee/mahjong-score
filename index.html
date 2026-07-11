@@ -79,47 +79,51 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .title-actions { display: flex; gap: 8px; }
 .lp-inner { max-width: 100%; margin: 0 auto; }
 .lp-section { padding: 52px 20px; }
-.lp-sub-link { display: block; margin-top: 18px; color: #177083; font-size: 13px; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.lp-sub-link { display: block; margin-top: 18px; color: #177083; font-size: 14px; font-weight: 700; text-decoration: underline; cursor: pointer; }
 
 /* CTA: オレンジ限定（行動喚起）。影なし・横長のピル型 */
 .cta-btn { display: inline-block; background: #E75620; color: #fff; border: none; border-radius: 50px; padding: 17px 20px; width: 100%; max-width: 380px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: none; transition: background 0.2s, transform 0.1s; }
 .cta-btn:hover { background: #F0824F; }
 .cta-btn:active { transform: scale(0.97); }
 
-.lp-body { font-size: 14px; color: #444; line-height: 2.0; margin-bottom: 20px; }
+.lp-body { font-size: 15px; color: #444; line-height: 1.8; margin-bottom: 20px; }
 
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
 .lp-solution { background: #fff; }
 .lp-solution h2 { font-size: 25px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
-.features-row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 14px; -webkit-overflow-scrolling: touch; max-width: 960px; margin: 0 auto; }
-.features-row::-webkit-scrollbar { height: 6px; }
-.features-row::-webkit-scrollbar-thumb { background: #cfe3db; border-radius: 3px; }
+/* 無限ループのカルーセル。1周すると最初の項目に戻る（スクロールバーは位置の意味を持たないため非表示） */
+.features-wrap { position: relative; max-width: 960px; margin: 0 auto; }
+.features-row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.features-row::-webkit-scrollbar { display: none; }
 .feature { flex: 0 0 76%; max-width: 300px; scroll-snap-align: center; background: #f6faf9; border: 1px solid #e2ece7; border-radius: 16px; padding: 20px 18px; margin-bottom: 0; }
-@media (min-width: 700px) { .features-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; overflow: visible; padding: 0; } .feature { flex: none; max-width: none; } }
+.features-nav { display: none; position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e2ece7; background: #fff; color: #177083; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.features-nav.prev { left: -14px; }
+.features-nav.next { right: -14px; }
+@media (min-width: 700px) { .feature { flex: 0 0 300px; } .features-nav { display: block; } }
 .feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .fi-green { background: #E4F3EC; }
 .fi-blue { background: #EAF0FB; }
-.feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
-.feature p { font-size: 13px; color: #444; line-height: 2.0; }
+.feature h3 { font-size: 17px; color: #177083; margin-bottom: 8px; }
+.feature p { font-size: 14.5px; color: #444; line-height: 1.8; }
 
 /* ⑥ Before / After 比較表 */
 .lp-compare { background: #E4F3EC; }
 .lp-compare h2 { font-size: 25px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
 .compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.compare-table th { font-size: 13px; padding: 12px 10px; text-align: center; }
+.compare-table th { font-size: 14px; padding: 12px 10px; text-align: center; }
 .compare-table th.before { background: #eceff1; color: #888; }
 .compare-table th.after { background: #177083; color: #fff; }
-.compare-table td { font-size: 12.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; }
+.compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; }
 .compare-table td.before { color: #999; width: 50%; }
 .compare-table td.after { color: #1a1a1a; font-weight: 700; width: 50%; }
 
 /* ⑦ 始めやすさ: 3ステップ */
-.lp-start { background: #EAF0FB; text-align: center; padding-top: 34px; }
+.lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
 .lp-start h2 { font-size: 25px; font-weight: 900; color: #1a1a1a; margin-bottom: 22px; }
 .steps { display: flex; flex-direction: column; gap: 12px; max-width: 340px; margin: 0 auto 20px; }
 .step { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 14px 16px; text-align: left; }
 .step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #177083; color: #fff; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; }
-.step-text { font-size: 14px; color: #1a1a1a; font-weight: 600; }
+.step-text { font-size: 15px; color: #1a1a1a; font-weight: 600; }
 .start-note { font-size: 19px; font-weight: 900; color: #177083; }
 .start-note strong { color: #E75620; font-size: 24px; }
 
@@ -131,33 +135,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ヒーロー */
 .hero { text-align: center; padding: 34px 20px 40px; background: #fff; }
-.hero h1 { font-size: 29px; line-height: 1.55; font-weight: 900; color: #177083; margin-bottom: 18px; letter-spacing: 0.5px; }
+.hero h1 { font-size: 29px; line-height: 1.42; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
-.hero-desc { max-width: 520px; margin: 0 auto 22px; line-height: 2.0; color: #555; font-size: 13px; }
+.hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
 .hero .cta-btn { margin-bottom: 14px; }
 /* CTA下の補足（バッジではなく普通の文章） */
-.start-note-plain { font-size: 14px; color: #177083; font-weight: 700; line-height: 2.0; max-width: 420px; margin: 0 auto; }
-
-/* 1行圧縮バンド（頷きの一撃）: 次セクションとの間隔を詰める */
-.lp-oneliner { background: #EAF0FB; text-align: center; padding: 24px 20px 20px; }
-.lp-oneliner p { font-size: 16px; font-weight: 700; color: #2c3e6b; line-height: 1.8; max-width: 560px; margin: 0 auto; }
+.start-note-plain { font-size: 15px; color: #177083; font-weight: 700; line-height: 1.9; max-width: 420px; margin: 0 auto; }
 
 /* 参考コンテンツ（使い方・スコア計算の基本） */
-.home-content { width: 100%; max-width: 640px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
+.home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
-.info-card h2 { font-size: 17px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
-.info-card h3 { font-size: 14px; margin: 16px 0 6px; color: #1a1a1a; }
-.info-card p, .info-card li { font-size: 13px; color: #444; }
+.info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
+.info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
+.info-card p, .info-card li { font-size: 14px; color: #444; }
 .info-card ol, .info-card ul { padding-left: 20px; }
 
 /* 使い方（Walica風: スマホ画面イラスト＋短い説明） */
 .howto h2 { text-align: center; border-left: none; padding-left: 0; }
 .howto-step { margin: 28px 0 34px; }
 .howto-step:last-of-type { margin-bottom: 8px; }
-.howto-step h3 { font-size: 15px; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
+.howto-step h3 { font-size: 16px; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
 .howto-shot { background: #177083; border-radius: 26px; padding: 24px 16px; display: flex; justify-content: center; }
-.howto-shot svg { width: 210px; height: auto; display: block; }
+.howto-shot svg { width: 200px; height: auto; display: block; }
 .howto-step p { margin-top: 12px; }
 
 /* フッター（濃い緑背景・リンクは2列で揃える） */
@@ -448,14 +448,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-home" class="view active">
 <!-- ファーストビュー -->
 <section class="hero">
-  <h1>麻雀のスコア記録、<br>まだ紙とペンでやってますか？</h1>
+  <h1>麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？</h1>
 
   <div class="hero-illust" aria-hidden="true">
     <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img">
-      <!-- ゴミ箱に捨てられる 電卓・くしゃくしゃの紙・ペン -->
+      <!-- ゴミ箱に捨てられる 電卓・くしゃくしゃの紙・鉛筆（ゴミ箱は電卓と紙の真下） -->
       <g>
-        <path d="M38 128 L106 128 L98 186 L46 186 Z" fill="#c9d6d4"/>
-        <rect x="32" y="120" width="80" height="10" rx="5" fill="#b3c4c1"/>
+        <path d="M70 128 L138 128 L130 186 L78 186 Z" fill="#c9d6d4"/>
+        <rect x="64" y="120" width="80" height="10" rx="5" fill="#b3c4c1"/>
         <!-- 電卓（傾いて落ちていく） -->
         <g transform="rotate(-22 78 84)">
           <rect x="58" y="60" width="40" height="52" rx="6" fill="#8fa6a3"/>
@@ -468,37 +468,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- くしゃくしゃの紙 -->
         <path d="M118 96 L131 88 L142 95 L146 108 L138 119 L123 117 L114 106 Z" fill="#eef2f1" stroke="#c9d6d4" stroke-width="2" transform="rotate(14 130 104)"/>
         <path d="M124 100 L136 104 M121 110 L134 112 M130 94 L133 103" stroke="#c9d6d4" stroke-width="1.6" fill="none" transform="rotate(14 130 104)"/>
-        <!-- ペン -->
-        <g transform="rotate(38 40 92)">
-          <rect x="26" y="86" width="42" height="8" rx="4" fill="#8fa6a3"/>
-          <path d="M68 86 L78 90 L68 94 Z" fill="#6d8683"/>
+        <!-- 鉛筆（消しゴム・軸・削った木部・芯） -->
+        <g transform="rotate(38 50 92)">
+          <rect x="24" y="87" width="7" height="8" rx="2.5" fill="#e8a49a"/>
+          <rect x="31" y="86" width="5" height="10" fill="#b3c4c1"/>
+          <rect x="36" y="86" width="29" height="10" fill="#e9b64c"/>
+          <path d="M36 89.3 L65 89.3 M36 92.6 L65 92.6" stroke="#d8a53c" stroke-width="1" fill="none"/>
+          <path d="M65 86 L76 91 L65 96 Z" fill="#ecd9b8"/>
+          <path d="M72 89.2 L76 91 L72 92.8 Z" fill="#5f7370"/>
         </g>
         <!-- ポイっと落ちる動き -->
-        <path d="M110 52 Q96 66 90 80" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
-        <path d="M132 62 Q128 74 128 86" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
+        <path d="M116 52 Q102 66 96 80" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
+        <path d="M138 62 Q134 74 134 86" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
       </g>
-      <!-- スマホ: 左上の「まじゃすこ」アプリを指で選択 -->
+      <!-- スマホ: リアルタイムで共有されるスコア収支の画面（使い方ステップ4と同じ） -->
       <g>
-        <rect x="212" y="18" width="106" height="170" rx="16" fill="#1f2a28"/>
-        <rect x="219" y="30" width="92" height="146" rx="8" fill="#ffffff"/>
-        <!-- アプリグリッド（左上がまじゃすこ） -->
-        <g>
-          <rect x="228" y="42" width="26" height="26" rx="7" fill="#177083"/>
-          <text x="241" y="61" font-size="15" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">ま</text>
-          <rect x="262" y="42" width="26" height="26" rx="7" fill="#e3ebe9"/>
-          <rect x="228" y="76" width="26" height="26" rx="7" fill="#e3ebe9"/>
-          <rect x="262" y="76" width="26" height="26" rx="7" fill="#e3ebe9"/>
-          <rect x="228" y="110" width="26" height="26" rx="7" fill="#e3ebe9"/>
-          <rect x="262" y="110" width="26" height="26" rx="7" fill="#e3ebe9"/>
-        </g>
-        <!-- タップの波紋 -->
-        <circle cx="241" cy="55" r="21" fill="none" stroke="#E75620" stroke-width="2.5" opacity="0.9"/>
-        <circle cx="241" cy="55" r="29" fill="none" stroke="#E75620" stroke-width="1.6" opacity="0.4"/>
-        <!-- 指 -->
-        <g>
-          <path d="M247 62 Q244 54 250 52 Q256 50 258 58 L268 96 Q272 112 262 120 L244 132 Q236 136 232 128 L226 116" fill="#f6cfae" stroke="#e0b48f" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M258 70 L276 64 M260 80 L280 76 M262 90 L282 88" stroke="#e0b48f" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </g>
+        <rect x="224" y="10" width="94" height="184" rx="15" fill="#1f2a28"/>
+        <rect x="228" y="14" width="86" height="176" rx="11" fill="#ffffff"/>
+        <rect x="258" y="18" width="26" height="6" rx="3" fill="#1f2a28"/>
+        <text x="271" y="37" font-size="9" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">スコア収支</text>
+        <g><rect x="234" y="44" width="74" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="238" y="58" font-size="8" font-family="sans-serif">🥇</text><text x="252" y="58" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="304" y="58" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g>
+        <g><rect x="234" y="70" width="74" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="238" y="84" font-size="8" font-family="sans-serif">🥈</text><text x="252" y="84" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="304" y="84" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g>
+        <g><rect x="234" y="96" width="74" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="238" y="110" font-size="8" font-family="sans-serif">🥉</text><text x="252" y="110" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="304" y="110" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g>
+        <g><rect x="234" y="122" width="74" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="252" y="136" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="304" y="136" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g>
+        <rect x="234" y="148" width="74" height="36" rx="5" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.2"/>
+        <polyline points="240,176 252,166 264,171 276,160 288,168 300,157" fill="none" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
       </g>
     </svg>
   </div>
@@ -515,11 +509,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- ここから下がLP本体（逆ピラミッド型） -->
-
-  <!-- 1行圧縮A（頷きの一撃） -->
-  <section class="lp-oneliner">
-    <p>試合が終わるたび、スコアを計算して紙に書くあの時間<br>——もう、いりません。</p>
-  </section>
 
   <!-- ⑦ 始めやすさ（薄青: 3ステップ） -->
   <section class="lp-section lp-start">
@@ -556,7 +545,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="features-row">
+      <div class="features-wrap">
+        <button type="button" class="features-nav prev" onclick="featuresScroll(-1)" aria-label="前の項目へ">‹</button>
+        <div class="features-row" id="features-row">
         <div class="feature">
           <div class="feature-icon fi-blue">🧮</div>
           <h3>点数からスコアを一瞬で計算。</h3>
@@ -572,6 +563,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <h3>グループ独自のルールにも対応。</h3>
           <p>三麻、チップ、Mリーグのようなチーム戦も選択できる。</p>
         </div>
+        </div>
+        <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
       </div>
     </div>
   </section>
@@ -592,25 +585,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="howto-step">
         <h3>1. グループを作る</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="4" width="200" height="292" rx="24" fill="#1f2a28"/><rect x="20" y="18" width="180" height="264" rx="12" fill="#ffffff"/><text x="110" y="42" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="34" y="66" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="32" y="72" width="156" height="24" rx="6" fill="#f2f7f6"/><text x="40" y="88" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">2026.07.11（金）</text><text x="34" y="118" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="32" y="126" width="46" height="20" rx="10" fill="#E4F3EC"/><text x="55" y="140" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="126" width="46" height="20" rx="10" fill="#E4F3EC"/><text x="107" y="140" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="136" y="126" width="46" height="20" rx="10" fill="#E4F3EC"/><text x="159" y="140" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="32" y="152" width="46" height="20" rx="10" fill="#E4F3EC"/><text x="55" y="166" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="34" y="196" font-size="9" fill="#9aa8a4" font-family="sans-serif">対局形式・ルール</text><rect x="32" y="202" width="76" height="22" rx="6" fill="#177083"/><text x="70" y="217" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="202" width="76" height="22" rx="6" fill="#f2f7f6"/><text x="150" y="217" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><rect x="32" y="240" width="156" height="30" rx="15" fill="#E75620"/><text x="110" y="260" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">2026.07.11（金）</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">対局形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><text x="32" y="284" font-size="9" fill="#9aa8a4" font-family="sans-serif">対戦形式</text><rect x="30" y="291" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="307" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="291" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="307" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
         <p>グループ名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
       </div>
 
       <div class="howto-step">
         <h3>2. URLをメンバーにシェアする</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="4" width="200" height="292" rx="24" fill="#1f2a28"/><rect x="20" y="18" width="180" height="264" rx="12" fill="#ffffff"/><text x="110" y="42" font-size="12" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">金曜メンバー（4）</text><line x1="20" y1="52" x2="200" y2="52" stroke="#eeeeee" stroke-width="2"/><rect x="62" y="66" width="126" height="46" rx="10" fill="#177083"/><text x="72" y="84" font-size="9.5" fill="#ffffff" font-family="sans-serif">今日の対局グループ</text><text x="72" y="98" font-size="9.5" fill="#ffffff" font-family="sans-serif">作ったよ！</text><rect x="62" y="120" width="126" height="26" rx="10" fill="#177083"/><text x="72" y="137" font-size="8.5" fill="#cfe9ef" text-decoration="underline" font-family="sans-serif">majasco.jp/#XXXXXXXX</text><rect x="32" y="160" width="120" height="26" rx="10" fill="#f0f0f0"/><text x="42" y="177" font-size="9.5" fill="#444444" font-family="sans-serif">参加した！🀄</text><rect x="62" y="200" width="126" height="46" rx="10" fill="#177083"/><text x="72" y="218" font-size="9.5" fill="#ffffff" font-family="sans-serif">誰かが入力すれば</text><text x="72" y="232" font-size="9.5" fill="#ffffff" font-family="sans-serif">全員に反映されるよ</text></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="52" font-size="12" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">金曜メンバー（4）</text><line x1="18" y1="64" x2="202" y2="64" stroke="#eeeeee" stroke-width="2"/><rect x="60" y="80" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="99" font-size="9.5" fill="#ffffff" font-family="sans-serif">今日の対局グループ</text><text x="72" y="114" font-size="9.5" fill="#ffffff" font-family="sans-serif">作ったよ！</text><rect x="60" y="138" width="130" height="28" rx="12" fill="#177083"/><text x="72" y="156" font-size="8.5" fill="#cfe9ef" text-decoration="underline" font-family="sans-serif">majasco.jp/#XXXXXXXX</text><rect x="30" y="182" width="112" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="200" font-size="9.5" fill="#444444" font-family="sans-serif">参加した！🀄</text><rect x="30" y="220" width="96" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="238" font-size="9.5" fill="#444444" font-family="sans-serif">見れた〜👍</text><rect x="60" y="258" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="277" font-size="9.5" fill="#ffffff" font-family="sans-serif">誰かが入力すれば</text><text x="72" y="292" font-size="9.5" fill="#ffffff" font-family="sans-serif">全員に反映されるよ</text><rect x="28" y="344" width="138" height="24" rx="12" fill="#f2f2f2"/><circle cx="182" cy="356" r="12" fill="#177083"/><path d="M177 356 L187 356 M183 352 L187 356 L183 360" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <p>発行されたURLをLINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</p>
       </div>
 
       <div class="howto-step">
         <h3>3. 試合後に表示点数を入力する</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="4" width="200" height="292" rx="24" fill="#1f2a28"/><rect x="20" y="18" width="180" height="264" rx="12" fill="#ffffff"/><text x="110" y="44" font-size="13" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">点数入力</text><g><text x="34" y="73" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">太郎</text><rect x="80" y="58" width="108" height="22" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="73" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">350</text><text x="182" y="73" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="34" y="103" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">次郎</text><rect x="80" y="88" width="108" height="22" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="103" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">280</text><text x="182" y="103" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="34" y="133" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">三郎</text><rect x="80" y="118" width="108" height="22" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="133" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">220</text><text x="182" y="133" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="34" y="163" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">四郎</text><rect x="80" y="148" width="108" height="22" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="163" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">150</text><text x="182" y="163" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><rect x="32" y="184" width="156" height="24" rx="8" fill="#e8f5e9"/><text x="110" y="200" font-size="10" font-weight="bold" fill="#2e7d32" text-anchor="middle" font-family="sans-serif">入力合計: 100,000 ✓</text><rect x="32" y="220" width="156" height="30" rx="10" fill="#177083"/><text x="110" y="240" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">入力完了</text></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="13" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">点数入力</text><g><text x="32" y="96" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">太郎</text><rect x="78" y="80" width="112" height="24" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="96" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">350</text><text x="184" y="96" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="32" y="136" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">次郎</text><rect x="78" y="120" width="112" height="24" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="136" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">280</text><text x="184" y="136" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="32" y="176" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">三郎</text><rect x="78" y="160" width="112" height="24" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="176" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">220</text><text x="184" y="176" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><g><text x="32" y="216" font-size="10" font-weight="bold" fill="#555555" font-family="sans-serif">四郎</text><rect x="78" y="200" width="112" height="24" rx="6" fill="#ffffff" stroke="#dddddd" stroke-width="1.5"/><text x="168" y="216" font-size="11" fill="#1a1a1a" text-anchor="end" font-family="sans-serif">150</text><text x="184" y="216" font-size="9" fill="#aaaaaa" text-anchor="end" font-family="sans-serif">00</text></g><rect x="30" y="248" width="160" height="26" rx="8" fill="#e8f5e9"/><text x="110" y="265" font-size="10" font-weight="bold" fill="#2e7d32" text-anchor="middle" font-family="sans-serif">入力合計: 100,000 ✓</text><text x="110" y="302" font-size="9" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">目の前の表示点数をそのまま入力</text><rect x="30" y="336" width="160" height="32" rx="16" fill="#177083"/><text x="110" y="357" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">入力完了</text></svg></div>
         <p>試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</p>
       </div>
 
       <div class="howto-step">
         <h3>4. 結果はリアルタイムで全員に</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 300" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="4" width="200" height="292" rx="24" fill="#1f2a28"/><rect x="20" y="18" width="180" height="264" rx="12" fill="#ffffff"/><text x="110" y="44" font-size="13" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">スコア収支</text><g><rect x="30" y="58" width="160" height="30" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="40" y="78" font-size="12" font-family="sans-serif">🥇</text><text x="62" y="78" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="182" y="78" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g><g><rect x="30" y="96" width="160" height="30" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="40" y="116" font-size="12" font-family="sans-serif">🥈</text><text x="62" y="116" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="182" y="116" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g><g><rect x="30" y="134" width="160" height="30" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="40" y="154" font-size="12" font-family="sans-serif">🥉</text><text x="62" y="154" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="182" y="154" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g><g><rect x="30" y="172" width="160" height="30" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="40" y="192" font-size="12" font-family="sans-serif"></text><text x="62" y="192" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="182" y="192" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g><rect x="30" y="216" width="160" height="52" rx="8" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.5"/><text x="110" y="238" font-size="9" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">スコア推移グラフ</text><polyline points="46,258 76,248 106,254 136,242 166,250" fill="none" stroke="#177083" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="13" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">スコア収支</text><g><rect x="28" y="76" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="98" font-size="12" font-family="sans-serif">🥇</text><text x="62" y="98" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="184" y="98" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g><g><rect x="28" y="120" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="142" font-size="12" font-family="sans-serif">🥈</text><text x="62" y="142" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="184" y="142" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g><g><rect x="28" y="164" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="186" font-size="12" font-family="sans-serif">🥉</text><text x="62" y="186" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="184" y="186" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g><g><rect x="28" y="208" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="230" font-size="12" font-family="sans-serif"></text><text x="62" y="230" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="184" y="230" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g><rect x="28" y="258" width="164" height="112" rx="8" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.5"/><text x="110" y="280" font-size="9" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">スコア推移グラフ</text><polyline points="44,318 70,334 96,326 122,342 148,332 176,348" fill="none" stroke="#c9d6d4" stroke-width="2" stroke-linecap="round"/><polyline points="44,340 70,318 96,328 122,304 148,316 176,298" fill="none" stroke="#177083" stroke-width="2.5" stroke-linecap="round"/></svg></div>
         <p>順位・スコア・推移グラフまで自動で記録。「いま誰がトップ？」が全員のスマホでひと目でわかります。</p>
       </div>
     </section>
@@ -1162,6 +1155,38 @@ function checkPendingSession() {
     if (name) document.getElementById('join-name').textContent = name;
   }).catch(() => {});
 }
+// ---- LP: 特徴カードの無限ループカルーセル ----
+// 前後に1セットずつ複製し、複製側へスクロールしたら同じ見た目になる本物側の位置へ瞬間移動する
+let featuresLoopW = 0;
+function initFeaturesLoop() {
+  const row = document.getElementById('features-row');
+  if (!row || row.children.length < 2) return;
+  const count = row.children.length;
+  const items = Array.from(row.children);
+  items.forEach(el => row.appendChild(el.cloneNode(true)));
+  for (let i = items.length - 1; i >= 0; i--) row.insertBefore(items[i].cloneNode(true), row.firstChild);
+  const position = () => {
+    featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
+    if (featuresLoopW > 0) row.scrollLeft = featuresLoopW;
+  };
+  position();
+  // リサイズでは幅だけ測り直す（スマホのアドレスバー開閉で位置が飛ばないように）
+  window.addEventListener('resize', () => {
+    featuresLoopW = row.children[count].offsetLeft - row.children[0].offsetLeft;
+  });
+  row.addEventListener('scroll', () => {
+    if (featuresLoopW <= 0) { position(); return; }
+    if (row.scrollLeft < featuresLoopW * 0.5) row.scrollLeft += featuresLoopW;
+    else if (row.scrollLeft >= featuresLoopW * 1.5) row.scrollLeft -= featuresLoopW;
+  }, { passive: true });
+}
+// PC用の矢印: カード1枚分だけスクロール
+function featuresScroll(dir) {
+  const row = document.getElementById('features-row');
+  if (!row || !row.children.length) return;
+  row.scrollBy({ left: dir * (row.children[0].offsetWidth + 14), behavior: 'smooth' });
+}
+
 // GTM(dataLayer)への行動イベント送信。GTM管理画面でカスタムイベントトリガーを作ると集計できる。
 // 送信イベント: group_create / group_join / round_submit / share_copy
 function track(event, params) {
@@ -2823,8 +2848,6 @@ async function saveGameEdit() {
 // ---- 履歴 ----
 function historyItemHtml(g) {
   const date = new Date(g.createdAt).toLocaleDateString('ja-JP');
-  const n = g.settings ? g.settings.numPlayers : '?';
-  const memberCount = g.settings ? g.settings.playerNames.length : 0;
   const rounds = g.rounds ? g.rounds.length : 0;
   // 最終順位とプレイヤー名（同点は同順位で表示。1試合も参加していないメンバーは省略）
   let rankLine = '';
@@ -2851,15 +2874,13 @@ function historyItemHtml(g) {
       </table>
     </div>`;
   }
-  const lastAccess = g.lastAccess
-    ? `・最終アクセス ${new Date(g.lastAccess).toLocaleDateString('ja-JP')} ${fmtTime(g.lastAccess)}` : '';
   return `<div class="history-item" onclick="viewDetailById('${esc(g.id)}')">
     <div class="history-info">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div class="history-name">${esc(g.name)}</div>
         <button class="edit-tab" style="flex-shrink:0" onclick="event.stopPropagation();rejoinGame('${esc(g.id)}')">再開</button>
       </div>
-      <div class="history-meta">${date} · ${n === 3 ? '三麻' : '四麻'} · メンバー${memberCount}人 · 計${rounds}試合${lastAccess}</div>
+      <div class="history-meta">${date} · 計${rounds}試合</div>
       ${rankLine}
     </div>
     <div class="history-arrow">›</div>
@@ -3001,6 +3022,7 @@ function esc(s) {
 // ---- 起動 ----
 loadStorage();
 initSetupForm();
+initFeaturesLoop();
 const urlHash = location.hash.slice(1);
 if (urlHash && urlHash.length > 5) {
   pendingSessionId = urlHash;
