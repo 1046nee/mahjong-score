@@ -26,7 +26,8 @@
   Article JSON-LD・blog-uma-oka/blog-sanma-yonmaへの内部リンク・lp_bottom広告枠つき）
 - `faq.html` — よくある質問（旧LP #faqセクションを2026.07.11に独立ページ化・7問に拡充。
   **FAQPage JSON-LDはこのページに置く（indexからは撤去済み）。本文とJSON-LDの内容は一致させること**）
-- `assets/` — 画像素材ディレクトリ（2026.07.10導入）: `favicon.png`（512×512、favicon/apple-touch-icon/manifest共用）、`logo.png`（透過ロゴ800×250、全ページのヘッダーで使用）、`ogp.png`（OGP画像2100×1103）。素材の元データはリポジトリ直下の`まじゃすこ素材/`（.gitignore済み・コミットされない）
+- `assets/` — 画像素材ディレクトリ（2026.07.10導入）: `favicon.png`（512×512、favicon/apple-touch-icon/manifest共用）、`logo.png`（透過ロゴ800×250、全ページのヘッダーで使用）、`ogp2.png`（**現行のOGP画像**2100×1103。2026.07.11に文言入りへ刷新: メイン「麻雀のスコア記録、まだ手書きでやってますか？」＋サブ「登録不要・無料｜URLひとつで全員のスマホに共有」、Noto Sans JP Black・緑#177083、右にスコア画面のスマホイラスト。生成スクリプトの元は`まじゃすこ素材/ogp2-draft.png`）、`ogp.png`（旧OGP画像。外部キャッシュ対策で残置）。
+  **OGP画像を差し替えるときはファイル名を変えて全ページのog:image/twitter:imageを書き換えること**（Xが画像URL単位でキャッシュするため同名上書きでは反映されない）。素材の元データはリポジトリ直下の`まじゃすこ素材/`（.gitignore済み・コミットされない）
 - `favicon.ico` — ルート直下（16/32/48px、favicon.pngからPILで生成。Google検索の favicon 表示と旧ブラウザ用フォールバック）。
   index.htmlのheadに `<link rel="icon" href="/favicon.ico">` とWebSite/OrganizationのJSON-LD（検索でのサイト名・ロゴ向け）を設置済み。
   検索結果のfavicon反映とサイトリンク（検索結果下の内部リンク）はGoogle側のクロール・アルゴリズム依存で、コード側からは強制できない
