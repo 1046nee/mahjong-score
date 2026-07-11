@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CLS対策: 広告読み込み前から高さを確保しておく
     el.style.minHeight = '280px';
     el.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;margin-bottom:4px">スポンサーリンク</div>'
-      + `<ins class="adsbygoogle" style="display:block" data-ad-client="${AD_CLIENT}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+      + `<ins class="adsbygoogle" style="display:block" data-ad-client="${AD_CLIENT}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="false"></ins>`;
     try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
   });
 });

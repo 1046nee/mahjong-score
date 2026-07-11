@@ -123,6 +123,17 @@ const BLOG_POSTS = [
   document.addEventListener('DOMContentLoaded', () => {
     renderChrome();
 
+    // 記事内の表: モバイルで列が潰れて読みにくくならないよう、横スクロールの入れ物に包む
+    // （列が多い表は最低幅を確保して、画面外はスクロールで見る）
+    document.querySelectorAll('.blog-post table').forEach(tb => {
+      if (tb.parentElement.classList.contains('table-scroll')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'table-scroll';
+      tb.parentNode.insertBefore(wrap, tb);
+      wrap.appendChild(tb);
+      if (tb.rows[0] && tb.rows[0].cells.length >= 4) tb.style.minWidth = '520px';
+    });
+
     // 記事一覧（カテゴリ別・新しい順）
     document.querySelectorAll('[data-post-list]').forEach(el => {
       const cat = el.getAttribute('data-post-list');

@@ -64,3 +64,24 @@ body.bs-list * { box-sizing: border-box; }
 .bs-list .site-foot { background: #177083; color: rgba(255,255,255,0.85); text-align: center; font-size: 12px; padding: 26px 16px 34px; }
 .bs-list .site-foot a { color: #fff; text-decoration: underline; margin: 0 10px; }
 .bs-list .site-foot .links { margin-bottom: 10px; }
+
+/* ==== モバイルで右側が切れないための安全策（全ブログページ共通） ==== */
+html, body { max-width: 100%; overflow-x: hidden; }
+.blog-post img, .blog-post svg { max-width: 100%; height: auto; }
+/* 列の多い表は表の中だけ横スクロールさせる（ページ全体は固定） */
+.blog-post table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ad-slot { max-width: 100%; overflow-x: hidden; }
+.ad-slot ins { max-width: 100% !important; }
+
+/* ==== 記事内イラスト（オリジナルSVG。post-metaの直後と末尾CTAの前に置く） ==== */
+.post-illust { margin: 18px auto 26px; max-width: 400px; }
+.post-illust svg { width: 100%; height: auto; display: block; }
+.post-illust.small { max-width: 320px; margin: 32px auto 24px; }
+
+/* モバイル対策: ページ全体は横にはみ出させない。記事内の表は潰して詰め込まず、横スクロールで自然な幅のまま見せる */
+/* グリッドアイテムはmin-width:autoのため、幅広の表があると本文列ごと広がってしまう（右切れの原因）。0にして列幅を固定する */
+.post-layout > * { min-width: 0; }
+body { overflow-x: hidden; }
+.blog-post img, .blog-post svg { max-width: 100%; height: auto; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 18px; }
+.table-scroll > table { margin-bottom: 0; }
