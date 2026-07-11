@@ -22,6 +22,10 @@
 - `blog-*.html` — 個別記事（本文はシンプルな黒文字＋緑の見出し・左バー、オレンジのハイライト）
 - `sitemap.xml` / `robots.txt` — SEO用。**新しいページ（記事・固定ページ）を追加したら sitemap.xml にも `<url>` を1件追加すること**
 - `terms.html` — 利用規約（禁止事項・賭博否定・免責・サービス変更等。2026.07.08追加）
+- `score-basics.html` — 麻雀のスコア計算の基本（初心者向け。旧LP #basicsセクションを2026.07.11に独立ページ化。
+  Article JSON-LD・blog-uma-oka/blog-sanma-yonmaへの内部リンク・lp_bottom広告枠つき）
+- `faq.html` — よくある質問（旧LP #faqセクションを2026.07.11に独立ページ化・7問に拡充。
+  **FAQPage JSON-LDはこのページに置く（indexからは撤去済み）。本文とJSON-LDの内容は一致させること**）
 - `assets/` — 画像素材ディレクトリ（2026.07.10導入）: `favicon.png`（512×512、favicon/apple-touch-icon/manifest共用）、`logo.png`（透過ロゴ800×250、全ページのヘッダーで使用）、`ogp.png`（OGP画像2100×1103）。素材の元データはリポジトリ直下の`まじゃすこ素材/`（.gitignore済み・コミットされない）
 - `favicon.ico` — ルート直下（16/32/48px、favicon.pngからPILで生成。Google検索の favicon 表示と旧ブラウザ用フォールバック）。
   index.htmlのheadに `<link rel="icon" href="/favicon.ico">` とWebSite/OrganizationのJSON-LD（検索でのサイト名・ロゴ向け）を設置済み。
@@ -36,7 +40,7 @@
 - `tests.html` — 計算ロジックの単体テスト（noindex）。index.htmlをiframeで読み込み、実物の
   rankGroups/calcScores/applyChombo/gameTotals/playedFlags/chipTotals を18ケース検証する。
   **計算ロジックを変更したら /tests.html を開いて ALL PASS を確認してからコミットすること**
-- 構造化データ: 全記事にArticle JSON-LD（headline/description/datePublished等）、LPにFAQPage JSON-LD＋「よくある質問」セクション（4問。JSON-LDと本文の内容は一致させること）
+- 構造化データ: 全記事にArticle JSON-LD（headline/description/datePublished等）、faq.htmlにFAQPage JSON-LD（7問・本文と一致）、indexにWebSite/Organization JSON-LD
 - **Google AdSense: 審査合格済み（2026.07.10）**: パブリッシャーID `ca-pub-9998035509478799`。
   全ページのheadにメタタグ＋adsbygoogle.js、ルートに `ads.txt` 設置済み
 - **広告枠は `/assets/ads.js` の `AD_SLOTS` で管理**: 枠は article_top（記事の導入直後）/ article_bottom（記事末尾CTA上）/
@@ -88,7 +92,8 @@
   「麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？」
 - ファーストビュー必須文言:「「まじゃすこ」は、表示点数を入力するだけでウマ・オカ込みのスコアを自動計算して、URLひとつで全員のスマホに共有できる無料のサービスです。」
 - ヒーローにインラインSVGイラスト＝**過去と現在の対比**: 左（電卓・紙・鉛筆をゴミ箱へ）は opacity 0.55 で薄く・鉛筆も電卓と同じくすんだトーン、
-  破線の乗り換え矢印 →、右のスマホ（スコア収支画面・iPhone風）は淡い光の円と輝きマークで明るく。指のイラストは廃止
+  点線の乗り換え矢印（進行方向に沿った三角の矢じり）、右のスマホ（スコア収支画面・iPhone風）は淡い光の円＋**4方向に尖った✨型スパークル**で明るく。
+  ＋印のキラキラ・指のイラストは廃止
 - CTAボタンは影なし・横長ピル型（width:100%/max-width:380px）。CTA下は普通の文章「面倒な登録や…たった10秒で、次の対局スタート。」
 - 「最近の試合」バナー（共有URLから来た試合のグループ名をボタンに表示・右端›）→ その下に「これまでの試合を振り返る ›」
 - CTA下の注記は2行・緑太字:「面倒な登録やアプリのインストールは一切不要！<br>たった10秒で、次の対局スタート！」
@@ -97,16 +102,22 @@
   特徴「スマホ1台で、ここまでできる。」 → クロージング「麻雀のスコア記録は、まじゃすこで。」（まじゃすこだけ緑）
   ※物語セクション・1行圧縮（つかみ）・「過去の対局を振り返る」リンクは廃止済み
 - 特徴カードは**無限ループカルーセル**（`initFeaturesLoop`が前後に複製セットを置き、端に来たら同じ見た目の位置へ瞬間移動。
-  全幅でカルーセル・700px以上では左右矢印 .features-nav を表示。スクロールバーは非表示）
-- 特徴は**8項目**（2026.07.11拡充）: 一瞬で計算🧮／同じスコア表📱／推移グラフ📈／最大40人👥／チーム戦🏆／ルール自由🀄／チップ・焼き鳥🐔／成績表📊
+  全幅でカルーセル・700px以上では左右矢印 .features-nav を表示。スクロールバーは非表示。
+  **UX演出**: 両端28pxの白フェード（続きがある示唆）＋下に現在位置ドット `.features-dots`（アクティブは横長ピル。
+  画面中央に最も近いカードを算出し複製分はmodで正規化。**rAFは使わない**＝非表示タブで固まるため直接更新）
+- 特徴は**8項目**（タイトルは1行に収まる8〜10字・本文は2文で厚めに）: スコアを一瞬で計算／全員のスマホに共有／推移グラフも自動／
+  最大40人で回し打ち／チーム戦にも対応／ルールは自由自在／チップや焼き鳥も記録／成績表も自動で作成。
+  **アイコンは絵文字ではなくインラインSVG**（ヒーロー/使い方と同じフラットなトーン: #177083・#9fc3bd・#E4F3EC・差し色#E75620）
 - 文字サイズは視認性優先で本文14〜15px（hero-desc 15px/max-width 340px、feature p 14.5px、info-card p 14px。行間は1.8前後に詰める）
 - 各セクション見出しはfont-size:25px/weight:900で統一
 - ヘッダー: **ロゴは中央に64px**・サブテキストなし・右上に「使い方」リンク（goUsage()で#howtoへ）。
-  **ゲーム設定画面だけ左上に「‹ 戻る」ボタン**（#header-back、showView内で name==='setup' のときだけ表示、押すとホームへ）
-- 下部コンテンツ: #howto「1分でわかるまじゃすこ（majasco）の使い方」= Walica風の4ステップ
+  **ゲーム設定画面だけ左上に丸い「‹」アイコンボタン**（文字なし・36px円形。#header-back、showView内で name==='setup' のときだけ表示、押すとホームへ）
+- 下部コンテンツ: #howto「1分でわかる「まじゃすこ」の使い方」= Walica風の4ステップ
   （各ステップ: 中央見出し → 緑ブロック.howto-shotにスマホ画面のインラインSVG → 短い説明文。
-  スマホフレームはiPhone風: viewBox 220×400・本体比率約1:1.94・ベゼル8px均一・上部にダイナミックアイランド）/ #basics スコア計算の基本 / #faq よくある質問（FAQPage JSON-LDと本文は一致させる）
-- フッターはリンク2列グリッド（使い方/基本/FAQ/ブログ/お知らせ/RSS/規約/PP/X/問い合わせ）
+  スマホフレームはiPhone風: viewBox 220×400・本体比率約1:1.94・ベゼル8px均一・上部にダイナミックアイランド）
+  → lp_bottom広告枠 → 「もっと詳しく」カード（score-basics.html / faq.html への内部リンク）
+  ※スコア計算の基本・よくある質問はLPから独立ページへ移行済み（2026.07.11）
+- フッターはリンク2列グリッド（使い方=#howto/基本=score-basics.html/FAQ=faq.html/ブログ/お知らせ/RSS/規約/PP/X/問い合わせ）
 
 ## 開発の進め方（重要な癖）
 - ユーザーはGitHub Web UIで直接コードを編集することがある。作業開始前に必ず `git pull origin main` して最新を取り込むこと。古い状態に巻き戻さない。
@@ -171,7 +182,7 @@
 
 ### データモデルと計算
 - Firebase `sessions/{10文字ID}`（URL共有モデル）＋ localStorage `mahjong-v3`（履歴最大20件・登録名）。
-  **起動時のセッション判定は「ハッシュ8文字以上」**（フッターのページ内アンカー #howto/#basics/#faq をセッションIDと誤認しないため。2026.07.11修正）
+  **起動時のセッション判定は「ハッシュ8文字以上」**（ページ内アンカー #howto をセッションIDと誤認しないため。2026.07.11修正）
 - `settings`: playerNames（3〜40人=MAX_MEMBERS）/ numPlayers（3|4）/ startPoints / returnPoints / uma[] /
   rate（スコア倍率）/ bonusEnabled / chipRate（チップ倍率）/ startChips（開始時チップ数）/ yakitori /
   chombo（チョンボ記録）/ chomboPenalty（罰符pts・0=マークのみ）/ teamMode / teams=[{name, members:[playerNamesのindex]}]
