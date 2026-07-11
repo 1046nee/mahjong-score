@@ -13,7 +13,8 @@
 - `favicon.ico` — ルート直下16/32/48px（→ docs/image-tools.md）
 - `manifest.json` — PWA最小構成
 - `docs/` `tools/` `CLAUDE.md` — 開発用。**firebase.jsonのignoreで配信除外済み**
-- `まじゃすこ素材/` — 画像素材の元データ（.gitignore済み・コミットされない）
+- `まじゃすこ素材/` — 画像素材の元データ（本体リポジトリには含めない=.gitignore。
+  **privateリポジトリ 1046nee/majasco-assets で管理**（→ docs/image-tools.md）。firebase.jsonのignoreでも配信除外）
 
 ## デプロイ
 - mainへpush → GitHub Actions（.github/workflows/firebase-hosting-merge.yml）→ Firebase Hosting自動デプロイ

@@ -6,6 +6,7 @@
       "CLAUDE.md",
       "docs/**",
       "tools/**",
+      "まじゃすこ素材/**",
       "**/.*",
       "**/node_modules/**",
       "README.md"
