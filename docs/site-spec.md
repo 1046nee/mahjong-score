@@ -34,7 +34,9 @@
 - faq.html: FAQPage（7問・本文一致）／ index: WebSite + Organization（検索のサイト名・ロゴ向け）
 
 ## 広告（AdSense）
-- 審査合格済み。パブリッシャーID `ca-pub-9998035509478799`。ads.txt設置済み
+- パブリッシャーID `ca-pub-9998035509478799`。ads.txt設置済み
+- **サイト審査: 2026-07-10申請、審査待ち（「準備中」）**。「準備完了」になるまで広告は配信されない（実装が正しくてもunfilledが返る）。
+  審査は通常数日〜2/4週間。承認を確認したらこの行を「承認済み」に更新する
 - 枠は `/assets/ads.js` の AD_SLOTS で管理: article_top / article_bottom / list_bottom / lp_bottom（4枠配信中）
 - スロットID空欄=非表示。追加時はAdSenseでディスプレイ広告ユニット作成→IDをAD_SLOTSへ（min-height:280px自動でCLS対策）
 - **置かない場所**: スコア入力・ゲーム画面・設定モーダル・privacy/terms・404（誤クリック防止）
