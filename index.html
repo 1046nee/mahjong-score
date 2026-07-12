@@ -448,9 +448,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; }
 /* チームの識別記号（履歴・成績表・チーム成績で所属を示す。色ではなく記号で区別） */
 .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
-/* その他成績（列=メンバー・行=成績項目）: 先頭の項目列は横スクロール時も固定表示 */
-.stats-table th.sticky-col, .stats-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
-.stats-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 先頭列（対局履歴=試合番号・その他成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
+   ラベルはどのズーム倍率でも省略しない（ellipsis禁止） */
+.rounds-table th.sticky-col, .rounds-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
+.rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
+/* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線 */
+.rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.35); }
+.rounds-table th.tb { border-left: 2px solid rgba(255,255,255,.85); }
+.rounds-table td.tb { border-left: 2px solid #e3eaea; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
@@ -1756,8 +1761,9 @@ function playedFlags(g) {
   return played;
 }
 // メンバー数が多い場合は横スクロールできるようテーブルに最小幅を与える
+// （先頭86px＋メンバー58px＝その他成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
 function tableStyleFor(memberCount) {
-  return memberCount > 4 ? `table-layout:fixed;min-width:${60 + memberCount * 84}px` : 'table-layout:fixed';
+  return memberCount > 4 ? `table-layout:fixed;min-width:${86 + memberCount * 58}px` : 'table-layout:fixed';
 }
 // ---- 収支集計（フェーズ2） ----
 // スコア収支 = 合計pts × スコア倍率、チップ収支 = チップ差の合計 × チップ倍率、
@@ -2092,7 +2098,7 @@ function openTableModal(g) {
   const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s)).join('');
   document.getElementById('table-modal-title').textContent = `${g.name} の対局履歴`;
   document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><table class="rounds-table" style="table-layout:fixed;min-width:${46 + s.playerNames.length * 56}px">${roundsTheadHtml(s)}<tbody>${rows}</tbody></table></div>`;
+    `<div id="table-zoom-wrap"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s)}<tbody>${rows}</tbody></table></div>`;
   tableModalZoom = 1;
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
@@ -2112,7 +2118,7 @@ function openChartModal(g, indiv = false) {
 function openStatsModal(g) {
   if (!g || !(g.rounds || []).length) return;
   document.getElementById('table-modal-title').textContent = `${g.name} のその他成績`;
-  document.getElementById('table-modal-body').innerHTML = `<div id="table-zoom-wrap">${rankCountHtml(g.rounds, g.settings)}</div>`;
+  document.getElementById('table-modal-body').innerHTML = `<div id="table-zoom-wrap">${rankCountHtml(g.rounds, g.settings, true)}</div>`;
   tableModalZoom = 1;
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
@@ -2228,11 +2234,40 @@ function memberDisplayOrder(s) {
   const inTeam = new Set(ordered);
   return ordered.concat(idx.filter(i => !inTeam.has(i)));
 }
+// チーム戦の表示順グループ（チームA→B…→未所属）。各チームの人数をcolspanに使う
+function teamGroupsOf(s) {
+  const N = s.playerNames.length;
+  const groups = normalizedTeams(s)
+    .map(t => ({ name: t.name, count: t.members.filter(m => m < N).length }))
+    .filter(t => t.count > 0);
+  const inTeams = groups.reduce((a, t) => a + t.count, 0);
+  const rest = memberDisplayOrder(s).length - inTeams;
+  if (rest > 0) groups.push({ name: '', count: rest }); // 未所属メンバー（通常は発生しない）
+  return groups;
+}
+// チームの境目にあたる列位置（表示順index）。この列に縦区切り線クラス .tb を付ける
+function teamBoundarySet(s) {
+  const set = new Set();
+  if (!s.teamMode || !s.teams) return set;
+  let pos = 0;
+  teamGroupsOf(s).forEach((t, gi) => { if (gi > 0) set.add(pos); pos += t.count; });
+  return set;
+}
+// プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
+// （対局履歴・その他成績の両方で共用。チーム戦でなければ空文字）
+function teamNameRowHtml(s) {
+  if (!s.teamMode || !s.teams) return '';
+  const cells = teamGroupsOf(s).map((t, gi) =>
+    `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
+  return `<tr class="team-row"><th class="sticky-col" style="width:86px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
+}
 function roundsTheadHtml(s) {
   const base = s.teamMode && s.teams ? `background:${TEAM_HEAD_BG};` : '';
-  const cols = memberDisplayOrder(s).map(i =>
-    `<th style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
-  return `<thead><tr><th style="width:60px;${base}">試合</th>${cols}</tr></thead>`;
+  const bset = teamBoundarySet(s);
+  const cols = memberDisplayOrder(s).map((i, k) =>
+    `<th${bset.has(k) ? ' class="tb"' : ''} style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
+  // 先頭列はその他成績の項目列と同じ幅86px（2つの表の列位置をそろえる）
+  return `<thead>${teamNameRowHtml(s)}<tr><th class="sticky-col" style="width:86px;${base}">試合</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示
@@ -2240,9 +2275,11 @@ function roundRowHtml(r, idx, onclickJs, s) {
   const mem = roundMembers(r, s);
   const slotOf = {}; // memberIndex → r.scores内の位置
   mem.forEach((m, k) => { slotOf[m] = k; });
-  const cells = memberDisplayOrder(s).map(i => {
+  const bset = teamBoundarySet(s);
+  const cells = memberDisplayOrder(s).map((i, ci) => {
+    const tb = bset.has(ci) ? ' class="tb"' : '';
     const k = slotOf[i];
-    if (k == null) return '<td style="color:#ddd">—</td>';
+    if (k == null) return `<td${tb} style="color:#ddd">—</td>`;
     const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
     const raw = (r.points && r.points[k] != null)
@@ -2256,18 +2293,21 @@ function roundRowHtml(r, idx, onclickJs, s) {
     const markHtml = marks.length
       ? `<div style="font-size:9px;color:#b08968;font-weight:600;margin-top:1px">${marks.join(' ')}</div>`
       : '';
-    return `<td style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
+    return `<td${tb} style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
   }).join('');
   const editedMark = r.edited ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
+  // 試合番号はその他成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
   return `<tr onclick="${onclickJs}" style="cursor:pointer">
-    <td style="color:#555"><div>${idx+1}</div>${editedMark}</td>
+    <td class="sticky-col"><div>${idx+1}</div>${editedMark}</td>
     ${cells}
   </tr>`;
 }
 
 // ---- 順位取得回数（その他成績） ----
 // メンバーごとに「参加した試合」だけを集計する（可変長メンバー対応）
-function rankCountHtml(rounds, s) {
+// forModal=true（もっと見る）では table-layout:fixed をやめて内容基準にし、
+// どんなに拡大縮小しても項目ラベルが省略されないようにする
+function rankCountHtml(rounds, s, forModal = false) {
   if (!rounds || rounds.length === 0) return '';
   const names = s.playerNames;
   const N = names.length;
@@ -2332,44 +2372,50 @@ function rankCountHtml(rounds, s) {
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
-  // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム名の行は置かず、所属はプレイヤー名のチームカラー●で示す
+  // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
   const colOrder = memberDisplayOrder(s);
-  const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map(i =>
-    `<th${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
+  const bset = teamBoundarySet(s);
+  const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
+    `<th${bset.has(k) ? ' class="tb"' : ''}${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`), '試合数',
     '平均着順', '連対率', 'トップ率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数'];
   const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
   const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
-  const cellsOf = colOrder.map(i => {
-    if (!gamesPlayed[i]) return statLabels.map(() => `<td>${dash}</td>`);
-    const sv = totals[i];
-    const raw = Math.round(rawSum[i] * 10) / 10;
-    const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
-    const cells = [];
-    for (let rank = 0; rank < slots; rank++) {
-      const c = counts[i][rank];
-      cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
-    }
-    cells.push(`<td>${gamesPlayed[i]}回</td>`,
-      `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`,
-      `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
-      `<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
-      `<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
-      `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
-      `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
-      `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
-    if (ptsCnt[i]) {
-      cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+  const cellsOf = colOrder.map((i, k) => {
+    let cells;
+    if (!gamesPlayed[i]) {
+      cells = statLabels.map(() => `<td>${dash}</td>`);
     } else {
-      cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
+      const sv = totals[i];
+      const raw = Math.round(rawSum[i] * 10) / 10;
+      const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
+      cells = [];
+      for (let rank = 0; rank < slots; rank++) {
+        const c = counts[i][rank];
+        cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
+      }
+      cells.push(`<td>${gamesPlayed[i]}回</td>`,
+        `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`,
+        `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
+        `<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
+        `<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
+        `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
+        `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
+        `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
+      if (ptsCnt[i]) {
+        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+      } else {
+        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
+      }
     }
-    return cells;
+    // チーム境目の列は全セルに縦区切り線クラスを付ける
+    return bset.has(k) ? cells.map(c => c.replace('<td', '<td class="tb"')) : cells;
   });
   const rows = statLabels.map((label, ri) =>
     `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${86 + N * 58}px">
-    <thead>${nameRow}</thead><tbody>${rows}</tbody>
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${86 + N * 58}px">
+    <thead>${teamNameRowHtml(s)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
 
