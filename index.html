@@ -2201,9 +2201,10 @@ function chartHtml(rounds, s, indiv = false) {
   const py = v => top + (H - top - bottom) * ((max - v) / (max - min));
 
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
-  // 横グリッド線（50刻み）
+  // 横グリッド線: 通常50刻み。表示範囲（プラス域＋マイナス域の絶対値合計）が600以上なら100刻みに間引く
+  const step = (max - min) >= 600 ? 100 : 50;
   const gridVals = [];
-  for (let v = Math.ceil(min / 50) * 50; v <= max; v += 50) gridVals.push(v);
+  for (let v = Math.ceil(min / step) * step; v <= max; v += step) gridVals.push(v);
   if (gridVals.length === 0) gridVals.push(0);
   gridVals.forEach(v => {
     const y = py(v);
