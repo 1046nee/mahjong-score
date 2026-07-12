@@ -1761,9 +1761,9 @@ function playedFlags(g) {
   return played;
 }
 // メンバー数が多い場合は横スクロールできるようテーブルに最小幅を与える
-// （先頭86px＋メンバー58px＝その他成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
+// （先頭64px＋メンバー58px＝その他成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
 function tableStyleFor(memberCount) {
-  return memberCount > 4 ? `table-layout:fixed;min-width:${86 + memberCount * 58}px` : 'table-layout:fixed';
+  return memberCount > 4 ? `table-layout:fixed;min-width:${64 + memberCount * 58}px` : 'table-layout:fixed';
 }
 // ---- 収支集計（フェーズ2） ----
 // スコア収支 = 合計pts × スコア倍率、チップ収支 = チップ差の合計 × チップ倍率、
@@ -2098,7 +2098,7 @@ function openTableModal(g) {
   const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s)).join('');
   document.getElementById('table-modal-title').textContent = `${g.name} の対局履歴`;
   document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s)}<tbody>${rows}</tbody></table></div>`;
+    `<div id="table-zoom-wrap"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table></div>`;
   tableModalZoom = 1;
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');
@@ -2253,21 +2253,24 @@ function teamBoundarySet(s) {
   teamGroupsOf(s).forEach((t, gi) => { if (gi > 0) set.add(pos); pos += t.count; });
   return set;
 }
+// 先頭列の幅: スコア画面は小さめ64px（最長ラベル「平均着順」48px＋余白14pxが収まる最小級）、
+// もっと見るモーダルは広め86px。どちらも文字が確実に収まる幅にする
+function firstColW(forModal) { return forModal ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
 // （対局履歴・その他成績の両方で共用。チーム戦でなければ空文字）
-function teamNameRowHtml(s) {
+function teamNameRowHtml(s, forModal = false) {
   if (!s.teamMode || !s.teams) return '';
   const cells = teamGroupsOf(s).map((t, gi) =>
     `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
-  return `<tr class="team-row"><th class="sticky-col" style="width:86px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
+  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forModal)}px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
 }
-function roundsTheadHtml(s) {
+function roundsTheadHtml(s, forModal = false) {
   const base = s.teamMode && s.teams ? `background:${TEAM_HEAD_BG};` : '';
   const bset = teamBoundarySet(s);
   const cols = memberDisplayOrder(s).map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''} style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
-  // 先頭列はその他成績の項目列と同じ幅86px（2つの表の列位置をそろえる）
-  return `<thead>${teamNameRowHtml(s)}<tr><th class="sticky-col" style="width:86px;${base}">試合</th>${cols}</tr></thead>`;
+  // 先頭列はその他成績の項目列と同じ幅（2つの表の列位置をそろえる）
+  return `<thead>${teamNameRowHtml(s, forModal)}<tr><th class="sticky-col" style="width:${firstColW(forModal)}px;${base}">試合</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示
@@ -2375,7 +2378,7 @@ function rankCountHtml(rounds, s, forModal = false) {
   // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
   const colOrder = memberDisplayOrder(s);
   const bset = teamBoundarySet(s);
-  const nameRow = `<tr><th class="sticky-col" style="width:86px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
+  const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forModal)}px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''}${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`), '試合数',
@@ -2414,8 +2417,8 @@ function rankCountHtml(rounds, s, forModal = false) {
   });
   const rows = statLabels.map((label, ri) =>
     `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${86 + N * 58}px">
-    <thead>${teamNameRowHtml(s)}${nameRow}</thead><tbody>${rows}</tbody>
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${firstColW(forModal) + N * 58}px">
+    <thead>${teamNameRowHtml(s, forModal)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
 
