@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Instagram用画像一括生成: 使い方カルーセル6枚 + 機能紹介シリーズ6枚（1080x1080）
+# Instagram用画像一括生成: 使い方カルーセル6枚 + 機能紹介シリーズ6枚（1080x1440＝縦4:3。
+# IGのプロフィールグリッドが4:3表示になったため、フィード画像はすべてこの比率で作る）
 import os, math
 from PIL import Image, ImageDraw, ImageFont
 
@@ -20,7 +21,7 @@ BLUE = (26, 35, 126)
 RED = (198, 40, 40)
 FAINT = (242, 247, 246)
 TEAM = {"赤": (230, 0, 18), "青": (0, 117, 194), "緑": (0, 160, 64), "橙": (243, 152, 0)}
-W = H = 1080
+W, H = 1080, 1440
 
 def font(size, weight):
     f = ImageFont.truetype(FONT, size)
@@ -41,15 +42,15 @@ def sparkle(d, x, y, R, color):
         pts.append((x + rad * math.cos(ang), y + rad * math.sin(ang)))
     d.polygon(pts, fill=color)
 
-def new_canvas(glow_cy=760):
+def new_canvas(glow_cy=980):
     img = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(img)
-    d.ellipse([540 - 340, glow_cy - 340, 540 + 340, glow_cy + 340], fill=(238, 248, 243))
-    sparkle(d, 935, 618, 44, ORANGE)
-    sparkle(d, 215, 520, 30, GREEN)
-    sparkle(d, 890, 950, 30, GREEN)
-    d.ellipse([940, 275, 964, 299], fill=ORANGE)
-    d.ellipse([185, 660, 203, 678], fill=(159, 195, 189))
+    d.ellipse([540 - 400, glow_cy - 400, 540 + 400, glow_cy + 400], fill=(238, 248, 243))
+    sparkle(d, 950, 610, 44, ORANGE)
+    sparkle(d, 215, 600, 30, GREEN)
+    sparkle(d, 940, 1290, 30, GREEN)
+    d.ellipse([940, 315, 964, 339], fill=ORANGE)
+    d.ellipse([185, 840, 203, 858], fill=(159, 195, 189))
     return img, d
 
 def logo_top(img, y=52, h=96):
@@ -58,9 +59,9 @@ def logo_top(img, y=52, h=96):
     img.paste(lg, ((W - lw) // 2, y), lg)
 
 def footer(d):
-    d.text((60, 1020), "majasco.jp", font=font(34, 700), fill=LGRAY, anchor="lm")
+    d.text((60, 1380), "majasco.jp", font=font(34, 700), fill=LGRAY, anchor="lm")
 
-def phone_frame(d, x0=352, y0=500, x1=728):
+def phone_frame(d, x0=352, y0=640, x1=728):
     d.rounded_rectangle([x0, y0, x1, H + 160], radius=58, fill=DARK)
     d.rounded_rectangle([x0 + 15, y0 + 15, x1 - 15, H + 160], radius=44, fill=(255, 255, 255))
     cx = (x0 + x1) // 2
@@ -192,7 +193,7 @@ def screen_rules(d, sx0, sy0, sx1):
 
 def two_phones(d):
     # 小さめのスマホを2台、少し重ねて表示（同じスコア画面）
-    for (x0, y0, x1) in [(180, 560, 500), (580, 560, 900)]:
+    for (x0, y0, x1) in [(180, 700, 500), (580, 700, 900)]:
         d.rounded_rectangle([x0, y0, x1, H + 160], radius=50, fill=DARK)
         d.rounded_rectangle([x0 + 13, y0 + 13, x1 - 13, H + 160], radius=38, fill=(255, 255, 255))
         cx = (x0 + x1) // 2
@@ -215,11 +216,11 @@ def slide(fname, title_lines, sub=None, sub_hl=None, screen_fn=None, step=None, 
     img, d = new_canvas()
     logo_top(img)
     d2 = ImageDraw.Draw(img)
-    y = 216
+    y = 256
     if step:
-        d2.rounded_rectangle([440, 172, 640, 232], radius=30, fill=ORANGE)
-        d2.text((540, 202), step, font=font(30, 800), fill=(255, 255, 255), anchor="mm")
-        y = 300
+        d2.rounded_rectangle([440, 212, 640, 272], radius=30, fill=ORANGE)
+        d2.text((540, 242), step, font=font(30, 800), fill=(255, 255, 255), anchor="mm")
+        y = 340
     f_main = font(70, 900)
     for line in title_lines:
         d2.text((540, y), line, font=f_main, fill=title_color, anchor="mm")
@@ -251,7 +252,7 @@ slide("howto-4-step3.png", ["点数を入れるだけ"], sub="ウマ・オカ込
 slide("howto-5-step4.png", ["結果は全員のスマホに"], sub="順位・成績・グラフまで自動で記録", screen_fn=screen_score, step="STEP 4")
 
 def closing(d):
-    y = 560
+    y = 700
     badges = ["登録不要", "完全無料", "スコアを共有"]
     widths = [d.textlength(b, font=font(36, 700)) + 76 for b in badges]
     total = sum(widths) + 2 * 24
@@ -260,9 +261,9 @@ def closing(d):
         d.rounded_rectangle([x, y, x + wdt, y + 76], radius=38, outline=GREEN, width=4, fill=(255, 255, 255))
         d.text((x + wdt / 2, y + 38), b, font=font(36, 700), fill=GREEN, anchor="mm")
         x += wdt + 24
-    d.rounded_rectangle([290, 720, 790, 816], radius=48, fill=ORANGE)
-    d.text((540, 768), "スコア記録をはじめる", font=font(40, 800), fill=(255, 255, 255), anchor="mm")
-    d.text((540, 880), "▲ プロフィールのリンクからすぐ使えます", font=font(32, 600), fill=GRAY, anchor="mm")
+    d.rounded_rectangle([290, 900, 790, 996], radius=48, fill=ORANGE)
+    d.text((540, 948), "スコア記録をはじめる", font=font(40, 800), fill=(255, 255, 255), anchor="mm")
+    d.text((540, 1090), "▲ プロフィールのリンクからすぐ使えます", font=font(32, 600), fill=GRAY, anchor="mm")
 slide("howto-6-close.png", ["今日の対局から、", "スマホ1台で。"], custom=closing)
 
 # ==== 機能紹介シリーズ（6枚） ====
