@@ -4,9 +4,11 @@
 
 - 本番: https://majasco.jp ／ リポジトリ: https://github.com/1046nee/mahjong-score（ブランチ: main）
 - mainへpush → GitHub Actionsが自動デプロイ（追加作業不要）
-- X公式: @majasco_jp ／ Instagram公式あり（詳細は docs/sns-ops.md）
+- SNS: X公式 @majasco_jp ／ Instagram公式 @majasco_jp ／ Threads @munii_dev（むにぃ個人・収益発信用。詳細は docs/sns-ops.md）
+- 画像素材: privateリポジトリ https://github.com/1046nee/majasco-assets（`まじゃすこ素材/` にnested cloneで配置。公開リポジトリには入れない）
 - 運用ハブ（Notion・ユーザー管理）: https://app.notion.com/p/39afc00e6ad081f2b1ccc874b1818eee
-  （資産/アカウント一覧・公開ページ一覧・運用タスク。記事公開時はNotionの一覧にも1行追加。仕様の正はあくまでdocs/）
+  （DB: 資産/アカウント一覧・公開ページ一覧・運用タスク・**SNS投稿カレンダー**（投稿文は各行のページ内）＋用語辞典（初心者向け解説56語）。
+  記事公開時は公開ページ一覧にも1行追加。仕様の正はあくまでdocs/。NotionはMCPツール notion-* で読み書きできる）
 
 ## このファイルの使い方（最初に読む）
 ここには**全作業で守るルールだけ**を置く。仕様の詳細は docs/ に分割してある。
@@ -18,7 +20,7 @@
 | LP（トップページの見た目・文言・イラスト） | docs/lp-spec.md |
 | ブログ記事の追加・修正 | docs/blog-spec.md |
 | サイト共通（新ページ・SEO・広告・計測・固定ページ・デプロイ構成） | docs/site-spec.md |
-| SNS（X・Instagramの投稿・運用） | docs/sns-ops.md |
+| SNS（X・Instagram・Threadsの投稿文・画像・運用） | docs/sns-ops.md（投稿予定と文面はNotionのSNS投稿カレンダー） |
 | 画像生成（OGP・SNS画像・イラスト） | docs/image-tools.md |
 
 複数領域にまたがるときは該当するdocを複数読む（例: 新機能→app-spec＋lp-spec、リリース告知→blog-spec＋sns-ops）。
