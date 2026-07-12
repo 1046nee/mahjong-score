@@ -352,7 +352,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
 .backdrop.open { display: block; }
 /* 点数入力は「設定の編集」と同じ中央モーダル形式（パネル内スクロール・transformなし） */
-.sheet { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 201; align-items: center; justify-content: center; padding: 20px 8px; }
+/* 点数入力シートは上端固定（縦中央揃えにしない）: 対局メンバーの選択で中身の高さが
+   変わっても上側の位置は動かず、下のエリアだけが伸縮する */
+.sheet { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 201; align-items: flex-start; justify-content: center; padding: 6vh 8px 20px; }
 .sheet.open { display: flex; }
 .sheet-box { background: #fff; border-radius: 16px; padding: 18px 12px; width: 100%; max-width: 430px; max-height: 88vh; overflow-y: auto; }
 .sheet-title { font-size: 16px; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -452,10 +454,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
    ラベルはどのズーム倍率でも省略しない（ellipsis禁止） */
 .rounds-table th.sticky-col, .rounds-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
 .rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
-/* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線 */
+/* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線
+   （区切り線は本文の横罫線 #eee と同じ1px。太くしない） */
 .rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.35); }
-.rounds-table th.tb { border-left: 2px solid rgba(255,255,255,.85); }
-.rounds-table td.tb { border-left: 2px solid #e3eaea; }
+.rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
+.rounds-table td.tb { border-left: 1px solid #e3eaea; }
+/* もっと見るモーダル内では先頭列を固定しない（スクロールに連動して動く）。
+   ※ th/td付きで書く: .rounds-table th.sticky-col（0,2,1）と同じ詳細度にしないと負ける */
+.table-modal-body th.sticky-col, .table-modal-body td.sticky-col { position: static; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
