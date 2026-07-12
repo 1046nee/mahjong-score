@@ -410,14 +410,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: #f2f7f6; color: #177083; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
 
-/* 対局履歴の全画面表示 */
-.table-modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 400; flex-direction: column; }
-.table-modal.open { display: flex; }
-.table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px; flex-shrink: 0; }
-.table-modal-sub { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+/* 対局履歴の全画面表示。縦スクロールはモーダル全体＝ヘッダー（タイトル/閉じる/ズーム±）は
+   固定せず中身と一緒にスクロールする。横スクロールは表を包む内側のラッパーが担い、
+   先頭列(.sticky-col)はそこに固定される（paddingぶんのジャンプを防ぐ） */
+.table-modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 400; overflow-y: auto; overflow-x: hidden; }
+.table-modal.open { display: block; }
+.table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px; }
+.table-modal-sub { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px; border-bottom: 1px solid #eee; }
 .table-modal-note { font-size: 10px; color: #9aa8a4; line-height: 1.5; flex: 1; }
 .table-modal-title { font-size: 15px; font-weight: 800; color: #177083; min-width: 0; line-height: 1.5; }
-.table-modal-body { flex: 1; overflow: auto; padding: 12px 16px 28px; }
+.table-modal-body { padding: 12px 16px 28px; }
 .table-modal-body table { font-size: 13px; }
 .table-modal-body th, .table-modal-body td { padding: 8px 4px; }
 .table-zoom-ctrl { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
@@ -459,9 +461,6 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.35); }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
-/* もっと見るモーダル内では先頭列を固定しない（スクロールに連動して動く）。
-   ※ th/td付きで書く: .rounds-table th.sticky-col（0,2,1）と同じ詳細度にしないと負ける */
-.table-modal-body th.sticky-col, .table-modal-body td.sticky-col { position: static; }
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
@@ -2104,7 +2103,7 @@ function openTableModal(g) {
   const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s)).join('');
   document.getElementById('table-modal-title').textContent = `${g.name} の対局履歴`;
   document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table></div>`;
+    `<div id="table-zoom-wrap"><div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table></div></div>`;
   tableModalZoom = 1;
   applyTableModalZoom();
   document.getElementById('table-modal').classList.add('open');

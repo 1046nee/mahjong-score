@@ -81,7 +81,9 @@
 - タイトル横ボタンは「設定の編集」（.title-edit-btn・三麻で青）
 - モーダル（もっと見る）: ヘッダー2段構成（タイトル+閉じる／ズーム±+注意書き）＝長い名前でも切れない。
   **その他成績のモーダルは`rankCountHtml(…, true)`でtable-layout:auto**（列幅が内容基準になり、どのズーム倍率でも項目ラベルが省略されない）。
-  **モーダル内では先頭列を固定しない**（`.table-modal-body th/td.sticky-col`をstaticに上書き。スクロールに連動して動く。スコア画面のカード上ではsticky固定のまま）
+  **ヘッダーは固定しない**: 縦スクロールは`.table-modal`全体（overflow-y:auto）が担い、ヘッダーも中身と一緒にスクロールする。
+  横スクロールは表を包む内側の`overflow-x:auto`ラッパーが担い、**先頭列(.sticky-col)はそこに固定される**
+  （モーダル自体を横スクロールさせるとbodyのpadding分だけ先頭列がジャンプするため、横は必ず内側ラッパーで）
 
 ## その他の機能
 - 過去の試合: カードは**グループ名・日付・総試合数・四麻/三麻・個人戦/チーム戦・プレイヤー名のみ**（結果のプレビューは載せない）。
@@ -103,3 +105,5 @@
 - CSS zoomを小さくすると、ブラウザの最小フォントサイズ設定で文字だけ縮まなくなり、table-layout:fixed＋ellipsisのセルは文字が消える
   → ズーム対象の表はtable-layout:autoにし、消えて困るラベルにellipsisを使わない
 - `.rounds-table th.sticky-col`（0,2,1）はクラス2つの上書き（0,2,0）に勝つ → 上書きは同じくth/td付きで書く（lp-specのbm-noteと同じ詳細度事故）
+- paddingのあるスクロールコンテナ直下でposition:sticky; left:0を使うと、固定位置はpadding端ではなくコンテナ端＝スクロール開始時にpadding分ジャンプする
+  → sticky列の横スクロールはpadding無しの内側ラッパー（overflow-x:auto）に担わせる
