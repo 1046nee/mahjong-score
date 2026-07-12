@@ -1,0 +1,45 @@
+# 別PCセットアップ手順（どのPCでも同じ品質で動かすための構成）
+
+> 設計思想: **正の情報はすべてクラウドにある**。コード・ルール・仕様＝GitHub（このリポジトリ）、
+> 運用・タスク・投稿文＝Notion運用ハブ、画像素材＝privateリポジトリ majasco-assets。
+> PCには「道具」を入れてcloneするだけで、どの端末でも同じ状態になる。
+
+## 1. 道具のインストール（最初の1回だけ）
+- **Git**（git-scm.com）
+- **Node.js**（LTS）— プレビュー用 http-server に使用
+- **Python 3** ＋ Pillow（`pip install pillow`）— 画像生成に使用
+- **Claude Code**（デスクトップアプリ / CLI / VS Code拡張のいずれか）→ **同じAnthropicアカウントでログイン**（プランはアカウントに紐づく）
+
+## 2. リポジトリの取得
+任意の場所で:
+```
+git clone https://github.com/1046nee/mahjong-score.git mahjong
+cd mahjong
+git clone https://github.com/1046nee/majasco-assets.git "まじゃすこ素材"
+```
+- GitHubのログインを求められたらブラウザ認証（majasco-assetsはprivateのため必須）
+- `まじゃすこ素材/` は本体の.gitignore対象なので、この入れ子構成で正しい
+
+## 3. Claude Codeで開く
+- **mahjongフォルダをプロジェクトルートとして開く**（CLAUDE.mdが自動で読み込まれ、ルール・ルーティングが効く）
+- Notion連携（notion-*ツール）はClaudeアカウントに紐づく。使えない場合はコネクタ設定からNotionを再認証
+- プレビューは `.claude/launch.json` の "mahjong" 設定（http-server・port 8081）を使う
+
+## 4. 初回の動作確認（Claudeに順に頼む）
+1. 「git pull して、CLAUDE.md と docs の構成を確認して」
+2. 「プレビューを起動してトップページを表示して」
+3. 「python tools/make_ig1.py を実行して画像が生成できるか確認して」
+
+## 5. 運用ルール（2台で安全に使うために）
+- **同期はCLAUDE.mdの絶対ルールで担保**: 作業前に必ずpull・変更ごとにpush。これを守る限り、どちらのPCで作業しても常に最新が正になる
+- **同時に2台で作業しない**（交互に使う。万一衝突したらpull時にClaudeが検知して報告する）
+- 素材を生成・変更したら `まじゃすこ素材/` の中でも add→commit→push（Claudeが実施）
+- 会話履歴とClaudeのローカルメモリは**端末ごとに別**。引き継ぐべき知識は docs/ とNotionに書くのが前提
+  （だから「トラブルは落とし穴へ追記」ルールが重要）
+
+## 6. 環境差の注意
+- 画像生成ツールはWindowsフォント前提（`C:\Windows\Fonts\NotoSansJP-VF.ttf` / `seguiemj.ttf`。Windows 11なら標準搭載）。
+  **Macで使う場合は tools/ 内のFONT/EMOJIパスの変更が必要**
+- gitのコミッター名を整えたい場合（任意）: `git config --global user.name "名前"` / `git config --global user.email "メール"`
+- この開発用PC（社内ネットワーク）では majasco.jp 自体がZscalerでブロックされる（docs/site-spec.md 落とし穴参照）。
+  自宅PCなど別環境なら本番サイトの確認も可能

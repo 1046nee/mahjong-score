@@ -22,6 +22,7 @@
 | サイト共通（新ページ・SEO・広告・計測・固定ページ・デプロイ構成） | docs/site-spec.md |
 | SNS（X・Instagram・Threadsの投稿文・画像・運用） | docs/sns-ops.md（投稿予定と文面はNotionのSNS投稿カレンダー） |
 | 画像生成（OGP・SNS画像・イラスト） | docs/image-tools.md |
+| 別PCのセットアップ・環境構築 | docs/setup-new-pc.md |
 
 複数領域にまたがるときは該当するdocを複数読む（例: 新機能→app-spec＋lp-spec、リリース告知→blog-spec＋sns-ops）。
 
