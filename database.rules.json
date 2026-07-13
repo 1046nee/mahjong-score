@@ -1,0 +1,29 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "sessions": {
+      "$id": {
+        ".read": true,
+        ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && (data.exists() || newData.hasChildren(['id', 'name', 'settings']))",
+        ".validate": "newData.hasChildren(['id', 'name', 'settings'])",
+        "id": { ".validate": "newData.isString() && newData.val() === $id" },
+        "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "settings": {
+          ".validate": "newData.hasChildren(['playerNames', 'numPlayers'])",
+          "playerNames": {
+            "$i": { ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length <= 60" }
+          }
+        },
+        "rounds": {
+          "$i": { ".validate": "$i.matches(/^[0-9]{1,4}$/)" }
+        },
+        "log": {
+          "$i": { ".validate": "$i.matches(/^[0-9]{1,4}$/)" }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

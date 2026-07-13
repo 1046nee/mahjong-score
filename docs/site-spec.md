@@ -20,6 +20,15 @@
 - mainへpush → GitHub Actions（.github/workflows/firebase-hosting-merge.yml）→ Firebase Hosting自動デプロイ
 - Firebase設定は firebase.json / .firebaserc にコミット済み
 
+## RTDBセキュリティルール（database.rules.json）
+- **正はリポジトリの database.rules.json**。ただしGitHub ActionsはHostingしかデプロイしないので、
+  変更したら**Firebaseコンソール（Realtime Database → ルール）に手動で貼り付けて「公開」**が必要（ユーザー作業）
+- 内容: ルート読み書き禁止／`sessions/$id`のみ読み書き可／IDは10桁または**22桁**（初期のIDは22桁だった。10桁だけにすると旧グループが書き込み不能になる）／
+  新規作成は id・name・settings 必須（updateによる部分書き込みでの新規作成も`.write`側で拒否）／
+  name≤120字・playerNames≤60字・rounds/logは最大10,000件（インデックス4桁まで）／**未知のトップレベルキーは拒否（$other: false）**
+- **セッションに新しいトップレベルキーを追加するときは、必ずdatabase.rules.jsonにも追加してコンソールに再適用する**（忘れると保存が全部失敗する）
+- 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
+
 ## 新ページのheadチェックリスト（blog記事のheadを参照）
 1. GTMスクリプト（viewport直後・titleより上）+ body直後にGTM noscript
 2. AdSenseメタタグ＋adsbygoogle.js（GTM直後）

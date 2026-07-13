@@ -4,6 +4,8 @@
 
 ## データモデルと計算
 - Firebase `sessions/{10文字ID}`（URL共有モデル）＋ localStorage `mahjong-v3`（履歴最大20件・登録名）
+- **セッションIDは`newSessionId()`で発行**（生成→既存チェック→被っていたら作り直し、最大5回。誕生日問題による他人のセッション上書きを防ぐ）。
+  初期のIDは22桁だったため、既存データには22桁IDも混在する（セキュリティルールは両方許可）
 - **起動時のセッション判定は「ハッシュ8文字以上」**（ページ内アンカー #howto をセッションIDと誤認しないため）
 - `settings`: playerNames（3〜40人=MAX_MEMBERS）/ numPlayers（3|4）/ startPoints / returnPoints / uma[] /
   rate（スコア倍率）/ bonusEnabled / chipRate（チップ倍率）/ startChips（持ちチップ）/ yakitori /
@@ -108,3 +110,4 @@
 - `.rounds-table th.sticky-col`（0,2,1）はクラス2つの上書き（0,2,0）に勝つ → 上書きは同じくth/td付きで書く（lp-specのbm-noteと同じ詳細度事故）
 - paddingのあるスクロールコンテナ直下でposition:sticky; left:0を使うと、固定位置はpadding端ではなくコンテナ端＝スクロール開始時にpadding分ジャンプする
   → sticky列の横スクロールはpadding無しの内側ラッパー（overflow-x:auto）に担わせる
+- セッションに新しいトップレベルキーを足すときはdatabase.rules.jsonの許可リストにも追加（$other:falseのため、忘れると保存が全部失敗する。→ docs/site-spec.md）
