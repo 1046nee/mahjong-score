@@ -986,6 +986,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="expand-btn" onclick="openTableModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
+          <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
@@ -2152,6 +2153,81 @@ function closeTableModal() {
   document.getElementById('table-modal').classList.remove('open');
 }
 
+// ---- CSVエクスポート（対局履歴を表計算ソフト向けに保存） ----
+// Excel（日本語環境）で文字化けしないようUTF-8 BOM付き。列は対局履歴と同じ表示順（チームA→B…）
+function csvEsc(v) {
+  const sv = String(v == null ? '' : v);
+  return /[",\r\n]/.test(sv) ? '"' + sv.replace(/"/g, '""') + '"' : sv;
+}
+function buildCsv(g) {
+  const s = g.settings;
+  const N = s.playerNames.length;
+  const order = memberDisplayOrder(s);
+  const rounds = g.rounds || [];
+  // オプション列は「設定が有効」または「記録が存在する」場合だけ出す（旧データ互換）
+  const hasChips = !!s.bonusEnabled || rounds.some(r => r.chips);
+  const hasYaki = !!s.yakitori || rounds.some(r => r.yakitori);
+  const hasChombo = !!s.chombo || rounds.some(r => r.chombo);
+  const rows = [];
+  rows.push(['グループ名', g.name || '']);
+  rows.push(['作成日', fmtDate(g.createdAt)]);
+  rows.push(['試合形式', `${s.numPlayers === 3 ? '三麻' : '四麻'}・${s.teamMode && s.teams ? 'チーム戦' : '個人戦'}`]);
+  if (s.teamMode && s.teams) {
+    rows.push(['チーム編成', normalizedTeams(s).map(t =>
+      `${t.name}: ${t.members.filter(m => m < N).map(m => s.playerNames[m]).join('・')}`).join(' ／ ')]);
+  }
+  rows.push([]);
+  const head = ['試合', '日時'];
+  order.forEach(i => {
+    const n = s.playerNames[i];
+    head.push(`${n} 点数`, `${n} スコア`);
+    if (hasChips) head.push(`${n} チップ`);
+    if (hasYaki) head.push(`${n} 焼き鳥`);
+    if (hasChombo) head.push(`${n} チョンボ`);
+  });
+  rows.push(head);
+  rounds.forEach((r, idx) => {
+    const mem = roundMembers(r, s);
+    const slotOf = {};
+    mem.forEach((m, k) => { slotOf[m] = k; });
+    const row = [idx + 1, r.at ? `${fmtDate(r.at)} ${fmtTime(r.at)}` : ''];
+    order.forEach(i => {
+      const k = slotOf[i];
+      row.push(k != null && r.points && r.points[k] != null ? r.points[k] : '',
+               k != null ? r.scores[k] : '');
+      if (hasChips) row.push(k != null && r.chips ? (r.chips[k] || 0) : '');
+      if (hasYaki) row.push(k != null && r.yakitori && r.yakitori[k] ? '○' : '');
+      if (hasChombo) row.push(k != null && r.chombo && r.chombo[k] ? '○' : '');
+    });
+    rows.push(row);
+  });
+  // 合計行（スコア＝pts累計・チップ＝チップ差累計。点数・マーク列は空欄）
+  const totals = gameTotals(g);
+  const chipSums = chipTotals(g).chips;
+  const trow = ['合計', ''];
+  order.forEach(i => {
+    trow.push('', Math.round(totals[i] * 10) / 10);
+    if (hasChips) trow.push(chipSums[i]);
+    if (hasYaki) trow.push('');
+    if (hasChombo) trow.push('');
+  });
+  rows.push(trow);
+  return rows.map(r => r.map(csvEsc).join(',')).join('\r\n');
+}
+function exportCsv(g) {
+  if (!g || !(g.rounds || []).length) return;
+  const blob = new Blob(['\uFEFF' + buildCsv(g)], { type: 'text/csv;charset=utf-8' }); // BOM付き=Excelで文字化けしない
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const date = (g.createdAt || '').slice(0, 10).replace(/-/g, '');
+  a.download = `まじゃすこ_${(g.name || 'game').replace(/[\\/:*?"<>|]/g, '_')}${date ? '_' + date : ''}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  track('csv_export', { rounds: g.rounds.length });
+}
+
 // ---- 順位バッジ（メダル） ----
 // 1〜3位は金銀銅メダル。4位以下は絵文字を付けず灰色の数字のみ
 // 同点グループはグループ先頭の順位で表示し「〜位タイ」を付ける
@@ -2565,6 +2641,7 @@ function renderGame() {
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('expand-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
+  document.getElementById('csv-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
@@ -3366,13 +3443,14 @@ function renderDetailBody(g) {
   const expandBtn = hasRounds ? `<button class="edit-tab" onclick="openTableModal(detailGame)">もっと見る</button>` : '';
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
+  const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
   const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
       <tbody>${rows}</tbody>
     </table></div>`;
   html += `<div class="card">
-    ${detailCardHead('対局履歴', 'rounds', expandBtn + logBtn)}
+    ${detailCardHead('対局履歴', 'rounds', expandBtn + logBtn + csvBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
