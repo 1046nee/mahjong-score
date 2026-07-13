@@ -3,6 +3,7 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      "database.rules.json",
       "CLAUDE.md",
       "docs/**",
       "tools/**",
@@ -11,5 +12,8 @@
       "**/node_modules/**",
       "README.md"
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }

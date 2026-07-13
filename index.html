@@ -1244,6 +1244,16 @@ function generateSessionId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   return Array.from({length: 10}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
+// 衝突チェック付きのID発行: 生成したIDが既存セッションと同じだったら作り直す
+// （誕生日問題対策。まれな衝突でも他人の進行中セッションを上書きしないため）
+async function newSessionId() {
+  for (let i = 0; i < 5; i++) {
+    const id = generateSessionId();
+    const snap = await db.ref('sessions/' + id).once('value');
+    if (!snap.exists()) return id;
+  }
+  throw new Error('session-id-collision');
+}
 function startListening() {
   stopListening();
   scoreMetric = 'score'; // 新しいグループを開いたときはデフォルト（スコア順位）に戻す
@@ -1671,10 +1681,10 @@ async function startGame() {
     if (teams.some(t => t.members.length === 0)) { showToast('メンバーがいないチームがあります。編成を確認してください'); return; }
   }
   savePlayerNames(playerNames);
-  sessionId = generateSessionId();
-  const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}) }, rounds: [] };
   showLoading(true);
   try {
+    sessionId = await newSessionId();
+    const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}) }, rounds: [] };
     await db.ref('sessions/' + sessionId).set(game);
     history.replaceState(null, '', '#' + sessionId);
     startListening();
