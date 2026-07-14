@@ -19,6 +19,8 @@
 - `tools/make_xheader.py` — Xヘッダー 1500×500
 - `tools/make_ig1.py` — Instagram初投稿 1080×1350（縦5:横4）
 - `tools/make_ig_series.py` — IG使い方カルーセル6枚＋機能紹介6枚（共通ヘルパー: phone_frame/screen_*/sparkle/slide）
+- `tools/make_ig_feature7.py` — 機能紹介feature-7「CSVで書き出せる」単発
+- `tools/make_ig_daily.py` — IG毎日投稿用: 麻雀用語ミニ解説カード4枚（glossary-*）＋小ワザTips3枚（tips-*）
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - 新しい画像は既存スクリプトをコピーして作る。**サイトで使う画像だけ assets/ にコピーしてコミット**
 - **「まじゃすこ素材/」は本体リポジトリに入れない**（.gitignore済み。公開リポジトリで画像を見られないように、
