@@ -7,7 +7,14 @@
   <atom:link href="https://majasco.jp/news/feed.xml" rel="self" type="application/rss+xml"/>
   <description>麻雀スコア記録アプリ「まじゃすこ / majasco」のアップデート情報・お知らせ</description>
   <language>ja</language>
-  <lastBuildDate>Fri, 10 Jul 2026 12:00:00 +0900</lastBuildDate>
+  <lastBuildDate>Tue, 14 Jul 2026 12:00:00 +0900</lastBuildDate>
+  <item>
+    <title>対局履歴をCSVで書き出せるようになりました</title>
+    <link>https://majasco.jp/news/csv-export.html</link>
+    <guid>https://majasco.jp/news/csv-export.html</guid>
+    <pubDate>Tue, 14 Jul 2026 12:00:00 +0900</pubDate>
+    <description>対局履歴をワンタップでCSVファイルとしてダウンロードできるようになりました。Excelやスプレッドシートに取り込んで、オリジナルの集計表や年間ランキングづくりに使えます。</description>
+  </item>
   <item>
     <title>大型アップデートのお知らせ｜チーム戦・チップ収支・最大40人の回し打ちに対応しました</title>
     <link>https://majasco.jp/news/update-2026-07.html</link>
