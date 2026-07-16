@@ -92,7 +92,7 @@ const BLOG_POSTS = [
     const st = document.createElement('style');
     st.textContent = `
       .site-head { background: #fff; border-bottom: 1px solid #eef3f2; }
-      .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 10px 56px; display: flex; align-items: center; justify-content: center; }
+      .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .site-foot { background: #177083 !important; border-top: none !important; text-align: center; padding: 34px 20px 44px !important; color: rgba(255,255,255,0.85) !important; font-size: 12px; }
       .site-foot a { color: #fff !important; text-decoration: underline; margin: 0 !important; font-size: 13px; line-height: 1.6; }
@@ -101,7 +101,7 @@ const BLOG_POSTS = [
     const head = document.querySelector('.site-head');
     if (head) {
       head.innerHTML = `<div class="site-head-inner">
-        <a href="/index.html" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:64px;vertical-align:middle"></a>
+        <a href="/index.html" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></a>
         <a class="head-app-link" href="/#howto">使い方</a>
       </div>`;
     }

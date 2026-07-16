@@ -56,7 +56,7 @@
 - GA4はGTM経由で配信する構成を推奨（GTM管理画面でGA4タグを追加。コード変更不要）
 
 ## ブログ系ページの共通ヘッダー/フッター
-- `/assets/blog-site.js` の `renderChrome()` が一元描画（LPと同じ見た目=中央ロゴ64px・右上「使い方」・緑2列フッター）
+- `/assets/blog-site.js` の `renderChrome()` が一元描画（LPと同じ見た目=中央ロゴ48px・右上「使い方」・緑2列フッター）
 - 各HTMLの静的.site-head/.site-footはJS無効時のフォールバック。**デザイン変更はrenderChromeだけ直す**
 
 ## 検索まわりの注意

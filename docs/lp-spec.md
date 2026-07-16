@@ -55,7 +55,7 @@
   （.bookmark-howto > p のセンター指定に勝つよう .bookmark-howto .bm-note の2クラスで指定）
 
 ## ヘッダー
-- ロゴ中央64px・右上「使い方」ピル（goUsage→#howto）。**ゲーム設定画面だけ左上に丸い「‹」ボタン**（#header-back）
+- ロゴ中央48px・右上「使い方」ピル（goUsage→#howto）。**ゲーム設定画面だけ左上に丸い「‹」ボタン**（#header-back）
 
 ## 落とし穴
 - 新機能を追加したらLPの「使い方」と特徴カードも更新すること
