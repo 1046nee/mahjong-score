@@ -21,6 +21,12 @@
 ## CTA
 - 記事末尾 `.cta-link`・一覧 `.app-btn` はLPのCTAと同形（影なし・ピルradius50px・max-width380px・blog.cssの!importantで統一済み）
 
+## 記事の品質基準（AdSense対策後の水準。2026-07-17〜）
+- **本文2,500字級**（表・実例・FAQ・実体験を含める。薄い記事は追加しない）
+- 著者ブロックはblog-site.jsがCTA直前に自動挿入（個別HTMLへの記載不要）
+- Article JSON-LDのauthorは `{"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}` で統一
+- 内部リンクを2本以上（関連記事へ相互に張る）
+
 ## 記事の追加手順
 1. 既存の `blog-*.html`（お知らせは `news/update-2026-07.html`）をコピーして執筆。
    head一式（docs/site-spec.mdのチェックリスト）・パンくず・.post-layout＋sidebar・広告枠（article_top/bottom）・末尾CTA・

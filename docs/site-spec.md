@@ -3,6 +3,7 @@
 ## ファイル構成
 - `index.html` — アプリ本体（SPA・全画面が1ファイル → docs/app-spec.md / docs/lp-spec.md）
 - `blog.html` / `blog-*.html` / `mahjong/` `news/` `blog/` — ブログ（→ docs/blog-spec.md）
+- `about.html` — 運営者情報（むにぃ名義・ProfilePage JSON-LD。著者ブロック/フッターからリンク。広告枠は置かない）
 - `score-basics.html` — スコア計算の基本（Article JSON-LD・関連記事への内部リンク・lp_bottom枠）
 - `faq.html` — よくある質問7問（**FAQPage JSON-LDはここ。本文と一致させる**）
 - `terms.html` / `privacy.html` — 規約・PP（AdSense必須文言含む。広告枠は置かない）
@@ -44,8 +45,9 @@
 
 ## 広告（AdSense）
 - パブリッシャーID `ca-pub-9998035509478799`。ads.txt設置済み
-- **サイト審査: 2026-07-10申請、審査待ち（「準備中」）**。「準備完了」になるまで広告は配信されない（実装が正しくてもunfilledが返る）。
-  審査は通常数日〜2/4週間。承認を確認したらこの行を「承認済み」に更新する
+- **サイト審査: 2026-07-10申請 → 2026-07-17不合格（「有用性の低いコンテンツ」）→ 対策実施中**。
+  対策: 記事増強（全14記事を2,500字級へ）・運営者ページ/著者ブロック（E-E-A-T）・新規記事追加。
+  **再申請は対策完了から2〜4週間空けて行う（ユーザー操作）**。承認を確認したらこの行を「承認済み」に更新する
 - 枠は `/assets/ads.js` の AD_SLOTS で管理: article_top / article_bottom / list_bottom / lp_bottom（4枠配信中）
 - スロットID空欄=非表示。追加時はAdSenseでディスプレイ広告ユニット作成→IDをAD_SLOTSへ（min-height:280px自動でCLS対策）
 - **置かない場所**: スコア入力・ゲーム画面・設定モーダル・privacy/terms・404（誤クリック防止）
@@ -64,6 +66,9 @@
 - XのOGPカードはURL単位で約1週間キャッシュ（→ docs/image-tools.md）
 
 ## 落とし穴
+- **AdSense審査は「形式要件OK」でも通らない**（2026-07-17に「有用性の低いコンテンツ」で不合格）。
+  効くのは記事の量（2,500字級）・独自性（実体験・独自データ）・E-E-A-T（運営者ページ・著者表記）。再申請は2〜4週間空ける
+- 全記事のArticle JSON-LDのauthorは Person（むにぃ・/about.htmlへリンク）で統一。著者ブロックはblog-site.jsが自動挿入（HTML個別編集不要）
 - firebase.jsonのpublicは「.」= リポジトリ全部配信。**開発用ファイルを増やしたらignoreに追加すること**
 - アセット（blog.css/blog-site.js）はブラウザキャッシュが強い。検証時は fetch(url, {cache:'reload'}) やクエリ付きで確認
 - **アプリのUI名・文言を変えたら faq / score-basics / news記事などの外部ページの言及も同時に更新する**
