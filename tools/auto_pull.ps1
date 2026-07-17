@@ -1,6 +1,10 @@
 ﻿# まじゃすこ自動pull: リポジトリ本体と入れ子clone（「まじゃすこ素材」等）を最新化する。
 # リモートセッション（Claude Code on the Web等）からpushされた変更を手元PCへ自動反映するための仕組み。
-# タスクスケジューラから定期実行される想定（登録は tools/install_auto_pull.ps1 を1回実行）。
+# 登録は tools/install_auto_pull.ps1 を1回実行（タスクスケジューラ or スタートアップ常駐に登録される）。
+#
+# 実行モード:
+#   （引数なし）  1回だけpullして終了（タスクスケジューラ用）
+#   -Loop         常駐して30分ごとにpullし続ける（スタートアップフォルダ用。多重起動は自動で防止）
 #
 # 安全設計（手元の作業を絶対に壊さない）:
 # - fast-forwardできるときだけ進める（git merge --ff-only）。衝突・未pushのローカルコミットがあれば何もしない
@@ -9,7 +13,9 @@
 
 param(
   # リポジトリルート（省略時はこのスクリプトの親フォルダ=リポジトリ直下）
-  [string]$Root = (Split-Path -Parent $PSScriptRoot)
+  [string]$Root = (Split-Path -Parent $PSScriptRoot),
+  [switch]$Loop,
+  [int]$IntervalMinutes = 30
 )
 
 $ErrorActionPreference = "Continue"
@@ -54,16 +60,31 @@ function Update-Repo([string]$dir) {
   }
 }
 
-# 本体 → 直下の入れ子clone（「まじゃすこ素材」など.gitを持つフォルダ全部）の順にpull
-Update-Repo $Root
-Get-ChildItem -Path $Root -Directory | ForEach-Object {
-  Update-Repo $_.FullName
+function Invoke-AutoPull {
+  # 本体 → 直下の入れ子clone（「まじゃすこ素材」など.gitを持つフォルダ全部）の順にpull
+  Update-Repo $Root
+  Get-ChildItem -Path $Root -Directory | ForEach-Object {
+    Update-Repo $_.FullName
+  }
+  # ログの肥大化防止: 1000行を超えたら新しい500行だけ残す
+  if (Test-Path $script:LogPath) {
+    $lines = @(Get-Content $script:LogPath -Encoding UTF8)
+    if ($lines.Count -gt 1000) {
+      $lines | Select-Object -Last 500 | Set-Content $script:LogPath -Encoding UTF8
+    }
+  }
 }
 
-# ログの肥大化防止: 1000行を超えたら新しい500行だけ残す
-if (Test-Path $script:LogPath) {
-  $lines = @(Get-Content $script:LogPath -Encoding UTF8)
-  if ($lines.Count -gt 1000) {
-    $lines | Select-Object -Last 500 | Set-Content $script:LogPath -Encoding UTF8
+if ($Loop) {
+  # 多重起動防止（ログオンごと・手動起動が重なっても1本だけ常駐する）
+  $created = $false
+  $mutex = New-Object System.Threading.Mutex($true, "Local\majasco-auto-pull", [ref]$created)
+  if (-not $created) { exit 0 }
+  Write-Log "常駐モード開始（${IntervalMinutes}分間隔）"
+  while ($true) {
+    Invoke-AutoPull
+    Start-Sleep -Seconds ($IntervalMinutes * 60)
   }
+} else {
+  Invoke-AutoPull
 }

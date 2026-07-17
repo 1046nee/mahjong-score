@@ -36,7 +36,9 @@ mahjongフォルダでPowerShellを開いて1回だけ実行:
 ```
 powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
 ```
-- タスクスケジューラに「majasco-auto-pull」を登録（ログオン時＋30分ごと。管理者権限不要）
+- タスクスケジューラに「majasco-auto-pull」を登録（ログオン時＋30分ごと。管理者権限不要）。
+  会社PCなどでタスク登録が「アクセス拒否」される場合は、**スタートアップフォルダの常駐スクリプト方式へ自動フォールバック**する
+  （majasco-auto-pull.vbs がログオン時に隠しウィンドウで起動し30分ごとにpull。多重起動は防止済み）
 - 本体と「まじゃすこ素材」など入れ子cloneをまとめて **fast-forwardのみ** でpull。
   mainブランチ以外・未pushのローカルコミット・衝突があるときは**何もせずスキップ**するので手元の作業は壊れない
 - ログ: `%LOCALAPPDATA%\majasco\auto-pull.log`（更新・スキップがあったときだけ記録）
@@ -60,3 +62,7 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
 ## 落とし穴
 - タスクスケジューラの繰り返し期間に `[TimeSpan]::MaxValue` は使えない（XML値 P99999999DT... が「範囲外」で登録失敗）
   → `New-TimeSpan -Days 3650` など有効な有限値を指定する（install_auto_pull.ps1で対応済み）
+- 会社PC（社内ポリシー）では Register-ScheduledTask 自体が「アクセス拒否」(0x80070005) になることがある
+  → スタートアップフォルダ＋常駐スクリプト方式なら管理者権限・タスク登録権限なしで動く（install_auto_pull.ps1が自動フォールバック）
+- .ps1に日本語コメントを書くならUTF-8 **BOM付き**で保存（Windows PowerShell 5.1はBOM無しをANSIと解釈して文字化け・パースエラーの危険）。
+  スタートアップ用.vbsはUTF-16（-Encoding Unicode）で書けば日本語パスも安全
