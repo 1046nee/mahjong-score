@@ -96,8 +96,10 @@ def floating_card(canvas, crop_im, width, x, y, radius=22):
     return h
 
 
-def phone(canvas, shot, x_center, y0, screen_w):
-    """実スクショを載せたスマホ（下端は画面外へ抜ける）"""
+def phone(canvas, shot, x_center, y0, screen_w, crop_top=0):
+    """実スクショを載せたスマホ（下端は画面外へ抜ける）。crop_topでスクショ上部を切って見せ場を上に寄せる"""
+    if crop_top:
+        shot = shot.crop((0, crop_top, shot.width, shot.height))
     screen_h = int(shot.height * screen_w / shot.width)
     bez = 16
     px0 = x_center - screen_w // 2 - bez
@@ -168,4 +170,57 @@ def make(variant, fname):
 
 make("vivid", "ig-v2-vivid.png")
 make("night", "ig-v2-night.png")
+
+# ==== v2シリーズ（機能紹介の再スタート枠。カバー=ig-v2-vivid.pngの後に3日おきで投稿） ====
+# 各スライド: vividグラデーション背景＋見出し2行＋サブ＋実画面スマホ＋浮遊カード（要素スクショ）
+SERIES = [
+    # (ファイル名, 見出し1, 見出し2, サブ, スマホ画面, crop_top, 浮遊カード[(素材, 幅, x, y)])
+    ("ig-v2-2-input.png", "点数を打つだけ、", "結果はその場で。", "ウマ・オカ込みのスコアを自動計算",
+     "shot-sheet-edit.png", 0, [("el-row1.png", 420, 30, 1100)]),
+    ("ig-v2-3-share.png", "URLを送るだけ、", "全員が同じスコア表。", "誰かが入力すれば、全員のスマホに反映",
+     "shot-share.png", 430, [("el-row1.png", 400, 30, 1060), ("el-row2.png", 380, 666, 1160)]),
+    # グラフ回はページ全体スクショから成績表後半〜グラフを切り出す（viewport版だと丈が足りず
+    # スマホが下端まで届かない）
+    ("ig-v2-4-graph.png", "昨夜の逆転劇が、", "グラフに残る。", "試合ごとのスコア推移を自動で記録",
+     "shot-full.png", 3170, [("el-row1.png", 420, 30, 1108)]),
+    ("ig-v2-5-team.png", "Mリーグ気分の、", "チーム戦モード。", "チーム合計も個人成績も自動で集計",
+     "team-top.png", 0, [("el-team-chart.png", 380, 666, 1030)]),
+    ("ig-v2-6-sanma.png", "三麻派も、", "いつものルールで。", "持ち点・返し点・ウマは自由に設定OK",
+     "sanma-top.png", 0, [("el-sanma-row1.png", 420, 30, 1108)]),
+    ("ig-v2-7-options.png", "焼き鳥もチョンボも、", "ワンタップで記録。", "チップの増減まで収支に自動反映",
+     "chips-sheet.png", 0, [("el-chips-row1.png", 420, 30, 1108)]),
+]
+
+
+def series_slide(fname, hl1, hl2, sub, shot_name, crop_top, floats):
+    bg = diagonal_gradient((17, 96, 116), BLUE_SANMA)
+    add_glow(bg, W // 2, 830, 520, (130, 212, 226), 95)
+    canvas = bg.convert("RGBA")
+    d = ImageDraw.Draw(canvas)
+
+    sparkle(d, 92, 108, 30, (255, 255, 255, 160))
+    sparkle(d, 1002, 470, 40, ORANGE)
+    sparkle(d, 76, 600, 24, LIGHT_CYAN)
+    sparkle(d, 1010, 1240, 26, (255, 255, 255, 150))
+    d.ellipse([948, 138, 972, 162], fill=ORANGE)
+    d.ellipse([130, 1000, 148, 1018], fill=(130, 212, 226))
+
+    d.text((W // 2, 165), hl1, font=font(88, 900), fill=(255, 255, 255), anchor="mm")
+    d.text((W // 2, 278), hl2, font=font(88, 900), fill=(255, 255, 255), anchor="mm")
+    d.text((W // 2, 383), sub, font=font(37, 600), fill=LIGHT_CYAN, anchor="mm")
+
+    shot = Image.open(os.path.join(SHOTS, shot_name)).convert("RGB")
+    phone(canvas, shot, W // 2, 470, 460, crop_top=crop_top)
+
+    for src, fw, fx, fy in floats:
+        fim = Image.open(os.path.join(SHOTS, src)).convert("RGB")
+        floating_card(canvas, fim, fw, fx, fy, radius=26)
+
+    d.text((56, 1292), "majasco.jp", font=font(38, 700), fill=(255, 255, 255, 230), anchor="lm")
+    canvas.convert("RGB").save(os.path.join(OUTDIR, fname))
+    print("saved:", fname)
+
+
+for slide_def in SERIES:
+    series_slide(*slide_def)
 print("done")
