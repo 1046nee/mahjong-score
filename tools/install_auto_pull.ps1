@@ -5,6 +5,9 @@
 
 param([switch]$Uninstall)
 
+# 登録に失敗したら成功メッセージを出さずに止める
+$ErrorActionPreference = "Stop"
+
 $taskName = "majasco-auto-pull"
 
 if ($Uninstall) {
@@ -20,9 +23,11 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" `
   -Argument ("-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"{0}`"" -f $pullScript)
 
 # ログオン時＋30分間隔の2本立て（間隔はここを変えて再実行すれば上書き登録される）
+# 注意: 繰り返し期間に [TimeSpan]::MaxValue を使うとタスクスケジューラがXML値を「範囲外」として
+# 拒否する（P99999999DT...）。有効な有限値（10年）を指定する
 $trigLogon = New-ScheduledTaskTrigger -AtLogOn
 $trigRepeat = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) `
-  -RepetitionInterval (New-TimeSpan -Minutes 30) -RepetitionDuration ([TimeSpan]::MaxValue)
+  -RepetitionInterval (New-TimeSpan -Minutes 30) -RepetitionDuration (New-TimeSpan -Days 3650)
 
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -RunOnlyIfNetworkAvailable
 

@@ -56,3 +56,7 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
 - gitのコミッター名を整えたい場合（任意）: `git config --global user.name "名前"` / `git config --global user.email "メール"`
 - この開発用PC（社内ネットワーク）では majasco.jp 自体がZscalerでブロックされる（docs/site-spec.md 落とし穴参照）。
   自宅PCなど別環境なら本番サイトの確認も可能
+
+## 落とし穴
+- タスクスケジューラの繰り返し期間に `[TimeSpan]::MaxValue` は使えない（XML値 P99999999DT... が「範囲外」で登録失敗）
+  → `New-TimeSpan -Days 3650` など有効な有限値を指定する（install_auto_pull.ps1で対応済み）
