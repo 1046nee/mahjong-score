@@ -14,6 +14,7 @@ import glob
 import http.server
 import math
 import os
+import re
 import shutil
 import subprocess
 import threading
@@ -27,7 +28,9 @@ os.makedirs(OUTDIR, exist_ok=True)
 
 PORT = 8789
 VIEW_W, VIEW_H = 390, 844          # スマホ実寸ビューポート
-REC_W, REC_H = 780, 1688           # 録画解像度（2倍）
+# 録画はビューポート等倍で行う（Playwrightのrecord_video_sizeは縮小専用。
+# 大きい値を指定すると左上に等倍配置＋グレー余白になる）。拡大はffmpeg側でlanczos補間
+REC_W, REC_H = VIEW_W, VIEW_H
 CANVAS_W, CANVAS_H = 1080, 1920    # ショート動画キャンバス（9:16）
 SCREEN_W = 744                     # 合成時のスマホ画面幅
 SCREEN_H = SCREEN_W * REC_H // REC_W
@@ -291,19 +294,28 @@ def main():
     ff = ffmpeg_exe()
 
     raw_mp4 = os.path.join(OUTDIR, "demo-raw.mp4")
-    subprocess.run([ff, "-y", "-i", raw_webm, "-c:v", "libx264", "-crf", "20",
+    subprocess.run([ff, "-y", "-i", raw_webm,
+                    "-vf", f"scale={VIEW_W * 2}:{VIEW_H * 2}:flags=lanczos",
+                    "-c:v", "libx264", "-crf", "20",
                     "-pix_fmt", "yuv420p", "-movflags", "+faststart", raw_mp4],
                    check=True, capture_output=True)
     os.remove(raw_webm)
 
+    # 元動画の長さを取得して -t で明示（-loop 1 の静止画入力が混ざるため、
+    # shortest=1 を全overlayに付けた上で出力長も固定しないとエンコードが終わらない）
+    probe = subprocess.run([ff, "-i", raw_mp4], capture_output=True, text=True)
+    m = re.search(r"Duration: (\d+):(\d+):([\d.]+)", probe.stderr)
+    assert m, "動画の長さを取得できない"
+    duration = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+
     bg_path, frame_path = build_overlay_images()
     short_mp4 = os.path.join(OUTDIR, "demo-short-9x16.mp4")
-    fc = (f"[1:v]scale={SCREEN_W}:{SCREEN_H}[scr];"
+    fc = (f"[1:v]scale={SCREEN_W}:{SCREEN_H}:flags=lanczos[scr];"
           f"[0:v][scr]overlay={SCREEN_X}:{SCREEN_Y}:shortest=1[t1];"
-          f"[t1][2:v]overlay=0:0,format=yuv420p")
+          f"[t1][2:v]overlay=0:0:shortest=1,format=yuv420p")
     subprocess.run([ff, "-y", "-loop", "1", "-i", bg_path, "-i", raw_mp4,
                     "-loop", "1", "-i", frame_path, "-filter_complex", fc,
-                    "-r", "30", "-c:v", "libx264", "-crf", "20",
+                    "-t", f"{duration:.2f}", "-r", "30", "-c:v", "libx264", "-crf", "20",
                     "-movflags", "+faststart", short_mp4],
                    check=True, capture_output=True)
     print("saved:", raw_mp4)
