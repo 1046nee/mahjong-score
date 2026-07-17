@@ -20,6 +20,8 @@
 - `tools/make_ig1.py` — Instagram初投稿 1080×1350（縦5:横4）
 - `tools/make_ig_series.py` — IG使い方カルーセル6枚＋機能紹介6枚（共通ヘルパー: phone_frame/screen_*/sparkle/slide）
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
+- `tools/shoot_app_screens.py` — 実アプリ画面のスマホ実寸スクショ撮影（index.htmlをローカル起動＋Firebaseを最小スタブ化。本番に触れない。出力: まじゃすこ素材/ig/shots/）
+- `tools/make_ig_v2.py` — IGフィードv2 1080×1350（実画面スクショ×カラー背景の濃色デザイン。白基調シリーズがグリッドで沈む対策。要: shoot_app_screens.py を先に実行）
 - 新しい画像は既存スクリプトをコピーして作る。**サイトで使う画像だけ assets/ にコピーしてコミット**
 - **「まじゃすこ素材/」は本体リポジトリに入れない**（.gitignore済み。公開リポジトリで画像を見られないように、
   **privateリポジトリ `1046nee/majasco-assets` にネストしたgitとして管理**。素材を作ったら まじゃすこ素材/ 内で add→commit→push。
@@ -42,6 +44,9 @@
 4. docs/sns-ops.md のチェックリストも通す
 
 ## 落とし穴
+- リモート実行環境（Claude Code on the Web等）からは majasco.jp / Firebase への接続がegressポリシーでブロックされることがある
+  → 実画面スクショは tools/shoot_app_screens.py のローカル起動＋Firebaseスタブ方式で撮る（本番データにも一切触れないので検証セッションの削除も不要）
+- フォントパスはOS依存（Windows: C:\Windows\Fonts\NotoSansJP-VF.ttf ／ Linux: /usr/share/fonts/truetype/noto-jp/NotoSansJP.ttf に配置）。make_ig_v2.pyは両対応済み
 - 可変フォントのweight指定を忘れると細字になる（try/exceptで握りつぶしているため気づきにくい）
 - bashヒアドキュメント内のWindowsパス（\U等）はエスケープ事故のもと → スクリプトはファイルに書いて実行する
 - 生成スクリプトはtools/に置く（scratchpadはセッションが変わると消える）
