@@ -153,12 +153,12 @@ def make(variant, fname):
     shot_top = Image.open(os.path.join(SHOTS, "shot-top.png")).convert("RGB")
     phone(canvas, shot_top, W // 2, 545, 460)
 
-    # 浮遊カード: 1位の行（shot-top.pngから切り抜き）とスコア推移グラフ（shot-full.pngから）
+    # 浮遊カード: 1位の行とスコア推移グラフ（要素単位スクショel-*を使う。座標固定のクロップは
+    # スクショ撮り直しでズレるため禁止。過去に太郎カードがずれた）
     # 位置はスマホ内の重要情報（グループ名・プラスのスコア）を隠さないよう左下／右下寄りに置く
-    row1 = shot_top.crop((95, 680, 1078, 878))
+    row1 = Image.open(os.path.join(SHOTS, "el-row1.png")).convert("RGB")
     floating_card(canvas, row1, 400, 30, 1108, radius=26)
-    full = Image.open(os.path.join(SHOTS, "shot-full.png")).convert("RGB")
-    graph = full.crop((38, 4230, 1132, 5155))
+    graph = Image.open(os.path.join(SHOTS, "el-graph.png")).convert("RGB")
     floating_card(canvas, graph, 372, 666, 1000, radius=26)
 
     # フッター（majasco.jp表記はQA必須項目）
