@@ -30,14 +30,27 @@ git clone https://github.com/1046nee/majasco-assets.git "まじゃすこ素材"
 2. 「プレビューを起動してトップページを表示して」
 3. 「python tools/make_ig1.py を実行して画像が生成できるか確認して」
 
-## 5. 運用ルール（2台で安全に使うために）
+## 5. 自動pull（リモートセッションの成果物を手元に自動反映・推奨）
+Claude Code on the Webなどリモート環境からpushされた変更（画像素材・コード）を、手元PCが自動で取り込む仕組み。
+mahjongフォルダでPowerShellを開いて1回だけ実行:
+```
+powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
+```
+- タスクスケジューラに「majasco-auto-pull」を登録（ログオン時＋30分ごと。管理者権限不要）
+- 本体と「まじゃすこ素材」など入れ子cloneをまとめて **fast-forwardのみ** でpull。
+  mainブランチ以外・未pushのローカルコミット・衝突があるときは**何もせずスキップ**するので手元の作業は壊れない
+- ログ: `%LOCALAPPDATA%\majasco\auto-pull.log`（更新・スキップがあったときだけ記録）
+- 解除: 同じコマンドに `-Uninstall` を付けて実行
+- **注意: 「作業前に必ずpull」の絶対ルールはこれがあっても維持する**（自動pullは30分間隔なので直前の変更は拾えていないことがある）
+
+## 6. 運用ルール（2台で安全に使うために）
 - **同期はCLAUDE.mdの絶対ルールで担保**: 作業前に必ずpull・変更ごとにpush。これを守る限り、どちらのPCで作業しても常に最新が正になる
 - **同時に2台で作業しない**（交互に使う。万一衝突したらpull時にClaudeが検知して報告する）
 - 素材を生成・変更したら `まじゃすこ素材/` の中でも add→commit→push（Claudeが実施）
 - 会話履歴とClaudeのローカルメモリは**端末ごとに別**。引き継ぐべき知識は docs/ とNotionに書くのが前提
   （だから「トラブルは落とし穴へ追記」ルールが重要）
 
-## 6. 環境差の注意
+## 7. 環境差の注意
 - 画像生成ツールはWindowsフォント前提（`C:\Windows\Fonts\NotoSansJP-VF.ttf` / `seguiemj.ttf`。Windows 11なら標準搭載）。
   **Macで使う場合は tools/ 内のFONT/EMOJIパスの変更が必要**
 - gitのコミッター名を整えたい場合（任意）: `git config --global user.name "名前"` / `git config --global user.email "メール"`
