@@ -96,7 +96,13 @@ const BLOG_POSTS = [
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .site-foot { background: #177083 !important; border-top: none !important; text-align: center; padding: 34px 20px 44px !important; color: rgba(255,255,255,0.85) !important; font-size: 12px; }
       .site-foot a { color: #fff !important; text-decoration: underline; margin: 0 !important; font-size: 13px; line-height: 1.6; }
-      .site-foot .links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; max-width: 440px; margin: 0 auto 18px; text-align: left; }`;
+      .site-foot .links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; max-width: 440px; margin: 0 auto 18px; text-align: left; }
+      .author-box { display: flex; gap: 14px; margin: 36px 0 0; padding: 18px; background: #f4faf7; border: 1px solid #e2ece7; border-radius: 12px; }
+      .author-box .a-icon { width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; background: #177083; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 24px; }
+      .author-box .a-body { min-width: 0; }
+      .author-box .a-name { font-weight: 800; font-size: 14px; color: #177083; margin-bottom: 6px; }
+      .author-box p { font-size: 13px; color: #444; margin: 0 0 8px; line-height: 1.8; }
+      .author-box a { font-size: 13px; color: #177083; font-weight: 700; }`;
     document.head.appendChild(st);
     const head = document.querySelector('.site-head');
     if (head) {
@@ -117,6 +123,7 @@ const BLOG_POSTS = [
         <a href="/privacy.html">プライバシーポリシー</a>
         <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
         <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
+        <a href="/about.html">運営者について</a>
         <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
       </div>
       <div>© 2026 まじゃすこ</div>`;
@@ -136,6 +143,20 @@ const BLOG_POSTS = [
       wrap.appendChild(tb);
       if (tb.rows[0] && tb.rows[0].cells.length >= 4) tb.style.minWidth = '520px';
     });
+
+    // 記事末尾の著者ブロック（E-E-A-T対策: 全記事共通でCTAの直前に自動挿入）
+    const cta = document.querySelector('.blog-post .cta-wrap');
+    if (cta && !document.querySelector('.author-box')) {
+      const box = document.createElement('div');
+      box.className = 'author-box';
+      box.innerHTML = `<div class="a-icon" aria-hidden="true">む</div>
+        <div class="a-body">
+          <div class="a-name">この記事を書いた人：むにぃ</div>
+          <p>麻雀スコア記録アプリ「まじゃすこ」の開発・運営者。仲間内のセット麻雀で長らく「集計係」を担当してきた経験から、点数を打つだけで集計が終わる無料アプリを個人開発しました。当ブログでは、初心者向けのルール解説とスコア計算の話を書いています。</p>
+          <a href="/about.html">運営者について詳しく ›</a>
+        </div>`;
+      cta.parentNode.insertBefore(box, cta);
+    }
 
     // 記事一覧（カテゴリ別・新しい順）
     document.querySelectorAll('[data-post-list]').forEach(el => {
