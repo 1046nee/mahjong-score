@@ -22,6 +22,8 @@
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - `tools/shoot_app_screens.py` — 実アプリ画面のスマホ実寸スクショ撮影（index.htmlをローカル起動＋Firebaseを最小スタブ化。本番に触れない。出力: まじゃすこ素材/ig/shots/）
 - `tools/make_ig_v2.py` — IGフィードv2 1080×1350（実画面スクショ×カラー背景の濃色デザイン。白基調シリーズがグリッドで沈む対策。要: shoot_app_screens.py を先に実行）
+- `tools/record_app_demo.py` — 操作デモ動画の録画（LP→グループ作成→URL共有→点数入力→成績・グラフ。
+  ローカル起動＋Firebaseスタブ＋タップ可視化。出力: demo-raw.mp4=素の縦長録画／demo-short-9x16.mp4=1080×1920ショート用合成。要: pip install imageio-ffmpeg）
 - 新しい画像は既存スクリプトをコピーして作る。**サイトで使う画像だけ assets/ にコピーしてコミット**
 - **「まじゃすこ素材/」は本体リポジトリに入れない**（.gitignore済み。公開リポジトリで画像を見られないように、
   **privateリポジトリ `1046nee/majasco-assets` にネストしたgitとして管理**。素材を作ったら まじゃすこ素材/ 内で add→commit→push。
