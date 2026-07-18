@@ -11,6 +11,14 @@
       "**/.*",
       "**/node_modules/**",
       "README.md"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      }
     ]
   },
   "database": {
