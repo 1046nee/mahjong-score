@@ -104,6 +104,7 @@
 
 ## テスト
 - /tests.html = index.htmlをiframeで読み実物関数を18ケース検証。**計算ロジック変更時はALL PASS確認必須**
+- tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。ローカルは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）
 
 ## 落とし穴
 - **起動時のhistory.replaceStateで第3引数にlocation.pathnameだけを渡すと、共有URLの#セッションIDが消えて自動参加が壊れる**

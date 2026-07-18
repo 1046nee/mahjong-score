@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # 主要動線のスモークテスト（グループ作成→URL共有→自動参加→点数入力→結果表示）。
+      # 失敗したらここでジョブが止まり、壊れたコードは本番にデプロイされない
+      - name: スモークテスト（失敗したらデプロイ中止）
+        run: |
+          python3 -m pip install --quiet playwright
+          python3 -m playwright install --with-deps chromium
+          python3 tools/smoke_test.py
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
