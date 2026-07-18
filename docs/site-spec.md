@@ -18,7 +18,9 @@
   **privateリポジトリ 1046nee/majasco-assets で管理**（→ docs/image-tools.md）。firebase.jsonのignoreでも配信除外）
 
 ## デプロイ
-- mainへpush → GitHub Actions（.github/workflows/firebase-hosting-merge.yml）→ Firebase Hosting自動デプロイ
+- mainへpush → GitHub Actions（.github/workflows/firebase-hosting-merge.yml）→ **スモークテスト → 合格時のみ**Firebase Hosting自動デプロイ
+- スモークテスト = tools/smoke_test.py（LP表示→グループ作成→URL共有→別タブで自動参加→点数入力→結果表示の主要動線を実ブラウザで検証。
+  2026-07-18の「共有URLで開くとLPしか出ない」障害の再発防止。落ちたらActionsのログで原因を確認して修正後に再push）
 - Firebase設定は firebase.json / .firebaserc にコミット済み
 
 ## RTDBセキュリティルール（database.rules.json）
