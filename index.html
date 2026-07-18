@@ -1301,7 +1301,9 @@ function fmtDate(iso) {
 }
 // ---- Views (画面遷移と履歴管理) ----
 if (!history.state) {
-  history.replaceState({ view: 'home' }, '', location.pathname);
+  // 注意: 第3引数にlocation.pathnameだけを渡すと共有URLの#セッションIDが消えて
+  // 起動時の自動参加が壊れる（実際に起きた）。必ずhashを保持すること
+  history.replaceState({ view: 'home' }, '', location.pathname + location.hash);
 }
 
 function showView(name, skipHistory = false) {

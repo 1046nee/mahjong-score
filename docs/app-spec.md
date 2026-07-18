@@ -106,6 +106,8 @@
 - /tests.html = index.htmlをiframeで読み実物関数を18ケース検証。**計算ロジック変更時はALL PASS確認必須**
 
 ## 落とし穴
+- **起動時のhistory.replaceStateで第3引数にlocation.pathnameだけを渡すと、共有URLの#セッションIDが消えて自動参加が壊れる**
+  （2026-07-18に発生。「共有URLを開いてもLPしか出ない」の原因。必ず `location.pathname + location.hash` にする）
 - iOSで transform＋fixed＋input はタップ不良を起こす（ボトムシート廃止の理由）。モーダルはtransformなしで
 - requestAnimationFrameは非表示タブで発火しない → UI更新に使わない（カルーセルのドットで事故った）
 - .toggle-btnはbackgroundにtransitionがあり、切替直後のgetComputedStyleは中間色を返す（検証時の偽陽性）
