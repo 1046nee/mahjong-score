@@ -71,6 +71,8 @@
 - 全記事のArticle JSON-LDのauthorは Person（むにぃ・/about.htmlへリンク）で統一。著者ブロックはblog-site.jsが自動挿入（HTML個別編集不要）
 - firebase.jsonのpublicは「.」= リポジトリ全部配信。**開発用ファイルを増やしたらignoreに追加すること**
 - アセット（blog.css/blog-site.js）はブラウザキャッシュが強い。検証時は fetch(url, {cache:'reload'}) やクエリ付きで確認
+- **Hostingのキャッシュヘッダー未設定だとデフォルトmax-age=3600**で、不具合修正が最大1時間ユーザーに届かない
+  → firebase.jsonのheadersで全ファイルCache-Control: no-cacheに設定済み（ETag再検証・304なら転送なし。2026-07-18）
 - **アプリのUI名・文言を変えたら faq / score-basics / news記事などの外部ページの言及も同時に更新する**
   （2026.07: 「変更」ボタン→設定の編集、対局形式→試合形式、レート、旧倍率例示、個人成績→その他成績 が外部ページに残っていた。
   faq.htmlはFAQPage JSON-LDも本文とセットで直す）
