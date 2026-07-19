@@ -1811,6 +1811,14 @@ function chipTotals(g) {
   });
   return { chips, yaki, chombo };
 }
+// 収支セクション（合計収支・内訳）の表示条件: チップあり、またはスコア倍率が実質有効。
+// スコア倍率だけ設定したグループでも「スコア収支」を表示する（チップあり🍪には紐づけない。
+// 2026-07-19「倍率を設定したのに収支が出ない」の修正）。
+// 旧データ互換: rate未設定・×1・なし(0)のグループは従来どおり非表示
+function bonusVisible(s) {
+  const r = Number(s.rate) || 0;
+  return !!s.bonusEnabled || (r > 0 && r !== 1);
+}
 function bonusTableHtml(g) {
   const s = g.settings;
   const names = s.playerNames;
@@ -1845,8 +1853,10 @@ function bonusTableHtml(g) {
   const row = (label, cellsHtml) => `<tr><td style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
   let rows = row('スコア（pts）', colOrder.map(i => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
   rows += row(`スコア収支（pts×${scoreRate}倍）`, colOrder.map(i => cell(i, signed(scoreBonus[i]))).join(''));
-  rows += row('チップ差', colOrder.map(i => cell(i, `${signed(chips[i])}枚`)).join(''));
-  rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map(i => cell(i, signed(chipBonus[i]))).join(''));
+  if (s.bonusEnabled) { // チップ関連の行はチップあり🍪のグループだけ表示
+    rows += row('チップ差', colOrder.map(i => cell(i, `${signed(chips[i])}枚`)).join(''));
+    rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map(i => cell(i, signed(chipBonus[i]))).join(''));
+  }
   rows += row('合計収支', colOrder.map(i => cell(i, `${signed(grand[i])}bonus`, true)).join(''));
   if (s.yakitori) {
     rows += row('焼き鳥🐔', colOrder.map(i => cell(i, yaki[i] ? `${yaki[i]}回` : '0回', yaki[i] > 0)).join(''));
@@ -1937,7 +1947,7 @@ function scoreMainHtml(g) {
     html += `<div class="metric-label">${scoreMetric === 'chips' ? '順位（チップ）' : '順位（スコア）'}</div>`;
   }
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
-  if (s.bonusEnabled && hasRounds) {
+  if (bonusVisible(s) && hasRounds) {
     html += `<button type="button" class="bonus-section-toggle${bonusSectionOpen ? ' open' : ''}" onclick="toggleBonusSection(this)">
       <span>合計収支</span><span class="bst-arrow">${bonusSectionOpen ? '▴' : '▾'}</span>
     </button>
@@ -2003,7 +2013,7 @@ function teamStandingsHtml(g) {
     const grp = groups[ti];
     const memberNames = t.members.map(m => esc(s.playerNames[m] || '')).join('・');
     let bonusLine = '';
-    if (s.bonusEnabled) {
+    if (bonusVisible(s)) {
       // メンバーごとの収支（表示と同じ丸め）を合算してチーム合計収支にする
       const grand = t.members.reduce((a, m) => a + Math.round((totals[m] || 0) * scoreRate) + Math.round((chips[m] || 0) * chipRate), 0);
       bonusLine = `<div class="score-bonus">合計収支 ${grand > 0 ? '+' : ''}${grand.toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span></div>`;
