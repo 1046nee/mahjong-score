@@ -74,7 +74,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .global-header-wrap { background: #fff; border-bottom: 1px solid #eef3f2; max-width: 960px; margin: 0 auto; }
 .global-header { position: relative; padding: 8px 56px; display: flex; align-items: center; justify-content: center; }
 .global-logo { cursor: pointer; user-select: none; display: inline-flex; align-items: center; min-width: 0; }
-.global-nav-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border: none; border-radius: 20px; padding: 7px 14px; cursor: pointer; text-decoration: none; }
+/* 右上「使い方」はテキストリンク風（ピル背景なし）。ヒーローのCTAと視覚的に競合させない */
+.global-nav-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 600; color: #5f6e6b; background: transparent; border: none; padding: 7px 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 /* ゲーム設定画面だけ左上に表示する「戻る」ボタン */
 .header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: none; background: #f0f5f4; color: #177083; font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
 
@@ -84,7 +85,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .title-actions { display: flex; gap: 8px; }
 .lp-inner { max-width: 100%; margin: 0 auto; }
 .lp-section { padding: 52px 20px; }
-.lp-sub-link { display: block; margin-top: 18px; color: #177083; font-size: 14px; font-weight: 700; text-decoration: underline; cursor: pointer; }
+/* 二次導線は控えめに（CTAより目立たせない） */
+.lp-sub-link { display: block; margin-top: 22px; color: #9aa8a4; font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 
 /* CTA: オレンジ限定（行動喚起）。影なし・横長のピル型 */
 .cta-btn { display: inline-block; background: #E75620; color: #fff; border: none; border-radius: 50px; padding: 17px 20px; width: 100%; max-width: 380px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: none; transition: background 0.2s, transform 0.1s; }
@@ -156,7 +158,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
 .hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
-.hero .cta-btn { margin-bottom: 12px; }
+/* ヒーローのCTA周り: ボタンを唯一の主役にする（マイクロコピー → 大きめCTA → 控えめな信頼テキスト）。
+   ピル型バッジはボタンに見えてCTAと競合するため、ヒーローでは使わない（クロージングのみ） */
+.cta-note { color: #177083; font-size: 13.5px; font-weight: 800; margin-bottom: 10px; }
+/* 注意誘導はボタン外側に広がる波紋（ping）で行う。ボタン自体をtransformで動かすと
+   自動テストの「要素静止待ち」に引っかかるため動かさない（2026-07-19の学び） */
+.hero .cta-btn { position: relative; margin-bottom: 10px; font-size: 18px; padding: 19px 20px; }
+.hero .cta-btn::after { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 50px; border: 2px solid #E75620; opacity: 0; animation: ctaPing 2.8s ease-out infinite; pointer-events: none; }
+@keyframes ctaPing { 0% { transform: scale(1); opacity: 0.5; } 70%, 100% { transform: scale(1.08, 1.35); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hero .cta-btn::after { animation: none; } }
+.cta-trust { color: #8ba39f; font-size: 12.5px; letter-spacing: 0.2px; }
 
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
@@ -566,10 +577,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <p class="hero-desc">「まじゃすこ」は、表示点数を入力するだけでウマ・オカ込みのスコアを自動計算して、URLひとつで全員のスマホに共有できる無料のサービスです。</p>
 
+  <p class="cta-note">登録なしで、10秒でグループ作成</p>
   <button class="cta-btn" onclick="showView('setup')">スコア記録をはじめる</button>
-  <div class="close-badges" style="margin-top:0;margin-bottom:0">
-    <span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span>
-  </div>
+  <p class="cta-trust">完全無料・アプリDL不要・会員登録不要</p>
   <div class="join-banner" id="join-banner" style="display:none">
     <p>最近の試合</p>
     <button class="join-btn" onclick="joinFromBanner()"><span class="join-name" id="join-name">共有された試合に参加する</span><span class="join-arrow">›</span></button>
