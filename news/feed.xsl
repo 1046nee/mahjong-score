@@ -30,7 +30,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 </style>
 </head>
 <body>
-<div class="head"><a href="/index.html">まじゃすこ / majasco</a></div>
+<div class="head"><a href="/">まじゃすこ / majasco</a></div>
 <div class="hero">
   <h1>お知らせRSSフィード</h1>
   <p><xsl:value-of select="/rss/channel/description"/></p>
@@ -49,7 +49,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
       <span class="more">記事を読む ▶</span>
     </a>
   </xsl:for-each>
-  <div class="foot" style="padding-top:16px"><a href="/news/">お知らせ一覧へ ›</a>　<a href="/index.html">トップへ ›</a></div>
+  <div class="foot" style="padding-top:16px"><a href="/news/">お知らせ一覧へ ›</a>　<a href="/">トップへ ›</a></div>
 </div>
 </body>
 </html>

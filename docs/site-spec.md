@@ -9,7 +9,7 @@
 - `terms.html` / `privacy.html` — 規約・PP（AdSense必須文言含む。広告枠は置かない）
 - `404.html` — カスタム404（noindex。blog-site.jsは読み込む）
 - `tests.html` — 計算ロジックの単体テスト（noindex → docs/app-spec.md）
-- `sitemap.xml` / `robots.txt` — **新ページを追加したらsitemap.xmlに`<url>`を1件追加**
+- `sitemap.xml` / `robots.txt` — **新ページを追加したらsitemap.xmlに`<url>`を1件追加**（`<lastmod>`付き。既存ページも大きく更新したらlastmodを更新）
 - `assets/` — favicon.png(512) / logo.png(800×250透過) / ogp2.png(現行OGP) / ogp.png(旧・残置) / blog.css / blog-site.js / ads.js
 - `favicon.ico` — ルート直下16/32/48px（→ docs/image-tools.md）
 - `manifest.json` — PWA最小構成
@@ -64,6 +64,8 @@
 - 各HTMLの静的.site-head/.site-footはJS無効時のフォールバック。**デザイン変更はrenderChromeだけ直す**
 
 ## 検索まわりの注意
+- **サイト内リンクは `/`（トップ）表記で統一。`index.html` と書かない**（重複URLがクロールされ
+  Search Consoleの未登録一覧に出続ける。2026-07-28に96箇所を一括修正済み。canonicalは`/`）
 - 検索結果のfavicon・サイトリンクはGoogle側依存。新ページはSearch Consoleでインデックス登録リクエスト推奨
 - XのOGPカードはURL単位で約1週間キャッシュ（→ docs/image-tools.md）
 

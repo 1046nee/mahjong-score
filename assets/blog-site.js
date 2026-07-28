@@ -107,7 +107,7 @@ const BLOG_POSTS = [
     const head = document.querySelector('.site-head');
     if (head) {
       head.innerHTML = `<div class="site-head-inner">
-        <a href="/index.html" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></a>
+        <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></a>
         <a class="head-app-link" href="/#howto">使い方</a>
       </div>`;
     }
