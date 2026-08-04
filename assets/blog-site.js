@@ -113,7 +113,9 @@ const BLOG_POSTS = [
     }
     const foot = document.querySelector('.site-foot');
     if (foot) {
+      // 静的HTMLのフッターと同じ12リンク・同じ順序に保つこと（正はこの並び。変えるときは両方直す）
       foot.innerHTML = `<div class="links">
+        <a href="/">トップ</a>
         <a href="/score-basics.html">スコア計算の基本</a>
         <a href="/faq.html">よくある質問</a>
         <a href="/blog.html">ブログ</a>
@@ -121,10 +123,10 @@ const BLOG_POSTS = [
         <a href="/news/feed.xml">お知らせRSS</a>
         <a href="/terms.html">利用規約</a>
         <a href="/privacy.html">プライバシーポリシー</a>
-        <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
-        <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
         <a href="/about.html">運営者について</a>
         <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+        <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
+        <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
       </div>
       <div>© 2026 まじゃすこ</div>`;
     }

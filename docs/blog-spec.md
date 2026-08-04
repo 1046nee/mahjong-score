@@ -32,9 +32,10 @@
    head一式（docs/site-spec.mdのチェックリスト）・パンくず・.post-layout＋sidebar・広告枠（article_top/bottom）・末尾CTA・
    blog.css/blog-site.js/ads.jsの読み込みを維持。**Article JSON-LDを新記事の内容に書き換える**
 2. BLOG_POSTSの**先頭**に1件追加
-3. sitemap.xmlに`<url>`追加
-4. お知らせなら `/news/feed.xml` に`<item>`追加（lastBuildDateも更新）
-5. 関連記事と内部リンクを張り合う。このdocの記事一覧を更新
+3. **`node tools/build_post_lists.js` を実行**（一覧4ページの静的カードを再生成。忘れると一覧に載らない）
+4. sitemap.xmlに`<url>`追加（**newsのお知らせ記事はnoindex運用のためsitemapに入れない**。headにnoindexを付ける）
+5. お知らせなら `/news/feed.xml` に`<item>`追加（lastBuildDateも更新）
+6. 関連記事と内部リンクを張り合う。このdocの記事一覧を更新
 
 ## 執筆の用語注意
 - 符・翻・役を解説する記事は「点数計算」をテーマにしてよいが、**アプリの守備範囲の説明は「半荘の集計」「スコア計算」**に切り替える

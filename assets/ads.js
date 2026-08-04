@@ -23,6 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-ad]').forEach(el => {
     const slot = AD_SLOTS[el.getAttribute('data-ad')];
     if (!slot) { el.style.display = 'none'; return; }
+    // アプリ（index.html）内の枠は、非表示ビュー内 または 共有URL起動（#セッションID）のとき初期化しない。
+    // 共有URLで開くとLPは直後にゲーム画面へ切り替わる（非同期）ため、ハッシュの有無で先回りして判定する。
+    // 「コンテンツのない画面への広告」「隠しコンテナ内の広告」ポリシー対策
+    const view = el.closest('.view');
+    if (view && (!view.classList.contains('active') || location.hash.length >= 9)) { return; }
     // CLS対策: 広告読み込み前から高さを確保しておく
     el.style.minHeight = '280px';
     el.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;margin-bottom:4px">スポンサーリンク</div>'

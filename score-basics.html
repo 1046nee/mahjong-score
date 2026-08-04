@@ -77,14 +77,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h2>オカ</h2>
     <p>持ち点（例: 25,000点）と返し点（例: 30,000点）の差額×人数分を、トップの1人が総取りするルールです。25,000点持ち・30,000点返しの4人麻雀なら、1位に +20pts が加算されます。</p>
 
+    <h2>実例：4人の最終スコアを計算してみよう</h2>
+    <p>25,000点持ち・30,000点返し・ウマ10-30の四麻で、終了時の持ち点が「Aさん41,300点／Bさん28,200点／Cさん22,500点／Dさん8,000点」だったとします。計算は3ステップです。</p>
+    <p>①<b>素点</b>：持ち点から30,000を引いて1,000で割ります。→ A +11.3／B −1.8／C −7.5／D −22.0<br>
+    ②<b>ウマ</b>：順位に応じて 1位+30／2位+10／3位−10／4位−30 を足します。<br>
+    ③<b>オカ</b>：(30,000−25,000)×4人分＝+20.0pts を1位に足します。</p>
+    <p>結果は <b>A +61.3／B +8.2／C −17.5／D −52.0</b>。ここで大事なのが、<b>4人の合計は必ずぴったり0になる</b>こと（ゼロサム）です。手計算で0にならなかったら、どこかに転記ミスや符号ミスがあるサインなので、この「合計0チェック」を検算に使ってください。</p>
+
     <h2>スコア倍率（収支換算）</h2>
     <p>スコア（pts）に掛ける倍率です。仲間内のルールに合わせて設定すると、スコアを「bonus」という単位のスコア収支に換算して表示できます（例：スコア倍率が×100の場合、+123.0pts → +12,300bonus）。まじゃすこではスコア表示と収支表示をワンタップで切り替えられます。</p>
+
+    <h2>チップの収支</h2>
+    <p>チップありのルールでは、終了時のチップ枚数から開始時の持ちチップを引いた「チップ差」に、チップ倍率を掛けたものがチップ収支です（例：チップ倍率が×500の場合、+5枚 → +2,500bonus）。スコア収支とチップ収支を合計したものが、その日の合計収支になります。チップも全員分を合計すると増減0になるはずなので、こちらも検算に使えます。</p>
 
     <h2>同点のときは？</h2>
     <p>同点で並んだ場合は同順位とし、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。まじゃすこでは同点処理も自動で計算されます。</p>
 
     <h2>三麻（3人麻雀）の場合</h2>
     <p>三麻では持ち点35,000点・返し点40,000点など、四麻と異なる設定がよく使われます。まじゃすこは三麻にも対応しており、ウマも「15-0-15」のような3人用の形式で設定できます。三麻と四麻の違いは<a href="blog-sanma-yonma.html">3人麻雀と4人麻雀の違い</a>で詳しく紹介しています。</p>
+
+    <h2>手計算でよくあるミス</h2>
+    <p>紙とペンでスコア計算をすると、(1)持ち点の転記ミス、(2)マイナスの符号の付け忘れ、(3)ウマ・オカの足し忘れ、この3つが定番のミスです。とくに深夜の対局後は間違いが起きやすく、あとから「合計が0にならない」と気づいても、どの試合のどの数字が原因かを探すのはかなり大変です。まじゃすこなら表示点数を入力するだけでウマ・オカ込みのスコアを自動計算し、入力時の合計チェックも毎回自動で行われます。</p>
 
     <a class="cta" href="/">スコア記録をはじめる</a>
     <p style="text-align:center;font-size:12px;color:#888;margin-top:8px">登録不要・無料。面倒なスコア計算はまじゃすこにお任せ</p>
@@ -93,12 +106,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
 </div>
 <div class="footer">
-  <a href="/">トップ</a>
-  <a href="faq.html">よくある質問</a>
-  <a href="blog.html">ブログ</a>
-  <a href="privacy.html">プライバシーポリシー</a>
-  <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
-  <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
+  <div style="margin-bottom:10px">
+    <a href="/">トップ</a>
+    <a href="/score-basics.html">スコア計算の基本</a>
+    <a href="/faq.html">よくある質問</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/news/">お知らせ</a>
+    <a href="/news/feed.xml">お知らせRSS</a>
+    <a href="/terms.html">利用規約</a>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/about.html">運営者について</a>
+    <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+    <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
+    <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
+  </div>
   © 2026 まじゃすこ
 </div>
 <script src="assets/ads.js" defer></script>
