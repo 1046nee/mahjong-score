@@ -36,6 +36,14 @@
 - OGP: 現行 `/assets/ogp2.png`。**差し替えるときはファイル名を変えて全ページのog:image/twitter:imageを書き換える**（Xが画像URL単位でキャッシュするため同名上書きは反映されない）。旧ogp.pngは残置
 - ロゴ: `/assets/logo.png`（800×250透過・全ページヘッダー）
 
+## 実写真（ブログ用）
+- **原本はまじゃすこ素材/写真/（private）**。公開するのはPIL加工後の `/assets/photo-*.jpg` のみ
+- 加工手順: **人名・個人情報をPILの黒塗りで必ずマスク**（加工後にReadで目視確認）→ 幅1200pxへ縮小 → JPEG quality=82
+- 記事への挿入は `<figure>`＋`loading="lazy"`＋altとfigcaption必須。キャプションに「（名前は伏せています）」を明記
+- 公開済み: photo-score-notebook.jpg（集計係記事）／photo-score-sheets.jpg（集計係・ウマオカ記事）／
+  photo-jantaku-hand.jpg（牌の種類記事）／photo-kotatsu-mahjong.jpg（持ち物リスト記事）
+- 写真を差し込んだ記事はJSON-LDのdateModifiedを更新する
+
 ## セーフゾーン
 - OGP（X表示）: 2:1で中央トリミング → 2100×1103は上下約26pxずつ切れる
 - Xヘッダー: プロフィールアイコンが左下に重なる／端末により上下約60px切れる → 文字は中央帯に
