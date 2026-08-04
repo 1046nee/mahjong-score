@@ -52,10 +52,14 @@
   **Phase 1（技術・構造対策）は2026-07-13完了**: 一覧4ページの静的HTML化+カテゴリ説明文（tools/build_post_lists.js）／
   全ページのフッター12リンク統一（運営者について含む）／faq 13問化・score-basics増補（計算実例・チップ収支・よくあるミス）／
   news記事2本をnoindex+sitemap除外／ads.jsの可視ビュー限定初期化。
-  **Phase 2（記事の独自性注入）進行中**: 2026-07-13に体験記2本を公開（blog-shukei-gakari=集計係8年の実話・
-  blog-team-tournament=大人数チーム戦の開き方。いずれも開発者の一次情報ベース・記事固有のSVG挿絵）、
-  blog-why-majascoに開発タイムライン実数（Manus2日→Claude Code1週間×10h/日・セッション100・最終目標）を追記。
-  残り: ワースト3記事（riichi/yaku-list/dora）への牌姿図・実画面スクショ注入（**ユーザーの写真素材待ち**）→完了後に再申請。
+  **Phase 2（記事の独自性注入）2026-07-13完了 → 再申請可能な状態**:
+  (a)体験記2本を公開（blog-shukei-gakari=集計係8年の実話・blog-team-tournament=大人数チーム戦の開き方。開発者の一次情報）
+  (b)blog-why-majascoに開発タイムライン実数（Manus2日→Claude Code1週間×10h/日・セッション100・目標1日1,000アクセス）
+  (c)実写真4枚を5記事に掲載（名前は黒塗り。→ docs/image-tools.md）
+  (d)ワースト3記事に牌姿図を注入（リーチ=テンパイ例／役一覧=タンヤオ・役牌／ドラ=表示牌→ドラ対応図。tools/make_tile_svg.py）
+  ＋リーチ記事の出典なし確率表現を修正、リーチ棒の集計実体験をFAQに追記。
+  **次のアクション（ユーザー操作）**: Search Consoleで主要ページのインデックス確認→AdSense「問題を修正しました」に
+  チェック→「審査をリクエスト」。審査は数日〜2週間。
   **再申請に「2週間空ける」公式ルールはない**（修正の質が全て）。全対策完了後に1回で申請する（ユーザー操作）。承認されたらこの行を「承認済み」に更新
 - 枠は `/assets/ads.js` の AD_SLOTS で管理: article_top / article_bottom / list_bottom / lp_bottom（4枠配信中）
 - スロットID空欄=非表示。追加時はAdSenseでディスプレイ広告ユニット作成→IDをAD_SLOTSへ（min-height:280px自動でCLS対策）
