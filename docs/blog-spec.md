@@ -42,8 +42,10 @@
 - NG例: 「点数計算の基本」という見出しでウマ・オカを説明（→見出しは「スコア計算」に）
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
-## 公開済み記事一覧（16記事）
-1. blog-why-majasco.html — 開発ストーリー
+## 公開済み記事一覧（18記事）
+0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
+0b. blog-team-tournament.html — 10人以上のチーム対抗戦・トーナメントの開き方（遊び方ガイド）
+1. blog-why-majasco.html — 開発ストーリー（2026-07-13に開発タイムライン・セッション数・最終目標を追記）
 2. blog-uma-oka.html — ウマ・オカ入門
 3. blog-score-table.html — 翻・符の点数早見表
 4. blog-yaku-list.html — 基本役10選

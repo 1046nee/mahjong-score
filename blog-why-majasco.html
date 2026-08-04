@@ -69,7 +69,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算がめんどうで『まじゃすこ』を作った話", "description": "対局後のスコア計算が面倒、紙のスコアシートは読みにくい、合計が合わない……。そんな不満から無料の麻雀スコア記録アプリ『まじゃすこ』を作りました。開発の経緯とこだわりを紹介します。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-07-06", "dateModified": "2026-07-06", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-why-majasco.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算がめんどうで『まじゃすこ』を作った話", "description": "対局後のスコア計算が面倒、紙のスコアシートは読みにくい、合計が合わない……。そんな不満から無料の麻雀スコア記録アプリ『まじゃすこ』を作りました。開発の経緯とこだわりを紹介します。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-07-06", "dateModified": "2026-07-13", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-why-majasco.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -143,12 +143,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>技術的なこだわり</h2>
   <p>仕組みの面でこだわったのは「<strong>インストールさせない</strong>」ことです。まじゃすこはブラウザだけで動くWebアプリで、URLを開けばその瞬間から使えます。スコアはクラウド上で同期されるので、誰かが入力すれば全員の画面に即座に反映されます。逆に言うと、アカウントもパスワードも作らせない設計なので、対局グループのURLだけがスコアへの入り口です。<strong>URLは対局メンバーのLINEグループなどに残しておく</strong>のがおすすめの使い方です。計算ロジックには自動テストを組んであり、ウマ・オカ・同点処理のような間違えやすい部分は、毎回機械的に検証してから公開しています。</p>
 
+  <h2>数字で振り返る、開発タイムライン</h2>
+  <p>「アプリを作った」と言うと大ごとに聞こえますが、実際の開発期間は<strong>合計2週間ほど</strong>です。時系列で振り返るとこうなります。</p>
+  <ul>
+    <li><strong>2025年下半期</strong> — AIツール（Manus）を使って、HTMLとCSSの設計に<strong>2日</strong>。このときは一般公開せず、完全に自分専用のスコア記録ツールでした。それでも効果は絶大で、集計の手間が消えたぶん、純粋に麻雀をする時間が増えたのを覚えています。</li>
+    <li><strong>2026年6月</strong> — 毎年お盆にやっている仲間内のチーム戦で使えるアプリにしようと決意。「自分専用」から「誰でも使える」への作り直しを始めました。</li>
+    <li><strong>公開直前の1週間</strong> — Claude CodeというAIコーディング支援を相棒に、<strong>毎日10時間以上</strong>AIと向き合う日々。細かいUIの設計、必要な要件の洗い出し、URL共有機能の作成、そしてアプリを知ってもらうための導線づくりまで、一気に仕上げました。</li>
+  </ul>
+  <p>公開してからまだ日は浅く、記録されたグループはようやく<strong>100</strong>を超えたところです。それでも、届いた要望からチーム戦モードやCSV書き出しが生まれ、アプリは今も毎週のように育っています。</p>
+
   <h2>個人開発の裏側</h2>
   <p>まじゃすこは、企画からデザイン、開発、この記事の執筆まで、ひとりでやっています。日中は別の仕事をしているので、開発は主に夜と週末。最近はAIのコーディング支援ツールを相棒に、思いついた改善をその日のうちに形にする、というスタイルに落ち着きました。開発の試行錯誤は<a href="https://www.threads.net/@munii_dev" target="_blank" rel="noopener">Threads（@munii_dev）</a>で発信しているので、個人開発に興味のある方はのぞいてみてください。</p>
+  <p>ちなみに、そもそもなぜ私がスコア計算にこだわるのかは、8年間集計係を務めた失敗の歴史に理由があります。<a href="blog-shukei-gakari.html">麻雀の集計係を8年やってわかった、手書きスコア記録の限界</a>に赤裸々に書いたので、集計係経験者はぜひ。</p>
   <p>ひとり開発の良いところは、ユーザーの声との距離が近いことです。<a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせフォーム</a>に届いた要望は全部自分で読んでいますし、良いアイデアは数日でアプリに反映されることもあります。「こういう卓で使いたいのに、ここが足りない」があれば、ぜひ気軽に送ってください。</p>
 
   <h2>おわりに</h2>
   <p>まじゃすこがやりたいことは、たったひとつ。<span class="hl">あなたの麻雀の時間を、まるごと麻雀に返すこと</span>です。</p>
+  <p>その先の目標も、はっきり決めています。麻雀プレイヤーが、対戦相手が誰であってもすぐに麻雀を始められて、集計のストレスなしに自分の成績管理や対戦記録の振り返りができる——そんな状態を「当たり前」にすることです。</p>
   <p>計算で止まらない、待たせない、合わなくて揉めない。次の半荘から、よかったら試してみてください。もちろん無料です。</p>
 
   <div class="post-illust small" aria-hidden="true"><svg viewBox="0 0 340 84" xmlns="http://www.w3.org/2000/svg" role="img"><line x1="24" y1="42" x2="124" y2="42" stroke="#e2ece7" stroke-width="2"/><line x1="216" y1="42" x2="316" y2="42" stroke="#e2ece7" stroke-width="2"/><path d="M136 13 Q137.5 18.5 143 20 Q137.5 21.5 136 27 Q134.5 21.5 129 20 Q134.5 18.5 136 13 Z" fill="#E75620"/><path d="M206 58 Q207.3 62.7 212 64 Q207.3 65.3 206 70 Q204.7 65.3 200 64 Q204.7 62.7 206 58 Z" fill="#177083"/><g><rect x="152" y="8" width="36" height="68" rx="8" fill="#1f2a28"/><rect x="154.5" y="10.5" width="31" height="63" rx="6" fill="#ffffff"/><rect x="164" y="13" width="12" height="3" rx="1.5" fill="#1f2a28"/><circle cx="170" cy="52" r="11" fill="#E75620"/><path d="M165 52 l4 4 7 -8" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg></div>

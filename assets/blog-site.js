@@ -19,13 +19,19 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-shukei-gakari.html', cat: 'blog', date: '2026.07.13', tag: '体験談', tagStyle: 'orange', recommended: true,
+    title: '麻雀の集計係を8年やってわかった、手書きスコア記録の限界',
+    desc: '暗算が得意な私でも、8年間で何度も集計を間違えました。合計が合わない・犯人さがし・読めない字・ぐちゃぐちゃの修正跡……手書きスコア記録の失敗談と解決策を実体験で語ります。' },
+  { url: '/blog-team-tournament.html', cat: 'mahjong', date: '2026.07.13', tag: '遊び方ガイド', tagStyle: 'orange',
+    title: '麻雀を10人以上で楽しむ方法｜チーム対抗戦・トーナメントの開き方',
+    desc: 'お盆や年末年始に10人以上で麻雀を楽しむには？チーム対抗戦・トーナメント・回し打ちランキングの3つの遊び方と、卓割り・抜け番・集計など運営のコツを実体験から紹介します。' },
   { url: '/news/csv-export.html', cat: 'news', date: '2026.07.14', tag: '新機能',
     title: '対局履歴をCSVで書き出せるようになりました',
     desc: '対局履歴をワンタップでCSVファイルとしてダウンロードできるようになりました。Excelやスプレッドシートに取り込んで、オリジナルの集計表や年間ランキングづくりに使えます。' },
   { url: '/news/update-2026-07.html', cat: 'news', date: '2026.07.10', tag: 'アップデート',
     title: '大型アップデートのお知らせ｜チーム戦・チップ収支・最大40人の回し打ちに対応しました',
     desc: 'チーム戦モード、チップの収支計算、メンバー3〜40人の回し打ち対応など、まじゃすこの大型アップデート内容を紹介します。' },
-  { url: '/blog-naki.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説', recommended: true,
+  { url: '/blog-naki.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説',
     title: '麻雀の鳴き（ポン・チー・カン）とは？基本ルールと使いどころを解説',
     desc: 'ポン・チー・カンの違い、誰から鳴けるのか、鳴きのメリット・デメリットと「鳴いていい場面」の考え方を初心者向けに整理します。' },
   { url: '/blog-dora.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説', recommended: true,
