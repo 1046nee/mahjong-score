@@ -60,7 +60,7 @@
 13. blog-dora.html — ドラの仕組み
 14. blog-naki.html — 鳴きの基本
 15. news/update-2026-07.html — 大型アップデートのお知らせ
-16. news/csv-export.html — 対局履歴のCSVエクスポート対応のお知らせ
+16. news/csv-export.html — 試合結果のCSVエクスポート対応のお知らせ
 
 ## 記事アイデア（候補）
 - 麻雀の歴史・起源／オンライン麻雀と対面の違い／点数申告の言い方

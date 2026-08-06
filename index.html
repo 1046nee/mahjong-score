@@ -289,6 +289,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rank-badge { font-size: 20px; font-weight: 800; color: #177083; min-width: 48px; text-align: center; flex-shrink: 0; }
 .score-info { flex: 1; min-width: 0; }
 .score-name { font-size: 14px; font-weight: 700; overflow-wrap: break-word; overflow-wrap: anywhere; }
+/* チーム名は最大40文字。スマホでは名前欄が126px前後しかなく、そのままだと5行に伸びて
+   カードのバランスが崩れる → 3行で打ち切る（全文は結果画像・設定カード・title属性で確認できる。
+   画像出力はtextContentを読むので全文のまま） */
+.score-name { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .score-bonus { font-size: 12px; color: #888; overflow-wrap: anywhere; }
 .score-val { font-size: 22px; font-weight: 800; flex-shrink: 0; white-space: nowrap; }
 .score-val.pos { color: #1a237e; }
@@ -467,7 +471,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; overflow-wrap: anywhere; }
 /* チームの識別記号（履歴・成績表・チーム順位で所属を示す。色ではなく記号で区別） */
 .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
-/* 先頭列（対局履歴=試合番号・個人成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
+/* 先頭列（試合結果=試合番号・個人成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
    ラベルはどのズーム倍率でも省略しない（ellipsis禁止） */
 .rounds-table th.sticky-col, .rounds-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
 .rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
@@ -477,6 +481,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.85); }
 /* 長いチーム名・プレイヤー名は何度でも折り返す（列幅を押し広げて表を横長にしない） */
 .rounds-table th { word-break: break-all; overflow-wrap: anywhere; }
+/* チーム名（最大40文字）は3行で打ち切る＝狭い列でも見出しが縦に伸びきらない。
+   thをflex/boxにすると表のセルでなくなるので、必ず内側のspanに掛ける */
+.team-head-name { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .rounds-table td.sticky-col { overflow-wrap: anywhere; }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
@@ -488,6 +495,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
    罫線が表側に属するため、横スクロール時にsticky列の罫線だけが取り残される */
 .rounds-table th.sticky-col { box-shadow: inset -1px 0 0 rgba(255,255,255,.85); }
 .rounds-table td.sticky-col { box-shadow: inset -1px 0 0 #e3eaea; }
+/* 「チーム」セルの下の線も同じ理由でborderでは出せない（sticky列はz-index:1で自分の背景を
+   collapseされた罫線より後に描くため、隣のセルより細く/薄く見える）。
+   borderを消してbox-shadowで引き直し、隣の「チーム名」セルの線と同じ1pxにそろえる */
+.rounds-table tr.team-row th.sticky-col {
+  border-bottom: 0;
+  box-shadow: inset -1px 0 0 rgba(255,255,255,.85), inset 0 -1px 0 rgba(255,255,255,.85);
+}
 /* 画像プレビュー（保存せずその場で結果を確認する） */
 .img-modal { display: none; position: fixed; inset: 0; background: rgba(14,24,22,0.94); z-index: 420; flex-direction: column; }
 .img-modal.open { display: flex; }
@@ -515,6 +529,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
 .auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
+/* 副次アクション（CSV書き出し）。主役の「まとめてプレビュー」とぶつからないよう控えめな配色にする
+   （オレンジはCTA限定のため、こちらはメインカラーの緑／三麻は青） */
+.auto-btn.sub { background: #fff; color: #177083; border-color: #177083; font-size: 14px; padding: 11px; }
+.sanma .auto-btn.sub, .sanma-mode .auto-btn.sub { color: #4261AA; border-color: #4261AA; }
 .total-check { text-align: center; font-size: 13px; margin-bottom: 16px; padding: 8px; border-radius: 8px; font-weight: 600; }
 .total-check.ok { background: #e8f5e9; color: #2e7d32; }
 .total-check.ng { background: #ffebee; color: #c62828; }
@@ -763,7 +781,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="10" y="7" width="28" height="34" rx="4" fill="#ffffff"/><path d="M10 12 a4 4 0 0 1 4 -5 h20 a4 4 0 0 1 4 5 v4 H10 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.2"><path d="M10 24 H38"/><path d="M10 31 H38"/><path d="M19.5 16 V41"/><path d="M28.5 16 V41"/></g><circle cx="34" cy="34" r="7" fill="#E75620"/><path d="M34 30.4 V36 M31 33.4 L34 36.4 L37 33.4" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <h3>CSVで書き出せる</h3>
-          <p>対局履歴はワンタップでCSVファイルをダウンロード。Excelやスプレッドシートに取り込めば、オリジナルの集計表や年間ランキングも作れます。</p>
+          <p>試合結果はワンタップでCSVファイルをダウンロード。Excelやスプレッドシートに取り込めば、オリジナルの集計表や年間ランキングも作れます。</p>
         </div>
         </div>
         <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
@@ -1046,10 +1064,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="card-title" style="margin-bottom:0">対局履歴</div>
+        <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
-          <button class="edit-tab" id="csv-btn" onclick="openCsvModal(activeGame)" style="display:none">CSV</button>
           <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">プレビュー</button>
           <span id="rounds-collapse"></span>
         </div>
@@ -1089,6 +1106,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
+    <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
@@ -1779,11 +1797,14 @@ const MAX_MEMBERS = 40;
 // 名前の文字数上限。長すぎる名前は表示崩れ・画像の折り返し破綻・保存サイズ増の原因になるため、
 // 入力の時点で止める（maxlength＋保存時のclampNameの二段構え）。
 // 既存データに上限を超えた名前があっても切り詰めない＝これまでの記録は今までどおり表示される
-const MAX_NAME_LEN = 16;   // プレイヤー名・チーム名
+const MAX_NAME_LEN = 16;   // プレイヤー名（表の列見出しになるので短く保つ）
+// チーム名は表ではcolspanでまとめた1セル・順位カードでは1行を丸ごと使えるため、
+// プレイヤー名より長く許せる（折り返し前提。グループ名と同じ40文字）
+const MAX_TEAM_LEN = 40;   // チーム名
 const MAX_GROUP_LEN = 40;  // グループ名
 // 1グループに記録できる試合数の上限。根拠は3つ:
 //  ①保存のたびに全試合ぶんを書き直すので通信が重くなる（4人500試合で約85KB／1000試合で約168KB）
-//  ②対局履歴の画像が読める大きさの1枚に収まらなくなる（縮約版でも400試合弱が限界）
+//  ②試合結果の画像が読める大きさの1枚に収まらなくなる（縮約版でも400試合弱が限界）
 //  ③database.rules.jsonのrounds indexが4桁まで
 // 週10試合のグループでも1年でようやく届く水準なので、実運用には十分な余裕がある
 const MAX_ROUNDS = 500;
@@ -2038,7 +2059,7 @@ function playedFlags(g) {
   return played;
 }
 // ---- 表示量の調整（規模が大きいときに画面が長くなりすぎないようにする） ----
-// 対局履歴を一度に出す試合数。300試合をそのまま並べると画面20個分以上になり、
+// 試合結果を一度に出す試合数。300試合をそのまま並べると画面20個分以上になり、
 // 下にある個人成績・グラフにたどり着けなくなるため、既定は直近だけ出して残りはボタンで開く
 const ROUNDS_PREVIEW = 20;
 let roundsShowAll = false;
@@ -2141,7 +2162,7 @@ function bonusTableHtml(g) {
     return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
   }).join('');
   // 内訳: 補足情報として控えめな表にまとめる（タップで展開）。
-  // 体裁は対局履歴・個人成績と同じ（先頭列sticky＋チーム区切り線＋チーム名行）
+  // 体裁は試合結果・個人成績と同じ（先頭列sticky＋チーム区切り線＋チーム名行）
   const bset = teamBoundarySet(s);
   const tbCls = k => bset.has(k) ? ' class="tb"' : '';
   const cell = (i, k, text, strong) => played[i]
@@ -2274,7 +2295,7 @@ function normalizedTeams(s) {
   // Firebase経由でmembersが欠落するケースに備えて空配列で補完
   return (s.teams || []).map(t => ({ name: t.name || '', members: t.members || [] }));
 }
-// チームの識別カラー（チーム順位・対局履歴・個人成績・グラフで共通）。
+// チームの識別カラー（チーム順位・試合結果・個人成績・グラフで共通）。
 // チームAから順に赤・青・緑・オレンジ・紫・黄・ピンク・茶の原色系を割り当てる。
 // 9色目以降も白以外の互いに異なる40色（先頭に近いほど判別しやすい色を配置）
 // 表の1行目はチーム戦では灰色背景（名前の前に色ドットを付けるので文字は白のまま）
@@ -2323,7 +2344,7 @@ function teamStandingsHtml(g) {
     return `<div class="score-card">
       ${rankBadgeHtml(grp.start, grp.size > 1, grp.isLast)}
       <div class="score-info">
-        <div class="score-name"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</div>
+        <div class="score-name" title="${esc(t.name)}"><span class="team-dot" style="background:${teamColorOf(ti)}"></span>${esc(t.name)}</div>
         <div class="team-members-line">${memberNames}</div>
         ${bonusLine}
       </div>
@@ -2349,7 +2370,7 @@ function renderTeamEditor() {
       ondragleave="this.classList.remove('drag-over')" ondrop="onTeamDrop(event, ${ti})">
       <div class="team-box-head">
         <span class="team-dot" style="background:${teamColorOf(ti)};width:12px;height:12px;flex-shrink:0"></span>
-        <input type="text" id="${ctx.idPrefix}-team-name-${ti}" value="${esc(t.name)}" placeholder="${defaultTeamName(ti)}" maxlength="${MAX_NAME_LEN}">
+        <input type="text" id="${ctx.idPrefix}-team-name-${ti}" value="${esc(t.name)}" placeholder="${defaultTeamName(ti)}" maxlength="${MAX_TEAM_LEN}">
         ${ctx.teams.length > minTeams ? `<button type="button" class="round-del-btn" style="flex-shrink:0" onclick="removeTeam(${ti})">削除</button>` : ''}
       </div>
       <div class="team-members-zone">
@@ -2362,7 +2383,7 @@ function captureTeamNames() {
   if (!teamEditorCtx) return;
   teamEditorCtx.teams.forEach((t, ti) => {
     const el = document.getElementById(teamEditorCtx.idPrefix + '-team-name-' + ti);
-    if (el) t.name = clampName(el.value, MAX_NAME_LEN) || defaultTeamName(ti);
+    if (el) t.name = clampName(el.value, MAX_TEAM_LEN) || defaultTeamName(ti);
   });
 }
 function moveTeamMember(id, toTi) {
@@ -2425,8 +2446,8 @@ function syncTeamsWithIds(teams, ids) {
 }
 
 
-// ---- CSVエクスポート（対局履歴を表計算ソフト向けに保存） ----
-// Excel（日本語環境）で文字化けしないようUTF-8 BOM付き。列は対局履歴と同じ表示順（チームA→B…）
+// ---- CSVエクスポート（試合結果を表計算ソフト向けに保存） ----
+// Excel（日本語環境）で文字化けしないようUTF-8 BOM付き。列は試合結果と同じ表示順（チームA→B…）
 function csvEsc(v) {
   const sv = String(v == null ? '' : v);
   return /[",\r\n]/.test(sv) ? '"' + sv.replace(/"/g, '""') + '"' : sv;
@@ -2590,7 +2611,7 @@ const COMPOSE_W = 540;  // まとめ画像の内部幅（実ピクセルでは10
 const IMG_SECTIONS = [
   { kind: 'score',  label: '総合順位' },
   { kind: 'team',   label: 'チーム順位' },
-  { kind: 'rounds', label: '対局履歴' },
+  { kind: 'rounds', label: '試合結果' },
   { kind: 'stats',  label: '個人成績' },
   { kind: 'chart',  label: 'スコア推移' },
   { kind: 'ichart', label: '個人スコア推移' },
@@ -2711,7 +2732,7 @@ function drawImgFooter(ctx, W, H) {
   ctx.textAlign = 'left';
 }
 
-// ===== 本体Canvas（1）表: 対局履歴・個人成績 =====
+// ===== 本体Canvas（1）表: 試合結果・個人成績 =====
 function imgTableBodyCanvas(g, kind, compact = false) {
   const s = g.settings;
   // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
@@ -2719,14 +2740,7 @@ function imgTableBodyCanvas(g, kind, compact = false) {
   if (kind === 'rounds') {
     let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact)).join('');
     rows = rows.replace(/<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済<\/div>/g, '');
-    const totals = gameTotals(g);
-    const bset = teamBoundarySet(s);
-    const totalCells = memberDisplayOrder(s).map((i, ci) => {
-      const v = Math.round(totals[i] * 10) / 10;
-      const st = v > 0 ? 'color:#1a237e;font-weight:700' : v < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-      return `<td${bset.has(ci) ? ' class="tb"' : ''} style="${st};background:#eef5f3">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`;
-    }).join('');
-    rows += `<tr><td class="sticky-col" style="background:#eef5f3">合計</td>${totalCells}</tr>`;
+    rows += roundsTotalRowHtml(g);
     tableHtml = `<table class="rounds-table">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table>`;
   } else {
     tableHtml = rankCountHtml(g.rounds, s, true);
@@ -2915,12 +2929,22 @@ function imgRankingBodyCanvas(g, kind) {
   });
   const W = Math.max(300, Math.min(660, Math.ceil(BADGE + nameW + VALGAP + valW + 20)));
   const maxSubs = Math.max(0, ...rows.map(r => r.subs.length));
-  const rowH = maxSubs === 0 ? 42 : maxSubs === 1 ? 50 : 60;
-  const H = rows.length * rowH;
+  // 名前は2行まで折り返す（40文字のチーム名を1行に詰めると…で切れて読めないため）。
+  // 折り返した行数ぶんだけその行の高さを増やす＝隣の行と重ならない
+  const NAME_LH = 17, BASE_H = maxSubs === 0 ? 42 : maxSubs === 1 ? 50 : 60;
+  rows.forEach(r => {
+    m.font = imgFont(14, true);
+    const availName = W - (BADGE + (r.dot ? 14 : 0)) - valW - VALGAP - 8;
+    r.nameLines = m.measureText(r.name).width <= availName ? [r.name] : imgWrap(m, r.name, availName, 2);
+    r.h = BASE_H + (r.nameLines.length - 1) * NAME_LH;
+  });
+  const H = rows.reduce((a, r) => a + r.h, 0);
   const { c: canvas, ctx } = imgCanvas(W, H);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  rows.forEach((r, i) => {
-    const y = i * rowH;
+  let yCur = 0;
+  rows.forEach((r) => {
+    const rowH = r.h;
+    const y = yCur; yCur += rowH;
     if (r.dim) ctx.globalAlpha = 0.55;
     // 順位バッジ（1〜3位は金銀銅の丸、それ以外は薄いグレーの丸）
     const cx = 22, cy = y + rowH / 2;
@@ -2936,10 +2960,12 @@ function imgRankingBodyCanvas(g, kind) {
       ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(8, true);
       ctx.textAlign = 'center'; ctx.fillText('タイ', cx, cy + 20); ctx.textAlign = 'left';
     }
-    // 名前（＋チームカラー●）とサブ行
+    // 名前（＋チームカラー●）とサブ行。名前の行数ぶんも含めて縦中央にまとめる
     const tx = BADGE;
     const ns = r.subs.length;
-    const nameY = ns === 0 ? cy : ns === 1 ? cy - 9 : cy - 14;
+    const blockH = r.nameLines.length * NAME_LH + ns * 14;
+    const top = y + (rowH - blockH) / 2;
+    const nameY = top + NAME_LH / 2;
     let nx = tx;
     if (r.dot) {
       ctx.fillStyle = r.dot; ctx.beginPath();
@@ -2947,14 +2973,11 @@ function imgRankingBodyCanvas(g, kind) {
       nx = tx + 14;
     }
     ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(14, true);
-    const availName = W - nx - valW - VALGAP - 8;
-    let nm = r.name;
-    if (ctx.measureText(nm).width > availName) nm = imgWrap(ctx, nm, availName, 1)[0]; // imgWrapが末尾に…を付ける
-    ctx.fillText(nm, nx, nameY);
+    r.nameLines.forEach((ln, li) => ctx.fillText(ln, nx, nameY + li * NAME_LH)); // 末尾の…はimgWrapが付ける
     if (ns) {
       ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, false);
       const availSub = W - tx - valW - VALGAP - 8;
-      const y0 = ns === 1 ? cy + 10 : cy + 3;
+      const y0 = top + r.nameLines.length * NAME_LH + 7;
       r.subs.forEach((sbRaw, si) => {
         let sb = sbRaw;
         if (ctx.measureText(sb).width > availSub) sb = imgWrap(ctx, sb, availSub, 1)[0];
@@ -3093,8 +3116,11 @@ function buildComposedCanvas(g, kinds, compact = false) {
       label: imgSectionLabel(kind, s) + (compact && kind === 'rounds' ? '（スコアのみ）' : '') };
   }).filter(Boolean);
   if (!items.length) return null;
-  const HEAD = 92, LABEL_H = 30, GAP = 22;
-  const H = HEAD + items.reduce((a, it) => a + LABEL_H + it.h + GAP, 0) - GAP + IMG_FOOT + 10;
+  // LABEL_Hは「見出し1つ分の縦の取り分」。textBaselineがmiddleなので見出しの文字は
+  // 中心y+12＝おおよそy+3〜y+21を占める。白カードは影(blur6/offset2)ぶんも上にはみ出すので、
+  // カード上端(y+LABEL_H-CARD_PAD)が文字の下端より十分下に来る値にする（以前は30で4px重なっていた）
+  const HEAD = 92, TOP = 14, LABEL_H = 36, GAP = 24, CARD_PAD = 6;
+  const H = HEAD + TOP + items.reduce((a, it) => a + LABEL_H + it.h + GAP, 0) - GAP + CARD_PAD + IMG_FOOT + 6;
   const scAll = imgFitScale(CW, H);
   if (!imgFitsCanvas(CW, H, scAll)) {
     if (!compact && kinds.includes('rounds')) return buildComposedCanvas(g, kinds, true);
@@ -3114,20 +3140,20 @@ function buildComposedCanvas(g, kinds, compact = false) {
   ctx.fillText(`${g.createdAt ? fmtDate(g.createdAt) + ' ・ ' : ''}全${g.rounds.length}試合 ・ ${modeTxt}`, IMG_PAD, 62);
   ctx.globalAlpha = 1;
   // 各セクション
-  let y = HEAD + 14;
+  let y = HEAD + TOP;
   items.forEach(it => {
-    ctx.fillStyle = theme; ctx.fillRect(IMG_PAD, y + 3, 4, 15);           // 見出しの縦バー
+    ctx.fillStyle = theme; ctx.fillRect(IMG_PAD, y + 4, 4, 16);           // 見出しの縦バー
     ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(15, true);
-    ctx.fillText(it.label, IMG_PAD + 12, y + 11);
-    y += LABEL_H - 8;
+    ctx.fillText(it.label, IMG_PAD + 12, y + 12);
+    y += LABEL_H;
     const x = IMG_PAD + (inner - it.w) / 2;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.10)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
     ctx.fillStyle = '#ffffff';
-    imgRoundRect(ctx, x - 6, y - 6, it.w + 12, it.h + 12, 10); ctx.fill();
+    imgRoundRect(ctx, x - CARD_PAD, y - CARD_PAD, it.w + CARD_PAD * 2, it.h + CARD_PAD * 2, 10); ctx.fill();
     ctx.restore();
     ctx.drawImage(it.body, x, y, it.w, it.h);
-    y += it.h + GAP + 8;
+    y += it.h + GAP;
   });
   ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, true);
   ctx.textAlign = 'right'; ctx.fillText('majasco.jp', CW - IMG_PAD, H - IMG_FOOT / 2); ctx.textAlign = 'left';
@@ -3394,13 +3420,15 @@ function teamBoundarySet(s) {
 // 画像出力は広め86px。どちらも文字が確実に収まる幅にする
 function firstColW(forImage) { return forImage ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
-// （対局履歴・個人成績の両方で共用。チーム戦でなければ空文字）
+// （試合結果・個人成績の両方で共用。チーム戦でなければ空文字）
 // firstW: 先頭列の幅を明示したいとき（合計収支の内訳の表だけ120px）
 function teamNameRowHtml(s, forImage = false, firstW = null) {
   if (!s.teamMode || !s.teams) return '';
   const w = firstW != null ? firstW : firstColW(forImage);
+  // チーム名は40文字まで許すので、メンバー1人のチーム（列が狭い）だと縦に伸び続ける。
+  // 画像出力（imgWrapの既定3行）と同じく3行で打ち切り、全文はtitleとチーム順位カードで見せる
   const cells = teamGroupsOf(s).map((t, gi) =>
-    `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
+    `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}"><span class="team-head-name" title="${esc(t.name)}">${esc(t.name)}</span></th>`).join('');
   // 先頭は行の見出し（この行が何の行かを示す）
   return `<tr class="team-row"><th class="sticky-col" style="width:${w}px;background:${TEAM_HEAD_BG}">チーム</th>${cells}</tr>`;
 }
@@ -3452,6 +3480,20 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false) {
     ${cells}
   </tr>`;
 }
+// 試合結果の表の最終行に置く合計行（画面・画像で共用）。
+// 表示を直近n試合に絞っていても、合計は常に全試合の累計（総合順位カードの値と一致する）
+function roundsTotalRowHtml(g) {
+  const s = g.settings;
+  const totals = gameTotals(g);
+  const bset = teamBoundarySet(s);
+  const cells = memberDisplayOrder(s).map((i, ci) => {
+    const v = Math.round(totals[i] * 10) / 10;
+    const st = v > 0 ? 'color:#1a237e;font-weight:700' : v < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
+    return `<td${bset.has(ci) ? ' class="tb"' : ''} style="${st};background:#eef5f3">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`;
+  }).join('');
+  // cat-break は「数字の意味が変わる境目」の線。画面のCSSと画像出力（c.catBreak）の両方が同じ線を引く
+  return `<tr class="total-row cat-break"><td class="sticky-col" style="background:#eef5f3">合計</td>${cells}</tr>`;
+}
 
 // ---- 順位取得回数（個人成績） ----
 // メンバーごとに「参加した試合」だけを集計する（可変長メンバー対応）
@@ -3498,7 +3540,7 @@ function rankCountHtml(rounds, s, forImage = false) {
     const r = Math.round(v * 10) / 10;
     return Number.isInteger(r) ? `${r}` : `${r.toFixed(1)}`;
   };
-  // 表は対局履歴と同じ「列=メンバー、行=成績項目」の転置レイアウト（1行目にプレイヤー名）。
+  // 表は試合結果と同じ「列=メンバー、行=成績項目」の転置レイアウト（1行目にプレイヤー名）。
   // 横スクロールしても項目列（sticky）が固定されるので、何の成績か見失わない
   const avgs = names.map((_, i) => gamesPlayed[i] ? avgRankSum[i] / gamesPlayed[i] : null);
   const pcts = names.map((_, i) => gamesPlayed[i] ? Math.round((gamesPlayed[i] - lastCount[i]) / gamesPlayed[i] * 100) : null);
@@ -3522,7 +3564,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
-  // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
+  // 列順は試合結果と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
   const colOrder = memberDisplayOrder(s);
   const bset = teamBoundarySet(s);
   const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${thBg}">メンバー</th>${colOrder.map((i, k) =>
@@ -3709,7 +3751,7 @@ function renderGame() {
     teamCard.style.display = 'none';
   }
 
-  // 対局履歴（表形式・1行目に名前、以降が試合結果。メンバーが多いときは表内で横スクロール）
+  // 試合結果（表形式・1行目に名前、以降が各試合のスコア、最終行が合計。メンバーが多いときは表内で横スクロール）
   const wrap = document.getElementById('rounds-wrap');
   document.getElementById('rounds-collapse').innerHTML = collapseBtnHtml('rounds');
   wrap.style.display = collapsedCards.rounds ? 'none' : '';
@@ -3719,13 +3761,14 @@ function renderGame() {
     // 試合数が多いときは直近だけ描く（下のボタンで全件に切り替えられる）
     tableHtml += visibleRoundIdx(activeGame.rounds.length)
       .map(idx => roundRowHtml(activeGame.rounds[idx], idx, `openRoundMenu(${idx})`, s)).join('');
+    tableHtml += roundsTotalRowHtml(activeGame);
   } else {
     tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
   }
   tableHtml += '</tbody>';
   wrap.innerHTML = `<table class="rounds-table" id="rounds-table" style="${tableStyleFor(s.playerNames.length)}">${tableHtml}</table>`;
 
-  // 履歴（対局履歴カード内）
+  // 履歴（試合結果カード内）
   let logEl = document.getElementById('game-log');
   if (!logEl) {
     logEl = document.createElement('div'); logEl.id = 'game-log';
@@ -3736,7 +3779,6 @@ function renderGame() {
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
-  document.getElementById('csv-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
@@ -3784,7 +3826,9 @@ function renderGame() {
     ichartCard.style.display = 'none';
   }
 
+  // まとめプレビューとCSVは画面末尾に並ぶ対（カードの開閉には連動しない）
   document.getElementById('compose-btn').style.display = hasRounds ? 'block' : 'none';
+  document.getElementById('csv-btn').style.display = hasRounds ? 'block' : 'none';
 }
 
 function leaveGame() {
@@ -4561,16 +4605,16 @@ function renderDetailBody(g) {
 
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
-  const csvBtn = hasRounds ? `<button class="edit-tab" onclick="openCsvModal(detailGame)">CSV</button>` : '';
   const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
   const rows = visibleRoundIdx(g.rounds.length)
-    .map(ridx => roundRowHtml(g.rounds[ridx], ridx, `editDetailRound(${ridx})`, s)).join('');
+    .map(ridx => roundRowHtml(g.rounds[ridx], ridx, `editDetailRound(${ridx})`, s)).join('')
+    + (hasRounds ? roundsTotalRowHtml(g) : '');
   const roundsHtml = `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
       <tbody>${rows}</tbody>
     </table></div>`;
   html += `<div class="card">
-    ${detailCardHead('対局履歴', 'rounds', logBtn + csvBtn + imgBtn)}
+    ${detailCardHead('試合結果', 'rounds', logBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds)
       ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' + roundsMoreBtnHtml(g.rounds.length)
@@ -4598,7 +4642,9 @@ function renderDetailBody(g) {
       ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
+    // まとめプレビューとCSVは画面末尾に並ぶ対（ゲーム画面と同じ並び）
     html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめてプレビュー</button>`;
+    html += `<button class="auto-btn sub" onclick="openCsvModal(detailGame)">CSVで書き出す</button>`;
   }
   document.getElementById('detail-body').innerHTML = html;
   updateScrollHints();

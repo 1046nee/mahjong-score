@@ -66,7 +66,7 @@ def phone_frame(d, x0=352, y0=600, x1=728):
     d.rounded_rectangle([cx - 52, y0 + 32, cx + 52, y0 + 56], radius=12, fill=DARK)
     return (x0 + 15, y0 + 15, x1 - 15)
 
-# ==== スマホ画面: 対局履歴カード + CSV保存 ====
+# ==== スマホ画面: 試合結果カード + CSV保存 ====
 def screen_csv(d, sx0, sy0, sx1):
     cx = (sx0 + sx1) // 2
     d.text((cx, sy0 + 92), "過去の試合", font=font(36, 800), fill=(26, 26, 26), anchor="mm")
@@ -123,6 +123,6 @@ def slide(fname, title_lines, sub=None, screen_fn=None, title_color=GREEN):
     img.save(os.path.join(OUTDIR, fname))
     print("saved:", fname)
 
-slide("feature-7.png", ["対局履歴は、", "CSVで書き出せる"],
+slide("feature-7.png", ["試合結果は、", "CSVで書き出せる"],
       sub="Excelで自分だけの集計表も作れる", screen_fn=screen_csv)
 print("done")
