@@ -473,6 +473,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線
    （区切り線は本文の横罫線 #eee と同じ1px。太くしない） */
 .rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.35); }
+/* 長いチーム名・プレイヤー名は何度でも折り返す（列幅を押し広げて表を横長にしない） */
+.rounds-table th { word-break: break-all; overflow-wrap: anywhere; }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
 /* チェックボックス付きオプション行 */
@@ -1013,10 +1015,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button class="edit-tab" id="expand-btn" onclick="openTableModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
+          <button class="edit-tab" id="img-btn" onclick="shareResultImage(activeGame,'rounds')" style="display:none">画像</button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
-      <div style="overflow-x:auto" id="rounds-wrap">
+      <div style="overflow-x:auto" id="rounds-wrap" class="table-fit">
         <table class="rounds-table" id="rounds-table"></table>
       </div>
     </div>
@@ -1025,6 +1028,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">その他成績</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="rank-more-btn" onclick="openStatsModal(activeGame)" style="display:none">もっと見る</button>
+          <button class="edit-tab" id="rank-img-btn" onclick="shareResultImage(activeGame,'stats')" style="display:none">画像</button>
           <span id="rank-collapse"></span>
         </div>
       </div>
@@ -2163,7 +2167,7 @@ let tableModalZoom = 1;
 function openTableModal(g) {
   if (!g || !(g.rounds || []).length) return;
   const s = g.settings;
-  const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s)).join('');
+  const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true)).join(''); // モーダルはスコアのみ
   document.getElementById('table-modal-title').textContent = `${g.name} の対局履歴`;
   document.getElementById('table-modal-body').innerHTML =
     `<div id="table-zoom-wrap"><div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table></div></div>`;
@@ -2278,6 +2282,178 @@ function exportCsv(g) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   track('csv_export', { rounds: g.rounds.length });
+}
+
+// ---- 結果表の画像出力（SNS共有用） ----
+// 画面上の見た目（フィット縮小で小さい等）に関係なく、Canvasに描き直した
+// 「文字サイズも枠も崩れない一枚絵」を生成する。スマホでは共有シート、PCではダウンロード。
+// 中身はもっと見ると同じスコアのみ表示＋合計行。列幅は文字の実測から決め、
+// 長い名前・チーム名はセル内で折り返す（はみ出しなし）
+function imgFont(size, bold) {
+  return `${bold ? 700 : 400} ${size}px -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif`;
+}
+function imgWrap(ctx, text, maxW) {
+  const lines = [];
+  let cur = '';
+  for (const ch of String(text)) {
+    if (cur && ctx.measureText(cur + ch).width > maxW) { lines.push(cur); cur = ch; }
+    else cur += ch;
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, 3); // 最大3行（それ以上は切る）
+}
+function buildResultCanvas(g, kind) {
+  const s = g.settings;
+  // 1) 画像用テーブルのHTMLを組み立てる（表示ロジックを一元化するため既存レンダラを使う）
+  let tableHtml;
+  if (kind === 'rounds') {
+    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true)).join('');
+    rows = rows.replace(/<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済<\/div>/g, '');
+    const totals = gameTotals(g);
+    const bset = teamBoundarySet(s);
+    const totalCells = memberDisplayOrder(s).map((i, ci) => {
+      const v = Math.round(totals[i] * 10) / 10;
+      const st = v > 0 ? 'color:#1a237e;font-weight:700' : v < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
+      return `<td${bset.has(ci) ? ' class="tb"' : ''} style="${st};background:#eef5f3">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`;
+    }).join('');
+    rows += `<tr><td class="sticky-col" style="background:#eef5f3">合計</td>${totalCells}</tr>`;
+    tableHtml = `<table class="rounds-table">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table>`;
+  } else {
+    tableHtml = rankCountHtml(g.rounds, s, true);
+  }
+  // 2) 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:2000px';
+  holder.innerHTML = tableHtml;
+  document.body.appendChild(holder);
+  const grid = [...holder.querySelectorAll('tr')].map(tr => [...tr.children].map(cell => {
+    const src = (cell.firstElementChild && cell.firstElementChild.textContent.trim()) ? cell.firstElementChild : cell;
+    const cs = getComputedStyle(src);
+    const cellCs = getComputedStyle(cell);
+    const dot = cell.querySelector('.team-dot');
+    return {
+      t: (cell.querySelector('div') ? cell.querySelector('div').textContent : cell.textContent).trim(),
+      head: cell.tagName === 'TH',
+      span: cell.colSpan || 1,
+      left: cell.classList.contains('sticky-col'),
+      tb: cell.classList.contains('tb'),
+      bold: parseInt(cs.fontWeight, 10) >= 600,
+      color: cs.color,
+      bg: cellCs.backgroundColor,
+      dot: dot ? getComputedStyle(dot).backgroundColor : null,
+    };
+  }));
+  holder.remove();
+
+  // 3) 列幅を実測で決める（最小46・最大132。ヘッダー名はそれ以上なら折り返す）
+  const m = document.createElement('canvas').getContext('2d');
+  const nCols = Math.max(...grid.map(row => row.reduce((a, c) => a + c.span, 0)));
+  const colW = new Array(nCols).fill(46);
+  const FS = 13;
+  grid.forEach(row => {
+    let ci = 0;
+    row.forEach(c => {
+      if (c.span === 1) {
+        m.font = imgFont(FS, c.bold);
+        const w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0);
+        colW[ci] = Math.max(colW[ci], Math.min(132, Math.ceil(w)));
+      }
+      ci += c.span;
+    });
+  });
+  // 4) 行の高さ（折り返し行数に応じる）と各セルの行分割を決める
+  const layout = grid.map(row => {
+    let ci = 0;
+    const cells = row.map(c => {
+      const wAvail = colW.slice(ci, ci + c.span).reduce((a, b) => a + b, 0) - 16 - (c.dot ? 14 : 0);
+      m.font = imgFont(FS, c.bold);
+      const lines = m.measureText(c.t).width <= wAvail ? [c.t] : imgWrap(m, c.t, wAvail);
+      const out = { ...c, lines, x0: colW.slice(0, ci).reduce((a, b) => a + b, 0), w: colW.slice(ci, ci + c.span).reduce((a, b) => a + b, 0) };
+      ci += c.span;
+      return out;
+    });
+    const h = Math.max(30, 12 + Math.max(...cells.map(c => c.lines.length)) * 17);
+    return { cells, h };
+  });
+
+  // 5) 描画
+  const PAD = 16, BAND = 52, FOOT = 26;
+  const tableW = colW.reduce((a, b) => a + b, 0);
+  const tableH = layout.reduce((a, r) => a + r.h, 0);
+  const W = PAD * 2 + tableW, H = BAND + 10 + tableH + FOOT;
+  const SCALE = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * SCALE; canvas.height = H * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  ctx.textBaseline = 'middle';
+  // 背景と上部バンド
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = s.numPlayers === 3 ? '#4261AA' : '#177083';
+  ctx.fillRect(0, 0, W, BAND);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
+  ctx.fillText(g.name || '', PAD, BAND / 2 - (g.createdAt ? 8 : 0), W - PAD * 2 - 110);
+  if (g.createdAt) {
+    ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
+    ctx.fillText(`${fmtDate(g.createdAt)} ・ 全${g.rounds.length}試合`, PAD, BAND / 2 + 11);
+    ctx.globalAlpha = 1;
+  }
+  ctx.font = imgFont(13, true); ctx.textAlign = 'right';
+  ctx.fillText(kind === 'rounds' ? '対局履歴' : 'その他成績', W - PAD, BAND / 2);
+  ctx.textAlign = 'left';
+  // 表本体
+  let y = BAND + 10;
+  layout.forEach(row => {
+    row.cells.forEach(c => {
+      const x = PAD + c.x0;
+      const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
+      ctx.fillStyle = bg; ctx.fillRect(x, y, c.w, row.h);
+      if (c.tb) { ctx.fillStyle = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6'; ctx.fillRect(x, y, 1, row.h); }
+      ctx.fillStyle = c.color; ctx.font = imgFont(FS, c.bold);
+      const cy0 = y + row.h / 2 - (c.lines.length - 1) * 8.5;
+      let tx = c.left ? x + 9 : 0;
+      c.lines.forEach((ln, li) => {
+        const lw = ctx.measureText(ln).width;
+        const cx = c.left ? tx + (c.dot && li === 0 ? 14 : 0) : x + (c.w - lw - (c.dot && li === 0 ? 14 : 0)) / 2 + (c.dot && li === 0 ? 14 : 0);
+        if (c.dot && li === 0) {
+          ctx.save(); ctx.fillStyle = c.dot; ctx.beginPath();
+          ctx.arc(cx - 9, cy0, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        ctx.fillText(ln, cx, cy0 + li * 17);
+      });
+    });
+    y += row.h;
+    ctx.fillStyle = '#eeeeee'; ctx.fillRect(PAD, y - 1, tableW, 1); // 行罫線
+  });
+  // フッター
+  ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, true); ctx.textAlign = 'right';
+  ctx.fillText('majasco.jp', W - PAD, H - FOOT / 2);
+  ctx.textAlign = 'left';
+  return canvas;
+}
+async function shareResultImage(g, kind) {
+  if (!g || !(g.rounds || []).length) return;
+  const canvas = buildResultCanvas(g, kind);
+  track('image_export', { kind, rounds: g.rounds.length });
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  const label = kind === 'rounds' ? '対局履歴' : 'その他成績';
+  const fname = `まじゃすこ_${label}_${(g.name || 'game').replace(/[\\/:*?"<>|]/g, '_')}.png`;
+  const file = new File([blob], fname, { type: 'image/png' });
+  // スマホ: 共有シート（LINE・X・保存などへ直接）／ 非対応環境: ダウンロード
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: `${g.name || ''} の${label}` });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // ユーザーが共有をやめただけ
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  showToast('画像を保存しました');
 }
 
 // ---- 順位バッジ（メダル） ----
@@ -2417,8 +2593,9 @@ function roundsTheadHtml(s, forModal = false) {
   return `<thead>${teamNameRowHtml(s, forModal)}<tr><th class="sticky-col" style="width:${firstColW(forModal)}px;${base}">試合</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
-// 列は全メンバー分。その試合に参加していないメンバーは「—」表示
-function roundRowHtml(r, idx, onclickJs, s) {
+// 列は全メンバー分。その試合に参加していないメンバーは「—」表示。
+// scoreOnly=true（もっと見るモーダル・画像出力）ではスコアの数値だけを載せる（点数・チップ・マークは省く）
+function roundRowHtml(r, idx, onclickJs, s, scoreOnly = false) {
   const mem = roundMembers(r, s);
   const slotOf = {}; // memberIndex → r.scores内の位置
   mem.forEach((m, k) => { slotOf[m] = k; });
@@ -2429,14 +2606,16 @@ function roundRowHtml(r, idx, onclickJs, s) {
     if (k == null) return `<td${tb} style="color:#ddd">—</td>`;
     const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-    const raw = (r.points && r.points[k] != null)
+    const raw = (!scoreOnly && r.points && r.points[k] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
     // チップ差・焼き鳥🐔（記録がある試合のみ小さく表示）
     const marks = [];
-    if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
-    if (r.yakitori && r.yakitori[k]) marks.push('🐔');
-    if (r.chombo && r.chombo[k]) marks.push('💩');
+    if (!scoreOnly) {
+      if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
+      if (r.yakitori && r.yakitori[k]) marks.push('🐔');
+      if (r.chombo && r.chombo[k]) marks.push('💩');
+    }
     const markHtml = marks.length
       ? `<div style="font-size:9px;color:#b08968;font-weight:600;margin-top:1px">${marks.join(' ')}</div>`
       : '';
@@ -2561,7 +2740,7 @@ function rankCountHtml(rounds, s, forModal = false) {
   });
   const rows = statLabels.map((label, ri) =>
     `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${firstColW(forModal) + N * 58}px">
+  return `<div${forModal ? '' : ' class="table-fit"'} style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${firstColW(forModal) + N * 58}px">
     <thead>${teamNameRowHtml(s, forModal)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -2694,6 +2873,7 @@ function renderGame() {
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('expand-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('csv-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
+  document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
@@ -2705,6 +2885,7 @@ function renderGame() {
     rankCard.style.display = 'block';
     document.getElementById('rank-collapse').innerHTML = collapseBtnHtml('rank');
     document.getElementById('rank-more-btn').style.display = collapsedCards.rank ? 'none' : 'inline-block';
+    document.getElementById('rank-img-btn').style.display = collapsedCards.rank ? 'none' : 'inline-block';
     const rankBody = document.getElementById('rank-body');
     rankBody.style.display = collapsedCards.rank ? 'none' : '';
     rankBody.innerHTML = collapsedCards.rank ? '' : rankCountHtml(activeGame.rounds, s);
@@ -2738,7 +2919,28 @@ function renderGame() {
   } else {
     ichartCard.style.display = 'none';
   }
+
+  fitTables();
 }
+
+// ---- 表のフィット縮小 ----
+// メンバーが多くて表が画面幅を超えるとき、.table-fit の中身全体をzoomで縮小して
+// 左から右まで1画面に収める（文字も等倍で縮むので枠からはみ出ない）。
+// 下限0.34 ≒ 16人の表(992px)がスマホ(375px)に収まる倍率。それ未満（40人など）は横スクロール併用
+const TABLE_FIT_MIN_ZOOM = 0.34;
+function fitTables() {
+  document.querySelectorAll('.table-fit').forEach(el => {
+    el.style.zoom = '';
+    const t = el.querySelector('table');
+    if (!t) return;
+    const avail = el.clientWidth;
+    const need = t.offsetWidth;
+    if (avail > 0 && need > avail) {
+      el.style.zoom = Math.max(TABLE_FIT_MIN_ZOOM, Math.min(1, avail / need));
+    }
+  });
+}
+window.addEventListener('resize', fitTables);
 
 function leaveGame() {
   if (activeGame) saveToLocalHistory();
@@ -3496,17 +3698,19 @@ function renderDetailBody(g) {
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
+  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="shareResultImage(detailGame,'rounds')">画像</button>` : '';
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
-  const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
+  const roundsHtml = `<div class="table-fit" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
       <tbody>${rows}</tbody>
     </table></div>`;
   html += `<div class="card">
-    ${detailCardHead('対局履歴', 'rounds', expandBtn + logBtn + csvBtn)}
+    ${detailCardHead('対局履歴', 'rounds', expandBtn + logBtn + csvBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
-    const statsBtn = `<button class="edit-tab" onclick="openStatsModal(detailGame)">もっと見る</button>`;
+    const statsBtn = `<button class="edit-tab" onclick="openStatsModal(detailGame)">もっと見る</button>`
+      + `<button class="edit-tab" onclick="shareResultImage(detailGame,'stats')">画像</button>`;
     html += `<div class="card">${detailCardHead('その他成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
   }
 
@@ -3530,6 +3734,7 @@ function renderDetailBody(g) {
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
+  fitTables();
 }
 
 // ---- 過去の結果の編集 ----
