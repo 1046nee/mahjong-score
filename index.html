@@ -1610,6 +1610,10 @@ function copyUrl() {
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('URLをコピーしました'); }
 }
 let toastTimer = null;
+// 「元に戻す」トーストの表示時間。既定8秒＝削除・修正のように取り返しがつかない操作向け。
+// 設定の更新は何度でもやり直せるので短くする（UNDO_TOAST_SHORT_MS）
+const UNDO_TOAST_MS = 8000;
+const UNDO_TOAST_SHORT_MS = 3000;
 function showToast(msg) {
   const el = document.getElementById('toast');
   el.classList.remove('act');
@@ -1618,7 +1622,8 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 // 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
-function showUndoToast(msg, key) {
+// ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒）
+function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   if (!key) { showToast(msg); return; }
   const el = document.getElementById('toast');
   el.textContent = '';
@@ -1633,7 +1638,7 @@ function showUndoToast(msg, key) {
   el.appendChild(btn);
   el.classList.add('act', 'show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show', 'act'), 8000);
+  toastTimer = setTimeout(() => el.classList.remove('show', 'act'), ms);
 }
 function showLoading(show) {
   let el = document.getElementById('loading-overlay');
@@ -4523,7 +4528,7 @@ async function saveGameEdit() {
   try {
     await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: appendLog(activeGame.log, logEntry) });
     savePlayerNames(settings.playerNames);
-    showUndoToast('設定を更新しました', bkKey);
+    showUndoToast('設定を更新しました', bkKey, UNDO_TOAST_SHORT_MS);
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
