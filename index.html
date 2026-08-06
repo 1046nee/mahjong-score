@@ -356,6 +356,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .chart-legend span { font-size: 12px; font-weight: 600; color: #555; display: flex; align-items: center; gap: 4px; max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
+/* 横スクロールできることの案内（はみ出しているときだけJSが表示する） */
+.scroll-hint { display: none; font-size: 11px; color: #aaa; margin-top: 6px; text-align: center; }
+
 /* Toast */
 /* left:50%だけだと使える幅が画面の半分に制限され、長い文言が折り返される → max-contentで内容なりの幅にする */
 .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 24px); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -1051,7 +1054,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="rounds-collapse"></span>
         </div>
       </div>
-      <div style="overflow-x:auto" id="rounds-wrap">
+      <div class="tbl-scroll" style="overflow-x:auto" id="rounds-wrap">
         <table class="rounds-table" id="rounds-table"></table>
       </div>
     </div>
@@ -1457,6 +1460,7 @@ function startListening() {
   scoreMetric = 'score'; // 新しいグループを開いたときはデフォルト（スコア順位）に戻す
   collapsedCards = {}; // カードもすべて開いた状態に戻す
   bonusSectionOpen = false;
+  resetViewLimits();
   sessionRef = db.ref('sessions/' + sessionId);
   sessionCallback = sessionRef.on('value', snapshot => {
     const data = snapshot.val();
@@ -2033,6 +2037,45 @@ function playedFlags(g) {
   (g.rounds || []).forEach(r => roundMembers(r, s).forEach(m => { if (m < played.length) played[m] = true; }));
   return played;
 }
+// ---- 表示量の調整（規模が大きいときに画面が長くなりすぎないようにする） ----
+// 対局履歴を一度に出す試合数。300試合をそのまま並べると画面20個分以上になり、
+// 下にある個人成績・グラフにたどり着けなくなるため、既定は直近だけ出して残りはボタンで開く
+const ROUNDS_PREVIEW = 20;
+let roundsShowAll = false;
+function resetViewLimits() { roundsShowAll = false; logShowAll = false; }
+function toggleRoundsShowAll() {
+  roundsShowAll = !roundsShowAll;
+  if (document.getElementById('view-detail').classList.contains('active') && detailGame) viewDetail(detailGame);
+  else renderGame();
+}
+// 表示する試合のindex（既定は直近ROUNDS_PREVIEW件。少しだけ超える程度なら全部出す）
+function visibleRoundIdx(total) {
+  if (roundsShowAll || total <= ROUNDS_PREVIEW + 5) return Array.from({ length: total }, (_, i) => i);
+  return Array.from({ length: ROUNDS_PREVIEW }, (_, i) => total - ROUNDS_PREVIEW + i);
+}
+function roundsMoreBtnHtml(total) {
+  if (total <= ROUNDS_PREVIEW + 5) return '';
+  return roundsShowAll
+    ? `<button class="auto-btn" style="margin-top:8px" onclick="toggleRoundsShowAll()">直近${ROUNDS_PREVIEW}試合だけ表示する</button>`
+    : `<button class="auto-btn" style="margin-top:8px" onclick="toggleRoundsShowAll()">すべての試合を表示する（全${total}試合）</button>`;
+}
+// 表が画面より横に広いときだけ案内を出す。**実際にはみ出しているかを測ってから**出すので、
+// 少人数のときやPCの広い画面では出ない
+function updateScrollHints() {
+  document.querySelectorAll('.tbl-scroll').forEach(w => {
+    let hint = w.nextElementSibling;
+    if (!hint || !hint.classList.contains('scroll-hint')) {
+      hint = document.createElement('div');
+      hint.className = 'scroll-hint';
+      hint.textContent = '← 表は横にスクロールできます →';
+      w.parentNode.insertBefore(hint, w.nextSibling);
+    }
+    hint.style.display = w.scrollWidth > w.clientWidth + 4 ? 'block' : 'none';
+  });
+}
+let scrollHintTimer = null;
+window.addEventListener('resize', () => { clearTimeout(scrollHintTimer); scrollHintTimer = setTimeout(updateScrollHints, 200); });
+
 // メンバー数が多い場合は横スクロールできるようテーブルに最小幅を与える
 // （先頭64px＋メンバー58px＝個人成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
 function tableStyleFor(memberCount) {
@@ -3523,7 +3566,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // 「スコア」から下は点数系＝上（着順の回数・率）とは数字の意味が変わるので、その境目に区切り線を入れる
   const rows = statLabels.map((label, ri) =>
     `<tr${label === 'スコア' ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
     <thead>${teamNameRowHtml(s, forImage)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -3535,11 +3578,16 @@ function logEvents(log) {
 // 「履歴」ボタンから画面上にモーダルで表示する（すべて/入力/修正/削除で絞り込みできる）
 let logFilter = 'all';
 let logSrc = 'game';
+// 履歴は最大600件たまる。全部並べると画面17個分になるので既定は最新50件だけ出す
+const LOG_PREVIEW = 50;
+let logShowAll = false;
 function showLogModal(src) {
   logSrc = src;
   logFilter = 'all';
+  logShowAll = false;
   renderLogModal();
 }
+function toggleLogShowAll() { logShowAll = !logShowAll; renderLogModal(); }
 function setLogFilter(f) {
   logFilter = f;
   renderLogModal();
@@ -3583,6 +3631,9 @@ function renderLogList(log, g) {
   let events = logEvents(log);
   if (logFilter !== 'all') events = events.filter(e => e.type === logFilter);
   if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">該当する履歴はありません</div>';
+  const total = events.length;
+  const trimmed = !logShowAll && total > LOG_PREVIEW;
+  if (trimmed) events = events.slice(total - LOG_PREVIEW); // 新しい方を残す
   // 対戦相手が分かるよう「名前 点数」のペアで表示（旧ログはe.namesが無いので現在の試合から補完）
   const fmtPts = (pts, names) => {
     if (!pts) return '';
@@ -3627,7 +3678,11 @@ function renderLogList(log, g) {
       <div class="log-content"><b>${esc(label)}</b>${body}</div>
     </div>`;
   });
-  return `<div class="log-list">${rows}</div>`;
+  const moreBtn = total > LOG_PREVIEW
+    ? `<button class="auto-btn" style="margin-top:8px" onclick="toggleLogShowAll()">${
+        logShowAll ? `最新${LOG_PREVIEW}件だけ表示する` : `すべて表示する（全${total}件）`}</button>`
+    : '';
+  return `<div class="log-list">${rows}</div>${moreBtn}`;
 }
 
 function renderGame() {
@@ -3661,7 +3716,9 @@ function renderGame() {
   wrap.style.overflowX = 'auto';
   let tableHtml = roundsTheadHtml(s) + '<tbody>';
   if (hasRounds) {
-    tableHtml += activeGame.rounds.map((r, idx) => roundRowHtml(r, idx, `openRoundMenu(${idx})`, s)).join('');
+    // 試合数が多いときは直近だけ描く（下のボタンで全件に切り替えられる）
+    tableHtml += visibleRoundIdx(activeGame.rounds.length)
+      .map(idx => roundRowHtml(activeGame.rounds[idx], idx, `openRoundMenu(${idx})`, s)).join('');
   } else {
     tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
   }
@@ -3674,7 +3731,10 @@ function renderGame() {
     logEl = document.createElement('div'); logEl.id = 'game-log';
     wrap.closest('.card').appendChild(logEl);
   }
-  logEl.innerHTML = (hasRounds && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
+  logEl.innerHTML = (hasRounds && !collapsedCards.rounds)
+    ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>'
+      + roundsMoreBtnHtml(activeGame.rounds.length)
+    : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('csv-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
@@ -3682,6 +3742,7 @@ function renderGame() {
   // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
+  updateScrollHints(); // 表が実際にはみ出しているときだけ横スクロールの案内を出す
 
   // 個人成績（別カード）
   const rankCard = document.getElementById('rank-card');
@@ -4471,6 +4532,7 @@ function renderHistory() {
 
 let detailGame = null;
 function viewDetailById(id) {
+  resetViewLimits(); // 別の結果を開いたら「すべて表示」は解除する
   const g = appState.games.find(x => x.id === id);
   if (g) viewDetail(g);
 }
@@ -4501,15 +4563,18 @@ function renderDetailBody(g) {
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const csvBtn = hasRounds ? `<button class="edit-tab" onclick="openCsvModal(detailGame)">CSV</button>` : '';
   const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
-  const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
-  const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
+  const rows = visibleRoundIdx(g.rounds.length)
+    .map(ridx => roundRowHtml(g.rounds[ridx], ridx, `editDetailRound(${ridx})`, s)).join('');
+  const roundsHtml = `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
       <tbody>${rows}</tbody>
     </table></div>`;
   html += `<div class="card">
     ${detailCardHead('対局履歴', 'rounds', logBtn + csvBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
-    ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
+    ${(g.rounds.length && !collapsedCards.rounds)
+      ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' + roundsMoreBtnHtml(g.rounds.length)
+      : ''}</div>`;
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">プレビュー</button>`;
     html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
@@ -4536,6 +4601,7 @@ function renderDetailBody(g) {
     html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめてプレビュー</button>`;
   }
   document.getElementById('detail-body').innerHTML = html;
+  updateScrollHints();
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
 }
