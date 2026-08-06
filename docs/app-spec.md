@@ -79,6 +79,13 @@
 - **カード上の表は自動縮小しない＝横スクロールで見る**（`overflow-x:auto`＋`tableStyleFor`のmin-width）。
   一時期zoomで1画面に収める実装を入れたが、モバイルで文字がセルからはみ出すため撤去した（下の落とし穴参照）。
   「全体を1枚で見たい」ニーズは**画像出力ボタン**が担う
+- **長い名前への耐性**（プレイヤー名・チーム名）: 区切りのない半角英数字（`aaaa…`）が最も崩れやすい。
+  日本語・全角英数・韓国語などはブラウザが自動で折り返すが、半角の連続は折り返されず横に伸びる。
+  対策は2つセットで必要:
+  ①折り返しを許す`overflow-wrap: anywhere`（`.score-name` `.team-members-line` `.score-bonus` `.chart-legend span`
+  `.sel-chip` `.team-chip` `.rounds-table th/td.sticky-col`）
+  ②**flexアイテムに`min-width: 0`**（`.score-info`）。これが無いと最小幅が中身に引きずられ、
+  右のスコア値が画面外へ押し出されて見えなくなる。値側は`flex-shrink: 0`＋`white-space: nowrap`で守る
 - チーム識別: TEAM_COLORSは**40色**（1-8は赤#e60012/青#0075c2/緑#00a040/橙#f39800/紫#9b26b6/黄#e6b400/桃#ff5ca8/茶#8b5a2b で不変。
   9色目以降も白以外の互いに異なる色）。名前の前に`.team-dot`●（文字色は変えない）。チーム戦の表見出しは灰色TEAM_HEAD_BG=#5f6e6b。
   列と合計収支はチームA→B…順（個人戦の合計収支は値の大きい順）
@@ -109,6 +116,9 @@
   - 本体の描き方は3種: 表（`imgTableBodyCanvas`＝画面と同じHTMLを非表示DOMに展開してセル情報を抽出）／
     順位リスト（`imgRankingBodyCanvas`＝`.score-card`から抽出。**順位は絵文字でなく金銀銅の丸バッジ**で描く＝環境差なく同じ絵になる）／
     グラフ（`imgChartBodyCanvas`＝`chartData`の計算結果からCanvasに直接線を引く）
+  - **画像の折り返しは書記素クラスタ単位**（`imgGraphemes`＝Intl.Segmenter、非対応環境はコードポイント）。
+    コードポイントで切るとタイ語の母音記号・アラビア語の連結・ZWJ絵文字（👨‍👩‍👧）が壊れて重なって描かれる。
+    入りきらない場合は最終行の末尾を「…」にする（`imgWrap`が付けるので呼び出し側で足さないこと）
   - 対局履歴は画面と同じ「スコア＋薄い点数＋チップ差」の縦積み＋合計行
     （セル内の2行目以降は`subs`として9pxで描く。列幅・行高もsubsを含めて計算する）。
     チーム順位はメンバー名と合計収支を2行のサブ行で表示
@@ -147,7 +157,9 @@
 - .toggle-btnはbackgroundにtransitionがあり、切替直後のgetComputedStyleは中間色を返す（検証時の偽陽性）
 - ブラウザ検証: プレビューのモバイルエミュレーションではfixed要素の幅がペイン実幅になる（scrollWidth偽陽性。実スクロールはwindow.scrollXで判定）
 - チーム編成エディタ再初期化前に必ず captureTeamNames()（入力中のチーム名が消える）
-- グリッドアイテムはmin-width:autoで内容に引きずられて広がる → min-width:0 を忘れない
+- グリッド／flexアイテムはmin-width:autoで内容に引きずられて広がる → min-width:0 を忘れない
+  （2026-08: 区切りのない長い半角英数字のチーム名で、順位カードのスコア値が画面外に押し出された）
+- Canvasで長文を手で折り返すときは書記素クラスタ単位で切る（コードポイント単位だと結合文字が壊れる）
 - CSS zoomを小さくすると、ブラウザの最小フォントサイズ設定で文字だけ縮まなくなり、table-layout:fixed＋ellipsisのセルは文字が消える
   → 縮小しうる表はtable-layout:autoにし、消えて困るラベルにellipsisを使わない（画像出力の`forImage=true`がこれ）
 - **表の縮小にCSS zoomを使ってはいけない**（2026-08-06に実機で発覚）。zoomはレイアウトごと縮むため、
