@@ -470,12 +470,18 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
 /* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線
    （区切り線は本文の横罫線 #eee と同じ1px。太くしない） */
-.rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.35); }
+/* チーム名行とプレイヤー名行の境目。チームの縦区切り（.tb）と同じ濃さにそろえる */
+.rounds-table tr.team-row th { border-bottom: 1px solid rgba(255,255,255,.85); }
 /* 長いチーム名・プレイヤー名は何度でも折り返す（列幅を押し広げて表を横長にしない） */
 .rounds-table th { word-break: break-all; overflow-wrap: anywhere; }
 .rounds-table td.sticky-col { overflow-wrap: anywhere; }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
+/* 先頭列（試合番号・項目）と本文の境目も、チームの区切りと同じ線でそろえる。
+   borderではなくinsetのbox-shadowを使う: border-collapse:collapseの表では
+   罫線が表側に属するため、横スクロール時にsticky列の罫線だけが取り残される */
+.rounds-table th.sticky-col { box-shadow: inset -1px 0 0 rgba(255,255,255,.85); }
+.rounds-table td.sticky-col { box-shadow: inset -1px 0 0 #e3eaea; }
 /* 画像プレビュー（保存せずその場で結果を確認する） */
 .img-modal { display: none; position: fixed; inset: 0; background: rgba(14,24,22,0.94); z-index: 420; flex-direction: column; }
 .img-modal.open { display: flex; }
@@ -2654,6 +2660,7 @@ function imgTableBodyCanvas(g, kind) {
       span: cell.colSpan || 1,
       left: cell.classList.contains('sticky-col'),
       tb: cell.classList.contains('tb'),
+      teamRow: !!(cell.parentElement && cell.parentElement.classList.contains('team-row')),
       bold: parseInt(cs.fontWeight, 10) >= 600,
       color: cs.color,
       bg: cellCs.backgroundColor,
@@ -2709,7 +2716,9 @@ function imgTableBodyCanvas(g, kind) {
       const x = c.x0;
       const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
       ctx.fillStyle = bg; ctx.fillRect(x, y, c.w, row.h);
-      if (c.tb) { ctx.fillStyle = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6'; ctx.fillRect(x, y, 1, row.h); }
+      const lineCol = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6';
+      if (c.tb) { ctx.fillStyle = lineCol; ctx.fillRect(x, y, 1, row.h); }              // チームの境目
+      if (c.left) { ctx.fillStyle = lineCol; ctx.fillRect(x + c.w - 1, y, 1, row.h); }  // 先頭列の右
       const subs = c.subs || [];
       // メイン行＋サブ行をひとかたまりとしてセル内で上下中央に置く
       const blockH = c.lines.length * 17 + subs.length * (SUB_FS + 3);
@@ -2735,7 +2744,9 @@ function imgTableBodyCanvas(g, kind) {
       });
     });
     y += row.h;
-    ctx.fillStyle = '#eeeeee'; ctx.fillRect(0, y - 1, W, 1); // 行罫線
+    // 行罫線。チーム名行の下だけはチームの区切りと同じ明るい線にする
+    ctx.fillStyle = (row.cells[0] && row.cells[0].teamRow) ? 'rgba(255,255,255,0.85)' : '#eeeeee';
+    ctx.fillRect(0, y - 1, W, 1);
   });
   return canvas;
 }
@@ -3379,8 +3390,9 @@ function rankCountHtml(rounds, s, forImage = false) {
   const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''}${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
-  const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`), '試合数',
-    '平均着順', '連対率', 'トップ率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数'];
+  // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
+  const statLabels = ['試合数', '平均着順', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
+    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数'];
   const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
   const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
   const cellsOf = colOrder.map((i, k) => {
@@ -3391,15 +3403,15 @@ function rankCountHtml(rounds, s, forImage = false) {
       const sv = totals[i];
       const raw = Math.round(rawSum[i] * 10) / 10;
       const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
-      cells = [];
+      // statLabels と同じ並びで積む（ここの順番を変えるときは statLabels も必ず合わせる）
+      cells = [`<td style="font-weight:700">${gamesPlayed[i]}回</td>`,
+        `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`];
       for (let rank = 0; rank < slots; rank++) {
         const c = counts[i][rank];
         cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
       }
-      cells.push(`<td>${gamesPlayed[i]}回</td>`,
-        `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`,
+      cells.push(`<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
         `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
-        `<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
         `<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
         `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
         `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
