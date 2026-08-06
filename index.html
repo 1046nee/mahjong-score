@@ -477,6 +477,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rounds-table td.sticky-col { overflow-wrap: anywhere; }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
+/* 数字の意味（カテゴリー）が変わる行の上に引く区切り線。
+   通常の行罫線(1px #eee)より少しだけ太く濃くして、グループの切れ目だと分かるようにする */
+.rounds-table tr.cat-break td { border-top: 2px solid #ccd8d5; }
 /* 先頭列（試合番号・項目）と本文の境目も、チームの区切りと同じ線でそろえる。
    borderではなくinsetのbox-shadowを使う: border-collapse:collapseの表では
    罫線が表側に属するため、横スクロール時にsticky列の罫線だけが取り残される */
@@ -2089,7 +2092,7 @@ function bonusTableHtml(g) {
   const cell = (i, k, text, strong) => played[i]
     ? `<td${tbCls(k)} style="${strong ? 'font-weight:700' : 'color:#889'}">${text}</td>`
     : `<td${tbCls(k)} style="color:#ddd">—</td>`;
-  const row = (label, cellsHtml) => `<tr><td class="sticky-col" style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
+  const row = (label, cellsHtml, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col" style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
   let rows = row('スコア（pts）', colOrder.map((i, k) => cell(i, k, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
   rows += row(`スコア収支（pts×${scoreRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(scoreBonus[i]))).join(''));
   if (s.bonusEnabled) { // チップ関連の行はチップあり🍪のグループだけ表示
@@ -2097,12 +2100,15 @@ function bonusTableHtml(g) {
     rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(chipBonus[i]))).join(''));
   }
   rows += row('合計収支', colOrder.map((i, k) => cell(i, k, `${signed(grand[i])}bonus`, true)).join(''));
-  // 回数は個人成績と同じく単位「回」を付けない
+  // 回数は個人成績と同じく単位「回」を付けない。
+  // ここから下は収支ではなく回数＝数字の意味が変わるので、最初の1行だけ区切り線を入れる
+  let brk = 'cat-break';
   if (s.yakitori) {
-    rows += row('焼き鳥🐔', colOrder.map((i, k) => cell(i, k, String(yaki[i] || 0), yaki[i] > 0)).join(''));
+    rows += row('焼き鳥🐔', colOrder.map((i, k) => cell(i, k, String(yaki[i] || 0), yaki[i] > 0)).join(''), brk);
+    brk = '';
   }
   if (s.chombo) {
-    rows += row('チョンボ💩', colOrder.map((i, k) => cell(i, k, String(chombo[i] || 0), chombo[i] > 0)).join(''));
+    rows += row('チョンボ💩', colOrder.map((i, k) => cell(i, k, String(chombo[i] || 0), chombo[i] > 0)).join(''), brk);
   }
   return `<div class="bonus-grid">${cells}</div>
   <div class="bonus-table-wrap bonus-collapsed" style="overflow-x:auto;margin-top:10px">
@@ -2667,6 +2673,7 @@ function imgTableBodyCanvas(g, kind) {
       left: cell.classList.contains('sticky-col'),
       tb: cell.classList.contains('tb'),
       teamRow: !!(cell.parentElement && cell.parentElement.classList.contains('team-row')),
+      catBreak: !!(cell.parentElement && cell.parentElement.classList.contains('cat-break')),
       bold: parseInt(cs.fontWeight, 10) >= 600,
       color: cs.color,
       bg: cellCs.backgroundColor,
@@ -2717,7 +2724,7 @@ function imgTableBodyCanvas(g, kind) {
   const { c: canvas, ctx } = imgCanvas(W, H);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   let y = 0;
-  layout.forEach(row => {
+  layout.forEach((row, ri) => {
     row.cells.forEach(c => {
       const x = c.x0;
       const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
@@ -2750,9 +2757,16 @@ function imgTableBodyCanvas(g, kind) {
       });
     });
     y += row.h;
-    // 行罫線。チーム名行の下だけはチームの区切りと同じ明るい線にする
-    ctx.fillStyle = (row.cells[0] && row.cells[0].teamRow) ? 'rgba(255,255,255,0.85)' : '#eeeeee';
-    ctx.fillRect(0, y - 1, W, 1);
+    // 行罫線。チーム名行の下＝チームの区切りと同じ明るい線／
+    // 次の行がカテゴリーの切れ目なら少し太く濃い線（画面のtr.cat-breakと同じ見え方にする）
+    const next = layout[ri + 1];
+    if (row.cells[0] && row.cells[0].teamRow) {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(0, y - 1, W, 1);
+    } else if (next && next.cells[0] && next.cells[0].catBreak) {
+      ctx.fillStyle = '#ccd8d5'; ctx.fillRect(0, y - 2, W, 2);
+    } else {
+      ctx.fillStyle = '#eeeeee'; ctx.fillRect(0, y - 1, W, 1);
+    }
   });
   return canvas;
 }
@@ -3435,8 +3449,9 @@ function rankCountHtml(rounds, s, forImage = false) {
     // チーム境目の列は全セルに縦区切り線クラスを付ける
     return bset.has(k) ? cells.map(c => c.replace('<td', '<td class="tb"')) : cells;
   });
+  // 「スコア」から下は点数系＝上（着順の回数・率）とは数字の意味が変わるので、その境目に区切り線を入れる
   const rows = statLabels.map((label, ri) =>
-    `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
+    `<tr${label === 'スコア' ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
   return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
     <thead>${teamNameRowHtml(s, forImage)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
