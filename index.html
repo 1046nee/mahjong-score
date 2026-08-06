@@ -1004,7 +1004,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" id="team-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">チーム成績</div>
-        <span id="team-collapse"></span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab" id="team-img-btn" onclick="shareResultImage(activeGame,'team')" style="display:none">画像</button>
+          <span id="team-collapse"></span>
+        </div>
       </div>
       <div id="team-body" style="margin-top:10px"></div>
     </div>
@@ -1042,6 +1045,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="chart-more-btn" onclick="openChartModal(activeGame)" style="display:none">もっと見る</button>
+          <button class="edit-tab" id="chart-img-btn" onclick="shareResultImage(activeGame,'chart')" style="display:none">画像</button>
           <span id="chart-collapse"></span>
         </div>
       </div>
@@ -1052,11 +1056,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="ichart-more-btn" onclick="openChartModal(activeGame, true)" style="display:none">もっと見る</button>
+          <button class="edit-tab" id="ichart-img-btn" onclick="shareResultImage(activeGame,'ichart')" style="display:none">画像</button>
           <span id="ichart-collapse"></span>
         </div>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
+    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめて画像にする</button>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
@@ -1163,6 +1169,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="table-modal-note">※拡大・縮小の倍率によっては、文字やレイアウトが崩れる場合があります</div>
   </div>
   <div class="table-modal-body" id="table-modal-body"></div>
+</div>
+
+<!-- 結果まとめ画像の選択（縦長1枚にする項目を選ぶ） -->
+<div class="sheet" id="compose-modal" onclick="if(event.target===this)closeComposeModal()">
+  <div class="sheet-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="sheet-title">結果をまとめて画像に</div>
+      <button class="edit-tab" onclick="closeComposeModal()" style="font-size:12px;padding:6px 12px">キャンセル</button>
+    </div>
+    <div style="font-size:12px;color:#8a9aa5;line-height:1.7;margin-bottom:10px">
+      入れたい項目を選ぶと、縦長の1枚画像にまとめます。SNSでの共有にどうぞ。
+    </div>
+    <div id="compose-list"></div>
+    <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">画像を作る</button>
+  </div>
 </div>
 
 <!-- Toast -->
@@ -1981,7 +2002,7 @@ function scoreMainHtml(g) {
   const collapsed = collapsedCards.score;
   let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : s.bonusEnabled ? '6px' : '12px'}">
     <div class="card-title" style="margin-bottom:0">総合成績</div>
-    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${collapseBtnHtml('score')}</div>
+    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="shareResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
   if (s.bonusEnabled) {
@@ -2303,15 +2324,31 @@ function exportCsv(g) {
   track('csv_export', { rounds: g.rounds.length });
 }
 
-// ---- 結果表の画像出力（SNS共有用） ----
-// 画面上の見た目（フィット縮小で小さい等）に関係なく、Canvasに描き直した
-// 「文字サイズも枠も崩れない一枚絵」を生成する。スマホでは共有シート、PCではダウンロード。
-// 中身はもっと見ると同じスコアのみ表示＋合計行。列幅は文字の実測から決め、
-// 長い名前・チーム名はセル内で折り返す（はみ出しなし）
+// ---- 結果の画像出力（SNS共有用） ----
+// 画面の見え方（横スクロール中かどうか等）に関係なく、Canvasに描き直した
+// 「文字も枠も崩れない一枚絵」を作る。DOMのスクショではなくCanvas直描画にしているのは、
+// iOS SafariでSVG/foreignObject経由の画像化が壊れる・汚染されるため。
+// 各セクションは「本体だけを描いたCanvas」を返す関数に統一し、
+//   単体出力  = ブランド帯 ＋ 本体 ＋ フッター
+//   まとめ出力 = 全体ヘッダー ＋［見出し＋本体］×n ＋ フッター
+// で共用する。スマホでは共有シート、PCではダウンロード。
+const IMG_SCALE = 2;    // 実ピクセル = CSS px × 2（高解像度で書き出す）
+const IMG_PAD = 16;
+const IMG_BAND = 52;    // 上部ブランド帯の高さ
+const IMG_FOOT = 26;
+const COMPOSE_W = 540;  // まとめ画像の内部幅（実ピクセルでは1080px＝SNSの標準幅）
+const IMG_SECTIONS = [
+  { kind: 'score',  label: '総合成績' },
+  { kind: 'team',   label: 'チーム成績' },
+  { kind: 'rounds', label: '対局履歴' },
+  { kind: 'stats',  label: 'その他成績' },
+  { kind: 'chart',  label: 'スコア推移' },
+  { kind: 'ichart', label: '個人スコア推移' },
+];
 function imgFont(size, bold) {
   return `${bold ? 700 : 400} ${size}px -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif`;
 }
-function imgWrap(ctx, text, maxW) {
+function imgWrap(ctx, text, maxW, maxLines = 3) {
   const lines = [];
   let cur = '';
   for (const ch of String(text)) {
@@ -2319,11 +2356,70 @@ function imgWrap(ctx, text, maxW) {
     else cur += ch;
   }
   if (cur) lines.push(cur);
-  return lines.slice(0, 3); // 最大3行（それ以上は切る）
+  return lines.slice(0, maxLines);
 }
-function buildResultCanvas(g, kind) {
+// CSS px で指定して、実ピクセルは×2（既定）で持つCanvasを作る。
+// 長大な画像では sc を下げて端末の上限に収める
+function imgCanvas(w, h, sc = IMG_SCALE) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w * sc));
+  c.height = Math.max(1, Math.round(h * sc));
+  const ctx = c.getContext('2d');
+  ctx.scale(sc, sc);
+  ctx.textBaseline = 'middle';
+  return { c, ctx };
+}
+function imgRoundRect(ctx, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+function imgThemeColor(s) {
+  return s.numPlayers === 3 ? '#4261AA' : '#177083'; // 三麻は青
+}
+function imgSectionLabel(kind, s) {
+  if (kind === 'chart') return (s.teamMode && s.teams) ? 'チームスコア推移' : 'スコア推移';
+  const f = IMG_SECTIONS.find(x => x.kind === kind);
+  return f ? f.label : '';
+}
+// 上部ブランド帯（グループ名・日付・試合数・セクション名）
+function drawImgBand(ctx, W, g, label) {
   const s = g.settings;
-  // 1) 画像用テーブルのHTMLを組み立てる（表示ロジックを一元化するため既存レンダラを使う）
+  ctx.fillStyle = imgThemeColor(s);
+  ctx.fillRect(0, 0, W, IMG_BAND);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = imgFont(16, true);
+  ctx.fillText(g.name || '', IMG_PAD, IMG_BAND / 2 - (g.createdAt ? 8 : 0), W - IMG_PAD * 2 - 120);
+  if (g.createdAt) {
+    ctx.font = imgFont(11, false);
+    ctx.globalAlpha = 0.85;
+    ctx.fillText(`${fmtDate(g.createdAt)} ・ 全${(g.rounds || []).length}試合`, IMG_PAD, IMG_BAND / 2 + 11);
+    ctx.globalAlpha = 1;
+  }
+  if (label) {
+    ctx.font = imgFont(13, true);
+    ctx.textAlign = 'right';
+    ctx.fillText(label, W - IMG_PAD, IMG_BAND / 2);
+    ctx.textAlign = 'left';
+  }
+}
+function drawImgFooter(ctx, W, H) {
+  ctx.fillStyle = '#9aa8a4';
+  ctx.font = imgFont(11, true);
+  ctx.textAlign = 'right';
+  ctx.fillText('majasco.jp', W - IMG_PAD, H - IMG_FOOT / 2);
+  ctx.textAlign = 'left';
+}
+
+// ===== 本体Canvas（1）表: 対局履歴・その他成績 =====
+function imgTableBodyCanvas(g, kind) {
+  const s = g.settings;
+  // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
   let tableHtml;
   if (kind === 'rounds') {
     let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true)).join('');
@@ -2340,7 +2436,7 @@ function buildResultCanvas(g, kind) {
   } else {
     tableHtml = rankCountHtml(g.rounds, s, true);
   }
-  // 2) 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出
+  // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出
   const holder = document.createElement('div');
   holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:2000px';
   holder.innerHTML = tableHtml;
@@ -2363,8 +2459,9 @@ function buildResultCanvas(g, kind) {
     };
   }));
   holder.remove();
+  if (!grid.length) return null;
 
-  // 3) 列幅を実測で決める（最小46・最大132。ヘッダー名はそれ以上なら折り返す）
+  // 列幅は文字の実測で決める（最小46・最大132。超える見出しはセル内で折り返す）
   const m = document.createElement('canvas').getContext('2d');
   const nCols = Math.max(...grid.map(row => row.reduce((a, c) => a + c.span, 0)));
   const colW = new Array(nCols).fill(46);
@@ -2380,7 +2477,6 @@ function buildResultCanvas(g, kind) {
       ci += c.span;
     });
   });
-  // 4) 行の高さ（折り返し行数に応じる）と各セルの行分割を決める
   const layout = grid.map(row => {
     let ci = 0;
     const cells = row.map(c => {
@@ -2395,46 +2491,24 @@ function buildResultCanvas(g, kind) {
     return { cells, h };
   });
 
-  // 5) 描画
-  const PAD = 16, BAND = 52, FOOT = 26;
-  const tableW = colW.reduce((a, b) => a + b, 0);
-  const tableH = layout.reduce((a, r) => a + r.h, 0);
-  const W = PAD * 2 + tableW, H = BAND + 10 + tableH + FOOT;
-  const SCALE = 2;
-  const canvas = document.createElement('canvas');
-  canvas.width = W * SCALE; canvas.height = H * SCALE;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(SCALE, SCALE);
-  ctx.textBaseline = 'middle';
-  // 背景と上部バンド
+  const W = colW.reduce((a, b) => a + b, 0);
+  const H = layout.reduce((a, r) => a + r.h, 0);
+  const { c: canvas, ctx } = imgCanvas(W, H);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = s.numPlayers === 3 ? '#4261AA' : '#177083';
-  ctx.fillRect(0, 0, W, BAND);
-  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
-  ctx.fillText(g.name || '', PAD, BAND / 2 - (g.createdAt ? 8 : 0), W - PAD * 2 - 110);
-  if (g.createdAt) {
-    ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-    ctx.fillText(`${fmtDate(g.createdAt)} ・ 全${g.rounds.length}試合`, PAD, BAND / 2 + 11);
-    ctx.globalAlpha = 1;
-  }
-  ctx.font = imgFont(13, true); ctx.textAlign = 'right';
-  ctx.fillText(kind === 'rounds' ? '対局履歴' : 'その他成績', W - PAD, BAND / 2);
-  ctx.textAlign = 'left';
-  // 表本体
-  let y = BAND + 10;
+  let y = 0;
   layout.forEach(row => {
     row.cells.forEach(c => {
-      const x = PAD + c.x0;
+      const x = c.x0;
       const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
       ctx.fillStyle = bg; ctx.fillRect(x, y, c.w, row.h);
       if (c.tb) { ctx.fillStyle = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6'; ctx.fillRect(x, y, 1, row.h); }
       ctx.fillStyle = c.color; ctx.font = imgFont(FS, c.bold);
       const cy0 = y + row.h / 2 - (c.lines.length - 1) * 8.5;
-      let tx = c.left ? x + 9 : 0;
       c.lines.forEach((ln, li) => {
         const lw = ctx.measureText(ln).width;
-        const cx = c.left ? tx + (c.dot && li === 0 ? 14 : 0) : x + (c.w - lw - (c.dot && li === 0 ? 14 : 0)) / 2 + (c.dot && li === 0 ? 14 : 0);
-        if (c.dot && li === 0) {
+        const hasDot = c.dot && li === 0;
+        const cx = c.left ? x + 9 + (hasDot ? 14 : 0) : x + (c.w - lw - (hasDot ? 14 : 0)) / 2 + (hasDot ? 14 : 0);
+        if (hasDot) {
           ctx.save(); ctx.fillStyle = c.dot; ctx.beginPath();
           ctx.arc(cx - 9, cy0, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         }
@@ -2442,23 +2516,290 @@ function buildResultCanvas(g, kind) {
       });
     });
     y += row.h;
-    ctx.fillStyle = '#eeeeee'; ctx.fillRect(PAD, y - 1, tableW, 1); // 行罫線
+    ctx.fillStyle = '#eeeeee'; ctx.fillRect(0, y - 1, W, 1); // 行罫線
   });
-  // フッター
-  ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, true); ctx.textAlign = 'right';
-  ctx.fillText('majasco.jp', W - PAD, H - FOOT / 2);
-  ctx.textAlign = 'left';
   return canvas;
 }
-async function shareResultImage(g, kind) {
-  if (!g || !(g.rounds || []).length) return;
-  const canvas = buildResultCanvas(g, kind);
-  track('image_export', { kind, rounds: g.rounds.length });
+
+// ===== 本体Canvas（2）順位リスト: 総合成績・チーム成績 =====
+// 画面と同じ .score-card のHTMLから情報を抜き、Canvasに描き直す。
+// 順位は絵文字ではなく金銀銅の丸バッジで描く（環境差なく必ず同じ絵になる）
+const IMG_MEDAL = ['#d4a017', '#9aa5ad', '#c97b3f'];
+function imgRankingRows(g, kind) {
+  const html = kind === 'team' ? teamStandingsHtml(g)
+    : `<div class="score-cards">${scoreCardsListHtml(g)}</div>`;
+  if (!html) return [];
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:600px';
+  holder.innerHTML = html;
+  document.body.appendChild(holder);
+  const rows = [...holder.querySelectorAll('.score-card')].map(card => {
+    const badge = card.querySelector('.rank-badge');
+    const num = card.querySelector('.rank-num');
+    const nameEl = card.querySelector('.score-name');
+    const dot = card.querySelector('.score-name .team-dot');
+    const valEl = card.querySelector('.score-val');
+    const subs = [];
+    const memLine = card.querySelector('.team-members-line');
+    if (memLine && memLine.textContent.trim()) subs.push(memLine.textContent.trim());
+    const bonusLine = card.querySelector('.score-bonus');
+    if (bonusLine && bonusLine.textContent.trim()) subs.push(bonusLine.textContent.trim());
+    let medal = -1;
+    if (badge) {
+      for (let i = 1; i <= 3; i++) if (badge.classList.contains('rank-' + i)) medal = i - 1;
+    }
+    return {
+      rank: num ? num.textContent.trim() : '',
+      medal,
+      name: nameEl ? nameEl.textContent.trim() : '',
+      dot: dot ? getComputedStyle(dot).backgroundColor : null,
+      subs,
+      val: valEl ? valEl.textContent.trim() : '',
+      valColor: valEl ? getComputedStyle(valEl).color : '#1a1a1a',
+      dim: (parseFloat(card.style.opacity || '1') < 0.9),
+    };
+  });
+  holder.remove();
+  return rows;
+}
+function imgRankingBodyCanvas(g, kind) {
+  const rows = imgRankingRows(g, kind);
+  if (!rows.length) return null;
+  const m = document.createElement('canvas').getContext('2d');
+  const BADGE = 46, VALGAP = 14;
+  // 必要幅 = バッジ + 名前/サブの最大幅 + 値の最大幅
+  let nameW = 0, valW = 0;
+  rows.forEach(r => {
+    m.font = imgFont(14, true);
+    nameW = Math.max(nameW, m.measureText(r.name).width + (r.dot ? 14 : 0));
+    m.font = imgFont(11, false);
+    r.subs.forEach(sb => { nameW = Math.max(nameW, m.measureText(sb).width); });
+    m.font = imgFont(16, true);
+    valW = Math.max(valW, m.measureText(r.val).width);
+  });
+  const W = Math.max(300, Math.min(520, Math.ceil(BADGE + nameW + VALGAP + valW + 20)));
+  const maxSubs = Math.max(0, ...rows.map(r => r.subs.length));
+  const rowH = maxSubs === 0 ? 42 : maxSubs === 1 ? 50 : 60;
+  const H = rows.length * rowH;
+  const { c: canvas, ctx } = imgCanvas(W, H);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  rows.forEach((r, i) => {
+    const y = i * rowH;
+    if (r.dim) ctx.globalAlpha = 0.55;
+    // 順位バッジ（1〜3位は金銀銅の丸、それ以外は薄いグレーの丸）
+    const cx = 22, cy = y + rowH / 2;
+    ctx.fillStyle = r.medal >= 0 ? IMG_MEDAL[r.medal] : '#e3e9e8';
+    ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = r.medal >= 0 ? '#ffffff' : '#8a9aa5';
+    const rankTxt = r.rank.replace('位タイ', '').replace('位', '');
+    ctx.font = imgFont(rankTxt.length > 2 ? 10 : 13, true);
+    ctx.textAlign = 'center';
+    ctx.fillText(rankTxt, cx, cy);
+    ctx.textAlign = 'left';
+    if (r.rank.includes('タイ')) {
+      ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(8, true);
+      ctx.textAlign = 'center'; ctx.fillText('タイ', cx, cy + 20); ctx.textAlign = 'left';
+    }
+    // 名前（＋チームカラー●）とサブ行
+    const tx = BADGE;
+    const ns = r.subs.length;
+    const nameY = ns === 0 ? cy : ns === 1 ? cy - 9 : cy - 14;
+    let nx = tx;
+    if (r.dot) {
+      ctx.fillStyle = r.dot; ctx.beginPath();
+      ctx.arc(tx + 4.5, nameY, 4.5, 0, Math.PI * 2); ctx.fill();
+      nx = tx + 14;
+    }
+    ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(14, true);
+    const availName = W - nx - valW - VALGAP - 8;
+    let nm = r.name;
+    if (ctx.measureText(nm).width > availName) nm = imgWrap(ctx, nm, availName, 1)[0] + '…';
+    ctx.fillText(nm, nx, nameY);
+    if (ns) {
+      ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, false);
+      const availSub = W - tx - valW - VALGAP - 8;
+      const y0 = ns === 1 ? cy + 10 : cy + 3;
+      r.subs.forEach((sbRaw, si) => {
+        let sb = sbRaw;
+        if (ctx.measureText(sb).width > availSub) sb = imgWrap(ctx, sb, availSub, 1)[0] + '…';
+        ctx.fillText(sb, tx, y0 + si * 14);
+      });
+    }
+    // 値（pts/枚/bonus）
+    ctx.fillStyle = r.valColor; ctx.font = imgFont(16, true);
+    ctx.textAlign = 'right';
+    ctx.fillText(r.val, W - 8, cy);
+    ctx.textAlign = 'left';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#eeeeee'; ctx.fillRect(0, y + rowH - 1, W, 1);
+  });
+  return canvas;
+}
+
+// ===== 本体Canvas（3）スコア推移グラフ =====
+// 画面のSVGと同じ計算（chartData）を使い、Canvasに直接描く
+function imgChartBodyCanvas(g, indiv) {
+  const d = chartData(g.rounds, g.settings, indiv);
+  if (!d) return null;
+  const W = 460, GH = 250;         // グラフ領域
+  const left = 46, right = 14, top = 12, bottom = 26;
+  const px = i => left + (W - left - right) * (i / d.R);
+  const py = v => top + (GH - top - bottom) * ((d.max - v) / (d.max - d.min));
+  // 凡例（折り返して何行になるか先に測る）
+  const m = document.createElement('canvas').getContext('2d');
+  m.font = imgFont(12, false);
+  const items = d.lines.map(l => ({ label: l.label, color: l.color, w: 16 + m.measureText(l.label).width + 14 }));
+  const legRows = [];
+  let cur = [], curW = 0;
+  items.forEach(it => {
+    if (cur.length && curW + it.w > W) { legRows.push(cur); cur = []; curW = 0; }
+    cur.push(it); curW += it.w;
+  });
+  if (cur.length) legRows.push(cur);
+  const LEG = legRows.length * 22 + 6;
+  const H = GH + LEG;
+  const { c: canvas, ctx } = imgCanvas(W, H);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  // 横グリッド線と目盛り
+  ctx.font = imgFont(10, false);
+  d.gridVals.forEach(v => {
+    const y = py(v);
+    const strong = v === 0;
+    ctx.fillStyle = strong ? '#bbbbbb' : '#e5e5e5';
+    ctx.fillRect(left, y - (strong ? 0.75 : 0.5), W - left - right, strong ? 1.5 : 1);
+    ctx.fillStyle = '#999999';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${v > 0 ? '+' : ''}${v}`, left - 6, y);
+    ctx.textAlign = 'left';
+  });
+  // X軸ラベル（試合番号）。数が多いときは間引く
+  const stepX = Math.ceil((d.R + 1) / 14);
+  ctx.fillStyle = '#999999'; ctx.textAlign = 'center';
+  for (let i = 0; i <= d.R; i++) {
+    if (i % stepX === 0 || i === d.R) ctx.fillText(String(i), px(i), GH - 10);
+  }
+  ctx.textAlign = 'left';
+  // 折れ線と点
+  d.lines.forEach(l => {
+    ctx.strokeStyle = l.color; ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    l.values.forEach((v, x) => { const X = px(x), Y = py(v); x === 0 ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y); });
+    ctx.stroke();
+    ctx.fillStyle = l.color;
+    l.values.forEach((v, x) => { ctx.beginPath(); ctx.arc(px(x), py(v), 3, 0, Math.PI * 2); ctx.fill(); });
+  });
+  // 凡例
+  let ly = GH + 12;
+  legRows.forEach(row => {
+    let lx = 2;
+    row.forEach(it => {
+      ctx.fillStyle = it.color; ctx.beginPath(); ctx.arc(lx + 5, ly, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#555555'; ctx.font = imgFont(12, false);
+      ctx.fillText(it.label, lx + 16, ly);
+      lx += it.w;
+    });
+    ly += 22;
+  });
+  return canvas;
+}
+
+// セクション種別 → 本体Canvas（存在しないセクションはnull）
+function imgSectionBodyCanvas(g, kind) {
+  const s = g.settings;
+  if (!g || !(g.rounds || []).length) return null;
+  if (kind === 'rounds' || kind === 'stats') return imgTableBodyCanvas(g, kind);
+  if (kind === 'score') return imgRankingBodyCanvas(g, 'score');
+  if (kind === 'team') return (s.teamMode && s.teams) ? imgRankingBodyCanvas(g, 'team') : null;
+  if (kind === 'chart') return imgChartBodyCanvas(g, false);
+  if (kind === 'ichart') return (s.teamMode && s.teams) ? imgChartBodyCanvas(g, true) : null;
+  return null;
+}
+function imgAvailableSections(g) {
+  return IMG_SECTIONS.filter(x => {
+    const s = g.settings;
+    if (x.kind === 'team' || x.kind === 'ichart') return !!(s.teamMode && s.teams);
+    return true;
+  });
+}
+
+// 単体出力（ブランド帯＋本体＋フッター）
+function buildResultCanvas(g, kind) {
+  const body = imgSectionBodyCanvas(g, kind);
+  if (!body) return null;
+  const bw = body.width / IMG_SCALE, bh = body.height / IMG_SCALE;
+  const W = IMG_PAD * 2 + bw;
+  const H = IMG_BAND + 10 + bh + IMG_FOOT;
+  const { c, ctx } = imgCanvas(W, H);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  drawImgBand(ctx, W, g, imgSectionLabel(kind, g.settings));
+  ctx.drawImage(body, IMG_PAD, IMG_BAND + 10, bw, bh);
+  drawImgFooter(ctx, W, H);
+  return c;
+}
+
+// まとめ出力（縦長1枚。選んだセクションを上から順に積む）
+// 各セクションは内側幅に収まるよう縮小して中央に置く（横長の表も1枚に収まる）
+function buildComposedCanvas(g, kinds) {
+  const s = g.settings;
+  const CW = COMPOSE_W, inner = CW - IMG_PAD * 2;
+  const items = kinds.map(kind => {
+    const body = imgSectionBodyCanvas(g, kind);
+    if (!body) return null;
+    const bw = body.width / IMG_SCALE, bh = body.height / IMG_SCALE;
+    const k = Math.min(1, inner / bw);
+    return { kind, body, w: bw * k, h: bh * k, label: imgSectionLabel(kind, s) };
+  }).filter(Boolean);
+  if (!items.length) return null;
+  const HEAD = 92, LABEL_H = 30, GAP = 22;
+  const H = HEAD + items.reduce((a, it) => a + LABEL_H + it.h + GAP, 0) - GAP + IMG_FOOT + 10;
+  // iOS Safariはcanvasの総ピクセル数（約16.7M）と1辺に上限があり、超えると保存が丸ごと失敗する。
+  // 上限に触れるときだけ解像度を落として必ず収める（通常は等倍2倍＝幅1080pxを保つ）
+  const MAX_SIDE = 8000, MAX_AREA = 16000000;
+  let sc = IMG_SCALE;
+  if (H * sc > MAX_SIDE) sc = MAX_SIDE / H;
+  if (CW * sc * H * sc > MAX_AREA) sc = Math.sqrt(MAX_AREA / (CW * H));
+  sc = Math.max(1, Math.min(IMG_SCALE, sc));
+  const { c, ctx } = imgCanvas(CW, H, sc);
+  const theme = imgThemeColor(s);
+  ctx.fillStyle = '#f4f7f6'; ctx.fillRect(0, 0, CW, H);
+  // 全体ヘッダー
+  ctx.fillStyle = theme; ctx.fillRect(0, 0, CW, HEAD);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(21, true);
+  const title = g.name || '';
+  const tLines = ctx.measureText(title).width > CW - IMG_PAD * 2 ? imgWrap(ctx, title, CW - IMG_PAD * 2, 1) : [title];
+  ctx.fillText(tLines[0] + (tLines[0] !== title ? '…' : ''), IMG_PAD, 36);
+  ctx.font = imgFont(12, false); ctx.globalAlpha = 0.9;
+  const modeTxt = `${s.numPlayers === 3 ? '三麻' : '四麻'}・${s.teamMode && s.teams ? 'チーム戦' : '個人戦'}`;
+  ctx.fillText(`${g.createdAt ? fmtDate(g.createdAt) + ' ・ ' : ''}全${g.rounds.length}試合 ・ ${modeTxt}`, IMG_PAD, 62);
+  ctx.globalAlpha = 1;
+  // 各セクション
+  let y = HEAD + 14;
+  items.forEach(it => {
+    ctx.fillStyle = theme; ctx.fillRect(IMG_PAD, y + 3, 4, 15);           // 見出しの縦バー
+    ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(15, true);
+    ctx.fillText(it.label, IMG_PAD + 12, y + 11);
+    y += LABEL_H - 8;
+    const x = IMG_PAD + (inner - it.w) / 2;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.10)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+    ctx.fillStyle = '#ffffff';
+    imgRoundRect(ctx, x - 6, y - 6, it.w + 12, it.h + 12, 10); ctx.fill();
+    ctx.restore();
+    ctx.drawImage(it.body, x, y, it.w, it.h);
+    y += it.h + GAP + 8;
+  });
+  ctx.fillStyle = '#9aa8a4'; ctx.font = imgFont(11, true);
+  ctx.textAlign = 'right'; ctx.fillText('majasco.jp', CW - IMG_PAD, H - IMG_FOOT / 2); ctx.textAlign = 'left';
+  return c;
+}
+
+// Canvas → 共有/ダウンロード（スマホは共有シート、非対応環境はPNG保存）
+async function shareCanvasImage(canvas, g, label) {
   const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-  const label = kind === 'rounds' ? '対局履歴' : 'その他成績';
+  if (!blob) { showToast('画像の作成に失敗しました'); return; }
   const fname = `まじゃすこ_${label}_${(g.name || 'game').replace(/[\\/:*?"<>|]/g, '_')}.png`;
   const file = new File([blob], fname, { type: 'image/png' });
-  // スマホ: 共有シート（LINE・X・保存などへ直接）／ 非対応環境: ダウンロード
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: `${g.name || ''} の${label}` });
@@ -2473,6 +2814,49 @@ async function shareResultImage(g, kind) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   showToast('画像を保存しました');
+}
+async function shareResultImage(g, kind) {
+  if (!g || !(g.rounds || []).length) return;
+  const canvas = buildResultCanvas(g, kind);
+  if (!canvas) { showToast('この項目はまだ画像にできません'); return; }
+  track('image_export', { kind, rounds: g.rounds.length });
+  await shareCanvasImage(canvas, g, imgSectionLabel(kind, g.settings));
+}
+
+// ---- まとめ画像の選択モーダル ----
+let composeTarget = null;
+function openComposeModal(g) {
+  if (!g || !(g.rounds || []).length) return;
+  composeTarget = g;
+  const list = imgAvailableSections(g).map(x => `
+    <label class="opt-check" style="padding:9px 2px">
+      <input type="checkbox" class="compose-pick" value="${x.kind}" checked>
+      <span>${x.kind === 'chart' ? imgSectionLabel('chart', g.settings) : x.label}</span>
+    </label>`).join('');
+  document.getElementById('compose-list').innerHTML = list;
+  document.getElementById('compose-modal').classList.add('open');
+}
+function closeComposeModal() {
+  document.getElementById('compose-modal').classList.remove('open');
+}
+async function runCompose() {
+  const g = composeTarget;
+  if (!g) return;
+  const kinds = [...document.querySelectorAll('.compose-pick:checked')].map(el => el.value);
+  if (!kinds.length) { showToast('1つ以上選んでください'); return; }
+  const btn = document.getElementById('compose-run');
+  btn.disabled = true; btn.textContent = '作成中…';
+  try {
+    // 描画は同期処理なので、ボタンの文言を先に反映させてから実行する
+    await new Promise(r => setTimeout(r, 30));
+    const canvas = buildComposedCanvas(g, kinds);
+    if (!canvas) { showToast('画像の作成に失敗しました'); return; }
+    track('image_export', { kind: 'compose', sections: kinds.length, rounds: g.rounds.length });
+    closeComposeModal();
+    await shareCanvasImage(canvas, g, '結果まとめ');
+  } finally {
+    btn.disabled = false; btn.textContent = '画像を作る';
+  }
 }
 
 // ---- 順位バッジ（メダル） ----
@@ -2493,8 +2877,10 @@ function rankBadgeHtml(rank, isTie, isLast) {
 // indiv=true ならチーム戦でも個人ごとの線を描く（「個人スコア推移」カード用）。
 // 個人の線の色は、表示順（memberDisplayOrder＝チームA→B…・個人戦は登録順）の
 // n番目の人にTEAM_COLORSのn色目を割り当てる（並び順と色の番号が一致する）
-function chartHtml(rounds, s, indiv = false) {
-  if (!rounds || rounds.length === 0) return '';
+// グラフの計算部分だけを切り出したもの（SVG描画と画像出力の両方から使う）。
+// 返り値: { lines, min, max, R, gridVals } ／ 描けない場合は null
+function chartData(rounds, s, indiv = false) {
+  if (!rounds || rounds.length === 0) return null;
   const N = s.playerNames.length;
   // 0局目=全員0から始まる累積スコア。未参加の試合は前回値を維持（横ばい）
   const series = Array.from({length: N}, () => [0]);
@@ -2521,24 +2907,29 @@ function chartHtml(rounds, s, indiv = false) {
       label: s.playerNames[m], color: TEAM_COLORS[k % TEAM_COLORS.length], on: played[m], values: series[m]
     })).filter(l => l.on);
   }
-  if (!lines.length) return '';
+  if (!lines.length) return null;
   const all = lines.flatMap(l => l.values);
   let min = Math.min(...all), max = Math.max(...all);
   if (min === max) { min -= 10; max += 10; }
   const range = max - min;
   min -= range * 0.08; max += range * 0.08;
-
-  const W = 340, H = 200, left = 42, right = 12, top = 10, bottom = 24;
-  const R = rounds.length;
-  const px = i => left + (W - left - right) * (i / R);
-  const py = v => top + (H - top - bottom) * ((max - v) / (max - min));
-
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
   // 横グリッド線: 通常50刻み。表示範囲（プラス域＋マイナス域の絶対値合計）が600以上なら100刻みに間引く
   const step = (max - min) >= 600 ? 100 : 50;
   const gridVals = [];
   for (let v = Math.ceil(min / step) * step; v <= max; v += step) gridVals.push(v);
   if (gridVals.length === 0) gridVals.push(0);
+  return { lines, min, max, R: rounds.length, gridVals };
+}
+function chartHtml(rounds, s, indiv = false) {
+  const d = chartData(rounds, s, indiv);
+  if (!d) return '';
+  const { lines, min, max, R, gridVals } = d;
+
+  const W = 340, H = 200, left = 42, right = 12, top = 10, bottom = 24;
+  const px = i => left + (W - left - right) * (i / R);
+  const py = v => top + (H - top - bottom) * ((max - v) / (max - min));
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto">`;
   gridVals.forEach(v => {
     const y = py(v);
     const strong = v === 0;
@@ -2864,6 +3255,7 @@ function renderGame() {
     const teamBody = document.getElementById('team-body');
     teamBody.style.display = collapsedCards.team ? 'none' : '';
     teamBody.innerHTML = collapsedCards.team ? '' : teamStandingsHtml(activeGame);
+    document.getElementById('team-img-btn').style.display = (hasRounds && !collapsedCards.team) ? 'inline-block' : 'none';
   } else {
     teamCard.style.display = 'none';
   }
@@ -2922,6 +3314,7 @@ function renderGame() {
     const chartBody = document.getElementById('chart-body');
     chartBody.style.display = collapsedCards.chart ? 'none' : '';
     chartBody.innerHTML = collapsedCards.chart ? '' : chartHtml(activeGame.rounds, s);
+    document.getElementById('chart-img-btn').style.display = collapsedCards.chart ? 'none' : 'inline-block';
   } else {
     chartCard.style.display = 'none';
   }
@@ -2935,10 +3328,12 @@ function renderGame() {
     const ichartBody = document.getElementById('ichart-body');
     ichartBody.style.display = collapsedCards.ichart ? 'none' : '';
     ichartBody.innerHTML = collapsedCards.ichart ? '' : chartHtml(activeGame.rounds, s, true);
+    document.getElementById('ichart-img-btn').style.display = collapsedCards.ichart ? 'none' : 'inline-block';
   } else {
     ichartCard.style.display = 'none';
   }
 
+  document.getElementById('compose-btn').style.display = hasRounds ? 'block' : 'none';
 }
 
 function leaveGame() {
@@ -3688,7 +4083,8 @@ function renderDetailBody(g) {
   let html = '';
   // チーム成績（チーム戦が有効なグループのみ・スコア収支の上）
   if (s.teamMode && s.teams && hasRounds) {
-    html += `<div class="card">${detailCardHead('チーム成績', 'team')}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
+    const teamImgBtn = `<button class="edit-tab" onclick="shareResultImage(detailGame,'team')">画像</button>`;
+    html += `<div class="card">${detailCardHead('チーム成績', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
   // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   html += `<div class="card">${scoreMainHtml(g)}</div>`;
@@ -3715,11 +4111,13 @@ function renderDetailBody(g) {
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`;
+    const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`
+      + `<button class="edit-tab" onclick="shareResultImage(detailGame,'chart')">画像</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
-      const ichartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame, true)">もっと見る</button>`;
+      const ichartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame, true)">もっと見る</button>`
+        + `<button class="edit-tab" onclick="shareResultImage(detailGame,'ichart')">画像</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }
@@ -3730,6 +4128,9 @@ function renderDetailBody(g) {
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
       ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
+  if (g.rounds.length > 0) {
+    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめて画像にする</button>`;
+  }
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
