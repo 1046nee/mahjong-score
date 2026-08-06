@@ -2569,16 +2569,42 @@ function imgWrap(ctx, text, maxW, maxLines = 3) {
   kept[maxLines - 1] = last.join('') + '…';
   return kept;
 }
+// iOS Safariにはcanvasの1辺（約8000px）と総ピクセル数（約16.7M）の上限がある。
+// 超えるとtoBlobが黙ってnullを返し、保存もプレビューも丸ごと失敗する（真っ白ではなく「失敗しました」になる）。
+// 上限に触れるときだけ解像度を落として必ず収める。通常は等倍2倍（＝まとめ画像で幅1080px）を保つ
+const IMG_MAX_SIDE = 8000, IMG_MAX_AREA = 16000000;
+// 下限0.7＝本文13pxが約9pxで描かれる限界。これ以上落とすと読めない画像になるので、
+// 収まらない場合は縮め続けずに「作れない」と伝える（IMG_TOO_LARGE）
+const IMG_MIN_SCALE = 0.7;
+function imgFitScale(w, h) {
+  let sc = IMG_SCALE;
+  const longer = Math.max(w, h);
+  if (longer * sc > IMG_MAX_SIDE) sc = IMG_MAX_SIDE / longer;
+  if (w * sc * h * sc > IMG_MAX_AREA) sc = Math.sqrt(IMG_MAX_AREA / (w * h));
+  return Math.max(IMG_MIN_SCALE, Math.min(IMG_SCALE, sc));
+}
+// その倍率で端末の上限に収まるか（収まらない＝読める大きさでは1枚にできない）
+function imgFitsCanvas(w, h, sc) {
+  return Math.max(w, h) * sc <= IMG_MAX_SIDE && w * sc * h * sc <= IMG_MAX_AREA;
+}
+const IMG_TOO_LARGE = 'too-large';
 // CSS px で指定して、実ピクセルは×2（既定）で持つCanvasを作る。
-// 長大な画像では sc を下げて端末の上限に収める
-function imgCanvas(w, h, sc = IMG_SCALE) {
+// scを省略すると上限に収まる倍率を自動で選ぶ（長大な表・まとめ画像はここで自動的に縮む）
+function imgCanvas(w, h, sc = null) {
+  const s = sc == null ? imgFitScale(w, h) : sc;
   const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(w * sc));
-  c.height = Math.max(1, Math.round(h * sc));
+  c.width = Math.max(1, Math.round(w * s));
+  c.height = Math.max(1, Math.round(h * s));
   const ctx = c.getContext('2d');
-  ctx.scale(sc, sc);
+  ctx.scale(s, s);
   ctx.textBaseline = 'middle';
+  c._sc = s; // 実ピクセル/CSSpx。上限で落ちた場合があるので、CSSサイズを逆算するのに使う
   return { c, ctx };
+}
+// Canvasの見た目上のサイズ（CSS px）。_scは上限で下げられていることがあるのでIMG_SCALE決め打ちにしない
+function imgCssSize(c) {
+  const sc = c._sc || IMG_SCALE;
+  return { w: c.width / sc, h: c.height / sc };
 }
 function imgRoundRect(ctx, x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h / 2);
@@ -2923,11 +2949,8 @@ function imgChartBodyCanvas(g, indiv) {
     ctx.textAlign = 'left';
   });
   // X軸ラベル（試合番号）。数が多いときは間引く
-  const stepX = Math.ceil((d.R + 1) / 14);
   ctx.fillStyle = '#999999'; ctx.textAlign = 'center';
-  for (let i = 0; i <= d.R; i++) {
-    if (i % stepX === 0 || i === d.R) ctx.fillText(String(i), px(i), GH - 10);
-  }
+  chartXTicks(d.R, 14).forEach(i => ctx.fillText(String(i), px(i), GH - 10));
   ctx.textAlign = 'left';
   // 折れ線と点
   d.lines.forEach(l => {
@@ -2936,8 +2959,10 @@ function imgChartBodyCanvas(g, indiv) {
     ctx.beginPath();
     l.values.forEach((v, x) => { const X = px(x), Y = py(v); x === 0 ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y); });
     ctx.stroke();
-    ctx.fillStyle = l.color;
-    l.values.forEach((v, x) => { ctx.beginPath(); ctx.arc(px(x), py(v), 3, 0, Math.PI * 2); ctx.fill(); });
+    if (chartShowDots(W - left - right, d.R)) {
+      ctx.fillStyle = l.color;
+      l.values.forEach((v, x) => { ctx.beginPath(); ctx.arc(px(x), py(v), 3, 0, Math.PI * 2); ctx.fill(); });
+    }
   });
   // 凡例
   let ly = GH + 12;
@@ -2977,10 +3002,12 @@ function imgAvailableSections(g) {
 function buildResultCanvas(g, kind) {
   const body = imgSectionBodyCanvas(g, kind);
   if (!body) return null;
-  const bw = body.width / IMG_SCALE, bh = body.height / IMG_SCALE;
+  const { w: bw, h: bh } = imgCssSize(body);
   const W = IMG_PAD * 2 + bw;
   const H = IMG_BAND + 10 + bh + IMG_FOOT;
-  const { c, ctx } = imgCanvas(W, H);
+  const sc = imgFitScale(W, H);
+  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE; // 縦に長すぎて読める大きさの1枚にできない
+  const { c, ctx } = imgCanvas(W, H, sc);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   drawImgBand(ctx, W, g, imgSectionLabel(kind, g.settings));
   ctx.drawImage(body, IMG_PAD, IMG_BAND + 10, bw, bh);
@@ -2996,21 +3023,16 @@ function buildComposedCanvas(g, kinds) {
   const items = kinds.map(kind => {
     const body = imgSectionBodyCanvas(g, kind);
     if (!body) return null;
-    const bw = body.width / IMG_SCALE, bh = body.height / IMG_SCALE;
+    const { w: bw, h: bh } = imgCssSize(body);
     const k = Math.min(1, inner / bw);
     return { kind, body, w: bw * k, h: bh * k, label: imgSectionLabel(kind, s) };
   }).filter(Boolean);
   if (!items.length) return null;
   const HEAD = 92, LABEL_H = 30, GAP = 22;
   const H = HEAD + items.reduce((a, it) => a + LABEL_H + it.h + GAP, 0) - GAP + IMG_FOOT + 10;
-  // iOS Safariはcanvasの総ピクセル数（約16.7M）と1辺に上限があり、超えると保存が丸ごと失敗する。
-  // 上限に触れるときだけ解像度を落として必ず収める（通常は等倍2倍＝幅1080pxを保つ）
-  const MAX_SIDE = 8000, MAX_AREA = 16000000;
-  let sc = IMG_SCALE;
-  if (H * sc > MAX_SIDE) sc = MAX_SIDE / H;
-  if (CW * sc * H * sc > MAX_AREA) sc = Math.sqrt(MAX_AREA / (CW * H));
-  sc = Math.max(1, Math.min(IMG_SCALE, sc));
-  const { c, ctx } = imgCanvas(CW, H, sc);
+  const scAll = imgFitScale(CW, H);
+  if (!imgFitsCanvas(CW, H, scAll)) return IMG_TOO_LARGE;
+  const { c, ctx } = imgCanvas(CW, H, scAll); // 上限に触れるときだけ自動で解像度が下がる
   const theme = imgThemeColor(s);
   ctx.fillStyle = '#f4f7f6'; ctx.fillRect(0, 0, CW, H);
   // 全体ヘッダー
@@ -3069,6 +3091,7 @@ async function shareCanvasImage(canvas, g, label) {
 async function showResultImage(g, kind) {
   if (!g || !(g.rounds || []).length) return;
   const canvas = buildResultCanvas(g, kind);
+  if (canvas === IMG_TOO_LARGE) { showToast('試合数が多すぎて1枚の画像に収まりません。CSVで書き出してください'); return; }
   if (!canvas) { showToast('この項目はまだ画像にできません'); return; }
   track('image_preview', { kind, rounds: g.rounds.length });
   await openImagePreview(canvas, g, imgSectionLabel(kind, g.settings));
@@ -3145,6 +3168,7 @@ async function runCompose() {
     // 描画は同期処理なので、ボタンの文言を先に反映させてから実行する
     await new Promise(r => setTimeout(r, 30));
     const canvas = buildComposedCanvas(g, kinds);
+    if (canvas === IMG_TOO_LARGE) { showToast('試合数が多すぎて1枚の画像に収まりません。項目を減らすかCSVをお使いください'); return; }
     if (!canvas) { showToast('画像の作成に失敗しました'); return; }
     track('image_preview', { kind: 'compose', sections: kinds.length, rounds: g.rounds.length });
     closeComposeModal();
@@ -3208,13 +3232,32 @@ function chartData(rounds, s, indiv = false) {
   if (min === max) { min -= 10; max += 10; }
   const range = max - min;
   min -= range * 0.08; max += range * 0.08;
-  // 横グリッド線: 通常50刻み。表示範囲（プラス域＋マイナス域の絶対値合計）が600以上なら100刻みに間引く
-  const step = (max - min) >= 600 ? 100 : 50;
+  // 横グリッド線の刻み: 目盛りが12本以上にならない最小の刻みを選ぶ。
+  // 「表示範囲（プラス域＋マイナス域の絶対値合計）が600以上なら50→100刻み」はこの規則の一部
+  // （600/50=12本でちょうど切り替わる）。100試合規模だと範囲が数千になるため、
+  // 100で止めると目盛りの数字が重なって完全に読めなくなる → 200/500/1000…と上げ続ける
+  const GRID_STEPS = [50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
+  const MAX_GRID = 12;
+  const step = GRID_STEPS.find(v => (max - min) / v < MAX_GRID) || GRID_STEPS[GRID_STEPS.length - 1];
   const gridVals = [];
   for (let v = Math.ceil(min / step) * step; v <= max; v += step) gridVals.push(v);
   if (gridVals.length === 0) gridVals.push(0);
   return { lines, min, max, R: rounds.length, gridVals };
 }
+// X軸（試合番号）に出す目盛りの位置。全試合ぶん出すと数字が重なって読めないので間引く。
+// 最後は必ず出すが、直前の目盛りと近すぎるときはその目盛りの方を落とす
+function chartXTicks(R, maxLabels) {
+  const step = Math.max(1, Math.ceil((R + 1) / maxLabels));
+  const ticks = [];
+  for (let i = 0; i <= R; i += step) ticks.push(i);
+  if (ticks[ticks.length - 1] !== R) {
+    if (R - ticks[ticks.length - 1] < step / 2) ticks.pop();
+    ticks.push(R);
+  }
+  return ticks;
+}
+// 点（各試合の位置に打つ丸）は、間隔が直径6を下回ると重なって線がだんご状になるので、そのときは描かない
+function chartShowDots(plotW, R) { return R > 0 && plotW / R >= 6; }
 function chartHtml(rounds, s, indiv = false) {
   const d = chartData(rounds, s, indiv);
   if (!d) return '';
@@ -3231,15 +3274,16 @@ function chartHtml(rounds, s, indiv = false) {
     svg += `<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="${strong ? '#bbb' : '#e5e5e5'}" stroke-width="${strong ? 1.5 : 1}"/>`;
     svg += `<text x="${left-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#999">${v > 0 ? '+' : ''}${v}</text>`;
   });
-  // X軸ラベル（局番号）
-  for (let i = 0; i <= R; i++) {
+  // X軸ラベル（試合番号）。画面は幅が狭いので最大12個まで
+  chartXTicks(R, 12).forEach(i => {
     svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
-  }
+  });
   // 折れ線
+  const dots = chartShowDots(W - left - right, R);
   lines.forEach(l => {
     const pts = l.values.map((v, x) => `${px(x)},${py(v)}`).join(' ');
     svg += `<polyline points="${pts}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-    l.values.forEach((v, x) => { svg += `<circle cx="${px(x)}" cy="${py(v)}" r="3" fill="${l.color}"/>`; });
+    if (dots) l.values.forEach((v, x) => { svg += `<circle cx="${px(x)}" cy="${py(v)}" r="3" fill="${l.color}"/>`; });
   });
   svg += '</svg>';
 
