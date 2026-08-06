@@ -113,6 +113,11 @@
     順位リスト（`imgRankingBodyCanvas`＝`.score-card`から抽出。**順位は絵文字でなく金銀銅の丸バッジ**で描く＝環境差なく同じ絵になる）／
     グラフ（`imgChartBodyCanvas`＝`chartData`の計算結果からCanvasに直接線を引く）
   - 対局履歴はスコアのみ＋合計行。チーム成績はメンバー名と合計収支を2行のサブ行で表示
+- **画像プレビュー**（`openImagePreview`）: カードの「画像」ボタン（`showResultImage`）とまとめ作成は、
+  **まず全画面プレビューを開く**（保存せずその場で結果を確認するため）。書き出したCanvasをそのまま表示するので保存物と同一の絵。
+  中身: タップで幅フィット⇄等倍のズーム切替、「PDF・印刷」（`printPreviewImage`＝`@media print`で画像だけを紙面に出す。
+  スマホの印刷画面から「PDFとして保存」できる）、「保存・共有」（`shareCanvasImage`）。
+  画像はblob URLで渡し、閉じるときにrevoke（`img.src=''`はページURLを読みに行くので`removeAttribute`で外す）
 - **まとめ画像**（`openComposeModal`→`runCompose`→`buildComposedCanvas`）: 入れる項目をチェックで選び、
   **縦長1枚（幅1080px）**に連結する。ゲーム画面と結果詳細の末尾に「結果をまとめて画像にする」ボタン。
   各セクションは内側幅に収まるよう縮小して白い角丸カードに載せ、上に見出しを付ける。

@@ -480,6 +480,28 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rounds-table th { word-break: break-all; overflow-wrap: anywhere; }
 .rounds-table th.tb { border-left: 1px solid rgba(255,255,255,.85); }
 .rounds-table td.tb { border-left: 1px solid #e3eaea; }
+/* 画像プレビュー（保存せずその場で結果を確認する） */
+.img-modal { display: none; position: fixed; inset: 0; background: rgba(14,24,22,0.94); z-index: 420; flex-direction: column; }
+.img-modal.open { display: flex; }
+.img-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px 8px; flex-shrink: 0; }
+.img-modal-title { font-size: 14px; font-weight: 800; color: #fff; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.img-modal-close { background: rgba(255,255,255,0.16); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.img-modal-body { flex: 1; overflow: auto; padding: 0 12px; -webkit-overflow-scrolling: touch; }
+.img-modal-body img { display: block; width: 100%; height: auto; margin: 0 auto; border-radius: 10px; background: #fff; cursor: zoom-in; }
+.img-modal-body.zoom img { width: auto; max-width: none; cursor: zoom-out; }
+.img-hint { font-size: 11px; color: rgba(255,255,255,0.66); text-align: center; padding: 8px 0 4px; flex-shrink: 0; }
+.img-modal-foot { flex-shrink: 0; display: flex; gap: 8px; padding: 8px 14px calc(14px + env(safe-area-inset-bottom)); }
+.img-modal-foot button { flex: 1; border: none; border-radius: 10px; padding: 13px 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.img-btn-sub { background: rgba(255,255,255,0.16); color: #fff; }
+.img-btn-main { background: #E75620; color: #fff; }
+/* 印刷（ブラウザの「PDFとして保存」もここを通る）: 画像だけを紙面いっぱいに出す */
+@media print {
+  body.printing-image > *:not(.img-modal) { display: none !important; }
+  body.printing-image .img-modal { position: static; inset: auto; background: #fff; display: block !important; }
+  body.printing-image .img-modal-head, body.printing-image .img-modal-foot, body.printing-image .img-hint { display: none !important; }
+  body.printing-image .img-modal-body { overflow: visible; padding: 0; }
+  body.printing-image .img-modal-body img { width: 100%; border-radius: 0; }
+}
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #177083; }
@@ -1005,7 +1027,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">チーム成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="team-img-btn" onclick="shareResultImage(activeGame,'team')" style="display:none">画像</button>
+          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none">画像</button>
           <span id="team-collapse"></span>
         </div>
       </div>
@@ -1021,7 +1043,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button class="edit-tab" id="expand-btn" onclick="openTableModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
-          <button class="edit-tab" id="img-btn" onclick="shareResultImage(activeGame,'rounds')" style="display:none">画像</button>
+          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">画像</button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
@@ -1034,7 +1056,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">その他成績</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="rank-more-btn" onclick="openStatsModal(activeGame)" style="display:none">もっと見る</button>
-          <button class="edit-tab" id="rank-img-btn" onclick="shareResultImage(activeGame,'stats')" style="display:none">画像</button>
+          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">画像</button>
           <span id="rank-collapse"></span>
         </div>
       </div>
@@ -1045,7 +1067,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="chart-more-btn" onclick="openChartModal(activeGame)" style="display:none">もっと見る</button>
-          <button class="edit-tab" id="chart-img-btn" onclick="shareResultImage(activeGame,'chart')" style="display:none">画像</button>
+          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none">画像</button>
           <span id="chart-collapse"></span>
         </div>
       </div>
@@ -1056,13 +1078,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="ichart-more-btn" onclick="openChartModal(activeGame, true)" style="display:none">もっと見る</button>
-          <button class="edit-tab" id="ichart-img-btn" onclick="shareResultImage(activeGame,'ichart')" style="display:none">画像</button>
+          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none">画像</button>
           <span id="ichart-collapse"></span>
         </div>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
-    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめて画像にする</button>
+    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめて見る・画像にする</button>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
@@ -1179,10 +1201,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="edit-tab" onclick="closeComposeModal()" style="font-size:12px;padding:6px 12px">キャンセル</button>
     </div>
     <div style="font-size:12px;color:#8a9aa5;line-height:1.7;margin-bottom:10px">
-      入れたい項目を選ぶと、縦長の1枚画像にまとめます。SNSでの共有にどうぞ。
+      入れたい項目を選ぶと、縦長の1枚にまとめて表示します。その場で確認して、保存・共有やPDFにもできます。
     </div>
     <div id="compose-list"></div>
-    <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">画像を作る</button>
+    <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">まとめて表示する</button>
+  </div>
+</div>
+
+<!-- 画像プレビュー（保存せずその場で確認・PDF/印刷もここから） -->
+<div class="img-modal" id="img-preview">
+  <div class="img-modal-head">
+    <div class="img-modal-title" id="img-preview-title">結果</div>
+    <button class="img-modal-close" onclick="closeImagePreview()">閉じる</button>
+  </div>
+  <div class="img-modal-body" id="img-preview-body" onclick="toggleImageZoom()">
+    <img id="img-preview-img" alt="対局結果">
+  </div>
+  <div class="img-hint">タップで拡大・縮小できます</div>
+  <div class="img-modal-foot">
+    <button class="img-btn-sub" onclick="printPreviewImage()">PDF・印刷</button>
+    <button class="img-btn-main" onclick="saveFromPreview()">保存・共有</button>
   </div>
 </div>
 
@@ -2002,7 +2040,7 @@ function scoreMainHtml(g) {
   const collapsed = collapsedCards.score;
   let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : s.bonusEnabled ? '6px' : '12px'}">
     <div class="card-title" style="margin-bottom:0">総合成績</div>
-    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="shareResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">画像</button>`}${collapseBtnHtml('score')}</div>
+    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
   if (s.bonusEnabled) {
@@ -2815,12 +2853,57 @@ async function shareCanvasImage(canvas, g, label) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   showToast('画像を保存しました');
 }
-async function shareResultImage(g, kind) {
+// カードの「画像」ボタン → まずプレビューを出す（保存はその中から選べる）
+async function showResultImage(g, kind) {
   if (!g || !(g.rounds || []).length) return;
   const canvas = buildResultCanvas(g, kind);
   if (!canvas) { showToast('この項目はまだ画像にできません'); return; }
-  track('image_export', { kind, rounds: g.rounds.length });
-  await shareCanvasImage(canvas, g, imgSectionLabel(kind, g.settings));
+  track('image_preview', { kind, rounds: g.rounds.length });
+  await openImagePreview(canvas, g, imgSectionLabel(kind, g.settings));
+}
+
+
+// ---- 画像プレビュー ----
+// 「保存はしたくないけど、その場できれいな結果を見たい」ための表示。
+// 画像として書き出したCanvasをそのまま画面に出すので、保存したものと1pxも変わらない絵が見られる。
+// ここから保存・共有／PDF（ブラウザの印刷経由）にも進める
+let imgPreviewState = null;
+async function openImagePreview(canvas, g, label) {
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+  if (!blob) { showToast('画像の作成に失敗しました'); return; }
+  if (imgPreviewState && imgPreviewState.url) URL.revokeObjectURL(imgPreviewState.url);
+  const url = URL.createObjectURL(blob);
+  imgPreviewState = { canvas, g, label, url };
+  document.getElementById('img-preview-title').textContent = `${g.name || ''} の${label}`;
+  const body = document.getElementById('img-preview-body');
+  body.classList.remove('zoom');
+  body.scrollTop = 0; body.scrollLeft = 0;
+  document.getElementById('img-preview-img').src = url;
+  document.getElementById('img-preview').classList.add('open');
+}
+function closeImagePreview() {
+  document.getElementById('img-preview').classList.remove('open');
+  // src='' はページのURLを読みに行ってしまうので属性ごと外す
+  document.getElementById('img-preview-img').removeAttribute('src');
+  if (imgPreviewState && imgPreviewState.url) URL.revokeObjectURL(imgPreviewState.url);
+  imgPreviewState = null;
+}
+function toggleImageZoom() {
+  document.getElementById('img-preview-body').classList.toggle('zoom');
+}
+async function saveFromPreview() {
+  if (!imgPreviewState) return;
+  await shareCanvasImage(imgPreviewState.canvas, imgPreviewState.g, imgPreviewState.label);
+}
+// ブラウザの印刷を通してPDF化する（iOS/Androidの印刷画面からPDF保存、PCは「PDFに保存」）
+function printPreviewImage() {
+  if (!imgPreviewState) return;
+  track('image_print', { label: imgPreviewState.label });
+  document.body.classList.add('printing-image');
+  const cleanup = () => document.body.classList.remove('printing-image');
+  window.addEventListener('afterprint', cleanup, { once: true });
+  setTimeout(cleanup, 60000); // afterprintが来ない環境の保険
+  setTimeout(() => window.print(), 60);
 }
 
 // ---- まとめ画像の選択モーダル ----
@@ -2851,11 +2934,11 @@ async function runCompose() {
     await new Promise(r => setTimeout(r, 30));
     const canvas = buildComposedCanvas(g, kinds);
     if (!canvas) { showToast('画像の作成に失敗しました'); return; }
-    track('image_export', { kind: 'compose', sections: kinds.length, rounds: g.rounds.length });
+    track('image_preview', { kind: 'compose', sections: kinds.length, rounds: g.rounds.length });
     closeComposeModal();
-    await shareCanvasImage(canvas, g, '結果まとめ');
+    await openImagePreview(canvas, g, '結果まとめ');
   } finally {
-    btn.disabled = false; btn.textContent = '画像を作る';
+    btn.disabled = false; btn.textContent = 'まとめて表示する';
   }
 }
 
@@ -4083,7 +4166,7 @@ function renderDetailBody(g) {
   let html = '';
   // チーム成績（チーム戦が有効なグループのみ・スコア収支の上）
   if (s.teamMode && s.teams && hasRounds) {
-    const teamImgBtn = `<button class="edit-tab" onclick="shareResultImage(detailGame,'team')">画像</button>`;
+    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">画像</button>`;
     html += `<div class="card">${detailCardHead('チーム成績', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
   // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
@@ -4093,7 +4176,7 @@ function renderDetailBody(g) {
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
-  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="shareResultImage(detailGame,'rounds')">画像</button>` : '';
+  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">画像</button>` : '';
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
   const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
@@ -4105,19 +4188,19 @@ function renderDetailBody(g) {
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab" onclick="openStatsModal(detailGame)">もっと見る</button>`
-      + `<button class="edit-tab" onclick="shareResultImage(detailGame,'stats')">画像</button>`;
+      + `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">画像</button>`;
     html += `<div class="card">${detailCardHead('その他成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
     const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`
-      + `<button class="edit-tab" onclick="shareResultImage(detailGame,'chart')">画像</button>`;
+      + `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">画像</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
       const ichartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame, true)">もっと見る</button>`
-        + `<button class="edit-tab" onclick="shareResultImage(detailGame,'ichart')">画像</button>`;
+        + `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">画像</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }
@@ -4129,7 +4212,7 @@ function renderDetailBody(g) {
       ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
-    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめて画像にする</button>`;
+    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめて見る・画像にする</button>`;
   }
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
