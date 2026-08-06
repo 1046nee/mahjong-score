@@ -1012,7 +1012,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">チーム成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none">画像</button>
+          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none">プレビュー</button>
           <span id="team-collapse"></span>
         </div>
       </div>
@@ -1027,7 +1027,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
-          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">画像</button>
+          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">プレビュー</button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
@@ -1039,7 +1039,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">その他成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">画像</button>
+          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">プレビュー</button>
           <span id="rank-collapse"></span>
         </div>
       </div>
@@ -1049,7 +1049,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none">画像</button>
+          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none">プレビュー</button>
           <span id="chart-collapse"></span>
         </div>
       </div>
@@ -1059,13 +1059,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none">画像</button>
+          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none">プレビュー</button>
           <span id="ichart-collapse"></span>
         </div>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
-    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめて見る・画像にする</button>
+    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
@@ -2004,7 +2004,7 @@ function scoreMainHtml(g) {
   const collapsed = collapsedCards.score;
   let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : s.bonusEnabled ? '6px' : '12px'}">
     <div class="card-title" style="margin-bottom:0">総合成績</div>
-    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">画像</button>`}${collapseBtnHtml('score')}</div>
+    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">プレビュー</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
   if (s.bonusEnabled) {
@@ -2387,8 +2387,15 @@ function imgTableBodyCanvas(g, kind) {
     const cs = getComputedStyle(src);
     const cellCs = getComputedStyle(cell);
     const dot = cell.querySelector('.team-dot');
+    // セル内は［スコア］［薄い点数］［チップ差］の縦積み。2行目以降はsubsとして小さく描く
+    const divs = [...cell.querySelectorAll('div')];
+    const subs = divs.slice(1).map(d => {
+      const ds = getComputedStyle(d);
+      return { t: d.textContent.trim(), color: ds.color };
+    }).filter(x => x.t);
     return {
-      t: (cell.querySelector('div') ? cell.querySelector('div').textContent : cell.textContent).trim(),
+      t: (divs.length ? divs[0].textContent : cell.textContent).trim(),
+      subs,
       head: cell.tagName === 'TH',
       span: cell.colSpan || 1,
       left: cell.classList.contains('sticky-col'),
@@ -2406,13 +2413,17 @@ function imgTableBodyCanvas(g, kind) {
   const m = document.createElement('canvas').getContext('2d');
   const nCols = Math.max(...grid.map(row => row.reduce((a, c) => a + c.span, 0)));
   const colW = new Array(nCols).fill(46);
-  const FS = 13;
+  const FS = 13, SUB_FS = 9;  // SUB_FS = 画面の薄い点数と同じ9px
   grid.forEach(row => {
     let ci = 0;
     row.forEach(c => {
       if (c.span === 1) {
         m.font = imgFont(FS, c.bold);
-        const w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0);
+        let w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0);
+        if (c.subs && c.subs.length) {
+          m.font = imgFont(SUB_FS, false);
+          c.subs.forEach(sb => { w = Math.max(w, m.measureText(sb.t).width + 16); });
+        }
         colW[ci] = Math.max(colW[ci], Math.min(132, Math.ceil(w)));
       }
       ci += c.span;
@@ -2428,7 +2439,9 @@ function imgTableBodyCanvas(g, kind) {
       ci += c.span;
       return out;
     });
-    const h = Math.max(30, 12 + Math.max(...cells.map(c => c.lines.length)) * 17);
+    const maxLines = Math.max(...cells.map(c => c.lines.length));
+    const maxSubs = Math.max(0, ...cells.map(c => (c.subs || []).length));
+    const h = Math.max(30, 12 + maxLines * 17 + maxSubs * (SUB_FS + 3));
     return { cells, h };
   });
 
@@ -2443,8 +2456,11 @@ function imgTableBodyCanvas(g, kind) {
       const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
       ctx.fillStyle = bg; ctx.fillRect(x, y, c.w, row.h);
       if (c.tb) { ctx.fillStyle = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6'; ctx.fillRect(x, y, 1, row.h); }
+      const subs = c.subs || [];
+      // メイン行＋サブ行をひとかたまりとしてセル内で上下中央に置く
+      const blockH = c.lines.length * 17 + subs.length * (SUB_FS + 3);
+      const cy0 = y + (row.h - blockH) / 2 + 8.5;
       ctx.fillStyle = c.color; ctx.font = imgFont(FS, c.bold);
-      const cy0 = y + row.h / 2 - (c.lines.length - 1) * 8.5;
       c.lines.forEach((ln, li) => {
         const lw = ctx.measureText(ln).width;
         const hasDot = c.dot && li === 0;
@@ -2454,6 +2470,14 @@ function imgTableBodyCanvas(g, kind) {
           ctx.arc(cx - 9, cy0, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         }
         ctx.fillText(ln, cx, cy0 + li * 17);
+      });
+      // 薄い点数・チップ差（画面と同じ体裁で小さく）
+      let sy = cy0 + c.lines.length * 17 - 4;
+      subs.forEach(sb => {
+        ctx.fillStyle = sb.color; ctx.font = imgFont(SUB_FS, false);
+        const sw = ctx.measureText(sb.t).width;
+        ctx.fillText(sb.t, c.left ? x + 9 : x + (c.w - sw) / 2, sy);
+        sy += SUB_FS + 3;
       });
     });
     y += row.h;
@@ -2990,8 +3014,8 @@ function roundsTheadHtml(s, forImage = false) {
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示。
-// scoreOnly=true（画像出力）ではスコアの数値だけを載せる（点数・チップ・マークは省く）
-function roundRowHtml(r, idx, onclickJs, s, scoreOnly = false) {
+// forImage=true（画像出力）では絵文字マークだけ省く（点数・チップ差は画面と同じく表示する）
+function roundRowHtml(r, idx, onclickJs, s, forImage = false) {
   const mem = roundMembers(r, s);
   const slotOf = {}; // memberIndex → r.scores内の位置
   mem.forEach((m, k) => { slotOf[m] = k; });
@@ -3002,13 +3026,14 @@ function roundRowHtml(r, idx, onclickJs, s, scoreOnly = false) {
     if (k == null) return `<td${tb} style="color:#ddd">—</td>`;
     const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-    const raw = (!scoreOnly && r.points && r.points[k] != null)
+    const raw = (r.points && r.points[k] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
     // チップ差・焼き鳥🐔（記録がある試合のみ小さく表示）
     const marks = [];
-    if (!scoreOnly) {
-      if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
+    if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
+    // 絵文字は画像（Canvas）に描くと環境によってモノクロ・豆腐になるので画像では出さない
+    if (!forImage) {
       if (r.yakitori && r.yakitori[k]) marks.push('🐔');
       if (r.chombo && r.chombo[k]) marks.push('💩');
     }
@@ -4065,7 +4090,7 @@ function renderDetailBody(g) {
   let html = '';
   // チーム成績（チーム戦が有効なグループのみ・スコア収支の上）
   if (s.teamMode && s.teams && hasRounds) {
-    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">画像</button>`;
+    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
     html += `<div class="card">${detailCardHead('チーム成績', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
   // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
@@ -4074,7 +4099,7 @@ function renderDetailBody(g) {
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
-  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">画像</button>` : '';
+  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
   const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
@@ -4085,17 +4110,17 @@ function renderDetailBody(g) {
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
-    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">画像</button>`;
+    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">プレビュー</button>`;
     html += `<div class="card">${detailCardHead('その他成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">画像</button>`;
+    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">プレビュー</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
-      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">画像</button>`;
+      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">プレビュー</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }
@@ -4107,7 +4132,7 @@ function renderDetailBody(g) {
       ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ×${s.rate}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
-    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめて見る・画像にする</button>`;
+    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめてプレビュー</button>`;
   }
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('view-detail').classList.toggle('sanma', s.numPlayers === 3);
