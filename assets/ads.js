@@ -31,7 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // CLS対策: 広告読み込み前から高さを確保しておく
     el.style.minHeight = '280px';
     el.innerHTML = '<div style="font-size:10px;color:#aaa;text-align:center;margin-bottom:4px">スポンサーリンク</div>'
-      + `<ins class="adsbygoogle" style="display:block" data-ad-client="${AD_CLIENT}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="false"></ins>`;
-    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+      + `<ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="${AD_CLIENT}" data-ad-slot="${slot}" data-ad-format="auto" data-full-width-responsive="false"></ins>`;
+    // 枠の幅が確定してからpushする。レイアウト確定前に呼ぶと
+    // 「No slot size for availableWidth=0」で失敗し、その枠は二度と配信されない。
+    // 非表示タブでも動くようrequestAnimationFrameではなくsetTimeoutで待つ
+    const push = (tries = 0) => {
+      if (el.clientWidth === 0) {
+        if (tries < 20) setTimeout(() => push(tries + 1), 100);
+        return;
+      }
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+    };
+    push();
   });
 });
