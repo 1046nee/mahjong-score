@@ -1421,7 +1421,7 @@ async function applyRestore(bk, where) {
       await db.ref('sessions/' + sessionId).update({
         name: bk.name, settings: bk.settings,
         rounds: bk.rounds.length ? bk.rounds : null,
-        log: [...(activeGame.log || []), logEntry]
+        log: appendLog(activeGame.log, logEntry)
       });
       showToast('元に戻しました');
     } catch(e) { showToast('復元に失敗しました'); }
@@ -1430,7 +1430,7 @@ async function applyRestore(bk, where) {
     detailGame.name = bk.name;
     detailGame.settings = bk.settings;
     detailGame.rounds = bk.rounds;
-    detailGame.log = [...(detailGame.log || []), logEntry];
+    detailGame.log = appendLog(detailGame.log, logEntry);
     saveStorage();
     viewDetail(detailGame);
     showToast('元に戻しました');
@@ -1476,7 +1476,7 @@ function stopListening() {
 }
 async function writeRoundsToFirebase(rounds, logEntry) {
   const updates = { rounds: rounds.length ? rounds : null };
-  if (logEntry) updates.log = [...(activeGame.log || []), logEntry];
+  if (logEntry) updates.log = appendLog(activeGame.log, logEntry);
   await db.ref('sessions/' + sessionId).update(updates);
 }
 function fmtTime(iso) {
@@ -1777,6 +1777,18 @@ const MAX_MEMBERS = 40;
 // 既存データに上限を超えた名前があっても切り詰めない＝これまでの記録は今までどおり表示される
 const MAX_NAME_LEN = 16;   // プレイヤー名・チーム名
 const MAX_GROUP_LEN = 40;  // グループ名
+// 1グループに記録できる試合数の上限。根拠は3つ:
+//  ①保存のたびに全試合ぶんを書き直すので通信が重くなる（4人500試合で約85KB／1000試合で約168KB）
+//  ②対局履歴の画像が読める大きさの1枚に収まらなくなる（縮約版でも400試合弱が限界）
+//  ③database.rules.jsonのrounds indexが4桁まで
+// 週10試合のグループでも1年でようやく届く水準なので、実運用には十分な余裕がある
+const MAX_ROUNDS = 500;
+// 履歴（入力・修正・削除のログ）の保持件数。古いものから捨てて保存サイズに上限を作る
+const MAX_LOG = 600;
+function appendLog(log, entry) {
+  const a = [...(log || []), entry];
+  return a.length > MAX_LOG ? a.slice(a.length - MAX_LOG) : a;
+}
 // 書記素クラスタ単位で切り詰める（絵文字や結合文字を途中で割らない）
 function clampName(v, max) {
   const s = String(v == null ? '' : v).trim();
@@ -2580,12 +2592,15 @@ function imgFitScale(w, h) {
   let sc = IMG_SCALE;
   const longer = Math.max(w, h);
   if (longer * sc > IMG_MAX_SIDE) sc = IMG_MAX_SIDE / longer;
-  if (w * sc * h * sc > IMG_MAX_AREA) sc = Math.sqrt(IMG_MAX_AREA / (w * h));
+  // ぴったり上限になる倍率を出すと、丸め誤差で1pxだけ超えて「収まらない」判定になる → 0.1%だけ余裕を持たせる
+  if (w * sc * h * sc > IMG_MAX_AREA) sc = Math.sqrt(IMG_MAX_AREA / (w * h)) * 0.999;
   return Math.max(IMG_MIN_SCALE, Math.min(IMG_SCALE, sc));
 }
-// その倍率で端末の上限に収まるか（収まらない＝読める大きさでは1枚にできない）
+// その倍率で端末の上限に収まるか（収まらない＝読める大きさでは1枚にできない）。
+// 判定は実際に作られるピクセル数（四捨五入後）で行う
 function imgFitsCanvas(w, h, sc) {
-  return Math.max(w, h) * sc <= IMG_MAX_SIDE && w * sc * h * sc <= IMG_MAX_AREA;
+  const pw = Math.round(w * sc), ph = Math.round(h * sc);
+  return Math.max(pw, ph) <= IMG_MAX_SIDE && pw * ph <= IMG_MAX_AREA;
 }
 const IMG_TOO_LARGE = 'too-large';
 // CSS px で指定して、実ピクセルは×2（既定）で持つCanvasを作る。
@@ -2654,12 +2669,12 @@ function drawImgFooter(ctx, W, H) {
 }
 
 // ===== 本体Canvas（1）表: 対局履歴・個人成績 =====
-function imgTableBodyCanvas(g, kind) {
+function imgTableBodyCanvas(g, kind, compact = false) {
   const s = g.settings;
   // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
   let tableHtml;
   if (kind === 'rounds') {
-    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true)).join('');
+    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact)).join('');
     rows = rows.replace(/<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済<\/div>/g, '');
     const totals = gameTotals(g);
     const bset = teamBoundarySet(s);
@@ -2709,9 +2724,11 @@ function imgTableBodyCanvas(g, kind) {
   holder.remove();
   if (!grid.length) return null;
 
-  // 列幅は文字の実測で決める（最小46・最大132。超える見出しはセル内で折り返す）
+  // 列幅は文字の実測で決める（最小46・上限は列数しだい。超える見出しはセル内で折り返す）。
+  // 40人だと132pxのままでは画像の幅が端末の上限（8000px）に達してしまうため、列が多いほど上限を下げる
   const m = document.createElement('canvas').getContext('2d');
   const nCols = Math.max(...grid.map(row => row.reduce((a, c) => a + c.span, 0)));
+  const COL_MAX = nCols > 26 ? 84 : nCols > 14 ? 104 : 132;
   const colW = new Array(nCols).fill(46);
   const FS = 13, SUB_FS = 9;  // SUB_FS = 画面の薄い点数と同じ9px
   grid.forEach(row => {
@@ -2724,7 +2741,7 @@ function imgTableBodyCanvas(g, kind) {
           m.font = imgFont(SUB_FS, false);
           c.subs.forEach(sb => { w = Math.max(w, m.measureText(sb.t).width + 16); });
         }
-        colW[ci] = Math.max(colW[ci], Math.min(132, Math.ceil(w)));
+        colW[ci] = Math.max(colW[ci], Math.min(COL_MAX, Math.ceil(w)));
       }
       ci += c.span;
     });
@@ -2980,10 +2997,10 @@ function imgChartBodyCanvas(g, indiv) {
 }
 
 // セクション種別 → 本体Canvas（存在しないセクションはnull）
-function imgSectionBodyCanvas(g, kind) {
+function imgSectionBodyCanvas(g, kind, compact = false) {
   const s = g.settings;
   if (!g || !(g.rounds || []).length) return null;
-  if (kind === 'rounds' || kind === 'stats') return imgTableBodyCanvas(g, kind);
+  if (kind === 'rounds' || kind === 'stats') return imgTableBodyCanvas(g, kind, compact);
   if (kind === 'score') return imgRankingBodyCanvas(g, 'score');
   if (kind === 'team') return (s.teamMode && s.teams) ? imgRankingBodyCanvas(g, 'team') : null;
   if (kind === 'chart') return imgChartBodyCanvas(g, false);
@@ -2999,17 +3016,21 @@ function imgAvailableSections(g) {
 }
 
 // 単体出力（ブランド帯＋本体＋フッター）
-function buildResultCanvas(g, kind) {
-  const body = imgSectionBodyCanvas(g, kind);
+function buildResultCanvas(g, kind, compact = false) {
+  const body = imgSectionBodyCanvas(g, kind, compact);
   if (!body) return null;
   const { w: bw, h: bh } = imgCssSize(body);
   const W = IMG_PAD * 2 + bw;
   const H = IMG_BAND + 10 + bh + IMG_FOOT;
   const sc = imgFitScale(W, H);
-  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE; // 縦に長すぎて読める大きさの1枚にできない
+  if (!imgFitsCanvas(W, H, sc)) {
+    // 試合数が多くて収まらない → 薄い点数・チップ差を省いた縮約版で作り直す（行の高さが約6割になる）
+    if (kind === 'rounds' && !compact) return buildResultCanvas(g, kind, true);
+    return IMG_TOO_LARGE;
+  }
   const { c, ctx } = imgCanvas(W, H, sc);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  drawImgBand(ctx, W, g, imgSectionLabel(kind, g.settings));
+  drawImgBand(ctx, W, g, imgSectionLabel(kind, g.settings) + (compact ? '（スコアのみ）' : ''));
   ctx.drawImage(body, IMG_PAD, IMG_BAND + 10, bw, bh);
   drawImgFooter(ctx, W, H);
   return c;
@@ -3017,21 +3038,25 @@ function buildResultCanvas(g, kind) {
 
 // まとめ出力（縦長1枚。選んだセクションを上から順に積む）
 // 各セクションは内側幅に収まるよう縮小して中央に置く（横長の表も1枚に収まる）
-function buildComposedCanvas(g, kinds) {
+function buildComposedCanvas(g, kinds, compact = false) {
   const s = g.settings;
   const CW = COMPOSE_W, inner = CW - IMG_PAD * 2;
   const items = kinds.map(kind => {
-    const body = imgSectionBodyCanvas(g, kind);
+    const body = imgSectionBodyCanvas(g, kind, compact);
     if (!body) return null;
     const { w: bw, h: bh } = imgCssSize(body);
     const k = Math.min(1, inner / bw);
-    return { kind, body, w: bw * k, h: bh * k, label: imgSectionLabel(kind, s) };
+    return { kind, body, w: bw * k, h: bh * k,
+      label: imgSectionLabel(kind, s) + (compact && kind === 'rounds' ? '（スコアのみ）' : '') };
   }).filter(Boolean);
   if (!items.length) return null;
   const HEAD = 92, LABEL_H = 30, GAP = 22;
   const H = HEAD + items.reduce((a, it) => a + LABEL_H + it.h + GAP, 0) - GAP + IMG_FOOT + 10;
   const scAll = imgFitScale(CW, H);
-  if (!imgFitsCanvas(CW, H, scAll)) return IMG_TOO_LARGE;
+  if (!imgFitsCanvas(CW, H, scAll)) {
+    if (!compact && kinds.includes('rounds')) return buildComposedCanvas(g, kinds, true);
+    return IMG_TOO_LARGE;
+  }
   const { c, ctx } = imgCanvas(CW, H, scAll); // 上限に触れるときだけ自動で解像度が下がる
   const theme = imgThemeColor(s);
   ctx.fillStyle = '#f4f7f6'; ctx.fillRect(0, 0, CW, H);
@@ -3347,8 +3372,10 @@ function roundsTheadHtml(s, forImage = false) {
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示。
-// forImage=true（画像出力）では絵文字マークだけ省く（点数・チップ差は画面と同じく表示する）
-function roundRowHtml(r, idx, onclickJs, s, forImage = false) {
+// forImage=true（画像出力）では絵文字マークだけ省く（点数・チップ差は画面と同じく表示する）。
+// compact=true では薄い点数・チップ差も省いてスコアだけにする
+// （試合数が多くて1枚の画像に収まらないときの最後の手段。行の高さが約6割になる）
+function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false) {
   const mem = roundMembers(r, s);
   const slotOf = {}; // memberIndex → r.scores内の位置
   mem.forEach((m, k) => { slotOf[m] = k; });
@@ -3359,12 +3386,12 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false) {
     if (k == null) return `<td${tb} style="color:#ddd">—</td>`;
     const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-    const raw = (r.points && r.points[k] != null)
+    const raw = (!compact && r.points && r.points[k] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
     // チップ差・焼き鳥🐔（記録がある試合のみ小さく表示）
     const marks = [];
-    if (r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
+    if (!compact && r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
     // 絵文字は画像（Canvas）に描くと環境によってモノクロ・豆腐になるので画像では出さない
     if (!forImage) {
       if (r.yakitori && r.yakitori[k]) marks.push('🐔');
@@ -3375,7 +3402,7 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false) {
       : '';
     return `<td${tb} style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
   }).join('');
-  const editedMark = r.edited ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
+  const editedMark = (!compact && r.edited) ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
   // 試合番号は個人成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
   return `<tr onclick="${onclickJs}" style="cursor:pointer">
     <td class="sticky-col"><div>${idx+1}</div>${editedMark}</td>
@@ -3736,13 +3763,13 @@ async function deleteRound(idx) {
   const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
   // 履歴の試合番号を現在の番号に合わせて振り直す:
   //   削除された試合の履歴 → 旧扱い（番号は当時のまま）、それより後の試合の履歴 → 番号を1つ繰り上げ
-  const newLog = (activeGame.log || []).map(e => {
+  let newLog = (activeGame.log || []).map(e => {
     if (e.old || typeof e.no !== 'number') return e;
     if (e.no === idx + 1) return { ...e, old: true };
     if (e.no > idx + 1) return { ...e, no: e.no - 1 };
     return e;
   });
-  newLog.push({ type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null,
+  newLog = appendLog(newLog, { type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null,
     names: old ? roundMembers(old, activeGame.settings).map(m => activeGame.settings.playerNames[m]) : null });
   const bkKey = takeBackup(activeGame, `第${idx + 1}試合を削除`, newRounds.length); // 書き込む前の状態を控える
   try {
@@ -3807,6 +3834,11 @@ function defaultParticipants(ctx) {
   return Array.from({ length: Math.min(n, N) }, (_, i) => i);
 }
 function openSheetCtx(ctx, idx) {
+  // 新規入力のときだけ上限をみる（既存試合の修正・削除は上限に関係なくできる）
+  if (idx < 0 && (ctx.rounds || []).length >= MAX_ROUNDS) {
+    showToast(`1つのグループに記録できるのは${MAX_ROUNDS}試合までです。新しいグループを作ってください`);
+    return;
+  }
   sheetCtx = ctx;
   editingIndex = idx;
   // 3人麻雀の点数入力シートは配色を反転
@@ -4104,12 +4136,16 @@ async function submitRound() {
     logEntry = { type: 'add', at: now, no: newRounds.length, points, names: members.map(m => ctx.settings.playerNames[m]) };
   }
   const isEdit = editingIndex >= 0;
+  if (!isEdit && newRounds.length > MAX_ROUNDS) {
+    showToast(`1つのグループに記録できるのは${MAX_ROUNDS}試合までです`); return;
+  }
   // 修正は上書きなので、書き込む前の状態を控えておく（新規入力は消えるものが無いので不要）
   const bkKey = isEdit ? takeBackup(ctx.game, `第${editingIndex + 1}試合を修正`, newRounds.length) : null;
   closeSheet();
   try {
     await ctx.save(newRounds, logEntry);
     if (bkKey) showUndoToast('修正しました', bkKey);
+    else if (newRounds.length >= MAX_ROUNDS - 20) showToast(`あと${MAX_ROUNDS - newRounds.length}試合で上限です`);
     track('round_submit', { is_edit: isEdit, round_no: logEntry.no });
   } catch(e) { showToast('保存に失敗しました'); }
 }
@@ -4380,7 +4416,7 @@ async function saveGameEdit() {
   const bkKey = takeBackup(activeGame, 'ゲーム設定を変更', rounds.length);
   closeFormModal();
   try {
-    await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: [...(activeGame.log || []), logEntry] });
+    await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: appendLog(activeGame.log, logEntry) });
     savePlayerNames(settings.playerNames);
     showUndoToast('設定を更新しました', bkKey);
   } catch(e) { showToast('保存に失敗しました'); }
@@ -4515,7 +4551,7 @@ function editDetailRound(ridx) {
     rounds: g.rounds,
     save: (rounds, logEntry) => {
       g.rounds = rounds;
-      g.log = [...(g.log || []), logEntry];
+      g.log = appendLog(g.log, logEntry);
       saveStorage();
       viewDetail(g);
       showToast('更新しました');
