@@ -269,7 +269,7 @@ slide("howto-6-close.png", ["今日の対局から、", "スマホ1台で。"], 
 # ==== 機能紹介シリーズ（6枚） ====
 slide("feature-1.png", ["点数を入れるだけで、", "自動計算"], sub="ウマ・オカ・同点処理もぜんぶおまかせ", screen_fn=screen_input)
 slide("feature-2.png", ["全員のスマホが、", "同じスコア表"], sub="「いま誰がトップ？」が一目でわかる", custom=two_phones)
-slide("feature-3.png", ["Mリーグみたいな、", "チーム戦"], sub="チームカラーで団体戦が盛り上がる", screen_fn=lambda d, a, b, c: screen_score(d, a, b, c, title="チーム成績", team=True))
+slide("feature-3.png", ["Mリーグみたいな、", "チーム戦"], sub="チームカラーで団体戦が盛り上がる", screen_fn=lambda d, a, b, c: screen_score(d, a, b, c, title="チーム順位", team=True))
 slide("feature-4.png", ["逆転のドラマを、", "グラフで"], sub="試合ごとの推移を自動で記録", screen_fn=screen_score)
 slide("feature-5.png", ["三麻もOK、", "ルールは自由自在"], sub="持ち点・ウマもいつものルールで", screen_fn=screen_rules, title_color=BLUE_SANMA)
 slide("feature-6.png", ["チップも焼き鳥も、", "まとめて記録"], sub="細かいルールごと、スマホ1台で", screen_fn=screen_chips)

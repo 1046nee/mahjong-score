@@ -260,7 +260,7 @@ def record():
         page.wait_for_timeout(900)
         page.click("#confirm-btn")
         page.wait_for_selector("#score-main-body .score-card", state="visible", timeout=10000)
-        page.wait_for_timeout(2200)  # メダル付きの総合成績を見せる
+        page.wait_for_timeout(2200)  # メダル付きの総合順位を見せる
 
         # ---- 2・3試合目はデータ注入（リアルタイム反映のデモを兼ねる） ----
         settings = page.evaluate("activeGame.settings")
@@ -277,7 +277,7 @@ def record():
 
         # ---- 成績・グラフを順に見せる ----
         smooth_scroll_to(page, "#score-main-body", 90, 1600)
-        smooth_scroll_to(page, "#rank-card", 70, 1800)   # その他成績
+        smooth_scroll_to(page, "#rank-card", 70, 1800)   # 個人成績
         smooth_scroll_to(page, "#chart-card", 70, 2600)  # スコア推移グラフ
         page.wait_for_timeout(400)
 

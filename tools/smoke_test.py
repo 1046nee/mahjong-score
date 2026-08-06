@@ -7,7 +7,7 @@
 #   1. LPが表示される
 #   2. グループ作成 → URL共有画面が出て、URLに#セッションIDが含まれる
 #   3. 共有URLを開き直す（受け取った人のシミュレーション）→ 試合画面が自動で開く
-#   4. 点数入力（自動入力ボタン含む）→ 総合成績にスコアが表示される
+#   4. 点数入力（自動入力ボタン含む）→ 総合順位にスコアが表示される
 #   5. スコア推移グラフのカードが存在する
 #
 # Firebaseは最小スタブに差し替え（本番に触れない）。ページ再読み込み後も
@@ -136,7 +136,7 @@ def main():
             "() => { const c = document.querySelector('#score-main-body .score-card');"
             " return c && c.innerText.includes('太郎') && c.innerText.includes('+'); }",
             timeout=10000)
-        print("OK 4/5: 点数入力→総合成績にスコア表示")
+        print("OK 4/5: 点数入力→総合順位にスコア表示")
 
         # ---- 5. グラフカードの存在 ----
         assert page.evaluate("!!document.querySelector('#chart-card')"), "スコア推移カードがない"

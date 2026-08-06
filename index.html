@@ -408,7 +408,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 焼き鳥🐔トグル（OFFはグレー表示） */
 .yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; width: 42px; padding: 8px 0; text-align: center; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
 .yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
-/* 総合成績カード: スコア/チップの切替トグルと、順位エリアのスムーズな置き換え */
+/* 総合順位カード: スコア/チップの切替トグルと、順位エリアのスムーズな置き換え */
 .mini-toggle { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .mini-toggle button { border: none; background: #fff; color: #888; font-size: 11px; font-weight: 700; padding: 6px 11px; cursor: pointer; transition: background 0.15s, color 0.15s; }
 .mini-toggle button.on { background: #177083; color: #fff; }
@@ -416,7 +416,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
-/* 合計収支セクション: 総合成績カード内の大きめトグルで開閉（「詳細を見る」感覚） */
+/* 合計収支セクション: 総合順位カード内の大きめトグルで開閉（「詳細を見る」感覚） */
 .bonus-section-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 12px 14px; border: 1.5px solid #dfe9ec; background: #f2f8f9; color: #177083; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .bonus-section-toggle .bst-arrow { font-size: 12px; }
 .bonus-section-toggle.open { border-radius: 10px 10px 0 0; }
@@ -450,11 +450,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .team-members-zone { display: flex; flex-wrap: wrap; gap: 6px; min-height: 34px; }
 .team-chip { border: 1.5px solid #ddd; background: #f7f7f7; border-radius: 16px; padding: 5px 12px; font-size: 13px; font-weight: 600; color: #444; cursor: grab; user-select: none; -webkit-user-select: none; }
 .team-chip:active { cursor: grabbing; background: #E4F3EC; border-color: #177083; }
-/* チーム成績カードのメンバー名 */
+/* チーム順位カードのメンバー名 */
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; }
-/* チームの識別記号（履歴・成績表・チーム成績で所属を示す。色ではなく記号で区別） */
+/* チームの識別記号（履歴・成績表・チーム順位で所属を示す。色ではなく記号で区別） */
 .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
-/* 先頭列（対局履歴=試合番号・その他成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
+/* 先頭列（対局履歴=試合番号・個人成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
    ラベルはどのズーム倍率でも省略しない（ellipsis禁止） */
 .rounds-table th.sticky-col, .rounds-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
 .rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
@@ -1010,7 +1010,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="game-body">
     <div class="card" id="team-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">チーム成績</div>
+        <div class="card-title" style="margin-bottom:0">チーム順位</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none">プレビュー</button>
           <span id="team-collapse"></span>
@@ -1037,7 +1037,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="card" id="rank-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">その他成績</div>
+        <div class="card-title" style="margin-bottom:0">個人成績</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">プレビュー</button>
           <span id="rank-collapse"></span>
@@ -1241,7 +1241,7 @@ let sessionCallback = null;
 let pendingSessionId = null;
 let editingIndex = -1; // 修正中の局インデックス（-1 = 新規）
 let appState = { games: [], players: [] };
-// 総合成績カードの表示指標: 'score'（合計スコアの順位・デフォルト） / 'chips'（チップ最終枚数の順位）
+// 総合順位カードの表示指標: 'score'（合計スコアの順位・デフォルト） / 'chips'（チップ最終枚数の順位）
 let scoreMetric = 'score';
 // スコア画面のカード開閉状態（key: team / score / rounds / rank / chart / settings）
 let collapsedCards = {};
@@ -1849,7 +1849,7 @@ function playedFlags(g) {
   return played;
 }
 // メンバー数が多い場合は横スクロールできるようテーブルに最小幅を与える
-// （先頭64px＋メンバー58px＝その他成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
+// （先頭64px＋メンバー58px＝個人成績と同じ列幅。上下に並ぶ2つの表の列位置をそろえる）
 function tableStyleFor(memberCount) {
   return memberCount > 4 ? `table-layout:fixed;min-width:${64 + memberCount * 58}px` : 'table-layout:fixed';
 }
@@ -1945,7 +1945,7 @@ function toggleBonusDetail(btn) {
   btn.textContent = collapsed ? '内訳を表示' : '内訳を閉じる';
 }
 
-// ---- 総合成績カード（ゲーム画面・結果詳細で共用） ----
+// ---- 総合順位カード（ゲーム画面・結果詳細で共用） ----
 // デフォルトは合計スコアの順位。右上のトグルで「チップ最終枚数」の順位に切り替えられる。
 // 収支計算ONのグループは、カード内の大きめトグル「合計収支」から内訳を展開できる
 function metricToggleHtml(s) {
@@ -2003,7 +2003,7 @@ function scoreMainHtml(g) {
   const hasRounds = (g.rounds || []).length > 0;
   const collapsed = collapsedCards.score;
   let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : s.bonusEnabled ? '6px' : '12px'}">
-    <div class="card-title" style="margin-bottom:0">総合成績</div>
+    <div class="card-title" style="margin-bottom:0">総合順位</div>
     <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">プレビュー</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
@@ -2037,7 +2037,7 @@ function normalizedTeams(s) {
   // Firebase経由でmembersが欠落するケースに備えて空配列で補完
   return (s.teams || []).map(t => ({ name: t.name || '', members: t.members || [] }));
 }
-// チームの識別カラー（チーム成績・対局履歴・その他成績・グラフで共通）。
+// チームの識別カラー（チーム順位・対局履歴・個人成績・グラフで共通）。
 // チームAから順に赤・青・緑・オレンジ・紫・黄・ピンク・茶の原色系を割り当てる。
 // 9色目以降も白以外の互いに異なる40色（先頭に近いほど判別しやすい色を配置）
 // 表の1行目はチーム戦では灰色背景（名前の前に色ドットを付けるので文字は白のまま）
@@ -2277,10 +2277,10 @@ const IMG_BAND = 52;    // 上部ブランド帯の高さ
 const IMG_FOOT = 26;
 const COMPOSE_W = 540;  // まとめ画像の内部幅（実ピクセルでは1080px＝SNSの標準幅）
 const IMG_SECTIONS = [
-  { kind: 'score',  label: '総合成績' },
-  { kind: 'team',   label: 'チーム成績' },
+  { kind: 'score',  label: '総合順位' },
+  { kind: 'team',   label: 'チーム順位' },
   { kind: 'rounds', label: '対局履歴' },
-  { kind: 'stats',  label: 'その他成績' },
+  { kind: 'stats',  label: '個人成績' },
   { kind: 'chart',  label: 'スコア推移' },
   { kind: 'ichart', label: '個人スコア推移' },
 ];
@@ -2355,7 +2355,7 @@ function drawImgFooter(ctx, W, H) {
   ctx.textAlign = 'left';
 }
 
-// ===== 本体Canvas（1）表: 対局履歴・その他成績 =====
+// ===== 本体Canvas（1）表: 対局履歴・個人成績 =====
 function imgTableBodyCanvas(g, kind) {
   const s = g.settings;
   // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
@@ -2486,7 +2486,7 @@ function imgTableBodyCanvas(g, kind) {
   return canvas;
 }
 
-// ===== 本体Canvas（2）順位リスト: 総合成績・チーム成績 =====
+// ===== 本体Canvas（2）順位リスト: 総合順位・チーム順位 =====
 // 画面と同じ .score-card のHTMLから情報を抜き、Canvasに描き直す。
 // 順位は絵文字ではなく金銀銅の丸バッジで描く（環境差なく必ず同じ絵になる）
 const IMG_MEDAL = ['#d4a017', '#9aa5ad', '#c97b3f'];
@@ -2997,7 +2997,7 @@ function teamBoundarySet(s) {
 // 画像出力は広め86px。どちらも文字が確実に収まる幅にする
 function firstColW(forImage) { return forImage ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
-// （対局履歴・その他成績の両方で共用。チーム戦でなければ空文字）
+// （対局履歴・個人成績の両方で共用。チーム戦でなければ空文字）
 function teamNameRowHtml(s, forImage = false) {
   if (!s.teamMode || !s.teams) return '';
   const cells = teamGroupsOf(s).map((t, gi) =>
@@ -3009,7 +3009,7 @@ function roundsTheadHtml(s, forImage = false) {
   const bset = teamBoundarySet(s);
   const cols = memberDisplayOrder(s).map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''} style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
-  // 先頭列はその他成績の項目列と同じ幅（2つの表の列位置をそろえる）
+  // 先頭列は個人成績の項目列と同じ幅（2つの表の列位置をそろえる）
   return `<thead>${teamNameRowHtml(s, forImage)}<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;${base}">試合</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
@@ -3043,14 +3043,14 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false) {
     return `<td${tb} style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
   }).join('');
   const editedMark = r.edited ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
-  // 試合番号はその他成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
+  // 試合番号は個人成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
   return `<tr onclick="${onclickJs}" style="cursor:pointer">
     <td class="sticky-col"><div>${idx+1}</div>${editedMark}</td>
     ${cells}
   </tr>`;
 }
 
-// ---- 順位取得回数（その他成績） ----
+// ---- 順位取得回数（個人成績） ----
 // メンバーごとに「参加した試合」だけを集計する（可変長メンバー対応）
 // forImage=true（画像出力）では table-layout:fixed をやめて内容基準にし、
 // どんなに拡大縮小しても項目ラベルが省略されないようにする
@@ -3254,11 +3254,11 @@ function renderGame() {
   // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
   document.getElementById('game-date').textContent = activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
-  // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
+  // 総合順位カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   const hasRounds = activeGame.rounds.length > 0;
   document.getElementById('score-main-body').innerHTML = scoreMainHtml(activeGame);
 
-  // チーム成績（チーム戦が有効なグループのみ）
+  // チーム順位（チーム戦が有効なグループのみ）
   const teamCard = document.getElementById('team-card');
   if (s.teamMode && s.teams && hasRounds) {
     teamCard.style.display = 'block';
@@ -3300,7 +3300,7 @@ function renderGame() {
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);
 
-  // その他成績（別カード）
+  // 個人成績（別カード）
   const rankCard = document.getElementById('rank-card');
   if (hasRounds) {
     rankCard.style.display = 'block';
@@ -4088,12 +4088,12 @@ function renderDetailBody(g) {
   const hasRounds = g.rounds.length > 0;
 
   let html = '';
-  // チーム成績（チーム戦が有効なグループのみ・スコア収支の上）
+  // チーム順位（チーム戦が有効なグループのみ・スコア収支の上）
   if (s.teamMode && s.teams && hasRounds) {
     const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
-    html += `<div class="card">${detailCardHead('チーム成績', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
+    html += `<div class="card">${detailCardHead('チーム順位', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
-  // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
+  // 総合順位カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   html += `<div class="card">${scoreMainHtml(g)}</div>`;
 
   const logBtn = logEvents(g.log).length > 0
@@ -4111,7 +4111,7 @@ function renderDetailBody(g) {
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">プレビュー</button>`;
-    html += `<div class="card">${detailCardHead('その他成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
+    html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
