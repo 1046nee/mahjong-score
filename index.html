@@ -427,21 +427,6 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: #f2f7f6; color: #177083; font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
 
-/* 対局履歴の全画面表示。縦スクロールはモーダル全体＝ヘッダー（タイトル/閉じる/ズーム±）は
-   固定せず中身と一緒にスクロールする。横スクロールは表を包む内側のラッパーが担い、
-   先頭列(.sticky-col)はそこに固定される（paddingぶんのジャンプを防ぐ） */
-.table-modal { display: none; position: fixed; inset: 0; background: #fff; z-index: 400; overflow-y: auto; overflow-x: hidden; }
-.table-modal.open { display: block; }
-.table-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px 8px; }
-.table-modal-sub { display: flex; align-items: center; gap: 10px; padding: 0 16px 10px; border-bottom: 1px solid #eee; }
-.table-modal-note { font-size: 10px; color: #9aa8a4; line-height: 1.5; flex: 1; }
-.table-modal-title { font-size: 15px; font-weight: 800; color: #177083; min-width: 0; line-height: 1.5; }
-.table-modal-body { padding: 12px 16px 28px; }
-.table-modal-body table { font-size: 13px; }
-.table-modal-body th, .table-modal-body td { padding: 8px 4px; }
-.table-zoom-ctrl { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
-.table-zoom-ctrl button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #ddd; background: #fff; color: #177083; font-size: 18px; font-weight: 700; line-height: 1; cursor: pointer; }
-.table-zoom-ctrl span { font-size: 11px; color: #888; min-width: 40px; text-align: center; }
 
 /* 収支集計: 主役の「合計収支」はミニカードで大きく、内訳は控えめな表でメリハリをつける */
 .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -1040,7 +1025,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">対局履歴</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="expand-btn" onclick="openTableModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
           <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">画像</button>
@@ -1055,7 +1039,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">その他成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="rank-more-btn" onclick="openStatsModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">画像</button>
           <span id="rank-collapse"></span>
         </div>
@@ -1066,7 +1049,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="chart-more-btn" onclick="openChartModal(activeGame)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none">画像</button>
           <span id="chart-collapse"></span>
         </div>
@@ -1077,7 +1059,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="ichart-more-btn" onclick="openChartModal(activeGame, true)" style="display:none">もっと見る</button>
           <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none">画像</button>
           <span id="ichart-collapse"></span>
         </div>
@@ -1174,23 +1155,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div id="form-modal-body"></div>
   </div>
-</div>
-
-<!-- 対局履歴の全画面表示（閲覧専用） -->
-<div class="table-modal" id="table-modal">
-  <div class="table-modal-head">
-    <div class="table-modal-title" id="table-modal-title">対局履歴</div>
-    <button class="edit-tab" onclick="closeTableModal()" style="font-size:13px;padding:7px 16px;flex-shrink:0">閉じる</button>
-  </div>
-  <div class="table-modal-sub">
-    <div class="table-zoom-ctrl">
-      <button type="button" onclick="tableModalZoomBy(-0.1)" aria-label="縮小">−</button>
-      <span id="table-zoom-label">100%</span>
-      <button type="button" onclick="tableModalZoomBy(0.1)" aria-label="拡大">＋</button>
-    </div>
-    <div class="table-modal-note">※拡大・縮小の倍率によっては、文字やレイアウトが崩れる場合があります</div>
-  </div>
-  <div class="table-modal-body" id="table-modal-body"></div>
 </div>
 
 <!-- 結果まとめ画像の選択（縦長1枚にする項目を選ぶ） -->
@@ -2223,69 +2187,6 @@ function syncTeamsWithIds(teams, ids) {
   });
 }
 
-// ---- 対局履歴の全画面表示（閲覧専用・±ボタンで拡大縮小） ----
-// 列幅は通常の表よりコンパクトにし、−で縮小すれば全列を一画面で見渡せる
-let tableModalZoom = 1;
-function openTableModal(g) {
-  if (!g || !(g.rounds || []).length) return;
-  const s = g.settings;
-  const rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true)).join(''); // モーダルはスコアのみ
-  document.getElementById('table-modal-title').textContent = `${g.name} の対局履歴`;
-  document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><div style="overflow-x:auto"><table class="rounds-table" style="table-layout:fixed;min-width:${86 + s.playerNames.length * 58}px">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table></div></div>`;
-  tableModalZoom = 1;
-  applyTableModalZoom();
-  document.getElementById('table-modal').classList.add('open');
-}
-// スコア推移グラフを全画面で見る（対局履歴と同じモーダル・ズーム共用。indiv=trueで個人スコア推移）
-function openChartModal(g, indiv = false) {
-  if (!g || !(g.rounds || []).length) return;
-  const s = g.settings;
-  document.getElementById('table-modal-title').textContent = `${g.name} の${s.teamMode && s.teams ? (indiv ? '個人スコア推移' : 'チームスコア推移') : 'スコア推移'}`;
-  document.getElementById('table-modal-body').innerHTML =
-    `<div id="table-zoom-wrap"><div class="chart-wrap">${chartHtml(g.rounds, s, indiv)}</div></div>`;
-  tableModalZoom = 1;
-  applyTableModalZoom();
-  document.getElementById('table-modal').classList.add('open');
-}
-// その他成績を全画面で見る（対局履歴と同じモーダル・ズーム共用）
-function openStatsModal(g) {
-  if (!g || !(g.rounds || []).length) return;
-  document.getElementById('table-modal-title').textContent = `${g.name} のその他成績`;
-  document.getElementById('table-modal-body').innerHTML = `<div id="table-zoom-wrap">${rankCountHtml(g.rounds, g.settings, true)}</div>`;
-  tableModalZoom = 1;
-  applyTableModalZoom();
-  document.getElementById('table-modal').classList.add('open');
-}
-function tableModalZoomBy(d) {
-  tableModalZoom = Math.min(2, Math.max(0.4, Math.round((tableModalZoom + d) * 10) / 10));
-  applyTableModalZoom();
-}
-// ズームは transform:scale で行う（CSS zoomは使わない）。
-// zoomはレイアウトごと縮むため、モバイルの最小フォントサイズ制限で
-// 「セルは縮むのに文字は縮みきらない」＝文字がセルからはみ出す。
-// transformは見た目だけを等倍で縮めるので、レイアウトが崩れずはみ出しが起きない。
-// 縮小するとレイアウト上の幅・高さは元のまま残るので、width と marginBottom で辻褄を合わせる
-function applyTableModalZoom() {
-  const wrap = document.getElementById('table-zoom-wrap');
-  if (wrap) {
-    const z = tableModalZoom;
-    wrap.style.transform = '';
-    wrap.style.width = '';
-    wrap.style.marginBottom = '';
-    if (z !== 1) {
-      wrap.style.transformOrigin = 'top left';
-      wrap.style.width = (100 / z) + '%';
-      wrap.style.transform = `scale(${z})`;
-      wrap.style.marginBottom = `${-wrap.offsetHeight * (1 - z)}px`;
-    }
-  }
-  const label = document.getElementById('table-zoom-label');
-  if (label) label.textContent = Math.round(tableModalZoom * 100) + '%';
-}
-function closeTableModal() {
-  document.getElementById('table-modal').classList.remove('open');
-}
 
 // ---- CSVエクスポート（対局履歴を表計算ソフト向けに保存） ----
 // Excel（日本語環境）で文字化けしないようUTF-8 BOM付き。列は対局履歴と同じ表示順（チームA→B…）
@@ -2474,9 +2375,11 @@ function imgTableBodyCanvas(g, kind) {
   } else {
     tableHtml = rankCountHtml(g.rounds, s, true);
   }
-  // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出
+  // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出。
+  // 三麻は .sanma を付けないと表ヘッダーが緑のままになる（画面と配色が食い違う）
   const holder = document.createElement('div');
   holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:2000px';
+  if (s.numPlayers === 3) holder.classList.add('sanma');
   holder.innerHTML = tableHtml;
   document.body.appendChild(holder);
   const grid = [...holder.querySelectorAll('tr')].map(tr => [...tr.children].map(cell => {
@@ -3067,27 +2970,27 @@ function teamBoundarySet(s) {
   return set;
 }
 // 先頭列の幅: スコア画面は小さめ64px（最長ラベル「平均着順」48px＋余白14pxが収まる最小級）、
-// もっと見るモーダルは広め86px。どちらも文字が確実に収まる幅にする
-function firstColW(forModal) { return forModal ? 86 : 64; }
+// 画像出力は広め86px。どちらも文字が確実に収まる幅にする
+function firstColW(forImage) { return forImage ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
 // （対局履歴・その他成績の両方で共用。チーム戦でなければ空文字）
-function teamNameRowHtml(s, forModal = false) {
+function teamNameRowHtml(s, forImage = false) {
   if (!s.teamMode || !s.teams) return '';
   const cells = teamGroupsOf(s).map((t, gi) =>
     `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
-  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forModal)}px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
+  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
 }
-function roundsTheadHtml(s, forModal = false) {
+function roundsTheadHtml(s, forImage = false) {
   const base = s.teamMode && s.teams ? `background:${TEAM_HEAD_BG};` : '';
   const bset = teamBoundarySet(s);
   const cols = memberDisplayOrder(s).map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''} style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
   // 先頭列はその他成績の項目列と同じ幅（2つの表の列位置をそろえる）
-  return `<thead>${teamNameRowHtml(s, forModal)}<tr><th class="sticky-col" style="width:${firstColW(forModal)}px;${base}">試合</th>${cols}</tr></thead>`;
+  return `<thead>${teamNameRowHtml(s, forImage)}<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;${base}">試合</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示。
-// scoreOnly=true（もっと見るモーダル・画像出力）ではスコアの数値だけを載せる（点数・チップ・マークは省く）
+// scoreOnly=true（画像出力）ではスコアの数値だけを載せる（点数・チップ・マークは省く）
 function roundRowHtml(r, idx, onclickJs, s, scoreOnly = false) {
   const mem = roundMembers(r, s);
   const slotOf = {}; // memberIndex → r.scores内の位置
@@ -3124,9 +3027,9 @@ function roundRowHtml(r, idx, onclickJs, s, scoreOnly = false) {
 
 // ---- 順位取得回数（その他成績） ----
 // メンバーごとに「参加した試合」だけを集計する（可変長メンバー対応）
-// forModal=true（もっと見る）では table-layout:fixed をやめて内容基準にし、
+// forImage=true（画像出力）では table-layout:fixed をやめて内容基準にし、
 // どんなに拡大縮小しても項目ラベルが省略されないようにする
-function rankCountHtml(rounds, s, forModal = false) {
+function rankCountHtml(rounds, s, forImage = false) {
   if (!rounds || rounds.length === 0) return '';
   const names = s.playerNames;
   const N = names.length;
@@ -3194,7 +3097,7 @@ function rankCountHtml(rounds, s, forModal = false) {
   // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
   const colOrder = memberDisplayOrder(s);
   const bset = teamBoundarySet(s);
-  const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forModal)}px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
+  const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''}${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   const statLabels = [...Array.from({length: slots}, (_, r) => `${r + 1}着`), '試合数',
@@ -3233,8 +3136,8 @@ function rankCountHtml(rounds, s, forModal = false) {
   });
   const rows = statLabels.map((label, ri) =>
     `<tr><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
-  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forModal ? '' : 'table-layout:fixed;'}min-width:${firstColW(forModal) + N * 58}px">
-    <thead>${teamNameRowHtml(s, forModal)}${nameRow}</thead><tbody>${rows}</tbody>
+  return `<div style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
+    <thead>${teamNameRowHtml(s, forImage)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
 }
 
@@ -3365,7 +3268,6 @@ function renderGame() {
   }
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>' : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
-  document.getElementById('expand-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('csv-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
   document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
 
@@ -3378,7 +3280,6 @@ function renderGame() {
   if (hasRounds) {
     rankCard.style.display = 'block';
     document.getElementById('rank-collapse').innerHTML = collapseBtnHtml('rank');
-    document.getElementById('rank-more-btn').style.display = collapsedCards.rank ? 'none' : 'inline-block';
     document.getElementById('rank-img-btn').style.display = collapsedCards.rank ? 'none' : 'inline-block';
     const rankBody = document.getElementById('rank-body');
     rankBody.style.display = collapsedCards.rank ? 'none' : '';
@@ -3392,7 +3293,6 @@ function renderGame() {
   if (hasRounds) {
     chartCard.style.display = 'block';
     document.getElementById('chart-title').textContent = s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移';
-    document.getElementById('chart-more-btn').style.display = collapsedCards.chart ? 'none' : 'inline-block';
     document.getElementById('chart-collapse').innerHTML = collapseBtnHtml('chart');
     const chartBody = document.getElementById('chart-body');
     chartBody.style.display = collapsedCards.chart ? 'none' : '';
@@ -3406,7 +3306,6 @@ function renderGame() {
   const ichartCard = document.getElementById('ichart-card');
   if (hasRounds && s.teamMode && s.teams) {
     ichartCard.style.display = 'block';
-    document.getElementById('ichart-more-btn').style.display = collapsedCards.ichart ? 'none' : 'inline-block';
     document.getElementById('ichart-collapse').innerHTML = collapseBtnHtml('ichart');
     const ichartBody = document.getElementById('ichart-body');
     ichartBody.style.display = collapsedCards.ichart ? 'none' : '';
@@ -4172,7 +4071,6 @@ function renderDetailBody(g) {
   // 総合成績カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
   html += `<div class="card">${scoreMainHtml(g)}</div>`;
 
-  const expandBtn = hasRounds ? `<button class="edit-tab" onclick="openTableModal(detailGame)">もっと見る</button>` : '';
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
@@ -4183,24 +4081,21 @@ function renderDetailBody(g) {
       <tbody>${rows}</tbody>
     </table></div>`;
   html += `<div class="card">
-    ${detailCardHead('対局履歴', 'rounds', expandBtn + logBtn + csvBtn + imgBtn)}
+    ${detailCardHead('対局履歴', 'rounds', logBtn + csvBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds) ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>' : ''}</div>`;
   if (g.rounds.length > 0) {
-    const statsBtn = `<button class="edit-tab" onclick="openStatsModal(detailGame)">もっと見る</button>`
-      + `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">画像</button>`;
+    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">画像</button>`;
     html += `<div class="card">${detailCardHead('その他成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    const chartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame)">もっと見る</button>`
-      + `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">画像</button>`;
+    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">画像</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
-      const ichartBtn = `<button class="edit-tab" onclick="openChartModal(detailGame, true)">もっと見る</button>`
-        + `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">画像</button>`;
+      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">画像</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }

@@ -24,7 +24,7 @@
 - **チーム戦の制約**: 同チーム同士は対局不可。最低チーム数=1試合の人数（四麻4・三麻3、`teamEditorCtx.minTeams`）。
   ガード: toggleSheetMember / submitRound / defaultParticipants
 - ログ: `renderLogModal`（フィルタlogFilter）/ `renderLogList(log, g)`。新規ログは`e.names`に参加者名を保存
-- 全画面モーダル: `openTableModal` / `openStatsModal` / `openChartModal`（#table-modal・zoom共用 40〜200%）
+- 画像出力とプレビュー: `imgSectionBodyCanvas` / `buildResultCanvas` / `buildComposedCanvas` / `openImagePreview`（→ その他の機能）
 - カード開閉: `collapsedCards` + `toggleCard(key)`（key: team/score/rounds/rank/chart/ichart/settings）
 - 計測: `track(event, params)` → dataLayer（group_create / group_join / round_submit / share_copy）
 
@@ -63,9 +63,9 @@
 - 総合成績: pts順位がデフォルト。ミニトグル「スコア/チップ」はチップあり🍪のときだけ。
   **「合計収支 ▾」セクションの表示条件は`bonusVisible(s)`＝チップあり または スコア倍率が実質有効（>0かつ≠1）**
   （スコア倍率だけのグループでも収支を表示する。チップ差・チップ収支の内訳行はチップあり🍪のときだけ。開始時チップ行は置かない）
-- 対局履歴: 常に表形式。行タップで修正・削除。「もっと見る」で全画面モーダル（ズーム）。
+- 対局履歴: 常に表形式。行タップで修正・削除。全体を見たいときは**画像プレビュー**（下記）。
   **列幅・先頭列の体裁はその他成績と完全に統一**（メンバー列58px。上下に並ぶ2表の列位置がそろう）。
-  先頭列幅は`firstColW(forModal)`: **スコア画面64px（小さめ・最長ラベル「平均着順」がぎりぎり収まる幅）／モーダル86px**。
+  先頭列幅は`firstColW(forImage)`: **画面64px（小さめ・最長ラベル「平均着順」がぎりぎり収まる幅）／画像出力86px**。
   試合番号の列は項目列と同じ`.sticky-col`（12px・weight600・標準色・左詰め・横スクロール時固定）
 - その他成績: **対局履歴と同じ転置レイアウト（列=メンバー・行=成績項目、1行目にプレイヤー名）**。項目列はsticky。
   行=上から 1着..n着/試合数/平均着順/連対率/トップ率/ラス回避/スコア/素点/順位点/最高点数/最低点数（平均点数は載せない）。
@@ -89,16 +89,11 @@
   個人戦のスコア推移も同じ割当。凡例も表示順に並ぶ）
 - 順位バッジ: 1〜3位のみ🥇🥈🥉、4位以下は灰色数字
 - タイトル横ボタンは「設定の編集」（.title-edit-btn・三麻で青）
-- モーダル（もっと見る）: ヘッダー2段構成（タイトル+閉じる／ズーム±+注意書き）＝長い名前でも切れない。
-  **対局履歴モーダルはスコアのみ表示**（`roundRowHtml(..., scoreOnly=true)`。点数・チップ・🐔💩マークは出さない。修正済マークは残す）。
-  **その他成績のモーダルは`rankCountHtml(…, true)`でtable-layout:auto**（列幅が内容基準になり、どのズーム倍率でも項目ラベルが省略されない）。
-  **ヘッダーは固定しない**: 縦スクロールは`.table-modal`全体（overflow-y:auto）が担い、ヘッダーも中身と一緒にスクロールする。
-  横スクロールは表を包む内側の`overflow-x:auto`ラッパーが担い、**先頭列(.sticky-col)はそこに固定される**
-  （モーダル自体を横スクロールさせるとbodyのpadding分だけ先頭列がジャンプするため、横は必ず内側ラッパーで）。
-  **ズーム（±ボタン40〜200%）は`transform:scale`で行う。CSS zoomは使わない**（`applyTableModalZoom`）。
-  transformは見た目だけを等倍で縮めるためレイアウトが変わらず、どの倍率でも文字がセルからはみ出さない。
-  縮小時はレイアウト幅・高さが元のまま残るので`width:(100/z)%`と負の`marginBottom`で辻褄を合わせる
-  （この結果、縮小すると内側ラッパーが広がって全列が1画面に収まる）
+- **「もっと見る」（全画面モーダル）は廃止**（2026-08-06）。全体を1画面で見る用途は画像プレビューが完全に置き換えたため、
+  対局履歴・その他成績・グラフの4か所すべてから削除し、代わりに「画像」を置いた。
+  画像出力用の広い版を作るフラグ名は`forImage`（旧`forModal`）。
+  **画像の対局履歴はスコアのみ**（`roundRowHtml(..., scoreOnly=true)`。点数・チップ・🐔💩マークは出さない）、
+  **その他成績は`rankCountHtml(…, true)`でtable-layout:auto**（列幅が内容基準になり項目ラベルが省略されない）
 
 ## その他の機能
 - **結果の画像出力**: **画面の見え方（横スクロール中かどうか等）に関係なく、Canvasに描き直した一枚絵PNG**を生成。
@@ -124,7 +119,7 @@
   **iOS Safariのcanvas上限（総ピクセル数16.7M・1辺）を超えると保存が丸ごと失敗する**ため、
   超えるときだけ解像度を落として収める（通常は幅1080pxを維持。400試合でも安全に生成できることを確認済み）
 - **CSVエクスポート**（`exportCsv(g)`/`buildCsv(g)`）: ゲーム画面と結果詳細の対局履歴カードに「CSV」ボタン
-  （もっと見る・履歴の隣。表示条件はもっと見ると同じ）。**UTF-8 BOM付き**（Excel日本語環境の文字化け対策。
+  （履歴・画像の隣）。**UTF-8 BOM付き**（Excel日本語環境の文字化け対策。
   ソース中のBOMは`﻿`のエスケープ表記で書く=生文字は編集事故のもと）。
   内容: メタ4行（グループ名/作成日/試合形式/チーム編成※チーム戦のみ）→空行→
   ヘッダー（試合・日時＋メンバーごとに「名前 点数/スコア/チップ/焼き鳥/チョンボ」）→試合行→合計行（スコア・チップ累計）。
@@ -150,7 +145,7 @@
 - チーム編成エディタ再初期化前に必ず captureTeamNames()（入力中のチーム名が消える）
 - グリッドアイテムはmin-width:autoで内容に引きずられて広がる → min-width:0 を忘れない
 - CSS zoomを小さくすると、ブラウザの最小フォントサイズ設定で文字だけ縮まなくなり、table-layout:fixed＋ellipsisのセルは文字が消える
-  → ズーム対象の表はtable-layout:autoにし、消えて困るラベルにellipsisを使わない
+  → 縮小しうる表はtable-layout:autoにし、消えて困るラベルにellipsisを使わない（画像出力の`forImage=true`がこれ）
 - **表の縮小にCSS zoomを使ってはいけない**（2026-08-06に実機で発覚）。zoomはレイアウトごと縮むため、
   モバイルの最小フォントサイズ制限で「セルは縮むのに文字は縮みきらない」＝文字がセルからはみ出す。
   縮小は必ず`transform:scale`（見た目だけ縮み、レイアウトは不変なので構造的にはみ出さない）
@@ -159,6 +154,8 @@
 - `.rounds-table th.sticky-col`（0,2,1）はクラス2つの上書き（0,2,0）に勝つ → 上書きは同じくth/td付きで書く（lp-specのbm-noteと同じ詳細度事故）
 - paddingのあるスクロールコンテナ直下でposition:sticky; left:0を使うと、固定位置はpadding端ではなくコンテナ端＝スクロール開始時にpadding分ジャンプする
   → sticky列の横スクロールはpadding無しの内側ラッパー（overflow-x:auto）に担わせる
+- 画像出力は非表示DOMにHTMLを展開して読み取る方式なので、**三麻は`.sanma`クラスをそのコンテナに付ける**
+  （付け忘れると画面は青なのに画像の表ヘッダーだけ緑になる）
 - セッションに新しいトップレベルキーを足すときはdatabase.rules.jsonの許可リストにも追加（$other:falseのため、忘れると保存が全部失敗する。→ docs/site-spec.md）
 - HTML→画像はSVG foreignObject+canvas方式だとiOS Safariで壊れる/汚染される → 表の画像化はCanvasに自前描画する（buildResultCanvasの方式を踏襲）
 - 検証でcanvasの絵をClaudeが目視したいときは、scratchpadのワンショット受信サーバー(save-server.js)へfetch POSTしてファイル化→Read（クリップボードはフォーカス制約で不可）
