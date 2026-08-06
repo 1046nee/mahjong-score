@@ -357,8 +357,18 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
 /* Toast */
-.toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+/* left:50%だけだと使える幅が画面の半分に制限され、長い文言が折り返される → max-contentで内容なりの幅にする */
+.toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100vw - 24px); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .toast.show { opacity: 1; }
+.toast.act { pointer-events: auto; display: flex; align-items: center; gap: 12px; }
+.toast-undo { background: #fff; color: #333; border: 0; border-radius: 14px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+
+/* 変更前の記録（履歴モーダル内） */
+.bk-box { border: 1px solid #e2ece7; border-radius: 12px; padding: 12px; margin-bottom: 14px; background: #f7fbfa; }
+.bk-head { font-size: 13px; font-weight: 700; color: #177083; margin-bottom: 4px; }
+.bk-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid #e8f0ed; }
+.bk-info { flex: 1; min-width: 0; font-size: 12px; color: #333; overflow-wrap: anywhere; }
+.bk-sub { font-size: 11px; color: #8a9aa5; margin-top: 1px; }
 
 /* Loading */
 .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
@@ -819,7 +829,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div class="field">
         <label>グループ名</label>
-        <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部">
+        <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部" maxlength="40">
       </div>
       <div class="field">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -827,7 +837,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0">登録名の管理</button>
         </div>
         <div style="display:flex;gap:8px">
-          <input type="text" id="member-input" placeholder="山田先輩" list="saved-players"
+          <input type="text" id="member-input" placeholder="山田先輩" list="saved-players" maxlength="16"
             onkeydown="if(event.key==='Enter'){event.preventDefault();addMember();}">
           <button class="add-member-btn" id="member-add-btn" onclick="addMember()">追加</button>
         </div>
@@ -1027,7 +1037,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">対局履歴</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
-          <button class="edit-tab" id="csv-btn" onclick="exportCsv(activeGame)" style="display:none">CSV</button>
+          <button class="edit-tab" id="csv-btn" onclick="openCsvModal(activeGame)" style="display:none">CSV</button>
           <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">プレビュー</button>
           <span id="rounds-collapse"></span>
         </div>
@@ -1173,6 +1183,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- CSV出力の項目選択（必要な列だけに絞って書き出す） -->
+<div class="sheet" id="csv-modal" onclick="if(event.target===this)closeCsvModal()">
+  <div class="sheet-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="sheet-title">CSVで書き出す</div>
+      <button class="edit-tab" onclick="closeCsvModal()" style="font-size:12px;padding:6px 12px">キャンセル</button>
+    </div>
+    <div style="font-size:12px;color:#8a9aa5;line-height:1.7;margin-bottom:10px">
+      入れたい項目だけを選べます（試合番号は必ず入ります）。選んだ内容はこの端末に記憶され、次回も同じ状態で開きます。
+    </div>
+    <div id="csv-list"></div>
+    <button class="confirm-btn" id="csv-run" onclick="runCsvExport()" style="margin-top:14px">CSVを保存する</button>
+  </div>
+</div>
+
 <!-- 画像プレビュー（保存せずその場で確認・PDF/印刷もここから） -->
 <div class="img-modal" id="img-preview">
   <div class="img-modal-head">
@@ -1295,6 +1320,112 @@ function saveToLocalHistory() {
   appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
   appState.games = appState.games.slice(0, 20);
   saveStorage();
+}
+
+// ---- 誤操作からの復元（端末内バックアップ） ----
+// 削除・修正・設定変更をする「直前の状態」をこの端末のlocalStorageに残す。
+// Firebase側には何も書き込まないので、保存容量・通信コスト・セキュリティルールは一切変わらない。
+// 保持は1グループ5世代・全体で約900KBまで（入りきらなければ古いものから捨てる）。
+const BK_KEY = 'mahjong-backup-v1';
+const BK_PER_GAME = 5;
+const BK_MAX_CHARS = 900000;
+function loadBackups() {
+  try { const d = localStorage.getItem(BK_KEY); const a = d ? JSON.parse(d) : []; return Array.isArray(a) ? a : []; }
+  catch(e) { return []; }
+}
+function writeBackups(list) {
+  // 容量オーバーで保存が丸ごと失敗しないよう、入りきるまで古いものから捨てる
+  let arr = list.slice();
+  while (arr.length) {
+    const json = JSON.stringify(arr);
+    if (json.length <= BK_MAX_CHARS) {
+      try { localStorage.setItem(BK_KEY, json); return true; } catch(e) { /* 容量不足 → 減らして再挑戦 */ }
+    }
+    arr.shift();
+  }
+  try { localStorage.removeItem(BK_KEY); } catch(e) {}
+  return false;
+}
+// 変更を書き込む「前」に呼ぶ。expect = 操作後に想定される試合数
+// （復元時に「その後だれかが入力していないか」を見分けるための目印）
+function takeBackup(g, label, expect) {
+  if (!g || !g.id) return null;
+  const snap = {
+    key: g.id + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+    gid: g.id,
+    at: new Date().toISOString(),
+    label: label,
+    expect: typeof expect === 'number' ? expect : (g.rounds || []).length,
+    name: g.name || '',
+    settings: JSON.parse(JSON.stringify(g.settings || {})),
+    rounds: JSON.parse(JSON.stringify(g.rounds || []))
+  };
+  let all = loadBackups().concat(snap);
+  // グループごとに最新BK_PER_GAME件だけ残す（新しい方から数えて超えた分を落とす）
+  const cnt = {};
+  all = all.slice().reverse().filter(b => {
+    cnt[b.gid] = (cnt[b.gid] || 0) + 1;
+    return cnt[b.gid] <= BK_PER_GAME;
+  }).reverse();
+  writeBackups(all);
+  return snap.key;
+}
+function backupsFor(gid) {
+  return loadBackups().filter(b => b.gid === gid).reverse(); // 新しい順
+}
+// 復元先: 開いているのが本人のグループ（Firebase）か、過去の試合（この端末の控え）かで書き戻し先が変わる
+function restoreTargetOf(gid) {
+  const detailOpen = document.getElementById('view-detail').classList.contains('active');
+  if (detailOpen && detailGame && detailGame.id === gid) return 'detail';
+  if (activeGame && activeGame.id === gid) return 'live';
+  if (detailGame && detailGame.id === gid) return 'detail';
+  return null;
+}
+function confirmRestore(key) {
+  const bk = loadBackups().find(b => b.key === key);
+  if (!bk) { showToast('この記録はもう残っていません'); return; }
+  document.getElementById('confirm-modal-title').textContent = 'この状態に戻す';
+  document.getElementById('confirm-modal-desc').textContent =
+    `${fmtDate(bk.at)} ${fmtTime(bk.at)}「${bk.label}」の直前（第${bk.rounds.length}試合まで）の状態に戻します。`
+    + 'そのあとに入力・修正した内容は取り消されます。よろしいですか？';
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = '戻す';
+  ok.onclick = () => { closeConfirmModal(); closeFormModal(); restoreBackupById(key, true); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+// force=false のときは、想定より試合数が変わっていたら（＝他の人が入力した可能性）確認を挟む
+function restoreBackupById(key, force) {
+  const bk = loadBackups().find(b => b.key === key);
+  if (!bk) { showToast('この記録はもう残っていません'); return; }
+  const where = restoreTargetOf(bk.gid);
+  if (!where) { showToast('この結果を開いてから戻してください'); return; }
+  const cur = where === 'live' ? activeGame : detailGame;
+  if (!force && (cur.rounds || []).length !== bk.expect) { confirmRestore(key); return; }
+  applyRestore(bk, where);
+}
+async function applyRestore(bk, where) {
+  const logEntry = { type: 'edit', at: new Date().toISOString(),
+    label: `${fmtDate(bk.at)} ${fmtTime(bk.at)}の状態にもどす` };
+  if (where === 'live') {
+    takeBackup(activeGame, 'もとに戻す', bk.rounds.length); // 復元そのものも取り消せるようにする
+    try {
+      await db.ref('sessions/' + sessionId).update({
+        name: bk.name, settings: bk.settings,
+        rounds: bk.rounds.length ? bk.rounds : null,
+        log: [...(activeGame.log || []), logEntry]
+      });
+      showToast('元に戻しました');
+    } catch(e) { showToast('復元に失敗しました'); }
+  } else {
+    takeBackup(detailGame, 'もとに戻す', bk.rounds.length);
+    detailGame.name = bk.name;
+    detailGame.settings = bk.settings;
+    detailGame.rounds = bk.rounds;
+    detailGame.log = [...(detailGame.log || []), logEntry];
+    saveStorage();
+    viewDetail(detailGame);
+    showToast('元に戻しました');
+  }
 }
 
 // ---- Firebase ----
@@ -1447,10 +1578,31 @@ function copyUrl() {
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('URLをコピーしました'); }
 }
+let toastTimer = null;
 function showToast(msg) {
   const el = document.getElementById('toast');
+  el.classList.remove('act');
   el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+// 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
+function showUndoToast(msg, key) {
+  if (!key) { showToast(msg); return; }
+  const el = document.getElementById('toast');
+  el.textContent = '';
+  const span = document.createElement('span');
+  span.textContent = msg;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'toast-undo';
+  btn.textContent = '元に戻す';
+  btn.onclick = () => { el.classList.remove('show', 'act'); restoreBackupById(key, false); };
+  el.appendChild(span);
+  el.appendChild(btn);
+  el.classList.add('act', 'show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show', 'act'), 8000);
 }
 function showLoading(show) {
   let el = document.getElementById('loading-overlay');
@@ -1588,7 +1740,7 @@ function moveSavedPlayer(i, dir) {
 }
 // 登録済みの名前をそのままゲームのメンバーに追加する
 function addSavedPlayerToGame(i) {
-  const name = appState.players[i];
+  const name = clampName(appState.players[i], MAX_NAME_LEN);
   if (!name) return;
   if (setupMembers.length >= MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   if (setupMembers.includes(name)) { showToast('すでに追加されています'); return; }
@@ -1611,9 +1763,20 @@ function savePlayerNames(names) {
 // ---- メンバーのタグ入力（Walica風） ----
 let setupMembers = [];
 const MAX_MEMBERS = 40;
+// 名前の文字数上限。長すぎる名前は表示崩れ・画像の折り返し破綻・保存サイズ増の原因になるため、
+// 入力の時点で止める（maxlength＋保存時のclampNameの二段構え）。
+// 既存データに上限を超えた名前があっても切り詰めない＝これまでの記録は今までどおり表示される
+const MAX_NAME_LEN = 16;   // プレイヤー名・チーム名
+const MAX_GROUP_LEN = 40;  // グループ名
+// 書記素クラスタ単位で切り詰める（絵文字や結合文字を途中で割らない）
+function clampName(v, max) {
+  const s = String(v == null ? '' : v).trim();
+  const g = imgGraphemes(s);
+  return g.length <= max ? s : g.slice(0, max).join('');
+}
 function addMember() {
   const input = document.getElementById('member-input');
-  const name = input.value.trim();
+  const name = clampName(input.value, MAX_NAME_LEN);
   if (!name) return;
   if (setupMembers.length >= MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   if (setupMembers.includes(name)) { showToast('同じ名前がすでに追加されています'); return; }
@@ -1727,8 +1890,8 @@ async function startGame() {
   // 開始条件: 3人麻雀は3名以上、4人麻雀は4名以上（最大40名）
   if (setupMembers.length < numPlayers) { showToast(`ゲームを開始するにはあと${numPlayers - setupMembers.length}名必要です`); return; }
   if (setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
-  const name = document.getElementById('s-name').value.trim() || todayStr();
-  const playerNames = setupMembers.slice();
+  const name = clampName(document.getElementById('s-name').value, MAX_GROUP_LEN) || todayStr();
+  const playerNames = setupMembers.map(m => clampName(m, MAX_NAME_LEN));
   const startPoints = Number(document.getElementById('s-start').value) || 25000;
   const returnPoints = Number(document.getElementById('s-return').value) || 30000;
   const uma = getUmaArray();
@@ -2113,7 +2276,7 @@ function renderTeamEditor() {
       ondragleave="this.classList.remove('drag-over')" ondrop="onTeamDrop(event, ${ti})">
       <div class="team-box-head">
         <span class="team-dot" style="background:${teamColorOf(ti)};width:12px;height:12px;flex-shrink:0"></span>
-        <input type="text" id="${ctx.idPrefix}-team-name-${ti}" value="${esc(t.name)}" placeholder="${defaultTeamName(ti)}">
+        <input type="text" id="${ctx.idPrefix}-team-name-${ti}" value="${esc(t.name)}" placeholder="${defaultTeamName(ti)}" maxlength="${MAX_NAME_LEN}">
         ${ctx.teams.length > minTeams ? `<button type="button" class="round-del-btn" style="flex-shrink:0" onclick="removeTeam(${ti})">削除</button>` : ''}
       </div>
       <div class="team-members-zone">
@@ -2126,7 +2289,7 @@ function captureTeamNames() {
   if (!teamEditorCtx) return;
   teamEditorCtx.teams.forEach((t, ti) => {
     const el = document.getElementById(teamEditorCtx.idPrefix + '-team-name-' + ti);
-    if (el) t.name = el.value.trim() || defaultTeamName(ti);
+    if (el) t.name = clampName(el.value, MAX_NAME_LEN) || defaultTeamName(ti);
   });
 }
 function moveTeamMember(id, toTi) {
@@ -2195,64 +2358,138 @@ function csvEsc(v) {
   const sv = String(v == null ? '' : v);
   return /[",\r\n]/.test(sv) ? '"' + sv.replace(/"/g, '""') + '"' : sv;
 }
-function buildCsv(g) {
+// 出力する項目。既定は「最低限」＝スコアと合計行だけ（あとは選んで足す）
+const CSV_DEFAULT = { meta: false, at: false, points: false, scores: true, chips: false, yaki: false, chombo: false, total: true };
+const CSV_OPTS_KEY = 'mahjong-csv-opts-v1';
+function loadCsvOpts() {
+  try {
+    const d = JSON.parse(localStorage.getItem(CSV_OPTS_KEY));
+    if (d && typeof d === 'object') return Object.assign({}, CSV_DEFAULT, d);
+  } catch(e) {}
+  return Object.assign({}, CSV_DEFAULT);
+}
+// 選べる項目（該当しないオプションは出さない。旧データ互換のため「記録がある」場合も出す）
+function csvItemsFor(g) {
+  const s = g.settings, rounds = g.rounds || [];
+  return [
+    ['scores', 'スコア（計算後）', true],
+    ['points', '点数（素点）', true],
+    ['chips', 'チップ', !!s.bonusEnabled || rounds.some(r => r.chips)],
+    ['yaki', '焼き鳥', !!s.yakitori || rounds.some(r => r.yakitori)],
+    ['chombo', 'チョンボ', !!s.chombo || rounds.some(r => r.chombo)],
+    ['at', '日時', true],
+    ['total', '合計行', true],
+    ['meta', 'グループ情報（名前・作成日・形式・チーム編成）', true]
+  ].filter(x => x[2]);
+}
+function buildCsv(g, opts) {
+  const o = Object.assign({}, CSV_DEFAULT, opts || {});
   const s = g.settings;
   const N = s.playerNames.length;
   const order = memberDisplayOrder(s);
   const rounds = g.rounds || [];
-  // オプション列は「設定が有効」または「記録が存在する」場合だけ出す（旧データ互換）
-  const hasChips = !!s.bonusEnabled || rounds.some(r => r.chips);
-  const hasYaki = !!s.yakitori || rounds.some(r => r.yakitori);
-  const hasChombo = !!s.chombo || rounds.some(r => r.chombo);
+  // 「選ばれている」かつ「設定が有効 or 記録が存在する」列だけ出す（旧データ互換）
+  const useChips = !!o.chips && (!!s.bonusEnabled || rounds.some(r => r.chips));
+  const useYaki = !!o.yaki && (!!s.yakitori || rounds.some(r => r.yakitori));
+  const useChombo = !!o.chombo && (!!s.chombo || rounds.some(r => r.chombo));
+  // 1人あたりの列が1つだけなら見出しは名前のみ（「山田 スコア」ではなく「山田」）
+  const cols = [];
+  if (o.points) cols.push('点数');
+  if (o.scores) cols.push('スコア');
+  if (useChips) cols.push('チップ');
+  if (useYaki) cols.push('焼き鳥');
+  if (useChombo) cols.push('チョンボ');
+  const colHead = (n, c) => cols.length === 1 ? n : `${n} ${c}`;
   const rows = [];
-  rows.push(['グループ名', g.name || '']);
-  rows.push(['作成日', fmtDate(g.createdAt)]);
-  rows.push(['試合形式', `${s.numPlayers === 3 ? '三麻' : '四麻'}・${s.teamMode && s.teams ? 'チーム戦' : '個人戦'}`]);
-  if (s.teamMode && s.teams) {
-    rows.push(['チーム編成', normalizedTeams(s).map(t =>
-      `${t.name}: ${t.members.filter(m => m < N).map(m => s.playerNames[m]).join('・')}`).join(' ／ ')]);
+  if (o.meta) {
+    rows.push(['グループ名', g.name || '']);
+    rows.push(['作成日', fmtDate(g.createdAt)]);
+    rows.push(['試合形式', `${s.numPlayers === 3 ? '三麻' : '四麻'}・${s.teamMode && s.teams ? 'チーム戦' : '個人戦'}`]);
+    if (s.teamMode && s.teams) {
+      rows.push(['チーム編成', normalizedTeams(s).map(t =>
+        `${t.name}: ${t.members.filter(m => m < N).map(m => s.playerNames[m]).join('・')}`).join(' ／ ')]);
+    }
+    rows.push([]);
   }
-  rows.push([]);
-  const head = ['試合', '日時'];
+  const head = ['試合'];
+  if (o.at) head.push('日時');
   order.forEach(i => {
     const n = s.playerNames[i];
-    head.push(`${n} 点数`, `${n} スコア`);
-    if (hasChips) head.push(`${n} チップ`);
-    if (hasYaki) head.push(`${n} 焼き鳥`);
-    if (hasChombo) head.push(`${n} チョンボ`);
+    if (o.points) head.push(colHead(n, '点数'));
+    if (o.scores) head.push(colHead(n, 'スコア'));
+    if (useChips) head.push(colHead(n, 'チップ'));
+    if (useYaki) head.push(colHead(n, '焼き鳥'));
+    if (useChombo) head.push(colHead(n, 'チョンボ'));
   });
   rows.push(head);
   rounds.forEach((r, idx) => {
     const mem = roundMembers(r, s);
     const slotOf = {};
     mem.forEach((m, k) => { slotOf[m] = k; });
-    const row = [idx + 1, r.at ? `${fmtDate(r.at)} ${fmtTime(r.at)}` : ''];
+    const row = [idx + 1];
+    if (o.at) row.push(r.at ? `${fmtDate(r.at)} ${fmtTime(r.at)}` : '');
     order.forEach(i => {
       const k = slotOf[i];
-      row.push(k != null && r.points && r.points[k] != null ? r.points[k] : '',
-               k != null ? r.scores[k] : '');
-      if (hasChips) row.push(k != null && r.chips ? (r.chips[k] || 0) : '');
-      if (hasYaki) row.push(k != null && r.yakitori && r.yakitori[k] ? '○' : '');
-      if (hasChombo) row.push(k != null && r.chombo && r.chombo[k] ? '○' : '');
+      if (o.points) row.push(k != null && r.points && r.points[k] != null ? r.points[k] : '');
+      if (o.scores) row.push(k != null ? r.scores[k] : '');
+      if (useChips) row.push(k != null && r.chips ? (r.chips[k] || 0) : '');
+      if (useYaki) row.push(k != null && r.yakitori && r.yakitori[k] ? '○' : '');
+      if (useChombo) row.push(k != null && r.chombo && r.chombo[k] ? '○' : '');
     });
     rows.push(row);
   });
   // 合計行（スコア＝pts累計・チップ＝チップ差累計。点数・マーク列は空欄）
-  const totals = gameTotals(g);
-  const chipSums = chipTotals(g).chips;
-  const trow = ['合計', ''];
-  order.forEach(i => {
-    trow.push('', Math.round(totals[i] * 10) / 10);
-    if (hasChips) trow.push(chipSums[i]);
-    if (hasYaki) trow.push('');
-    if (hasChombo) trow.push('');
-  });
-  rows.push(trow);
+  if (o.total) {
+    const totals = gameTotals(g);
+    const chipSums = chipTotals(g).chips;
+    const trow = ['合計'];
+    if (o.at) trow.push('');
+    order.forEach(i => {
+      if (o.points) trow.push('');
+      if (o.scores) trow.push(Math.round(totals[i] * 10) / 10);
+      if (useChips) trow.push(chipSums[i]);
+      if (useYaki) trow.push('');
+      if (useChombo) trow.push('');
+    });
+    rows.push(trow);
+  }
   return rows.map(r => r.map(csvEsc).join(',')).join('\r\n');
 }
-function exportCsv(g) {
+// ---- 出力する項目を選ぶモーダル ----
+let csvTarget = null;
+let csvItemKeys = [];
+function openCsvModal(g) {
   if (!g || !(g.rounds || []).length) return;
-  const blob = new Blob(['\uFEFF' + buildCsv(g)], { type: 'text/csv;charset=utf-8' }); // BOM付き=Excelで文字化けしない
+  csvTarget = g;
+  const o = loadCsvOpts();
+  const items = csvItemsFor(g);
+  csvItemKeys = items.map(x => x[0]);
+  document.getElementById('csv-list').innerHTML = items.map(([k, label]) => `
+    <label class="opt-check" style="padding:9px 2px">
+      <input type="checkbox" class="csv-pick" value="${k}"${o[k] ? ' checked' : ''}>
+      <span>${label}</span>
+    </label>`).join('');
+  document.getElementById('csv-modal').classList.add('open');
+}
+function closeCsvModal() {
+  document.getElementById('csv-modal').classList.remove('open');
+}
+function runCsvExport() {
+  const g = csvTarget;
+  if (!g) return;
+  const picked = new Set([...document.querySelectorAll('.csv-pick:checked')].map(el => el.value));
+  const o = loadCsvOpts();
+  csvItemKeys.forEach(k => { o[k] = picked.has(k); }); // 表示していない項目の設定は触らない
+  if (!o.points && !o.scores && !o.chips && !o.yaki && !o.chombo) {
+    showToast('書き出す内容を1つ以上選んでください'); return;
+  }
+  try { localStorage.setItem(CSV_OPTS_KEY, JSON.stringify(o)); } catch(e) {}
+  closeCsvModal();
+  exportCsv(g, o);
+}
+function exportCsv(g, opts) {
+  if (!g || !(g.rounds || []).length) return;
+  const blob = new Blob(['\uFEFF' + buildCsv(g, opts)], { type: 'text/csv;charset=utf-8' }); // BOM付き=Excelで文字化けしない
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const date = (g.createdAt || '').slice(0, 10).replace(/-/g, '');
@@ -3208,10 +3445,31 @@ function renderLogModal() {
     `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML =
-    `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
+    backupSectionHtml(g)
+    + `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
     + renderLogList(g.log, g)
     + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
+}
+// 「変更前の記録」＝この端末に残っているスナップショット一覧
+function backupSectionHtml(g) {
+  if (!g || !g.id) return '';
+  const list = backupsFor(g.id);
+  if (!list.length) return '';
+  const rows = list.map(b => `
+    <div class="bk-row">
+      <div class="bk-info"><b>${esc(b.label)}</b>
+        <div class="bk-sub">この操作の直前／第${b.rounds.length}試合まで／${fmtDate(b.at)} ${fmtTime(b.at)}</div>
+      </div>
+      <button type="button" class="edit-tab" style="flex-shrink:0" onclick="confirmRestore('${b.key}')">戻す</button>
+    </div>`).join('');
+  return `<div class="bk-box">
+    <div class="bk-head">変更をもとに戻す</div>
+    <div style="font-size:11px;color:#8a9aa5;line-height:1.6;margin-bottom:4px">
+      削除・修正・設定変更をする直前の状態を、この端末に最新5件まで残しています（戻すと全員の画面に反映されます）。
+    </div>
+    ${rows}
+  </div>`;
 }
 function renderLogList(log, g) {
   let events = logEvents(log);
@@ -3382,8 +3640,10 @@ function closeActionModal() {
 }
 function confirmDeleteRound(idx) {
   document.getElementById('confirm-modal-title').textContent = `第${idx+1}試合を削除`;
-  document.getElementById('confirm-modal-desc').textContent = 'この試合の記録を削除します。全員の画面から削除されます（履歴には残ります）。よろしいですか？';
-  document.getElementById('confirm-modal-ok').onclick = () => { closeConfirmModal(); deleteRound(idx); };
+  document.getElementById('confirm-modal-desc').textContent = 'この試合の記録を削除します。全員の画面から削除されます（あとから「元に戻す」で戻せます）。よろしいですか？';
+  const okBtn = document.getElementById('confirm-modal-ok');
+  okBtn.textContent = '削除する'; // 復元の確認で文言を変えるので毎回セットし直す
+  okBtn.onclick = () => { closeConfirmModal(); deleteRound(idx); };
   document.getElementById('confirm-modal').classList.add('open');
 }
 function closeConfirmModal() {
@@ -3403,9 +3663,10 @@ async function deleteRound(idx) {
   });
   newLog.push({ type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null,
     names: old ? roundMembers(old, activeGame.settings).map(m => activeGame.settings.playerNames[m]) : null });
+  const bkKey = takeBackup(activeGame, `第${idx + 1}試合を削除`, newRounds.length); // 書き込む前の状態を控える
   try {
     await db.ref('sessions/' + sessionId).update({ rounds: newRounds.length ? newRounds : null, log: newLog });
-    showToast('削除しました');
+    showUndoToast('削除しました', bkKey);
   } catch(e) { showToast('削除に失敗しました'); }
 }
 
@@ -3414,6 +3675,7 @@ async function deleteRound(idx) {
 let sheetCtx = null;
 function liveSheetCtx() {
   return {
+    game: activeGame, // バックアップ（変更前の控え）の対象
     settings: activeGame.settings,
     rounds: activeGame.rounds,
     save: (rounds, logEntry) => writeRoundsToFirebase(rounds, logEntry)
@@ -3761,9 +4023,12 @@ async function submitRound() {
     logEntry = { type: 'add', at: now, no: newRounds.length, points, names: members.map(m => ctx.settings.playerNames[m]) };
   }
   const isEdit = editingIndex >= 0;
+  // 修正は上書きなので、書き込む前の状態を控えておく（新規入力は消えるものが無いので不要）
+  const bkKey = isEdit ? takeBackup(ctx.game, `第${editingIndex + 1}試合を修正`, newRounds.length) : null;
   closeSheet();
   try {
     await ctx.save(newRounds, logEntry);
+    if (bkKey) showUndoToast('修正しました', bkKey);
     track('round_submit', { is_edit: isEdit, round_no: logEntry.no });
   } catch(e) { showToast('保存に失敗しました'); }
 }
@@ -3810,7 +4075,7 @@ function renderEditMembers() {
       : `<span style="flex-shrink:0;font-size:10px;color:#aaa;border:1px solid #e5e5e5;border-radius:5px;padding:4px 7px;white-space:nowrap;cursor:help"
           onclick="showToast('${reason}')">${label}</span>`;
     return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-      <input type="text" id="e-p-${pos}" value="${esc(m.name)}" style="flex:1;min-width:0">
+      <input type="text" id="e-p-${pos}" value="${esc(m.name)}" style="flex:1;min-width:0" maxlength="${MAX_NAME_LEN}">
       ${action}
     </div>`;
   }).join('');
@@ -3860,7 +4125,7 @@ function settingsFormHtml(name, s) {
   const rateOpts = [['10','×10'],['20','×20'],['30','×30'],['50','×50'],['100','×100'],['200','×200'],['500','×500'],['1000','×1000'],['2000','×2000'],['0','なし'],['custom','カスタム']]
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
-    <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}"></div>
+    <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}" maxlength="${MAX_GROUP_LEN}"></div>
     <div class="chips-hint" style="margin-bottom:10px">試合形式（${n === 3 ? '三麻' : '四麻'}）は、過去の試合と整合が取れなくなるため作成後に変更できません。</div>
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
@@ -3985,9 +4250,9 @@ async function saveGameEdit() {
   const s = activeGame.settings;
   const n = s.numPlayers;
   captureEditMembers();
-  const playerNames = editMembersState.map((m, pos) => m.name.trim() || ('プレイヤー' + (pos + 1)));
+  const playerNames = editMembersState.map((m, pos) => clampName(m.name, MAX_NAME_LEN) || ('プレイヤー' + (pos + 1)));
   if (playerNames.length < n) { showToast(`メンバーは最低${n}人必要です`); return; }
-  const name = document.getElementById('e-name').value.trim() || todayStr();
+  const name = clampName(document.getElementById('e-name').value, MAX_GROUP_LEN) || todayStr();
   const startPoints = Number(document.getElementById('e-start').value) || 25000;
   const returnPoints = Number(document.getElementById('e-return').value) || 30000;
   const umaKey = document.getElementById('e-uma').value;
@@ -4030,11 +4295,13 @@ async function saveGameEdit() {
     scores: applyChombo(calcScores(r.points, settings), r.chombo, settings)
   }));
   const logEntry = { type: 'edit', at: new Date().toISOString(), label: 'ゲーム設定を変更' };
+  // ルール変更は全試合が再計算される＝取り返しがつかないので、必ず変更前を控える
+  const bkKey = takeBackup(activeGame, 'ゲーム設定を変更', rounds.length);
   closeFormModal();
   try {
     await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: [...(activeGame.log || []), logEntry] });
     savePlayerNames(settings.playerNames);
-    showToast('設定を更新しました');
+    showUndoToast('設定を更新しました', bkKey);
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
@@ -4115,7 +4382,7 @@ function renderDetailBody(g) {
 
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
-  const csvBtn = hasRounds ? `<button class="edit-tab" onclick="exportCsv(detailGame)">CSV</button>` : '';
+  const csvBtn = hasRounds ? `<button class="edit-tab" onclick="openCsvModal(detailGame)">CSV</button>` : '';
   const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
   const rows = g.rounds.map((r, ridx) => roundRowHtml(r, ridx, `editDetailRound(${ridx})`, s)).join('');
   const roundsHtml = `<div style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
@@ -4162,6 +4429,7 @@ function editDetailRound(ridx) {
   if (!detailGame) return;
   const g = detailGame;
   openSheetCtx({
+    game: g,
     settings: g.settings,
     rounds: g.rounds,
     save: (rounds, logEntry) => {
@@ -4179,9 +4447,9 @@ function openDetailEdit() {
   const g = detailGame;
   document.getElementById('form-modal-title').textContent = '結果を編集';
   document.getElementById('form-modal-body').innerHTML = `
-    <div class="field"><label>ゲーム名</label><input type="text" id="d-name" value="${esc(g.name)}"></div>
+    <div class="field"><label>ゲーム名</label><input type="text" id="d-name" value="${esc(g.name)}" maxlength="${MAX_GROUP_LEN}"></div>
     <div class="field"><label>プレイヤー名</label>
-      ${g.settings.playerNames.map((nm, i) => `<input type="text" id="d-p-${i}" value="${esc(nm)}" style="margin-bottom:6px">`).join('')}
+      ${g.settings.playerNames.map((nm, i) => `<input type="text" id="d-p-${i}" value="${esc(nm)}" style="margin-bottom:6px" maxlength="${MAX_NAME_LEN}">`).join('')}
     </div>
     <button class="confirm-btn" style="margin-top:10px" onclick="saveDetailEdit()">保存する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
@@ -4189,13 +4457,14 @@ function openDetailEdit() {
 }
 function saveDetailEdit() {
   const g = detailGame;
-  g.name = document.getElementById('d-name').value.trim() || g.name;
+  const bkKey = takeBackup(g, '名前を編集', (g.rounds || []).length);
+  g.name = clampName(document.getElementById('d-name').value, MAX_GROUP_LEN) || g.name;
   g.settings.playerNames = g.settings.playerNames.map((nm, i) =>
-    document.getElementById(`d-p-${i}`).value.trim() || nm);
+    clampName(document.getElementById(`d-p-${i}`).value, MAX_NAME_LEN) || nm);
   saveStorage();
   closeFormModal();
   viewDetail(g);
-  showToast('更新しました');
+  showUndoToast('更新しました', bkKey);
 }
 
 function esc(s) {
