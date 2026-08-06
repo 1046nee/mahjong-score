@@ -2082,26 +2082,32 @@ function bonusTableHtml(g) {
     const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
     return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
   }).join('');
-  // 内訳: 補足情報として控えめな表にまとめる（タップで展開）
-  const cell = (i, text, strong) => played[i] ? `<td style="${strong ? 'font-weight:700' : 'color:#889'}">${text}</td>` : '<td style="color:#ddd">—</td>';
-  const row = (label, cellsHtml) => `<tr><td style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
-  let rows = row('スコア（pts）', colOrder.map(i => cell(i, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
-  rows += row(`スコア収支（pts×${scoreRate}倍）`, colOrder.map(i => cell(i, signed(scoreBonus[i]))).join(''));
+  // 内訳: 補足情報として控えめな表にまとめる（タップで展開）。
+  // 体裁は対局履歴・個人成績と同じ（先頭列sticky＋チーム区切り線＋チーム名行）
+  const bset = teamBoundarySet(s);
+  const tbCls = k => bset.has(k) ? ' class="tb"' : '';
+  const cell = (i, k, text, strong) => played[i]
+    ? `<td${tbCls(k)} style="${strong ? 'font-weight:700' : 'color:#889'}">${text}</td>`
+    : `<td${tbCls(k)} style="color:#ddd">—</td>`;
+  const row = (label, cellsHtml) => `<tr><td class="sticky-col" style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
+  let rows = row('スコア（pts）', colOrder.map((i, k) => cell(i, k, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
+  rows += row(`スコア収支（pts×${scoreRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(scoreBonus[i]))).join(''));
   if (s.bonusEnabled) { // チップ関連の行はチップあり🍪のグループだけ表示
-    rows += row('チップ差', colOrder.map(i => cell(i, `${signed(chips[i])}枚`)).join(''));
-    rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map(i => cell(i, signed(chipBonus[i]))).join(''));
+    rows += row('チップ差', colOrder.map((i, k) => cell(i, k, `${signed(chips[i])}枚`)).join(''));
+    rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(chipBonus[i]))).join(''));
   }
-  rows += row('合計収支', colOrder.map(i => cell(i, `${signed(grand[i])}bonus`, true)).join(''));
+  rows += row('合計収支', colOrder.map((i, k) => cell(i, k, `${signed(grand[i])}bonus`, true)).join(''));
+  // 回数は個人成績と同じく単位「回」を付けない
   if (s.yakitori) {
-    rows += row('焼き鳥🐔', colOrder.map(i => cell(i, yaki[i] ? `${yaki[i]}回` : '0回', yaki[i] > 0)).join(''));
+    rows += row('焼き鳥🐔', colOrder.map((i, k) => cell(i, k, String(yaki[i] || 0), yaki[i] > 0)).join(''));
   }
   if (s.chombo) {
-    rows += row('チョンボ💩', colOrder.map(i => cell(i, chombo[i] ? `${chombo[i]}回` : '0回', chombo[i] > 0)).join(''));
+    rows += row('チョンボ💩', colOrder.map((i, k) => cell(i, k, String(chombo[i] || 0), chombo[i] > 0)).join(''));
   }
   return `<div class="bonus-grid">${cells}</div>
   <div class="bonus-table-wrap bonus-collapsed" style="overflow-x:auto;margin-top:10px">
     <table class="rounds-table bonus-detail-table" style="table-layout:fixed;min-width:${120 + N * 84}px">
-      <thead><tr><th style="width:120px;text-align:left;padding-left:8px${teamMode ? `;background:${TEAM_HEAD_BG}` : ''}">内訳</th>${colOrder.map(i => `<th${teamMode ? ` style="background:${TEAM_HEAD_BG}"` : ''}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr></thead>
+      <thead>${teamNameRowHtml(s, false, 120)}<tr><th class="sticky-col" style="width:120px;text-align:left;padding-left:8px${teamMode ? `;background:${TEAM_HEAD_BG}` : ''}">メンバー</th>${colOrder.map((i, k) => `<th${tbCls(k)}${teamMode ? ` style="background:${TEAM_HEAD_BG}"` : ''}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>
@@ -3263,12 +3269,14 @@ function teamBoundarySet(s) {
 function firstColW(forImage) { return forImage ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
 // （対局履歴・個人成績の両方で共用。チーム戦でなければ空文字）
-function teamNameRowHtml(s, forImage = false) {
+// firstW: 先頭列の幅を明示したいとき（合計収支の内訳の表だけ120px）
+function teamNameRowHtml(s, forImage = false, firstW = null) {
   if (!s.teamMode || !s.teams) return '';
+  const w = firstW != null ? firstW : firstColW(forImage);
   const cells = teamGroupsOf(s).map((t, gi) =>
     `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
   // 先頭は行の見出し（この行が何の行かを示す）
-  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${TEAM_HEAD_BG}">チーム</th>${cells}</tr>`;
+  return `<tr class="team-row"><th class="sticky-col" style="width:${w}px;background:${TEAM_HEAD_BG}">チーム</th>${cells}</tr>`;
 }
 function roundsTheadHtml(s, forImage = false) {
   const base = s.teamMode && s.teams ? `background:${TEAM_HEAD_BG};` : '';
@@ -3357,10 +3365,10 @@ function rankCountHtml(rounds, s, forImage = false) {
       }
     });
   });
-  // 整数はそのまま、同点配分などで小数になる場合のみ小数第1位まで表示
+  // 整数はそのまま、同点配分などで小数になる場合のみ小数第1位まで表示（単位「回」は付けない）
   const fmtCount = v => {
     const r = Math.round(v * 10) / 10;
-    return Number.isInteger(r) ? `${r}回` : `${r.toFixed(1)}回`;
+    return Number.isInteger(r) ? `${r}` : `${r.toFixed(1)}`;
   };
   // 表は対局履歴と同じ「列=メンバー、行=成績項目」の転置レイアウト（1行目にプレイヤー名）。
   // 横スクロールしても項目列（sticky）が固定されるので、何の成績か見失わない
@@ -3406,7 +3414,7 @@ function rankCountHtml(rounds, s, forImage = false) {
       const raw = Math.round(rawSum[i] * 10) / 10;
       const rankPt = Math.round((sv - raw) * 10) / 10; // ウマ・オカ・罰符ぶん
       // statLabels と同じ並びで積む（ここの順番を変えるときは statLabels も必ず合わせる）
-      cells = [`<td style="font-weight:700">${gamesPlayed[i]}回</td>`,
+      cells = [`<td style="font-weight:700">${gamesPlayed[i]}</td>`,
         `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`];
       for (let rank = 0; rank < slots; rank++) {
         const c = counts[i][rank];
