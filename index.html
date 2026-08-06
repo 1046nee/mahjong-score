@@ -3267,15 +3267,17 @@ function teamNameRowHtml(s, forImage = false) {
   if (!s.teamMode || !s.teams) return '';
   const cells = teamGroupsOf(s).map((t, gi) =>
     `<th colspan="${t.count}"${gi > 0 ? ' class="tb"' : ''} style="background:${TEAM_HEAD_BG}">${esc(t.name)}</th>`).join('');
-  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${TEAM_HEAD_BG}"></th>${cells}</tr>`;
+  // 先頭は行の見出し（この行が何の行かを示す）
+  return `<tr class="team-row"><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${TEAM_HEAD_BG}">チーム</th>${cells}</tr>`;
 }
 function roundsTheadHtml(s, forImage = false) {
   const base = s.teamMode && s.teams ? `background:${TEAM_HEAD_BG};` : '';
   const bset = teamBoundarySet(s);
   const cols = memberDisplayOrder(s).map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''} style="${base}">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</th>`).join('');
-  // 先頭列は個人成績の項目列と同じ幅（2つの表の列位置をそろえる）
-  return `<thead>${teamNameRowHtml(s, forImage)}<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;${base}">試合</th>${cols}</tr></thead>`;
+  // 先頭列は個人成績の項目列と同じ幅（2つの表の列位置をそろえる）。
+  // 先頭セルは列の見出しではなく行の見出し＝この行がメンバー名の行であることを示す
+  return `<thead>${teamNameRowHtml(s, forImage)}<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;${base}">メンバー</th>${cols}</tr></thead>`;
 }
 // 行タップで編集メニューを開く。修正済みは局番号の下に小さく表示。
 // 列は全メンバー分。その試合に参加していないメンバーは「—」表示。
@@ -3387,7 +3389,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // 列順は対局履歴と同じ（チームA→B…→未所属）。チーム戦ではプレイヤー名の上にチーム名行（colspanでまとめる）
   const colOrder = memberDisplayOrder(s);
   const bset = teamBoundarySet(s);
-  const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${thBg}">項目</th>${colOrder.map((i, k) =>
+  const nameRow = `<tr><th class="sticky-col" style="width:${firstColW(forImage)}px;background:${thBg}">メンバー</th>${colOrder.map((i, k) =>
     `<th${bset.has(k) ? ' class="tb"' : ''}${thS}>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('')}</tr>`;
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
