@@ -1112,6 +1112,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
+    <div style="text-align:center;margin-top:14px">
+      <button type="button" onclick="leaveGame();showView('history')" style="background:none;border:none;font-size:13px;font-weight:600;color:#5f6e6b;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px">過去の試合・引き継ぎURL ›</button>
+    </div>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
@@ -1811,8 +1814,9 @@ async function joinSession(id) {
 }
 function joinFromBanner() { if (pendingSessionId) joinSession(pendingSessionId); }
 
-// ヒーローの「最近の試合」（Walica風）: ローカル履歴の新しい2件を表示。
-// 3件以上あるときだけ「もっとみる」で履歴画面へ。履歴なしなら丸ごと非表示
+// ヒーローの「最近の試合」（Walica風）: ローカル履歴の新しい2件を表示。履歴なしなら丸ごと非表示。
+// 「過去の試合」画面への入り口はここが本線なので、履歴が1件でもあれば必ずリンクを出す
+// （以前は3件以上のときだけ「もっとみる」を出していて、1〜2件の人は画面にたどり着けなかった）
 function renderRecentGames() {
   const wrap = document.getElementById('recent-games');
   const list = document.getElementById('recent-games-list');
@@ -1822,7 +1826,7 @@ function renderRecentGames() {
   wrap.style.display = 'block';
   list.innerHTML = games.slice(0, 2).map(g =>
     `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
-  ).join('') + (games.length > 2 ? `<a class="rg-more" onclick="showView('history')">もっとみる ›</a>` : '');
+  ).join('') + `<a class="rg-more" onclick="showView('history')">過去の試合をすべて見る ›</a>`;
 }
 
 // ---- Setup ----
