@@ -505,6 +505,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .tag-role-btn.on { border-color: #177083; background: #177083; color: #fff; }
 .tag-me-chip { border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 18px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
 .tag-me-chip.on { border-color: #177083; background: #177083; color: #fff; }
+/* 成績シートのグループ名: sticky列のnowrapを打ち消して折り返す。長すぎる名前は3行で打ち切り
+   （clampはtd自体に掛けるとセルでなくなるので必ず内側のspanに。全文はtitle属性で読める） */
+.ms-gname { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; overflow-wrap: anywhere; }
 /* 先頭列（試合番号・項目）と本文の境目も、チームの区切りと同じ線でそろえる。
    borderではなくinsetのbox-shadowを使う: border-collapse:collapseの表では
    罫線が表側に属するため、横スクロール時にsticky列の罫線だけが取り残される */
@@ -1139,7 +1142,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="page-title-row">
     <h1>過去の試合</h1>
   </div>
-  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。<span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>して開くと、ブラウザの自動削除の対象外になり履歴が消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
+  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.8">履歴は<b>この端末だけ</b>に保存されています。<span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>すると消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
   <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
   <div style="margin:10px 16px 0"><button class="auto-btn" onclick="showView('mystats')">📊 自分の成績シート</button></div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
@@ -1678,19 +1681,14 @@ function renderMyListCard() {
   const el = document.getElementById('mylist-card');
   if (!el) return;
   if (!myListId) {
-    // 「1回だけ・今の履歴もまるごと入る・あとは自動・使うのは機種変のとき」が読み取れる説明にする
-    el.innerHTML = `<b>🔑 引き継ぎURL — 機種変更に備える控え</b>
-      <ul style="margin:6px 0 0;padding-left:1.3em">
-        <li>作るのは<b>最初の1回だけ</b>。いつ作ってもOKで、いまこの一覧にある試合も<b>まるごと入ります</b></li>
-        <li>以後に参加した試合は<b>自動で追記</b>されます（毎回の操作は不要）</li>
-        <li>機種変更やブラウザ変更のあと、新しい端末で<b>このURLを開くだけ</b>で履歴一式が戻ります</li>
-      </ul>
+    // 一瞬でメリットが伝わる短さを最優先（詳細は作ったあとの表示とお知らせ記事が担う）
+    el.innerHTML = `<b>🔑 機種変更しても、履歴を引き継げます</b><br>
+      引き継ぎURLを1回作って控えておくだけ。あとの試合は自動で追記されます（登録不要）。
       <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>`;
   } else {
-    el.innerHTML = `<b>🔑 引き継ぎURL（作成済み）</b><br>
-      以後の試合は<b>自動で</b>このURLに追記されています。ブックマークや自分宛てのメモに控えておき、
-      機種変更のあとに新しい端末で開くだけで履歴一式が戻ります。<br>
-      <span style="color:#a05a2c">⚠ あなた専用のURLです。グループの共有URLとは別物なので、他の人には送らないでください。</span>
+    el.innerHTML = `<b>🔑 引き継ぎURL</b><span style="color:#5f8577">（作成済み・自動で追記中）</span><br>
+      機種変更したら、新しい端末でこのURLを開くだけで履歴が戻ります。<br>
+      <span style="color:#a05a2c">⚠ 自分専用です。仲間に送るのはグループの共有URLで。</span>
       <div style="display:flex;gap:6px;margin-top:8px">
         <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
           style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff;color:#555">
@@ -4949,22 +4947,25 @@ function myStatsTableHtml(st) {
   row('最高点数', cols.map(np => `<td>${st.modes[np].ptMax != null ? st.modes[np].ptMax.toLocaleString() : '—'}</td>`));
   row('最低点数', cols.map(np => `<td>${st.modes[np].ptMin != null ? st.modes[np].ptMin.toLocaleString() : '—'}</td>`));
   const head = cols.map(np => `<th>${np === 3 ? '三麻' : '四麻'}</th>`).join('');
-  return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${64 + cols.length * 96}px">
-    <thead><tr><th class="sticky-col" style="width:64px">項目</th>${head}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  // 項目列は78px（最長ラベル「グループ数」「通算スコア」=60px＋余白が収まる幅。64pxでははみ出す）
+  return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${78 + cols.length * 96}px">
+    <thead><tr><th class="sticky-col" style="width:78px">項目</th>${head}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
 // グループ別内訳の表（forImage=trueでタップ用の属性を外す）
 function myStatsGroupsTableHtml(st, forImage = false) {
   const rows = st.groups.map(gr => {
     const sc = Math.round(gr.score * 10) / 10;
     const col = sc > 0 ? '#1a237e' : sc < 0 ? '#c62828' : '#1a1a1a';
+    // グループ名は内側spanで3行打ち切り＋折り返し（全文はtitle）。
+    // 「チーム戦」は列幅を押し広げないよう9pxのサブ行にする（<div>2つ＝画像側ではメイン＋subsとして描かれる）
     return `<tr${forImage ? '' : ` onclick="viewDetailById('${esc(gr.id)}')" style="cursor:pointer"`}>
-      <td class="sticky-col" style="overflow-wrap:anywhere">${esc(gr.name)}</td>
-      <td>${gr.np === 3 ? '三麻' : '四麻'}${gr.team ? '・チーム' : ''}</td>
+      <td class="sticky-col"><span class="ms-gname" title="${esc(gr.name)}">${esc(gr.name)}</span></td>
+      <td><div>${gr.np === 3 ? '三麻' : '四麻'}</div>${gr.team ? '<div style="font-size:9px;color:#8a9aa5;margin-top:1px">チーム戦</div>' : ''}</td>
       <td>${gr.games}</td>
       <td style="font-weight:700;color:${col}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>
       <td>${gr.avgRank.toFixed(2)}</td></tr>`;
   }).join('');
-  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:360px">
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${110 + 4 * 68}px">
     <thead><tr><th class="sticky-col" style="width:110px">グループ</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
