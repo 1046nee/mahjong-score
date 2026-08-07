@@ -1620,52 +1620,58 @@ function copyMyListUrl() {
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('引き継ぎURLをコピーしました'); }
   track('mylist_copy');
 }
+// サーバーのリスト内容をこの端末に取り込み、この端末にだけあるグループは逆に追記する（双方向マージ）。
+// #my=URLで開いたときと、起動時・過去の試合を開いたときの静かな同期（refreshMyList）で共用。
+// 戻り値=新たに取り込めたグループ数
+async function mergeMyListData(data) {
+  // サーバーのリストに保存された分類（参加/観戦・自分がどれか）をこの端末に取り込む
+  Object.entries(data.groups || {}).forEach(([gid, meta]) => {
+    if (!meta) return;
+    if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null };
+    else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
+  });
+  saveTags();
+  // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
+  const entries = Object.entries(data.groups || {})
+    .sort((a, b) => new Date((b[1] && b[1].at) || 0) - new Date((a[1] && a[1].at) || 0))
+    .slice(0, MAX_HISTORY);
+  const known = new Set((appState.games || []).map(g => g.id));
+  const toFetch = entries.filter(([gid]) => !known.has(gid));
+  const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
+  const results = await Promise.all(toFetch.map(([gid, meta]) =>
+    db.ref('sessions/' + gid).once('value').then(s => ({ meta, val: s.val() })).catch(() => null)));
+  let added = 0;
+  results.forEach(r => {
+    if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
+    appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
+      lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
+    added++;
+  });
+  appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
+  appState.games = appState.games.slice(0, MAX_HISTORY);
+  saveStorage();
+  requestPersistentStorage();
+  // この端末にだけあるグループはサーバーのリストへ追記（双方向でそろえる）
+  (appState.games || []).forEach(g => {
+    const meta = (data.groups || {})[g.id];
+    if (!meta) { syncGroupToMyList(g); return; }
+    myListSynced.add(g.id);
+    // サーバー側に分類が無く、この端末にだけある場合は上げておく
+    const t = tagOf(g.id);
+    if (meta.role == null && meta.me == null && (t.role === 'watch' || t.me != null)) syncTagToMyList(g.id);
+  });
+  return added;
+}
 // #my=ID で開いたとき: サーバーのリストをこの端末に取り込み、以後この端末も同じリストに追記していく
 async function openMyListFromUrl(lid) {
   showLoading(true);
   try {
     const snap = await db.ref('mylists/' + lid).once('value');
     if (!snap.exists()) { alert('この引き継ぎURLは見つかりませんでした。'); return; }
-    const data = snap.val() || {};
     myListId = lid;
     myListSynced.clear(); // 「送信済み」の記録は前のリストのもの。別のリストに乗り換えたら白紙に戻す
     try { localStorage.setItem(MYLIST_KEY, lid); } catch (e) {}
-    // サーバーのリストに保存された分類（参加/観戦・自分がどれか）をこの端末に取り込む
-    Object.entries(data.groups || {}).forEach(([gid, meta]) => {
-      if (!meta) return;
-      if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null };
-      else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
-    });
-    saveTags();
-    // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
-    const entries = Object.entries(data.groups || {})
-      .sort((a, b) => new Date((b[1] && b[1].at) || 0) - new Date((a[1] && a[1].at) || 0))
-      .slice(0, MAX_HISTORY);
-    const known = new Set((appState.games || []).map(g => g.id));
-    const toFetch = entries.filter(([gid]) => !known.has(gid));
-    const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
-    const results = await Promise.all(toFetch.map(([gid, meta]) =>
-      db.ref('sessions/' + gid).once('value').then(s => ({ meta, val: s.val() })).catch(() => null)));
-    let added = 0;
-    results.forEach(r => {
-      if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
-      appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
-        lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
-      added++;
-    });
-    appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
-    appState.games = appState.games.slice(0, MAX_HISTORY);
-    saveStorage();
-    requestPersistentStorage();
-    // この端末にだけあるグループはサーバーのリストへ追記（双方向でそろえる）
-    (appState.games || []).forEach(g => {
-      const meta = (data.groups || {})[g.id];
-      if (!meta) { syncGroupToMyList(g); return; }
-      myListSynced.add(g.id);
-      // サーバー側に分類が無く、この端末にだけある場合は上げておく
-      const t = tagOf(g.id);
-      if (meta.role == null && meta.me == null && (t.role === 'watch' || t.me != null)) syncTagToMyList(g.id);
-    });
+    const added = await mergeMyListData(snap.val() || {});
     // 取り込みが終わったらURLからIDを外す（再読み込みのたびに取り込み直さない。
     // 起動時のreplaceStateはhash保持が必須だが、ここは処理完了後なので意図的に外す）
     history.replaceState(null, '', location.pathname);
@@ -1676,15 +1682,47 @@ async function openMyListFromUrl(lid) {
     alert('接続エラーが発生しました。');
   } finally { showLoading(false); }
 }
+// 引き継ぎURL（または14文字のIDだけ）を貼り付けて読み込む。
+// ホーム画面に追加したアプリはアドレスバーが無くURLを直接開けないため、この入力欄が取り込みの導線になる
+function importMyListFromInput() {
+  const v = (document.getElementById('mylist-import-input').value || '').trim();
+  const m = v.match(/my=([A-HJ-NP-Za-hj-km-np-z2-9]{14})/) || v.match(/^([A-HJ-NP-Za-hj-km-np-z2-9]{14})$/);
+  if (!m) { showToast('引き継ぎURLの形式が正しくありません'); return; }
+  openMyListFromUrl(m[1]);
+}
+// 作成済みの端末では、起動時と過去の試合を開いたときにサーバーのリストから静かに取り込む。
+// ホーム画面に追加したアプリはブラウザと別の保存領域で動くため、この取り込みが無いと
+// 「ブラウザ側で参加した卓がアプリ側に現れない」ままになる（逆方向はsyncGroupToMyListが担う）
+let myListRefreshing = false;
+async function refreshMyList() {
+  if (!myListId || myListRefreshing) return;
+  myListRefreshing = true;
+  try {
+    const snap = await db.ref('mylists/' + myListId).once('value');
+    if (snap.exists()) {
+      const added = await mergeMyListData(snap.val() || {});
+      const historyActive = document.getElementById('view-history').classList.contains('active');
+      if (added && historyActive) renderHistory();
+    }
+  } catch (e) { /* オフライン等。次の機会に取り込む */ }
+  finally { myListRefreshing = false; }
+}
 // 過去の試合画面のカード（未作成なら作成ボタン、作成済みならURLとコピー）
 function renderMyListCard() {
   const el = document.getElementById('mylist-card');
   if (!el) return;
   if (!myListId) {
-    // 一瞬でメリットが伝わる短さを最優先（詳細は作ったあとの表示とお知らせ記事が担う）
+    // 一瞬でメリットが伝わる短さを最優先（詳細は作ったあとの表示とお知らせ記事が担う）。
+    // 貼り付け読み込みは「別の保存領域」で開いた人の導線（ホーム画面アプリ・機種変更後の新端末など）
     el.innerHTML = `<b>🔑 機種変更しても、履歴を引き継げます</b><br>
       引き継ぎURLを1回作って控えておくだけ。あとの試合は自動で追記されます（登録不要）。
-      <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>`;
+      <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>
+      <div style="margin-top:2px;color:#5f8577">すでに引き継ぎURLを持っている場合（別の端末・ホーム画面に追加したアプリ）:</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input type="text" id="mylist-import-input" placeholder="引き継ぎURLをここに貼り付け"
+          style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff">
+        <button type="button" class="edit-tab" style="flex-shrink:0" onclick="importMyListFromInput()">読み込む</button>
+      </div>`;
   } else {
     el.innerHTML = `<b>🔑 引き継ぎURL</b><span style="color:#5f8577">（作成済み・自動で追記中）</span><br>
       機種変更したら、新しい端末でこのURLを開くだけで履歴が戻ります。<br>
@@ -1748,7 +1786,7 @@ function showView(name, skipHistory = false) {
   window.scrollTo(0, 0); // 画面遷移時に一番上へ
   document.getElementById('header-back').style.display = name === 'setup' ? 'block' : 'none'; // 設定画面だけ戻るボタン
 
-  if (name === 'history') { renderMyListCard(); renderHistory(); }
+  if (name === 'history') { renderMyListCard(); renderHistory(); refreshMyList(); }
   if (name === 'mystats') renderMyStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { checkPendingSession(); renderRecentGames(); }
@@ -5014,7 +5052,10 @@ function historyItemHtml(g) {
     <div class="history-info">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div class="history-name">${esc(g.name)}</div>
-        <button class="edit-tab" style="flex-shrink:0" onclick="event.stopPropagation();rejoinGame('${esc(g.id)}')">再開</button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="edit-tab" onclick="event.stopPropagation();rejoinGame('${esc(g.id)}')">再開</button>
+          <button class="round-del-btn" onclick="event.stopPropagation();confirmDeleteHistory('${esc(g.id)}')">削除</button>
+        </div>
       </div>
       <div class="history-meta">${date} · 計${rounds}試合 · ${mode}</div>
       ${members ? `<div class="history-members">${members}</div>` : ''}
@@ -5026,6 +5067,34 @@ function historyItemHtml(g) {
 // 履歴からグループの共有セッションに再接続する（URL遷移と同等）
 function rejoinGame(id) {
   joinSession(id);
+}
+// 過去の試合を一覧から個別に削除する。必ず確認モーダルを挟む。
+// 消えるのは「この端末の履歴（＋引き継ぎURLの一覧）」だけで、sessions/のデータ本体には触れない
+// ＝共有URLを知っている仲間の画面には影響しないし、URLを開けば自分でもまた表示できる
+function confirmDeleteHistory(id) {
+  const g = (appState.games || []).find(x => x.id === id);
+  if (!g) return;
+  document.getElementById('confirm-modal-title').textContent = '過去の試合から削除';
+  document.getElementById('confirm-modal-desc').textContent =
+    `「${g.name || ''}」を過去の試合の一覧から削除します。` +
+    (myListId ? '引き継ぎURLの一覧からも外れます。' : '') +
+    'グループのデータ自体は消えないため、共有URLを開けばまた表示できます。よろしいですか？';
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = '削除する'; // 使い回しボタンなので毎回セットし直す（復元確認の「戻す」が残ることがある）
+  ok.onclick = () => { closeConfirmModal(); deleteHistoryItem(id); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function deleteHistoryItem(id) {
+  appState.games = (appState.games || []).filter(g => g.id !== id);
+  saveStorage();
+  if (gameTags[id]) { delete gameTags[id]; saveTags(); } // 分類タグも一緒に片付ける
+  myListSynced.delete(id); // 同じページ表示中に再参加したら改めて追記できるように
+  // 引き継ぎURLの一覧からも外す（残すと次の同期で復活してしまう）。失敗しても端末側の削除は成立
+  if (myListId) db.ref(`mylists/${myListId}/groups/${id}`).remove().catch(() => {});
+  renderHistory();
+  renderRecentGames(); // ホームの「最近のゲーム」にも同じ履歴が出ている
+  showToast('過去の試合から削除しました');
+  track('history_delete');
 }
 // ---- ホーム画面に追加の案内 ----
 // すでにホーム画面から起動している（standalone表示）なら案内は出さない
@@ -5053,10 +5122,16 @@ function showInstallHelp() {
     </ol>`;
   document.getElementById('form-modal-title').textContent = 'ホーム画面に追加する';
   document.getElementById('form-modal-body').innerHTML = `
-    <div style="font-size:13px;color:#555;line-height:1.8;margin-bottom:14px">
+    <div style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px">
       ホーム画面に追加すると、アプリのようにワンタップで開けるようになります。
       とくにiPhoneでは、<b>7日間使わないとブラウザの保存データが自動削除される仕組み</b>があり、
       ホーム画面から開くまじゃすこはその対象外になるため、履歴が消えにくくなります。
+    </div>
+    <div style="font-size:12px;color:#8a6d1a;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:14px">
+      ⚠ ホーム画面に追加したまじゃすこは、<b>ブラウザとは別の保存場所</b>で動きます（OSの仕様）。
+      いま見えている履歴は自動では引き継がれないため、おすすめの順番は——<br>
+      <b>① 上の「引き継ぎURL」を作ってコピー → ② ホーム画面に追加 → ③ 追加したアプリを開き、引き継ぎURLを貼り付けて「読み込む」</b><br>
+      ③は最初の1回だけ。以降はブラウザ・アプリのどちらで遊んでも、開いたときに自動で同期されます。
     </div>
     <div style="font-size:13px;color:#333">
       ${iosBlock}
@@ -5233,6 +5308,10 @@ if (urlHash.startsWith('my=')) {
   pendingSessionId = urlHash;
   document.getElementById('join-banner').style.display = 'block';
   joinSession(urlHash);
+} else if (myListId) {
+  // 作成済みの端末は起動時に静かに同期する。ホーム画面に追加したアプリは
+  // ブラウザと別の保存領域なので、この取り込みがブラウザ⇄アプリの橋渡しになる
+  refreshMyList();
 }
 </script>
 <script src="assets/ads.js" defer></script>
