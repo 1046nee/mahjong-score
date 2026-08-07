@@ -217,7 +217,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* 共有ゲームへの参加バナー */
 .join-banner { max-width: 420px; margin: 28px auto 0; text-align: left; }
-.join-banner p { color: #1a1a1a; font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+/* 見出しは「最近の試合」（.rg-title）と同じ体裁にそろえる */
+.join-banner p { color: #667571; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
 .join-btn { background: #177083; color: #fff; border: none; border-radius: 8px; padding: 12px 14px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; }
 .join-btn .join-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .join-btn .join-arrow { flex-shrink: 0; font-size: 17px; opacity: 0.85; }
@@ -1613,12 +1614,18 @@ function renderMyListCard() {
   const el = document.getElementById('mylist-card');
   if (!el) return;
   if (!myListId) {
-    el.innerHTML = `<b>🔑 引き継ぎURL</b><br>
-      機種変更やブラウザの変更をしても、引き継ぎURLを開くだけでこの履歴一式が戻ります（会員登録は不要です）。
+    // 「1回だけ・今の履歴もまるごと入る・あとは自動・使うのは機種変のとき」が読み取れる説明にする
+    el.innerHTML = `<b>🔑 引き継ぎURL — 機種変更に備える控え</b>
+      <ul style="margin:6px 0 0;padding-left:1.3em">
+        <li>作るのは<b>最初の1回だけ</b>。いつ作ってもOKで、いまこの一覧にある試合も<b>まるごと入ります</b></li>
+        <li>以後に参加した試合は<b>自動で追記</b>されます（毎回の操作は不要）</li>
+        <li>機種変更やブラウザ変更のあと、新しい端末で<b>このURLを開くだけ</b>で履歴一式が戻ります</li>
+      </ul>
       <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>`;
   } else {
-    el.innerHTML = `<b>🔑 引き継ぎURL</b><br>
-      機種変更やブラウザの変更のあとは、このURLを開くだけで履歴一式が戻ります。ブックマークや自分宛てのメモに控えておいてください。<br>
+    el.innerHTML = `<b>🔑 引き継ぎURL（作成済み）</b><br>
+      以後の試合は<b>自動で</b>このURLに追記されています。ブックマークや自分宛てのメモに控えておき、
+      機種変更のあとに新しい端末で開くだけで履歴一式が戻ります。<br>
       <span style="color:#a05a2c">⚠ あなた専用のURLです。グループの共有URLとは別物なので、他の人には送らないでください。</span>
       <div style="display:flex;gap:6px;margin-top:8px">
         <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
