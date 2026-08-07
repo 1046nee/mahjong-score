@@ -3,7 +3,16 @@
 ※「今の正」だけを書く。経緯・改修履歴はgit log。仕様を変えたらこのdocも更新すること。
 
 ## データモデルと計算
-- Firebase `sessions/{10文字ID}`（URL共有モデル）＋ localStorage `mahjong-v3`（履歴最大20件・登録名）
+- Firebase `sessions/{10文字ID}`（URL共有モデル）＋ localStorage `mahjong-v3`（履歴最大`MAX_HISTORY`**100件**・登録名）
+- **履歴が消えにくくなる対策（第1段階・2026-08）**:
+  ①`saveStorage`は容量あふれ（QuotaExceeded）で丸ごと失敗せず、**古い履歴から落として必ず保存を成功させる**
+  （gamesは常に新しい順＝末尾が最古）
+  ②履歴を持つ端末では`requestPersistentStorage()`＝`navigator.storage.persist()`で保存データの保護を要求
+  （起動時とsaveToLocalHistory。Chrome系/Firefoxが利用実績から自動判断・ダイアログなし。Safariは非対応）
+  ③過去の試合画面に**「ホーム画面に追加」の案内**（`showInstallHelp`モーダル・iOS/Android/PC別の手順）。
+  iPhoneのSafariは**7日間使わないと保存データを自動削除する**が、ホーム画面から開く場合は対象外になる。
+  すでにstandalone起動中（`isStandaloneApp()`）なら案内`#hist-tip-install`を隠す。
+  ※第2段階（マイURL方式＝端末をまたぐ履歴）は未実装・構想のみ
 - **セッションIDは`newSessionId()`で発行**（生成→既存チェック→被っていたら作り直し、最大5回。誕生日問題による他人のセッション上書きを防ぐ）。
   初期のIDは22桁だったため、既存データには22桁IDも混在する（セキュリティルールは両方許可）
 - **起動時のセッション判定は「ハッシュ8文字以上」**（ページ内アンカー #howto をセッションIDと誤認しないため）
