@@ -672,7 +672,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="howto-step">
         <h3>1. グループを作る</h3>
         <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">まじゃすこ学園サッカー部</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">試合形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><rect x="30" y="265" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="281" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="265" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="281" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
-        <p>グループ名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
+        <p>ゲーム名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
       </div>
 
       <div class="howto-step">
@@ -881,7 +881,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="form-body">
     <div class="card">
       <div class="field">
-        <label>グループ名</label>
+        <label>ゲーム名</label>
         <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部" maxlength="40">
       </div>
       <div class="field">
@@ -1146,7 +1146,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
   <div style="margin:10px 16px 0"><button class="auto-btn" onclick="showView('mystats')">📊 自分の成績シート</button></div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
-    <input type="text" id="hist-search" placeholder="グループ名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
+    <input type="text" id="hist-search" placeholder="ゲーム名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
     <select id="hist-mode" onchange="renderHistory()" style="width:84px;flex-shrink:0">
       <option value="all">すべて</option>
       <option value="4">四麻</option>
@@ -1513,14 +1513,24 @@ async function applyRestore(bk, where) {
       showToast('元に戻しました');
     } catch(e) { showToast('復元に失敗しました'); }
   } else {
+    // 結果詳細からの復元もサーバーへ書く（端末内だけ戻すと、サーバーから取り直す入り口で
+    // 復元前の状態に巻き戻ってしまい、復元した意味がなくなる）
     takeBackup(detailGame, 'もとに戻す', bk.rounds.length);
-    detailGame.name = bk.name;
-    detailGame.settings = bk.settings;
-    detailGame.rounds = bk.rounds;
-    detailGame.log = appendLog(detailGame.log, logEntry);
-    saveStorage();
-    viewDetail(detailGame);
-    showToast('元に戻しました');
+    try {
+      const newLog = appendLog(detailGame.log, logEntry);
+      await db.ref('sessions/' + bk.gid).update({
+        name: bk.name, settings: bk.settings,
+        rounds: bk.rounds.length ? bk.rounds : null,
+        log: newLog
+      });
+      detailGame.name = bk.name;
+      detailGame.settings = bk.settings;
+      detailGame.rounds = bk.rounds;
+      detailGame.log = newLog;
+      saveStorage();
+      viewDetail(detailGame);
+      showToast('元に戻しました');
+    } catch(e) { showToast('復元に失敗しました'); }
   }
 }
 
@@ -1670,6 +1680,9 @@ async function mergeMyListData(data) {
     if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
     appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
       lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
+    // 取り込んだゲームのプレイヤー名を「登録名」にも反映する（この端末で作成した場合と同じ扱い。
+    // 引き継ぎ後のセットアップで過去のメンバー名が候補に出るようになる）
+    if (r.val.settings && r.val.settings.playerNames) savePlayerNames(r.val.settings.playerNames);
     added++;
   });
   appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
@@ -2048,7 +2061,9 @@ function toggleSetupOptions() {
 }
 function initSetupForm() {
   setSetupOptions(false); // 画面を開くたびに閉じた状態へ戻す
-  document.getElementById('s-name').value = ''; // 初期値は空（未入力ならstartGameで日付名にフォールバック）
+  // ゲーム名は今日の日付を初期値にする（そのまま作成してもよく、消して書き換えてもよい。
+  // 全部消したまま作成した場合もstartGameが日付名にフォールバックする）
+  document.getElementById('s-name').value = todayStr();
   setupMembers = [];
   document.getElementById('member-input').value = '';
   numPlayers = 4;
@@ -2164,7 +2179,7 @@ const MAX_NAME_LEN = 16;   // プレイヤー名（表の列見出しになる�
 // チーム名は表ではcolspanでまとめた1セル・順位カードでは1行を丸ごと使えるため、
 // プレイヤー名より長く許せる（折り返し前提。グループ名と同じ40文字）
 const MAX_TEAM_LEN = 40;   // チーム名
-const MAX_GROUP_LEN = 40;  // グループ名
+const MAX_GROUP_LEN = 40;  // ゲーム名（UI表記は「ゲーム名」に統一。変数名は互換のため据え置き）
 // 1グループに記録できる試合数の上限。根拠は3つ:
 //  ①保存のたびに全試合ぶんを書き直すので通信が重くなる（4人500試合で約85KB／1000試合で約168KB）
 //  ②試合結果の画像が読める大きさの1枚に収まらなくなる（縮約版でも400試合弱が限界）
@@ -2836,7 +2851,7 @@ function csvItemsFor(g) {
     ['chombo', 'チョンボ', !!s.chombo || rounds.some(r => r.chombo)],
     ['at', '日時', true],
     ['total', '合計行', true],
-    ['meta', 'グループ情報（名前・作成日・形式・チーム編成）', true]
+    ['meta', 'ゲーム情報（名前・作成日・形式・チーム編成）', true]
   ].filter(x => x[2]);
 }
 function buildCsv(g, opts) {
@@ -2859,7 +2874,7 @@ function buildCsv(g, opts) {
   const colHead = (n, c) => cols.length === 1 ? n : `${n} ${c}`;
   const rows = [];
   if (o.meta) {
-    rows.push(['グループ名', g.name || '']);
+    rows.push(['ゲーム名', g.name || '']);
     rows.push(['作成日', fmtDate(g.createdAt)]);
     rows.push(['試合形式', `${s.numPlayers === 3 ? '三麻' : '四麻'}・${s.teamMode && s.teams ? 'チーム戦' : '個人戦'}`]);
     if (s.teamMode && s.teams) {
@@ -5063,7 +5078,7 @@ function myStatsTableHtml(st) {
     return `<td style="font-weight:700;color:${col}">${r > 0 ? '+' : ''}${r.toFixed(1)}</td>`; };
   const rows = [];
   const row = (label, cells, cls) => rows.push(`<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col">${label}</td>${cells.join('')}</tr>`);
-  row('グループ数', cols.map(np => `<td style="font-weight:700">${st.modes[np].groups}</td>`));
+  row('ゲーム数', cols.map(np => `<td style="font-weight:700">${st.modes[np].groups}</td>`));
   row('試合数', cols.map(np => `<td style="font-weight:700">${st.modes[np].games}</td>`));
   row('平均着順', cols.map(np => `<td style="font-weight:700">${(st.modes[np].avgRankSum / st.modes[np].games).toFixed(2)}</td>`));
   for (let rank = 0; rank < 4; rank++) {
@@ -5080,7 +5095,7 @@ function myStatsTableHtml(st) {
   row('最高点数', cols.map(np => `<td>${st.modes[np].ptMax != null ? st.modes[np].ptMax.toLocaleString() : '—'}</td>`));
   row('最低点数', cols.map(np => `<td>${st.modes[np].ptMin != null ? st.modes[np].ptMin.toLocaleString() : '—'}</td>`));
   const head = cols.map(np => `<th>${np === 3 ? '三麻' : '四麻'}</th>`).join('');
-  // 項目列は78px（最長ラベル「グループ数」「通算スコア」=60px＋余白が収まる幅。64pxでははみ出す）
+  // 項目列は78px（最長ラベル「通算スコア」=60px＋余白が収まる幅。64pxでははみ出す）
   return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${78 + cols.length * 96}px">
     <thead><tr><th class="sticky-col" style="width:78px">項目</th>${head}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
@@ -5350,17 +5365,36 @@ function renderDetailBody(g) {
 }
 
 // ---- 過去の結果の編集 ----
+// 【重要】結果詳細からの編集も必ずFirebase（sessions/{id}）へ書く。
+// かつて端末内の控えだけを更新していたため、「再開」「最近の試合」「共有された試合」など
+// サーバーから取り直す入り口を通ると編集前に巻き戻る不整合があった（データの正は常にsessions側）。
+// 端末内の控えは古い可能性があるので、編集の前後で最新を取得してから載せる（他の人の入力を消さないため）
+const normalizeSession = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
 // 局の点数編集: 点数入力シートを過去ゲーム用コンテキストで開く
-function editDetailRound(ridx) {
+async function editDetailRound(ridx) {
   if (!detailGame) return;
   const g = detailGame;
+  // 編集前に最新を取り込む。古い控えのまま全試合を書き戻すと、
+  // その後に他のメンバーが入力した試合が消えてしまう
+  try {
+    const snap = await db.ref('sessions/' + g.id).once('value');
+    if (snap.exists()) {
+      const fresh = snap.val();
+      Object.assign(g, { ...fresh, rounds: normalizeSession(fresh.rounds), log: normalizeSession(fresh.log) });
+      saveStorage();
+      if (!g.rounds[ridx]) { renderDetailBody(g); showToast('この試合は削除されています'); return; }
+    }
+  } catch (e) { /* オフラインは手元の控えで続行（保存時に失敗として知らせる） */ }
   openSheetCtx({
     game: g,
     settings: g.settings,
     rounds: g.rounds,
-    save: (rounds, logEntry) => {
+    save: async (rounds, logEntry) => {
+      const newLog = appendLog(g.log, logEntry);
+      // サーバーへ書けたときだけ端末の控えも更新（片方だけ更新すると巻き戻り事故が再発する）
+      await db.ref('sessions/' + g.id).update({ rounds: rounds.length ? rounds : null, log: newLog });
       g.rounds = rounds;
-      g.log = appendLog(g.log, logEntry);
+      g.log = newLog;
       saveStorage();
       viewDetail(g);
       showToast('更新しました');
@@ -5381,16 +5415,45 @@ function openDetailEdit() {
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
-function saveDetailEdit() {
+async function saveDetailEdit() {
   const g = detailGame;
-  const bkKey = takeBackup(g, '名前を編集', (g.rounds || []).length);
-  g.name = clampName(document.getElementById('d-name').value, MAX_GROUP_LEN) || g.name;
-  g.settings.playerNames = g.settings.playerNames.map((nm, i) =>
+  const newName = clampName(document.getElementById('d-name').value, MAX_GROUP_LEN) || g.name;
+  const newPlayers = g.settings.playerNames.map((nm, i) =>
     clampName(document.getElementById(`d-p-${i}`).value, MAX_NAME_LEN) || nm);
-  saveStorage();
-  closeFormModal();
-  viewDetail(g);
-  showUndoToast('更新しました', bkKey);
+  const bkKey = takeBackup(g, '名前を編集', (g.rounds || []).length);
+  try {
+    // 最新の設定の上に名前だけを載せて書く（設定の編集・新しい試合など他の人の変更を消さない）
+    const snap = await db.ref('sessions/' + g.id).once('value');
+    if (snap.exists()) {
+      const fresh = snap.val();
+      const freshNames = (fresh.settings && fresh.settings.playerNames) || [];
+      if (freshNames.length !== newPlayers.length) {
+        // 編集中にメンバー構成が変わった（設定の編集で増減）: どの欄が誰か分からないので安全側で中断
+        Object.assign(g, { ...fresh, rounds: normalizeSession(fresh.rounds), log: normalizeSession(fresh.log) });
+        saveStorage();
+        closeFormModal();
+        viewDetail(g);
+        showToast('メンバー構成が変わっていたため、最新の内容に更新しました。もう一度編集してください');
+        return;
+      }
+      const settings = { ...fresh.settings, playerNames: newPlayers };
+      await db.ref('sessions/' + g.id).update({ name: newName, settings });
+      Object.assign(g, { ...fresh, name: newName, settings, rounds: normalizeSession(fresh.rounds), log: normalizeSession(fresh.log) });
+    } else {
+      // サーバーから消えているゲームは端末内の控えだけ更新（書き戻し先が無い）
+      g.name = newName;
+      g.settings.playerNames = newPlayers;
+    }
+    savePlayerNames(newPlayers); // ゲーム画面の設定の編集と同じく、登録名にも反映する
+    // 引き継ぎURLの一覧に出る名前も古いままにしない
+    if (myListId) db.ref(`mylists/${myListId}/groups/${g.id}`).update({ name: String(newName).slice(0, 120) }).catch(() => {});
+    saveStorage();
+    closeFormModal();
+    viewDetail(g);
+    showUndoToast('更新しました', bkKey);
+  } catch (e) {
+    showToast('保存に失敗しました。通信環境を確認してください');
+  }
 }
 
 function esc(s) {
