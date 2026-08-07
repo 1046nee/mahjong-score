@@ -20,6 +20,8 @@
 - `tools/make_ig1.py` — Instagram初投稿 1080×1350（縦5:横4）
 - `tools/make_ig_series.py` — IG使い方カルーセル6枚＋機能紹介6枚（共通ヘルパー: phone_frame/screen_*/sparkle/slide）
 - `tools/make_ig_feature7.py` — 機能紹介feature-7「CSVで書き出せる」単発
+- `tools/make_ig_feature8.py` — 機能紹介feature-8「機種変更しても、履歴を引き継げる」単発
+  （スマホ2台＋PIL図形のカギ＋矢印の横並び構成。カギは絵文字でなく図形で描く=画像内絵文字禁止ルール）
 - `tools/make_ig_daily.py` — IG毎日投稿用: 麻雀用語ミニ解説カード4枚（glossary-*）＋小ワザTips3枚（tips-*）
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - `tools/shoot_app_screens.py` — 実アプリ画面のスマホ実寸スクショ撮影（index.htmlをローカル起動＋Firebaseを最小スタブ化。本番に触れない。出力: まじゃすこ素材/ig/shots/）
