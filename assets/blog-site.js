@@ -19,6 +19,9 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/news/hikitsugi-url.html', cat: 'news', date: '2026.08.07', tag: '新機能',
+    title: '機種変更しても履歴が引き継げる「引き継ぎURL」を追加しました',
+    desc: '「引き継ぎURL」を作っておけば、機種変更やブラウザの変更をしてもURLを開くだけで履歴がまるごと戻ります。会員登録は不要。あわせて、うっかり削除を「元に戻す」機能も追加しました。' },
   { url: '/blog-shukei-gakari.html', cat: 'blog', date: '2026.07.13', tag: '体験談', tagStyle: 'orange', recommended: true,
     title: '麻雀の集計係を8年やってわかった、手書きスコア記録の限界',
     desc: '暗算が得意な私でも、8年間で何度も集計を間違えました。合計が合わない・犯人さがし・読めない字・ぐちゃぐちゃの修正跡……手書きスコア記録の失敗談と解決策を実体験で語ります。' },

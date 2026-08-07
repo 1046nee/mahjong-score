@@ -7,7 +7,14 @@
   <atom:link href="https://majasco.jp/news/feed.xml" rel="self" type="application/rss+xml"/>
   <description>麻雀スコア記録アプリ「まじゃすこ / majasco」のアップデート情報・お知らせ</description>
   <language>ja</language>
-  <lastBuildDate>Tue, 14 Jul 2026 12:00:00 +0900</lastBuildDate>
+  <lastBuildDate>Fri, 07 Aug 2026 12:00:00 +0900</lastBuildDate>
+  <item>
+    <title>機種変更しても履歴が引き継げる「引き継ぎURL」を追加しました</title>
+    <link>https://majasco.jp/news/hikitsugi-url.html</link>
+    <guid>https://majasco.jp/news/hikitsugi-url.html</guid>
+    <pubDate>Fri, 07 Aug 2026 12:00:00 +0900</pubDate>
+    <description>「引き継ぎURL」を作っておけば、機種変更やブラウザの変更をしてもURLを開くだけで履歴がまるごと戻ります。会員登録は不要。あわせて、うっかり削除を「元に戻す」機能も追加しました。</description>
+  </item>
   <item>
     <title>試合結果をCSVで書き出せるようになりました</title>
     <link>https://majasco.jp/news/csv-export.html</link>
