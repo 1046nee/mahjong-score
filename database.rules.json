@@ -24,6 +24,24 @@
         },
         "$other": { ".validate": false }
       }
+    },
+    "mylists": {
+      "$lid": {
+        ".read": true,
+        ".write": "$lid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)",
+        ".validate": "newData.hasChildren(['id'])",
+        "id": { ".validate": "newData.isString() && newData.val() === $lid" },
+        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "groups": {
+          "$gid": {
+            ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
+            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

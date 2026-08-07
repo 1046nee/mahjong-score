@@ -1117,6 +1117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h1>過去の試合</h1>
   </div>
   <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。<span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>して開くと、ブラウザの自動削除の対象外になり履歴が消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
+  <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
     <input type="text" id="hist-search" placeholder="グループ名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
     <select id="hist-mode" onchange="renderHistory()" style="width:112px;flex-shrink:0">
@@ -1373,6 +1374,7 @@ function saveToLocalHistory() {
   appState.games = appState.games.slice(0, MAX_HISTORY);
   saveStorage();
   requestPersistentStorage(); // 履歴を持っている端末では保存データの保護を要求しておく
+  syncGroupToMyList(g);       // 引き継ぎURLを作っている端末では、サーバーのリストにも追記する
 }
 
 // ---- 誤操作からの復元（端末内バックアップ） ----
@@ -1496,6 +1498,127 @@ async function newSessionId() {
   }
   throw new Error('session-id-collision');
 }
+
+// ---- 引き継ぎURL（履歴を端末をまたいで持ち運ぶ） ----
+// 仕組み: 端末ごとに専用ID（14文字）を1つ発行し、mylists/{ID} に「参加したグループのID一覧」だけを置く。
+// #my=ID のURLを開けば別の端末でも履歴一式が戻る。対局データ本体は従来どおり sessions/ にあり二重には持たない。
+// IDを知っている人だけが読める＝グループの共有URLと同じ思想（会員登録なし）。1人あたり数KBでコストはほぼゼロ
+const MYLIST_KEY = 'mahjong-mylist-id';
+let myListId = null;
+try { myListId = localStorage.getItem(MYLIST_KEY) || null; } catch (e) {}
+function generateMyListId() {
+  // セッションIDと同じ文字種（紛らわしいI/l/O/0/1を除く）で、専用IDは長め=14文字
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({ length: 14 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+// グループをサーバーのリストに追記する。1回のページ表示につきグループごとに1回だけ（書き込みは数十バイト）
+const myListSynced = new Set();
+function syncGroupToMyList(g) {
+  if (!myListId || !g || !g.id || myListSynced.has(g.id)) return;
+  myListSynced.add(g.id);
+  db.ref(`mylists/${myListId}/groups/${g.id}`)
+    .set({ at: new Date().toISOString(), name: String(g.name || '').slice(0, 120) })
+    .catch(() => { myListSynced.delete(g.id); }); // 失敗したら次の機会に再試行
+}
+async function createMyList() {
+  const btn = document.getElementById('mylist-create-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '作成中…'; }
+  try {
+    // セッションIDと同じく、既存と被っていないIDを発行する
+    let id = null;
+    for (let i = 0; i < 5; i++) {
+      const cand = generateMyListId();
+      const snap = await db.ref('mylists/' + cand).once('value');
+      if (!snap.exists()) { id = cand; break; }
+    }
+    if (!id) throw new Error('mylist-id-collision');
+    // いまこの端末にある履歴を最初から含めて作る
+    const groups = {};
+    (appState.games || []).forEach(g => {
+      if (g.id) groups[g.id] = { at: g.lastAccess || g.createdAt || new Date().toISOString(), name: String(g.name || '').slice(0, 120) };
+    });
+    const payload = { id, createdAt: new Date().toISOString() };
+    if (Object.keys(groups).length) payload.groups = groups;
+    await db.ref('mylists/' + id).set(payload);
+    myListId = id;
+    try { localStorage.setItem(MYLIST_KEY, id); } catch (e) {}
+    (appState.games || []).forEach(g => myListSynced.add(g.id));
+    renderMyListCard();
+    showToast('引き継ぎURLを作りました。忘れないうちに控えておいてください');
+    track('mylist_create', { groups: Object.keys(groups).length });
+  } catch (e) {
+    showToast('作成に失敗しました。通信環境を確認してもう一度お試しください');
+    if (btn) { btn.disabled = false; btn.textContent = '引き継ぎURLを作る'; }
+  }
+}
+function copyMyListUrl() {
+  if (!myListId) return;
+  const url = location.origin + '/#my=' + myListId;
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('引き継ぎURLをコピーしました'));
+  else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('引き継ぎURLをコピーしました'); }
+  track('mylist_copy');
+}
+// #my=ID で開いたとき: サーバーのリストをこの端末に取り込み、以後この端末も同じリストに追記していく
+async function openMyListFromUrl(lid) {
+  showLoading(true);
+  try {
+    const snap = await db.ref('mylists/' + lid).once('value');
+    if (!snap.exists()) { alert('この引き継ぎURLは見つかりませんでした。'); return; }
+    const data = snap.val() || {};
+    myListId = lid;
+    myListSynced.clear(); // 「送信済み」の記録は前のリストのもの。別のリストに乗り換えたら白紙に戻す
+    try { localStorage.setItem(MYLIST_KEY, lid); } catch (e) {}
+    // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
+    const entries = Object.entries(data.groups || {})
+      .sort((a, b) => new Date((b[1] && b[1].at) || 0) - new Date((a[1] && a[1].at) || 0))
+      .slice(0, MAX_HISTORY);
+    const known = new Set((appState.games || []).map(g => g.id));
+    const toFetch = entries.filter(([gid]) => !known.has(gid));
+    const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
+    const results = await Promise.all(toFetch.map(([gid, meta]) =>
+      db.ref('sessions/' + gid).once('value').then(s => ({ meta, val: s.val() })).catch(() => null)));
+    let added = 0;
+    results.forEach(r => {
+      if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
+      appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
+        lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
+      added++;
+    });
+    appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
+    appState.games = appState.games.slice(0, MAX_HISTORY);
+    saveStorage();
+    requestPersistentStorage();
+    // この端末にだけあるグループはサーバーのリストへ追記（双方向でそろえる）
+    (appState.games || []).forEach(g => { if ((data.groups || {})[g.id]) myListSynced.add(g.id); else syncGroupToMyList(g); });
+    // 取り込みが終わったらURLからIDを外す（再読み込みのたびに取り込み直さない。
+    // 起動時のreplaceStateはhash保持が必須だが、ここは処理完了後なので意図的に外す）
+    history.replaceState(null, '', location.pathname);
+    showView('history');
+    showToast(added ? `履歴を読み込みました（新たに${added}件）` : '履歴は最新の状態です');
+    track('mylist_restore', { added });
+  } catch (e) {
+    alert('接続エラーが発生しました。');
+  } finally { showLoading(false); }
+}
+// 過去の試合画面のカード（未作成なら作成ボタン、作成済みならURLとコピー）
+function renderMyListCard() {
+  const el = document.getElementById('mylist-card');
+  if (!el) return;
+  if (!myListId) {
+    el.innerHTML = `<b>🔑 引き継ぎURL</b><br>
+      機種変更やブラウザの変更をしても、引き継ぎURLを開くだけでこの履歴一式が戻ります（会員登録は不要です）。
+      <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>`;
+  } else {
+    el.innerHTML = `<b>🔑 引き継ぎURL</b><br>
+      機種変更やブラウザの変更のあとは、このURLを開くだけで履歴一式が戻ります。ブックマークや自分宛てのメモに控えておいてください。<br>
+      <span style="color:#a05a2c">⚠ あなた専用のURLです。グループの共有URLとは別物なので、他の人には送らないでください。</span>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
+          style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff;color:#555">
+        <button type="button" class="edit-tab" style="flex-shrink:0" onclick="copyMyListUrl()">コピー</button>
+      </div>`;
+  }
+}
 function startListening() {
   stopListening();
   scoreMetric = 'score'; // 新しいグループを開いたときはデフォルト（スコア順位）に戻す
@@ -1548,7 +1671,7 @@ function showView(name, skipHistory = false) {
   window.scrollTo(0, 0); // 画面遷移時に一番上へ
   document.getElementById('header-back').style.display = name === 'setup' ? 'block' : 'none'; // 設定画面だけ戻るボタン
 
-  if (name === 'history') renderHistory();
+  if (name === 'history') { renderMyListCard(); renderHistory(); }
   if (name === 'setup') initSetupForm();
   if (name === 'home') { checkPendingSession(); renderRecentGames(); }
 
@@ -4772,8 +4895,11 @@ renderRecentGames();
 initSetupForm();
 initFeaturesCarousel();
 const urlHash = location.hash.slice(1);
-// セッションIDは10文字。#howto などページ内アンカーはセッション扱いしない
-if (urlHash && urlHash.length >= 8) {
+// 判定順に注意: #my=（引き継ぎURL）→ セッションID（8文字以上）→ ページ内アンカー。
+// my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
+if (urlHash.startsWith('my=')) {
+  openMyListFromUrl(urlHash.slice(3));
+} else if (urlHash && urlHash.length >= 8) {
   pendingSessionId = urlHash;
   document.getElementById('join-banner').style.display = 'block';
   joinSession(urlHash);
