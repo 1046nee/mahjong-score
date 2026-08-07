@@ -9,7 +9,9 @@
   （gamesは常に新しい順＝末尾が最古）
   ②履歴を持つ端末では`requestPersistentStorage()`＝`navigator.storage.persist()`で保存データの保護を要求
   （起動時とsaveToLocalHistory。Chrome系/Firefoxが利用実績から自動判断・ダイアログなし。Safariは非対応）
-  ③過去の試合画面に**「ホーム画面に追加」の案内**（`showInstallHelp`モーダル・iOS/Android/PC別の手順）。
+  ③過去の試合画面に**「ホーム画面に追加」の案内**（`showInstallHelp`モーダル。**iPhone→Android→PCの順で固定**。
+  iPhoneはLP番外編と同テイストのSVGイラスト3枚で図解: ①アドレスバー右の「…」→②「共有」→③「ホーム画面に追加」→④「追加」。
+  実機スクショ（まじゃすこ素材/iPhone画面/）を簡略化したもの。旧UI向けに「画面下の共有ボタンからでもOK」の注記つき）。
   iPhoneのSafariは**7日間使わないと保存データを自動削除する**が、ホーム画面から開く場合は対象外になる。
   すでにstandalone起動中（`isStandaloneApp()`）なら案内`#hist-tip-install`を隠す。
 - **引き継ぎURL（第2段階・端末をまたぐ履歴。2026-08）**: 端末ごとに専用ID（**14文字**・セッションIDと同じ文字種）を発行し、
