@@ -37,6 +37,8 @@
             ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
             "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
             "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+            "role": { ".validate": "newData.isString() && newData.val().matches(/^(play|watch)$/)" },
+            "me": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 39" },
             "$other": { ".validate": false }
           }
         },

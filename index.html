@@ -491,6 +491,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 数字の意味（カテゴリー）が変わる行の上に引く区切り線。
    通常の行罫線(1px #eee)より少しだけ太く濃くして、グループの切れ目だと分かるようにする */
 .rounds-table tr.cat-break td { border-top: 2px solid #ccd8d5; }
+/* 参加/観戦タグ（過去の試合カード・タグ編集モーダル） */
+.tag-chip { border: 1px solid #cfe3db; background: #f4faf8; color: #33544a; border-radius: 12px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 6px; }
+.tag-chip.watch { background: #f3f3f6; border-color: #d9d9e0; color: #667; }
+.tag-chip.unset { border-color: #f0c9a8; background: #fdf3ea; color: #a05a2c; }
+.tag-role-btn { flex: 1; border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 10px; padding: 10px 0; font-size: 14px; font-weight: 700; cursor: pointer; }
+.tag-role-btn.on { border-color: #177083; background: #177083; color: #fff; }
+.tag-me-chip { border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 18px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.tag-me-chip.on { border-color: #177083; background: #177083; color: #fff; }
 /* 先頭列（試合番号・項目）と本文の境目も、チームの区切りと同じ線でそろえる。
    borderではなくinsetのbox-shadowを使う: border-collapse:collapseの表では
    罫線が表側に属するため、横スクロール時にsticky列の罫線だけが取り残される */
@@ -1127,15 +1135,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
   <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.7">この一覧はこの端末のブラウザに保存されています。端末の変更やブラウザデータの削除で消えることがあるため、続けたいグループは共有URLを控えておくと安心です（URLを開けばいつでも再開できます）。<span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>して開くと、ブラウザの自動削除の対象外になり履歴が消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
   <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
+  <div style="margin:10px 16px 0"><button class="auto-btn" onclick="showView('mystats')">📊 自分の成績シート</button></div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
     <input type="text" id="hist-search" placeholder="グループ名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
-    <select id="hist-mode" onchange="renderHistory()" style="width:112px;flex-shrink:0">
+    <select id="hist-mode" onchange="renderHistory()" style="width:84px;flex-shrink:0">
       <option value="all">すべて</option>
       <option value="4">四麻</option>
       <option value="3">三麻</option>
     </select>
+    <select id="hist-role" onchange="renderHistory()" style="width:84px;flex-shrink:0">
+      <option value="all">すべて</option>
+      <option value="play">参加</option>
+      <option value="watch">観戦</option>
+    </select>
   </div>
   <div class="history-body" id="history-body"></div>
+</div>
+
+<!-- MYSTATS（自分の成績シート） -->
+<div id="view-mystats" class="view">
+  <div class="page-title-row">
+    <h1>自分の成績</h1>
+    <div class="title-actions"><button class="edit-tab" id="mystats-img-btn" onclick="showMyStatsImage()" style="display:none">プレビュー</button></div>
+  </div>
+  <div class="detail-body" id="mystats-body"></div>
 </div>
 
 <!-- DETAIL -->
@@ -1522,12 +1545,28 @@ function generateMyListId() {
 }
 // グループをサーバーのリストに追記する。1回のページ表示につきグループごとに1回だけ（書き込みは数十バイト）
 const myListSynced = new Set();
+// 分類（参加/観戦・自分がどれか）のサーバー保存値。既定（参加・未選択）はnullで消す
+function tagPayload(gid) {
+  const t = tagOf(gid);
+  return { role: t.role, me: t.role === 'play' && t.me != null ? t.me : null };
+}
 function syncGroupToMyList(g) {
   if (!myListId || !g || !g.id || myListSynced.has(g.id)) return;
   myListSynced.add(g.id);
-  db.ref(`mylists/${myListId}/groups/${g.id}`)
-    .set({ at: new Date().toISOString(), name: String(g.name || '').slice(0, 120) })
-    .catch(() => { myListSynced.delete(g.id); }); // 失敗したら次の機会に再試行
+  const ref = db.ref(`mylists/${myListId}/groups/${g.id}`);
+  const t = tagOf(g.id);
+  // at/name（本体）とrole/me（分類）は分けて書く。分類はルール更新前の環境だと拒否されるが、
+  // その場合も本体の追記は成功させたい（分類はこの端末には残っていて、次の同期で再挑戦される）
+  ref.update({ at: new Date().toISOString(), name: String(g.name || '').slice(0, 120) })
+    .then(() => { if (t.role === 'watch' || t.me != null) ref.update(tagPayload(g.id)).catch(() => {}); })
+    .catch(() => { myListSynced.delete(g.id); }); // 本体の失敗は次の機会に再試行
+}
+// タグを変えたときの即時同期（引き継ぎURL未作成・ルール未適用・オフラインでは端末内にだけ残る）
+function syncTagToMyList(gid) {
+  if (!myListId) return;
+  db.ref(`mylists/${myListId}/groups/${gid}`)
+    .update({ at: new Date().toISOString(), ...tagPayload(gid) })
+    .catch(() => {});
 }
 async function createMyList() {
   const btn = document.getElementById('mylist-create-btn');
@@ -1549,6 +1588,11 @@ async function createMyList() {
     const payload = { id, createdAt: new Date().toISOString() };
     if (Object.keys(groups).length) payload.groups = groups;
     await db.ref('mylists/' + id).set(payload);
+    // 分類は別途書く（ルール未適用の環境では黙って諦める。端末には残る）
+    Object.keys(groups).forEach(gid => {
+      const t = tagOf(gid);
+      if (t.role === 'watch' || t.me != null) db.ref(`mylists/${id}/groups/${gid}`).update(tagPayload(gid)).catch(() => {});
+    });
     myListId = id;
     try { localStorage.setItem(MYLIST_KEY, id); } catch (e) {}
     (appState.games || []).forEach(g => myListSynced.add(g.id));
@@ -1577,6 +1621,13 @@ async function openMyListFromUrl(lid) {
     myListId = lid;
     myListSynced.clear(); // 「送信済み」の記録は前のリストのもの。別のリストに乗り換えたら白紙に戻す
     try { localStorage.setItem(MYLIST_KEY, lid); } catch (e) {}
+    // サーバーのリストに保存された分類（参加/観戦・自分がどれか）をこの端末に取り込む
+    Object.entries(data.groups || {}).forEach(([gid, meta]) => {
+      if (!meta) return;
+      if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null };
+      else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
+    });
+    saveTags();
     // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
     const entries = Object.entries(data.groups || {})
       .sort((a, b) => new Date((b[1] && b[1].at) || 0) - new Date((a[1] && a[1].at) || 0))
@@ -1598,7 +1649,14 @@ async function openMyListFromUrl(lid) {
     saveStorage();
     requestPersistentStorage();
     // この端末にだけあるグループはサーバーのリストへ追記（双方向でそろえる）
-    (appState.games || []).forEach(g => { if ((data.groups || {})[g.id]) myListSynced.add(g.id); else syncGroupToMyList(g); });
+    (appState.games || []).forEach(g => {
+      const meta = (data.groups || {})[g.id];
+      if (!meta) { syncGroupToMyList(g); return; }
+      myListSynced.add(g.id);
+      // サーバー側に分類が無く、この端末にだけある場合は上げておく
+      const t = tagOf(g.id);
+      if (meta.role == null && meta.me == null && (t.role === 'watch' || t.me != null)) syncTagToMyList(g.id);
+    });
     // 取り込みが終わったらURLからIDを外す（再読み込みのたびに取り込み直さない。
     // 起動時のreplaceStateはhash保持が必須だが、ここは処理完了後なので意図的に外す）
     history.replaceState(null, '', location.pathname);
@@ -1687,6 +1745,7 @@ function showView(name, skipHistory = false) {
   document.getElementById('header-back').style.display = name === 'setup' ? 'block' : 'none'; // 設定画面だけ戻るボタン
 
   if (name === 'history') { renderMyListCard(); renderHistory(); }
+  if (name === 'mystats') renderMyStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { checkPendingSession(); renderRecentGames(); }
 
@@ -2912,11 +2971,15 @@ function imgTableBodyCanvas(g, kind, compact = false) {
   } else {
     tableHtml = rankCountHtml(g.rounds, s, true);
   }
+  return imgTableHtmlCanvas(tableHtml, s.numPlayers === 3);
+}
+// 任意の表HTML（.rounds-table系）をCanvasに描き直す共通部（自分の成績シートでも使う）
+function imgTableHtmlCanvas(tableHtml, sanma = false) {
   // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出。
   // 三麻は .sanma を付けないと表ヘッダーが緑のままになる（画面と配色が食い違う）
   const holder = document.createElement('div');
   holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:2000px';
-  if (s.numPlayers === 3) holder.classList.add('sanma');
+  if (sanma) holder.classList.add('sanma');
   holder.innerHTML = tableHtml;
   document.body.appendChild(holder);
   const grid = [...holder.querySelectorAll('tr')].map(tr => [...tr.children].map(cell => {
@@ -3327,15 +3390,65 @@ function buildComposedCanvas(g, kinds, compact = false) {
   return c;
 }
 
+// ===== 自分の成績シートの画像 =====
+// 帯（緑・タイトル「自分の成績」）＋成績まとめ＋グループ別＋フッターの縦1枚
+function buildMyStatsCanvas() {
+  const st = collectMyStats();
+  if (!st.groups.length) return null;
+  const b1 = imgTableHtmlCanvas(myStatsTableHtml(st));
+  const b2 = imgTableHtmlCanvas(myStatsGroupsTableHtml(st, true));
+  const s1 = imgCssSize(b1), s2 = imgCssSize(b2);
+  const LABEL = 28, GAP = 18;
+  const W = IMG_PAD * 2 + Math.max(s1.w, s2.w, 340);
+  const H = IMG_BAND + 12 + LABEL + s1.h + GAP + LABEL + s2.h + 14 + IMG_FOOT;
+  const sc = imgFitScale(W, H);
+  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
+  const { c, ctx } = imgCanvas(W, H, sc);
+  const total = st.groups.reduce((a, g) => a + g.games, 0);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#177083'; ctx.fillRect(0, 0, W, IMG_BAND);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
+  ctx.fillText('自分の成績', IMG_PAD, IMG_BAND / 2 - 8);
+  ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
+  ctx.fillText(`${fmtDate(new Date().toISOString())} 時点 ・ ${st.groups.length}グループ・計${total}試合`, IMG_PAD, IMG_BAND / 2 + 11);
+  ctx.globalAlpha = 1;
+  ctx.font = imgFont(13, true); ctx.textAlign = 'right';
+  ctx.fillText(st.myNames.join('・'), W - IMG_PAD, IMG_BAND / 2, W / 2 - IMG_PAD);
+  ctx.textAlign = 'left';
+  let y = IMG_BAND + 12;
+  const section = (label, b, bs) => {
+    ctx.fillStyle = '#177083'; ctx.fillRect(IMG_PAD, y + 4, 4, 14);
+    ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(14, true);
+    ctx.fillText(label, IMG_PAD + 10, y + 11);
+    y += LABEL;
+    ctx.drawImage(b, IMG_PAD, y, bs.w, bs.h);
+    y += bs.h;
+  };
+  section('成績まとめ', b1, s1);
+  y += GAP;
+  section('グループ別', b2, s2);
+  drawImgFooter(ctx, W, H);
+  return c;
+}
+async function showMyStatsImage() {
+  const canvas = buildMyStatsCanvas();
+  if (canvas === IMG_TOO_LARGE) { showToast('グループが多すぎて1枚の画像に収まりません'); return; }
+  if (!canvas) { showToast('まだ集計できる試合がありません'); return; }
+  track('image_preview', { kind: 'mystats' });
+  await openImagePreview(canvas, { name: '' }, '自分の成績');
+}
+
 // Canvas → 共有/ダウンロード（スマホは共有シート、非対応環境はPNG保存）
 async function shareCanvasImage(canvas, g, label) {
   const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
   if (!blob) { showToast('画像の作成に失敗しました'); return; }
-  const fname = `まじゃすこ_${label}_${(g.name || 'game').replace(/[\\/:*?"<>|]/g, '_')}.png`;
+  const fname = g.name
+    ? `まじゃすこ_${label}_${g.name.replace(/[\\/:*?"<>|]/g, '_')}.png`
+    : `まじゃすこ_${label}.png`;
   const file = new File([blob], fname, { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: `${g.name || ''} の${label}` });
+      await navigator.share({ files: [file], title: g.name ? `${g.name} の${label}` : label });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return; // ユーザーが共有をやめただけ
@@ -3370,7 +3483,7 @@ async function openImagePreview(canvas, g, label) {
   if (imgPreviewState && imgPreviewState.url) URL.revokeObjectURL(imgPreviewState.url);
   const url = URL.createObjectURL(blob);
   imgPreviewState = { canvas, g, label, url };
-  document.getElementById('img-preview-title').textContent = `${g.name || ''} の${label}`;
+  document.getElementById('img-preview-title').textContent = g.name ? `${g.name} の${label}` : label;
   const body = document.getElementById('img-preview-body');
   body.classList.remove('zoom');
   body.scrollTop = 0; body.scrollLeft = 0;
@@ -4694,6 +4807,193 @@ async function saveGameEdit() {
   } catch(e) { showToast('保存に失敗しました'); }
 }
 
+// ---- 参加/観戦タグと自分の成績 ----
+// 会員登録が無いため、アプリは「この端末の持ち主がどのプレイヤーか」を知らない。
+// そこで本人にタグ付けしてもらう: 卓ごとに 参加/観戦 ＋ 参加なら自分の名前を選ぶ。
+// タグはこの端末（localStorage）に保存し、引き継ぎURLがあればサーバーのリストにも同期する
+const TAGS_KEY = 'mahjong-tags-v1';
+let gameTags = {};
+try { gameTags = JSON.parse(localStorage.getItem(TAGS_KEY)) || {}; } catch (e) { gameTags = {}; }
+function saveTags() { try { localStorage.setItem(TAGS_KEY, JSON.stringify(gameTags)); } catch (e) {} }
+function tagOf(gid) {
+  const t = gameTags[gid] || {};
+  return { role: t.role === 'watch' ? 'watch' : 'play', me: typeof t.me === 'number' ? t.me : null };
+}
+function setTag(gid, role, me) {
+  if (role === 'watch') gameTags[gid] = { role: 'watch', me: null };
+  else if (me != null) gameTags[gid] = { role: 'play', me };
+  else delete gameTags[gid]; // 既定（参加・自分未選択）は保存しない
+  saveTags();
+  syncTagToMyList(gid);
+}
+// カードに出すバッジ。未設定はオレンジ系で「選べる」ことに気づかせる
+function tagBadgeHtml(g) {
+  const t = tagOf(g.id);
+  const open = `event.stopPropagation();openTagEditor('${esc(g.id)}')`;
+  if (t.role === 'watch') return `<button type="button" class="tag-chip watch" onclick="${open}">👀 観戦</button>`;
+  if (t.me != null) {
+    const nm = (g.settings && g.settings.playerNames && g.settings.playerNames[t.me]) || '';
+    return `<button type="button" class="tag-chip" onclick="${open}">🀄 自分: ${esc(nm)}</button>`;
+  }
+  return `<button type="button" class="tag-chip unset" onclick="${open}">🀄 参加 · 自分を選ぶ</button>`;
+}
+// タグ編集モーダル
+let tagEditGid = null, tagEditRole = 'play', tagEditMe = null;
+function openTagEditor(gid) {
+  const g = appState.games.find(x => x.id === gid);
+  if (!g) return;
+  const t = tagOf(gid);
+  tagEditGid = gid; tagEditRole = t.role; tagEditMe = t.me;
+  document.getElementById('form-modal-title').textContent = 'この卓との関わり';
+  renderTagEditor();
+  document.getElementById('form-modal').classList.add('open');
+}
+function renderTagEditor() {
+  const g = appState.games.find(x => x.id === tagEditGid);
+  if (!g) return;
+  const names = (g.settings && g.settings.playerNames) || [];
+  const chips = names.map((n, i) =>
+    `<button type="button" class="tag-me-chip${tagEditMe === i ? ' on' : ''}" onclick="tagEditMe=${i};renderTagEditor()">${esc(n)}</button>`).join('');
+  document.getElementById('form-modal-body').innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;overflow-wrap:anywhere">${esc(g.name || '')}</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button type="button" class="tag-role-btn${tagEditRole === 'play' ? ' on' : ''}" onclick="tagEditRole='play';renderTagEditor()">🀄 参加した</button>
+      <button type="button" class="tag-role-btn${tagEditRole === 'watch' ? ' on' : ''}" onclick="tagEditRole='watch';tagEditMe=null;renderTagEditor()">👀 観戦した</button>
+    </div>
+    ${tagEditRole === 'play'
+      ? `<div style="font-size:12px;color:#667;margin-bottom:8px">自分はどれ？（選ぶと「自分の成績シート」に集計されます）</div>
+         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px">${chips}</div>`
+      : `<div style="font-size:12px;color:#667;margin-bottom:6px">観戦した卓は「自分の成績シート」の集計に入りません。</div>`}
+    <button class="confirm-btn" style="margin-top:10px" onclick="saveTagEditor()">保存する</button>
+    <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
+}
+function saveTagEditor() {
+  setTag(tagEditGid, tagEditRole, tagEditRole === 'play' ? tagEditMe : null);
+  closeFormModal();
+  renderHistory();
+  showToast('保存しました');
+  track('tag_set', { role: tagEditRole, has_me: tagEditMe != null });
+}
+// ---- 自分の成績の集計 ----
+// 参加（role=play）かつ自分が設定済みのグループを横断して集計する。
+// 四麻と三麻は着順の意味が違うので別バケツ。同点の按分（rankGroups）は個人成績と同じ数え方
+function collectMyStats() {
+  const modes = {};
+  const groupsOut = [];
+  const myNames = [];
+  let untagged = 0;
+  (appState.games || []).forEach(g => {
+    const s = g.settings || {};
+    const t = tagOf(g.id);
+    if (t.role === 'watch') return;
+    const N = (s.playerNames || []).length;
+    const rounds = g.rounds || [];
+    if (t.me == null || t.me >= N) { if (rounds.length) untagged++; return; }
+    const me = t.me;
+    const np = s.numPlayers === 3 ? 3 : 4;
+    const b = modes[np] = modes[np] || { games: 0, groups: 0, counts: new Array(np).fill(0), avgRankSum: 0, lastCount: 0, score: 0, ptMax: null, ptMin: null };
+    let played = 0, scoreSum = 0, rankSum = 0;
+    rounds.forEach(r => {
+      const mem = roundMembers(r, s);
+      const k = mem.indexOf(me);
+      if (k < 0 || !r.scores || r.scores[k] == null) return;
+      const grp = rankGroups((r.points || r.scores).slice(0, mem.length))[k];
+      for (let rank = grp.start; rank <= grp.end; rank++) if (rank < np) b.counts[rank] += 1 / grp.size;
+      b.avgRankSum += grp.avgRank;
+      if (grp.isLast) b.lastCount += 1 / grp.size;
+      played++; scoreSum += r.scores[k]; rankSum += grp.avgRank;
+      if (r.points && r.points[k] != null) {
+        const pt = Number(r.points[k]);
+        if (b.ptMax == null || pt > b.ptMax) b.ptMax = pt;
+        if (b.ptMin == null || pt < b.ptMin) b.ptMin = pt;
+      }
+    });
+    if (!played) return;
+    b.games += played; b.groups++; b.score += scoreSum;
+    const nm = s.playerNames[me];
+    if (nm && !myNames.includes(nm)) myNames.push(nm);
+    groupsOut.push({ id: g.id, name: g.name || '', np, team: !!(s.teamMode && s.teams),
+      games: played, score: scoreSum, avgRank: rankSum / played });
+  });
+  return { modes, groups: groupsOut, myNames, untagged };
+}
+// 成績まとめの表（列=四麻/三麻・行=項目。rounds-table系にして画像出力と共用）
+function myStatsTableHtml(st) {
+  const cols = [4, 3].filter(np => st.modes[np]);
+  const fmtC = v => { const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+  const scoreCell = v => { const r = Math.round(v * 10) / 10;
+    const col = r > 0 ? '#1a237e' : r < 0 ? '#c62828' : '#1a1a1a';
+    return `<td style="font-weight:700;color:${col}">${r > 0 ? '+' : ''}${r.toFixed(1)}</td>`; };
+  const rows = [];
+  const row = (label, cells, cls) => rows.push(`<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col">${label}</td>${cells.join('')}</tr>`);
+  row('グループ数', cols.map(np => `<td style="font-weight:700">${st.modes[np].groups}</td>`));
+  row('試合数', cols.map(np => `<td style="font-weight:700">${st.modes[np].games}</td>`));
+  row('平均着順', cols.map(np => `<td style="font-weight:700">${(st.modes[np].avgRankSum / st.modes[np].games).toFixed(2)}</td>`));
+  for (let rank = 0; rank < 4; rank++) {
+    if (cols.every(np => rank >= np)) continue;
+    row(`${rank + 1}着`, cols.map(np => rank < np
+      ? `<td style="${st.modes[np].counts[rank] > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtC(st.modes[np].counts[rank])}</td>`
+      : '<td style="color:#ccc">—</td>'));
+  }
+  const pct = (np, f) => Math.round(f(st.modes[np]) / st.modes[np].games * 100) + '%';
+  row('トップ率', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.counts[0])}</td>`), 'cat-break');
+  row('連対率', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.counts[0] + (b.counts[1] || 0))}</td>`));
+  row('ラス回避', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.games - b.lastCount)}</td>`));
+  row('通算スコア', cols.map(np => scoreCell(st.modes[np].score)), 'cat-break');
+  row('最高点数', cols.map(np => `<td>${st.modes[np].ptMax != null ? st.modes[np].ptMax.toLocaleString() : '—'}</td>`));
+  row('最低点数', cols.map(np => `<td>${st.modes[np].ptMin != null ? st.modes[np].ptMin.toLocaleString() : '—'}</td>`));
+  const head = cols.map(np => `<th>${np === 3 ? '三麻' : '四麻'}</th>`).join('');
+  return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${64 + cols.length * 96}px">
+    <thead><tr><th class="sticky-col" style="width:64px">項目</th>${head}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+}
+// グループ別内訳の表（forImage=trueでタップ用の属性を外す）
+function myStatsGroupsTableHtml(st, forImage = false) {
+  const rows = st.groups.map(gr => {
+    const sc = Math.round(gr.score * 10) / 10;
+    const col = sc > 0 ? '#1a237e' : sc < 0 ? '#c62828' : '#1a1a1a';
+    return `<tr${forImage ? '' : ` onclick="viewDetailById('${esc(gr.id)}')" style="cursor:pointer"`}>
+      <td class="sticky-col" style="overflow-wrap:anywhere">${esc(gr.name)}</td>
+      <td>${gr.np === 3 ? '三麻' : '四麻'}${gr.team ? '・チーム' : ''}</td>
+      <td>${gr.games}</td>
+      <td style="font-weight:700;color:${col}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>
+      <td>${gr.avgRank.toFixed(2)}</td></tr>`;
+  }).join('');
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:360px">
+    <thead><tr><th class="sticky-col" style="width:110px">グループ</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function renderMyStats() {
+  const body = document.getElementById('mystats-body');
+  const st = collectMyStats();
+  const imgBtn = document.getElementById('mystats-img-btn');
+  if (!st.groups.length) {
+    imgBtn.style.display = 'none';
+    body.innerHTML = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.9">
+      まだ集計できる試合がありません。<br>
+      「過去の試合」の各カードにある<b>「🀄 参加 · 自分を選ぶ」</b>から、その卓での自分の名前を選ぶと、
+      グループをまたいだ自分の通算成績がここにまとまります。${st.untagged ? `<br><span style="color:#a05a2c">自分をまだ選んでいない卓が${st.untagged}件あります。</span>` : ''}
+      </div>
+      <button class="auto-btn" style="margin-top:12px" onclick="showView('history')">過去の試合へ</button></div>`;
+    return;
+  }
+  imgBtn.style.display = 'inline-block';
+  const total = st.groups.reduce((a, g) => a + g.games, 0);
+  body.innerHTML = `
+    <div class="card">
+      <div class="card-title" style="margin-bottom:4px">成績まとめ</div>
+      <div style="font-size:12px;color:#8a9aa5;margin-bottom:10px;overflow-wrap:anywhere">自分: ${st.myNames.map(esc).join('・')} ／ ${st.groups.length}グループ・計${total}試合</div>
+      ${myStatsTableHtml(st)}
+      <div style="font-size:11px;color:#aaa;margin-top:8px;line-height:1.7">スコアは各グループのルール（ウマ・返し点・罰符）で計算された値の合計です。</div>
+    </div>
+    <div class="card">
+      <div class="card-title">グループ別</div>
+      ${myStatsGroupsTableHtml(st)}
+      <div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると結果詳細が開きます</div>
+    </div>
+    ${st.untagged ? `<div style="margin:0 0 8px;padding:9px 12px;background:#fdf3ea;border:1px solid #f0c9a8;border-radius:10px;font-size:12px;color:#a05a2c;line-height:1.7">自分をまだ選んでいない「参加」の卓が${st.untagged}件あります。<a onclick="showView('history')" style="text-decoration:underline;cursor:pointer;font-weight:700">過去の試合</a>で設定すると集計に加わります。</div>` : ''}`;
+  updateScrollHints();
+}
+
 // ---- 履歴 ----
 function historyItemHtml(g) {
   const s = g.settings || {};
@@ -4711,6 +5011,7 @@ function historyItemHtml(g) {
       </div>
       <div class="history-meta">${date} · 計${rounds}試合 · ${mode}</div>
       ${members ? `<div class="history-members">${members}</div>` : ''}
+      <div>${tagBadgeHtml(g)}</div>
     </div>
     <div class="history-arrow">›</div>
   </div>`;
@@ -4763,12 +5064,14 @@ function renderHistory() {
   // 絞り込み: グループ名・メンバー名のキーワード検索 ＋ 対局形式（4人/3人）
   const q = (document.getElementById('hist-search').value || '').trim().toLowerCase();
   const mode = document.getElementById('hist-mode').value;
+  const role = document.getElementById('hist-role').value;
   // 最終アクセスの新しい順・最大MAX_HISTORY件で表示
   const sorted = [...appState.games]
     .sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt))
     .slice(0, MAX_HISTORY)
     .filter(g => {
       if (mode !== 'all' && String(g.settings && g.settings.numPlayers) !== mode) return false;
+      if (role !== 'all' && tagOf(g.id).role !== role) return false;
       if (!q) return true;
       const hay = (String(g.name || '') + ' ' + ((g.settings && g.settings.playerNames) || []).join(' ')).toLowerCase();
       return hay.includes(q);
