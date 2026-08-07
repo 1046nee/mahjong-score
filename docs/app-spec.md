@@ -314,11 +314,22 @@
   削除で消えるのは**この端末の履歴＋引き継ぎURLの一覧**（mylistsから外さないと次の同期で復活する）＋分類タグのみ。
   **sessions/のデータ本体には触れない**＝仲間の画面には影響せず、共有URLを開けば自分でもまた表示できる（確認文にも明記）。
   確認モーダルのOKボタンは使い回しなので文言「削除する」を毎回セットし直す。
-  **削除には墓標が必須**（localStorage `mahjong-deleted-v1`＝gid→削除日時、200件超で古い順に破棄）:
-  双方向マージは「サーバーに無い＝この端末の新規」とみなして書き戻すため、墓標が無いと
-  同じ引き継ぎURLの別端末が再追記→この端末が再取り込み、で削除が復活する。
-  `markDeleted`は`deleteHistoryItem`で、`unmarkDeleted`は`joinSession`（自分から開き直し=削除の撤回）で呼ぶ。
-  `mergeMyListData`のtoFetchは墓標のあるgidを除外する。
+  **削除の同期設計（2026-08-08）**: 削除の影響範囲は
+  「この端末の履歴・分類タグ」「引き継ぎURLのリスト（削除印）」「同じ引き継ぎURLを使う自分の別端末（伝播で消える）」のみ。
+  **sessions/には触れない＝仲間の端末には一切影響しない**（グループ本体は残り、共有URLでいつでも再表示できる）。
+  仕組みは**削除印方式**: `deleteHistoryItem`は`mylists/{id}/groups/{gid}`をremoveせず
+  **`{deleted:true, at}`を書く**（数十バイト・コスト無視できる）。
+  removeだと別端末が「この端末にだけある新規」と誤解してリストへ書き戻し、削除が復活してしまう。
+  `mergeMyListData`は印を見て ①取り込まない ②ローカルの控え・タグも消す（**伝播**）③書き戻さない（myListSynced.add）。
+  伝播側にはローカル墓標を付けない＝**リストの印が唯一の権威**（誰かが開き直して印が消えたら次のマージで自然復帰）。
+  印の解除は「自分から開き直す」操作で: `joinSession`が`unmarkDeleted`＋`myListSynced.delete`→
+  `syncGroupToMyList`のupdateに常に`deleted: null`が入っていて印ごと上書きする。
+  **ルール未適用環境へのフォールバック**: 印の書き込みが拒否されたら従来のremoveに退化（壊れない。
+  rules.jsonに`deleted`キーを追加済み→コンソール手動反映が必要）。
+  ローカル墓標（localStorage `mahjong-deleted-v1`＝gid→削除日時、200件超で古い順に破棄）は
+  オフラインで印を書けなかった場合の保険としてtoFetch除外に使う。
+  **削除直後の「元に戻す」トースト**（`UNDO_TOAST_DELETE_MS`**4秒**・showUndoToastに関数を渡す形）＝
+  控えコピーの復帰＋タグ復帰＋墓標解除＋syncで印も解除（`restoreDeletedHistory`）。
   **対局中グループの削除時は`stopListening()`**（popstateで戻るとリスナーが生きたままになり、
   次のvalueイベントの`saveToLocalHistory`が削除を数秒で巻き戻すため）
 - 履歴ログ: フィルタタブ（すべて/入力/修正/削除。タグと同配色=緑/オレンジ/赤）。点数は「名前 点数」ペア表示

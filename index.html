@@ -1598,7 +1598,9 @@ function syncGroupToMyList(g) {
   const t = tagOf(g.id);
   // at/name（本体）とrole/me（分類）は分けて書く。分類はルール更新前の環境だと拒否されるが、
   // その場合も本体の追記は成功させたい（分類はこの端末には残っていて、次の同期で再挑戦される）
-  ref.update({ at: new Date().toISOString(), name: String(g.name || '').slice(0, 120) })
+  // deleted: null で削除印も解除する（開き直したグループが別端末の伝播でまた消えないように。
+  // 印を使っていないリストでもnullの書き込み=キー削除は無害）
+  ref.update({ at: new Date().toISOString(), name: String(g.name || '').slice(0, 120), deleted: null })
     .then(() => { if (t.role === 'watch' || t.me != null) ref.update(tagPayload(g.id)).catch(() => {}); })
     .catch(() => { myListSynced.delete(g.id); }); // 本体の失敗は次の機会に再試行
 }
@@ -1658,19 +1660,30 @@ function copyMyListUrl() {
 // #my=URLで開いたときと、起動時・過去の試合を開いたときの静かな同期（refreshMyList）で共用。
 // 戻り値=新たに取り込めたグループ数
 async function mergeMyListData(data) {
+  // 削除印のついたグループは、この端末の控えからも外す（別の端末での削除を伝播させる）。
+  // ローカルの墓標は付けない＝リスト側の印が唯一の権威。あとで誰かが開き直して印が消えたら、
+  // 次のマージで自然に取り込み直される
+  Object.entries(data.groups || {}).forEach(([gid, meta]) => {
+    if (!meta || !meta.deleted) return;
+    const i = (appState.games || []).findIndex(g => g.id === gid);
+    if (i >= 0) { appState.games.splice(i, 1); }
+    if (gameTags[gid]) { delete gameTags[gid]; }
+    myListSynced.add(gid); // 「この端末にだけある」と誤解して書き戻さないように
+  });
   // サーバーのリストに保存された分類（参加/観戦・自分がどれか）をこの端末に取り込む
   Object.entries(data.groups || {}).forEach(([gid, meta]) => {
-    if (!meta) return;
+    if (!meta || meta.deleted) return;
     if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null };
     else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
   });
   saveTags();
   // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
   const entries = Object.entries(data.groups || {})
+    .filter(([, meta]) => !(meta && meta.deleted)) // 削除印つきは取り込まない
     .sort((a, b) => new Date((b[1] && b[1].at) || 0) - new Date((a[1] && a[1].at) || 0))
     .slice(0, MAX_HISTORY);
   const known = new Set((appState.games || []).map(g => g.id));
-  // この端末で削除したグループ（墓標あり）は取り込み直さない（別の端末が書き戻しても復活させない）
+  // この端末で削除したグループ（墓標あり）は取り込み直さない（オフライン中に印を書けなかった場合の保険）
   const toFetch = entries.filter(([gid]) => !known.has(gid) && !deletedGids[gid]);
   const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
   const results = await Promise.all(toFetch.map(([gid, meta]) =>
@@ -1965,6 +1978,7 @@ let toastTimer = null;
 // 設定の更新は何度でもやり直せるので短くする（UNDO_TOAST_SHORT_MS）
 const UNDO_TOAST_MS = 8000;
 const UNDO_TOAST_SHORT_MS = 3000;
+const UNDO_TOAST_DELETE_MS = 4000; // 過去の試合の削除（端末内＋引き継ぎリストの操作なので中間の長さ）
 function showToast(msg) {
   const el = document.getElementById('toast');
   el.classList.remove('act');
@@ -1973,7 +1987,8 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 // 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
-// ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒）
+// ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒／履歴の削除は4秒）
+// key: バックアップのキー（restoreBackupByIdで戻す）または関数（押したらそのまま実行）
 function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   if (!key) { showToast(msg); return; }
   const el = document.getElementById('toast');
@@ -1984,7 +1999,7 @@ function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   btn.type = 'button';
   btn.className = 'toast-undo';
   btn.textContent = '元に戻す';
-  btn.onclick = () => { el.classList.remove('show', 'act'); restoreBackupById(key, false); };
+  btn.onclick = () => { el.classList.remove('show', 'act'); typeof key === 'function' ? key() : restoreBackupById(key, false); };
   el.appendChild(span);
   el.appendChild(btn);
   el.classList.add('act', 'show');
@@ -2005,6 +2020,7 @@ async function joinSession(id) {
     if (!snap.exists()) { showLoading(false); alert('このURLのゲームは見つかりませんでした。'); return; }
     sessionId = id;
     unmarkDeleted(id); // 自分から開き直した＝削除の意思は撤回。以後の同期対象に戻す
+    myListSynced.delete(id); // 次のsyncGroupToMyListが削除印の解除ごと書き直せるように
     history.replaceState(null, '', '#' + id);
     startListening(); showView('game');
     track('group_join');
@@ -5198,17 +5214,44 @@ function deleteHistoryItem(id) {
   // 対局中のグループを消す場合はリスナーを止める（放置すると「戻る」経由でリスナーが生きたまま
   // 次のvalueイベントがsaveToLocalHistoryで履歴に書き戻し、削除が数秒で巻き戻る）
   if (activeGame && activeGame.id === id) { stopListening(); activeGame = null; }
+  // 「元に戻す」用に消す前の状態を控える（メモリ上のみ。トーストを逃しても共有URLから復帰できる）
+  const gCopy = (appState.games || []).find(g => g.id === id);
+  const tagCopy = gameTags[id] ? { ...gameTags[id] } : null;
   markDeleted(id); // 墓標: 同期（mergeMyListData）がこのグループを取り込み直さないように
   appState.games = (appState.games || []).filter(g => g.id !== id);
   saveStorage();
   if (gameTags[id]) { delete gameTags[id]; saveTags(); } // 分類タグも一緒に片付ける
   myListSynced.delete(id);
-  // 引き継ぎURLの一覧からも外す（残すと次の同期で復活してしまう）。失敗しても端末側の削除は成立
-  if (myListId) db.ref(`mylists/${myListId}/groups/${id}`).remove().catch(() => {});
+  // 引き継ぎURLのリストには「削除印」を書く（消すのではなく残す）:
+  // 同じ引き継ぎURLを使う自分の別端末（ホーム画面アプリ等）が印を見て自分の控えも消す＝削除が伝播する。
+  // 印を残さずremoveすると、別端末が「この端末にだけある新規」と誤解してリストへ書き戻し、削除が復活する。
+  // 印は数十バイトでコストは無視できる。ルール未適用の環境では印の書き込みが拒否されるので、
+  // その場合だけ従来どおりremoveへフォールバック（現状動作に退化するだけで壊れない）
+  if (myListId) {
+    const ref = db.ref(`mylists/${myListId}/groups/${id}`);
+    ref.update({ deleted: true, at: new Date().toISOString() })
+      .catch(() => ref.remove().catch(() => {}));
+  }
   renderHistory();
   renderRecentGames(); // ホームの「最近のゲーム」にも同じ履歴が出ている
-  showToast('過去の試合から削除しました');
+  showUndoToast('過去の試合から削除しました', () => restoreDeletedHistory(gCopy, tagCopy), UNDO_TOAST_DELETE_MS);
   track('history_delete');
+}
+// 削除直後の「元に戻す」: 端末の控えと引き継ぎリストの両方を削除前に戻す
+function restoreDeletedHistory(g, tag) {
+  if (!g || !g.id) return;
+  unmarkDeleted(g.id);
+  if (!(appState.games || []).some(x => x.id === g.id)) {
+    appState.games.push(g);
+    appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
+  }
+  saveStorage();
+  if (tag) { gameTags[g.id] = tag; saveTags(); }
+  myListSynced.delete(g.id); // 次のsyncで削除印の解除ごと書き直させる
+  if (myListId) syncGroupToMyList(g);
+  renderHistory();
+  renderRecentGames();
+  showToast('元に戻しました');
 }
 // ---- ホーム画面に追加の案内 ----
 // すでにホーム画面から起動している（standalone表示）なら案内は出さない
