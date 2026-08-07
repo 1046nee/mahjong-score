@@ -584,7 +584,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- 全画面共通ヘッダー -->
 <div class="global-header-wrap">
   <div class="global-header">
-    <button type="button" class="header-back" id="header-back" onclick="showView('home')" aria-label="前のページに戻る">‹</button>
+    <button type="button" class="header-back" id="header-back" aria-label="前のページに戻る">‹</button>
     <span class="global-logo" onclick="goHome()"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></span>
     <button type="button" class="global-nav-link" onclick="goUsage()">使い方</button>
   </div>
@@ -1837,7 +1837,12 @@ function showView(name, skipHistory = false) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   window.scrollTo(0, 0); // 画面遷移時に一番上へ
-  document.getElementById('header-back').style.display = name === 'setup' ? 'block' : 'none'; // 設定画面だけ戻るボタン
+  // 左上の「戻る」ボタン（ゲーム設定と同じ仕様を全画面に展開）。
+  // ホーム画面に追加したアプリはブラウザの戻るボタンが無いため、画面内に必ず戻り道を置く
+  const backBtn = document.getElementById('header-back');
+  const backTo = backTargetOf(name);
+  backBtn.style.display = backTo ? 'block' : 'none';
+  backBtn.onclick = backTo === 'game-leave' ? goHome : () => showView(backTo);
 
   if (name === 'history') { renderMyListCard(); renderHistory(); refreshMyList(); }
   if (name === 'mystats') renderMyStats();
@@ -1851,13 +1856,31 @@ function showView(name, skipHistory = false) {
   }
 }
 
+// 画面ごとの「戻る」先。ホーム画面に追加したアプリ（standalone）はブラウザUIが無いため、
+// どの画面からも画面内のボタンだけで戻れるようにする。
+// detailは入り口が2つ（過去の試合／自分の成績）あるので、開いたときに記録した先へ戻す
+function backTargetOf(name) {
+  if (name === 'setup' || name === 'history') return 'home';
+  if (name === 'mystats') return 'history';
+  if (name === 'detail') return detailBackTo || 'history';
+  if (name === 'game') return 'game-leave'; // 対局からの退出はgoHome（保存・リスナー停止を通す）
+  return null; // home・share（作成完了の順方向フロー）には出さない
+}
 // スマホやPCの「戻る」「進む」ボタンが押されたときの検知
 window.addEventListener('popstate', (e) => {
-  if (e.state && e.state.view) {
-    showView(e.state.view, true);
-  } else {
-    showView('home', true);
+  const target = (e.state && e.state.view) || 'home';
+  // 開いているモーダル・シートは閉じる（Androidの戻るボタンで「モーダルの下だけ画面が変わる」事故を防ぐ）
+  document.querySelectorAll('.sheet.open, .modal-backdrop.open, .img-modal.open')
+    .forEach(el => el.classList.remove('open'));
+  // 対局画面から離れる場合は退出処理を通す。リスナーを生かしたまま放置すると、
+  // 次のvalueイベントが削除済みの履歴を書き戻すなどの事故につながる（leaveGameと同じ後始末）
+  if (activeGame && target !== 'game') {
+    saveToLocalHistory();
+    stopListening();
+    const saved = sessionId;
+    activeGame = null; sessionId = null; pendingSessionId = saved;
   }
+  showView(target, true);
 });
 
 function goHome() {
@@ -5244,12 +5267,17 @@ function renderHistory() {
 }
 
 let detailGame = null;
+let detailBackTo = 'history'; // 結果詳細の戻り先（過去の試合 or 自分の成績。開いた場所を覚える）
 function viewDetailById(id) {
   resetViewLimits(); // 別の結果を開いたら「すべて表示」は解除する
   const g = appState.games.find(x => x.id === id);
   if (g) viewDetail(g);
 }
 function viewDetail(g) {
+  // どこから開いたかを記録（詳細画面内での再描画では上書きしない）
+  const active = document.querySelector('.view.active');
+  if (active && active.id === 'view-mystats') detailBackTo = 'mystats';
+  else if (active && active.id !== 'view-detail') detailBackTo = 'history';
   scoreMetric = 'score'; // 詳細を開いたときはデフォルト（スコア順位）に戻す
   collapsedCards = {}; // カードもすべて開いた状態に戻す
   renderDetailBody(g);

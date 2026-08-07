@@ -98,6 +98,13 @@
 - **互換性ルール（最重要）**: 旧データはキー無し=無効・0枚・1倍扱い。members無しの旧ラウンドは先頭numPlayers人参加とみなす（`roundMembers(r,s)`に集約）。保存キー名・関数名はbonus系のまま変えない（settings.rateも不変）
 
 ## 主要関数マップ
+- **画面遷移と戻るボタン**: 左上の`#header-back`（36px円形・ゲーム設定と同仕様）を全画面に展開。
+  戻り先は`backTargetOf(name)`のマップ＝setup/history→home ／ mystats→history ／
+  detail→開いた場所（`detailBackTo`: history or mystats。viewDetailで記録、詳細内の再描画では上書きしない）／
+  game→goHome（保存とリスナー停止を通す）／ home・share（作成完了の順方向フロー）には出さない。
+  **ホーム画面に追加したアプリ（standalone）はブラウザの戻るボタンが無い**ため、画面内に必ず戻り道を置くのが原則。
+  popstate（Androidの戻るボタン・ブラウザの戻る）では ①開いているモーダル・シートを全部閉じる
+  （下だけ画面が変わる事故防止）②対局画面から離れるならleaveGame相当の後始末（リスナー停止・pendingSessionId退避）を通す
 - 同点処理は `rankGroups(values)` に一元化（ウマ・オカ按分・平均順位すべてこれ）
 - 集計: `gameTotals` / `playedFlags` / `chipTotals`。チップ基準値は `chipBaseline(m)` = 持ちチップ + 過去試合のチップ差累計（修正時は対象試合より前まで）
 - 結果カード: `scoreMainHtml(g)`（ゲーム=#score-main-body、詳細=`renderDetailBody(g)`。`viewDetail`=そのラッパ。内訳は`bonusTableHtml(g)`）
