@@ -398,8 +398,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .edit-tab:disabled { opacity: 0.45; cursor: default; }
 .sheet-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 /* 今回の対局メンバー選択（メンバーが1試合の人数より多いグループで表示） */
-.sheet-members-label { font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
+.sheet-members-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px; }
 .sheet-members-label span { font-weight: 600; color: #999; }
+/* 「前回と同じ」は右端に寄せる（毎回同じ顔ぶれのときの一括選択） */
+#sheet-same-btn { margin-left: auto; flex-shrink: 0; }
 /* 別スクロールにはしない（名前が隠れるため）。パネル全体のスクロールに任せて全員分を表示する */
 .sheet-members { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .sel-chip { border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; text-align: left; }
@@ -1196,7 +1198,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div id="sheet-members-area" style="display:none">
-      <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span></div>
+      <div class="sheet-members-label">今回の対局メンバー <span id="sheet-members-count"></span>
+        <button type="button" class="edit-tab" id="sheet-same-btn" style="display:none" onclick="selectSameAsLast()">前回と同じ</button>
+      </div>
       <div class="sheet-members" id="sheet-members"></div>
     </div>
     <div class="sheet-inputs" id="sheet-inputs"></div>
@@ -1780,14 +1784,16 @@ function renderMyListCard() {
       <button type="button" class="edit-tab" style="flex-shrink:0" onclick="importMyListFromInput()">読み込む</button>
     </div>`;
   if (!myListId) {
-    if (isStandaloneApp()) {
-      // ホーム画面に追加したアプリはブラウザと別の保存領域で始まる＝ここに来る目的の大半は
-      // 「ブラウザ側の履歴を持ってくること」。貼り付け欄を主役にする
+    // 主役の出し分けは**standalone判定ではなく履歴の件数**で決める。
+    // 判定は端末によって外れる（＝アプリなのに「作る」が主役になり、誤タップで空のリストを作ってしまう）が、
+    // 「履歴0件でこの画面に来た＝持ってくるものが無い＝引き継ぎたい」は判定に依存せず必ず正しい。
+    // ホームの入り口（renderRecentGames）も同じく件数で出しているので、案内と着地の主役が一致する
+    if (!(appState.games || []).length) {
       el.innerHTML = `<b>🔑 ブラウザで使っていた履歴を引き継ぐ</b><br>
-        ブラウザ版の「過去の試合」で引き継ぎURLを作ってコピーし、ここに貼り付けてください。
-        読み込みは最初の1回だけ。以降はブラウザ・アプリのどちらで遊んでも自動で同期されます。
+        前に使っていた端末（ブラウザ）の「過去の試合」で引き継ぎURLを作ってコピーし、ここに貼り付けてください。
+        読み込みは最初の1回だけ。以降はどちらで遊んでも自動で同期されます。
         ${pasteBlock}
-        <div style="margin-top:8px;color:#5f8577">履歴を引き継がず、このアプリで新しく始める場合:</div>
+        <div style="margin-top:8px;color:#5f8577">引き継ぐものが無い（この端末で新しく始める）場合:</div>
         <button type="button" class="edit-tab" id="mylist-create-btn" style="margin-top:4px" onclick="createMyList()">引き継ぎURLを新しく作る</button>`;
     } else {
       // 一瞬でメリットが伝わる短さを最優先（詳細は作ったあとの表示とお知らせ記事が担う）
@@ -2038,20 +2044,18 @@ function renderRecentGames() {
   const games = appState.games || [];
   const title = wrap.querySelector('.rg-title');
   if (!games.length) {
-    // ホーム画面に追加したアプリ（standalone）はブラウザと別の保存領域で始まるため履歴が空。
-    // ここで導線ごと消すと「過去の試合」＝引き継ぎ欄のある画面に一生たどり着けない（実際に迷わせた）ので、
-    // 引き継ぎの入り口だけは必ず出す。引き継ぎURL作成済みの端末も同様
-    // （全履歴を削除した直後などに、自分のURLを確認・コピーできる画面へ戻れなくなる）。
-    // どちらでもないブラウザの新規訪問者には今までどおり何も出さない
-    if (isStandaloneApp() || myListId) {
-      wrap.style.display = 'block';
-      if (title) title.textContent = '履歴の引き継ぎ';
-      // 作成済みなら「引き継ぐ」はもう済んでいるので、行き先をそのまま表す名前にする
-      const label = myListId ? '過去の試合・引き継ぎURL' : 'ブラウザで使っていた履歴を引き継ぐ';
-      list.innerHTML = `<button type="button" class="rg-row" onclick="showView('history')"><span class="rg-name">${label}</span><span class="rg-arrow">›</span></button>`;
-    } else {
-      wrap.style.display = 'none';
-    }
+    // 履歴0件でも**必ず**引き継ぎの入り口を出す。
+    // ホーム画面に追加したアプリはブラウザと別の保存領域で始まるため履歴が空になるが、
+    // ここを隠すと「過去の試合」＝引き継ぎ欄のある唯一の画面に一生たどり着けない。
+    // standalone判定は端末によって外れることがある（＝判定に頼ると「表示されない人」が出る）ので、
+    // 判定は文言の出し分けだけに使い、入り口そのものは無条件に出す。
+    // 新規訪問者にも1行出るが、履歴が1件でも入れば「最近の試合」に置き換わって消える
+    wrap.style.display = 'block';
+    if (title) title.textContent = '履歴の引き継ぎ';
+    const label = myListId ? '過去の試合・引き継ぎURL'
+      : isStandaloneApp() ? 'ブラウザで使っていた履歴を引き継ぐ'
+      : '別の端末の履歴を引き継ぐ';
+    list.innerHTML = `<button type="button" class="rg-row" onclick="showView('history')"><span class="rg-name">${label}</span><span class="rg-arrow">›</span></button>`;
     return;
   }
   wrap.style.display = 'block';
@@ -3433,17 +3437,13 @@ function imgChartBodyCanvas(g, indiv) {
   ctx.fillStyle = '#999999'; ctx.textAlign = 'center';
   chartXTicks(d.R, 14).forEach(i => ctx.fillText(String(i), px(i), GH - 10));
   ctx.textAlign = 'left';
-  // 折れ線と点
+  // 折れ線のみ（画面のSVGと同じくデータマーカーは描かない）
   d.lines.forEach(l => {
     ctx.strokeStyle = l.color; ctx.lineWidth = 2.5;
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
     l.values.forEach((v, x) => { const X = px(x), Y = py(v); x === 0 ? ctx.moveTo(X, Y) : ctx.lineTo(X, Y); });
     ctx.stroke();
-    if (chartShowDots(W - left - right, d.R)) {
-      ctx.fillStyle = l.color;
-      l.values.forEach((v, x) => { ctx.beginPath(); ctx.arc(px(x), py(v), 3, 0, Math.PI * 2); ctx.fill(); });
-    }
   });
   // 凡例
   let ly = GH + 12;
@@ -3798,8 +3798,6 @@ function chartXTicks(R, maxLabels) {
   }
   return ticks;
 }
-// 点（各試合の位置に打つ丸）は、間隔が直径6を下回ると重なって線がだんご状になるので、そのときは描かない
-function chartShowDots(plotW, R) { return R > 0 && plotW / R >= 6; }
 function chartHtml(rounds, s, indiv = false) {
   const d = chartData(rounds, s, indiv);
   if (!d) return '';
@@ -3820,12 +3818,10 @@ function chartHtml(rounds, s, indiv = false) {
   chartXTicks(R, 12).forEach(i => {
     svg += `<text x="${px(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="#999">${i}</text>`;
   });
-  // 折れ線
-  const dots = chartShowDots(W - left - right, R);
+  // 折れ線のみ（各試合の位置に打つデータマーカーは出さない＝線の形だけを見せる）
   lines.forEach(l => {
     const pts = l.values.map((v, x) => `${px(x)},${py(v)}`).join(' ');
     svg += `<polyline points="${pts}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-    if (dots) l.values.forEach((v, x) => { svg += `<circle cx="${px(x)}" cy="${py(v)}" r="3" fill="${l.color}"/>`; });
   });
   svg += '</svg>';
 
@@ -4399,9 +4395,15 @@ function openSheetCtx(ctx, idx) {
   const s = ctx.settings;
   const isEdit = idx >= 0;
 
+  // メンバーが1試合の人数より多いグループ（回し打ち・チーム戦）は**誰も選ばれていない状態**で開く。
+  // 自動で選んでおくと、違う顔ぶれのときに「まず外してから選び直す」二度手間になり、
+  // 定員に達した状態で別の人を押すと「先に外してください」と怒られて操作が止まるため。
+  // 毎回同じ顔ぶれのときは「前回と同じ」ボタン1タップで戻せる（下のselectSameAsLast）。
+  // 人数ぴったりのグループは選びようがないので従来どおり全員を自動選択する（選択UI自体を出さない）
+  const canChoose = s.playerNames.length > s.numPlayers;
   sheetSelected = isEdit
     ? roundMembers(ctx.rounds[idx], s).slice().sort((a, b) => a - b)
-    : defaultParticipants(ctx);
+    : (canChoose ? [] : defaultParticipants(ctx));
   sheetPrefill = {};
   sheetChips = {};
   sheetYaki = {};
@@ -4427,6 +4429,34 @@ function openSheetCtx(ctx, idx) {
   document.getElementById('score-sheet').classList.add('open');
   if (!isEdit) setTimeout(() => { const el = document.getElementById('si-0'); if (el) el.focus(); }, 80);
 }
+// 直前の試合のメンバー（**そのまま使えるものだけ**）。使えなければnull＝「前回と同じ」を出さない。
+// 使えない条件: 人数が足りない（メンバーを消した）／チーム編成を変えた結果いま同チーム同士になっている。
+// 後者を見ないと、押した瞬間に「同じチームのメンバー同士は対局できません」で詰む組み合わせを復元してしまう
+function lastRoundMembers(ctx) {
+  const s = ctx.settings;
+  const last = (ctx.rounds || [])[ctx.rounds.length - 1];
+  if (!last) return null;
+  const mem = roundMembers(last, s).filter(m => m < s.playerNames.length);
+  if (mem.length !== s.numPlayers) return null;
+  if (s.teamMode && s.teams) {
+    const seen = new Set();
+    for (const m of mem) {
+      const ti = memberTeamIndex(s, m);
+      if (ti < 0) continue;      // 未所属は制約の対象外
+      if (seen.has(ti)) return null;
+      seen.add(ti);
+    }
+  }
+  return mem.slice().sort((a, b) => a - b);
+}
+// 「前回と同じ」: 直前の試合と同じ顔ぶれを一括で選ぶ（毎回同じメンバーのときの近道）
+function selectSameAsLast() {
+  const mem = lastRoundMembers(sheetCtx);
+  if (!mem) return;
+  captureSheetValues(); // 入力途中の値は保持する
+  sheetSelected = mem;
+  renderSheetMembers();
+}
 function renderSheetMembers() {
   const s = sheetCtx.settings;
   // チーム戦はチームA→B…の順に並べ、名前の前に所属チームの色ドットを付ける
@@ -4434,6 +4464,12 @@ function renderSheetMembers() {
     `<button type="button" class="sel-chip${sheetSelected.includes(i) ? ' on' : ''}" onclick="toggleSheetMember(${i})">${teamDotHtml(s, i)}${esc(s.playerNames[i])}</button>`
   ).join('');
   document.getElementById('sheet-members-count').textContent = `（${sheetSelected.length}/${s.numPlayers}人）`;
+  // 「前回と同じ」は新規入力のときだけ（修正中の「前回」は最後の試合を指してしまい意味がずれる）。
+  // 直前の試合があって、いまの選択と違うときだけ出す（押しても何も変わらない状態では隠す）
+  const same = editingIndex < 0 ? lastRoundMembers(sheetCtx) : null;
+  const btn = document.getElementById('sheet-same-btn');
+  const already = same && same.length === sheetSelected.length && same.every((m, k) => m === sheetSelected[k]);
+  btn.style.display = (same && !already) ? 'inline-block' : 'none';
   renderSheetInputs();
 }
 function toggleSheetMember(i) {
@@ -4619,10 +4655,13 @@ function updateTotal() {
 }
 function autoFill() {
   const n = sheetCtx.settings.numPlayers;
+  // 対局メンバーが揃うまで入力欄自体が無い（未選択で開く仕様）。ボタンはdisabledだが念のため弾く
+  if (sheetOrder.length !== n) return;
   const expected = sheetCtx.settings.startPoints * n;
   let filledSum = 0, emptyIdx = -1;
   for (let i = 0; i < n; i++) {
     const el = document.getElementById('si-' + i);
+    if (!el) return;
     if (el.value === '') emptyIdx = i; else filledSum += Number(el.value) * 100;
   }
   if (emptyIdx < 0) return;
@@ -5255,10 +5294,16 @@ function restoreDeletedHistory(g, tag) {
 }
 // ---- ホーム画面に追加の案内 ----
 // すでにホーム画面から起動している（standalone表示）なら案内は出さない
+// ホーム画面から起動しているか。端末・OSによって当たる条件が違うので、分かっている全部を見る。
+// **この判定は外れることがある前提**で使うこと（外れても詰まないよう、引き継ぎの入り口は
+// 判定に関係なく必ず出す＝renderRecentGames側で担保している）
 function isStandaloneApp() {
   try {
-    return (window.matchMedia && matchMedia('(display-mode: standalone)').matches)
-      || window.navigator.standalone === true; // iOS Safariの独自プロパティ
+    if (window.navigator.standalone === true) return true;            // iOS Safari独自
+    if (document.referrer.startsWith('android-app://')) return true;  // Androidのアプリ起動
+    // display-modeはmanifestのdisplay/display_overrideやOSによってstandalone以外にもなる
+    return ['standalone', 'minimal-ui', 'fullscreen', 'window-controls-overlay']
+      .some(m => window.matchMedia && matchMedia(`(display-mode: ${m})`).matches);
   } catch (e) { return false; }
 }
 function showInstallHelp() {
