@@ -182,6 +182,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
 .info-card p, .info-card li { font-size: 15px; color: #444; }
 .info-card ol, .info-card ul { padding-left: 20px; }
+/* 読みものリスト: タイトル1行＋説明1行。カード内で罫線区切り（アイコンや画像は置かず軽く保つ） */
+.read-list { list-style: none; padding-left: 0 !important; margin: 0; }
+.read-list li { border-top: 1px solid #eef3f2; padding: 13px 0; }
+.read-list li:first-child { border-top: none; padding-top: 4px; }
+.read-list a { display: block; color: #177083; font-weight: 700; font-size: 15px; text-decoration: none; line-height: 1.6; }
+.read-list a:hover { text-decoration: underline; }
+.read-list .rl-desc { display: block; color: #667571; font-weight: 400; font-size: 13px; margin-top: 3px; line-height: 1.7; }
+.read-more-link { display: block; text-align: center; margin-top: 16px; color: #177083; font-size: 14px; font-weight: 700; text-decoration: none; }
 
 /* 使い方（Walica風: スマホ画面イラスト＋短い説明。カードにはせずシンプルに置く） */
 .howto { padding: 14px 2px 4px; line-height: 1.9; }
@@ -673,7 +681,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="howto-step">
         <h3>1. グループを作る</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">グループ名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">まじゃすこ学園サッカー部</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">試合形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><rect x="30" y="265" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="281" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="265" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="281" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">ゲーム名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">まじゃすこ学園サッカー部</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">試合形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><rect x="30" y="265" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="281" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="265" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="281" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
         <p>ゲーム名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
       </div>
 
@@ -852,6 +860,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </section>
 
   <div class="home-content">
+
+    <div class="info-card">
+      <h2>麻雀のスコア記録を、もっと詳しく</h2>
+      <p style="margin-bottom:14px">仲間内のセット麻雀で長く集計係をしてきた運営者むにぃが、ルールの決め方から点数が合わないときの対処まで書いています。</p>
+      <ul class="read-list">
+        <li><a href="score-basics.html">麻雀のスコア計算の基本（初心者向け）<span class="rl-desc">素点・ウマ・オカとは何か。4人分のスコアを実際に計算する手順つき。</span></a></li>
+        <li><a href="blog-score-examples.html">スコア計算 実例12パターン<span class="rl-desc">同点・トビ・三麻・チョンボ罰符まで、途中式を省略せず全部計算しました。</span></a></li>
+        <li><a href="blog-house-rules.html">セット麻雀のルールの決め方<span class="rl-desc">持ち点・返し点・ウマ・同点の扱いなど、打つ前に決める10項目のチェックリスト。</span></a></li>
+        <li><a href="blog-score-mismatch.html">点数が合わないときのチェックリスト<span class="rl-desc">ズレ幅から原因を特定する方法。1,000点足りないなら、まず場の供託を疑います。</span></a></li>
+        <li><a href="blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方<span class="rl-desc">抜け番の回し方と、試合数が違う人同士の成績を公平に比べる方法。</span></a></li>
+        <li><a href="faq.html">よくある質問<span class="rl-desc">使い方・ルール設定・データの保存についての19の質問と答え。</span></a></li>
+      </ul>
+      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
+    </div>
 
     <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
 
