@@ -69,7 +69,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算がめんどうで『まじゃすこ』を作った話", "description": "対局後のスコア計算が面倒、紙のスコアシートは読みにくい、合計が合わない……。そんな不満から無料の麻雀スコア記録アプリ『まじゃすこ』を作りました。開発の経緯とこだわりを紹介します。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-07-06", "dateModified": "2026-07-13", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-why-majasco.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算がめんどうで『まじゃすこ』を作った話", "description": "対局後のスコア計算が面倒、紙のスコアシートは読みにくい、合計が合わない……。そんな不満から無料の麻雀スコア記録アプリ『まじゃすこ』を作りました。開発の経緯とこだわりを紹介します。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-07-06", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-why-majasco.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -85,7 +85,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="post-layout">
 <article class="blog-post">
   <h1>麻雀のスコア計算がめんどうで『まじゃすこ』を作った話</h1>
-  <p class="post-meta">2026.07.06</p>
+  <p class="post-meta">2026.07.06<span style="margin-left:8px">（2026.08.25 更新）</span></p>
 
   <div class="post-illust" aria-hidden="true"><svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" role="img"><circle cx="170" cy="76" r="62" fill="#E4F3EC"/><path d="M272 21 Q274 28 281 30 Q274 32 272 39 Q270 32 263 30 Q270 28 272 21 Z" fill="#177083"/><path d="M70 117 Q71.5 122.5 77 124 Q71.5 125.5 70 131 Q68.5 125.5 63 124 Q68.5 122.5 70 117 Z" fill="#E75620"/><g fill="#9fc3bd"><circle cx="88" cy="58" r="11"/><path d="M70 92 Q88 70 106 92 Z"/></g><g fill="#9fc3bd"><circle cx="252" cy="92" r="11"/><path d="M234 126 Q252 104 270 126 Z"/></g><g><rect x="140" y="10" width="60" height="132" rx="11" fill="#1f2a28"/><rect x="143" y="13" width="54" height="126" rx="8" fill="#ffffff"/><rect x="162" y="17" width="16" height="4" rx="2" fill="#1f2a28"/><rect x="148" y="30" width="40" height="22" rx="8" fill="#177083"/><path d="M154 38 h24 M154 44 h16" stroke="#cfe9ef" stroke-width="2.5" stroke-linecap="round"/><rect x="152" y="60" width="40" height="18" rx="8" fill="#f0f0f0"/><path d="M158 69 h22" stroke="#9aa8a4" stroke-width="2.5" stroke-linecap="round"/><rect x="148" y="86" width="40" height="22" rx="8" fill="#177083"/><path d="M154 94 h24 M154 100 h18" stroke="#cfe9ef" stroke-width="2.5" stroke-linecap="round"/><rect x="148" y="116" width="32" height="12" rx="6" fill="#f2f2f2"/><circle cx="188" cy="122" r="7" fill="#177083"/></g><path d="M208 30 a16 16 0 0 1 12 15" stroke="#E75620" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M213 17 a28 28 0 0 1 21 25" stroke="#E75620" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>
 
@@ -156,6 +156,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>まじゃすこは、企画からデザイン、開発、この記事の執筆まで、ひとりでやっています。日中は別の仕事をしているので、開発は主に夜と週末。最近はAIのコーディング支援ツールを相棒に、思いついた改善をその日のうちに形にする、というスタイルに落ち着きました。開発の試行錯誤は<a href="https://www.threads.net/@munii_dev" target="_blank" rel="noopener">Threads（@munii_dev）</a>で発信しているので、個人開発に興味のある方はのぞいてみてください。</p>
   <p>ちなみに、そもそもなぜ私がスコア計算にこだわるのかは、8年間集計係を務めた失敗の歴史に理由があります。<a href="blog-shukei-gakari.html">麻雀の集計係を8年やってわかった、手書きスコア記録の限界</a>に赤裸々に書いたので、集計係経験者はぜひ。</p>
   <p>ひとり開発の良いところは、ユーザーの声との距離が近いことです。<a href="/contact.html">お問い合わせフォーム</a>に届いた要望は全部自分で読んでいますし、良いアイデアは数日でアプリに反映されることもあります。「こういう卓で使いたいのに、ここが足りない」があれば、ぜひ気軽に送ってください。</p>
+
+  <!-- ADDED-DEPTH -->
+  <h2>「作らない」と決めた4つのこと</h2>
+  <p>公開してから、同じ質問を何度も受け取りました。「なぜ会員登録がないのか」「なぜアプリストアに出さないのか」。せっかくなので、開発時にどういう判断でこの形にしたのかを、開発者本人として書き残しておきます。まじゃすこには、機能を足すのと同じだけ時間をかけて<span class="hl">「作らない」と決めたもの</span>が4つあります。どれも出発点は、仲間内の卓で集計係をしていたときに実際に困ったことです。そして、どの判断にも捨てたものがあります。そこも正直に書きます。</p>
+
+  <table>
+    <thead>
+      <tr><th>決めたこと</th><th>理由になった原体験</th><th>捨てたもの</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>会員登録を作らない</td><td>その日だけの助っ人が登録で止まる</td><td>個人の通算成績・復旧手段</td></tr>
+      <tr><td>インストールを求めない</td><td>卓が立つ直前にストアで詰まる人が出る</td><td>通知・電波が弱い場所での強さ</td></tr>
+      <tr><td>URLを知っている人だけが見る</td><td>身内のスコアを検索に出したくない</td><td>厳密なアクセス制御</td></tr>
+      <tr><td>1台に閉じない共有にする</td><td>集計係が席を立つと記録が止まる</td><td>編集権限の管理</td></tr>
+    </tbody>
+  </table>
+
+  <h3>1. 会員登録を作らない</h3>
+  <p>集まった全員が同じ数字を見ている状態に、何秒でたどり着けるか。集計係をしていていちばん効いたのはここでした。メンバーには、その日だけの助っ人や、麻雀のアプリを一切入れていない人が必ず混じります。そこで「まずアカウントを作って」と言った瞬間に、たいてい誰かひとりが止まります。止まったひとりを待つくらいなら紙でいいか、となって結局ペンに戻る。これを何度も見てきたので、登録は最初から作りませんでした。代わりに捨てたのは、<strong>個人の通算成績と復旧手段</strong>です。誰が誰なのかをこちらが持っていないので、「あなたの生涯成績」のような横断的な集計は作れません。URLを失えば戻る道もありません。便利さと引き換えに、この2つは諦めています。</p>
+
+  <h3>2. インストールを求めない</h3>
+  <p>「今から打つ」という場でストアを開かせると、容量が足りない、端末が古い、ストアのパスワードを思い出せない、と必ず何かが起きます。私の周りでは、ほぼ毎回誰かが引っかかっていました。ブラウザで開くだけなら、URLを送ってから全員の画面が揃うまでが圧倒的に早い。ここは迷わず決めました。捨てたのは<strong>通知と、電波が弱い場所での強さ</strong>です。地下の個室や電波の届きにくい部屋だと、通信が細ったときに読み込みを待たされることがあります。ここは今も弱点で、そういう会場では入力担当だけでも電波の入る席に座ってもらうようお願いしています。</p>
+
+  <h3>3. URLを知っている人だけが見られる</h3>
+  <p>招待して承認して、という仕組みを作れば厳密にはなります。ただ、それは卓が立つ速さに間に合いません。かといって、仲間内のスコアが検索で出てくるのも違う。そこで「公開ランキング」でも「招待承認」でもなく、URLを知っている人だけ、という真ん中に置きました。捨てたのは<strong>厳密なアクセス制御</strong>です。URLが外に出れば、その人も中身を見られます。SNSにそのまま貼らない、という運用の約束に頼った設計です。裏返すと、途中で帰った人にあとから結果を見せるのはURLを送るだけで済みます。</p>
+
+  <h3>4. 1台に閉じない共有にする</h3>
+  <p>集計係のしんどさの正体は、計算そのものより<span class="hl">「自分だけが数字を持っている」こと</span>だと思っています。席を立つと記録が止まる、確認の質問が全部自分に飛んでくる、途中経過を聞かれるたびに手が止まる。全員の画面に同じ数字が出ていれば、入力ミスはその場で誰かが気づきます。共有は便利機能というより、<strong>相互チェックの仕組み</strong>として入れました。捨てたのは編集権限の管理です。全員が見られるということは全員が直せるということで、うっかり書き換わることもあります。速さを優先して、権限のしくみは作りませんでした。</p>
+
+  <h2>捨てたものを、運用でどう埋めているか</h2>
+  <p>設計で諦めた部分は、使い方の側でかなり埋められます。私のグループで落ち着いた運用はこの4つです。</p>
+  <ul>
+    <li><strong>URLはグループのノートに固定する。</strong>ブラウザのブックマークは機種変更で消えます。会員登録がない以上、URLが記録への唯一の入り口なので、消えない場所に置いておくのがいちばん大事です。</li>
+    <li><strong>入力は1人、読み上げは別の人。</strong>全員が入力できる作りですが、実際には担当を決めたほうが事故が減ります。合わなくなったときの追い方は<a href="/blog-score-mismatch.html">点数が合わないときのチェックリスト</a>にまとめています。</li>
+    <li><strong>ルールは打つ前に決めて、URLは1本にする。</strong>途中でウマや細かい扱いを変えると、記録の意味が変わってしまいます。決めておく項目は<a href="/blog-house-rules.html">打つ前に決める10項目</a>が目安になります。</li>
+    <li><strong>長く残したい記録はCSVで手元に。</strong>通算成績を持てない設計なので、年間のランキングを作りたい人は、書き出したものを自分で持っておくのが確実です。</li>
+  </ul>
+  <p>この4つの方針は、公開から今まで一度も変えていません。使ってみて足りないところが見つかったら、遠慮なく教えてください。</p>
+
+  <h2>よくある質問</h2>
+
+  <h3>Q. 会員登録がないと、記録はどこに紐づいているのですか？</h3>
+  <p>対局グループごとのURLに紐づいています。人ではなくURLが記録の入り口だと考えてください。だから同じURLを開けば、別の端末でも、何日空いても同じ記録の続きから入力できます。逆に言えば、URLを全員が見失うと戻れません。グループのノートに貼る、幹事だけでなく数人が控えておく、といった保険をおすすめします。</p>
+
+  <h3>Q. URLを他人に知られたら、見られたり書き換えられたりしますか？</h3>
+  <p>はい、見られますし、書き換えもできます。ここは隠さず書いておきます。厳密な制限をかけるより、卓が立つ速さを優先した結果です。だから公開の場に貼るのは避けてください。外の人に結果だけ見せたいときは、画面を撮ったものか書き出したデータを渡すほうが安全です。</p>
+
+  <h3>Q. 途中参加や途中抜けのメンバーがいても大丈夫ですか？</h3>
+  <p>問題ありません。URLを送れば途中からでも同じ記録に入れますし、先に帰った人もあとから結果を見られます。半荘ごとに打つ人が入れ替わる会の回し方は<a href="/blog-mawashi-uchi.html">5人以上での回し方</a>にまとめてあるので、大人数の会の前に目を通してもらえると準備が早くなります。</p>
+
 
   <h2>おわりに</h2>
   <p>まじゃすこがやりたいことは、たったひとつ。<span class="hl">あなたの麻雀の時間を、まるごと麻雀に返すこと</span>です。</p>
