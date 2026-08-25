@@ -19,6 +19,18 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-score-examples.html', cat: 'mahjong', date: '2026.08.25', tag: 'スコア計算入門', recommended: true,
+    title: '麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた',
+    desc: 'ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、スコア倍率まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。' },
+  { url: '/blog-house-rules.html', cat: 'mahjong', date: '2026.08.25', tag: '遊び方ガイド', tagStyle: 'orange', recommended: true,
+    title: 'セット麻雀のルールの決め方｜打ち始める前に決める10項目チェックリスト',
+    desc: '仲間内の麻雀で揉めるのは、始まる前に決めていなかったことが原因です。持ち点・返し点・ウマ・同点の扱い・終了時の供託など、打ち始める前に決めるべき10項目を判断材料つきでまとめました。' },
+  { url: '/blog-score-mismatch.html', cat: 'mahjong', date: '2026.08.25', tag: 'スコア計算入門',
+    title: '麻雀の点数が合わないときのチェックリスト｜集計係が使う原因の切り分け方',
+    desc: '半荘の点棒の合計が合わない、スコアの合計が0にならない。そんなときに上から順に潰していける実践チェックリストです。ズレ幅から原因を特定する方法と、二度と起こさないための予防策をまとめました。' },
+  { url: '/blog-mawashi-uchi.html', cat: 'mahjong', date: '2026.08.25', tag: '遊び方ガイド', tagStyle: 'orange',
+    title: '5人以上で麻雀を打つときの回し方｜抜け番の決め方と成績が不公平にならない見方',
+    desc: '5人・6人・7人と卓が1つのときの抜け番の回し方を、人数別の一巡表つきで解説します。試合数が違う人同士の成績をどう比べるか（合計・平均・平均着順の使い分け）まで扱います。' },
   { url: '/news/hikitsugi-url.html', cat: 'news', date: '2026.08.07', tag: '新機能',
     title: '機種変更しても履歴が引き継げる「引き継ぎURL」を追加しました',
     desc: '「引き継ぎURL」を作っておけば、機種変更やブラウザの変更をしてもURLを開くだけで履歴がまるごと戻ります。会員登録は不要。あわせて、うっかり削除を「元に戻す」機能も追加しました。' },
@@ -37,7 +49,7 @@ const BLOG_POSTS = [
   { url: '/blog-naki.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説',
     title: '麻雀の鳴き（ポン・チー・カン）とは？基本ルールと使いどころを解説',
     desc: 'ポン・チー・カンの違い、誰から鳴けるのか、鳴きのメリット・デメリットと「鳴いていい場面」の考え方を初心者向けに整理します。' },
-  { url: '/blog-dora.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説', recommended: true,
+  { url: '/blog-dora.html', cat: 'mahjong', date: '2026.07.10', tag: 'ルール解説',
     title: '麻雀のドラとは？裏ドラ・カンドラ・赤ドラの仕組みをやさしく解説',
     desc: 'ドラ表示牌の見方から、裏ドラ・カンドラ・赤ドラの違い、「ドラは役ではない」の意味まで、点数が伸びる仕組みを解説します。' },
   { url: '/blog-starter-kit.html', cat: 'mahjong', date: '2026.07.08', tag: '準備ガイド', tagStyle: 'orange',
@@ -55,7 +67,7 @@ const BLOG_POSTS = [
   { url: '/blog-hai-types.html', cat: 'mahjong', date: '2026.07.08', tag: '牌の基礎',
     title: '麻雀牌の種類と名前一覧｜萬子・索子・筒子・字牌をやさしく解説',
     desc: '数牌（萬子・索子・筒子）と字牌（風牌・三元牌）の違いを、見分け方のコツつきで初心者向けに紹介します。' },
-  { url: '/blog-app-guide.html', cat: 'mahjong', date: '2026.07.07', tag: 'アプリの選び方', tagStyle: 'orange', recommended: true,
+  { url: '/blog-app-guide.html', cat: 'mahjong', date: '2026.07.07', tag: 'アプリの選び方', tagStyle: 'orange',
     title: '麻雀のスコア記録アプリの選び方｜チェックすべき5つのポイント',
     desc: '共有できるか、ウマ・オカを自由に設定できるか、サンマに対応しているかなど、比較すべき5つの軸をまとめました。' },
   { url: '/blog-sanma-yonma.html', cat: 'mahjong', date: '2026.07.07', tag: 'ルール解説',
@@ -133,7 +145,7 @@ const BLOG_POSTS = [
         <a href="/terms.html">利用規約</a>
         <a href="/privacy.html">プライバシーポリシー</a>
         <a href="/about.html">運営者について</a>
-        <a href="https://forms.gle/YEFdzb9KQxHeesUq9" target="_blank" rel="noopener">お問い合わせ</a>
+        <a href="/contact.html">お問い合わせ</a>
         <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
         <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
       </div>

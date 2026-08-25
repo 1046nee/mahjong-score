@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KMRMGKKV');</script>
+<!-- End Google Tag Manager -->
+<meta name="google-adsense-account" content="ca-pub-9998035509478799">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9998035509478799"
+     crossorigin="anonymous"></script>
+<title>麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた | まじゃすこ</title>
+<meta name="description" content="ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、スコア倍率まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。">
+<link rel="canonical" href="https://majasco.jp/blog-score-examples.html">
+<link rel="alternate" type="application/rss+xml" title="まじゃすこ お知らせRSS" href="https://majasco.jp/news/feed.xml">
+<link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/favicon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#177083">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://majasco.jp/blog-score-examples.html">
+<meta property="og:site_name" content="まじゃすこ / majasco">
+<meta property="og:title" content="麻雀のスコア計算 実例12パターン｜同点・トビ・三麻まで全部計算">
+<meta property="og:description" content="ウマ・オカ込みのスコア計算を、途中式ごと12パターン。同点の山分け・トビ・三麻・チョンボ罰符まで、実際の数字で確認できます。">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:image" content="https://majasco.jp/assets/ogp2.png">
+<meta property="og:image:width" content="2100">
+<meta property="og:image:height" content="1103">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@majasco_jp">
+<meta name="twitter:image" content="https://majasco.jp/assets/ogp2.png">
+<meta name="twitter:title" content="麻雀のスコア計算 実例12パターン｜同点・トビ・三麻まで全部計算">
+<meta name="twitter:description" content="ウマ・オカ込みのスコア計算を、途中式ごと12パターン。同点の山分け・トビ・三麻・チョンボ罰符まで、実際の数字で確認できます。">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; background: #fff; color: #222; line-height: 1.95; -webkit-font-smoothing: antialiased; }
+
+.site-head { border-bottom: 1px solid #eee; }
+.site-head-inner { max-width: 680px; margin: 0 auto; padding: 14px 20px; }
+.brand { font-size: 16px; font-weight: 800; color: #177083; text-decoration: none; }
+
+.crumbs { max-width: 680px; margin: 0 auto; padding: 14px 20px 0; font-size: 12px; color: #999; }
+.crumbs a { color: #555; text-decoration: none; }
+
+.blog-post { max-width: 680px; margin: 0 auto; padding: 8px 20px 40px; }
+.blog-post h1 { font-size: 22px; font-weight: 800; line-height: 1.6; margin: 16px 0 6px; color: #222; }
+.post-meta { font-size: 12px; color: #999; margin-bottom: 28px; }
+.blog-post h2 { font-size: 18px; font-weight: 800; margin: 40px 0 14px; color: #177083; border-left: 5px solid #177083; padding-left: 12px; line-height: 1.5; }
+.blog-post h3 { font-size: 16px; font-weight: 700; margin: 26px 0 8px; color: #222; }
+.blog-post p { font-size: 15px; color: #222; margin-bottom: 18px; }
+.blog-post ul, .blog-post ol { margin: 0 0 18px; padding-left: 1.5em; }
+.blog-post li { font-size: 15px; color: #222; margin-bottom: 12px; line-height: 1.9; }
+.blog-post strong { font-weight: 700; color: #177083; }
+.blog-post .hl { color: #E75620; font-weight: 700; }
+.blog-post table { border-collapse: collapse; width: 100%; margin: 0 0 18px; font-size: 14px; }
+.blog-post th, .blog-post td { border: 1px solid #dbe5e2; padding: 8px 10px; text-align: left; }
+.blog-post th { background: #E4F3EC; color: #177083; font-weight: 700; }
+.blog-post .callout { background: #f4faf7; border: 1px solid #e2ece7; border-radius: 12px; padding: 14px 16px; margin: 0 0 18px; }
+.blog-post .callout p:last-child { margin-bottom: 0; }
+.blog-post .callout .c-ttl { font-size: 14px; font-weight: 800; color: #177083; margin-bottom: 6px; }
+
+.cta-wrap { text-align: center; margin-top: 40px; padding-top: 28px; border-top: 1px solid #eee; }
+.cta-wrap p { font-size: 14px; color: #222; margin-bottom: 16px; }
+.cta-link { display: inline-block; background: #E75620; color: #fff; text-decoration: none; font-weight: 700; font-size: 16px; border-radius: 8px; padding: 14px 28px; box-shadow: 0 5px 16px rgba(231,86,32,0.28); }
+
+.post-nav { max-width: 680px; margin: 0 auto; padding: 22px 20px 40px; }
+.post-nav a { color: #177083; font-weight: 700; font-size: 14px; text-decoration: none; }
+
+.site-foot { border-top: 1px solid #eee; text-align: center; font-size: 12px; padding: 24px 16px 32px; color: #999; }
+.site-foot a { color: #555; margin: 0 8px; }
+.site-foot .links { margin-bottom: 8px; }
+</style>
+<link rel="stylesheet" href="/assets/blog.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、スコア倍率まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-08-25", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KMRMGKKV"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<header class="site-head">
+  <div class="site-head-inner"><a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:32px;vertical-align:middle"></a></div>
+</header>
+
+<nav class="crumbs"><a href="/">トップ</a> ＞ <a href="/blog.html">ブログ</a> ＞ <a href="/mahjong/">麻雀攻略</a> ＞ スコア計算の実例</nav>
+
+<div class="post-layout">
+<article class="blog-post">
+  <h1>麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた</h1>
+  <p class="post-meta">2026.08.25</p>
+
+  <div class="post-illust" aria-hidden="true"><svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" role="img"><circle cx="170" cy="76" r="62" fill="#E4F3EC"/><g><rect x="140" y="26" width="76" height="100" rx="11" fill="#dfe9e6"/><rect x="136" y="22" width="76" height="100" rx="11" fill="#177083"/><rect x="145" y="31" width="58" height="24" rx="4" fill="#ffffff"/><text x="197" y="48" text-anchor="end" font-size="13" font-weight="700" fill="#177083" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif">+61.3</text><g fill="#9fc3bd"><rect x="145" y="63" width="15" height="12" rx="3"/><rect x="166" y="63" width="15" height="12" rx="3"/><rect x="187" y="63" width="16" height="12" rx="3"/><rect x="145" y="80" width="15" height="12" rx="3"/><rect x="166" y="80" width="15" height="12" rx="3"/><rect x="187" y="80" width="16" height="12" rx="3"/><rect x="145" y="97" width="36" height="12" rx="3"/></g><rect x="187" y="97" width="16" height="12" rx="3" fill="#E75620"/></g><g stroke="#9fc3bd" stroke-width="3" stroke-linecap="round"><path d="M40 44 h56"/><path d="M40 62 h40"/><path d="M40 80 h56"/><path d="M40 98 h34"/><path d="M244 44 h56"/><path d="M244 62 h40"/><path d="M244 80 h56"/><path d="M244 98 h48"/></g><circle cx="104" cy="44" r="4" fill="#177083"/><circle cx="104" cy="80" r="4" fill="#177083"/><circle cx="236" cy="62" r="4" fill="#E75620"/><path d="M112 118 Q113.8 124.5 120 126 Q113.8 127.5 112 134 Q110.2 127.5 104 126 Q110.2 124.5 112 118 Z" fill="#E75620"/><path d="M232 16 Q234.4 25 243 27.5 Q234.4 30 232 39 Q229.6 30 221 27.5 Q229.6 25 232 16 Z" fill="#177083"/></svg></div>
+
+  <p>「ウマとオカの計算は、記事を読めば理屈はわかる。でも自分の卓の数字を当てはめると、とたんに自信がなくなる」——集計係をやっていると、これが一番よく聞く声です。理屈の説明はどこにでもありますが、<strong>実際の数字を最後まで計算しきった例</strong>はあまり見かけません。</p>
+  <p>そこでこの記事では、セット麻雀で実際に起きる場面を12パターン用意して、<strong>持ち点からスコアが出るまでの途中式を全部そのまま載せます</strong>。同点・トビ・三麻・チョンボ罰符といった「例外っぽい場面」も省略しません。掲載している数字はすべて、まじゃすこの計算ロジック（自動テストで検証しているもの）と同じ式で別途プログラムを書いて再計算し、1件ずつ突き合わせて確認しています。</p>
+
+  <div class="ad-slot" data-ad="article_top" style="margin:6px 0 10px"></div>
+
+  <h2>計算の型：3ステップだけ覚えれば全部同じ</h2>
+  <p>どのパターンも、やることは変わりません。</p>
+  <table>
+    <tbody>
+      <tr><th>① 素点</th><td>（自分の持ち点 − 返し点）÷ 1,000</td></tr>
+      <tr><th>② ウマ</th><td>順位に応じた加減点を足す（例：10-30なら 1位+30／2位+10／3位−10／4位−30）</td></tr>
+      <tr><th>③ オカ</th><td>（返し点 − 持ち点）× 人数 ÷ 1,000 を、1位だけが受け取る</td></tr>
+    </tbody>
+  </table>
+  <p>最後に<strong>全員のスコアを足して0になるか</strong>を確認します。これがこの記事で一番お伝えしたいことで、<span class="hl">0にならなければ、必ずどこかが間違っています</span>。理屈がゼロサムだからです（例外は後述のチョンボ罰符だけ）。用語そのものがあやしい方は、先に<a href="/blog-uma-oka.html">ウマ・オカとは？初心者向けスコア計算入門</a>を読むと、以下がぐっと追いやすくなります。</p>
+
+  <div class="callout">
+    <div class="c-ttl">この記事の共通設定</div>
+    <p>特に断りがなければ <strong>四麻・25,000点持ち・30,000点返し・ウマ10-30</strong> です。この場合のオカは（30,000 − 25,000）× 4 ÷ 1,000 = <strong>+20.0pts</strong> で固定になります。</p>
+  </div>
+
+  <h2>基本編：まずは標準的な1半荘</h2>
+
+  <h3>パターン1｜ごく普通の四麻</h3>
+  <p>終了時の持ち点が A 41,300／B 28,200／C 22,500／D 8,000 だったとします。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>① 素点</th><th>② ウマ</th><th>③ オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>41,300</td><td>+11.3</td><td>+30</td><td>+20.0</td><td><strong>+61.3</strong></td></tr>
+      <tr><td>2位 B</td><td>28,200</td><td>−1.8</td><td>+10</td><td>—</td><td><strong>+8.2</strong></td></tr>
+      <tr><td>3位 C</td><td>22,500</td><td>−7.5</td><td>−10</td><td>—</td><td><strong>−17.5</strong></td></tr>
+      <tr><td>4位 D</td><td>8,000</td><td>−22.0</td><td>−30</td><td>—</td><td><strong>−52.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>61.3 + 8.2 − 17.5 − 52.0 = <strong>0.0</strong>。合計が0なので、この計算は正しいと確認できました。持ち点の合計も 100,000点＝25,000×4人 でぴったり合っています。</p>
+
+  <h3>パターン2｜ウマを軽くする（5-10）</h3>
+  <p>同じ持ち点のまま、ウマだけ「5-10」（1位+10／2位+5／3位−5／4位−10）に変えると、こうなります。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>ウマ10-30</th><th>ウマ5-10</th><th>差</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>41,300</td><td>+61.3</td><td><strong>+41.3</strong></td><td>−20.0</td></tr>
+      <tr><td>2位 B</td><td>28,200</td><td>+8.2</td><td><strong>+3.2</strong></td><td>−5.0</td></tr>
+      <tr><td>3位 C</td><td>22,500</td><td>−17.5</td><td><strong>−12.5</strong></td><td>+5.0</td></tr>
+      <tr><td>4位 D</td><td>8,000</td><td>−52.0</td><td><strong>−32.0</strong></td><td>+20.0</td></tr>
+    </tbody>
+  </table>
+  <p>ここが「ウマをどうするか」を決めるときの判断材料になります。ウマが重いほど<strong>素点の差より順位そのものが効く</strong>ゲームになり、ラス回避の価値が跳ね上がります。逆にウマを軽くすると、たくさんあがって点を稼いだ人が報われやすくなります。初心者が混ざる会で「4位でも大惨事にならない」空気を作りたいなら、5-10や5-15は現実的な選択肢です。</p>
+
+  <h3>パターン3｜ウマなし（オカだけ）</h3>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>41,300</td><td>+11.3</td><td>+20.0</td><td><strong>+31.3</strong></td></tr>
+      <tr><td>2位 B</td><td>28,200</td><td>−1.8</td><td>—</td><td><strong>−1.8</strong></td></tr>
+      <tr><td>3位 C</td><td>22,500</td><td>−7.5</td><td>—</td><td><strong>−7.5</strong></td></tr>
+      <tr><td>4位 D</td><td>8,000</td><td>−22.0</td><td>—</td><td><strong>−22.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>ウマがないと、2位以下は素点がそのままスコアになります。「トップだけ少し得をする」くらいの、いちばん素朴なルールです。</p>
+
+  <h3>パターン4｜オカなし（30,000点持ちの30,000点返し）</h3>
+  <p>持ち点と返し点を同じにすると、オカは（30,000 − 30,000）×4 ÷ 1,000 = 0 になり、消えます。持ち点が A 46,300／B 33,200／C 27,500／D 13,000 の場合：</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>46,300</td><td>+16.3</td><td>+30</td><td><strong>+46.3</strong></td></tr>
+      <tr><td>2位 B</td><td>33,200</td><td>+3.2</td><td>+10</td><td><strong>+13.2</strong></td></tr>
+      <tr><td>3位 C</td><td>27,500</td><td>−2.5</td><td>−10</td><td><strong>−12.5</strong></td></tr>
+      <tr><td>4位 D</td><td>13,000</td><td>−17.0</td><td>−30</td><td><strong>−47.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>「オカって結局なに？」という質問には、この2パターンを見比べてもらうのが一番早いと思っています。<strong>オカは、持ち点と返し点の差を全員から集めて、トップに丸ごと渡す仕組み</strong>。だから持ち点＝返し点にすると、集める原資がなくなって存在ごと消えます。</p>
+
+  <h2>同点編：ここで手が止まる人が一番多い</h2>
+  <p>集計係として断言しますが、<strong>手計算が止まるのはだいたい同点のとき</strong>です。「順位はどっちが上？」「ウマはどう分ける？」でその場の空気が止まります。公平で説明しやすいのは、<span class="hl">同点は同順位とし、その順位帯のウマとオカを人数で均等に分ける</span>やり方です。以下はすべてその方式で計算しています。</p>
+
+  <h3>パターン5｜1位が同点2人</h3>
+  <p>A 35,000／B 35,000／C 20,000／D 10,000。AとBは1位と2位を分け合うので、ウマは（+30 + 10）÷ 2 = +20 ずつ。オカ +20.0 も2人で割って +10.0 ずつです。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ（分配後）</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>35,000</td><td>+5.0</td><td>+20.0</td><td>+10.0</td><td><strong>+35.0</strong></td></tr>
+      <tr><td>1位 B</td><td>35,000</td><td>+5.0</td><td>+20.0</td><td>+10.0</td><td><strong>+35.0</strong></td></tr>
+      <tr><td>3位 C</td><td>20,000</td><td>−10.0</td><td>−10</td><td>—</td><td><strong>−20.0</strong></td></tr>
+      <tr><td>4位 D</td><td>10,000</td><td>−20.0</td><td>−30</td><td>—</td><td><strong>−50.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>合計は 35.0 + 35.0 − 20.0 − 50.0 = <strong>0.0</strong>。同点でもゼロサムは崩れません。<strong>3位のCが「2位」ではなく3位扱いになる</strong>点に注意してください（1位が2人いるので2位が空席になる）。ここを2位として+10を渡すと、合計が0からずれて破綻します。</p>
+
+  <h3>パターン6｜2位と3位が同点</h3>
+  <p>A 40,000／B 25,000／C 25,000／D 10,000。BとCで（+10 −10）÷ 2 = 0 ずつ。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>40,000</td><td>+10.0</td><td>+30</td><td>+20.0</td><td><strong>+60.0</strong></td></tr>
+      <tr><td>2位 B</td><td>25,000</td><td>−5.0</td><td>0.0</td><td>—</td><td><strong>−5.0</strong></td></tr>
+      <tr><td>2位 C</td><td>25,000</td><td>−5.0</td><td>0.0</td><td>—</td><td><strong>−5.0</strong></td></tr>
+      <tr><td>4位 D</td><td>10,000</td><td>−20.0</td><td>−30</td><td>—</td><td><strong>−50.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>ちょうど打ち消し合って、2人ともウマ0になりました。</p>
+
+  <h3>パターン7｜4人全員が同点</h3>
+  <p>A〜D全員 25,000点。素点は全員 −5.0。ウマは（30 + 10 − 10 − 30）÷ 4 = 0、オカ +20.0 は4人で割って +5.0 ずつ。</p>
+  <p>結果は <strong>全員 0.0</strong> です。−5.0 + 0 + 5.0 = 0.0。誰も得も損もしない、理屈どおりの答えになります。実戦ではまず起きませんが、「同点処理の式が正しいか」を確かめるにはいい検算になります。</p>
+
+  <h2>例外編：トビ・三麻・チョンボ</h2>
+
+  <h3>パターン8｜トビ（持ち点がマイナス）</h3>
+  <p>A 52,400／B 30,600／C 21,500／D −4,500。マイナスの持ち点でも、式はまったく変わりません。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>52,400</td><td>+22.4</td><td>+30</td><td>+20.0</td><td><strong>+72.4</strong></td></tr>
+      <tr><td>2位 B</td><td>30,600</td><td>+0.6</td><td>+10</td><td>—</td><td><strong>+10.6</strong></td></tr>
+      <tr><td>3位 C</td><td>21,500</td><td>−8.5</td><td>−10</td><td>—</td><td><strong>−18.5</strong></td></tr>
+      <tr><td>4位 D</td><td>−4,500</td><td>−34.5</td><td>−30</td><td>—</td><td><strong>−64.5</strong></td></tr>
+    </tbody>
+  </table>
+  <p>手計算でここを間違える人が多いのは、<strong>「−4,500 − 30,000」を「−4,500 + 30,000」と打ち間違える</strong>からです。マイナスの持ち点が出た半荘は、素点の符号だけ声に出して確認するくらいでちょうどいいと思います。なお、トビ賞（飛ばした人にボーナス）を採用しているグループは、ここまで計算した<em>あと</em>に別枠で足し引きします。素点・ウマ・オカの式には混ぜないでください。</p>
+
+  <h3>パターン9｜三麻（35,000点持ち・40,000点返し・ウマ15-0-15）</h3>
+  <p>三麻はオカの式の「人数」が3になります。（40,000 − 35,000）× 3 ÷ 1,000 = <strong>+15.0pts</strong>。持ち点は A 58,000／B 34,000／C 13,000。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>58,000</td><td>+18.0</td><td>+15</td><td>+15.0</td><td><strong>+48.0</strong></td></tr>
+      <tr><td>2位 B</td><td>34,000</td><td>−6.0</td><td>0</td><td>—</td><td><strong>−6.0</strong></td></tr>
+      <tr><td>3位 C</td><td>13,000</td><td>−27.0</td><td>−15</td><td>—</td><td><strong>−42.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>三麻のウマが「15-0-15」のように<strong>2位を0にして1位と3位を対称にする</strong>のは、こうすればウマの合計がきれいに0になるからです。四麻の10-30をそのまま3人に流用すると（30 + 10 − 10 = +30）合計が0にならず、集計が壊れます。三麻と四麻の違いは<a href="/blog-sanma-yonma.html">3人麻雀と4人麻雀の違い</a>にまとめています。</p>
+
+  <h3>パターン10｜三麻で2位・3位が同点</h3>
+  <p>A 59,000／B 23,000／C 23,000。BとCで（0 − 15）÷ 2 = −7.5 ずつ。</p>
+  <table>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>59,000</td><td>+19.0</td><td>+15</td><td>+15.0</td><td><strong>+49.0</strong></td></tr>
+      <tr><td>2位 B</td><td>23,000</td><td>−17.0</td><td>−7.5</td><td>—</td><td><strong>−24.5</strong></td></tr>
+      <tr><td>2位 C</td><td>23,000</td><td>−17.0</td><td>−7.5</td><td>—</td><td><strong>−24.5</strong></td></tr>
+    </tbody>
+  </table>
+  <p>合計 49.0 − 24.5 − 24.5 = <strong>0.0</strong>。0.5刻みの端数が出ますが、これは正しい姿です。「半端な数字が出た＝間違い」ではないので、無理に丸めないでください。</p>
+
+  <h3>パターン11｜チョンボ罰符あり（ここだけ合計が0にならない）</h3>
+  <p>パターン1と同じ持ち点で、Dがチョンボ（罰符 −20pts）した場合。</p>
+  <table>
+    <thead><tr><th>順位</th><th>スコア（罰符前）</th><th>罰符</th><th>最終スコア</th></tr></thead>
+    <tbody>
+      <tr><td>1位 A</td><td>+61.3</td><td>—</td><td><strong>+61.3</strong></td></tr>
+      <tr><td>2位 B</td><td>+8.2</td><td>—</td><td><strong>+8.2</strong></td></tr>
+      <tr><td>3位 C</td><td>−17.5</td><td>—</td><td><strong>−17.5</strong></td></tr>
+      <tr><td>4位 D</td><td>−52.0</td><td>−20.0</td><td><strong>−72.0</strong></td></tr>
+    </tbody>
+  </table>
+  <p>合計は <strong>−20.0</strong>。<span class="hl">この記事で唯一、合計が0にならないパターン</span>です。罰符を「他の3人に配る」のではなく「場から消す」方式だからで、ゼロサムをどうしても保ちたいグループは、罰符を3等分して他家に配るルールにしてください（−20を3人に配るなら各 +6.67 で端数が出るので、−30を3人に+10ずつ、のように<strong>人数で割り切れる額</strong>にしておくと後がラクです）。チョンボの扱いそのものは<a href="/blog-manner.html">麻雀のマナーとチョンボ</a>で解説しています。</p>
+
+  <h3>パターン12｜スコア倍率をかけた「スコア収支」</h3>
+  <p>スコア（pts）に倍率をかけて、bonus という単位で記録することもできます。パターン1の結果に ×100 をかけると：</p>
+  <table>
+    <tbody>
+      <tr><th>A</th><td>+61.3pts → <strong>+6,130bonus</strong></td></tr>
+      <tr><th>B</th><td>+8.2pts → <strong>+820bonus</strong></td></tr>
+      <tr><th>C</th><td>−17.5pts → <strong>−1,750bonus</strong></td></tr>
+      <tr><th>D</th><td>−52.0pts → <strong>−5,200bonus</strong></td></tr>
+    </tbody>
+  </table>
+  <p>単に一定の数を掛けるだけなので、<strong>合計が0になる性質はそのまま残ります</strong>。倍率をかけたあとの合計が0でなければ、倍率ではなく元のスコアが間違っています。</p>
+
+  <h2>手計算でつまずいたときの見どころ</h2>
+  <p>12パターンを並べてみると、間違いが起きる場所はかなり限られているとわかります。</p>
+  <table>
+    <thead><tr><th>症状</th><th>まず疑うところ</th></tr></thead>
+    <tbody>
+      <tr><td>合計が0にならない</td><td>持ち点の合計が「持ち点 × 人数」になっているか。供託のリーチ棒を場に残したまま数えていないか</td></tr>
+      <tr><td>合計が0にならない（同点あり）</td><td>同点で空席になった順位に、誰かのウマを渡していないか（パターン5参照）</td></tr>
+      <tr><td>1位だけ数字が大きすぎる／小さすぎる</td><td>オカを二重に足していないか、逆に足し忘れていないか</td></tr>
+      <tr><td>4位の数字がおかしい</td><td>マイナスの持ち点の引き算で符号を取り違えていないか（パターン8参照）</td></tr>
+      <tr><td>三麻で合計が合わない</td><td>四麻用のウマ（10-30など）をそのまま使っていないか（パターン9参照）</td></tr>
+    </tbody>
+  </table>
+  <p>原因の切り分けをもっと詳しくたどりたい場合は、<a href="/blog-score-mismatch.html">麻雀の点数が合わないときのチェックリスト</a>に、卓の上で使える順番でまとめてあります。</p>
+
+  <h2>よくある質問</h2>
+
+  <h3>Q. 素点の端数（100点単位）はどう扱う？</h3>
+  <p>そのまま小数で持つのが正解です。41,300点なら +11.3 で、+11 に丸めてはいけません。丸めた瞬間に合計が0からずれて、検算が使えなくなります。1,000点未満の端数が出るルール（一本場の積み棒など）でも同じで、<strong>最後まで小数のまま計算して、表示だけ小数第1位</strong>にするのが扱いやすいです。</p>
+
+  <h3>Q. 「五捨六入」で順位点をつけるルールを見たことがあるけれど？</h3>
+  <p>素点を整数に丸めてから順位点を足す方式（30,000点を基準に五捨六入する、など）を使うグループもあります。この記事の計算とは別のルール体系なので、混ぜないでください。どちらでも構いませんが、<strong>その日の全半荘で必ず統一する</strong>ことだけは守ってください。半荘ごとに方式が変わると、後から検算しても一致しなくなります。</p>
+
+  <h3>Q. 途中でメンバーが入れ替わる場合は？</h3>
+  <p>半荘は「その半荘に座っていた人の間で」ゼロサムになるので、半荘ごとに独立して計算すれば問題ありません。5人以上で抜け番を回す場合の集計は<a href="/blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方</a>で扱っています。</p>
+
+  <h3>Q. これを毎回やるのは正直しんどいのですが</h3>
+  <p>正直に言うと、私もそう思ってこのアプリを作りました。ここまでの12パターンはすべて、<a href="/">まじゃすこ</a>に表示点数を入れれば同じ答えが一瞬で出ます。同点の分配もトビも三麻も、場合分けを意識せずそのまま入力できます。手計算の練習として一度は通っておくと、アプリが出した数字を「正しいと確認できる」ようになるので、この記事はそのための下敷きとして使ってもらえたら嬉しいです。</p>
+
+  <div class="post-illust small" aria-hidden="true"><svg viewBox="0 0 340 84" xmlns="http://www.w3.org/2000/svg" role="img"><line x1="24" y1="42" x2="124" y2="42" stroke="#e2ece7" stroke-width="2"/><line x1="216" y1="42" x2="316" y2="42" stroke="#e2ece7" stroke-width="2"/><path d="M136 13 Q137.5 18.5 143 20 Q137.5 21.5 136 27 Q134.5 21.5 129 20 Q134.5 18.5 136 13 Z" fill="#E75620"/><path d="M206 58 Q207.3 62.7 212 64 Q207.3 65.3 206 70 Q204.7 65.3 200 64 Q204.7 62.7 206 58 Z" fill="#177083"/><g><rect x="152" y="8" width="36" height="68" rx="8" fill="#1f2a28"/><rect x="154.5" y="10.5" width="31" height="63" rx="6" fill="#ffffff"/><rect x="164" y="13" width="12" height="3" rx="1.5" fill="#1f2a28"/><circle cx="170" cy="52" r="11" fill="#E75620"/><path d="M165 52 l4 4 7 -8" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg></div>
+
+  <h2>まとめ</h2>
+  <ul>
+    <li>計算は<strong>素点 → ウマ → オカ</strong>の3ステップ。どのパターンでもこれは変わらない。</li>
+    <li><strong>全員のスコアの合計は0</strong>。0にならなければ必ずどこかが間違っている（唯一の例外はチョンボ罰符）。</li>
+    <li>同点は<strong>同順位にして、その順位帯のウマとオカを人数で割る</strong>。空席になった順位に誰かを入れない。</li>
+    <li>三麻は<strong>オカの人数が3</strong>、ウマは<strong>合計0になる形</strong>（15-0-15など）を使う。</li>
+    <li>マイナスの持ち点は<strong>符号だけ声に出して確認</strong>。ここが手計算最大の落とし穴。</li>
+  </ul>
+
+  <div class="post-illust small" aria-hidden="true"><svg viewBox="0 0 340 90" xmlns="http://www.w3.org/2000/svg" role="img"><circle cx="170" cy="46" r="40" fill="#E4F3EC"/><path d="M148 22 H192 V42 A22 20 0 0 1 148 42 Z" fill="#177083"/><path d="M148 26 H136 A14 13 0 0 0 150 44" stroke="#9fc3bd" stroke-width="4" fill="none"/><path d="M192 26 H204 A14 13 0 0 1 190 44" stroke="#9fc3bd" stroke-width="4" fill="none"/><rect x="164" y="60" width="12" height="9" fill="#177083"/><rect x="150" y="69" width="40" height="8" rx="3" fill="#9fc3bd"/><circle cx="170" cy="34" r="6" fill="#E4F3EC"/><path d="M240 18 Q242.4 27 251 29.5 Q242.4 32 240 41 Q237.6 32 229 29.5 Q237.6 27 240 18 Z" fill="#E75620"/><path d="M108 52 Q109.8 58.5 116 60 Q109.8 61.5 108 68 Q106.2 61.5 100 60 Q106.2 58.5 108 52 Z" fill="#177083"/><circle cx="222" cy="70" r="3" fill="#9fc3bd"/><circle cx="122" cy="26" r="3.5" fill="#E75620"/></svg></div>
+  <div class="ad-slot" data-ad="article_bottom" style="margin:28px 0 0"></div>
+
+  <div class="cta-wrap">
+    <p>この12パターン、全部アプリなら一瞬で。</p>
+    <a href="/" class="cta-link">まじゃすこを無料で使ってみる</a>
+  </div>
+</article>
+<aside class="side" data-sidebar></aside>
+</div>
+
+<nav class="post-nav"><a href="blog.html">‹ ブログ一覧に戻る</a></nav>
+
+<footer class="site-foot">
+  <div class="links">
+    <a href="/">トップ</a>
+    <a href="/score-basics.html">スコア計算の基本</a>
+    <a href="/faq.html">よくある質問</a>
+    <a href="/blog.html">ブログ</a>
+    <a href="/news/">お知らせ</a>
+    <a href="/news/feed.xml">お知らせRSS</a>
+    <a href="/terms.html">利用規約</a>
+    <a href="/privacy.html">プライバシーポリシー</a>
+    <a href="/about.html">運営者について</a>
+    <a href="/contact.html">お問い合わせ</a>
+    <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
+    <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
+  </div>
+  <div>© 2026 まじゃすこ</div>
+</footer>
+<script src="/assets/blog-site.js" defer></script>
+<script src="/assets/ads.js" defer></script>
+</body>
+</html>
