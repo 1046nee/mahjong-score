@@ -30,6 +30,11 @@
 - **数字を書くときは必ず検算する**。スコア計算の例はindex.htmlの calcScores / rankGroups / applyChombo を
   別実装で再現して突き合わせる。符・翻の点数は 基本点=符×2の(翻+2)乗 から計算する
 - **根拠のない確率・統計値は書かない**（「〇%」「〇回に1回」）。日付入りの作り話エピソードも禁止
+- **記事に書く既定値はアプリのデフォルトとそろえる**。三麻は**30,000点持ち／35,000点返し**
+  （index.htmlの`applyMode(3)`とクイックスタートの値）。四麻は25,000／30,000。
+  2026-08-26まで記事側だけ35,000／40,000と書いており、読んでからアプリを開くと数字が違う状態だった。
+  アプリ側の初期値を変えたら、この2つの数字を使っている記事（sanma-yonma / house-rules / score-examples /
+  score-mismatch / uma-oka / riichi / score-basics）も一緒に直す
 - 著者ブロックはblog-site.jsがCTA直前に自動挿入（個別HTMLへの記載不要）
 - Article JSON-LDのauthorは `{"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}` で統一
 - 内部リンクを2本以上（関連記事へ相互に張る）
