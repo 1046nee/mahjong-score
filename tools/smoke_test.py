@@ -5,10 +5,13 @@
 #
 # 検証する動線（2026-07-18の「共有URLで開くとLPしか出ない」障害の再発防止が起点）:
 #   1. LPが表示される
-#   2. グループ作成 → URL共有画面が出て、URLに#セッションIDが含まれる
+#   2. LPの「はじめる」→ 人数の2択モーダル →「先に決める」→ セットアップ画面 → グループ作成 →
+#      URL共有画面が出て、URLに#セッションIDが含まれる
 #   3. 共有URLを開き直す（受け取った人のシミュレーション）→ 試合画面が自動で開く
 #   4. 点数入力（自動入力ボタン含む）→ 総合順位にスコアが表示される
 #   5. スコア推移グラフのカードが存在する
+#   6. クイックスタート: LPの「はじめる」→ 四麻を選ぶ → セットアップも共有画面も挟まず試合画面へ直行し、
+#      仮のメンバー名（A・B・C・D）が入っている（2026-08-26のクイックスタート導入で追加）
 #
 # Firebaseは最小スタブに差し替え（本番に触れない）。ページ再読み込み後も
 # データが残るよう、スタブの保存先はlocalStorage。
@@ -97,10 +100,14 @@ def main():
         page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
         page.wait_for_timeout(400)
         assert active_view(page) == ["view-home"], f"LPが表示されない: {active_view(page)}"
-        print("OK 1/5: LP表示")
+        print("OK 1/6: LP表示")
 
         # ---- 2. グループ作成 → 共有URLに#IDがあること ----
         page.click("#view-home .cta-btn")
+        # 「はじめる」の行き先は人数の2択モーダル。詳細設定はそこからのリンクで開く
+        page.wait_for_selector("#quick-start.open", state="visible", timeout=10000)
+        page.click("#quick-start .qs-detail")
+        page.wait_for_selector("#s-name", state="visible", timeout=10000)
         page.fill("#s-name", "スモークテスト")
         for name in ["太郎", "次郎", "三郎", "四郎"]:
             page.fill("#member-input", name)
@@ -111,7 +118,7 @@ def main():
         assert "#" in share_url, f"共有URLに#がない: {share_url}"
         sid = share_url.split("#")[1]
         assert len(sid) == 10, f"セッションIDが10文字でない: {sid}"
-        print(f"OK 2/5: グループ作成・共有URL発行（#{sid}）")
+        print(f"OK 2/6: グループ作成・共有URL発行（#{sid}）")
 
         # ---- 3. 共有URLを別タブで開く（受け取り側のシミュレーション）→ 試合画面が自動で開く ----
         # 同一URLへのgotoはハッシュ移動扱いで再読み込みされないため、必ず新しいページで開くこと
@@ -123,7 +130,7 @@ def main():
             " const b = document.querySelector('#score-main-body');"
             " return v && v.classList.contains('active') && b && b.innerText.includes('太郎'); }",
             timeout=15000)
-        print("OK 3/5: 共有URLからの自動参加（試合画面表示）")
+        print("OK 3/6: 共有URLからの自動参加（試合画面表示）")
 
         # ---- 4. 点数入力（3人分＋残り1人自動入力）→ スコア表示 ----
         page.click(".fab")
@@ -136,11 +143,32 @@ def main():
             "() => { const c = document.querySelector('#score-main-body .score-card');"
             " return c && c.innerText.includes('太郎') && c.innerText.includes('+'); }",
             timeout=10000)
-        print("OK 4/5: 点数入力→総合順位にスコア表示")
+        print("OK 4/6: 点数入力→総合順位にスコア表示")
 
         # ---- 5. グラフカードの存在 ----
         assert page.evaluate("!!document.querySelector('#chart-card')"), "スコア推移カードがない"
-        print("OK 5/5: スコア推移カードあり")
+        print("OK 5/6: スコア推移カードあり")
+
+        # ---- 6. クイックスタート（LP → 人数を選ぶ → 試合画面へ直行） ----
+        # セットアップ画面も共有画面も挟まないこと・仮名が入っていることまで確認する
+        page = ctx.new_page()
+        page.on("pageerror", lambda e: page_errors.append(str(e)))
+        page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
+        page.wait_for_timeout(400)
+        page.click("#view-home .cta-btn")
+        page.wait_for_selector("#quick-start.open", state="visible", timeout=10000)
+        page.click("#quick-start .qs-4")
+        page.wait_for_function(
+            "() => { const v = document.querySelector('#view-game');"
+            " const b = document.querySelector('#score-main-body');"
+            " return v && v.classList.contains('active') && b && b.innerText.includes('A'); }",
+            timeout=15000)
+        assert active_view(page) == ["view-game"], f"試合画面へ直行しない: {active_view(page)}"
+        names = page.evaluate("activeGame.settings.playerNames")
+        assert names == ["A", "B", "C", "D"], f"仮のメンバー名が入っていない: {names}"
+        assert page.evaluate("activeGame.settings.numPlayers") == 4, "四麻で作られていない"
+        assert "#" in page.evaluate("location.href"), "URLに#セッションIDが無い"
+        print("OK 6/6: クイックスタート（人数選択→試合画面へ直行）")
 
         assert not page_errors, f"ページ内JSエラー: {page_errors}"
         browser.close()

@@ -30,6 +30,8 @@
 1. **作業前に必ず `git pull origin main`**（ユーザーがGitHub Web UIで直接編集することがある。巻き戻し厳禁）
 2. 変更後は**ブラウザ実機で検証してから完了報告**（mcp__Claude_Browser__*。スクリーンショットはタイムアウトしやすいのでDOM評価を主体に。検証で作ったFirebaseセッションは `db.ref('sessions/ID').remove()` で削除）
 3. **計算ロジックを触ったら /tests.html がALL PASSであることを確認**してからコミット
+3b. **主要動線（LPのCTA・グループ作成・共有URL・点数入力）を触ったら `python tools/smoke_test.py` を通す**。
+   これはCIがpushごとに実行し、落ちるとデプロイが止まる。動線を変えたらテスト側も同時に直すこと
 4. 変更ごとに `git add → commit（日本語で内容と理由）→ push origin main` まで行う
 5. **データ互換性が最優先**: 旧データはキー無し=無効扱いで計算に影響させない。保存キー名は変えない（settings.rate等bonus系のまま）
 6. 大きめの置換はscratchpadにPythonスクリプトを書いて実行する（アンカー文字列をassertで検証してから置換。ヒアドキュメント直書きはエスケープ事故のもと）
