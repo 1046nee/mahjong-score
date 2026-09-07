@@ -326,6 +326,23 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .modal-cancel { flex: 1; background: #f0f0f0; color: #555; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .modal-danger { flex: 1; background: #c62828; color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
 
+/* クイックスタート: LPの「はじめる」から2タップで対局を作る。
+   四麻はティール・三麻は青（アプリ内の三麻カラーと同じ）で、選ぶ前から色の違いが分かるようにする */
+.qs-modal { background: #fff; border-radius: 18px; padding: 24px 20px 18px; width: 100%; max-width: 340px; text-align: center; }
+.qs-title { font-size: 18px; font-weight: 900; color: #1a1a1a; margin-bottom: 6px; }
+.qs-desc { font-size: 12.5px; color: #667571; line-height: 1.75; margin-bottom: 18px; }
+.qs-btn { display: flex; align-items: center; gap: 13px; width: 100%; border: none; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; text-align: left; color: #fff; }
+.qs-btn.qs-4 { background: #177083; }
+.qs-btn.qs-3 { background: #4261AA; }
+.qs-btn:active { transform: scale(0.985); }
+.qs-btn .qs-n { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.18); text-align: center; line-height: 42px; font-size: 20px; font-weight: 900; }
+.qs-btn .qs-n small { font-size: 11px; font-weight: 700; margin-left: 1px; }
+.qs-btn .qs-t { min-width: 0; }
+.qs-btn .qs-t b { display: block; font-size: 15.5px; font-weight: 800; line-height: 1.4; }
+.qs-btn .qs-t small { display: block; font-size: 10.5px; opacity: 0.82; line-height: 1.5; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qs-detail { display: block; width: 100%; background: none; border: none; margin-top: 6px; padding: 10px; color: #177083; font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.qs-note { font-size: 11px; color: #9aa8a4; line-height: 1.7; margin-top: 2px; }
+
 .chips-hint { font-size: 11px; color: #999; margin-bottom: 6px; }
 
 /* Edit tab (rounds) */
@@ -661,7 +678,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <p class="hero-desc">まじゃすこは、麻雀のスコア計算と共有のわずらわしさを、シンプルに解決する無料のサービスです。</p>
 
-  <button class="cta-btn" onclick="showView('setup')">はじめる</button>
+  <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
   <p class="cta-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
   <div class="join-banner" id="join-banner" style="display:none">
     <p>共有された試合</p>
@@ -680,15 +697,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p style="text-align:center">会員登録もインストールも不要。<br>ブラウザだけで、この4ステップです。</p>
 
       <div class="howto-step">
-        <h3>1. グループを作る</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="15" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">まじゃすこ</text><text x="32" y="84" font-size="9" fill="#9aa8a4" font-family="sans-serif">ゲーム名</text><rect x="30" y="91" width="160" height="26" rx="6" fill="#f2f7f6"/><text x="38" y="108" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">まじゃすこ学園サッカー部</text><text x="32" y="140" font-size="9" fill="#9aa8a4" font-family="sans-serif">メンバー名</text><g><rect x="30" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">太郎 ×</text><rect x="84" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="108" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">次郎 ×</text><rect x="138" y="147" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="162" y="161" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">三郎 ×</text><rect x="30" y="174" width="48" height="21" rx="10.5" fill="#E4F3EC"/><text x="54" y="188" font-size="10" fill="#177083" text-anchor="middle" font-family="sans-serif">四郎 ×</text></g><text x="32" y="224" font-size="9" fill="#9aa8a4" font-family="sans-serif">試合形式</text><rect x="30" y="231" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="247" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">四麻</text><rect x="112" y="231" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="247" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">三麻</text><rect x="30" y="265" width="78" height="24" rx="6" fill="#177083"/><text x="69" y="281" font-size="10" fill="#ffffff" text-anchor="middle" font-family="sans-serif">個人戦</text><rect x="112" y="265" width="78" height="24" rx="6" fill="#f2f7f6"/><text x="151" y="281" font-size="10" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">チーム戦</text><rect x="30" y="340" width="160" height="32" rx="16" fill="#E75620"/><text x="110" y="361" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">グループを作成</text></svg></div>
-        <p>ゲーム名とメンバーの名前を入れるだけ。持ち点・ウマ・三麻・チーム戦などのルールもここで選べます。</p>
+        <h3>1. 人数を選ぶ</h3>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><g opacity="0.3"><rect x="40" y="98" width="18" height="18" rx="4" fill="#177083"/><rect x="43" y="101" width="12" height="12" rx="2.5" fill="#ffffff"/><text x="49" y="111" text-anchor="middle" font-size="11" font-weight="bold" fill="#E75620" font-family="sans-serif">M</text><text x="64" y="112" font-size="11" font-weight="bold" fill="#1f2a28" font-family="sans-serif">まじゃすこ</text><text x="110" y="150" text-anchor="middle" font-size="12" font-weight="bold" fill="#177083" font-family="sans-serif">麻雀のスコア記録、</text><text x="110" y="167" text-anchor="middle" font-size="12" font-weight="bold" fill="#177083" font-family="sans-serif">まだ電卓と紙とペンで…</text></g><rect x="18" y="14" width="184" height="372" rx="22" fill="#1f2a28" opacity="0.45"/><rect x="30" y="118" width="160" height="176" rx="16" fill="#ffffff"/><text x="110" y="143" text-anchor="middle" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">何人で打ちますか？</text><text x="110" y="157" text-anchor="middle" font-size="7" fill="#667571" font-family="sans-serif">選ぶだけで、すぐ点数を入力できます</text><rect x="40" y="168" width="140" height="44" rx="11" fill="#177083"/><circle cx="60" cy="190" r="14" fill="#ffffff" fill-opacity="0.18"/><text x="60" y="195" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff" font-family="sans-serif">4</text><text x="82" y="188" font-size="9.5" font-weight="bold" fill="#ffffff" font-family="sans-serif">四麻ではじめる</text><text x="82" y="200" font-size="6.5" fill="#ffffff" fill-opacity="0.85" font-family="sans-serif">25,000点持ち・ウマ10-30</text><rect x="40" y="218" width="140" height="44" rx="11" fill="#4261AA"/><circle cx="60" cy="240" r="14" fill="#ffffff" fill-opacity="0.18"/><text x="60" y="245" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff" font-family="sans-serif">3</text><text x="82" y="238" font-size="9.5" font-weight="bold" fill="#ffffff" font-family="sans-serif">三麻ではじめる</text><text x="82" y="250" font-size="6.5" fill="#ffffff" fill-opacity="0.85" font-family="sans-serif">30,000点持ち・ウマ10-0-10</text><text x="110" y="278" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#177083" font-family="sans-serif">メンバー名やルールを先に決める ›</text><line x1="46" y1="280.5" x2="174" y2="280.5" stroke="#177083" stroke-width="0.7"/></svg></div>
+        <p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p>
       </div>
 
       <div class="howto-step">
         <h3>2. URLをメンバーにシェアする</h3>
         <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="52" font-size="12" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">金曜メンバー（4）</text><line x1="18" y1="64" x2="202" y2="64" stroke="#eeeeee" stroke-width="2"/><rect x="60" y="80" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="99" font-size="9.5" fill="#ffffff" font-family="sans-serif">今日の対局グループ</text><text x="72" y="114" font-size="9.5" fill="#ffffff" font-family="sans-serif">作ったよ！</text><rect x="60" y="138" width="130" height="28" rx="12" fill="#177083"/><text x="72" y="156" font-size="8.5" fill="#cfe9ef" text-decoration="underline" font-family="sans-serif">majasco.jp/#XXXXXXXX</text><rect x="30" y="182" width="112" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="200" font-size="9.5" fill="#444444" font-family="sans-serif">参加した！🀄</text><rect x="30" y="220" width="96" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="238" font-size="9.5" fill="#444444" font-family="sans-serif">見れた〜👍</text><rect x="60" y="258" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="277" font-size="9.5" fill="#ffffff" font-family="sans-serif">誰かが入力すれば</text><text x="72" y="292" font-size="9.5" fill="#ffffff" font-family="sans-serif">全員に反映されるよ</text><rect x="28" y="344" width="138" height="24" rx="12" fill="#f2f2f2"/><circle cx="182" cy="356" r="12" fill="#177083"/><path d="M177 356 L187 356 M183 352 L187 356 L183 360" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-        <p>発行されたURLをLINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</p>
+        <p>画面右上の「URLを共有」からLINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</p>
       </div>
 
       <div class="howto-step">
@@ -855,7 +872,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="close-badges">
         <span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span>
       </div>
-      <button class="cta-btn" onclick="showView('setup')">はじめる</button>
+      <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
     </div>
   </section>
 
@@ -1092,6 +1109,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="game-date" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
     </div>
     <div class="title-actions">
+      <button class="edit-tab title-edit-btn" onclick="copyUrl()">URLを共有</button>
       <button class="edit-tab title-edit-btn" onclick="openGameEdit()">設定の編集</button>
     </div>
   </div>
@@ -1235,6 +1253,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <!-- Confirm modal -->
+<!-- クイックスタート（LPの「はじめる」の行き先） -->
+<div class="modal-backdrop" id="quick-start" onclick="if(event.target===this)closeQuickStart()">
+  <div class="qs-modal">
+    <div class="qs-title">何人で打ちますか？</div>
+    <div class="qs-desc">選ぶだけで、すぐ点数入力を始められます。<br>メンバー名やルールは、あとからいつでも変えられます。</div>
+    <button type="button" class="qs-btn qs-4" onclick="quickStart(4)">
+      <span class="qs-n">4<small>人</small></span>
+      <span class="qs-t"><b>四麻ではじめる</b><small>25,000点持ち・ウマ10-30</small></span>
+    </button>
+    <button type="button" class="qs-btn qs-3" onclick="quickStart(3)">
+      <span class="qs-n">3<small>人</small></span>
+      <span class="qs-t"><b>三麻ではじめる</b><small>30,000点持ち・ウマ10-0-10</small></span>
+    </button>
+    <button type="button" class="qs-detail" onclick="closeQuickStart();showView('setup')">メンバー名やルールを先に決める ›</button>
+    <div class="qs-note">※ 三麻・四麻だけは、あとから変更できません</div>
+  </div>
+</div>
+
 <div class="modal-backdrop" id="confirm-modal">
   <div class="modal">
     <div class="modal-title" id="confirm-modal-title">確認</div>
@@ -2383,19 +2419,66 @@ async function startGame() {
     teams = setupTeams.map(t => ({ name: t.name, members: t.members.slice() }));
     if (teams.some(t => t.members.length === 0)) { showToast('メンバーがいないチームがあります。編成を確認してください'); return; }
   }
-  savePlayerNames(playerNames);
+  await createGame(name, { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}) });
+}
+
+// グループの作成〜画面遷移までの共通処理。設定画面からの startGame と、
+// LPから直行する quickStart の両方がここを通る（作成手順を1本にして分岐を減らす）。
+//  opts.toGame  : true なら共有画面を挟まずゲーム画面へ直行する（クイックスタート）
+//  opts.saveNames: false なら登録名に保存しない（仮名のA・B・C…で候補を汚さないため）
+async function createGame(name, settings, opts = {}) {
+  if (opts.saveNames !== false) savePlayerNames(settings.playerNames);
   showLoading(true);
   try {
     sessionId = await newSessionId();
-    const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings: { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}) }, rounds: [] };
+    const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings, rounds: [] };
     await db.ref('sessions/' + sessionId).set(game);
     history.replaceState(null, '', '#' + sessionId);
     startListening();
-    // Walica風: まずURL共有画面を表示してからスコア入力へ
-    document.getElementById('share-url').value = location.href;
-    showView('share');
-    track('group_create', { num_players: numPlayers, member_count: playerNames.length, team_mode: !!teamMode, bonus_enabled: bonusEnabled });
-  } catch(e) { alert('ゲームの作成に失敗しました。'); } finally { showLoading(false); }
+    if (opts.toGame) {
+      // クイックスタートは「すぐ点数を入れる」ことが目的なので共有画面を挟まない。
+      // 共有URLはゲーム画面の「URLを共有」からいつでも取れる
+      showView('game');
+    } else {
+      // Walica風: まずURL共有画面を表示してからスコア入力へ
+      document.getElementById('share-url').value = location.href;
+      showView('share');
+    }
+    track('group_create', { num_players: settings.numPlayers, member_count: settings.playerNames.length, team_mode: !!settings.teamMode, bonus_enabled: settings.bonusEnabled, quick_start: !!opts.toGame });
+    return true;
+  } catch(e) { alert('ゲームの作成に失敗しました。'); return false; } finally { showLoading(false); }
+}
+
+// ---- クイックスタート ----
+// 「LPからすぐ点数入力にたどり着けない」ことが利用のハードルになっていたため、
+// 人数を選ぶ1タップだけで対局を作れるようにした（2026-08-26）。
+// 設定はセットアップ画面の初期値と完全に同じ値を使う（あとから設定画面と食い違わないように）
+function openQuickStart() { document.getElementById('quick-start').classList.add('open'); }
+function closeQuickStart() { document.getElementById('quick-start').classList.remove('open'); }
+// 仮のプレイヤー名 A・B・C…（27人目以降はAA・AB…。MAX_MEMBERS=40まで一意）
+function placeholderNames(n) {
+  return Array.from({ length: n }, (_, i) => {
+    const a = String.fromCharCode(65 + (i % 26));
+    return i < 26 ? a : String.fromCharCode(64 + Math.floor(i / 26)) + a;
+  });
+}
+async function quickStart(n) {
+  closeQuickStart();
+  await createGame(todayStr(), {
+    playerNames: placeholderNames(n),
+    numPlayers: n,
+    startPoints: n === 3 ? 30000 : 25000,
+    returnPoints: n === 3 ? 35000 : 30000,
+    uma: umaArrayFor(n === 3 ? '10-0-10' : '10-30', n),
+    rate: 100,
+    bonusEnabled: false,
+    chipRate: 500,
+    startChips: 20,
+    yakitori: false,
+    chombo: false,
+    chomboPenalty: 20,
+    teamMode: false
+  }, { toGame: true, saveNames: false });
 }
 function copyShareUrl() {
   const url = document.getElementById('share-url').value;
@@ -4229,7 +4312,8 @@ function renderGame() {
       .map(idx => roundRowHtml(activeGame.rounds[idx], idx, `openRoundMenu(${idx})`, s)).join('');
     tableHtml += roundsTotalRowHtml(activeGame);
   } else {
-    tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#bbb;padding:16px">まだ試合がありません</td></tr>`;
+    // 作りたてのグループはここが最初に目に入るので、次にどこを押せばいいかまで書く
+    tableHtml += `<tr><td colspan="${s.playerNames.length + 1}" style="color:#aaa;padding:18px 12px;font-size:12px;line-height:1.8">まだ試合がありません<br>下の<b style="color:#E75620">「＋ 点数入力」</b>から1試合目を記録できます</td></tr>`;
   }
   tableHtml += '</tbody>';
   wrap.innerHTML = `<table class="rounds-table" id="rounds-table" style="${tableStyleFor(s.playerNames.length)}">${tableHtml}</table>`;
