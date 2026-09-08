@@ -444,7 +444,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pt-input .pt-suffix { color: #aaa; font-size: 16px; font-weight: 600; margin-left: 1px; }
 .pt-input:focus-within { border-color: #177083; }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
-/* チップ入力（収支計算が有効なグループのみ）。列順は 名前｜焼き鳥｜チョンボ｜チップ｜点数 */
+/* チップ入力（チップ記録が有効なグループのみ）。列順は 名前｜焼き鳥｜チョンボ｜チップ｜点数 */
 .chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 68px; flex-shrink: 0; }
 .chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
@@ -461,7 +461,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
-/* 合計収支セクション: 総合順位カード内の大きめトグルで開閉（「詳細を見る」感覚） */
+/* 換算合計セクション: 総合順位カード内の大きめトグルで開閉（「詳細を見る」感覚） */
 .bonus-section-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding: 12px 14px; border: 1.5px solid #dfe9ec; background: #f2f8f9; color: #177083; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .bonus-section-toggle .bst-arrow { font-size: 12px; }
 .bonus-section-toggle.open { border-radius: 10px 10px 0 0; }
@@ -473,12 +473,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sanma .card-collapse { color: #4261AA; }
 
 
-/* 収支集計: 主役の「合計収支」はミニカードで大きく、内訳は控えめな表でメリハリをつける */
+/* 換算集計: 主役の「換算合計」はミニカードで大きく、内訳は控えめな表でメリハリをつける */
 .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .bonus-cell { background: #f6f9fa; border: 1px solid #e3edf0; border-radius: 10px; padding: 10px 12px; min-width: 0; }
 .bonus-cell .bc-name { font-size: 11px; color: #789; font-weight: 600; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bonus-cell .bc-val { font-size: 19px; font-weight: 800; white-space: nowrap; }
-.bonus-cell .bc-unit { font-size: 10px; font-weight: 600; color: #9ab; margin-left: 2px; }
 .bonus-cell.pos .bc-val { color: #1a237e; }
 .bonus-cell.neg .bc-val { color: #c62828; }
 .bonus-cell.zero .bc-val { color: #667; }
@@ -1420,7 +1419,7 @@ function detailCardHead(title, key, extra = '') {
     <div style="display:flex;gap:6px;align-items:center">${collapsedCards[key] ? '' : extra}${collapseBtnHtml(key)}</div>
   </div>`;
 }
-// 合計収支セクションの開閉状態（再描画してもリセットされないよう保持する）
+// 換算合計セクションの開閉状態（再描画してもリセットされないよう保持する）
 let bonusSectionOpen = false;
 function setMetric(m) {
   if (scoreMetric === m) return;
@@ -2358,7 +2357,7 @@ function onUmaChange() {
 function onRateChange() {
   document.getElementById('rate-custom').style.display = document.getElementById('s-rate').value === 'custom' ? 'block' : 'none';
 }
-// 収支計算のON/OFFでチップ倍率などの入力欄を出し分ける
+// チップ記録のON/OFFでチップ倍率などの入力欄を出し分ける
 function onBonusOptChange() {
   document.getElementById('s-bonus-fields').style.display = document.getElementById('s-bonus').checked ? 'block' : 'none';
 }
@@ -2400,7 +2399,7 @@ async function startGame() {
   const uma = getUmaArray();
   const rateVal = document.getElementById('s-rate').value;
   const rate = rateVal === 'custom' ? (Number(document.getElementById('s-rate-custom').value) || 1) : Number(rateVal);
-  // 収支オプション（フェーズ2）: 未設定のチップ倍率は1倍・開始時チップ数は0として扱う
+  // チップのオプション（フェーズ2）: 未設定のチップ倍率は1倍・開始時チップ数は0として扱う
   const bonusEnabled = document.getElementById('s-bonus').checked;
   const chipRateVal = document.getElementById('s-chip-rate').value;
   const chipRate = chipRateVal === 'custom' ? (Number(document.getElementById('s-chip-rate-custom').value) || 1) : Number(chipRateVal);
@@ -2606,9 +2605,9 @@ window.addEventListener('resize', () => { clearTimeout(scrollHintTimer); scrollH
 function tableStyleFor(memberCount) {
   return memberCount > 4 ? `table-layout:fixed;min-width:${64 + memberCount * 58}px` : 'table-layout:fixed';
 }
-// ---- 収支集計（フェーズ2） ----
-// スコア収支 = 合計pts × スコア倍率、チップ収支 = チップ差の合計 × チップ倍率、
-// 合計収支 = スコア収支 + チップ収支。チップ差 = 終了時チップ数 − 開始時チップ数（settings.startChips、未設定は0）。
+// ---- 換算集計（フェーズ2） ----
+// スコア換算 = 合計pts × スコア倍率、チップ換算 = チップ差の合計 × チップ倍率、
+// 換算合計 = スコア換算 + チップ換算。チップ差 = 終了時チップ数 − 開始時チップ数（settings.startChips、未設定は0）。
 // 保存するのは試合ごとのチップ差（round.chips）のみ。
 // 旧データ互換: 倍率未設定は1倍、chips/yakitoriが無い試合は0枚・記録なしとして扱う
 // メンバーごとのチップ差の累計と焼き鳥回数
@@ -2628,9 +2627,9 @@ function chipTotals(g) {
   });
   return { chips, yaki, chombo };
 }
-// 収支セクション（合計収支・内訳）の表示条件: チップあり、またはスコア倍率が実質有効。
-// スコア倍率だけ設定したグループでも「スコア収支」を表示する（チップあり🍪には紐づけない。
-// 2026-07-19「倍率を設定したのに収支が出ない」の修正）。
+// 換算セクション（換算合計・内訳）の表示条件: チップあり、またはスコア倍率が実質有効。
+// スコア倍率だけ設定したグループでも「スコア換算」を表示する（チップあり🍪には紐づけない。
+// 2026-07-19「倍率を設定したのに換算が出ない」の修正）。
 // 旧データ互換: rate未設定・×1・なし(0)のグループは従来どおり非表示
 function bonusVisible(s) {
   const r = Number(s.rate) || 0;
@@ -2649,7 +2648,7 @@ function bonusTableHtml(g) {
   const chipBonus = chips.map(c => Math.round(c * chipRate));
   const grand = totals.map((_, i) => scoreBonus[i] + chipBonus[i]);
   const signed = v => `${v > 0 ? '+' : ''}${v.toLocaleString()}`;
-  // 主役: メンバーごとの合計収支（bonus単位）をミニカードで表示。
+  // 主役: メンバーごとの換算合計をミニカードで表示。
   // チーム戦はチームA→B…のメンバー順、個人戦は値の大きい順（未参加は最後）
   const teamMode = s.teamMode && s.teams;
   const order = teamMode ? memberDisplayOrder(s) : names.map((_, i) => i).sort((a, b) => {
@@ -2663,7 +2662,7 @@ function bonusTableHtml(g) {
     }
     const v = grand[i];
     const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : 'zero';
-    return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}<span class="bc-unit">bonus</span></div></div>`;
+    return `<div class="bonus-cell ${cls}"><div class="bc-name">${teamDotHtml(s, i)}${esc(names[i])}</div><div class="bc-val">${signed(v)}</div></div>`;
   }).join('');
   // 内訳: 補足情報として控えめな表にまとめる（タップで展開）。
   // 体裁は試合結果・個人成績と同じ（先頭列sticky＋チーム区切り線＋チーム名行）
@@ -2674,14 +2673,14 @@ function bonusTableHtml(g) {
     : `<td${tbCls(k)} style="color:#ddd">—</td>`;
   const row = (label, cellsHtml, cls) => `<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col" style="color:#667;font-size:10px;white-space:nowrap;padding-left:4px;padding-right:2px;text-align:left">${label}</td>${cellsHtml}</tr>`;
   let rows = row('スコア（pts）', colOrder.map((i, k) => cell(i, k, `${totals[i] >= 0 ? '+' : ''}${totals[i].toFixed(1)}pts`)).join(''));
-  rows += row(`スコア収支（pts×${scoreRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(scoreBonus[i]))).join(''));
+  rows += row(`スコア換算（pts×${scoreRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(scoreBonus[i]))).join(''));
   if (s.bonusEnabled) { // チップ関連の行はチップあり🍪のグループだけ表示
     rows += row('チップ差', colOrder.map((i, k) => cell(i, k, `${signed(chips[i])}枚`)).join(''));
-    rows += row(`チップ収支（枚×${chipRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(chipBonus[i]))).join(''));
+    rows += row(`チップ換算（枚×${chipRate}倍）`, colOrder.map((i, k) => cell(i, k, signed(chipBonus[i]))).join(''));
   }
-  rows += row('合計収支', colOrder.map((i, k) => cell(i, k, `${signed(grand[i])}bonus`, true)).join(''));
+  rows += row('換算合計', colOrder.map((i, k) => cell(i, k, signed(grand[i]), true)).join(''));
   // 回数は個人成績と同じく単位「回」を付けない。
-  // ここから下は収支ではなく回数＝数字の意味が変わるので、最初の1行だけ区切り線を入れる
+  // ここから下は換算値ではなく回数＝数字の意味が変わるので、最初の1行だけ区切り線を入れる
   let brk = 'cat-break';
   if (s.yakitori) {
     rows += row('焼き鳥🐔', colOrder.map((i, k) => cell(i, k, String(yaki[i] || 0), yaki[i] > 0)).join(''), brk);
@@ -2699,7 +2698,7 @@ function bonusTableHtml(g) {
   </div>
   <button class="edit-tab" style="margin-top:8px" onclick="toggleBonusDetail(this)">内訳を表示</button>`;
 }
-// 内訳行（スコア合計・各収支・チップ・焼き鳥）の表示/非表示をタップで切り替える
+// 内訳行（スコア合計・各換算値・チップ・焼き鳥）の表示/非表示をタップで切り替える
 function toggleBonusDetail(btn) {
   const wrap = btn.parentElement.querySelector('.bonus-table-wrap');
   if (!wrap) return;
@@ -2709,7 +2708,7 @@ function toggleBonusDetail(btn) {
 
 // ---- 総合順位カード（ゲーム画面・結果詳細で共用） ----
 // デフォルトは合計スコアの順位。右上のトグルで「チップ最終枚数」の順位に切り替えられる。
-// 収支計算ONのグループは、カード内の大きめトグル「合計収支」から内訳を展開できる
+// チップ記録ONのグループは、カード内の大きめトグル「換算合計」から内訳を展開できる
 function metricToggleHtml(s) {
   if (!s.bonusEnabled) return '';
   return `<div class="mini-toggle">
@@ -2759,7 +2758,7 @@ function scoreCardsListHtml(g) {
     </div>`).join('');
   return html;
 }
-// カード全体（タイトル＋トグル＋モードラベル＋順位リスト＋合計収支セクション）
+// カード全体（タイトル＋トグル＋モードラベル＋順位リスト＋換算合計セクション）
 function scoreMainHtml(g) {
   const s = g.settings;
   const hasRounds = (g.rounds || []).length > 0;
@@ -2775,7 +2774,7 @@ function scoreMainHtml(g) {
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
   if (bonusVisible(s) && hasRounds) {
     html += `<button type="button" class="bonus-section-toggle${bonusSectionOpen ? ' open' : ''}" onclick="toggleBonusSection(this)">
-      <span>合計収支</span><span class="bst-arrow">${bonusSectionOpen ? '▴' : '▾'}</span>
+      <span>換算合計</span><span class="bst-arrow">${bonusSectionOpen ? '▴' : '▾'}</span>
     </button>
     <div class="bonus-section" style="display:${bonusSectionOpen ? 'block' : 'none'}">${bonusTableHtml(g)}</div>`;
   }
@@ -2793,7 +2792,7 @@ function toggleBonusSection(btn) {
 
 // ---- チーム戦（フェーズ3） ----
 // 各チームは settings.teams = [{ name, members: [playerNamesへのindex...] }] で保存する。
-// 順位はチーム所属メンバーの合計スコア（pts）で決める。収支計算ONならチーム合計収支も表示。
+// 順位はチーム所属メンバーの合計スコア（pts）で決める。チップ記録ONならチームの換算合計も表示。
 // 旧データ互換: teamMode/teamsが無いグループはチーム表示なし
 function normalizedTeams(s) {
   // Firebase経由でmembersが欠落するケースに備えて空配列で補完
@@ -2840,9 +2839,9 @@ function teamStandingsHtml(g) {
     const memberNames = t.members.map(m => esc(s.playerNames[m] || '')).join('・');
     let bonusLine = '';
     if (bonusVisible(s)) {
-      // メンバーごとの収支（表示と同じ丸め）を合算してチーム合計収支にする
+      // メンバーごとの換算値（表示と同じ丸め）を合算してチームの換算合計にする
       const grand = t.members.reduce((a, m) => a + Math.round((totals[m] || 0) * scoreRate) + Math.round((chips[m] || 0) * chipRate), 0);
-      bonusLine = `<div class="score-bonus">合計収支 ${grand > 0 ? '+' : ''}${grand.toLocaleString()}<span style="font-size:9px;color:#aab">bonus</span></div>`;
+      bonusLine = `<div class="score-bonus">換算合計 ${grand > 0 ? '+' : ''}${grand.toLocaleString()}</div>`;
     }
     const cls = pts[ti] >= 0 ? 'pos' : 'neg';
     return `<div class="score-card">
@@ -3971,7 +3970,7 @@ function teamBoundarySet(s) {
 function firstColW(forImage) { return forImage ? 86 : 64; }
 // プレイヤー名の上に置くチーム名の行。チームごとにcolspanで1セルにまとめる
 // （試合結果・個人成績の両方で共用。チーム戦でなければ空文字）
-// firstW: 先頭列の幅を明示したいとき（合計収支の内訳の表だけ120px）
+// firstW: 先頭列の幅を明示したいとき（換算合計の内訳の表だけ120px）
 function teamNameRowHtml(s, forImage = false, firstW = null) {
   if (!s.teamMode || !s.teams) return '';
   const w = firstW != null ? firstW : firstColW(forImage);
@@ -4284,7 +4283,7 @@ function renderGame() {
   // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
   document.getElementById('game-date').textContent = activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
-  // 総合順位カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
+  // 総合順位カード（順位リスト＋スコア/チップ切替＋換算合計セクション）
   const hasRounds = activeGame.rounds.length > 0;
   document.getElementById('score-main-body').innerHTML = scoreMainHtml(activeGame);
 
@@ -4453,7 +4452,7 @@ function openSheet(idx) {
 let sheetSelected = []; // 選択中メンバーindex（昇順）
 let sheetOrder = [];    // 入力欄k → memberIndex の対応
 let sheetPrefill = {};  // memberIndex → 入力値（修正時のプレフィル・選択切替時の値保持）
-let sheetChips = {};    // memberIndex → チップ差（収支計算が有効なグループのみ）
+let sheetChips = {};    // memberIndex → チップ差（チップ記録が有効なグループのみ）
 let sheetYaki = {};     // memberIndex → 焼き鳥🐔フラグ
 let sheetChombo = {};   // memberIndex → チョンボ💩フラグ
 // 新規入力のデフォルト参加者: 直前の試合のメンバー、なければ先頭からnumPlayers人
@@ -4811,7 +4810,7 @@ async function submitRound() {
   let logEntry;
   if (editingIndex >= 0) {
     const orig = ctx.rounds[editingIndex];
-    // 収支計算・焼き鳥をOFFにした後の修正でも、記録済みの値は消さずに引き継ぐ（メンバー対応で再配置）
+    // チップ記録・焼き鳥をOFFにした後の修正でも、記録済みの値は消さずに引き継ぐ（メンバー対応で再配置）
     const origMem = roundMembers(orig, ctx.settings);
     if (!ctx.settings.bonusEnabled && orig.chips) {
       const chipOf = {};
@@ -4964,7 +4963,7 @@ function settingsFormHtml(name, s) {
       </div>
       <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値もあわせて集計します。使わない場合は「なし」を選んでください。</div>
     </div>
-    <div class="field"><label>収支オプション</label>
+    <div class="field"><label>チップ</label>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="e-bonus" ${s.bonusEnabled ? 'checked' : ''}
           onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップあり🍪
@@ -5502,12 +5501,12 @@ function renderDetailBody(g) {
   const hasRounds = g.rounds.length > 0;
 
   let html = '';
-  // チーム順位（チーム戦が有効なグループのみ・スコア収支の上）
+  // チーム順位（チーム戦が有効なグループのみ・スコア換算の上）
   if (s.teamMode && s.teams && hasRounds) {
     const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
     html += `<div class="card">${detailCardHead('チーム順位', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
-  // 総合順位カード（順位リスト＋スコア/チップ切替＋合計収支セクション）
+  // 総合順位カード（順位リスト＋スコア/チップ切替＋換算合計セクション）
   html += `<div class="card">${scoreMainHtml(g)}</div>`;
 
   const logBtn = logEvents(g.log).length > 0
@@ -5546,7 +5545,7 @@ function renderDetailBody(g) {
     <div style="font-size:13px;color:#555;line-height:2.2;${collapsedCards.settings ? 'display:none' : ''}">
       ${s.numPlayers === 3 ? '三麻' : '四麻'} ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ${(Number(s.rate) > 0 && Number(s.rate) !== 1) ? '×' + s.rate : 'なし'}${s.bonusEnabled ? `<br>収支計算: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
+      ウマ: ${s.uma.join(' / ')} ／ スコア倍率: ${(Number(s.rate) > 0 && Number(s.rate) !== 1) ? '×' + s.rate : 'なし'}${s.bonusEnabled ? `<br>チップ記録: 有効 ／ チップ倍率: ×${Number(s.chipRate) || 1} ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
     // まとめプレビューとCSVは画面末尾に並ぶ対（ゲーム画面と同じ並び）
