@@ -348,9 +348,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* Edit tab (rounds) */
 .edit-tab { background: #f0f0f0; border: none; color: #999; border-radius: 5px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600; }
 .edit-tab:active { background: #e0e0e0; }
-/* ページタイトル横の「変更」ボタン（三麻モードでは青系に） */
-.title-edit-btn { color: #177083; background: #e0f2f5; padding: 6px 12px; }
-#view-game.sanma .title-edit-btn, #view-detail.sanma .title-edit-btn { color: #4261AA; background: #eaf0fb; }
+/* ページタイトル横の「URLを共有」「設定の編集」（三麻モードでは青系に）。
+   薄い塗りだけだと画面の背景（#DBF4F9）とのコントラストが1.01でボタンに見えないため、
+   白地＋枠線で輪郭を作る。文字も12pxに上げ、高さはタップしやすい36pxを確保する */
+.title-edit-btn { color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 8px;
+  padding: 8px 12px; font-size: 12px; font-weight: 700; line-height: 1.15; white-space: nowrap; }
+.title-edit-btn:active { background: #e0f2f5; }
+#view-game.sanma .title-edit-btn, #view-detail.sanma .title-edit-btn { color: #4261AA; background: #fff; border-color: #4261AA; }
+#view-game.sanma .title-edit-btn:active, #view-detail.sanma .title-edit-btn:active { background: #eaf0fb; }
 
 /* Action modal buttons */
 .modal-action { display: block; width: 100%; background: #f8f9ff; color: #177083; border: none; border-radius: 10px; padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 8px; }
