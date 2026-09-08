@@ -14,7 +14,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9998035509478799"
      crossorigin="anonymous"></script>
 <title>麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた | まじゃすこ</title>
-<meta name="description" content="ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、スコア倍率まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。">
+<meta name="description" content="ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。">
 <link rel="canonical" href="https://majasco.jp/blog-score-examples.html">
 <link rel="alternate" type="application/rss+xml" title="まじゃすこ お知らせRSS" href="https://majasco.jp/news/feed.xml">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon.png">
@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、スコア倍率まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-08-25", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp2.png", "datePublished": "2026-08-25", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -254,17 +254,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p>合計は <strong>−20.0</strong>。<span class="hl">この記事で唯一、合計が0にならないパターン</span>です。罰符を「他の3人に配る」のではなく「場から消す」方式だからで、ゼロサムをどうしても保ちたいグループは、罰符を3等分して他家に配るルールにしてください（−20を3人に配るなら各 +6.67 で端数が出るので、−30を3人に+10ずつ、のように<strong>人数で割り切れる額</strong>にしておくと後がラクです）。チョンボの扱いそのものは<a href="/blog-manner.html">麻雀のマナーとチョンボ</a>で解説しています。</p>
 
-  <h3>パターン12｜スコア倍率をかけた「スコア収支」</h3>
-  <p>スコア（pts）に倍率をかけて、bonus という単位で記録することもできます。パターン1の結果に ×100 をかけると：</p>
+  <h3>パターン12｜3試合を通した累計と平均着順</h3>
+  <p>最後は、半荘を重ねたときの見え方です。同じ4人で3試合打った場合を、1試合ずつ計算して積み上げてみます。</p>
   <table>
+    <thead><tr><th>試合</th><th>持ち点（A／B／C／D）</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
     <tbody>
-      <tr><th>A</th><td>+61.3pts → <strong>+6,130bonus</strong></td></tr>
-      <tr><th>B</th><td>+8.2pts → <strong>+820bonus</strong></td></tr>
-      <tr><th>C</th><td>−17.5pts → <strong>−1,750bonus</strong></td></tr>
-      <tr><th>D</th><td>−52.0pts → <strong>−5,200bonus</strong></td></tr>
+      <tr><td>1試合目</td><td>41,300／28,200／22,500／8,000</td><td>+61.3</td><td>+8.2</td><td>−17.5</td><td>−52.0</td></tr>
+      <tr><td>2試合目</td><td>22,000／35,600／30,400／12,000</td><td>−18.0</td><td>+55.6</td><td>+10.4</td><td>−48.0</td></tr>
+      <tr><td>3試合目</td><td>28,900／19,100／44,000／8,000</td><td>+8.9</td><td>−20.9</td><td>+64.0</td><td>−52.0</td></tr>
+      <tr><td><strong>累計</strong></td><td>—</td><td><strong>+52.2</strong></td><td><strong>+42.9</strong></td><td><strong>+56.9</strong></td><td><strong>−152.0</strong></td></tr>
     </tbody>
   </table>
-  <p>単に一定の数を掛けるだけなので、<strong>合計が0になる性質はそのまま残ります</strong>。倍率をかけたあとの合計が0でなければ、倍率ではなく元のスコアが間違っています。</p>
+  <p>各試合の合計はどれも0で、<strong>累計もやはり0</strong>（52.2 + 42.9 + 56.9 − 152.0 = 0.0）です。1試合ごとにゼロサムなら、何試合積んでもゼロサムのままになります。ここが崩れたら、足し算ではなくどれか1試合の計算が間違っています。</p>
+  <p>おもしろいのは着順のほうです。A・B・Cはそれぞれ1位・2位・3位を1回ずつ取っているので、<span class="hl">3人とも平均着順は2.00でまったく同じ</span>です。それでも累計は +42.9 から +56.9 まで14ptsの差がつきました。</p>
+  <table>
+    <thead><tr><th>プレイヤー</th><th>着順の内訳</th><th>平均着順</th><th>累計スコア</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>1位・3位・2位</td><td>2.00</td><td>+52.2</td></tr>
+      <tr><td>B</td><td>2位・1位・3位</td><td>2.00</td><td>+42.9</td></tr>
+      <tr><td>C</td><td>3位・2位・1位</td><td>2.00</td><td>+56.9</td></tr>
+      <tr><td>D</td><td>4位・4位・4位</td><td>4.00</td><td>−152.0</td></tr>
+    </tbody>
+  </table>
+  <p>差を作っているのは<strong>素点</strong>です。同じ1位でも、41,300点のトップと44,000点のトップでは持ち帰る点が違います。<span class="hl">平均着順は「どれだけ安定して上位にいたか」、累計スコアは「どれだけ大きく勝ったか」</span>を表す別の指標だということが、この3試合だけでもはっきり出ます。成績を見るときは片方だけでなく、両方並べて見てください。試合数が違う人が混ざる会での比べ方は<a href="/blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方</a>にまとめています。</p>
 
   <h2>手計算でつまずいたときの見どころ</h2>
   <p>12パターンを並べてみると、間違いが起きる場所はかなり限られているとわかります。</p>
