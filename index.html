@@ -954,7 +954,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <button type="button" class="toggle-btn" id="vs-team" onclick="setMatchType(true)">チーム戦</button>
         </div>
         <div id="s-team-fields" style="display:none;margin-top:12px">
-          <div class="chips-hint" style="margin-bottom:8px">メンバーをチームに分けて、スコアの合計でチーム順位を競います。同じチームの人同士は対局できないため、チーム数は四麻なら4チーム・三麻なら3チーム以上です。上の「メンバー名」で追加した人は自動でチームに振り分けられます</div>
+          <div class="chips-hint" style="margin-bottom:8px">メンバーをチームに分けて、合計スコアでチーム順位を競います。追加した人は自動で振り分けられます</div>
           <div id="s-team-editor"></div>
           <div style="display:flex;gap:8px;margin-top:8px">
             <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
@@ -1014,7 +1014,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <option value="custom">カスタム</option>
           </select>
       </div>
-      <div class="chips-hint" style="margin:6px 0 0">スコアに倍率を掛けた値もあわせて記録します。仲間内で独自の集計単位を使うとき以外は「なし」のままで構いません。</div>
+      <div class="chips-hint" style="margin:6px 0 0">スコアに倍率を掛けた値もあわせて記録します。</div>
       <div id="rate-custom" style="display:none;margin-top:8px">
         <div class="field">
           <label>カスタム倍率</label>
@@ -1053,16 +1053,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" id="s-chip-rate-custom" placeholder="300">
           </div>
         </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップの増減もあわせて記録します。<br>※チップ差＝終了時チップ − 開始時チップ</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">チップの増減もあわせて記録します。</div>
       </div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-yakitori"> 焼き鳥あり🐔
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">1試合で一度もアガれなかった人に🐔マークがつきます。<br>※マークのみでスコアには影響しません。</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">1試合で一度もアガれなかった人に🐔マークがつきます（スコアには影響しません）</div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-chombo" onchange="onChomboOptChange()"> チョンボあり💩
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に💩マークがつきます。<br>※合計スコアからチョンボ罰符分がマイナスされます。</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に💩マークがつきます。罰符の分だけスコアが下がります</div>
       <div id="s-chombo-fields" style="display:none;margin:10px 0 0 26px">
         <div class="field">
           <label>チョンボ罰符</label>
@@ -1081,7 +1081,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <input type="number" id="s-chombo-pen-custom" placeholder="40">
           </div>
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チョンボした試合のスコアを記録後、罰符分をマイナスします。<br>※チョンボ罰符0の場合、マークのみ。</div>
       </div>
       </div>
     </div>
@@ -4902,8 +4901,8 @@ function renderEditMembers() {
   const addBtn = editMembersState.length < MAX_MEMBERS
     ? `<button type="button" class="edit-tab" style="margin-top:4px" onclick="addEditMember()">＋ メンバーを追加</button>`
     : '';
-  const hint = `<div class="chips-hint" style="margin:8px 0 0">・対局済みのメンバーは、結果が消えてしまうため削除できません（名前の変更は可能です）<br>・1試合の人数（${activeGame.settings.numPlayers}人）を下回る削除はできません</div>`;
-  wrap.innerHTML = rows + addBtn + hint;
+  // 削除できないメンバーには削除ボタン自体を出していない（canDelete）ので、注意書きは置かない
+  wrap.innerHTML = rows + addBtn;
 }
 function captureEditMembers() {
   editMembersState.forEach((m, pos) => {
@@ -4946,7 +4945,6 @@ function settingsFormHtml(name, s) {
     .map(([v,l]) => `<option value="${v}" ${v===rateKey?'selected':''}>${l}</option>`).join('');
   return `
     <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}" maxlength="${MAX_GROUP_LEN}"></div>
-    <div class="chips-hint" style="margin-bottom:10px">試合形式（${n === 3 ? '三麻' : '四麻'}）は、過去の試合と整合が取れなくなるため作成後に変更できません。</div>
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
@@ -4966,7 +4964,7 @@ function settingsFormHtml(name, s) {
       <div id="e-rate-custom" style="display:${rateKey==='custom'?'block':'none'};margin-top:6px">
         <input type="number" id="e-rate-c" value="${rateKey==='custom'?s.rate:''}" placeholder="150">
       </div>
-      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値もあわせて集計します。使わない場合は「なし」を選んでください。</div>
+      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">スコアに倍率を掛けた値もあわせて集計します。</div>
     </div>
     <div class="field"><label>チップ</label>
       <label class="opt-check" style="margin-top:2px">
@@ -4986,9 +4984,8 @@ function settingsFormHtml(name, s) {
         <div class="field" style="margin:8px 0 0"><label>持ちチップ（枚）</label>
           <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="20">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの増減もあわせて記録します。<br>※チップ差＝終了時チップ − 開始時チップ</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの増減もあわせて記録します。</div>
       </div>
-      ${s.bonusEnabled ? '<div class="chips-hint" style="margin:6px 0 0 26px">OFFにしても記録済みのチップ差は消えません（表示されなくなるだけで、再度ONにすると集計に戻ります）</div>' : ''}
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり🐔（マークのみ・スコアに影響なし）
       </label>
