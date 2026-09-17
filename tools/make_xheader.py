@@ -53,7 +53,7 @@ d.rounded_rectangle([px0, py0, px1, H + 120], radius=52, fill=DARK)
 d.rounded_rectangle([px0 + 14, py0 + 14, px1 - 14, H + 120], radius=40, fill=(255, 255, 255))
 d.rounded_rectangle([1148, 100, 1242, 122], radius=11, fill=DARK)  # ダイナミックアイランド
 
-d.text((1195, 168), "スコア収支", font=font(34, 800), fill=GREEN, anchor="mm")
+d.text((1195, 168), "総合順位", font=font(34, 800), fill=GREEN, anchor="mm")
 
 rows = [("太郎", "+55.0", BLUE, "\U0001F947"), ("次郎", "+8.0", BLUE, "\U0001F948"),
         ("三郎", "-18.0", RED, "\U0001F949"), ("四郎", "-45.0", RED, None)]

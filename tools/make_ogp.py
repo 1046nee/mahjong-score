@@ -5,7 +5,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # リポジトリルート
-OUT = os.path.join(BASE, "まじゃすこ素材", "ogp2-draft.png")
+OUT = os.path.join(BASE, "まじゃすこ素材", "ogp3-draft.png")
 FONT = r"C:\Windows\Fonts\NotoSansJP-VF.ttf"
 
 GREEN = (23, 112, 131)      # #177083
@@ -56,7 +56,7 @@ d.rounded_rectangle([px0 + 18, py0 + 18, px1 - 18, py1 - 18], radius=54, fill=(2
 d.rounded_rectangle([1691, 148, 1819, 178], radius=15, fill=DARK)  # ダイナミックアイランド
 
 f_title = font(46, 800)
-d.text((1755, 240), "スコア収支", font=f_title, fill=GREEN, anchor="mm")
+d.text((1755, 240), "総合順位", font=f_title, fill=GREEN, anchor="mm")
 
 rows = [("太郎", "+55.0", BLUE, "🥇"), ("次郎", "+8.0", BLUE, "🥈"),
         ("三郎", "-18.0", RED, "🥉"), ("四郎", "-45.0", RED, None)]

@@ -6,7 +6,7 @@
 # 実行: PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/shoot_app_screens.py
 #       （要: pip install playwright。日本語フォントがOSに無いと豆腐になるので注意）
 #
-# 撮影セッション: 通常四麻 ／ 三麻（青テーマ） ／ チーム戦（8人4チーム） ／ チップ・焼き鳥・チョンボあり
+# 撮影セッション: LP（クイックスタート）／ 通常四麻 ／ 三麻（青テーマ） ／ チーム戦（8人4チーム） ／ チップ・焼き鳥・チョンボあり
 # 出力: まじゃすこ素材/ig/shots/（shot-*=画面全体、el-*=カード等の要素単位）
 import functools
 import glob
@@ -30,14 +30,14 @@ SID_TEAM = "teamv2abcd"
 SID_CHIPS = "chpv2abcde"
 
 # scoresは (点数-返し点)/1000 + ウマ + トップにオカ を手計算した値（四麻: 25000/30000でオカ20、
-# 三麻: 35000/40000でオカ15）。チョンボは罰符ptsをそのまま減算
+# 三麻: 30000/35000でオカ15）。チョンボは罰符ptsをそのまま減算
 GAMES = {
     SID_NORMAL: {
         "id": SID_NORMAL, "name": "金曜メンバー", "createdAt": "2026-07-17T11:05:00.000Z",
         "settings": {
             "playerNames": ["太郎", "次郎", "三郎", "四郎"],
             "numPlayers": 4, "startPoints": 25000, "returnPoints": 30000,
-            "uma": [30, 10, -10, -30], "rate": 100, "bonusEnabled": False,
+            "uma": [30, 10, -10, -30], "rate": 0, "bonusEnabled": False,
             "chipRate": 1, "startChips": 0, "yakitori": False,
             "chombo": False, "chomboPenalty": 20, "teamMode": False,
         },
@@ -54,17 +54,17 @@ GAMES = {
         "id": SID_SANMA, "name": "木曜三麻会", "createdAt": "2026-07-16T20:00:00.000Z",
         "settings": {
             "playerNames": ["太郎", "次郎", "三郎"],
-            "numPlayers": 3, "startPoints": 35000, "returnPoints": 40000,
-            "uma": [15, 0, -15], "rate": 100, "bonusEnabled": False,
+            "numPlayers": 3, "startPoints": 30000, "returnPoints": 35000,
+            "uma": [10, 0, -10], "rate": 0, "bonusEnabled": False,
             "chipRate": 1, "startChips": 0, "yakitori": False,
             "chombo": False, "chomboPenalty": 20, "teamMode": False,
         },
         "rounds": [
-            {"points": [52300, 33400, 19300], "scores": [42.3, -6.6, -35.7],
+            {"points": [48200, 27400, 14400], "scores": [38.2, -7.6, -30.6],
              "members": [0, 1, 2], "at": "2026-07-16T20:15:00.000Z"},
-            {"points": [30200, 48100, 26700], "scores": [-9.8, 38.1, -28.3],
+            {"points": [26800, 41300, 21900], "scores": [-8.2, 31.3, -23.1],
              "members": [0, 1, 2], "at": "2026-07-16T20:55:00.000Z"},
-            {"points": [45600, 24100, 35300], "scores": [35.6, -30.9, -4.7],
+            {"points": [38700, 19500, 31800], "scores": [28.7, -25.5, -3.2],
              "members": [0, 1, 2], "at": "2026-07-16T21:30:00.000Z"},
         ],
     },
@@ -73,7 +73,7 @@ GAMES = {
         "settings": {
             "playerNames": ["太郎", "次郎", "三郎", "四郎", "五郎", "六郎", "七郎", "八郎"],
             "numPlayers": 4, "startPoints": 25000, "returnPoints": 30000,
-            "uma": [30, 10, -10, -30], "rate": 100, "bonusEnabled": False,
+            "uma": [30, 10, -10, -30], "rate": 0, "bonusEnabled": False,
             "chipRate": 1, "startChips": 0, "yakitori": False,
             "chombo": False, "chomboPenalty": 20, "teamMode": True,
             "teams": [
@@ -95,8 +95,8 @@ GAMES = {
         "settings": {
             "playerNames": ["太郎", "次郎", "三郎", "四郎"],
             "numPlayers": 4, "startPoints": 25000, "returnPoints": 30000,
-            "uma": [30, 10, -10, -30], "rate": 100, "bonusEnabled": True,
-            "chipRate": 500, "startChips": 20, "yakitori": True,
+            "uma": [30, 10, -10, -30], "rate": 0, "bonusEnabled": True,
+            "chipRate": 1, "startChips": 20, "yakitori": True,
             "chombo": True, "chomboPenalty": 20, "teamMode": False,
         },
         "rounds": [
@@ -207,6 +207,15 @@ def main():
         try:
             page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
             assert page.evaluate("typeof firebase") == "object", "firebaseスタブが読み込まれていない"
+
+            # ---- LP（クイックスタート: 「はじめる」→ 三麻/四麻の2択） ----
+            shot(page, "lp-hero.png")
+            page.evaluate("openQuickStart()")
+            page.wait_for_timeout(500)
+            shot(page, "lp-quickstart.png")
+            shot_el(page, ".qs-modal", "el-quickstart.png")
+            page.evaluate("closeQuickStart()")
+            page.wait_for_timeout(400)
 
             # ---- 通常四麻 ----
             join(page, SID_NORMAL)

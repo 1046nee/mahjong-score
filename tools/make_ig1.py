@@ -69,13 +69,13 @@ x = (W - total) / 2
 d.text((x, 470), seg1, font=f_sub_b, fill=ORANGE, anchor="lm")
 d.text((x + d.textlength(seg1, font=f_sub_b), 470), seg2, font=f_sub, fill=GRAY, anchor="lm")
 
-# スマホ（下端で見切れる・スコア収支画面）
+# スマホ（下端で見切れる・総合順位画面）
 px0, py0, px1 = 352, 590, 728  # 幅376
 d.rounded_rectangle([px0, py0, px1, H + 160], radius=58, fill=DARK)
 d.rounded_rectangle([px0 + 15, py0 + 15, px1 - 15, H + 160], radius=44, fill=(255, 255, 255))
 d.rounded_rectangle([488, 622, 592, 646], radius=12, fill=DARK)  # ダイナミックアイランド
 
-d.text((540, 700), "スコア収支", font=font(38, 800), fill=GREEN, anchor="mm")
+d.text((540, 700), "総合順位", font=font(38, 800), fill=GREEN, anchor="mm")
 
 rows = [("太郎", "+55.0", BLUE, "\U0001F947"), ("次郎", "+8.0", BLUE, "\U0001F948"),
         ("三郎", "-18.0", RED, "\U0001F949"), ("四郎", "-45.0", RED, None)]

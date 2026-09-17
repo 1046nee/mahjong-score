@@ -69,7 +69,7 @@ def phone_frame(d, x0=352, y0=600, x1=728):
     return (x0 + 15, y0 + 15, x1 - 15)
 
 # ==== スマホ画面の中身（コールバック群） ====
-def screen_score(d, sx0, sy0, sx1, title="スコア収支", title_color=GREEN, team=False):
+def screen_score(d, sx0, sy0, sx1, title="総合順位", title_color=GREEN, team=False):
     cx = (sx0 + sx1) // 2
     d.text((cx, sy0 + 95), title, font=font(38, 800), fill=title_color, anchor="mm")
     rows = ([("赤組", "+55.0", BLUE, None, TEAM["赤"]), ("青組", "+8.0", BLUE, None, TEAM["青"]),
@@ -122,6 +122,27 @@ def screen_setup(d, sx0, sy0, sx1):
     d.text((x + half / 2, sy0 + 494), "四麻", font=font(26, 700), fill=(255, 255, 255), anchor="mm")
     d.rounded_rectangle([x + half + 12, sy0 + 466, sx1 - 30, sy0 + 522], radius=12, fill=FAINT)
     d.text((x + half + 12 + half / 2, sy0 + 494), "三麻", font=font(26, 700), fill=LGRAY, anchor="mm")
+
+def screen_quickstart(d, sx0, sy0, sx1):
+    """LP「はじめる」を押すと出る2択モーダル（アプリの #quick-start と同じ構成）"""
+    cx = (sx0 + sx1) // 2
+    x = sx0 + 26
+    x1 = sx1 - 26
+    d.text((cx, sy0 + 108), "何人で打ちますか？", font=font(33, 800), fill=(26, 26, 26), anchor="mm")
+    d.text((cx, sy0 + 152), "選ぶだけで、すぐ始められます", font=font(21, 500), fill=GRAY, anchor="mm")
+    for i, (n, label, note, col) in enumerate([
+            (4, "四麻ではじめる", "25,000点持ち・ウマ10-30", GREEN),
+            (3, "三麻ではじめる", "30,000点持ち・ウマ10-0-10", BLUE_SANMA)]):
+        y = sy0 + 196 + i * 132
+        d.rounded_rectangle([x, y, x1, y + 112], radius=18, fill=col)
+        d.text((x + 38, y + 54), str(n), font=font(44, 900), fill=(255, 255, 255), anchor="mm")
+        d.text((x + 58, y + 64), "人", font=font(18, 700), fill=(255, 255, 255), anchor="lm")
+        d.text((x + 84, y + 42), label, font=font(25, 800), fill=(255, 255, 255), anchor="lm")
+        d.text((x + 84, y + 78), note, font=font(15, 500), fill=(226, 240, 243), anchor="lm")
+    y = sy0 + 470
+    d.rounded_rectangle([x, y, x1, y + 62], radius=14, fill=FAINT, outline=BORDER, width=3)
+    d.text((cx, y + 31), "ルールを先に決める ›", font=font(22, 600), fill=GRAY, anchor="mm")
+
 
 def screen_chat(d, sx0, sy0, sx1):
     cx = (sx0 + sx1) // 2
@@ -198,7 +219,7 @@ def two_phones(d):
         d.rounded_rectangle([x0 + 13, y0 + 13, x1 - 13, H + 160], radius=38, fill=(255, 255, 255))
         cx = (x0 + x1) // 2
         d.rounded_rectangle([cx - 42, y0 + 27, cx + 42, y0 + 47], radius=10, fill=DARK)
-        d.text((cx, y0 + 84), "スコア収支", font=font(30, 800), fill=GREEN, anchor="mm")
+        d.text((cx, y0 + 84), "総合順位", font=font(30, 800), fill=GREEN, anchor="mm")
         rows = [("太郎", "+55.0", BLUE, "\U0001F947"), ("次郎", "+8.0", BLUE, "\U0001F948"), ("三郎", "-18.0", RED, "\U0001F949")]
         y = y0 + 118
         for name, val, vc, medal in rows:
@@ -246,7 +267,7 @@ def slide(fname, title_lines, sub=None, sub_hl=None, screen_fn=None, step=None, 
 
 # ==== 使い方カルーセル（6枚） ====
 slide("howto-1-cover.png", ["使い方は", "かんたん4ステップ"], sub="｜1分でわかる「まじゃすこ」", sub_hl="登録不要・無料", screen_fn=screen_score)
-slide("howto-2-step1.png", ["グループを作る"], sub="グループ名とメンバーを入れるだけ（10秒）", screen_fn=screen_setup, step="STEP 1")
+slide("howto-2-step1.png", ["人数を選ぶ"], sub="4人か3人かを選ぶだけ。すぐ入力画面へ", screen_fn=screen_quickstart, step="STEP 1")
 slide("howto-3-step2.png", ["URLをシェアする"], sub="LINEで送れば、全員が同じスコア表に", screen_fn=screen_chat, step="STEP 2")
 slide("howto-4-step3.png", ["点数を入れるだけ"], sub="ウマ・オカ込みのスコアを自動計算", screen_fn=screen_input, step="STEP 3")
 slide("howto-5-step4.png", ["結果は全員のスマホに"], sub="順位・成績・グラフまで自動で記録", screen_fn=screen_score, step="STEP 4")
