@@ -132,7 +132,7 @@ def screen_quickstart(d, sx0, sy0, sx1):
     d.text((cx, sy0 + 152), "選ぶだけで、すぐ始められます", font=font(21, 500), fill=GRAY, anchor="mm")
     for i, (n, label, note, col) in enumerate([
             (4, "四麻ではじめる", "25,000点持ち・ウマ10-30", GREEN),
-            (3, "三麻ではじめる", "30,000点持ち・ウマ10-0-10", BLUE_SANMA)]):
+            (3, "三麻ではじめる", "35,000点持ち・ウマ10-0-10", BLUE_SANMA)]):
         y = sy0 + 196 + i * 132
         d.rounded_rectangle([x, y, x1, y + 112], radius=18, fill=col)
         d.text((x + 38, y + 54), str(n), font=font(44, 900), fill=(255, 255, 255), anchor="mm")
@@ -204,7 +204,7 @@ def screen_rules(d, sx0, sy0, sx1):
     d.text((x + half / 2, sy0 + 191), "四麻", font=font(26, 700), fill=LGRAY, anchor="mm")
     d.rounded_rectangle([x + half + 12, sy0 + 163, sx1 - 30, sy0 + 219], radius=12, fill=BLUE_SANMA)
     d.text((x + half + 12 + half / 2, sy0 + 191), "三麻", font=font(26, 700), fill=(255, 255, 255), anchor="mm")
-    items = [("持ち点", "35,000"), ("返し点", "40,000"), ("ウマ", "15-0-15"), ("スコア倍率", "×100")]
+    items = [("持ち点", "35,000"), ("返し点", "35,000"), ("ウマ", "10-0-10"), ("同点のとき", "山分け")]
     y = sy0 + 260
     for label, val in items:
         d.text((x, y + 14), label, font=font(24, 600), fill=LGRAY, anchor="lm")

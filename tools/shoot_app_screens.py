@@ -30,7 +30,7 @@ SID_TEAM = "teamv2abcd"
 SID_CHIPS = "chpv2abcde"
 
 # scoresは (点数-返し点)/1000 + ウマ + トップにオカ を手計算した値（四麻: 25000/30000でオカ20、
-# 三麻: 30000/35000でオカ15）。チョンボは罰符ptsをそのまま減算
+# 三麻: 35000/35000でオカ0）。チョンボは罰符ptsをそのまま減算
 GAMES = {
     SID_NORMAL: {
         "id": SID_NORMAL, "name": "金曜メンバー", "createdAt": "2026-07-17T11:05:00.000Z",
@@ -54,17 +54,17 @@ GAMES = {
         "id": SID_SANMA, "name": "木曜三麻会", "createdAt": "2026-07-16T20:00:00.000Z",
         "settings": {
             "playerNames": ["太郎", "次郎", "三郎"],
-            "numPlayers": 3, "startPoints": 30000, "returnPoints": 35000,
+            "numPlayers": 3, "startPoints": 35000, "returnPoints": 35000,
             "uma": [10, 0, -10], "rate": 0, "bonusEnabled": False,
             "chipRate": 1, "startChips": 0, "yakitori": False,
             "chombo": False, "chomboPenalty": 20, "teamMode": False,
         },
         "rounds": [
-            {"points": [48200, 27400, 14400], "scores": [38.2, -7.6, -30.6],
+            {"points": [52300, 33400, 19300], "scores": [27.3, -1.6, -25.7],
              "members": [0, 1, 2], "at": "2026-07-16T20:15:00.000Z"},
-            {"points": [26800, 41300, 21900], "scores": [-8.2, 31.3, -23.1],
+            {"points": [30200, 48100, 26700], "scores": [-4.8, 23.1, -18.3],
              "members": [0, 1, 2], "at": "2026-07-16T20:55:00.000Z"},
-            {"points": [38700, 19500, 31800], "scores": [28.7, -25.5, -3.2],
+            {"points": [45600, 24100, 35300], "scores": [20.6, -20.9, 0.3],
              "members": [0, 1, 2], "at": "2026-07-16T21:30:00.000Z"},
         ],
     },

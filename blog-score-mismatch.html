@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀の点数が合わないときのチェックリスト｜集計係が使う原因の切り分け方", "description": "半荘の点棒の合計が合わない、スコアの合計が0にならない。そんなときに上から順に潰していける実践チェックリストです。ズレ幅から原因を特定する方法と、二度と起こさないための予防策を集計係の視点でまとめました。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-mismatch.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀の点数が合わないときのチェックリスト｜集計係が使う原因の切り分け方", "description": "半荘の点棒の合計が合わない、スコアの合計が0にならない。そんなときに上から順に潰していける実践チェックリストです。ズレ幅から原因を特定する方法と、二度と起こさないための予防策を集計係の視点でまとめました。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-09-17", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-mismatch.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -107,8 +107,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <tbody>
       <tr><td>四麻・25,000点持ち</td><td>100,000点</td></tr>
       <tr><td>四麻・30,000点持ち</td><td>120,000点</td></tr>
-      <tr><td>三麻・30,000点持ち</td><td>90,000点</td></tr>
       <tr><td>三麻・35,000点持ち</td><td>105,000点</td></tr>
+      <tr><td>三麻・30,000点持ち</td><td>90,000点</td></tr>
     </tbody>
   </table>
   <p>この2つが「ものさし」です。ズレを見つけたら、まず<strong>どちらの段階でズレているのか</strong>を切り分けます。ここを飛ばして最初から全部見直すと、深夜の脳では絶対に見つかりません。</p>
@@ -176,7 +176,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>正しくは、<strong>同点は同順位にして、その順位帯のウマとオカを人数で均等に割る</strong>。1位が2人なら（1位のウマ + 2位のウマ）÷ 2 ずつ、オカも2人で山分けです。実際の数字は<a href="/blog-score-examples.html">スコア計算 実例12パターン</a>のパターン5〜7で、途中式ごと確認できます。</p>
 
   <h3>三麻に四麻のウマを使っていないか</h3>
-  <p>意外に多いのがこれです。四麻のウマ「10-30」（+30／+10／−10／−30）は4人で合計0になる設計なので、3人にそのまま使うと +30 + 10 − 10 = <strong>+30</strong> となり、毎半荘 +30 ずつズレ続けます。三麻では「15-0-15」のように<strong>2位を0にして1位と3位を対称にした形</strong>を使ってください。</p>
+  <p>意外に多いのがこれです。四麻のウマ「10-30」（+30／+10／−10／−30）は4人で合計0になる設計なので、3人にそのまま使うと +30 + 10 − 10 = <strong>+30</strong> となり、毎半荘 +30 ずつズレ続けます。三麻では「10-0-10」のように<strong>2位を0にして1位と3位を対称にした形</strong>を使ってください。</p>
 
   <h3>素点を整数に丸めていないか</h3>
   <p>41,300点の素点は +11.3 です。これを +11 に丸めると、丸めた誤差の分だけ合計が0からずれます。<strong>途中では丸めず、表示だけ小数第1位にする</strong>のが鉄則です。</p>

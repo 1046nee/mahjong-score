@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-08-25", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-09-17", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -217,29 +217,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p>手計算でここを間違える人が多いのは、<strong>「−4,500 − 30,000」を「−4,500 + 30,000」と打ち間違える</strong>からです。マイナスの持ち点が出た半荘は、素点の符号だけ声に出して確認するくらいでちょうどいいと思います。なお、トビ賞（飛ばした人にボーナス）を採用しているグループは、ここまで計算した<em>あと</em>に別枠で足し引きします。素点・ウマ・オカの式には混ぜないでください。</p>
 
-  <h3>パターン9｜三麻（30,000点持ち・35,000点返し・ウマ15-0-15）</h3>
-  <p>三麻はオカの式の「人数」が3になります。（35,000 − 30,000）× 3 ÷ 1,000 = <strong>+15.0pts</strong>。持ち点は A 53,000／B 29,000／C 8,000（合計90,000点＝30,000×3人）。</p>
+  <h3>パターン9｜三麻（35,000点持ち・35,000点返し・ウマ10-0-10）</h3>
+  <p>三麻はオカの式の「人数」が3になります。ここは持ち点と返し点が同じなので（35,000 − 35,000）× 3 ÷ 1,000 = <strong>0pts</strong>、つまり<strong>オカなし</strong>です。順位による上乗せはウマだけになります。持ち点は A 58,000／B 34,000／C 13,000（合計105,000点＝35,000×3人）。</p>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>53,000</td><td>+18.0</td><td>+15</td><td>+15.0</td><td><strong>+48.0</strong></td></tr>
-      <tr><td>2位 B</td><td>29,000</td><td>−6.0</td><td>0</td><td>—</td><td><strong>−6.0</strong></td></tr>
-      <tr><td>3位 C</td><td>8,000</td><td>−27.0</td><td>−15</td><td>—</td><td><strong>−42.0</strong></td></tr>
+      <tr><td>1位 A</td><td>58,000</td><td>+23.0</td><td>+10</td><td>—</td><td><strong>+33.0</strong></td></tr>
+      <tr><td>2位 B</td><td>34,000</td><td>−1.0</td><td>0</td><td>—</td><td><strong>−1.0</strong></td></tr>
+      <tr><td>3位 C</td><td>13,000</td><td>−22.0</td><td>−10</td><td>—</td><td><strong>−32.0</strong></td></tr>
     </tbody>
   </table>
-  <p>三麻のウマが「15-0-15」のように<strong>2位を0にして1位と3位を対称にする</strong>のは、こうすればウマの合計がきれいに0になるからです。四麻の10-30をそのまま3人に流用すると（30 + 10 − 10 = +30）合計が0にならず、集計が壊れます。三麻と四麻の違いは<a href="/blog-sanma-yonma.html">3人麻雀と4人麻雀の違い</a>にまとめています。</p>
+  <p>三麻のウマが「10-0-10」のように<strong>2位を0にして1位と3位を対称にする</strong>のは、こうすればウマの合計がきれいに0になるからです。四麻の10-30をそのまま3人に流用すると（30 + 10 − 10 = +30）合計が0にならず、集計が壊れます。三麻と四麻の違いは<a href="/blog-sanma-yonma.html">3人麻雀と4人麻雀の違い</a>にまとめています。</p>
 
   <h3>パターン10｜三麻で2位・3位が同点</h3>
-  <p>A 54,000／B 18,000／C 18,000。BとCで（0 − 15）÷ 2 = −7.5 ずつ。</p>
+  <p>パターン9と同じ設定（35,000点持ち・35,000点返し・ウマ10-0-10）で、A 57,000／B 24,000／C 24,000。BとCでウマを山分けして（0 − 10）÷ 2 = −5.0 ずつ。</p>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>54,000</td><td>+19.0</td><td>+15</td><td>+15.0</td><td><strong>+49.0</strong></td></tr>
-      <tr><td>2位 B</td><td>18,000</td><td>−17.0</td><td>−7.5</td><td>—</td><td><strong>−24.5</strong></td></tr>
-      <tr><td>2位 C</td><td>18,000</td><td>−17.0</td><td>−7.5</td><td>—</td><td><strong>−24.5</strong></td></tr>
+      <tr><td>1位 A</td><td>57,000</td><td>+22.0</td><td>+10</td><td>—</td><td><strong>+32.0</strong></td></tr>
+      <tr><td>2位 B</td><td>24,000</td><td>−11.0</td><td>−5.0</td><td>—</td><td><strong>−16.0</strong></td></tr>
+      <tr><td>2位 C</td><td>24,000</td><td>−11.0</td><td>−5.0</td><td>—</td><td><strong>−16.0</strong></td></tr>
     </tbody>
   </table>
-  <p>合計 49.0 − 24.5 − 24.5 = <strong>0.0</strong>。0.5刻みの端数が出ますが、これは正しい姿です。「半端な数字が出た＝間違い」ではないので、無理に丸めないでください。</p>
+  <p>合計 32.0 − 16.0 − 16.0 = <strong>0.0</strong>。ウマの数字が奇数のとき（15-0-15で2位・3位が同点なら −7.5 ずつ）は0.5刻みの端数が出ますが、これは正しい姿です。「半端な数字が出た＝間違い」ではないので、無理に丸めないでください。</p>
 
   <h3>パターン11｜チョンボ罰符あり（ここだけ合計が0にならない）</h3>
   <p>パターン1と同じ持ち点で、Dがチョンボ（罰符 −20pts）した場合。</p>
@@ -313,7 +313,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <li>計算は<strong>素点 → ウマ → オカ</strong>の3ステップ。どのパターンでもこれは変わらない。</li>
     <li><strong>全員のスコアの合計は0</strong>。0にならなければ必ずどこかが間違っている（唯一の例外はチョンボ罰符）。</li>
     <li>同点は<strong>同順位にして、その順位帯のウマとオカを人数で割る</strong>。空席になった順位に誰かを入れない。</li>
-    <li>三麻は<strong>オカの人数が3</strong>、ウマは<strong>合計0になる形</strong>（15-0-15など）を使う。</li>
+    <li>三麻は<strong>オカの人数が3</strong>（持ち点と返し点が同じならオカなし）、ウマは<strong>合計0になる形</strong>（10-0-10など）を使う。</li>
     <li>マイナスの持ち点は<strong>符号だけ声に出して確認</strong>。ここが手計算最大の落とし穴。</li>
   </ul>
 
