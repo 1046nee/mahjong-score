@@ -72,7 +72,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のウマ・オカとは？初心者向けスコア計算入門", "description": "麻雀のウマ・オカ、返し点、素点とは何かを初心者向けに解説。順位で決まるスコアの計算方法を、具体的な数字の例つきでわかりやすく説明します。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-07-06", "dateModified": "2026-09-17", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-uma-oka.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のウマ・オカとは？初心者向けスコア計算入門", "description": "麻雀のウマ・オカ、返し点、素点とは何かを初心者向けに解説。順位で決まるスコアの計算方法を、具体的な数字の例つきでわかりやすく説明します。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-07-06", "dateModified": "2026-09-18", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-uma-oka.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -99,6 +99,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>麻雀のスコアは、持ち点そのままではない</h2>
   <p>まず前提として、麻雀の最終的な勝ち負けは、対局終了時の持ち点をそのまま比べるわけではありません。持ち点に「返し点」「ウマ」「オカ」というルールを反映して、<strong>スコア（pt）</strong>に直してから比べるのが一般的です。ひとつずつ見ていきましょう。</p>
 
+  <table>
+  <thead><tr><th>言葉</th><th>ひとことで言うと</th><th>例（四麻 25,000点持ち・30,000点返し）</th></tr></thead>
+  <tbody>
+  <tr><td><strong>返し点</strong></td><td>スコアの基準にする点数。ここをちょうど0とみなす</td><td>30,000点</td></tr>
+  <tr><td><strong>素点</strong></td><td>（持ち点 − 返し点）÷ 1,000。持ち点をptsに直した値</td><td>35,000点なら +5.0pts</td></tr>
+  <tr><td><strong>ウマ</strong></td><td>順位に応じて足し引きする点。順位点ともいう</td><td>10-30なら 1位+30／2位+10／3位−10／4位−30</td></tr>
+  <tr><td><strong>オカ</strong></td><td>（返し点 − 持ち点）× 人数。1位がまとめて受け取る</td><td>5,000 × 4人 ＝ +20.0pts</td></tr>
+  </tbody>
+  </table>
+  <p>返し点は基準にする点数なので、足し算には出てきません。残りの<strong>素点・ウマ・オカの3つを足したもの</strong>が、その人のスコアです。</p>
+  <p><strong>スコア ＝ 素点 ＋ ウマ ＋（1位ならオカ）</strong></p>
+  <p>そして<span class="hl">全員のスコアを合計すると必ず0になります</span>。これがこの仕組みのいちばん大事なところで、合計が0にならなければどこかが間違っている、という検算にそのまま使えます。</p>
+
   <h2>素点と返し点</h2>
   <p><strong>返し点</strong>とは、スコア計算の基準になる点数のこと。多くの場合、30,000点に設定されます。</p>
   <p>この返し点を持ち点から引いて、1,000点を1ポイントとして換算したものが<strong>素点</strong>です。</p>
@@ -106,7 +119,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <li>持ち点が35,000点なら、35,000 − 30,000 = 5,000 → <span class="hl">+5.0pt</span></li>
     <li>持ち点が22,000点なら、22,000 − 30,000 = −8,000 → <span class="hl">−8.0pt</span></li>
   </ul>
-  <p>持ち点が返し点より多ければプラス、少なければマイナス。それだけの計算です。</p>
+  <p>持ち点が返し点より多ければプラス、少なければマイナス。それだけの計算です。式で書くとこうなります。</p>
+  <p><strong>素点 ＝（持ち点 − 返し点）÷ 1,000</strong></p>
+  <p>返し点は四麻なら30,000点がいちばん多く使われます。三麻は35,000点にすることが多く、そのときの素点も同じ式で出します（35,000点持ちで終わったなら ±0、48,000点なら +13.0pts）。<strong>返し点を変えると全員の素点が同じだけ動く</strong>ので、途中で変えないでください。</p>
 
   <h2>ウマ（順位点）とは</h2>
   <p><strong>ウマ</strong>は、最終順位に応じて加えたり引いたりするポイントです。順位点とも呼ばれます。「10-30」のように書き、これは次の意味になります。</p>
@@ -120,6 +135,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p><strong>オカ</strong>は、1位の人だけが受け取るボーナスのようなものです。持ち点と返し点の差に人数をかけた分を、トップが総取りします。</p>
   <p>たとえば25,000点持ち・30,000点返しの4人麻雀なら、差の5,000点 × 4人 = 20,000点 = <span class="hl">20pt</span>。これが1位に加算されます。</p>
   <p>なぜこんなルールがあるのかというと、返し点（30,000）が持ち点（25,000）より高いぶん、全員の素点を合計するとマイナスになります。その足りない分を1位がまとめて回収することで、<strong>全員のスコアの合計がちょうど0になる</strong>仕組みなんです。</p>
+  <p>ここから分かるとおり、<strong>オカは持ち点と返し点の差から自動的に決まります</strong>。自分で数字を決めるものではありません。</p>
+  <table>
+  <thead><tr><th>持ち点／返し点</th><th>人数</th><th>オカ</th></tr></thead>
+  <tbody>
+  <tr><td>25,000／30,000（四麻の定番）</td><td>4人</td><td>+20.0pts</td></tr>
+  <tr><td>30,000／30,000</td><td>4人</td><td>なし（0）</td></tr>
+  <tr><td>30,000／35,000</td><td>3人</td><td>+15.0pts</td></tr>
+  <tr><td>35,000／35,000（三麻でオカなし）</td><td>3人</td><td>なし（0）</td></tr>
+  </tbody>
+  </table>
+  <p><strong>持ち点と返し点を同じにすれば、オカは0</strong>です。「オカなし」と呼ばれるのはこの設定のことで、素点とウマだけで順位表がつくられます。トップの価値が軽くなるので、初参加の人が多い会では扱いやすい形です。</p>
 
   <h2>具体例で計算してみる</h2>
   <p>4人麻雀、持ち点25,000・返し点30,000・ウマ10-30として、次の結果で計算してみましょう。</p>
