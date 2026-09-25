@@ -134,6 +134,38 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .fdot { width: 7px; height: 7px; border-radius: 4px; background: #d3e2dc; transition: width 0.25s, background 0.25s; }
 .fdot.on { width: 22px; background: #177083; }
 .feature-icon svg { display: block; }
+/* アプリ内アイコンの色（スプライトの fill="var(--i1)" などが参照する）。三麻は青・削除は赤に置き換える */
+/* ===== デザインのトークン（色の役割は4つ。混ぜない）=====
+   ティール #177083（三麻は青 #4261AA）＝操作・選択・見出し・アイコン ／ 着順の色（--rkN）＝1試合の「着」 ／
+   メダル（--mdN）＝人の「位」 ／ 紺と赤＝スコアの正負・勝ち負け。オレンジ #E75620 はCTAボタンだけ */
+:root {
+  /* アイコン（スプライトの fill="var(--i1)" などが参照する）。差し色 --i4 は .ico の上で決める（下の .ico を参照） */
+  --i1: #177083; --i2: #9fc3bd; --i3: #E4F3EC; --ic-neg: #C62828;
+  /* 面・文字 */
+  --c-sep: #D5DEDB; --c-ink: #1F2A28; --c-ink-2: #4F5C5A; --c-ink-3: #5F6E6B; --c-chev: #B5C0BD;
+  /* 着順（1着ゴールド・2着スチール・3着グレー・ラスはクリムゾン。三麻の3着＝ラス）。
+     塗り --rkN ／塗りの上の文字 -on ／淡い地 -tint ／淡い地の上の文字 -ink */
+  --rk1: #D4A017; --rk1-on: #3B2C00; --rk1-tint: #FBF1D3; --rk1-ink: #7A5800;
+  --rk2: #6E8CA8; --rk2-on: #0F1B26; --rk2-tint: #E6EDF4; --rk2-ink: #3E5870;
+  --rk3: #B4C0BD; --rk3-on: #1F2A28; --rk3-tint: #EEF2F1; --rk3-ink: #4F5F5C;
+  --rk4: #C92F42; --rk4-on: #FFFFFF; --rk4-tint: #FBE4E7; --rk4-ink: #A8283A;
+  /* 位（メダル。画像出力の IMG_MEDAL と同じ値。4位以下は md0） */
+  --md1: #D4A017; --md1-on: #3B2C00; --md1-tint: #FBF1D3; --md1-ink: #7A5800;
+  --md2: #9AA5AD; --md2-on: #1F2A28; --md2-tint: #EEF1F3; --md2-ink: #4F5B63;
+  --md3: #C97B3F; --md3-on: #2E1A0A; --md3-tint: #F6E8DC; --md3-ink: #7D4A22;
+  --md0: #E3E9E8; --md0-on: #4F5C5A; --md0-tint: #EEF2F1; --md0-ink: #4F5C5A;
+  /* 影 */
+  --sh-1: 0 1px 2px rgba(16,40,36,.06);
+  --sh-2: 0 1px 2px rgba(16,40,36,.06), 0 4px 14px rgba(16,40,36,.05);
+  --sh-thumb: 0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04);
+}
+.sanma, body.sanma-mode .sheet { --i1: #4261AA; --i2: #a9b8dc; --i3: #EAF0FB; }
+.danger { --i1: #c62828; --i2: #f0a8a8; --i3: #fdecec; }
+.ico, .medal { display: inline-block; vertical-align: middle; flex-shrink: 0; }
+/* オレンジはCTAボタン限定。アイコンの差し色（--i4）は主色に置き換え、空の状態の大きい挿絵（.ico-l）だけLPと同じオレンジを1点残す。
+   --i4 は必ず .ico の上で決める（:root で決めると #177083 に固定されて受け継がれ、三麻の青・削除の赤に追従しない） */
+.ico { --i4: var(--i1); }
+.ico.ico-l { --i4: #E75620; }
 @media (min-width: 700px) { .feature { flex: 0 0 300px; } .features-nav { display: block; } }
 .feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .fi-green { background: #E4F3EC; }
@@ -358,6 +390,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 
 /* Edit tab (rounds) */
 .edit-tab { background: #f0f0f0; border: none; color: #999; border-radius: 5px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600; }
+/* ボタン・文中に置くアイコンの位置合わせ（文字の中心にそろえる） */
+.edit-tab .ico, .auto-btn .ico { margin: -2px 5px 0 0; }
+.ico-in { margin: -3px 2px 0; }
 .edit-tab:active { background: #e0e0e0; }
 /* ページタイトル横の「URLを共有」「設定の編集」（三麻モードでは青系に）。
    薄い塗りだけだと画面の背景（#DBF4F9）とのコントラストが1.01でボタンに見えないため、
@@ -405,7 +440,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rank-badge.rank-2 { color: #8e9aa5; }
 .rank-badge.rank-3 { color: #b46a3c; }
 .rank-badge.rank-last { color: #546e7a; }
-.rank-emoji { font-size: 18px; display: block; line-height: 1; }
+.rank-medal { display: block; line-height: 0; margin: 0 auto 3px; }
 .rank-num { font-size: 11px; font-weight: 800; display: block; white-space: nowrap; }
 
 /* Form modal (settings edit) */
@@ -482,9 +517,22 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
 .chip-input:focus-within { border-color: #177083; }
 .sheet.sanma .chip-input:focus-within { border-color: #4261AA; }
-/* 焼き鳥🐔トグル（OFFはグレー表示） */
-.yaki-btn { border: 1.5px solid #ddd; background: #fff; border-radius: 8px; width: 42px; padding: 8px 0; text-align: center; font-size: 15px; cursor: pointer; flex-shrink: 0; filter: grayscale(1); opacity: 0.45; }
-.yaki-btn.on { border-color: #E75620; background: #fdeee7; filter: none; opacity: 1; }
+/* 焼き鳥・チョンボのトグル。OFFは灰色の変数（filter・opacityは使わない）、ONは焼き鳥=主色・チョンボ=赤いバッジ。
+   ONは右上のチェックと aria-pressed でも示す（色だけに頼らない） */
+.yaki-btn { position: relative; width: 42px; height: 40px; padding: 0; border: 1.5px solid #DDE4E2; border-radius: 10px; background: #fff; display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
+  transition: background .15s, border-color .15s, transform .08s; }
+.yaki-btn:active { transform: scale(.94); }
+.yaki-btn .ico { --i1: #B9C3C0; --i2: #DDE4E2; --ic-neg: #B9C3C0; }
+.yaki-btn.on { border-color: #177083; background: #E4F3EC; }
+.yaki-btn.on .ico { --i1: #177083; --i2: #9FC3BD; }
+.yaki-btn.chombo.on { border-color: #C62828; background: #FDECEC; }
+.yaki-btn.chombo.on .ico { --i1: #177083; --i2: #9FC3BD; --ic-neg: #C62828; }
+.sheet.sanma .yaki-btn.on:not(.chombo) { border-color: #4261AA; background: #EAF0FB; }
+.sheet.sanma .yaki-btn.on .ico { --i1: #4261AA; --i2: #A9B8DC; }
+.yaki-btn.on::after { content: ''; position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 1.5px #fff;
+  background: #177083 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/10px no-repeat; }
+.yaki-btn.chombo.on::after { background-color: #C62828; }
+.sheet.sanma .yaki-btn.on:not(.chombo)::after { background-color: #4261AA; }
 /* 総合順位カード: スコア/チップの切替トグルと、順位エリアのスムーズな置き換え */
 .mini-toggle { display: flex; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .mini-toggle button { border: none; background: #fff; color: #888; font-size: 11px; font-weight: 700; padding: 6px 11px; cursor: pointer; transition: background 0.15s, color 0.15s; }
@@ -710,7 +758,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-panel { background: #fff; border-radius: 18px; padding: 14px; box-shadow: 0 1px 3px rgba(16,40,36,.07); }
 .mp-lead { font-size: 12px; color: #5f6e6b; line-height: 1.7; margin-bottom: 10px; }
 .mp-empty { text-align: center; padding: 22px 16px; }
-.mp-empty .mp-empty-ico { font-size: 30px; margin-bottom: 6px; }
+.mp-empty .mp-empty-ico { width: 60px; height: 60px; border-radius: 50%; background: var(--i3); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
 .mp-empty b { display: block; font-size: 14px; color: #1f2a28; margin-bottom: 4px; }
 .mp-empty span { display: block; font-size: 12px; color: #5f6e6b; line-height: 1.7; }
 .mp-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -784,7 +832,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gm-dots { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f2f6f5; color: #5f6e6b; font-size: 17px; font-weight: 900; line-height: 1; cursor: pointer; }
 .menu-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 13px 4px; background: none; border: none; border-top: 1px solid #eef1f4; font-size: 14px; font-weight: 700; color: #1f2a28; cursor: pointer; text-align: left; }
 .menu-btn:first-child { border-top: none; }
-.menu-btn .mb-ico { width: 30px; height: 30px; border-radius: 9px; background: #eef6f4; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.menu-btn .mb-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--i3); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .menu-btn small { display: block; font-size: 11px; font-weight: 500; color: #8a9aa5; margin-top: 1px; }
 .menu-btn.danger { color: #c62828; }
 .menu-btn.danger .mb-ico { background: #fdecec; }
@@ -808,7 +856,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pd { text-align: center; cursor: pointer; min-width: 0; }
 .pd-av { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 21px; font-weight: 900; position: relative; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(16,40,36,.15); }
 .pd.p1 .pd-av { width: 62px; height: 62px; font-size: 25px; }
-.pd-medal { position: absolute; right: -6px; bottom: -4px; font-size: 18px; }
+.pd-medal { position: absolute; right: -6px; bottom: -4px; line-height: 0; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .pd-name { font-size: 12px; font-weight: 800; color: #1f2a28; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pd-val { font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; margin-top: 1px; }
 .pd-base { margin-top: 6px; border-radius: 12px 12px 4px 4px; color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: flex-start; justify-content: center; padding-top: 6px; }
@@ -844,7 +892,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sh-opt { border-radius: 16px; padding: 14px; margin-bottom: 10px; background: #f5f9f8; }
 .sh-opt.main { background: #eef7f4; border: 1.5px solid #b7dccd; }
 .sh-h { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 900; color: #1f2a28; }
-.sh-h .sh-ico { width: 30px; height: 30px; border-radius: 9px; background: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }
+.sh-h .sh-ico { width: 34px; height: 34px; border-radius: 10px; background: #fff; display: inline-flex; align-items: center; justify-content: center; }
 .sh-d { font-size: 12px; color: #5f6e6b; line-height: 1.7; margin: 6px 0 10px; }
 .sh-d b { color: #1f2a28; }
 .sh-url { display: flex; gap: 6px; }
@@ -866,6 +914,40 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 </style>
 </head>
 <body>
+<!-- アプリ内アイコンのスプライト（LPの特徴カードと同じ描き方: 48×48・フラットトーン）。
+     使う側は <svg class="ico"><use href="#i-名前"/></svg>（JSは ico(名前, サイズ)）。
+     色はCSS変数 --i1 主色 / --i2 副色 / --i3 淡色 / --i4 差し色。三麻・削除は変数の上書きで色が変わる。
+     display:none にすると一部ブラウザで参照先が描かれないため、大きさ0で隠す -->
+<svg id="icon-sprite" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="i-tile" viewBox="0 0 48 48"><rect x="15" y="4" width="25" height="33" rx="5" fill="var(--i2)"/><rect x="8" y="10" width="25" height="34" rx="5" fill="#fff" stroke="var(--i1)" stroke-width="3"/><rect x="13.5" y="21" width="14" height="11" rx="2.2" fill="none" stroke="var(--i4)" stroke-width="2.8"/><path d="M20.5 16.5 V37" stroke="var(--i4)" stroke-width="2.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 48 48"><rect x="7" y="8" width="34" height="32" rx="6" fill="var(--i3)"/><path d="M13 32 L20.5 24 L27 28 L35 17" stroke="var(--i1)" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="35" cy="17" r="3.4" fill="var(--i4)"/></symbol>
+  <symbol id="i-person" viewBox="0 0 48 48"><circle cx="24" cy="16" r="8" fill="var(--i1)"/><path d="M9 41 a15 13 0 0 1 30 0 Z" fill="var(--i1)"/></symbol>
+  <symbol id="i-people" viewBox="0 0 48 48"><circle cx="13" cy="18" r="5.5" fill="var(--i2)"/><path d="M4 36 a9 8.5 0 0 1 18 0 Z" fill="var(--i2)"/><circle cx="35" cy="18" r="5.5" fill="var(--i2)"/><path d="M26 36 a9 8.5 0 0 1 18 0 Z" fill="var(--i2)"/><circle cx="24" cy="20" r="7" fill="var(--i1)"/><path d="M12 41 a12 11 0 0 1 24 0 Z" fill="var(--i1)"/></symbol>
+  <symbol id="i-table" viewBox="0 0 48 48"><rect x="9" y="7" width="30" height="34" rx="5" fill="#fff" stroke="var(--i1)" stroke-width="3"/><path d="M9 16 H39" stroke="var(--i1)" stroke-width="3"/><g stroke="var(--i2)" stroke-width="3" stroke-linecap="round"><path d="M15 23 H33"/><path d="M15 29 H33"/><path d="M15 35 H26"/></g></symbol>
+  <symbol id="i-pencil" viewBox="0 0 48 48"><path d="M30.5 8.5 l9 9 L18 39 l-11 2 2-11 Z" fill="var(--i1)"/><path d="M30.5 8.5 l9 9 l-4 4 l-9-9 Z" fill="var(--i2)"/><path d="M9 30 l9 9 l-11 2 Z" fill="var(--i2)"/></symbol>
+  <symbol id="i-link" viewBox="0 0 48 48"><path d="M21 27 a7 7 0 0 1 0-10 l5-5 a7 7 0 0 1 10 10 l-2.5 2.5" stroke="var(--i1)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M27 21 a7 7 0 0 1 0 10 l-5 5 a7 7 0 0 1-10-10 l2.5-2.5" stroke="var(--i2)" stroke-width="4" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-me" viewBox="0 0 48 48"><circle cx="21" cy="16" r="8" fill="var(--i1)"/><path d="M6 41 a15 13 0 0 1 30 0 Z" fill="var(--i1)"/><circle cx="36" cy="33" r="9" fill="var(--i4)" stroke="#fff" stroke-width="3"/><path d="M32 33.2 l3 3 l5.2-5.6" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 48 48"><rect x="12" y="15" width="24" height="26" rx="4" fill="var(--i1)"/><rect x="8" y="10" width="32" height="5" rx="2.5" fill="var(--i2)"/><rect x="19" y="6" width="10" height="5" rx="2" fill="var(--i2)"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".85"><path d="M19.5 21 V35"/><path d="M28.5 21 V35"/></g></symbol>
+  <symbol id="i-eye" viewBox="0 0 48 48"><path d="M4 24 C11 13 18 10 24 10 C30 10 37 13 44 24 C37 35 30 38 24 38 C18 38 11 35 4 24 Z" fill="#fff" stroke="var(--i1)" stroke-width="3"/><circle cx="24" cy="24" r="8" fill="var(--i1)"/><circle cx="27" cy="21" r="2.6" fill="#fff"/></symbol>
+  <symbol id="i-image" viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="30" rx="5" fill="#fff" stroke="var(--i1)" stroke-width="4"/><path d="M9 36 L19 24 L27 32 L32 27 L39 36 Z" fill="var(--i2)"/><circle cx="33" cy="18" r="3.6" fill="var(--i4)"/></symbol>
+  <symbol id="i-phoneAdd" viewBox="0 0 48 48"><rect x="11" y="4" width="22" height="40" rx="5" fill="var(--i1)"/><rect x="14.5" y="9" width="15" height="26" rx="2" fill="var(--i3)"/><circle cx="34" cy="31" r="10" fill="var(--i4)" stroke="#fff" stroke-width="3"/><path d="M34 26 V36 M29 31 H39" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-checklist" viewBox="0 0 48 48"><rect x="7" y="7" width="34" height="34" rx="6" fill="#fff" stroke="var(--i1)" stroke-width="3.6"/><g stroke="var(--i1)" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17 l2.8 2.8 l4.6-5"/><path d="M13 30 l2.8 2.8 l4.6-5"/></g><g stroke="var(--i2)" stroke-width="3.6" stroke-linecap="round"><path d="M25 17 H35"/><path d="M25 30 H35"/></g></symbol>
+  <symbol id="i-warn" viewBox="0 0 48 48"><path d="M24 6 L44 40 H4 Z" fill="#D4A017" stroke="#D4A017" stroke-width="3" stroke-linejoin="round"/><path d="M24 18 V29" stroke="#3B2C00" stroke-width="3.8" stroke-linecap="round"/><circle cx="24" cy="34.5" r="2.4" fill="#3B2C00"/></symbol>
+  <symbol id="i-dice" viewBox="0 0 48 48"><rect x="7" y="7" width="34" height="34" rx="8" fill="#fff" stroke="var(--i1)" stroke-width="4"/><g fill="var(--i1)"><circle cx="16" cy="16" r="3.6"/><circle cx="32" cy="32" r="3.6"/><circle cx="16" cy="32" r="3.6"/><circle cx="32" cy="16" r="3.6"/></g><circle cx="24" cy="24" r="3.6" fill="var(--i4)"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 48 48"><ellipse cx="24" cy="32" rx="14" ry="6" fill="var(--i1)"/><ellipse cx="24" cy="25" rx="14" ry="6" fill="var(--i2)"/><ellipse cx="24" cy="18" rx="14" ry="6" fill="#fff" stroke="var(--i2)" stroke-width="3"/><ellipse cx="24" cy="18" rx="7" ry="2.8" fill="none" stroke="var(--i4)" stroke-width="3"/></symbol>
+  <symbol id="i-yakitori" viewBox="0 0 48 48"><path d="M8 40 L40 8" stroke="var(--i2)" stroke-width="4.2" stroke-linecap="round"/><circle cx="31" cy="17" r="6.5" fill="var(--i1)"/><circle cx="22" cy="26" r="6.5" fill="var(--i1)"/><circle cx="13" cy="35" r="5.5" fill="var(--i4)"/></symbol>
+  <symbol id="i-chombo" viewBox="0 0 48 48"><rect x="7" y="5" width="26" height="36" rx="5" fill="#fff" stroke="var(--i1)" stroke-width="4"/><circle cx="20" cy="23" r="5" fill="var(--i2)"/><circle cx="35" cy="35" r="10.5" fill="var(--ic-neg)" stroke="#fff" stroke-width="3"/><path d="M30 35H40" stroke="#fff" stroke-width="4" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 48 48"><path d="M11 25L20 34L37 15" fill="none" stroke="var(--i1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-verified" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="var(--i1)"/><path d="M14 24.5L21 31.5L34 17.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-close" viewBox="0 0 48 48"><path d="M14 14L34 34M34 14L14 34" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 48 48"><path d="M18 10L32 24L18 38" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-more" viewBox="0 0 48 48"><g fill="currentColor"><circle cx="12" cy="24" r="4"/><circle cx="24" cy="24" r="4"/><circle cx="36" cy="24" r="4"/></g></symbol>
+  <symbol id="i-share" viewBox="0 0 48 48"><path d="M17 19H13a4 4 0 0 0-4 4V39a4 4 0 0 0 4 4H35a4 4 0 0 0 4-4V23a4 4 0 0 0-4-4H31" fill="none" stroke="var(--i2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 30V5M16 12L24 4.5L32 12" fill="none" stroke="var(--i1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 48 48"><circle cx="21" cy="21" r="12" fill="none" stroke="currentColor" stroke-width="4.5"/><path d="M30 30L40 40" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 48 48"><path d="M38 24a14 14 0 1 1-4.1-9.9" fill="none" stroke="var(--i1)" stroke-width="4.5" stroke-linecap="round"/><path d="M35 6V15H26" fill="none" stroke="var(--i1)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-userPlus" viewBox="0 0 48 48"><circle cx="19" cy="16" r="8" fill="var(--i1)"/><path d="M4 41a15 13 0 0 1 30 0Z" fill="var(--i2)"/><circle cx="37" cy="31" r="9" fill="var(--i1)" stroke="#fff" stroke-width="3"/><path d="M37 26.5V35.5M32.5 31H41.5" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 48 48"><circle cx="24" cy="24" r="15" fill="none" stroke="var(--i2)" stroke-width="8" stroke-dasharray="5.89 5.89"/><circle cx="24" cy="24" r="13" fill="var(--i1)"/><circle cx="24" cy="24" r="5.5" fill="#fff"/></symbol>
+</svg>
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KMRMGKKV"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -930,9 +1012,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <rect x="224" y="8" width="92" height="184" rx="12" fill="#ffffff"/>
         <rect x="256" y="13" width="28" height="6" rx="3" fill="#1f2a28"/>
         <text x="270" y="34" font-size="9.5" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">総合順位</text>
-        <g><rect x="230" y="42" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="234" y="56" font-size="8" font-family="sans-serif">🥇</text><text x="248" y="56" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="306" y="56" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g>
-        <g><rect x="230" y="68" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="234" y="82" font-size="8" font-family="sans-serif">🥈</text><text x="248" y="82" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="306" y="82" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g>
-        <g><rect x="230" y="94" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="234" y="108" font-size="8" font-family="sans-serif">🥉</text><text x="248" y="108" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="306" y="108" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g>
+        <g><rect x="230" y="42" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="53" r="4" fill="#d4a017"/><text x="238" y="54.8" font-size="5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text><text x="248" y="56" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="306" y="56" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g>
+        <g><rect x="230" y="68" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="79" r="4" fill="#9aa5ad"/><text x="238" y="80.8" font-size="5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">2</text><text x="248" y="82" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="306" y="82" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g>
+        <g><rect x="230" y="94" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="105" r="4" fill="#c97b3f"/><text x="238" y="106.8" font-size="5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">3</text><text x="248" y="108" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="306" y="108" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g>
         <g><rect x="230" y="120" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="248" y="134" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="306" y="134" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g>
         <rect x="230" y="146" width="80" height="40" rx="5" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.2"/>
         <polyline points="236,178 250,168 264,173 278,160 292,168 304,156" fill="none" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
@@ -964,7 +1046,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="howto-step">
         <h3>2. URLをメンバーにシェアする</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="52" font-size="12" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">金曜メンバー（4）</text><line x1="18" y1="64" x2="202" y2="64" stroke="#eeeeee" stroke-width="2"/><rect x="60" y="80" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="99" font-size="9.5" fill="#ffffff" font-family="sans-serif">今日の対局グループ</text><text x="72" y="114" font-size="9.5" fill="#ffffff" font-family="sans-serif">作ったよ！</text><rect x="60" y="138" width="130" height="28" rx="12" fill="#177083"/><text x="72" y="156" font-size="8.5" fill="#cfe9ef" text-decoration="underline" font-family="sans-serif">majasco.jp/#XXXXXXXX</text><rect x="30" y="182" width="112" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="200" font-size="9.5" fill="#444444" font-family="sans-serif">参加した！🀄</text><rect x="30" y="220" width="96" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="238" font-size="9.5" fill="#444444" font-family="sans-serif">見れた〜👍</text><rect x="60" y="258" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="277" font-size="9.5" fill="#ffffff" font-family="sans-serif">誰かが入力すれば</text><text x="72" y="292" font-size="9.5" fill="#ffffff" font-family="sans-serif">全員に反映されるよ</text><rect x="28" y="344" width="138" height="24" rx="12" fill="#f2f2f2"/><circle cx="182" cy="356" r="12" fill="#177083"/><path d="M177 356 L187 356 M183 352 L187 356 L183 360" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="52" font-size="12" font-weight="bold" fill="#1a1a1a" text-anchor="middle" font-family="sans-serif">金曜メンバー（4）</text><line x1="18" y1="64" x2="202" y2="64" stroke="#eeeeee" stroke-width="2"/><rect x="60" y="80" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="99" font-size="9.5" fill="#ffffff" font-family="sans-serif">今日の対局グループ</text><text x="72" y="114" font-size="9.5" fill="#ffffff" font-family="sans-serif">作ったよ！</text><rect x="60" y="138" width="130" height="28" rx="12" fill="#177083"/><text x="72" y="156" font-size="8.5" fill="#cfe9ef" text-decoration="underline" font-family="sans-serif">majasco.jp/#XXXXXXXX</text><rect x="30" y="182" width="112" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="200" font-size="9.5" fill="#444444" font-family="sans-serif">参加した！</text><rect x="30" y="220" width="96" height="28" rx="12" fill="#f0f0f0"/><text x="42" y="238" font-size="9.5" fill="#444444" font-family="sans-serif">見れた〜！</text><rect x="60" y="258" width="130" height="48" rx="12" fill="#177083"/><text x="72" y="277" font-size="9.5" fill="#ffffff" font-family="sans-serif">誰かが入力すれば</text><text x="72" y="292" font-size="9.5" fill="#ffffff" font-family="sans-serif">全員に反映されるよ</text><rect x="28" y="344" width="138" height="24" rx="12" fill="#f2f2f2"/><circle cx="182" cy="356" r="12" fill="#177083"/><path d="M177 356 L187 356 M183 352 L187 356 L183 360" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <p>画面右上の「URLを共有」からLINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</p>
       </div>
 
@@ -976,7 +1058,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       <div class="howto-step">
         <h3>4. 結果はリアルタイムで全員に</h3>
-        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="13" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">総合順位</text><g><rect x="28" y="76" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="98" font-size="12" font-family="sans-serif">🥇</text><text x="62" y="98" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="184" y="98" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g><g><rect x="28" y="120" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="142" font-size="12" font-family="sans-serif">🥈</text><text x="62" y="142" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="184" y="142" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g><g><rect x="28" y="164" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="186" font-size="12" font-family="sans-serif">🥉</text><text x="62" y="186" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="184" y="186" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g><g><rect x="28" y="208" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="230" font-size="12" font-family="sans-serif"></text><text x="62" y="230" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="184" y="230" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g><rect x="28" y="258" width="164" height="112" rx="8" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.5"/><text x="110" y="280" font-size="9" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">スコア推移グラフ</text><polyline points="44,318 70,334 96,326 122,342 148,332 176,348" fill="none" stroke="#c9d6d4" stroke-width="2" stroke-linecap="round"/><polyline points="44,340 70,318 96,328 122,304 148,316 176,298" fill="none" stroke="#177083" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        <div class="howto-shot"><svg viewBox="0 0 220 400" xmlns="http://www.w3.org/2000/svg" role="img"><rect x="10" y="6" width="200" height="388" rx="30" fill="#1f2a28"/><rect x="18" y="14" width="184" height="372" rx="22" fill="#ffffff"/><rect x="92" y="22" width="36" height="10" rx="5" fill="#1f2a28"/><text x="110" y="58" font-size="13" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">総合順位</text><g><rect x="28" y="76" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><circle cx="44.5" cy="94" r="6.2" fill="#d4a017"/><text x="44.5" y="96.7" font-size="7.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text><text x="62" y="98" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="184" y="98" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g><g><rect x="28" y="120" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><circle cx="44.5" cy="138" r="6.2" fill="#9aa5ad"/><text x="44.5" y="140.7" font-size="7.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">2</text><text x="62" y="142" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="184" y="142" font-size="12" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g><g><rect x="28" y="164" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><circle cx="44.5" cy="182" r="6.2" fill="#c97b3f"/><text x="44.5" y="184.7" font-size="7.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">3</text><text x="62" y="186" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="184" y="186" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g><g><rect x="28" y="208" width="164" height="34" rx="8" fill="#ffffff" stroke="#e2ece7" stroke-width="1.5"/><text x="38" y="230" font-size="12" font-family="sans-serif"></text><text x="62" y="230" font-size="11" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="184" y="230" font-size="12" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g><rect x="28" y="258" width="164" height="112" rx="8" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.5"/><text x="110" y="280" font-size="9" fill="#9aa8a4" text-anchor="middle" font-family="sans-serif">スコア推移グラフ</text><polyline points="44,318 70,334 96,326 122,342 148,332 176,348" fill="none" stroke="#c9d6d4" stroke-width="2" stroke-linecap="round"/><polyline points="44,340 70,318 96,328 122,304 148,316 176,298" fill="none" stroke="#177083" stroke-width="2.5" stroke-linecap="round"/></svg></div>
         <p>順位・スコア・推移グラフまで自動で記録。「いま誰がトップ？」が全員のスマホでひと目でわかります。</p>
       </div>
     </section>
@@ -1076,7 +1158,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><ellipse cx="24" cy="31" rx="13" ry="5.5" fill="#177083"/><ellipse cx="24" cy="24.5" rx="13" ry="5.5" fill="#9fc3bd"/><ellipse cx="24" cy="18" rx="13" ry="5.5" fill="#ffffff" stroke="#9fc3bd" stroke-width="1.6"/><ellipse cx="24" cy="18" rx="6.5" ry="2.6" fill="none" stroke="#E75620" stroke-width="1.6"/></svg></div>
           <h3>焼き鳥やチョンボも記録</h3>
-          <p>1試合もアガれなかった焼き鳥🐔や、チョンボ💩のマークをワンタップで記録。チョンボの罰符は合計スコアに自動で反映されます。</p>
+          <p>1試合もアガれなかった焼き鳥<svg class="ico ico-in" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-yakitori"/></svg>や、チョンボ<svg class="ico ico-in" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-chombo"/></svg>のマークをワンタップで記録。チョンボの罰符は合計スコアに自動で反映されます。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div>
@@ -1226,7 +1308,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div id="s-team-editor"></div>
           <div style="display:flex;gap:8px;margin-top:8px">
             <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
-            <button type="button" class="edit-tab" onclick="randomizeTeams()">🎲 ランダム編成</button>
+            <button type="button" class="edit-tab" onclick="randomizeTeams()"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-dice"/></svg>ランダム編成</button>
           </div>
           <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をタップすると次のチームへ移動できます</div>
         </div>
@@ -1267,7 +1349,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div id="setup-options-body" style="display:none;margin-top:12px">
       <label class="opt-check" style="margin-top:2px">
-        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり🍪
+        <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-chip"/></svg>
       </label>
       <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとにチップを入力でき、増減を記録します。</div>
       <div id="s-bonus-fields" style="display:none;margin:10px 0 0 26px">
@@ -1277,13 +1359,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
       <label class="opt-check" style="margin-top:14px">
-        <input type="checkbox" id="s-yakitori"> 焼き鳥あり🐔
+        <input type="checkbox" id="s-yakitori"> 焼き鳥あり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-yakitori"/></svg>
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">1試合で一度もアガれなかった人に🐔マークがつきます（スコアには影響しません）</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">1試合で一度もアガれなかった人に<svg class="ico ico-in" width="14" height="14" aria-hidden="true" focusable="false"><use href="#i-yakitori"/></svg>のマークがつきます（スコアには影響しません）</div>
       <label class="opt-check" style="margin-top:14px">
-        <input type="checkbox" id="s-chombo" onchange="onChomboOptChange()"> チョンボあり💩
+        <input type="checkbox" id="s-chombo" onchange="onChomboOptChange()"> チョンボあり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-chombo"/></svg>
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に💩マークがつきます。罰符の分だけスコアが下がります</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">チョンボした人に<svg class="ico ico-in" width="14" height="14" aria-hidden="true" focusable="false"><use href="#i-chombo"/></svg>のマークがつきます。罰符の分だけスコアが下がります</div>
       <div id="s-chombo-fields" style="display:none;margin:10px 0 0 26px">
         <div class="field">
           <label>チョンボ罰符</label>
@@ -1407,7 +1489,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
-    <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()">👥 仲間ページに追加</button>
+    <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()"><svg class="ico" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-people"/></svg>仲間ページに追加</button>
     <div style="text-align:center;margin-top:14px">
       <button type="button" onclick="goMyPage()" style="background:none;border:none;font-size:13px;font-weight:600;color:#5f6e6b;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px">マイページ（過去の試合・自分の成績） ›</button>
     </div>
@@ -1433,8 +1515,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-history" class="view">
   <div id="account-card" class="mp-hero" style="display:none"></div>
   <div class="seg" role="tablist" aria-label="マイページの表示">
-    <button type="button" id="mp-tab-me" role="tab" class="on" onclick="setMpTab('me')">📊 個人</button>
-    <button type="button" id="mp-tab-circle" role="tab" onclick="setMpTab('circle')">👥 仲間<span class="seg-n" id="mp-circle-n" style="display:none"></span></button>
+    <button type="button" id="mp-tab-me" role="tab" class="on" onclick="setMpTab('me')"><svg class="ico" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-person"/></svg>個人</button>
+    <button type="button" id="mp-tab-circle" role="tab" onclick="setMpTab('circle')"><svg class="ico" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-people"/></svg>仲間<span class="seg-n" id="mp-circle-n" style="display:none"></span></button>
   </div>
   <div id="mp-me">
     <div id="hist-organize"></div>
@@ -1452,7 +1534,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="history-body" id="history-body" style="margin-top:8px"></div>
-    <div class="mp-foot">📲 ホーム画面に追加すると、アプリのように1タップで開けます。追加したアプリでも一度Googleでログインすれば、同じ記録が見られます。<a onclick="showInstallHelp()">追加のしかた</a></div>
+    <div class="mp-foot"><svg class="ico ico-in" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-phoneAdd"/></svg>ホーム画面に追加すると、アプリのように1タップで開けます。追加したアプリでも一度Googleでログインすれば、同じ記録が見られます。<a onclick="showInstallHelp()">追加のしかた</a></div>
   </div>
   <div id="mp-circle" style="display:none">
     <div id="hist-circles"></div>
@@ -2637,7 +2719,7 @@ function circleRankTabHtml(st, modeChips, noBind) {
   const order = [1, 0, 2].filter(i => top3[i]);
   const podium = `<div class="podium" style="grid-template-columns:${order.map(i => (i === 0 ? '1.12fr' : '1fr')).join(' ')}">${order.map(i => {
     const p = top3[i], v = circleMetricVal(p, m), nm = rosterName(p.key);
-    return `<div class="pd p${i + 1}" onclick="openCircleMember('${p.key}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${['🥇', '🥈', '🥉'][i]}</span></div>
+    return `<div class="pd p${i + 1}" onclick="openCircleMember('${p.key}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${medalSvg(i + 1, 20)}</span></div>
       <div class="pd-name">${esc(nm)}</div><div class="pd-val ${clsOf(v)}" style="color:${clsOf(v) === 'neg' ? '#c62828' : clsOf(v) === 'pos' ? '#1a237e' : '#1f2a28'}">${circleMetricText(v, m)}</div><div class="pd-base">${i + 1}</div></div>`;
   }).join('')}</div>`;
   const row = (p, rank, dim) => {
@@ -3482,7 +3564,7 @@ function renderCircleSection() {
   }).join('');
   el.innerHTML = `<div class="mp-sec"><div class="mp-sec-head"><div class="mp-sec-title">仲間ページ</div></div>
     <div class="mp-lead">定例会や大会の試合をまとめて、<b>通算順位・全員の成績表・対戦成績</b>を仲間全員で見られるページです。自分が入っていない試合も入れられます。</div>
-    ${cards || `<div class="mp-panel mp-empty" style="margin-bottom:8px"><div class="mp-empty-ico">👥</div><b>まだ仲間ページがありません</b>
+    ${cards || `<div class="mp-panel mp-empty" style="margin-bottom:8px"><div class="mp-empty-ico">${ico('people', 34, 'ico-l')}</div><b>まだ仲間ページがありません</b>
       <span>いつものメンバーで1つ作っておくと、毎回の試合を足すだけで通算の順位表になります。</span></div>`}
     ${loginAvailable() ? `<button type="button" class="mp-add" onclick="${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}">＋ 仲間ページを作る</button>` : ''}
     <details class="mp-join"><summary>招待リンク・参加コードを持っている</summary><div class="row">
@@ -4172,7 +4254,7 @@ function renderShareSheet() {
   const g = shareCtxGame();
   if (!g) return;
   const vid = viewIds[g.id];
-  const viewPart = viewFeature === false ? '' : `<div class="sh-opt"><div class="sh-h"><span class="sh-ico">👀</span>見るだけのリンク</div>
+  const viewPart = viewFeature === false ? '' : `<div class="sh-opt"><div class="sh-h"><span class="sh-ico">${ico('eye', 22)}</span>見るだけのリンク</div>
       <div class="sh-d"><b>点数は変えられない</b>リンクです。SNSに載せる・観戦している人や来られなかった人に送るときはこちら。入力するとそのまま反映されます。</div>
       ${vid ? `<div class="sh-url"><input type="text" readonly value="${esc(viewUrlOf(vid))}" onclick="this.select()"><button type="button" onclick="shareCopy('view')">コピー</button></div>
         <div class="sh-btns">${navigator.share ? `<button type="button" onclick="shareNative('view')">SNS・ほかのアプリへ</button>` : ''}<button type="button" class="line" onclick="shareLine('view')">LINEで送る</button></div>`
@@ -4181,13 +4263,13 @@ function renderShareSheet() {
     </div>`;
   document.getElementById('form-modal-title').textContent = '共有';
   document.getElementById('form-modal-body').innerHTML = `<div id="share-sheet">
-    <div class="sh-opt main"><div class="sh-h"><span class="sh-ico">🀄</span>一緒に打つ人に送る</div>
+    <div class="sh-opt main"><div class="sh-h"><span class="sh-ico">${ico('tile', 22)}</span>一緒に打つ人に送る</div>
       <div class="sh-d">このURLを開いた人は<b>点数の入力・修正ができます</b>。同じ卓のメンバーだけに送ってください。</div>
       <div class="sh-url"><input type="text" id="share-sheet-url" readonly value="${esc(shareUrlOf(g.id))}" onclick="this.select()"><button type="button" onclick="shareCopy('member')">コピー</button></div>
       <div class="sh-btns"><button type="button" class="line" onclick="shareLine('member')">LINEで送る</button></div>
     </div>
     ${viewPart}
-    ${(g.rounds || []).length ? `<button type="button" class="auto-btn sub" style="margin:2px 0 0" onclick="closeFormModal();openComposeModal(shareCtxGame())">🖼 結果を画像にする</button>` : ''}
+    ${(g.rounds || []).length ? `<button type="button" class="auto-btn sub" style="margin:2px 0 0" onclick="closeFormModal();openComposeModal(shareCtxGame())">${ico('image', 18)}結果を画像にする</button>` : ''}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button></div>`;
 }
 function shareLinkOf(kind) {
@@ -5593,6 +5675,7 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
 // 画面と同じ .score-card のHTMLから情報を抜き、Canvasに描き直す。
 // 順位は絵文字ではなく金銀銅の丸バッジで描く（環境差なく必ず同じ絵になる）
 const IMG_MEDAL = ['#d4a017', '#9aa5ad', '#c97b3f'];
+const IMG_MEDAL_TEXT = ['#3B2C00', '#1F2A28', '#2E1A0A']; // 画面の medalSvg と同じ濃い字
 function imgRankingRows(g, kind) {
   const html = kind === 'team' ? teamStandingsHtml(g)
     : `<div class="score-cards">${scoreCardsListHtml(g)}</div>`;
@@ -5668,7 +5751,7 @@ function imgRankingBodyCanvas(g, kind) {
     const cx = 22, cy = y + rowH / 2;
     ctx.fillStyle = r.medal >= 0 ? IMG_MEDAL[r.medal] : '#e3e9e8';
     ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = r.medal >= 0 ? '#ffffff' : '#8a9aa5';
+    ctx.fillStyle = r.medal >= 0 ? IMG_MEDAL_TEXT[r.medal] : '#4F5C5A';
     const rankTxt = r.rank.replace('位タイ', '').replace('位', '');
     ctx.font = imgFont(rankTxt.length > 2 ? 10 : 13, true);
     ctx.textAlign = 'center';
@@ -6044,10 +6127,9 @@ async function runCompose() {
 // 1〜3位は金銀銅メダル。4位以下は絵文字を付けず灰色の数字のみ
 // 同点グループはグループ先頭の順位で表示し「〜位タイ」を付ける
 function rankBadgeHtml(rank, isTie, isLast) {
-  const emojis = ['🥇', '🥈', '🥉'];
   const label = `${rank+1}位${isTie ? 'タイ' : ''}`;
   if (rank < 3) {
-    return `<div class="rank-badge rank-${rank+1}"><span class="rank-emoji">${emojis[rank]}</span><span class="rank-num">${label}</span></div>`;
+    return `<div class="rank-badge rank-${rank+1}"><span class="rank-medal">${medalSvg(rank + 1, 26)}</span><span class="rank-num">${label}</span></div>`;
   }
   return `<div class="rank-badge" style="color:#8a9aa5"><span class="rank-num" style="font-size:13px">${label}</span></div>`;
 }
@@ -6224,13 +6306,13 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false) {
     const raw = (!compact && r.points && r.points[k] != null)
       ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
       : '';
-    // チップ差・焼き鳥🐔（記録がある試合のみ小さく表示）
+    // チップ差・焼き鳥・チョンボ（記録がある試合のみ小さく表示）
     const marks = [];
     if (!compact && r.chips && r.chips[k]) marks.push(`${r.chips[k] > 0 ? '+' : ''}${r.chips[k]}枚`);
     // 絵文字は画像（Canvas）に描くと環境によってモノクロ・豆腐になるので画像では出さない
     if (!forImage) {
-      if (r.yakitori && r.yakitori[k]) marks.push('🐔');
-      if (r.chombo && r.chombo[k]) marks.push('💩');
+      if (r.yakitori && r.yakitori[k]) marks.push(ico('yakitori', 12));
+      if (r.chombo && r.chombo[k]) marks.push(ico('chombo', 12));
     }
     const markHtml = marks.length
       ? `<div style="font-size:9px;color:#b08968;font-weight:600;margin-top:1px">${marks.join(' ')}</div>`
@@ -6345,9 +6427,9 @@ function rankCountHtml(rounds, s, forImage = false) {
   const useChombo = !!s.chombo || rounds.some(r => r.chombo);
   const extra = (useChips || useYaki || useChombo) ? chipTotals({ settings: s, rounds }) : null;
   if (useChips) statLabels.push('チップ差');
-  if (useYaki) statLabels.push('焼き鳥🐔');
-  if (useChombo) statLabels.push('チョンボ💩');
-  const firstExtra = useChips ? 'チップ差' : useYaki ? '焼き鳥🐔' : useChombo ? 'チョンボ💩' : null;
+  if (useYaki) statLabels.push('焼き鳥');
+  if (useChombo) statLabels.push('チョンボ');
+  const firstExtra = useChips ? 'チップ差' : useYaki ? '焼き鳥' : useChombo ? 'チョンボ' : null;
   const scoreColor = v => v > 0 ? '#1a237e' : v < 0 ? '#c62828' : '#1a1a1a';
   const signedPt = v => `${v > 0 ? '+' : ''}${v.toFixed(1)}`;
   const cellsOf = colOrder.map((i, k) => {
@@ -6883,8 +6965,8 @@ let sheetSelected = []; // 選択中メンバーindex（昇順）
 let sheetOrder = [];    // 入力欄k → memberIndex の対応
 let sheetPrefill = {};  // memberIndex → 入力値（修正時のプレフィル・選択切替時の値保持）
 let sheetChips = {};    // memberIndex → チップ差（チップ記録が有効なグループのみ）
-let sheetYaki = {};     // memberIndex → 焼き鳥🐔フラグ
-let sheetChombo = {};   // memberIndex → チョンボ💩フラグ
+let sheetYaki = {};     // memberIndex → 焼き鳥フラグ
+let sheetChombo = {};   // memberIndex → チョンボフラグ
 // 新規入力のデフォルト参加者: 直前の試合のメンバー、なければ先頭からnumPlayers人
 function defaultParticipants(ctx) {
   const s = ctx.settings;
@@ -7082,8 +7164,8 @@ function renderSheetInputs() {
     const cur = withChips ? chipBaseline(m) + (sheetChips[m] != null ? Number(sheetChips[m]) || 0 : 0) : 0;
     return `<div class="sheet-row">
       <label>${teamDotHtml(s, m)}${esc(s.playerNames[m])}</label>
-      ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥">🐔</button>` : ''}
-      ${withChombo ? `<button type="button" class="yaki-btn${sheetChombo[m] ? ' on' : ''}" id="pi-${k}" onclick="toggleSheetChombo(${k})" aria-label="チョンボ">💩</button>` : ''}
+      ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥" aria-pressed="${!!sheetYaki[m]}">${ico('yakitori', 22)}</button>` : ''}
+      ${withChombo ? `<button type="button" class="yaki-btn chombo${sheetChombo[m] ? ' on' : ''}" id="pi-${k}" onclick="toggleSheetChombo(${k})" aria-label="チョンボ" aria-pressed="${!!sheetChombo[m]}">${ico('chombo', 22)}</button>` : ''}
       ${withChips ? `<div class="chip-input">
         <input type="number" id="ce-${k}" value="${cur}" step="1" onkeydown="blockNonInt(event)" oninput="onChipEndInput(${k})">
         <span class="chip-suffix">枚</span>
@@ -7118,19 +7200,23 @@ function onChipEndInput(k) {
   else sheetChips[m] = (Number(el.value) || 0) - chipBaseline(m);
   updateTotal();
 }
-// 焼き鳥🐔のON/OFF切り替え（メンバー単位で保持し、選択切替後も維持される）
+// 焼き鳥のON/OFF切り替え（メンバー単位で保持し、選択切替後も維持される）
 function toggleSheetYaki(k) {
   const m = sheetOrder[k];
   if (sheetYaki[m]) delete sheetYaki[m];
   else sheetYaki[m] = true;
-  document.getElementById('yi-' + k).classList.toggle('on', !!sheetYaki[m]);
+  const b = document.getElementById('yi-' + k);
+  b.classList.toggle('on', !!sheetYaki[m]);
+  b.setAttribute('aria-pressed', !!sheetYaki[m]);
 }
-// チョンボ💩のON/OFF切り替え
+// チョンボのON/OFF切り替え
 function toggleSheetChombo(k) {
   const m = sheetOrder[k];
   if (sheetChombo[m]) delete sheetChombo[m];
   else sheetChombo[m] = true;
-  document.getElementById('pi-' + k).classList.toggle('on', !!sheetChombo[m]);
+  const b = document.getElementById('pi-' + k);
+  b.classList.toggle('on', !!sheetChombo[m]);
+  b.setAttribute('aria-pressed', !!sheetChombo[m]);
 }
 function closeSheet() {
   document.getElementById('score-sheet').classList.remove('open');
@@ -7366,7 +7452,7 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
-    <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">⚠ 持ち点・返し点・ウマを変更すると、<b>過去の試合もすべて新しいルールで再計算</b>されます。入力済みの点数はそのまま残ります。</div>
+    <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">${ico('warn', 14, 'ico-in')}持ち点・返し点・ウマを変更すると、<b>過去の試合もすべて新しいルールで再計算</b>されます。入力済みの点数はそのまま残ります。</div>
     <div class="field"><label>持ち点</label><input type="number" id="e-start" value="${s.startPoints}"></div>
     <div class="field"><label>返し点</label><input type="number" id="e-return" value="${s.returnPoints}"></div>
     <div class="field"><label>ウマ</label>
@@ -7380,7 +7466,7 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>チップ</label>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="e-bonus" ${s.bonusEnabled ? 'checked' : ''}
-          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップあり🍪
+          onchange="document.getElementById('e-bonus-fields').style.display=this.checked?'block':'none'"> チップあり${ico('chip', 18, 'ico-in')}
       </label>
       <div id="e-bonus-fields" style="display:${s.bonusEnabled ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin:0"><label>持ちチップ（枚）</label>
@@ -7389,11 +7475,11 @@ function settingsFormHtml(name, s) {
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの増減もあわせて記録します。</div>
       </div>
       <label class="opt-check" style="margin-top:8px">
-        <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり🐔（マークのみ・スコアに影響なし）
+        <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり${ico('yakitori', 18, 'ico-in')}（マークのみ・スコアに影響なし）
       </label>
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-chombo" ${s.chombo ? 'checked' : ''}
-          onchange="document.getElementById('e-chombo-fields').style.display=this.checked?'block':'none'"> チョンボあり💩（合計スコアからマイナス）
+          onchange="document.getElementById('e-chombo-fields').style.display=this.checked?'block':'none'"> チョンボあり${ico('chombo', 18, 'ico-in')}（合計スコアからマイナス）
       </label>
       <div id="e-chombo-fields" style="display:${s.chombo ? 'block' : 'none'};margin:4px 0 0 26px">
         <div class="field" style="margin-bottom:0"><label>チョンボ罰符</label>
@@ -7415,7 +7501,7 @@ function settingsFormHtml(name, s) {
         <div id="e-team-editor"></div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
-          <button type="button" class="edit-tab" onclick="randomizeTeams()">🎲 ランダム編成</button>
+          <button type="button" class="edit-tab" onclick="randomizeTeams()">${ico('dice', 15)}ランダム編成</button>
         </div>
         <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前をタップすると次のチームへ移動できます</div>
       </div>
@@ -7553,9 +7639,9 @@ function tagBadgeHtml(g) {
   if (t.role === 'watch') return `<button type="button" class="tag-chip watch" onclick="${open}">自分は出ていない</button>`;
   if (t.me != null) {
     const nm = (g.settings && g.settings.playerNames && g.settings.playerNames[t.me]) || '';
-    return `<button type="button" class="tag-chip" onclick="${open}">🀄 自分: ${esc(nm)}</button>`;
+    return `<button type="button" class="tag-chip" onclick="${open}">${ico('me', 13, 'ico-in')}自分: ${esc(nm)}</button>`;
   }
-  return `<button type="button" class="tag-chip unset" onclick="${open}">🀄 自分を選ぶ</button>`;
+  return `<button type="button" class="tag-chip unset" onclick="${open}">${ico('me', 13, 'ico-in')}自分を選ぶ</button>`;
 }
 // タグ編集モーダル
 let tagEditGid = null, tagEditRole = 'play', tagEditMe = null;
@@ -7682,7 +7768,7 @@ function renderOrganizeCard() {
   const el = document.getElementById('hist-organize');
   if (!el) return;
   const n = untaggedGames().length;
-  el.innerHTML = n ? `<div class="mp-warn">🗂 自分をまだ選んでいない試合が<b>${n}件</b>あります。選ぶと、成績とよく打つ相手にまとまります。
+  el.innerHTML = n ? `<div class="mp-warn">${ico('checklist', 16, 'ico-in')}自分をまだ選んでいない試合が<b>${n}件</b>あります。選ぶと、成績とよく打つ相手にまとまります。
     <button type="button" onclick="openOrganize()">まとめて選ぶ</button></div>` : '';
 }
 let orgKey = null;   // 「あなたの名前」（personKey）
@@ -7932,7 +8018,11 @@ function fmtScore(v) { const r = Math.round(v * 10) / 10; return (r > 0 ? '+' : 
 function scoreCls(v) { const r = Math.round(v * 10) / 10; return r > 0 ? 'pos' : r < 0 ? 'neg' : ''; }
 function pctText(x) { return Math.round(x * 100) + '%'; }
 function fmtCnt(v) { const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); }
-const RANK_COLORS = { 4: ['#177083', '#4fa3a0', '#b4d3cd', '#ea8f6f'], 3: ['#177083', '#8cc3bb', '#ea8f6f'] };
+// 着順の色（CSSの --rk1〜--rk4 と同じ値）。1着ゴールド・2着スチール・3着グレー・ラスはクリムゾン。
+// 三麻は3色で、3着＝ラスの色。トップとラスだけが目に入り、真ん中は控えめにする
+const RANK_COLORS = { 4: ['#D4A017', '#6E8CA8', '#B4C0BD', '#C92F42'], 3: ['#D4A017', '#6E8CA8', '#C92F42'] };
+// 着順のクラス（rank は1始まり）。三麻の3着＝ラス＝r4
+const rkCls = (rank, np) => (rank >= np ? 'r4' : 'r' + rank);
 // 1試合ごとの着順の記録を古い順に（t=入力日時、o=ゲーム内の試合番号）
 function sortHist(h) { return (h || []).slice().sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : a.o - b.o)); }
 // b = { n: 試合数, np: 3|4, counts: [1着..], rankSum, last: ラス回数, score }
@@ -7983,8 +8073,8 @@ function sparkHtml(hist) {
       <polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
     </svg></div>`;
 }
-function menuBtnHtml(ico, label, sub, js, cls = '') {
-  return `<button type="button" class="menu-btn ${cls}" onclick="${js}"><span class="mb-ico">${ico}</span><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
+function menuBtnHtml(icon, label, sub, js, cls = '') {
+  return `<button type="button" class="menu-btn ${cls}" onclick="${js}"><span class="mb-ico">${ico(icon, 20)}</span><span>${label}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
 }
 
 // ---- マイページ（上に自分のカード、下は「個人｜仲間」の切り替え） ----
@@ -8015,7 +8105,7 @@ function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);
   const head = right => `<div class="mp-sec-head"><div class="mp-sec-title">成績</div>${right || ''}</div>`;
   if (!modes.length) {
-    return `<div class="mp-sec">${head()}<div class="mp-panel mp-empty"><div class="mp-empty-ico">📊</div>
+    return `<div class="mp-sec">${head()}<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('chart', 34, 'ico-l')}</div>
       <b>試合で「自分」を選ぶと、ここに成績が出ます</b>
       <span>ゲームを開いたときの「あなたはどれ？」か、下の過去の試合の「自分を選ぶ」から選べます。ゲームをまたいだ通算・着順の分布・最近の調子がまとまります。</span></div></div>`;
   }
@@ -8069,11 +8159,11 @@ function openHistMenu(id) {
   const j = esc(id);
   document.getElementById('form-modal-title').textContent = g.name || '試合';
   document.getElementById('form-modal-body').innerHTML =
-    menuBtnHtml('📊', '結果を見る', '総合順位・試合結果・個人成績・対戦成績', `closeFormModal();viewDetailById('${j}')`) +
-    menuBtnHtml('✏️', '続きを入力する', '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`) +
-    menuBtnHtml('🔗', '共有する', '一緒に打つ人に送るURL・見るだけのリンク', `closeFormModal();openShareSheet('${j}')`) +
-    menuBtnHtml('🙋', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`) +
-    menuBtnHtml('🗑', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger') +
+    menuBtnHtml('table', '結果を見る', '総合順位・試合結果・個人成績・対戦成績', `closeFormModal();viewDetailById('${j}')`) +
+    menuBtnHtml('pencil', '続きを入力する', '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`) +
+    menuBtnHtml('link', '共有する', '一緒に打つ人に送るURL・見るだけのリンク', `closeFormModal();openShareSheet('${j}')`) +
+    menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`) +
+    menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger') +
     `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -8221,7 +8311,7 @@ function renderHistoryList() {
   const games = appState.games || [];
   if (cnt) cnt.textContent = games.length ? `${Math.min(games.length, MAX_HISTORY)}件` : '';
   if (!games.length) {
-    body.innerHTML = `<div class="mp-panel mp-empty"><div class="mp-empty-ico">🀄</div><b>まだ試合がありません</b>
+    body.innerHTML = `<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('tile', 34, 'ico-l')}</div><b>まだ試合がありません</b>
       <span>試合を作るか、共有された試合のURLを開くと、ここに自動で残ります。</span></div>`;
     return;
   }
@@ -8318,13 +8408,13 @@ function renderDetailBody(g) {
     <div style="font-size:13px;color:#555;line-height:2.2;${collapsedCards.settings ? 'display:none' : ''}">
       ${s.numPlayers === 3 ? '三麻' : '四麻'} ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')}${s.bonusEnabled ? `<br>チップ記録: 有効 ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥🐔: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ💩: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
+      ウマ: ${s.uma.join(' / ')}${s.bonusEnabled ? `<br>チップ記録: 有効 ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
     // まとめプレビューとCSVは画面末尾に並ぶ対（ゲーム画面と同じ並び）
     html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめてプレビュー</button>`;
     html += `<button class="auto-btn sub" onclick="openCsvModal(detailGame)">CSVで書き出す</button>`;
-    if (loginAvailable() && !detailRO) html += `<button class="auto-btn sub" onclick="openAddToCircle()">👥 仲間ページに追加</button>`;
+    if (loginAvailable() && !detailRO) html += `<button class="auto-btn sub" onclick="openAddToCircle()">${ico('people', 20)}仲間ページに追加</button>`;
   }
   if (detailRO && watchVid) html += watchCtaHtml();
   document.getElementById(P + '-body').innerHTML = html;
@@ -8413,6 +8503,23 @@ function saveDetailEdit() {
   showUndoToast('更新しました', bkKey);
 }
 
+// アプリ内アイコン（スプライト #i-名前 を参照する）。絵文字の代わりに使う。
+// 絵文字は端末ごとに絵柄が違い、LPのイラストとも調子が合わないため、アプリの画面では使わない
+function ico(name, size = 20, cls = '') {
+  return `<svg class="ico${cls ? ' ' + cls : ''}" width="${size}" height="${size}" aria-hidden="true" focusable="false"><use href="#i-${name}"/></svg>`;
+}
+// 順位（位）のメダル。1〜3位＝金銀銅・4位以下＝灰色。色は画像出力の IMG_MEDAL と同じ。
+// 数字は濃い字（金の上の白は2.4:1で読みにくい）。横に「n位」の文字が並ぶピルでは withNum=false にする。
+// SVGの <text> は textContent に入るので、画像を作る表のセルには入れないこと
+const MEDAL = [['#D4A017', '#3B2C00'], ['#9AA5AD', '#1F2A28'], ['#C97B3F', '#2E1A0A']];
+function medalSvg(rank, size = 22, withNum = true) {
+  const [bg, fg] = MEDAL[rank - 1] || ['#E3E9E8', '#4F5C5A'];
+  const fs = rank >= 10 ? 10 : 12, ty = rank >= 10 ? 15.5 : 16.2;
+  return `<svg class="medal" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="${bg}"/>`
+    + `<circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/>`
+    + (withNum ? `<text x="12" y="${ty}" text-anchor="middle" font-size="${fs}" font-weight="800" fill="${fg}" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${rank}</text>` : '')
+    + `</svg>`;
+}
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
