@@ -88,6 +88,10 @@
   rate（スコア倍率）/ bonusEnabled / chipRate（チップ倍率）/ startChips（持ちチップ）/ yakitori /
   chombo / chomboPenalty（罰符pts・0=マークのみ）/ teamMode / teams=[{name, members:[playerNamesのindex]}]
 - `rounds[]`: points[] / scores[]（チョンボ罰符適用後）/ members[]（参加者index）/ chips[]（**チップ差**）/ yakitori[] / chombo[] / at / edited
+  ／ id（その試合を追加した操作のID。2026-09以降の試合のみ）／ op（最後に修正した操作のID）
+- `log[]`: type（add / edit / delete / **settings**）／ at ／ no（試合番号）／ points・prev・names ／
+  op（その操作のID＝二重適用の判定に使う）／ settingsは label ＋ changes[]（「ウマ: 10-30 → 10-20」のような変更点の行）。
+  旧形式の設定変更・「元に戻す」は type:'edit' で no が無い（`logKind(e)` が 'settings' に分類する）
 - 計算: スコア換算 = pts×rate ／ チップ換算 = チップ差×chipRate ／ 換算合計 = 両者の和
 - チョンボ💩: `applyChombo(scores, chomboArr, s)` が罰符ptsを減算。**submitRoundとsaveGameEditの両方で必ず通す**。焼き鳥🐔はマークのみ
 - **名称の表記は「ゲーム名」に統一**（2026-08-08。旧「グループ名」。セットアップのラベル・検索placeholder・
@@ -125,10 +129,46 @@
   編成エディタは `teamEditorCtx` でセットアップ・設定変更モーダル共用。`syncTeamsWithIds`が同期を一元処理
 - **チーム戦の制約**: 同チーム同士は対局不可。最低チーム数=1試合の人数（四麻4・三麻3、`teamEditorCtx.minTeams`）。
   ガード: toggleSheetMember / submitRound / defaultParticipants
-- ログ: `renderLogModal`（フィルタlogFilter）/ `renderLogList(log, g)`。新規ログは`e.names`に参加者名を保存
+- ログ: `renderLogModal`（フィルタlogFilter: すべて/入力/修正/削除/**設定**）/ `renderLogList(log, g)`。新規ログは`e.names`に参加者名を保存。
+  設定タブは settings（と旧形式の設定変更）を出し、`e.changes` を箇条書きで見せる
+- 保存: **`enqueueOp(op)` だけを使う**（→ 下の「送信キュー」）。`sessions/{id}` へ直接 update/set してよいのは作成時の `createGame` だけ
 - 画像出力とプレビュー: `imgSectionBodyCanvas` / `buildResultCanvas` / `buildComposedCanvas` / `openImagePreview`（→ その他の機能）
 - カード開閉: `collapsedCards` + `toggleCard(key)`（key: team/score/rounds/rank/chart/ichart/settings）
 - 計測: `track(event, params)` → dataLayer（group_create / group_join / round_submit / share_copy）
+
+## 送信キュー（入力を失わない・他の人の入力を上書きしない。2026-09〜）
+- **背景**: 「入力完了で自分の画面には出たのに他の人には届かず、再読み込みしたら消えた」事故。原因は
+  ①保存のたびに手元の rounds 配列を丸ごと書いていた（圏外で古い画面の端末が復帰すると、他の人の試合を上書きして消す）
+  ②Firebaseの送信待ちはメモリにしか無い（送る前に再読み込み・アプリを閉じると入力ごと消える）の2つ
+- **仕組み**: 1回の操作を op（kind: add / edit / delete / settings / rename / restore）として
+  ①端末の送信キュー（localStorage `mahjong-outbox-v1`）に積む →
+  ②画面は `overlayPending(serverGame, sid)`＝サーバーの値に未送信opを重ねて表示（`activeGame`はこれ。サーバーの生の値は`serverGame`）→
+  ③`flushOutbox` が積まれた順に `sendOp` で `sessions/{id}` 全体をトランザクション（applyLocally=false）→
+  ④確定したらキューから消す
+- **中身は純粋関数 `applyOp(game, op)`**（トランザクション・重ね表示・tests.htmlで共用）。戻り値は
+  apply／already（適用済み＝再送・二重送信）／conflict（他の人の変更とぶつかった）。
+  **二重登録しない**: logに op のIDが残っていれば already（追加は試合のidでも判定）
+- **ぶつかったときは上書きしない**: 修正・削除は「そのとき見えていた中身の指紋」（`roundTarget`＝id or at ＋ `fpOf(roundCore(r))`）を持ち、
+  他の人が先に変えていたら反映せず知らせる（入力した点数をトーストに添える）。
+  設定・名前の変更は「編集を開いた時点の値」（`editBase`）の指紋を持ち、変わっていたら反映しない。
+  設定の編集中に他の人が先に変えたときは、保存ボタンの時点で気づいて開き直す（サーバー側でも applyOp が二重に確かめる）
+- **スコアは適用するときにサーバーのその時の設定で計算する**（op には点数・参加者だけを持たせる）。
+  入力中にメンバーが並び替え・追加された場合は `remapMembers` が名前で付け直す（名前の変更は人数が同じなら番号のまま）
+- **送る契機**: `.info/connected` がtrueになったとき・`online`・画面に戻ったとき（visibilitychange）・未送信があるあいだ15秒ごと・起動時。
+  つながっているのに45秒返ってこないトランザクションは打ち切って送り直す（同じopは二重に適用されない）
+- **見せ方**: 画面上部の帯 `#sync-bar`（ヘッダー直下・sticky）。
+  オフラインで未送信あり＝「未送信 N件：電波が戻ると自動で送信します（画面を閉じても消えません）」／
+  オンラインで2.5秒以上送れない＝「送信中… N件」／権限・検証エラー＝「送信できなかった入力」＋もう一度送る・破棄／
+  未送信なしでオフラインが4秒以上続く（ゲーム画面のみ）＝「オフラインです。他の人の入力は、電波が戻ると表示されます」。
+  送れていない試合の行には「未送信」印（`.pend-mark`。1.2秒たってから見えるCSSアニメーション＝普段はちらつかない）。
+  帯を出したあと全部送れたら「未送信だった入力を送信しました」
+- **権限・検証エラーは捨てない**（`failed` を付けてキューに残し、帯で知らせる）。何度送っても通らない種類なので自動再送はしない
+- **【最重要】`sessions/{id}` の直下に新しいキーを足さない**。トランザクションはゲーム全体を書くので、
+  database.rules.json の `$other: false` に引っかかると**本番の保存が全部失敗する**。スタブ（smoke_test等）にはルールが無いので気づけない。
+  保存まわりを触ったら **`python tools/sync_test.py`（本番DBで2台の端末を再現・検証用ゲームは自動削除）** を必ず通す
+- 設定変更の変更点は `describeSettingsChanges(base, next, editMembersState)` が作る
+  （ゲーム名／メンバー追加・名前変更・削除・並び順／持ち点／返し点／ウマ／スコア倍率／チップ記録・倍率・持ちチップ／焼き鳥／チョンボ・罰符／チーム戦・編成）。
+  何も変わっていなければ保存しない（「変更はありませんでした」）
 
 ## クイックスタート（LPの「はじめる」の行き先）
 - **LPのCTA「はじめる」は `openQuickStart()`**（ヒーロー・クロージングの2箇所とも）。
@@ -434,8 +474,12 @@
   メンバー削除は対局済み/最低N人なら不可。チーム戦OFFでもteams保持
 
 ## テスト
-- /tests.html = index.htmlをiframeで読み実物関数を18ケース検証。**計算ロジック変更時はALL PASS確認必須**
-- tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。ローカルは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）
+- /tests.html = index.htmlをiframeで読み実物関数を34ケース検証（うち16件が送信キューの applyOp）。**計算ロジック・保存処理の変更時はALL PASS確認必須**
+- tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。ローカルは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）。
+  Firebaseはスタブ（transaction・.info/connected も実装済み。スタブは shoot_app_screens.py / record_app_demo.py にもあり、3つそろえること）
+- tools/sync_test.py = **本番のFirebaseで**2台の端末を再現して、圏外復帰で他人の試合が消えない／圏外で入力→再読み込みで消えない／
+  二重登録しない／設定変更の履歴が残る／設定の同時編集で上書きしない、を確認。検証用ゲームは最後に自動で削除する。
+  **保存処理を触ったら必ず通す**（本番のセキュリティルールで弾かれないことはここでしか確認できない）
 
 ## 落とし穴
 - **画面への導線を条件付きにすると、その画面の機能ごと見つからなくなる**（2026-08-07に発生。
@@ -489,3 +533,8 @@
 - **用語を変えたら doc 全体を grep して直す**（2026-09-17。2026-08-26の「収支」→「換算」で、新しい節は書き足したのに
   計算式・クイックスタート・結果表示・画像出力の記述が旧表記のまま残り、同じファイル内で矛盾していた）。
   節を足すだけでなく、旧語での grep が0件（＝残るのは「以前は〜」の経緯だけ）になるまで確認する
+- **保存のたびに配列を丸ごと書くと、圏外から戻った端末が他の人の入力を消す**（2026-09に実際に点数が消えた）。
+  Firebase(RTDB)の送信待ちはメモリにしか無く、再読み込みで消えるのも同時に起きていた。
+  いまは送信キュー＋トランザクションで扱う（→「送信キュー」）。**配列の丸ごと書き込みを新しく足さないこと**
+- **手元のテストが全部通っても、本番のセキュリティルールで弾かれることがある**（スタブにはルールが無い）。
+  保存処理を変えたら tools/sync_test.py で本番DBに対して確かめる

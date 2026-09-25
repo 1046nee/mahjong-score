@@ -20,7 +20,7 @@ p.note { font-size: 12px; color: #888; }
 </head>
 <body>
 <h1>まじゃすこ 計算ロジックテスト</h1>
-<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals）をそのまま検証します。このページは検証用でnoindexです。</p>
+<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp）をそのまま検証します。このページは検証用でnoindexです。</p>
 <div id="summary">実行中...</div>
 <div id="out"></div>
 <iframe id="app" src="/index.html" style="width:1px;height:1px;opacity:0;position:absolute"></iframe>
@@ -122,6 +122,142 @@ function buildCases(w) {
       const { chips, yaki } = w.chipTotals(g);
       return arrEq(chips, [2, 0, 0, -2]) && arrEq(yaki, [0, 0, 0, 2]);
     }],
+    // ---- 送信キュー（applyOp）: 点数が消えない・二重にならない・他の人の入力を上書きしない ----
+    ...opCases(w),
+  ];
+}
+
+function opCases(w) {
+  const NAMES = ['A', 'B', 'C', 'D'];
+  const SET = () => ({ playerNames: NAMES.slice(), numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] });
+  const G0 = () => ({ id: 'TESTGAME01', name: 'テスト', settings: SET(), rounds: [], log: [] });
+  const T = n => `2026-09-25T10:0${n}:00.000Z`;
+  const add = (id, pts, n = 0, members = [0, 1, 2, 3], names = NAMES) =>
+    ({ id, sid: 'TESTGAME01', at: T(n), kind: 'add', round: { points: pts, members, at: T(n) }, names: names.slice() });
+  const P1 = [35000, 28000, 22000, 15000];
+  const P2 = [41300, 28200, 22500, 8000];
+  const P3 = [30000, 30000, 25000, 15000];
+  const apply = (g, op) => w.applyOp(g, op);
+  const withRounds = (...pts) => {  // それぞれ別の操作で試合を足したゲーム
+    let g = G0();
+    pts.forEach((p, i) => { g = apply(g, add('op' + i, p, i)).game; });
+    return g;
+  };
+  return [
+    ['fpOf: キーの順番・null・空配列の違いは同じものとみなす（Firebaseを通しても一致する）', () =>
+      w.fpOf({ b: 1, a: [1, 2], c: null, d: [], e: {} }) === w.fpOf({ a: [1, 2], b: 1 })],
+    ['applyOp 追加: 試合が1つ増え、スコアはその時の設定で計算・履歴に操作のIDが残る', () => {
+      const r = apply(G0(), add('op1', P1));
+      const rd = r.game.rounds[0], lg = r.game.log[r.game.log.length - 1];
+      return r.status === 'apply' && r.game.rounds.length === 1 && rd.id === 'op1'
+        && arrEq(rd.scores, [55, 8, -18, -45]) && lg.type === 'add' && lg.no === 1 && lg.op === 'op1';
+    }],
+    ['applyOp 追加: 同じ操作をもう一度適用しても二重に登録されない', () => {
+      const g1 = apply(G0(), add('op1', P1)).game;
+      const r2 = apply(g1, add('op1', P1));
+      return r2.status === 'already' && r2.game.rounds.length === 1;
+    }],
+    ['applyOp 追加: 他の端末の試合が先に入っていても上書きせず後ろに足す（今回の事故の再現）', () => {
+      // 端末Bは試合0件の画面のまま入力 → そのあいだに端末Aが1試合入れていた
+      const serverNow = apply(G0(), add('byA', P1, 0)).game;
+      const r = apply(serverNow, add('byB', P2, 1));
+      return r.status === 'apply' && r.game.rounds.length === 2
+        && r.game.rounds[0].id === 'byA' && r.game.rounds[1].id === 'byB' && r.game.log[1].no === 2;
+    }],
+    ['applyOp 修正: 対象の試合をidで探して直し、履歴に修正前の点数を残す', () => {
+      const g = withRounds(P1, P2);
+      const op = { id: 'e1', sid: 'TESTGAME01', at: T(5), kind: 'edit', target: w.roundTarget(g.rounds[1]),
+        label: '第2試合の修正', round: { points: P3, members: [0, 1, 2, 3] }, names: NAMES };
+      const r = apply(g, op);
+      const rd = r.game.rounds[1], lg = r.game.log[r.game.log.length - 1];
+      return r.status === 'apply' && arrEq(rd.points, P3) && rd.edited === true && rd.id === 'op1' && rd.at === T(1)
+        && lg.type === 'edit' && lg.no === 2 && arrEq(lg.prev, P2) && apply(r.game, op).status === 'already';
+    }],
+    ['applyOp 修正: 他の人が先に同じ試合を直していたら上書きしない（conflict）', () => {
+      const g = withRounds(P1);
+      const target = w.roundTarget(g.rounds[0]);
+      const other = apply(g, { id: 'x', sid: 'TESTGAME01', at: T(6), kind: 'edit', target, label: '第1試合の修正',
+        round: { points: P2, members: [0, 1, 2, 3] }, names: NAMES }).game;
+      const r = apply(other, { id: 'mine', sid: 'TESTGAME01', at: T(7), kind: 'edit', target, label: '第1試合の修正',
+        round: { points: P3, members: [0, 1, 2, 3] }, names: NAMES });
+      return r.status === 'conflict' && arrEq(r.game.rounds[0].points, P2) && /先に修正/.test(r.msg);
+    }],
+    ['applyOp 修正: 以前からある試合（idなし）も入力日時atで特定して直せる', () => {
+      const g = G0();
+      g.rounds = [{ points: P1, scores: [55, 8, -18, -45], members: [0, 1, 2, 3], at: T(0) }];
+      const r = apply(g, { id: 'e2', sid: 'TESTGAME01', at: T(8), kind: 'edit', target: w.roundTarget(g.rounds[0]),
+        label: '第1試合の修正', round: { points: P3, members: [0, 1, 2, 3] }, names: NAMES });
+      return r.status === 'apply' && arrEq(r.game.rounds[0].points, P3) && !r.game.rounds[0].id && r.game.rounds[0].op === 'e2';
+    }],
+    ['applyOp 削除: 試合を消し、履歴の試合番号を今の番号に振り直す', () => {
+      const g = withRounds(P1, P2, P3);
+      const r = apply(g, { id: 'd1', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[1]), label: '第2試合の削除' });
+      const L = r.game.log;
+      return r.status === 'apply' && r.game.rounds.length === 2 && r.game.rounds[1].id === 'op2'
+        && L[0].no === 1 && !L[0].old && L[1].no === 2 && L[1].old === true && L[2].no === 2 && !L[2].old
+        && L[3].type === 'delete' && L[3].no === 2 && L[3].op === 'd1';
+    }],
+    ['applyOp 削除: すでに消えている試合なら何もしない（already）', () => {
+      const g = withRounds(P1, P2);
+      const del = { id: 'd2', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[0]), label: '第1試合の削除' };
+      const g2 = apply(g, del).game;
+      const r = apply(g2, { ...del, id: 'd3' });
+      return r.status === 'already' && r.game.rounds.length === 1;
+    }],
+    ['applyOp 設定変更: ルールを変えると全試合を計算し直し、変更点を履歴に残す', () => {
+      const g = withRounds(P1);
+      const base = { name: g.name, settings: g.settings };
+      const settings = { ...SET(), uma: [20, 10, -10, -20] };
+      const changes = w.describeSettingsChanges(base, { name: g.name, settings }, NAMES.map((n, i) => ({ orig: i, name: n })));
+      const r = apply(g, { id: 's1', sid: 'TESTGAME01', at: T(9), kind: 'settings', baseFp: w.fpOf(base), name: g.name, settings,
+        memberMap: { 0: 0, 1: 1, 2: 2, 3: 3 }, changes });
+      const lg = r.game.log[r.game.log.length - 1];
+      return r.status === 'apply' && arrEq(r.game.rounds[0].scores, [45, 8, -18, -35])
+        && lg.type === 'settings' && lg.changes.includes('ウマ: 10-30 → 10-20');
+    }],
+    ['applyOp 設定変更: 編集中に他の人が設定を変えていたら上書きしない（conflict）', () => {
+      const g = withRounds(P1);
+      const base = { name: g.name, settings: g.settings };
+      const other = { ...g, settings: { ...g.settings, startPoints: 30000 } };
+      const r = apply(other, { id: 's2', sid: 'TESTGAME01', at: T(9), kind: 'settings', baseFp: w.fpOf(base), name: g.name,
+        settings: { ...SET(), uma: [20, 10, -10, -20] }, memberMap: { 0: 0, 1: 1, 2: 2, 3: 3 }, changes: [] });
+      return r.status === 'conflict' && r.game.settings.startPoints === 30000;
+    }],
+    ['applyOp 設定変更: 削除したメンバーの試合がそのあいだに入っていたら反映しない', () => {
+      let g = G0(); g.settings.playerNames = ['A', 'B', 'C', 'D', 'E']; // Eを消す設定を作っているあいだに、Eが対局した
+      const base = { name: g.name, settings: JSON.parse(JSON.stringify(g.settings)) };
+      g = apply(g, add('withE', P1, 0, [0, 1, 2, 4], g.settings.playerNames)).game;
+      const r = apply(g, { id: 's3', sid: 'TESTGAME01', at: T(9), kind: 'settings', baseFp: w.fpOf(base), name: g.name,
+        settings: SET(), memberMap: { 0: 0, 1: 1, 2: 2, 3: 3 }, changes: ['メンバー削除: E'] });
+      return r.status === 'conflict' && r.game.rounds.length === 1;
+    }],
+    ['applyOp 追加: 入力中にメンバーが並び替えられても、名前で正しい人に付け直す', () => {
+      const g = G0(); g.settings.playerNames = ['D', 'C', 'B', 'A'];
+      const r = apply(g, add('re', P1, 0, [0, 1, 2, 3], NAMES)); // A,B,C,D の順で入力した
+      return r.status === 'apply' && arrEq(r.game.rounds[0].members, [3, 2, 1, 0]);
+    }],
+    ['applyOp 追加: 入力中に参加者の名前が変わっても、人数が同じなら同じ人のまま', () => {
+      const g = G0(); g.settings.playerNames = ['A', 'Bさん', 'C', 'D'];
+      const r = apply(g, add('rn', P1, 0, [0, 1, 2, 3], NAMES));
+      return r.status === 'apply' && arrEq(r.game.rounds[0].members, [0, 1, 2, 3]);
+    }],
+    ['describeSettingsChanges: メンバーの追加・名前変更・削除と持ち点の変更を1行ずつ書く', () => {
+      const base = { name: 'X', settings: SET() };
+      const next = { name: 'Y', settings: { ...SET(), playerNames: ['A', 'B2', 'C', 'E'], startPoints: 30000 } };
+      const st = [{ orig: 0 }, { orig: 1 }, { orig: 2 }, { orig: null }];
+      const c = w.describeSettingsChanges(base, next, st);
+      return ['ゲーム名: X → Y', '名前変更: B → B2', 'メンバー追加: E', 'メンバー削除: D', '持ち点: 25,000 → 30,000']
+        .every(x => c.includes(x)) && c.length === 5;
+    }],
+    ['applyOp 元に戻す: 見ていた状態のままなら戻す／その後に他の人が入力していたら戻さない', () => {
+      const g = withRounds(P1);
+      const snap = { name: g.name, settings: g.settings, rounds: [] };
+      const baseFp = w.fpOf({ name: g.name, settings: g.settings, rounds: g.rounds.map(w.roundCore) });
+      const ok = apply(g, { id: 'r1', sid: 'TESTGAME01', at: T(9), kind: 'restore', baseFp, snap, label: '戻す' });
+      const moved = apply(g, add('late', P2, 5)).game;
+      const ng = apply(moved, { id: 'r2', sid: 'TESTGAME01', at: T(9), kind: 'restore', baseFp, snap, label: '戻す' });
+      return ok.status === 'apply' && ok.game.rounds.length === 0 && ng.status === 'conflict' && ng.game.rounds.length === 2;
+    }],
   ];
 }
 
@@ -131,7 +267,7 @@ window.addEventListener('load', () => {
   const wait = () => {
     let w = null;
     try { w = frame.contentWindow; } catch (e) {}
-    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function') {
+    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function') {
       if (++tries > 100) return done(null, 'アプリの読み込みに失敗しました（関数が見つかりません）');
       return setTimeout(wait, 100);
     }

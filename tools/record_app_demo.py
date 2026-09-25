@@ -66,8 +66,17 @@ FIREBASE_STUB = """
     set: v => { setPath(p, v); return Promise.resolve(); },
     update: o => { Object.keys(o).forEach(k => setPath(p + '/' + k, o[k])); return Promise.resolve(); },
     remove: () => { setPath(p, null); return Promise.resolve(); },
+    transaction: (fn, onComplete) => {
+      const cur = get(p);
+      const nv = fn(cur === null ? null : JSON.parse(JSON.stringify(cur)));
+      const committed = nv !== undefined;
+      if (committed) setPath(p, nv);
+      if (onComplete) setTimeout(() => onComplete(null, committed, snap(p)), 0);
+      return Promise.resolve({ committed, snapshot: snap(p) });
+    },
   });
-  window.firebase = { initializeApp: () => {}, database: () => ({ ref }) };
+  STORE['.info'] = { connected: true }; // 送信キューが見る接続状態
+  window.firebase = { initializeApp: () => {}, database: () => ({ ref, goOffline: () => {}, goOnline: () => {} }) };
 })();
 """
 

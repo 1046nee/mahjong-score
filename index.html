@@ -371,6 +371,22 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .log-tag.add { background: #177083; }
 .log-tag.edit { background: #E75620; }
 .log-tag.del { background: #c62828; }
+.log-tag.set { background: #5b6b8c; }
+.log-changes { margin: 3px 0 0; padding: 0; list-style: none; }
+.log-changes li { font-size: 11px; color: #6b7a78; line-height: 1.6; }
+.log-changes li::before { content: '・'; }
+/* 送信キュー: 送れていない入力があるときだけ出す帯（画面を下にスクロールしても見えるよう上端に貼り付く） */
+.sync-bar { position: sticky; top: 0; z-index: 60; max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 8px 10px; flex-wrap: wrap; padding: 8px 14px; font-size: 12px; line-height: 1.5; text-align: center; }
+.sync-bar[hidden] { display: none; }
+.sync-bar.warn { background: #fff4e5; color: #8a4b00; border-bottom: 1px solid #f1d6ad; }
+.sync-bar.info { background: #eef6f8; color: #2c5d68; border-bottom: 1px solid #cfe3e8; }
+.sync-bar.err { background: #fdecea; color: #a12622; border-bottom: 1px solid #f3c4bf; }
+.sync-bar.mute { background: #f2f4f5; color: #6b7a78; border-bottom: 1px solid #e3e8e7; }
+.sync-bar button { border: 1.5px solid currentColor; background: #fff; color: inherit; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
+/* 試合行の「未送信」。普段の保存は一瞬で終わるので、1.2秒たっても送れていないときだけ見えるようにする */
+.pend-mark { font-size: 9px; color: #b26a00; font-weight: 700; margin-top: 1px; animation: pendIn .2s 1.2s both; }
+@keyframes pendIn { from { opacity: 0; } to { opacity: 1; } }
+.toast { white-space: pre-line; line-height: 1.5; }
 .log-content { flex: 1; min-width: 0; }
 
 /* Rank medal colors */
@@ -620,6 +636,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="global-nav-link" onclick="goUsage()">使い方</button>
   </div>
 </div>
+<div id="sync-bar" class="sync-bar" hidden aria-live="polite"></div>
 
 <!-- HOME -->
 <div id="view-home" class="view active">
@@ -1564,39 +1581,22 @@ function restoreBackupById(key, force) {
   if (!force && (cur.rounds || []).length !== bk.expect) { confirmRestore(key); return; }
   applyRestore(bk, where);
 }
-async function applyRestore(bk, where) {
-  const logEntry = { type: 'edit', at: new Date().toISOString(),
-    label: `${fmtDate(bk.at)} ${fmtTime(bk.at)}の状態にもどす` };
-  if (where === 'live') {
-    takeBackup(activeGame, 'もとに戻す', bk.rounds.length); // 復元そのものも取り消せるようにする
-    try {
-      await db.ref('sessions/' + sessionId).update({
-        name: bk.name, settings: bk.settings,
-        rounds: bk.rounds.length ? bk.rounds : null,
-        log: appendLog(activeGame.log, logEntry)
-      });
-      showToast('元に戻しました');
-    } catch(e) { showToast('復元に失敗しました'); }
-  } else {
-    // 結果詳細からの復元もサーバーへ書く（端末内だけ戻すと、サーバーから取り直す入り口で
-    // 復元前の状態に巻き戻ってしまい、復元した意味がなくなる）
-    takeBackup(detailGame, 'もとに戻す', bk.rounds.length);
-    try {
-      const newLog = appendLog(detailGame.log, logEntry);
-      await db.ref('sessions/' + bk.gid).update({
-        name: bk.name, settings: bk.settings,
-        rounds: bk.rounds.length ? bk.rounds : null,
-        log: newLog
-      });
-      detailGame.name = bk.name;
-      detailGame.settings = bk.settings;
-      detailGame.rounds = bk.rounds;
-      detailGame.log = newLog;
-      saveStorage();
-      viewDetail(detailGame);
-      showToast('元に戻しました');
-    } catch(e) { showToast('復元に失敗しました'); }
+function applyRestore(bk, where) {
+  const label = `${fmtDate(bk.at)} ${fmtTime(bk.at)}の状態にもどす`;
+  const g = where === 'live' ? activeGame : detailGame;
+  takeBackup(g, 'もとに戻す', bk.rounds.length); // 復元そのものも取り消せるようにする
+  // 「戻す」を押した時点で画面に見えていた状態を基準にする（その後に他の人が入力していたら戻さない）
+  // 結果詳細からの復元もサーバーへ書く（端末内だけ戻すと、サーバーから取り直す入り口で巻き戻ってしまう）
+  const op = enqueueOp({ id: newOpId(), sid: bk.gid, at: new Date().toISOString(), kind: 'restore',
+    baseFp: fpOf({ name: g.name, settings: g.settings, rounds: (g.rounds || []).map(roundCore) }),
+    snap: { name: bk.name, settings: bk.settings, rounds: bk.rounds }, label });
+  if (where !== 'live') {
+    const r = applyOp(detailGame, op);
+    if (r.status === 'apply') Object.assign(detailGame, r.game);
+    saveStorage();
+    viewDetail(detailGame);
   }
+  showToast('元に戻しました');
 }
 
 // ---- Firebase ----
@@ -1890,23 +1890,405 @@ function startListening() {
   sessionCallback = sessionRef.on('value', snapshot => {
     const data = snapshot.val();
     if (!data) return;
-    const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
-    activeGame = { ...data, rounds: normArr(data.rounds), log: normArr(data.log) };
-    renderGame();
-    // 作成・参加したグループは常にローカル履歴へ自動保存（最終アクセス順・最大20件）
-    saveToLocalHistory();
+    serverGame = normGame(data);
+    refreshActiveGame();
   });
+}
+// 画面に出すゲーム＝サーバーの値に、この端末の未送信opを重ねたもの（送れていない入力も消えて見えない）
+function refreshActiveGame() {
+  if (!serverGame) return;
+  activeGame = overlayPending(serverGame, sessionId);
+  renderGame();
+  // 作成・参加したグループは常にローカル履歴へ自動保存（最終アクセス順・最大20件）
+  saveToLocalHistory();
+  updateSyncUi();
 }
 function stopListening() {
   if (sessionRef && sessionCallback) {
     sessionRef.off('value', sessionCallback);
     sessionCallback = null; sessionRef = null;
   }
+  serverGame = null;
 }
-async function writeRoundsToFirebase(rounds, logEntry) {
-  const updates = { rounds: rounds.length ? rounds : null };
-  if (logEntry) updates.log = appendLog(activeGame.log, logEntry);
-  await db.ref('sessions/' + sessionId).update(updates);
+
+// ==== 送信キュー（電波が悪くても入力を失わない・他の人の入力を上書きしない） ====
+// 2026-09に「入力完了で自分の画面には出たのに、他の人には届かず、再読み込みしたら消えた」事故があった。原因は2つ:
+//  ① 保存のたびに手元の試合一覧（rounds配列）を丸ごと書いていた
+//     → 圏外で古い画面のままの端末が復帰した瞬間、その間に他の人が入れた試合を上書きして消す
+//  ② Firebaseの送信待ちはメモリにしか無い → 送る前に再読み込み・アプリを閉じると入力ごと消える
+// いまは1回の操作を「op」（追加・修正・削除・設定変更・名前の変更・元に戻す）として扱う:
+//  1) まずこの端末の送信キュー（localStorage）に積む ← 再読み込みしても消えない
+//  2) 画面は「サーバーの値＋未送信のop」を重ねて表示する（送れていない試合には「未送信」印）
+//  3) サーバーの最新データに対してトランザクションで1件ずつ適用する ← 他の人の入力を上書きしない
+//  4) 確定したらキューから消す。opのIDを履歴(log)に残し、適用済みなら二度と適用しない ← 二重登録しない
+// 【重要】sessions/{id} の直下に新しいキーを足さないこと。database.rules.json の $other により、
+// 本番では書き込みが丸ごと拒否される（手元のテストはスタブなので通ってしまう → tools/sync_test.py で必ず確認）
+const OUTBOX_KEY = 'mahjong-outbox-v1';
+const OUTBOX_RETRY_MS = 15000;   // 未送信があるときの自動再送の間隔
+const SYNC_BAR_DELAY_MS = 2500;  // これより早く送れたら何も出さない（普段の保存で帯がちらつかないように）
+let serverGame = null;           // 進行中ゲームの「サーバーの値」（未送信opを重ねる前）
+let dbConnected = false;
+let offlineSince = Date.now();   // 起動直後はまだつながっていない
+let flushing = false;
+let flushTimer = null;
+let pendingShown = false;        // 「送れていない」を帯で見せたか（送れたときに一言知らせるため）
+function loadOutbox() {
+  try { const a = JSON.parse(localStorage.getItem(OUTBOX_KEY)); return Array.isArray(a) ? a.filter(o => o && o.id && o.sid) : []; }
+  catch (e) { return []; }
+}
+let outbox = loadOutbox();
+let outboxIds = new Set(outbox.map(o => o.id));
+function outboxChanged() {
+  outboxIds = new Set(outbox.map(o => o.id));
+  try { localStorage.setItem(OUTBOX_KEY, JSON.stringify(outbox)); } catch (e) { /* 容量不足でもメモリ上のキューで送信は続ける */ }
+}
+function newOpId() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  return Date.now().toString(36) + Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+// 試合行の「未送信」印の判定（追加した試合はid、修正した試合はopがopのIDと一致する）
+function isPendingRound(r) { return !!r && (outboxIds.has(r.id) || outboxIds.has(r.op)); }
+
+// ---- 比較用の指紋。Firebaseを通すとキーの順番・空配列・nullの扱いが変わるので、正規化してから比べる ----
+function canonVal(v) {
+  if (v === null || v === undefined) return undefined;
+  if (Array.isArray(v)) {
+    const a = v.map(canonVal).filter(x => x !== undefined);
+    return a.length ? a : undefined;
+  }
+  if (typeof v === 'object') {
+    const o = {};
+    Object.keys(v).sort().forEach(k => { const c = canonVal(v[k]); if (c !== undefined) o[k] = c; });
+    return Object.keys(o).length ? o : undefined;
+  }
+  return v;
+}
+function fpOf(v) { const c = canonVal(v); return JSON.stringify(c === undefined ? null : c); }
+function normGame(v) {
+  const arr = x => x ? (Array.isArray(x) ? x : Object.values(x)).filter(Boolean) : [];
+  return { ...v, rounds: arr(v.rounds), log: arr(v.log) };
+}
+// 試合の「中身」＝人が入力した部分（スコアは設定から計算し直すので含めない）
+function roundCore(r) {
+  return { at: r.at, points: r.points, members: r.members, chips: r.chips, yakitori: r.yakitori, chombo: r.chombo };
+}
+// 修正・削除の対象を指す目印: 新しい試合はid、それより前の試合は入力日時at。
+// あわせて「そのとき画面で見えていた中身」の指紋を持ち、他の人が先に変えていたら上書きしない
+function roundTarget(r) { return { id: r.id || null, at: r.at || null, fp: fpOf(roundCore(r)) }; }
+function findRoundIdx(rounds, t) {
+  if (t.id) return rounds.findIndex(r => r.id === t.id);
+  if (t.at) return rounds.findIndex(r => !r.id && r.at === t.at);
+  return rounds.findIndex(r => !r.id && fpOf(roundCore(r)) === t.fp);
+}
+// 入力したときのメンバー表（baseNames）と今のメンバー表が違うとき、参加者の番号を付け直す。
+// 並び替え・追加・未参加者の削除は名前で追える。名前の変更は人数が同じなら番号そのままで追える。
+// どちらでも追えないときは null（＝ぶつかった）
+function remapMembers(members, baseNames, curNames) {
+  if (!Array.isArray(baseNames) || fpOf(baseNames) === fpOf(curNames)) return members.slice();
+  const byName = members.map(m => {
+    const hit = curNames.reduce((a, n, i) => (n === baseNames[m] ? a.concat(i) : a), []);
+    return hit.length === 1 ? hit[0] : -1;
+  });
+  if (byName.every(i => i >= 0)) return byName;
+  if (curNames.length === baseNames.length) return members.slice();
+  return null;
+}
+// opをゲームに適用する純粋関数（トランザクション・画面の重ね表示・tests.htmlで共用）。
+// 戻り値 { status, game, msg }: apply=適用した／already=適用済み（再送・二重送信）／conflict=他の人の変更とぶつかった
+function applyOp(game, op) {
+  const log0 = game.log || [];
+  if (log0.some(e => e && e.op === op.id)) return { status: 'already', game };
+  const g = { ...game, rounds: (game.rounds || []).slice(), log: log0.slice() };
+  const s = g.settings || {};
+  const pn = s.playerNames || [];
+  const nameList = mem => mem.map(m => pn[m] || '');
+  const rescore = (r, st) => applyChombo(calcScores(r.points, st), r.chombo, st);
+  const conflict = msg => ({ status: 'conflict', game, msg });
+  const done = () => ({ status: 'apply', game: g });
+  if (op.kind === 'add') {
+    if (g.rounds.some(r => r.id === op.id)) return { status: 'already', game };
+    if (g.rounds.length >= MAX_ROUNDS) return conflict(`1つのゲームに記録できるのは${MAX_ROUNDS}試合までのため、追加できませんでした`);
+    const members = remapMembers(op.round.members, op.names, pn);
+    if (!members) return conflict('入力しているあいだにメンバー構成が変わったため、試合を追加できませんでした');
+    const r = { ...op.round, members, id: op.id };
+    r.scores = rescore(r, s);
+    g.rounds.push(r);
+    g.log = appendLog(g.log, { type: 'add', at: op.at, no: g.rounds.length, points: r.points, names: nameList(members), op: op.id });
+    return done();
+  }
+  if (op.kind === 'edit' || op.kind === 'delete') {
+    const i = findRoundIdx(g.rounds, op.target);
+    if (i < 0) {
+      // 削除: もう無い＝望んだ状態になっている。修正: 対象が消えていたので反映できない
+      return op.kind === 'delete' ? { status: 'already', game } : conflict(`${op.label}は、他の人が先に削除していたため反映できませんでした`);
+    }
+    const orig = g.rounds[i];
+    if (op.kind === 'edit' && orig.op === op.id) return { status: 'already', game };
+    if (fpOf(roundCore(orig)) !== op.target.fp) {
+      return conflict(`${op.label}は、他の人が先に修正していたため${op.kind === 'delete' ? '削除しませんでした' : '反映できませんでした'}`);
+    }
+    if (op.kind === 'edit') {
+      const members = remapMembers(op.round.members, op.names, pn);
+      if (!members) return conflict('入力しているあいだにメンバー構成が変わったため、修正を反映できませんでした');
+      const r = { ...op.round, members, at: orig.at || op.at, edited: true, op: op.id };
+      if (orig.id) r.id = orig.id;
+      r.scores = rescore(r, s);
+      g.rounds[i] = r;
+      g.log = appendLog(g.log, { type: 'edit', at: op.at, no: i + 1, prev: orig.points || null, points: r.points, names: nameList(members), op: op.id });
+    } else {
+      g.rounds.splice(i, 1);
+      // 履歴の試合番号を今の番号に合わせて振り直す（削除した試合の履歴は「旧」、それより後は1つ繰り上げ）
+      g.log = g.log.map(e => {
+        if (!e || e.old || typeof e.no !== 'number') return e;
+        if (e.no === i + 1) return { ...e, old: true };
+        if (e.no > i + 1) return { ...e, no: e.no - 1 };
+        return e;
+      });
+      g.log = appendLog(g.log, { type: 'delete', at: op.at, no: i + 1, old: true, points: orig.points || null,
+        names: nameList(roundMembers(orig, s)), op: op.id });
+    }
+    return done();
+  }
+  if (op.kind === 'settings') {
+    const cur = fpOf({ name: g.name, settings: s });
+    if (cur === fpOf({ name: op.name, settings: op.settings })) return { status: 'already', game };
+    if (cur !== op.baseFp) return conflict('設定を変更しているあいだに、他の人が先に設定を変更していました。最新の設定を確認して、もう一度変更してください');
+    const map = op.memberMap || {};
+    // 設定を開いたあとに、削除したメンバーの試合が入力されていたら番号を振り直せない
+    if (g.rounds.some(r => roundMembers(r, s).some(m => map[m] == null))) {
+      return conflict('削除したメンバーの試合がそのあいだに入力されていたため、設定の変更を反映できませんでした');
+    }
+    g.rounds = g.rounds.map(r => {
+      const nr = { ...r, members: roundMembers(r, s).map(m => map[m]) };
+      nr.scores = rescore(nr, op.settings);
+      return nr;
+    });
+    g.name = op.name;
+    g.settings = op.settings;
+    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: 'ゲーム設定を変更', changes: op.changes || [], op: op.id });
+    return done();
+  }
+  if (op.kind === 'rename') {
+    const cur = fpOf({ name: g.name, names: pn });
+    if (cur === fpOf({ name: op.name, names: op.playerNames })) return { status: 'already', game };
+    if (cur !== op.baseFp) return conflict('名前を編集しているあいだに、他の人が名前や設定を変更していました。最新の内容を確認して、もう一度編集してください');
+    g.name = op.name;
+    g.settings = { ...s, playerNames: op.playerNames };
+    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: '名前を変更', changes: op.changes || [], op: op.id });
+    return done();
+  }
+  if (op.kind === 'restore') {
+    if (fpOf({ name: g.name, settings: s, rounds: g.rounds.map(roundCore) }) !== op.baseFp) {
+      return conflict('元に戻す前に、他の人が入力・変更していたため戻しませんでした。最新の内容を確認して、もう一度お試しください');
+    }
+    g.name = op.snap.name;
+    g.settings = op.snap.settings;
+    g.rounds = (op.snap.rounds || []).slice();
+    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: op.label, op: op.id });
+    return done();
+  }
+  return conflict('不明な操作のため反映できませんでした');
+}
+// サーバーの値に、この端末の未送信opを積まれた順に重ねる
+function overlayPending(base, sid) {
+  let g = base;
+  for (const op of outbox) {
+    if (op.sid !== sid) continue;
+    const r = applyOp(g, op);
+    if (r.status === 'apply') g = r.game;
+  }
+  return g;
+}
+// サーバーへ書く形に戻す。sessions/{id} の既存キーはそのまま残し、変えるのは name/settings/rounds/log だけ
+function toServerGame(g, cur) {
+  return { ...cur, name: g.name, settings: g.settings,
+    rounds: g.rounds.length ? g.rounds : null, log: g.log.length ? g.log : null };
+}
+// opを送信キューに積む（入力の確定はここで済む。送信は裏で続ける）
+function enqueueOp(op) {
+  // Firebaseはundefinedを書けないので、JSONを通して落としておく（キューに保存される形ともそろう）
+  const q = JSON.parse(JSON.stringify({ ...op, queuedAt: Date.now() }));
+  outbox.push(q);
+  outboxChanged();
+  if (q.sid === sessionId && serverGame) refreshActiveGame();
+  updateSyncUi();
+  flushOutbox();
+  return q;
+}
+// 1件をトランザクションで送る。結果: applied / already / conflict / gone / failed / retry
+function sendOp(op) {
+  return new Promise(resolve => {
+    let finished = false, decision = null, msg = '';
+    const started = Date.now();
+    let watch = null;
+    const finish = res => { if (finished) return; finished = true; clearInterval(watch); resolve(res); };
+    // つながっているのに長く返ってこないときは、いったん打ち切って送り直す（同じopは二重に適用されない）
+    watch = setInterval(() => { if (dbConnected && Date.now() - started > 45000) finish({ status: 'retry' }); }, 5000);
+    try {
+      db.ref('sessions/' + op.sid).transaction(cur => {
+        // 手元にデータが無いと最初はnullで呼ばれる。そのままnullを返すとサーバーの値で呼び直される
+        //（本当にゲームが消えていたときだけnullのまま確定する＝gone）
+        if (cur === null) { decision = 'gone'; msg = ''; return null; }
+        const r = applyOp(normGame(cur), op);
+        decision = r.status; msg = r.msg || '';
+        return r.status === 'apply' ? toServerGame(r.game, cur) : undefined; // undefined＝中止（適用済み・衝突）
+      }, (err, committed, snap) => {
+        if (err) {
+          const code = String((err && (err.code || err.message)) || err);
+          // 権限・検証エラーは何度送っても通らない → 捨てずに「送れなかった入力」として残して知らせる
+          return finish(/permission|denied|invalid/i.test(code) ? { status: 'failed', msg: code } : { status: 'retry' });
+        }
+        if (committed) {
+          return finish(snap && snap.val() === null
+            ? { status: 'gone', msg: 'このゲームはサーバーから削除されていたため、保存できませんでした' }
+            : { status: 'applied' });
+        }
+        finish({ status: decision === 'conflict' ? 'conflict' : 'already', msg });
+      }, false);
+    } catch (e) {
+      finish({ status: 'failed', msg: String((e && e.message) || e) });
+    }
+  });
+}
+// キューを積まれた順に送る。通信の問題で送れなかったら順番を守るため止めて、次の機会に続きから送る
+async function flushOutbox() {
+  if (flushing) return;
+  flushing = true;
+  const tried = new Set();
+  try {
+    for (;;) {
+      const op = outbox.find(o => !o.failed && !tried.has(o.id));
+      if (!op) break;
+      tried.add(op.id);
+      const res = await sendOp(op);
+      if (res.status === 'retry') break;
+      if (res.status === 'failed') { op.failed = res.msg || 'error'; outboxChanged(); continue; }
+      outbox = outbox.filter(o => o.id !== op.id);
+      outboxChanged();
+      if (res.status === 'conflict' || res.status === 'gone') reportDroppedOp(op, res.msg);
+    }
+  } finally {
+    flushing = false;
+    if (sessionId && serverGame) refreshActiveGame(); else updateSyncUi();
+    clearTimeout(flushTimer);
+    if (outbox.some(o => !o.failed)) flushTimer = setTimeout(flushOutbox, OUTBOX_RETRY_MS);
+  }
+}
+// 他の人の変更とぶつかって反映できなかったopを知らせる（入力した点数も添えて、入れ直せるようにする）
+function reportDroppedOp(op, msg) {
+  let detail = '';
+  if (op.round && Array.isArray(op.round.points)) {
+    const nm = op.names || [];
+    detail = '入力した点数: ' + op.round.points.map((p, k) =>
+      `${nm[(op.round.members || [])[k]] || ''} ${Number(p).toLocaleString()}`).join('／');
+  }
+  showToast((msg || '他の人の変更とぶつかったため、反映できませんでした') + (detail ? '\n' + detail : ''), 10000);
+  console.warn('[majasco] 反映できなかった操作', op, msg);
+  // 過去の結果画面で開いているゲームなら、サーバーの最新に取り直して表示を合わせる
+  if (detailGame && detailGame.id === op.sid) reloadDetailFromServer(op.sid);
+}
+async function reloadDetailFromServer(gid) {
+  try {
+    const snap = await db.ref('sessions/' + gid).once('value');
+    if (!snap.exists() || !detailGame || detailGame.id !== gid) return;
+    Object.assign(detailGame, normGame(snap.val()));
+    saveStorage();
+    if (document.getElementById('view-detail').classList.contains('active')) viewDetail(detailGame);
+  } catch (e) { /* 取り直せなくても次に開いたときに合う */ }
+}
+function retryFailedOps() {
+  outbox.forEach(o => { delete o.failed; });
+  outboxChanged();
+  flushOutbox();
+}
+function discardFailedOps() {
+  const n = outbox.filter(o => o.failed).length;
+  if (!n || !confirm(`送信できなかった入力${n}件を破棄します。元には戻せません。よろしいですか？`)) return;
+  outbox = outbox.filter(o => !o.failed);
+  outboxChanged();
+  if (sessionId && serverGame) refreshActiveGame(); else updateSyncUi();
+}
+// 画面上部の帯: 送れていない入力がある／送れない入力がある／オフライン のときだけ出す
+function updateSyncUi() {
+  const bar = document.getElementById('sync-bar');
+  if (!bar) return;
+  const now = Date.now();
+  const failed = outbox.filter(o => o.failed).length;
+  const pend = outbox.filter(o => !o.failed);
+  const oldest = pend.reduce((a, o) => Math.min(a, o.queuedAt || now), now);
+  const inGame = document.getElementById('view-game').classList.contains('active');
+  let cls = '', html = '';
+  if (failed) {
+    cls = 'err';
+    html = `<span>送信できなかった入力が<b>${failed}件</b>あります</span>`
+      + '<button type="button" onclick="retryFailedOps()">もう一度送る</button>'
+      + '<button type="button" onclick="discardFailedOps()">破棄</button>';
+  } else if (pend.length && (!dbConnected || now - oldest >= SYNC_BAR_DELAY_MS)) {
+    cls = dbConnected ? 'info' : 'warn';
+    html = dbConnected
+      ? `<span>送信中… ${pend.length}件（電波が弱いようです。このままお待ちください）</span>`
+      : `<span><b>未送信 ${pend.length}件</b>：電波が戻ると自動で送信します（画面を閉じても消えません）</span>`;
+  } else if (!dbConnected && offlineSince && now - offlineSince > 4000 && inGame) {
+    cls = 'mute';
+    html = '<span>オフラインです。他の人の入力は、電波が戻ると表示されます</span>';
+  }
+  if (cls === 'info' || cls === 'warn') pendingShown = true;
+  if (!pend.length && !failed && pendingShown) {
+    pendingShown = false;
+    showToast('未送信だった入力を送信しました。全員の画面に反映されています', 4000);
+  }
+  const key = cls + html;
+  if (bar.dataset.key !== key) {
+    bar.dataset.key = key;
+    bar.className = 'sync-bar' + (cls ? ' ' + cls : '');
+    bar.innerHTML = html;
+    bar.hidden = !html;
+  }
+}
+
+// ---- 設定変更の履歴: 変更前と変更後を見比べて「ウマ: 10-20 → 10-30」のような行を作る ----
+function umaLabel(uma, n) {
+  const k = umaKeyOf(uma || [], n);
+  if (k === '0') return 'なし';
+  if (k !== 'custom') return k;
+  return (uma || []).join(' / ');
+}
+function describeSettingsChanges(base, next, membersState) {
+  const a = base.settings || {}, b = next.settings || {};
+  const out = [];
+  const num = v => (Number(v) || 0).toLocaleString();
+  const onoff = v => (v ? 'あり' : 'なし');
+  const rateStr = r => ((Number(r) > 0 && Number(r) !== 1) ? '×' + r : 'なし');
+  const penStr = p => (Number(p) > 0 ? `罰符 −${Number(p)}pts` : 'マークのみ');
+  const teamSig = st => (st.teams ? normalizedTeams(st).map(t => ({ name: t.name, members: t.members.map(m => (st.playerNames || [])[m]) })) : []);
+  if ((base.name || '') !== (next.name || '')) out.push(`ゲーム名: ${base.name || ''} → ${next.name || ''}`);
+  if (membersState) {
+    const oldNames = a.playerNames || [];
+    const newNames = b.playerNames || [];
+    const kept = new Set();
+    membersState.forEach((m, pos) => {
+      if (m.orig === null) { out.push(`メンバー追加: ${newNames[pos]}`); return; }
+      kept.add(m.orig);
+      if (oldNames[m.orig] !== newNames[pos]) out.push(`名前変更: ${oldNames[m.orig]} → ${newNames[pos]}`);
+    });
+    oldNames.forEach((nm, i) => { if (!kept.has(i)) out.push(`メンバー削除: ${nm}`); });
+    const order = membersState.filter(m => m.orig !== null).map(m => m.orig);
+    if (order.some((v, i) => i > 0 && v < order[i - 1])) out.push('メンバーの並び順を変更');
+  }
+  if (Number(a.startPoints) !== Number(b.startPoints)) out.push(`持ち点: ${num(a.startPoints)} → ${num(b.startPoints)}`);
+  if (Number(a.returnPoints) !== Number(b.returnPoints)) out.push(`返し点: ${num(a.returnPoints)} → ${num(b.returnPoints)}`);
+  if (fpOf(a.uma) !== fpOf(b.uma)) out.push(`ウマ: ${umaLabel(a.uma, a.numPlayers)} → ${umaLabel(b.uma, b.numPlayers)}`);
+  if (rateStr(a.rate) !== rateStr(b.rate)) out.push(`スコア倍率: ${rateStr(a.rate)} → ${rateStr(b.rate)}`);
+  if (!!a.bonusEnabled !== !!b.bonusEnabled) out.push(`チップ記録: ${onoff(a.bonusEnabled)} → ${onoff(b.bonusEnabled)}`);
+  if (b.bonusEnabled && (Number(a.chipRate) || 1) !== (Number(b.chipRate) || 1)) out.push(`チップ倍率: ×${Number(a.chipRate) || 1} → ×${Number(b.chipRate) || 1}`);
+  if (b.bonusEnabled && (Number(a.startChips) || 0) !== (Number(b.startChips) || 0)) out.push(`持ちチップ: ${Number(a.startChips) || 0}枚 → ${Number(b.startChips) || 0}枚`);
+  if (!!a.yakitori !== !!b.yakitori) out.push(`焼き鳥: ${onoff(a.yakitori)} → ${onoff(b.yakitori)}`);
+  if (!!a.chombo !== !!b.chombo) out.push(`チョンボ: ${onoff(a.chombo)} → ${onoff(b.chombo)}`);
+  else if (b.chombo && (Number(a.chomboPenalty) || 0) !== (Number(b.chomboPenalty) || 0)) out.push(`チョンボ: ${penStr(a.chomboPenalty)} → ${penStr(b.chomboPenalty)}`);
+  if (!!a.teamMode !== !!b.teamMode) out.push(`チーム戦: ${onoff(a.teamMode)} → ${onoff(b.teamMode)}`);
+  else if (b.teamMode && fpOf(teamSig(a)) !== fpOf(teamSig(b))) out.push('チーム編成を変更');
+  if (!out.length && fpOf(base) !== fpOf(next)) out.push('その他の設定を変更');
+  return out;
 }
 function fmtTime(iso) {
   if (!iso) return '--:--';
@@ -2046,12 +2428,12 @@ let toastTimer = null;
 const UNDO_TOAST_MS = 8000;
 const UNDO_TOAST_SHORT_MS = 3000;
 const UNDO_TOAST_DELETE_MS = 4000; // 過去の試合の削除（端末内＋引き継ぎリストの操作なので中間の長さ）
-function showToast(msg) {
+function showToast(msg, ms = 2500) {
   const el = document.getElementById('toast');
   el.classList.remove('act');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
 }
 // 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
 // ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒／履歴の削除は4秒）
@@ -4027,9 +4409,11 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false) {
     return `<td${tb} style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
   }).join('');
   const editedMark = (!compact && r.edited) ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
+  // 送信キューに残っている試合（電波待ち）。画像には出さない
+  const pendMark = (!forImage && isPendingRound(r)) ? '<div class="pend-mark">未送信</div>' : '';
   // 試合番号は個人成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
   return `<tr onclick="${onclickJs}" style="cursor:pointer">
-    <td class="sticky-col"><div>${idx+1}</div>${editedMark}</td>
+    <td class="sticky-col"><div>${idx+1}</div>${editedMark}${pendMark}</td>
     ${cells}
   </tr>`;
 }
@@ -4168,7 +4552,13 @@ function rankCountHtml(rounds, s, forImage = false) {
 
 // ---- 履歴表示（入力・修正・削除の3パターン） ----
 function logEvents(log) {
-  return (log || []).filter(e => e.type === 'add' || e.type === 'edit' || e.type === 'delete');
+  return (log || []).filter(e => e && (e.type === 'add' || e.type === 'edit' || e.type === 'delete' || e.type === 'settings'));
+}
+// 履歴の分類。旧形式の設定変更・「元に戻す」は type:'edit' で試合番号が無いので「設定」に入れる
+function logKind(e) {
+  if (e.type === 'settings') return 'settings';
+  if (e.type === 'edit' && typeof e.no !== 'number') return 'settings';
+  return e.type;
 }
 // 「履歴」ボタンから画面上にモーダルで表示する（すべて/入力/修正/削除で絞り込みできる）
 let logFilter = 'all';
@@ -4190,9 +4580,9 @@ function setLogFilter(f) {
 function renderLogModal() {
   const g = logSrc === 'detail' ? detailGame : activeGame;
   if (!g) return;
-  // タブの色は履歴タグ（.log-tag）と同じ配色: 入力=緑 / 修正=オレンジ / 削除=赤
-  const TAB_COLORS = { all: '#555', add: '#177083', edit: '#E75620', delete: '#c62828' };
-  const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除']].map(([k, l]) =>
+  // タブの色は履歴タグ（.log-tag）と同じ配色: 入力=緑 / 修正=オレンジ / 削除=赤 / 設定=青灰
+  const TAB_COLORS = { all: '#555', add: '#177083', edit: '#E75620', delete: '#c62828', settings: '#5b6b8c' };
+  const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除'], ['settings', '設定']].map(([k, l]) =>
     `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML =
@@ -4224,7 +4614,7 @@ function backupSectionHtml(g) {
 }
 function renderLogList(log, g) {
   let events = logEvents(log);
-  if (logFilter !== 'all') events = events.filter(e => e.type === logFilter);
+  if (logFilter !== 'all') events = events.filter(e => logKind(e) === logFilter);
   if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">該当する履歴はありません</div>';
   const total = events.length;
   const trimmed = !logShowAll && total > LOG_PREVIEW;
@@ -4238,7 +4628,7 @@ function renderLogList(log, g) {
     return pts.map(pt => pt.toLocaleString()).join(' / ');
   };
   const sub = 'font-size:11px;color:#999;margin-top:2px';
-  const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'] };
+  const TAG = { add: ['add', '入力'], edit: ['edit', '修正'], delete: ['del', '削除'], settings: ['set', '設定'] };
   // 日付ごとに区切り、更新の順番が矢印で追えるタイムラインにする
   let rows = '';
   let prevDate = null;
@@ -4250,7 +4640,8 @@ function renderLogList(log, g) {
     } else if (idx > 0) {
       rows += `<div class="log-arrow">↓</div>`;
     }
-    const [tagCls, tagLabel] = TAG[e.type] || ['add', e.type];
+    const kind = logKind(e);
+    const [tagCls, tagLabel] = TAG[kind] || ['add', e.type];
     // 番号付きエントリは（現）/（旧）を付けて現在の試合番号と対応させる。旧形式はlabelをそのまま表示
     const verb = { add: '入力', edit: '修正', delete: '削除' }[e.type] || '';
     const label = typeof e.no === 'number'
@@ -4266,6 +4657,9 @@ function renderLogList(log, g) {
       if (e.points) body += `<div style="${sub}">${fmtPts(e.points, names)}（修正後）</div>`;
     } else if (e.type === 'delete' && e.points) {
       body = `<div style="${sub}">${fmtPts(e.points, names)}（削除前）</div>`;
+    }
+    if (kind === 'settings' && Array.isArray(e.changes) && e.changes.length) {
+      body = `<ul class="log-changes">${e.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
     }
     rows += `<div class="log-row">
       <span class="log-time">${fmtTime(e.at)}</span>
@@ -4416,25 +4810,14 @@ function confirmDeleteRound(idx) {
 function closeConfirmModal() {
   document.getElementById('confirm-modal').classList.remove('open');
 }
-async function deleteRound(idx) {
+function deleteRound(idx) {
   if (!activeGame) return;
   const old = activeGame.rounds[idx];
-  const newRounds = activeGame.rounds.filter((_, i) => i !== idx);
-  // 履歴の試合番号を現在の番号に合わせて振り直す:
-  //   削除された試合の履歴 → 旧扱い（番号は当時のまま）、それより後の試合の履歴 → 番号を1つ繰り上げ
-  let newLog = (activeGame.log || []).map(e => {
-    if (e.old || typeof e.no !== 'number') return e;
-    if (e.no === idx + 1) return { ...e, old: true };
-    if (e.no > idx + 1) return { ...e, no: e.no - 1 };
-    return e;
-  });
-  newLog = appendLog(newLog, { type: 'delete', at: new Date().toISOString(), no: idx + 1, old: true, points: old ? old.points : null,
-    names: old ? roundMembers(old, activeGame.settings).map(m => activeGame.settings.playerNames[m]) : null });
-  const bkKey = takeBackup(activeGame, `第${idx + 1}試合を削除`, newRounds.length); // 書き込む前の状態を控える
-  try {
-    await db.ref('sessions/' + sessionId).update({ rounds: newRounds.length ? newRounds : null, log: newLog });
-    showUndoToast('削除しました', bkKey);
-  } catch(e) { showToast('削除に失敗しました'); }
+  if (!old) return;
+  const bkKey = takeBackup(activeGame, `第${idx + 1}試合を削除`, activeGame.rounds.length - 1); // 書き込む前の状態を控える
+  enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'delete',
+    target: roundTarget(old), label: `第${idx + 1}試合の削除` });
+  showUndoToast('削除しました', bkKey);
 }
 
 // ---- 点数入力シート ----
@@ -4445,7 +4828,8 @@ function liveSheetCtx() {
     game: activeGame, // バックアップ（変更前の控え）の対象
     settings: activeGame.settings,
     rounds: activeGame.rounds,
-    save: (rounds, logEntry) => writeRoundsToFirebase(rounds, logEntry)
+    sid: sessionId,
+    submit: op => enqueueOp(op)
   };
 }
 // idx = -1: 新規, idx >= 0: 修正
@@ -4778,7 +5162,7 @@ function autoFill() {
   document.getElementById('si-' + emptyIdx).value = (expected - filledSum) / 100;
   updateTotal();
 }
-async function submitRound() {
+function submitRound() {
   const ctx = sheetCtx;
   const n = ctx.settings.numPlayers;
   if (sheetOrder.length !== n) { showToast('対局メンバーを選択してください'); return; }
@@ -4808,12 +5192,11 @@ async function submitRound() {
   if (ctx.settings.chombo) {
     extras.chombo = sheetOrder.map(m => sheetChombo[m] ? 1 : 0);
   }
-  // スコア = 通常計算 − チョンボ罰符（罰符0=マークのみなら影響なし）
-  const scores = applyChombo(calcScores(points, ctx.settings), extras.chombo, ctx.settings);
-  const newRounds = [...ctx.rounds];
-  let logEntry;
-  if (editingIndex >= 0) {
-    const orig = ctx.rounds[editingIndex];
+  // スコアは送信キューが「サーバーのそのときの設定」で計算する（設定が同時に変わっても食い違わない）
+  const isEdit = editingIndex >= 0;
+  const nBefore = ctx.rounds.length;
+  const orig = isEdit ? ctx.rounds[editingIndex] : null;
+  if (isEdit) {
     // チップ記録・焼き鳥をOFFにした後の修正でも、記録済みの値は消さずに引き継ぐ（メンバー対応で再配置）
     const origMem = roundMembers(orig, ctx.settings);
     if (!ctx.settings.bonusEnabled && orig.chips) {
@@ -4831,25 +5214,22 @@ async function submitRound() {
       origMem.forEach((m, k) => { chomboOf[m] = orig.chombo[k]; });
       extras.chombo = members.map(m => chomboOf[m] ? 1 : 0);
     }
-    newRounds[editingIndex] = { points, scores, members, ...extras, at: orig.at || now, edited: true }; // 修正
-    logEntry = { type: 'edit', at: now, no: editingIndex + 1, prev: orig.points || null, points, names: members.map(m => ctx.settings.playerNames[m]) };
-  } else {
-    newRounds.push({ points, scores, members, ...extras, at: now }); // 新規
-    logEntry = { type: 'add', at: now, no: newRounds.length, points, names: members.map(m => ctx.settings.playerNames[m]) };
-  }
-  const isEdit = editingIndex >= 0;
-  if (!isEdit && newRounds.length > MAX_ROUNDS) {
+  } else if (nBefore >= MAX_ROUNDS) {
     showToast(`1つのグループに記録できるのは${MAX_ROUNDS}試合までです`); return;
   }
+  const round = { points, members, ...extras };
+  if (!isEdit) round.at = now;
+  const op = { id: newOpId(), sid: ctx.sid, at: now, kind: isEdit ? 'edit' : 'add', round,
+    names: ctx.settings.playerNames.slice() }; // 入力したときのメンバー表（途中でメンバーが変わっても追えるように）
+  if (isEdit) { op.target = roundTarget(orig); op.label = `第${editingIndex + 1}試合の修正`; }
   // 修正は上書きなので、書き込む前の状態を控えておく（新規入力は消えるものが無いので不要）
-  const bkKey = isEdit ? takeBackup(ctx.game, `第${editingIndex + 1}試合を修正`, newRounds.length) : null;
+  const bkKey = isEdit ? takeBackup(ctx.game, `第${editingIndex + 1}試合を修正`, nBefore) : null;
   closeSheet();
-  try {
-    await ctx.save(newRounds, logEntry);
-    if (bkKey) showUndoToast('修正しました', bkKey);
-    else if (newRounds.length >= MAX_ROUNDS - 20) showToast(`あと${MAX_ROUNDS - newRounds.length}試合で上限です`);
-    track('round_submit', { is_edit: isEdit, round_no: logEntry.no });
-  } catch(e) { showToast('保存に失敗しました'); }
+  // ここで入力は確定（端末の送信キューに入る）。送信は裏で続け、送れないあいだは画面上部の帯で知らせる
+  ctx.submit(op);
+  if (bkKey) showUndoToast('修正しました', bkKey);
+  else if (nBefore + 1 >= MAX_ROUNDS - 20) showToast(`あと${MAX_ROUNDS - nBefore - 1}試合で上限です`);
+  track('round_submit', { is_edit: isEdit, round_no: isEdit ? editingIndex + 1 : nBefore + 1 });
 }
 
 // ---- 設定編集（ゲーム中） ----
@@ -4875,6 +5255,8 @@ function participatedSet(g) {
 }
 // 設定変更モーダルのメンバー編集状態: [{orig: 元のindex|null(新規), name: 表示名}]
 let editMembersState = null;
+// 設定の編集を開いた時点のゲーム名・設定（変更点の履歴づくりと、他の人の変更とぶつかったかの判定に使う）
+let editBase = null;
 function renderEditMembers() {
   const wrap = document.getElementById('e-members');
   if (!wrap) return;
@@ -5050,6 +5432,7 @@ function openGameEdit() {
   editMembersState = s.playerNames.map((nm, i) => ({ orig: i, name: nm }));
   // 現在のチーム編成を編集用にコピー（origのindexは初期状態では位置と一致する）
   editTeams = s.teams ? normalizedTeams(s).map(t => ({ name: t.name, members: t.members.slice() })) : null;
+  editBase = { name: activeGame.name, settings: JSON.parse(JSON.stringify(s)) };
   document.getElementById('form-modal-title').textContent = 'ゲーム設定を編集';
   // フォームが長いので、ヘッダー右にも小さい保存/キャンセルを置く
   document.getElementById('form-modal-actions').innerHTML =
@@ -5102,24 +5485,29 @@ async function saveGameEdit() {
   const settings = { ...s, playerNames, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode };
   if (teams) settings.teams = teams;
   else delete settings.teams;
-  // メンバーの削除・並び替えに合わせて、各試合のmembers indexを旧→新に振り直す
-  // （対局済みメンバーは削除できないため、旧indexは必ず新indexに対応する）
+  // メンバーの削除・並び替えに合わせて、各試合のmembers indexを旧→新に振り直すための対応表
+  // （対局済みメンバーは削除できないため、旧indexは必ず新indexに対応する。付け直しは送信キューがサーバーの試合に対して行う）
   const mapOldToNew = {};
   editMembersState.forEach((m, pos) => { if (m.orig !== null) mapOldToNew[m.orig] = pos; });
-  const rounds = activeGame.rounds.map(r => ({
-    ...r,
-    members: roundMembers(r, s).map(m => mapOldToNew[m]),
-    scores: applyChombo(calcScores(r.points, settings), r.chombo, settings)
-  }));
-  const logEntry = { type: 'edit', at: new Date().toISOString(), label: 'ゲーム設定を変更' };
+  const base = editBase || { name: activeGame.name, settings: s };
+  // 編集中に他の人が先に設定を変えていたら、上書きせずに知らせて開き直す（変更前の値を基準に差分を作っているため）
+  if (fpOf({ name: activeGame.name, settings: activeGame.settings }) !== fpOf(base)) {
+    closeFormModal();
+    showToast('編集しているあいだに、他の人が設定を変更しました。最新の設定で開き直したので、もう一度変更してください', 7000);
+    openGameEdit();
+    return;
+  }
+  const next = { name, settings };
+  if (fpOf(base) === fpOf(next)) { closeFormModal(); showToast('変更はありませんでした'); return; }
+  const changes = describeSettingsChanges(base, next, editMembersState);
   // ルール変更は全試合が再計算される＝取り返しがつかないので、必ず変更前を控える
-  const bkKey = takeBackup(activeGame, 'ゲーム設定を変更', rounds.length);
+  const bkKey = takeBackup(activeGame, 'ゲーム設定を変更', activeGame.rounds.length);
   closeFormModal();
-  try {
-    await db.ref('sessions/' + sessionId).update({ name, settings, rounds: rounds.length ? rounds : null, log: appendLog(activeGame.log, logEntry) });
-    savePlayerNames(settings.playerNames);
-    showUndoToast('設定を更新しました', bkKey, UNDO_TOAST_SHORT_MS);
-  } catch(e) { showToast('保存に失敗しました'); }
+  enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'settings',
+    baseFp: fpOf(base), name, settings, memberMap: mapOldToNew, changes });
+  editBase = null;
+  savePlayerNames(settings.playerNames);
+  showUndoToast('設定を更新しました', bkKey, UNDO_TOAST_SHORT_MS);
 }
 
 // ---- 参加/観戦タグと自分の成績 ----
@@ -5585,22 +5973,26 @@ async function editDetailRound(ridx) {
     game: g,
     settings: g.settings,
     rounds: g.rounds,
-    save: async (rounds, logEntry) => {
-      const newLog = appendLog(g.log, logEntry);
-      // サーバーへ書けたときだけ端末の控えも更新（片方だけ更新すると巻き戻り事故が再発する）
-      await db.ref('sessions/' + g.id).update({ rounds: rounds.length ? rounds : null, log: newLog });
-      g.rounds = rounds;
-      g.log = newLog;
+    sid: g.id,
+    submit: op => {
+      const q = enqueueOp(op);
+      // 端末の控えにも先に反映しておく（送信はキューが続ける。ぶつかったらサーバーの最新に取り直す）
+      const r = applyOp(g, q);
+      if (r.status === 'apply') Object.assign(g, r.game);
       saveStorage();
       viewDetail(g);
-      showToast('更新しました');
     }
   }, ridx);
 }
 // ゲーム名・プレイヤー名の編集
-function openDetailEdit() {
+async function openDetailEdit() {
   if (!detailGame) return;
   const g = detailGame;
+  // 開く前に最新を取り込む（古い控えを基準にすると、保存時に他の人の変更とぶつかりやすい）
+  try {
+    const snap = await db.ref('sessions/' + g.id).once('value');
+    if (snap.exists()) { Object.assign(g, normGame(snap.val())); saveStorage(); }
+  } catch (e) { /* オフラインは手元の控えで続行（送信キューが後で送る） */ }
   document.getElementById('form-modal-title').textContent = '結果を編集';
   document.getElementById('form-modal-body').innerHTML = `
     <div class="field"><label>ゲーム名</label><input type="text" id="d-name" value="${esc(g.name)}" maxlength="${MAX_GROUP_LEN}"></div>
@@ -5611,45 +6003,29 @@ function openDetailEdit() {
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
-async function saveDetailEdit() {
+function saveDetailEdit() {
   const g = detailGame;
   const newName = clampName(document.getElementById('d-name').value, MAX_GROUP_LEN) || g.name;
   const newPlayers = g.settings.playerNames.map((nm, i) =>
     clampName(document.getElementById(`d-p-${i}`).value, MAX_NAME_LEN) || nm);
+  const baseFp = fpOf({ name: g.name, names: g.settings.playerNames });
+  if (baseFp === fpOf({ name: newName, names: newPlayers })) { closeFormModal(); showToast('変更はありませんでした'); return; }
+  const changes = [];
+  if (newName !== g.name) changes.push(`ゲーム名: ${g.name} → ${newName}`);
+  g.settings.playerNames.forEach((nm, i) => { if (nm !== newPlayers[i]) changes.push(`名前変更: ${nm} → ${newPlayers[i]}`); });
   const bkKey = takeBackup(g, '名前を編集', (g.rounds || []).length);
-  try {
-    // 最新の設定の上に名前だけを載せて書く（設定の編集・新しい試合など他の人の変更を消さない）
-    const snap = await db.ref('sessions/' + g.id).once('value');
-    if (snap.exists()) {
-      const fresh = snap.val();
-      const freshNames = (fresh.settings && fresh.settings.playerNames) || [];
-      if (freshNames.length !== newPlayers.length) {
-        // 編集中にメンバー構成が変わった（設定の編集で増減）: どの欄が誰か分からないので安全側で中断
-        Object.assign(g, { ...fresh, rounds: normalizeSession(fresh.rounds), log: normalizeSession(fresh.log) });
-        saveStorage();
-        closeFormModal();
-        viewDetail(g);
-        showToast('メンバー構成が変わっていたため、最新の内容に更新しました。もう一度編集してください');
-        return;
-      }
-      const settings = { ...fresh.settings, playerNames: newPlayers };
-      await db.ref('sessions/' + g.id).update({ name: newName, settings });
-      Object.assign(g, { ...fresh, name: newName, settings, rounds: normalizeSession(fresh.rounds), log: normalizeSession(fresh.log) });
-    } else {
-      // サーバーから消えているゲームは端末内の控えだけ更新（書き戻し先が無い）
-      g.name = newName;
-      g.settings.playerNames = newPlayers;
-    }
-    savePlayerNames(newPlayers); // ゲーム画面の設定の編集と同じく、登録名にも反映する
-    // 引き継ぎURLの一覧に出る名前も古いままにしない
-    if (myListId) db.ref(`mylists/${myListId}/groups/${g.id}`).update({ name: String(newName).slice(0, 120) }).catch(() => {});
-    saveStorage();
-    closeFormModal();
-    viewDetail(g);
-    showUndoToast('更新しました', bkKey);
-  } catch (e) {
-    showToast('保存に失敗しました。通信環境を確認してください');
-  }
+  // 最新の設定の上に名前だけを載せる（設定の編集・新しい試合など他の人の変更を消さない）。送信はキューが続ける
+  const op = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'rename',
+    baseFp, name: newName, playerNames: newPlayers, changes });
+  const r = applyOp(g, op);
+  if (r.status === 'apply') Object.assign(g, r.game);
+  savePlayerNames(newPlayers); // ゲーム画面の設定の編集と同じく、登録名にも反映する
+  // 引き継ぎURLの一覧に出る名前も古いままにしない
+  if (myListId) db.ref(`mylists/${myListId}/groups/${g.id}`).update({ name: String(newName).slice(0, 120) }).catch(() => {});
+  saveStorage();
+  closeFormModal();
+  viewDetail(g);
+  showUndoToast('更新しました', bkKey);
 }
 
 function esc(s) {
@@ -5658,6 +6034,17 @@ function esc(s) {
 
 // ---- 起動 ----
 loadStorage();
+// 送信キュー: 接続状態を見張り、つながったら・画面に戻ったら・15秒ごとに未送信を送る
+db.ref('.info/connected').on('value', snap => {
+  dbConnected = snap.val() === true;
+  offlineSince = dbConnected ? null : (offlineSince || Date.now());
+  if (dbConnected) flushOutbox();
+  updateSyncUi();
+});
+window.addEventListener('online', () => flushOutbox());
+document.addEventListener('visibilitychange', () => { if (!document.hidden) flushOutbox(); });
+setInterval(updateSyncUi, 1000);
+flushOutbox();
 if (appState.games && appState.games.length) requestPersistentStorage(); // 履歴を持つ端末は保存データの保護を要求
 if (isStandaloneApp()) { const el = document.getElementById('hist-tip-install'); if (el) el.style.display = 'none'; }
 renderRecentGames();
