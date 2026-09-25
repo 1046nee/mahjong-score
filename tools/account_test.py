@@ -57,6 +57,12 @@ AUTH_STUB = """
 """
 
 
+
+# wait_for_function の条件は SAFE % "式" で包む。ログイン・参加は location.reload() を挟むので、
+# 読み直し中（HTMLが途中まで・スクリプトがまだ動いていない瞬間）に評価すると ReferenceError や
+# null の classList で「待つべき所で落ちる」。例外は false（まだ）として待ち続ける
+SAFE = "() => { try { return !!(%s); } catch (e) { return false; } }"
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -101,7 +107,7 @@ def main():
             pg.evaluate("showView('setup')")
             pg.evaluate("(a) => { setupMembers = a[1]; renderMembers(); document.getElementById('s-name').value = a[0]; }", [name, members])
             pg.evaluate("startGame()")
-            pg.wait_for_function("() => document.querySelector('#view-share').classList.contains('active')", timeout=10000)
+            pg.wait_for_function(SAFE % "document.querySelector('#view-share').classList.contains('active')", timeout=10000)
             share = pg.evaluate("document.getElementById('share-url').value")
             pg.evaluate("showView('game')")
             for sel, pts in rounds:
@@ -120,7 +126,9 @@ def main():
             page.evaluate("(u) => localStorage.setItem('__smoke_next_uid', u)", uid)
             page.evaluate("signInWithGoogle()")
             page.wait_for_load_state("load")
-            page.wait_for_function("() => currentUser && !accountBusy", timeout=10000)
+            # ログインは location.reload() を挟む。読み直し中（新しいページのスクリプトがまだ動いていない瞬間）に
+            # currentUser を見ると ReferenceError で落ちるので、typeof で「定義されるまで待つ」
+            page.wait_for_function(SAFE % "currentUser && !accountBusy", timeout=10000)
             page.wait_for_timeout(400)
 
         # ---- 1. 共有URL ----
@@ -130,7 +138,7 @@ def main():
         results.append(("[1a] 共有URLはLINEの中でそのまま開く形（openExternalBrowserなし）", True, "openExternalBrowser" not in share1 and "#" in share1))
         pg2 = new_page()
         pg2.goto(share1, wait_until="load")
-        pg2.wait_for_function("() => document.querySelector('#view-game').classList.contains('active')", timeout=10000)
+        pg2.wait_for_function(SAFE % "document.querySelector('#view-game').classList.contains('active')", timeout=10000)
         results.append(("[1b] そのURLでゲーム画面が開く", True, True))
         pg2.close()
 
@@ -146,14 +154,14 @@ def main():
         login_as(pg, U1)
         results.append(("[2d] ログイン後はヘッダーが「マイページ」（ログイン中とわかる）になり、ログイン画面からマイページへ移る", True,
                         pg.evaluate("document.getElementById('hdr-acct').textContent.includes('マイページ') && document.getElementById('hdr-acct').classList.contains('in')")))
-        pg.wait_for_function("() => myListId", timeout=10000)
+        pg.wait_for_function(SAFE % "myListId", timeout=10000)
         db = db_of()
         lid = db.get("users", {}).get(U1, {}).get("listId")
         results.append(("[2e] users/{uid}/listId ができ、端末の履歴がそのリストに入る", True,
                         bool(lid) and g1 in db.get("mylists", {}).get(lid, {}).get("groups", {})))
         pg.evaluate("() => { const keep = ['__smoke_db', '__smoke_user']; Object.keys(localStorage).forEach(k => { if (!keep.includes(k)) localStorage.removeItem(k); }); }")
         pg.reload(wait_until="load")
-        pg.wait_for_function("() => currentUser && !accountBusy && (appState.games || []).length", timeout=10000)
+        pg.wait_for_function(SAFE % "currentUser && !accountBusy && (appState.games || []).length", timeout=10000)
         results.append(("[3] 空の端末でログインすると、過去の試合と「自分」の選択が戻る", True,
                         pg.evaluate(f"appState.games.some(g => g.id === '{g1}') && tagOf('{g1}').me === 0")))
         pg.evaluate("signOutAccount()")
@@ -162,7 +170,7 @@ def main():
                         pg.evaluate("(appState.games || []).length === 0 && !myListId && document.getElementById('hdr-acct').textContent.trim() === 'ログイン'")))
         # もう一度ログインすれば、アカウントから戻る
         login_as(pg, U1)
-        pg.wait_for_function("() => (appState.games || []).length", timeout=10000)
+        pg.wait_for_function(SAFE % "(appState.games || []).length", timeout=10000)
         results.append(("[3c] もう一度ログインすれば、過去の試合がアカウントから戻る", True, pg.evaluate(f"appState.games.some(g => g.id === '{g1}')")))
         pg.evaluate("signOutAccount()")
         pg.wait_for_timeout(300)
@@ -183,7 +191,7 @@ def main():
                         pg.evaluate("document.getElementById('hist-circles').innerText.includes('仲間ページを作る')")))
         pg.evaluate("openCreateCircle(); document.getElementById('cc-name').value = '金曜会'; document.getElementById('cc-me').value = 'むにぃ';")
         pg.evaluate("runCreateCircle()")
-        pg.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=10000)
+        pg.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=10000)
         cid = pg.evaluate("circleId")
         db = db_of()
         circ = db["circles"][cid]
@@ -230,7 +238,7 @@ def main():
         pgb = new_page()
         pgb.goto(app + "?openExternalBrowser=1#join=" + code, wait_until="load")
         try:
-            pgb.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+            pgb.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         except Exception:
             print("DEBUG:", pgb.evaluate("({view: document.querySelector('.view.active') && document.querySelector('.view.active').id, joinCid, joinCode, joinBusy, joinError, user: currentUser && currentUser.uid, body: (document.getElementById('join-body')||{}).innerText, circleId, members: circleMembers})"), errors)
             raise
@@ -264,14 +272,14 @@ def main():
         pgb.close()
         pg.evaluate(f"(u) => localStorage.setItem('__smoke_user', JSON.stringify({{ uid: u, displayName: 'テスト1' }}))", U1)
         pg.reload(wait_until="load")
-        pg.wait_for_function("() => currentUser && document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+        pg.wait_for_function(SAFE % "currentUser && document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         pg.evaluate(f"setCircleRole('{U2}', 'admin')")
         pg.wait_for_timeout(500)
         pg.evaluate("closeFormModal()")
         pg.evaluate(f"(u) => localStorage.setItem('__smoke_user', JSON.stringify({{ uid: u, displayName: 'テスト2' }}))", U2)
         pgb = new_page()
         pgb.goto(app + "#c=" + cid, wait_until="load")
-        pgb.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+        pgb.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         pgb.evaluate(f"openBindEditor('{g1}')")
         results.append(("[6g] 作成者が管理者にすると、本人が結びつけた席も変更できるようになる", True,
                         pgb.evaluate("circleRole() === 'admin' && bindState.rows[0].locked === false")))
@@ -281,7 +289,7 @@ def main():
         pg.evaluate("localStorage.removeItem('__smoke_user')")
         pgv = new_page()
         pgv.goto(app + "#c=" + cid, wait_until="load")
-        pgv.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=15000)
+        pgv.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=15000)
         acts = pgv.evaluate("document.getElementById('circle-actions').innerText")
         body = pgv.evaluate("document.getElementById('circle-body').innerText")
         results.append(("[7] ログインなしでも閲覧リンクで通算順位が見られ、招待・設定は出ない", True,
@@ -299,7 +307,7 @@ def main():
         lctx = new_ctx(ua="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/15.1.0", seed_db=seed)
         pgl = new_page(lctx)
         pgl.goto(app + "#join=" + code, wait_until="load")
-        pgl.wait_for_function("() => document.querySelector('#view-join').classList.contains('active')", timeout=15000)
+        pgl.wait_for_function(SAFE % "document.querySelector('#view-join').classList.contains('active')", timeout=15000)
         jt = pgl.evaluate("document.getElementById('join-body').innerText")
         results.append(("[8] LINEの中で招待リンクを開くと「Safari・Chromeで開いて参加」と参加コードを出す（結果だけは見られる）", True,
                         "Safari・Chromeで開いて参加する" in jt and f"{code[:4]}-{code[4:]}" in jt and "参加せずに結果だけ見る" in jt))
@@ -308,20 +316,20 @@ def main():
         # ---- 9. 未ログインで招待リンク→ログイン→自動で参加 ----
         pgj = new_page()
         pgj.goto(app + "?openExternalBrowser=1#join=" + code, wait_until="load")
-        pgj.wait_for_function("() => document.querySelector('#view-join').classList.contains('active')", timeout=15000)
+        pgj.wait_for_function(SAFE % "document.querySelector('#view-join').classList.contains('active')", timeout=15000)
         results.append(("[9a] 未ログインでは「Googleでログインして参加」を出す", True,
                         "Googleでログインして参加" in pgj.evaluate("document.getElementById('join-body').innerText")))
         pgj.evaluate(f"(u) => localStorage.setItem('__smoke_next_uid', u)", U3)
         pgj.evaluate("startJoinLogin()")
         pgj.wait_for_load_state("load")
-        pgj.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+        pgj.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         results.append(("[9b] ログインから戻ると自動で参加が完了し、仲間ページが開く", True,
                         db_of(pgj)["circleMembers"][cid].get(U3, {}).get("role") == "editor"))
 
         # ---- 10. マイページ（個人｜仲間） ----
         pg.evaluate("(u) => localStorage.setItem('__smoke_user', JSON.stringify({ uid: u, displayName: 'テスト1' }))", U1)
         pg.reload(wait_until="load")
-        pg.wait_for_function("() => currentUser && !accountBusy", timeout=10000)
+        pg.wait_for_function(SAFE % "currentUser && !accountBusy", timeout=10000)
         pg.evaluate("showView('history'); setMpTab('me')")
         pg.wait_for_timeout(300)
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
@@ -340,9 +348,9 @@ def main():
 
         # ---- 11. 共有シート・見るだけのリンク ----
         pg.evaluate(f"joinSession('{g1}')")
-        pg.wait_for_function("() => document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
+        pg.wait_for_function(SAFE % "document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.evaluate("openShareSheet()")
-        pg.wait_for_function("() => document.getElementById('share-sheet') && document.getElementById('share-sheet').innerText.includes('見るだけのリンクを作る')", timeout=10000)
+        pg.wait_for_function(SAFE % "document.getElementById('share-sheet') && document.getElementById('share-sheet').innerText.includes('見るだけのリンクを作る')", timeout=10000)
         sh = pg.evaluate("document.getElementById('share-sheet').innerText")
         results.append(("[11a] 共有シートの一番上は「一緒に打つ人に送る」（入力できるURL）、その下に見るだけのリンク", True,
                         sh.index("一緒に打つ人に送る") < sh.index("見るだけのリンク") and pg.evaluate("document.getElementById('share-sheet-url').value") == share1))
@@ -366,7 +374,7 @@ def main():
         wctx = new_ctx(seed_db=db_of())
         pw = new_page(wctx)
         pw.goto(app + "#v=" + vid, wait_until="load")
-        pw.wait_for_function("() => document.querySelector('#view-watch').classList.contains('active') && document.getElementById('watch-body').innerText.includes('総合順位')", timeout=15000)
+        pw.wait_for_function(SAFE % "document.querySelector('#view-watch').classList.contains('active') && document.getElementById('watch-body').innerText.includes('総合順位')", timeout=15000)
         results.append(("[11d] 見るだけのリンクは入力の入口なしで結果が見られ、その端末の試合の一覧には残らない", True,
                         pw.evaluate("(v) => !document.querySelector('#view-watch .fab') && !document.getElementById('watch-body').innerText.includes('行をタップすると点数を修正') && (appState.games || []).length === 0 && location.hash === '#v=' + v && document.getElementById('watch-title').textContent === '金曜会1'", vid)))
         pw.close()
