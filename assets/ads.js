@@ -12,6 +12,11 @@
    ========================================================== */
 
 const AD_CLIENT = 'ca-pub-9998035509478799';
+// サイト審査に通るまでは広告枠を一切描かない。
+// 承認前は広告が配信されないため、枠を描くと「高さ280pxの空白＋スポンサーリンク」だけが
+// 記事ごとに2つ並び、審査で未完成のページに見える（2026-09-25に実測で確認）。
+// 審査に必要なのは<head>のadsbygoogle.jsだけ。承認メールが来たら true にしてpushする
+const ADS_APPROVED = false;
 const AD_SLOTS = {
   article_top: '3816971981',    // 記事の導入文直後
   article_bottom: '3942084742', // 記事の末尾（CTAの上）
@@ -20,6 +25,10 @@ const AD_SLOTS = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  if (!ADS_APPROVED) {
+    document.querySelectorAll('[data-ad]').forEach(el => { el.style.display = 'none'; });
+    return;
+  }
   document.querySelectorAll('[data-ad]').forEach(el => {
     const slot = AD_SLOTS[el.getAttribute('data-ad')];
     if (!slot) { el.style.display = 'none'; return; }

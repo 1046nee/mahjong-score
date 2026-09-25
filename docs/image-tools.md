@@ -27,7 +27,7 @@
 - `tools/make_ig_daily.py` — IG毎日投稿用: 麻雀用語ミニ解説カード4枚（glossary-*）＋小ワザTips3枚（tips-*）
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - `tools/shoot_app_screens.py` — 実アプリ画面のスマホ実寸スクショ撮影（index.htmlをローカル起動＋Firebaseを最小スタブ化。本番に触れない。出力: まじゃすこ素材/ig/shots/）。
-  **サンプルデータは倍率なし（rate:0）**にしてある（rate>0だと画面に換算行が出て、SNS画像に出したくない情報が写る）。
+  **サンプルデータは rate:0**にしてある（アプリはもう倍率・換算を表示しないが、古い画面を撮らないよう念のため。SNS画像に出したくない情報が写る）。
   LPのクイックスタート（lp-hero/lp-quickstart/el-quickstart）も撮る
 - `tools/make_ig_v2.py` — IGフィードv2 1080×1350（実画面スクショ×カラー背景の濃色デザイン。白基調シリーズがグリッドで沈む対策。要: shoot_app_screens.py を先に実行）。
   先頭は ig-v2-1-quickstart（クイックスタートの2択モーダル）
