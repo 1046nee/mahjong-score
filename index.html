@@ -1943,7 +1943,7 @@ function renderMyListCard() {
 // ログインしない人の動きは何も変わらない（グループの共有URLもログイン不要のまま）。
 // 画面遷移はリダイレクト方式: iPhoneのホーム画面アプリではポップアップ方式が動かない。
 // LINEの中のブラウザではGoogleがログインを拒否するので、外のブラウザで開き直してもらう
-const LOGIN_ENABLED = false; // Firebaseコンソールの設定（docs/site-spec.md「ログイン」）が済んだら true
+const LOGIN_ENABLED = true; // Firebaseコンソールの設定（docs/site-spec.md「ログイン」）は2026-09-25に完了
 let authApi = null;
 try { authApi = (typeof firebase.auth === 'function') ? firebase.auth() : null; } catch (e) { authApi = null; }
 const IN_LINE_APP = /\bLine\//i.test(navigator.userAgent);

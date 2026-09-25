@@ -48,7 +48,7 @@
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
 
 ## ログイン（Firebase Authentication・Google）
-- アプリ側は index.html の **`LOGIN_ENABLED`**。**下のコンソール設定がすべて済むまで false のまま**にする
+- アプリ側は index.html の **`LOGIN_ENABLED`**。**2026-09-25にコンソール設定が済み true にした**（設定が壊れたら false に戻すとログインの入り口だけが消える）
   （true にすると過去の試合に「Googleでログイン」が出る。設定前に押されるとGoogleのエラー画面になる）
 - コンソール設定（ユーザー作業）:
   1. Firebaseコンソール → Authentication →「始める」→ Sign-in method → Google を有効化（サポートメールを選んで保存）
