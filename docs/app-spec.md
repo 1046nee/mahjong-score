@@ -606,7 +606,8 @@
 - **実行環境**: smoke / sync / account の3本はPlaywright（Python版＋Chromium）が要る。circle_rules / view_rules は標準ライブラリだけで動く。
   CIがpushごとに回すのはsmoke_testだけ（sync・accountは手元でしか回らない）。導入手順は docs/setup-new-pc.md
 - /tests.html = index.htmlをiframeで読み実物関数を49ケース検証（うち16件が送信キューの applyOp、対戦成績の h2hAdd・personKey、仲間ページの circleStats など）。**計算ロジック・保存処理の変更時はALL PASS確認必須**
-- tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。ローカルは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）。
+- tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。手元のWindowsは `python tools/smoke_test.py`、
+  リモート環境のLinuxは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）。
   Firebaseはスタブ（transaction・.info/connected も実装済み。スタブは shoot_app_screens.py / record_app_demo.py にもあり、3つそろえること）
 - tools/sync_test.py = **本番のFirebaseで**2台の端末を再現して、圏外復帰で他人の試合が消えない／圏外で入力→再読み込みで消えない／
   二重登録しない／設定変更の履歴が残る／設定の同時編集で上書きしない、を確認。検証用ゲームは最後に自動で削除する。

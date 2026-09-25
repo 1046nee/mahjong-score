@@ -8,15 +8,18 @@
 - **Git**（git-scm.com）
 - **Node.js**（LTS）— プレビュー用 http-server に使用
 - **Python 3** ＋ Pillow（`pip install pillow`）— 画像生成に使用
-- **Playwright**（Python版＋Chromium）— tools/ の検証テスト `smoke_test.py` / `sync_test.py` / `account_test.py` に使用。
+- **Playwright**（Python版＋Chromium）— tools/ の検証テスト `smoke_test.py` / `sync_test.py` / `account_test.py` に使用
+  （実画面スクショ `shoot_app_screens.py`・操作デモ録画 `record_app_demo.py` も使う）。
   **CLAUDE.mdのルール3b〜3dで該当する変更のたびに実行が必須**（CIがpushごとに自動で回すのはsmoke_testだけ。
   sync_test・account_testは手元で回すしかないので、入っていないPCでは保存処理・ログイン・共有URLまわりの変更を検証しきれない）
   ```
-  pip install playwright
+  pip install playwright imageio-ffmpeg
   python -m playwright install chromium
   ```
-  （CIはLinuxなので `--with-deps` 付き。Windowsでは不要。ブラウザは `%LOCALAPPDATA%\ms-playwright` に入る）。
-  `circle_rules_test.py` / `view_rules_test.py` は標準ライブラリだけで動く（Playwright不要）
+  （imageio-ffmpegは操作デモ録画だけで使う。CIはLinuxなので `--with-deps` 付き、Windowsでは不要。
+  ブラウザは `%LOCALAPPDATA%\ms-playwright` に入る＝Chromium本体とヘッドレス版で約310MB）。
+  `circle_rules_test.py` / `view_rules_test.py` は標準ライブラリだけで動く（Playwright不要）。
+  **動作確認済み**: Windows 11・Python 3.14・Playwright 1.63 で smoke / account / sync の3本がALL PASS（2026-09-25・会社PC）
 - **Claude Code**（デスクトップアプリ / CLI / VS Code拡張のいずれか）→ **同じAnthropicアカウントでログイン**（プランはアカウントに紐づく）
 
 ## 2. リポジトリの取得
@@ -75,5 +78,7 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
   → `New-TimeSpan -Days 3650` など有効な有限値を指定する（install_auto_pull.ps1で対応済み）
 - 会社PC（社内ポリシー）では Register-ScheduledTask 自体が「アクセス拒否」(0x80070005) になることがある
   → スタートアップフォルダ＋常駐スクリプト方式なら管理者権限・タスク登録権限なしで動く（install_auto_pull.ps1が自動フォールバック）
+- pipがユーザー領域に入れた場合（「normal site-packages is not writeable」と出る）、`playwright.exe` はPATHの通らない場所に入る
+  → コマンドは必ず `python -m playwright ...` の形で実行する（`playwright install` と直接打つと「見つからない」になる）
 - .ps1に日本語コメントを書くならUTF-8 **BOM付き**で保存（Windows PowerShell 5.1はBOM無しをANSIと解釈して文字化け・パースエラーの危険）。
   スタートアップ用.vbsはUTF-16（-Encoding Unicode）で書けば日本語パスも安全
