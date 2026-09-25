@@ -806,9 +806,6 @@ button.ios-row:active { background: #F2F6F5; }
 .mp-empty .mp-empty-ico { width: 60px; height: 60px; border-radius: 50%; background: var(--i3); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
 .mp-empty b { display: block; font-size: 15px; font-weight: 800; color: #1F2A28; margin-bottom: 4px; }
 .mp-empty span { display: block; font-size: 13px; color: #5F6E6B; line-height: 1.7; }
-.mp-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.mp-chip { border: 1.5px solid #cfe3db; background: #fff; color: #177083; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-.mp-chip.on { background: #177083; border-color: #177083; color: #fff; }
 .mp-note { margin: 8px 4px 0; font-size: 12px; color: #5F6E6B; line-height: 1.7; }
 /* ホーム画面に追加の案内 */
 .mp-foot { display: flex; gap: 12px; align-items: flex-start; margin: 16px 16px 24px; padding: 14px; background: #fff; border-radius: 16px; box-shadow: var(--sh-1); font-size: 13px; color: #5F6E6B; line-height: 1.7; }
@@ -998,43 +995,114 @@ button.ios-row:active { background: #F2F6F5; }
 .gp-sub { display: block; margin-top: 2px; font-size: 12px; color: #5F6E6B; }
 .gp-sc { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; } .gp-sc.pos { color: #1A237E; } .gp-sc.neg { color: #C62828; }
 .gp-row > .ico { color: #B5C0BD; }
-/* 仲間ページ: 順位（表彰台＋リスト） */
-.podium { display: grid; grid-template-columns: 1fr 1.12fr 1fr; align-items: end; gap: 8px; margin: 4px 0 12px; }
+/* ---- 仲間ページ: 見出し（タイトルは全幅で2行まで・操作は連絡先アプリ風のタイル3つ） ---- */
+#view-circle .page-title-row { display: block; padding: 20px 16px 4px; }
+#circle-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-size: 24px; font-weight: 800; letter-spacing: -.3px; line-height: 1.3; color: #1F2A28; }
+#circle-sub { margin-top: 4px; font-size: 13px; color: #5F6E6B; }
+.ch-role { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: #E3E9E7; color: #4F5C5A; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+#circle-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.ch-act { height: 58px; border: 0; border-radius: 12px; background: #fff; box-shadow: var(--sh-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; color: #177083; cursor: pointer; }
+.ch-act:active { background: #F2F6F5; }
+#view-circle .card { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
+#view-circle .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
+/* 「あなたはどれ？」の問いかけ（試合の画面と仲間ページ）。オレンジはCTA限定なので琥珀色 */
+.askme { border: 1px solid #F2E3B3; background: #FFF8E6; }
+.askme-sub { font-size: 12px; color: #5F6E6B; }
+/* 本人の印（✓の代わりにアイコン） */
+.cm-badge.self { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: 6px; padding: 0 7px 0 3px; border: 0; border-radius: 9px; background: #E4F3EC; color: #177083; font-size: 11px; font-weight: 800; vertical-align: 1px; }
+/* 指標のピル（横スクロール） */
+.pill-row { gap: 6px; margin-bottom: 14px; }
+.pill { flex: none; height: 32px; padding: 0 14px; border: 0; border-radius: 16px; background: #EEF2F1; color: #1F2A28; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.pill.on { background: #177083; color: #fff; }
+/* ---- 仲間ページ: 順位（表彰台＋リスト） ---- */
+.podium { display: grid; grid-template-columns: 1fr 1.12fr 1fr; align-items: end; gap: 8px; margin: 8px 0 12px; }
 .pd { text-align: center; cursor: pointer; min-width: 0; }
-.pd-av { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 21px; font-weight: 900; position: relative; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(16,40,36,.15); }
-.pd.p1 .pd-av { width: 62px; height: 62px; font-size: 25px; }
-.pd-medal { position: absolute; right: -6px; bottom: -4px; line-height: 0; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
-.pd-name { font-size: 12px; font-weight: 800; color: #1f2a28; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pd-val { font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; margin-top: 1px; }
-.pd-base { margin-top: 6px; border-radius: 12px 12px 4px 4px; color: #fff; font-size: 18px; font-weight: 900; display: flex; align-items: flex-start; justify-content: center; padding-top: 6px; }
-.pd.p1 .pd-base { height: 66px; background: linear-gradient(180deg, #e8b54a, #d39a22); }
-.pd.p2 .pd-base { height: 48px; background: linear-gradient(180deg, #b7c3c7, #95a4a9); }
-.pd.p3 .pd-base { height: 36px; background: linear-gradient(180deg, #d59b73, #b97a51); }
-.lb-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 2px; background: none; border: none; border-top: 1px solid #f0f3f2; cursor: pointer; text-align: left; }
-.lb-rank { width: 20px; flex-shrink: 0; text-align: center; font-size: 14px; font-weight: 900; color: #8a9aa5; }
+.pd-av { width: 52px; height: 52px; margin: 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 21px; font-weight: 800; position: relative; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(16,40,36,.15); }
+.pd.p1 .pd-av { width: 64px; height: 64px; font-size: 26px; }
+.pd-medal { position: absolute; right: -5px; bottom: -5px; line-height: 0; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.pd-name { font-size: 13px; font-weight: 700; color: #1F2A28; margin-top: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-val { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 1px; }
+/* 台は単色（LPのフラットな調子）。上端に光を1本。台の数字は濃い字 */
+.pd-base { margin-top: 8px; padding-top: 8px; border-radius: 12px 12px 4px 4px; font-size: 20px; font-weight: 900; display: flex; align-items: flex-start; justify-content: center; box-shadow: inset 0 3px 0 rgba(255,255,255,.28); }
+.pd.p1 .pd-base { height: 64px; background: #D4A017; color: #3B2C00; }
+.pd.p2 .pd-base { height: 48px; background: #9AA5AD; color: #1F2A28; }
+.pd.p3 .pd-base { height: 36px; background: #C97B3F; color: #2E1A0A; }
+.lb-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 0; background: none; border: none; border-top: .5px solid #D5DEDB; cursor: pointer; text-align: left; }
+.lb-rank { width: 24px; flex-shrink: 0; text-align: center; font-size: 15px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .lb-main { flex: 1; min-width: 0; display: block; }
-.lb-name { display: block; font-size: 13px; font-weight: 800; color: #1f2a28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lb-sub { display: block; font-size: 10px; color: #8a9aa5; margin-top: 1px; }
-.lb-bar { display: block; height: 5px; border-radius: 999px; background: #eef2f1; margin-top: 5px; overflow: hidden; }
-.lb-bar i { display: block; height: 100%; border-radius: 999px; background: #177083; }
-.lb-bar i.neg { background: #e57373; }
-.lb-val { flex-shrink: 0; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; }
-.lb-val.pos { color: #1a237e; }
-.lb-val.neg { color: #c62828; }
-.lb-div { font-size: 10px; font-weight: 800; color: #9aa8a4; letter-spacing: .5px; padding: 12px 2px 2px; border-top: 1px solid #f0f3f2; }
+.lb-name { display: block; font-size: 15px; font-weight: 700; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-sub { display: block; font-size: 12px; color: #5F6E6B; margin-top: 2px; }
+/* 順位の棒: 通算スコア・1試合平均は0を中央に置いて左右に伸ばす（-6.0 と -285.0 が同じ向きに見えないように）。それ以外は左から */
+.lb-bar { position: relative; display: block; height: 6px; margin-top: 6px; border-radius: 3px; background: #EEF2F1; }
+.lb-bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.lb-bar i.pos { left: 50%; background: #5C6BC0; }
+.lb-bar i.neg { right: 50%; background: #E57373; }
+.lb-bar i.mag { left: 0; background: #8FA6A2; }
+.lb-bar.div::after { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: #C9D3D1; }
+.lb-val { flex-shrink: 0; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lb-val.pos { color: #1A237E; } .lb-val.neg { color: #C62828; }
+.lb-div { padding: 16px 0 4px; font-size: 13px; font-weight: 700; color: #5F6E6B; border-top: .5px solid #D5DEDB; }
 .lb-row.dim { opacity: .6; }
-/* プロフィール（仲間ページのメンバー） */
-.pf-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.pf-av { width: 54px; height: 54px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 23px; font-weight: 900; }
-.pf-name { font-size: 18px; font-weight: 900; color: #1f2a28; overflow-wrap: anywhere; }
-.pf-sub { font-size: 11px; color: #8a9aa5; margin-top: 2px; line-height: 1.6; }
-.pf-rank { display: inline-block; font-size: 11px; font-weight: 800; color: #8a5a00; background: #fff1c9; border-radius: 999px; padding: 2px 9px; margin-top: 4px; }
-/* 仲間ページの見出し */
-.ch-hero { display: flex; align-items: center; gap: 12px; }
-.ch-hero .cc-icon { width: 44px; height: 44px; font-size: 19px; border-radius: 14px; }
-#view-circle { background: #f2f6f5; }
-#view-circle .card { border: none; border-radius: 18px; box-shadow: 0 1px 3px rgba(16,40,36,.07); }
-.best { color: #E75620 !important; }
+/* ---- 成績表・総当たり表（画面は明るい見出しの .tbl-soft。画像は今までどおり緑／青の見出し） ---- */
+.rounds-table.tbl-soft th { background: #F4F7F6 !important; color: #1F2A28; font-size: 12px; font-weight: 700; padding: 8px 4px; border-bottom: .5px solid #D5DEDB; vertical-align: bottom; }
+.rounds-table.tbl-soft th.sticky-col { box-shadow: inset -.5px 0 0 #D5DEDB; }
+.rounds-table.tbl-soft td { padding: 10px 4px; font-size: 14px; font-weight: 700; border-bottom: .5px solid #EEF2F1; font-variant-numeric: tabular-nums; }
+.rounds-table.tbl-soft td.sticky-col { background: #fff; font-size: 13px; font-weight: 600; box-shadow: inset -.5px 0 0 #D5DEDB; }
+.rounds-table.tbl-soft tr.cat-break td { border-top: 6px solid #F4F7F6; }
+.th-av { display: block; width: 22px; height: 22px; margin: 0 auto 3px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; line-height: 22px; }
+.rk-mini { display: inline-block; width: 10px; height: 14px; margin-right: 6px; border-radius: 3px; vertical-align: -2px; }
+.rk-mini.r1 { background: var(--rk1); } .rk-mini.r2 { background: var(--rk2-tint); box-shadow: inset 0 0 0 1.5px var(--rk2); }
+.rk-mini.r3 { background: var(--rk3-tint); box-shadow: inset 0 0 0 1.5px var(--rk3); } .rk-mini.r4 { background: var(--rk4); }
+/* いちばん良い値＝淡いゴールドの地（td に付ける。画像も td の地の色を読むので同じになる） */
+.best-swatch { display: inline-block; width: 12px; height: 12px; margin: 0 2px -1px 0; border-radius: 3px; background: #FBF1D3; box-shadow: inset 0 0 0 1px #E8CF7A; }
+.best { color: #7A5800 !important; background: #FBF1D3; }
+.scroll-hint { font-size: 12px; color: #5F6E6B; }
+/* 総当たり表のセル（勝ち越し＝紺・負け越し＝赤のピル） */
+.mx { display: inline-block; min-width: 36px; padding: 3px 6px; border-radius: 7px; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.mx.w { background: #E8EAF6; color: #1A237E; } .mx.l { background: #FDECEC; color: #C62828; } .mx.e { background: #fff; color: #1F2A28; box-shadow: inset 0 0 0 1px #DDE4E2; }
+.mx-d { font-size: 11px; font-weight: 600; color: #5F6E6B; margin-top: 2px; }
+.mx-lg { display: flex; gap: 12px; margin-bottom: 10px; font-size: 12px; color: #4F5C5A; }
+.mx-lg i { display: inline-block; width: 12px; height: 12px; margin-right: 4px; border-radius: 3px; vertical-align: -1px; }
+.mx-lg i.w { background: #E8EAF6; box-shadow: inset 0 0 0 1px #9FA8DA; } .mx-lg i.l { background: #FDECEC; box-shadow: inset 0 0 0 1px #EF9A9A; }
+/* だれから見る？（アバターの横スクロール） */
+.who-lb { font-size: 12px; font-weight: 700; color: #5F6E6B; margin-bottom: 6px; }
+.who-row { gap: 12px; margin-bottom: 12px; padding-top: 4px; padding-bottom: 6px; }
+.who { flex: none; width: 52px; padding: 0; border: 0; background: none; text-align: center; cursor: pointer; }
+.who-av { display: grid; place-items: center; width: 44px; height: 44px; margin: 0 auto; border-radius: 50%; color: #fff; font-size: 17px; font-weight: 800; }
+.who-nm { display: block; margin-top: 4px; font-size: 11px; font-weight: 700; color: #4F5C5A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who.on .who-av { box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px #177083; }
+.who.on .who-nm { color: #177083; font-weight: 800; }
+/* ---- 試合タブ（カレンダー型の日付・状態のピル） ---- */
+#view-circle .cg-row { position: relative; justify-content: flex-start; gap: 12px; min-height: 64px; padding: 12px 0; border-top: .5px solid #D5DEDB; text-align: left; }
+.cg-main { flex: 1; min-width: 0; display: block; }
+.cg-name { display: block; font-size: 15px; font-weight: 700; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-sub { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 12px; font-weight: 500; color: #5F6E6B; }
+.st-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; margin-top: 6px; padding: 0 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.st-pill.warn { background: #FFF8E6; color: #8A6D1A; box-shadow: inset 0 0 0 1px #F2E3B3; }
+.st-pill.ok { background: #EEF2F1; color: #4F5C5A; }
+.cg-row > .ico { flex: none; color: #B5C0BD; }
+/* ---- メンバータブ・メンバーの成績（ボトムシート） ---- */
+.pp-sub { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.pp-sub b.pos { color: #1A237E; } .pp-sub b.neg { color: #C62828; }
+.pf-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin-bottom: 14px; }
+.pf-av { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px; font-weight: 800; }
+.pf-name { font-size: 20px; font-weight: 800; color: #1F2A28; overflow-wrap: anywhere; }
+.pf-sub { font-size: 12px; color: #5F6E6B; line-height: 1.6; }
+.pf-rank { display: inline-flex; align-items: center; gap: 4px; height: 24px; margin-top: 2px; padding: 0 10px; border-radius: 12px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; }
+.pf-rank.r1, .pf-rank.r2, .pf-rank.r3 { padding-left: 4px; }
+.pf-rank.r1 { background: var(--md1-tint); color: var(--md1-ink); } .pf-rank.r2 { background: var(--md2-tint); color: var(--md2-ink); } .pf-rank.r3 { background: var(--md3-tint); color: var(--md3-ink); }
+.pf-stats { margin-top: 4px; padding: 14px; border-radius: 14px; background: #F4F7F6; --track: #E3E9E7; }
+.pf-h { margin: 20px 0 8px; font-size: 13px; font-weight: 700; color: #5F6E6B; }
+.pf-more { margin-top: 16px; border-top: .5px solid #D5DEDB; }
+.pf-more summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 15px; font-weight: 600; color: #1F2A28; cursor: pointer; }
+.pf-more summary::-webkit-details-marker { display: none; }
+.pf-more summary .ico, .mp-join.log summary .ico { color: #B5C0BD; transform: rotate(90deg); transition: transform .15s; }
+.pf-more[open] summary .ico { transform: rotate(-90deg); }
+.pf-admin { padding: 14px; border: 1px solid #E3E9E7; border-radius: 14px; background: #fff; }
+.pf-admin label { font-size: 13px; font-weight: 600; color: #5F6E6B; margin-bottom: 6px; }
+.pf-admin input[type=text], .pf-admin select { height: 44px; border: 1px solid #DDE4E2; border-radius: 10px; font-size: 16px; }
+.pf-admin .btn-tint { height: 44px; padding: 0 14px; border-radius: 10px; font-size: 14px; font-weight: 800; }
+.pf-admin .field + .field { margin-top: 10px; }
 /* 共有シート（一緒に打つ人に送る／見るだけのリンク） */
 .sh-opt { border-radius: 16px; padding: 14px; margin-bottom: 10px; background: #f5f9f8; }
 .sh-opt.main { background: #eef7f4; border: 1.5px solid #b7dccd; }
@@ -1706,7 +1774,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="page-title-row">
     <div style="min-width:0">
       <h1 id="circle-title">仲間ページ</h1>
-      <div id="circle-sub" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
+      <div id="circle-sub"></div>
     </div>
     <div class="title-actions" id="circle-actions"></div>
   </div>
@@ -2771,7 +2839,7 @@ async function refreshCircle() {
 
 // ---- 仲間ページの画面 ----
 function circleBadge(r) {
-  return r && r.uid ? '<span class="cm-badge self" title="本人がログインして「これは私」と登録">✓本人</span>' : '';
+  return r && r.uid ? `<span class="cm-badge self" title="本人がログインして「これは私」と登録">${ico('verified', 12)}本人</span>` : '';
 }
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
@@ -2787,7 +2855,17 @@ function circleMetricVal(p, m) {
 }
 function circleMetricText(v, m) { return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
 function circleCardHead(title, extra = '') {
-  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>`;
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>`;
+}
+// 横スクロールの列（指標のピル・だれから見る？）で、選んでいるものが見える位置までずらす（ページは縦に動かさない）
+function revealOnInRows(root) {
+  root.querySelectorAll('.pill-row, .who-row').forEach(r => {
+    const on = r.querySelector('.on');
+    if (!on) return;
+    const d = on.getBoundingClientRect(), b = r.getBoundingClientRect();
+    if (d.right > b.right - 24) r.scrollLeft += d.right - b.right + 40;
+    else if (d.left < b.left) r.scrollLeft -= b.left - d.left + 16;
+  });
 }
 function renderCircle() {
   if (!circleData) return;
@@ -2797,10 +2875,11 @@ function renderCircle() {
   const nRounds = gids.reduce((a, sid) => a + ((circleSess[sid] && circleSess[sid].rounds) || []).length, 0);
   document.getElementById('circle-title').textContent = circleData.name || '仲間ページ';
   const roleLabel = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[role] || (currentUser ? '閲覧中' : '閲覧中（ログインなし）');
-  document.getElementById('circle-sub').textContent = `${Object.keys(roster).length}人・${gids.length}ゲーム・計${nRounds}試合 ／ あなた: ${roleLabel}`;
+  document.getElementById('circle-sub').innerHTML = `${Object.keys(roster).length}人 ・ ${gids.length}ゲーム ・ 計${nRounds}試合<span class="ch-role">あなた：${esc(roleLabel)}</span>`;
+  // 操作は連絡先アプリ風のタイル（結果のリンク／招待／設定）。招待・設定はメンバーだけ
   document.getElementById('circle-actions').innerHTML =
-    `<button class="edit-tab title-edit-btn" onclick="copyText(circleViewUrl(circleId),'結果を見るリンクをコピーしました（ログインなしで見られます）')">結果のリンク</button>` +
-    (role ? `<button class="edit-tab title-edit-btn" onclick="openCircleInvite()">招待</button><button class="edit-tab title-edit-btn" onclick="openCircleSettings()">設定</button>` : '');
+    `<button type="button" class="ch-act" onclick="copyText(circleViewUrl(circleId),'結果を見るリンクをコピーしました（ログインなしで見られます）')">${ico('link', 22)}結果のリンク</button>` +
+    (role ? `<button type="button" class="ch-act" onclick="openCircleInvite()">${ico('userPlus', 22)}招待</button><button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 22)}設定</button>` : '');
   let html = '';
   // 立場ごとの案内
   if (!currentUser) {
@@ -2812,7 +2891,7 @@ function renderCircle() {
     html += `<div class="card askme"><div class="askme-q">この仲間ページで、あなたは名簿のどの人ですか？</div>
       <div class="askme-row">${cand.map(([mid, r]) => `<button type="button" class="askme-chip" onclick="claimCircleMember('${mid}')">${esc(r.name)}</button>`).join('')}
         <button type="button" class="askme-chip" onclick="openClaimNew()">名簿にいない（名前を入れる）</button></div>
-      <div class="askme-sub">選ぶと、その人に<b>✓本人</b>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
+      <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}本人</span>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
   }
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -2820,21 +2899,23 @@ function renderCircle() {
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
   const st = gids.length ? circleStats(circleData, circleSess, circleMode) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
-  const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h'].includes(circleTab)) ? `<div class="mp-chips">${modes.map(m =>
-    `<button type="button" class="mp-chip${circleMode === m ? ' on' : ''}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+  const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h'].includes(circleTab)) ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
+    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
-  const noBind = `<div style="font-size:12px;color:#999">名前を名簿の人に結びつけると、ここに通算が出ます。</div>`;
+  const noBind = `<div style="font-size:13px;color:#5F6E6B">名前を名簿の人に結びつけると、ここに通算が出ます。</div>`;
   if (circleTab === 'games') html += circleGamesTabHtml(role, gids);
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
   else if (!gids.length) html += noGames;
   else if (circleTab === 'grid') {
-    html += `<div class="card">${circleCardHead('成績表', `<button class="edit-tab" onclick="showCircleImage()">画像</button>`)}${modeChips}
-      ${st.list.length ? circleGridHtml(st) + `<div class="h2h-note">列＝メンバー（通算スコア順）。<span style="color:#E75620;font-weight:800">オレンジ</span>はその項目のいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>` : noBind}</div>`;
+    html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`)}${modeChips}
+      ${st.list.length ? circleGridHtml(st) + `<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>` : noBind}</div>`;
   } else if (circleTab === 'h2h') html += circleH2HTabHtml(st, modeChips, noBind);
   else html += circleRankTabHtml(st, modeChips, noBind);
-  html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">最新の状態にする</button>`;
-  document.getElementById('circle-body').innerHTML = html;
+  html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
+  const body = document.getElementById('circle-body');
+  body.innerHTML = html;
+  revealOnInRows(body);
   updateScrollHints();
 }
 // 開いたときの自分の順位などを控える（マイページの仲間ページのカードに出す）
@@ -2851,7 +2932,7 @@ function saveCircleSummary(st, nGames) {
 }
 // 順位タブ: 表彰台＋リスト。率・平均の項目は試合数が少ない人を分けて「参考」にする（規定打席と同じ考え方）
 function circleRankTabHtml(st, modeChips, noBind) {
-  const head = circleCardHead('通算順位', `<button class="edit-tab" onclick="showCircleImage()">画像</button>`);
+  const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`);
   if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
   const m = circleMetric;
   const np = circleMode === '3' ? 3 : 4;
@@ -2863,22 +2944,26 @@ function circleRankTabHtml(st, modeChips, noBind) {
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m)))) || 1;
   const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : Math.abs(v) / maxAbs;
   const clsOf = v => (m === 'score' || m === 'per') ? scoreCls(v) : '';
-  const chips = `<div class="mp-chips">${CIRCLE_METRICS.map(([k, l]) =>
-    `<button type="button" class="mp-chip${k === m ? ' on' : ''}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
+  const chips = `<div class="pill-row" role="tablist" aria-label="指標">${CIRCLE_METRICS.map(([k, l]) =>
+    `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
   const top3 = q.slice(0, 3);
   const order = [1, 0, 2].filter(i => top3[i]);
   const podium = `<div class="podium" style="grid-template-columns:${order.map(i => (i === 0 ? '1.12fr' : '1fr')).join(' ')}">${order.map(i => {
     const p = top3[i], v = circleMetricVal(p, m), nm = rosterName(p.key);
-    return `<div class="pd p${i + 1}" onclick="openCircleMember('${p.key}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${medalSvg(i + 1, 20)}</span></div>
+    return `<div class="pd p${i + 1}" onclick="openCircleMember('${p.key}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${medalSvg(i + 1, 22)}</span></div>
       <div class="pd-name">${esc(nm)}</div><div class="pd-val ${clsOf(v)}" style="color:${clsOf(v) === 'neg' ? '#c62828' : clsOf(v) === 'pos' ? '#1a237e' : '#1f2a28'}">${circleMetricText(v, m)}</div><div class="pd-base">${i + 1}</div></div>`;
   }).join('')}</div>`;
   const row = (p, rank, dim) => {
     const v = circleMetricVal(p, m), nm = rosterName(p.key);
+    // 棒: 通算スコア・1試合平均は0を中央に置いて左右に伸ばす。平均着順・率は左から（長いほど良い）
+    const bar = (m === 'score' || m === 'per')
+      ? `<span class="lb-bar div"><i class="${v >= 0 ? 'pos' : 'neg'}" style="width:${Math.max(1.5, Math.abs(v) / maxAbs * 50).toFixed(1)}%"></i></span>`
+      : `<span class="lb-bar"><i class="mag" style="width:${Math.max(3, Math.round(barOf(v) * 100))}%"></i></span>`;
     return `<button type="button" class="lb-row${dim ? ' dim' : ''}" onclick="openCircleMember('${p.key}')"><span class="lb-rank">${rank}</span>
-      <span class="lb-av" style="background:${avColor(p.key)};width:30px;height:30px;font-size:13px">${esc(avInitial(nm))}</span>
+      <span class="lb-av" style="background:${avColor(p.key)};width:32px;height:32px;font-size:14px">${esc(avInitial(nm))}</span>
       <span class="lb-main"><span class="lb-name">${esc(nm)}${circleBadge(rosterOf()[p.key])}</span>
         <span class="lb-sub">${[`${p.n}試合`, m === 'avg' ? '' : `平均着順 ${(p.rankSum / p.n).toFixed(2)}`, m === 'score' ? '' : fmtScore(p.score)].filter(Boolean).join(' ・ ')}</span>
-        <span class="lb-bar"><i class="${clsOf(v) === 'neg' ? 'neg' : ''}" style="width:${Math.max(3, Math.round(barOf(v) * 100))}%"></i></span></span>
+        ${bar}</span>
       <span class="lb-val ${clsOf(v)}">${circleMetricText(v, m)}</span></button>`;
   };
   const rows = q.slice(3).map((p, i) => row(p, i + 4)).join('')
@@ -2890,7 +2975,8 @@ function circleRankTabHtml(st, modeChips, noBind) {
 function circleGridHtml(st, forImage = false) {
   const L = st.list;
   const np = circleMode === '3' ? 3 : 4;
-  const hl = 'color:#E75620;font-weight:800';
+  // いちばん良い値は td の地を淡いゴールドに（画像も td の地の色を読むので画面と同じになる）
+  const hl = 'background:#FBF1D3;color:#7A5800;font-weight:800';
   const bestOf = (vals, dir) => {
     const f = vals.filter(v => v != null && !isNaN(v));
     if (!dir || f.length < 2) return null;
@@ -2908,7 +2994,8 @@ function circleGridHtml(st, forImage = false) {
   add('試合数', L.map(p => p.n), String);
   add('ゲーム数', L.map(p => p.games.size), String);
   add('平均着順', L.map(p => p.rankSum / p.n), v => v.toFixed(2), 'min');
-  for (let r = 0; r < np; r++) add(`${r + 1}着`, L.map(p => p.counts[r]), fmtCnt);
+  // 1着〜n着の行ラベルに着順の色の見本（画面だけ。画像の表のセルには要素を入れない）
+  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), fmtCnt);
   add('トップ率', L.map(p => p.top / p.n), pctText, 'max', 'cat-break');
   add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max');
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
@@ -2917,59 +3004,71 @@ function circleGridHtml(st, forImage = false) {
   add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
   add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
   const w = forImage ? 90 : 76;
+  // 画面は明るい見出し（.tbl-soft）＋名前の上に頭文字の丸。画像は今までどおり緑／青の見出し
   const thBg = circleMode === '3' ? '#4261AA' : '#177083';
-  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 60}px">
-    <thead><tr><th class="sticky-col" style="width:${w}px;background:${thBg}">メンバー</th>${L.map(p => `<th style="background:${thBg}">${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
+  const thSt = forImage ? ` style="background:${thBg}"` : '';
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table${forImage ? '' : ' tbl-soft'}" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 60}px">
+    <thead><tr><th class="sticky-col" style="width:${w}px${forImage ? `;background:${thBg}` : ''}">メンバー</th>${L.map(p => `<th${thSt}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
-// 総当たり表（行の人から見た、列の人との直接対決）
+// 総当たり表（行の人から見た、列の人との直接対決）。画面だけ（画像出力の対象外）
 function circleMatrixHtml(st) {
   const keys = st.list.map(p => p.key);
+  const my = myCircleMid();
   const head = keys.map(k => `<th>${esc(rosterName(k))}</th>`).join('');
-  const rows = keys.map(a => `<tr><td class="sticky-col">${esc(rosterName(a))}</td>${keys.map(b => {
-    if (a === b) return '<td style="color:#ccc;background:#f4f6f6">—</td>';
+  const rows = keys.map(a => `<tr><td class="sticky-col"${a === my ? ' style="font-weight:800;box-shadow:inset 3px 0 0 #177083"' : ''}>${esc(rosterName(a))}</td>${keys.map(b => {
+    if (a === b) return '<td style="color:#B5C0BD;background:#F4F7F6">—</td>';
     const e = st.acc[a] && st.acc[a][b];
-    if (!e) return '<td style="color:#ccc">・</td>';
+    if (!e) return '<td style="color:#B5C0BD">・</td>';
     const d = e.w - e.l;
-    const bg = d > 0 ? '#e8ecf8' : d < 0 ? '#fbe9e9' : '#ffffff';
-    return `<td style="font-weight:700;color:${h2hColor(d)};background:${bg}">${e.w}-${e.l}${e.d ? `<div style="font-size:9px;color:#8a9aa5">${e.d}分</div>` : ''}</td>`;
+    return `<td><span class="mx ${d > 0 ? 'w' : d < 0 ? 'l' : 'e'}">${e.w}-${e.l}</span>${e.d ? `<div class="mx-d">${e.d}分</div>` : ''}</td>`;
   }).join('')}</tr>`).join('');
-  return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table h2h-matrix" style="table-layout:fixed;min-width:${72 + keys.length * 58}px">
+  return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table h2h-matrix tbl-soft" style="table-layout:fixed;min-width:${72 + keys.length * 58}px">
     <thead><tr><th class="sticky-col" style="width:72px">勝-負</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function circleH2HTabHtml(st, modeChips, noBind) {
   if (!st.list.length) return `<div class="card">${circleCardHead('対戦成績')}${modeChips}${noBind}</div>`;
-  if (!circleFocus || !st.acc[circleFocus]) circleFocus = myCircleMid() && st.acc[myCircleMid()] ? myCircleMid() : st.list[0].key;
-  circleKeys = st.list.map(p => p.key);
+  const my = myCircleMid();
+  if (!circleFocus || !st.acc[circleFocus]) circleFocus = my && st.acc[my] ? my : st.list[0].key;
+  // だれから見る？は自分を先頭に（あとは通算の順）
+  circleKeys = st.list.map(p => p.key).sort((a, b) => (b === my) - (a === my));
   const row = st.acc[circleFocus] || {};
   const keys = h2hSortedKeys(row);
-  const chips = st.list.map((p, i) =>
-    `<button type="button" class="h2h-chip${p.key === circleFocus ? ' on' : ''}" onclick="circleFocus=circleKeys[${i}];renderCircle()">${esc(rosterName(p.key))}</button>`).join('');
+  const who = circleKeys.map((k, i) => {
+    const nm = rosterName(k);
+    return `<button type="button" class="who${k === circleFocus ? ' on' : ''}" aria-pressed="${k === circleFocus}" onclick="circleFocus=circleKeys[${i}];renderCircle()"><span class="who-av" style="background:${avColor(k)}">${esc(avInitial(nm))}</span><span class="who-nm">${esc(nm)}</span></button>`;
+  }).join('');
+  const nameOf = k => rosterName(k), avOf = k => avColor(k);
   return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
-    <div style="font-size:11px;color:#8a9aa5;margin-bottom:6px">だれから見る？</div><div class="h2h-chips">${chips}</div>
-    ${h2hSummaryHtml(row, k => rosterName(k))}
-    ${keys.length ? h2hRowsTableHtml(row, keys, k => rosterName(k)) : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
+    <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
+    ${h2hPairCardsHtml(row, nameOf, avOf)}
+    ${keys.length ? `<div class="h2-list" style="padding:0;margin-top:6px">${h2hListHtml(row, keys, nameOf, avOf)}</div>` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">${H2H_NOTE}</div></div>
-    <div class="card">${circleCardHead('総当たり表')}${circleMatrixHtml(st)}
-    <div class="h2h-note">行の人から見た、列の人との直接対決（勝ち-負け）です。勝ち越しは青、負け越しは赤の背景。</div></div>`;
+    <div class="card">${circleCardHead('総当たり表')}
+    <div class="mx-lg"><span><i class="w"></i>勝ち越し</span><span><i class="l"></i>負け越し</span></div>${circleMatrixHtml(st)}
+    <div class="h2h-note">行の人から見た、列の人との直接対決（勝ち-負け）です。</div></div>`;
 }
 function circleGamesTabHtml(role, gids) {
   const games = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
     .sort((a, b) => new Date(b.ge.at || 0) - new Date(a.ge.at || 0));
   const glist = games.map(({ sid, ge, g }) => {
-    if (!g) return `<button type="button" class="series-row" onclick="openCircleGameMenu('${sid}')"><span>${esc(ge.name || '')}<span class="sr-sub">読み込めませんでした（削除された可能性があります）</span></span><span class="sr-arrow">›</span></button>`;
+    if (!g) return `<button type="button" class="series-row cg-row" onclick="openCircleGameMenu('${sid}')"><span class="cg-main"><span class="cg-name">${esc(ge.name || '')}</span><span class="cg-sub">読み込めませんでした（削除された可能性があります）</span></span>${ico('chevron', 14)}</button>`;
     const played = playedFlags(g);
     const seats = (ge && ge.seats) || {};
     const nPlayed = played.filter(Boolean).length;
     const nBound = played.reduce((a, p, i) => a + (p && seats[i] && seats[i].mid ? 1 : 0), 0);
     const tot = gameTotals(g);
     let top = -1; played.forEach((p, i) => { if (p && (top < 0 || tot[i] > tot[top])) top = i; });
-    return `<button type="button" class="series-row" onclick="openCircleGameMenu('${sid}')">
-      <span>${esc(g.name || ge.name || '')}<span class="sr-sub">${fmtDate(g.createdAt || ge.at)} ・ ${(g.rounds || []).length}試合${top >= 0 ? ` ・ 1位 ${esc(g.settings.playerNames[top])}` : ''}
-        ・ ${nBound < nPlayed ? `<span style="color:#E75620;font-weight:700">未結びつけ ${nPlayed - nBound}人</span>` : '結びつけ済み'}</span></span><span class="sr-arrow">›</span></button>`;
+    const d = new Date(g.createdAt || ge.at || Date.now());
+    return `<button type="button" class="series-row cg-row${g.settings && g.settings.numPlayers === 3 ? ' gm-3' : ''}" onclick="openCircleGameMenu('${sid}')">
+      <span class="gm-date"><span>${d.getMonth() + 1}月</span><b>${d.getDate()}</b></span>
+      <span class="cg-main"><span class="cg-name">${esc(g.name || ge.name || '')}</span>
+        <span class="cg-sub">${(g.rounds || []).length}試合${top >= 0 ? ` ・ ${medalSvg(1, 14, false)}${esc(g.settings.playerNames[top])}` : ''}</span>
+        ${nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : `<span class="st-pill ok">${ico('check', 12)}結びつけ済み</span>`}</span>
+      ${ico('chevron', 14)}</button>`;
   }).join('');
-  return `<div class="card">${circleCardHead(`試合（${gids.length}ゲーム）`, role ? `<button class="edit-tab" onclick="openCircleAddGames()">＋ 追加</button>` : '')}
-    ${glist || `<div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
+  return `<div class="card">${circleCardHead(`試合（${gids.length}ゲーム）`, role ? `<button class="btn-tint" onclick="openCircleAddGames()">＋ 追加</button>` : '')}
+    ${glist || `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
     ${role && !gids.length ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}
     <div class="h2h-note">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。</div></div>`;
 }
@@ -2981,15 +3080,15 @@ function circlePeopleTabHtml(st) {
     || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   const rows = ents.map(([mid, r]) => {
     const e = byKey[mid];
-    return `<button type="button" class="lb-row" onclick="openCircleMember('${mid}')"><span class="lb-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</span>
+    return `<button type="button" class="lb-row pp-row" onclick="openCircleMember('${mid}')"><span class="lb-av" style="background:${avColor(mid)};width:40px;height:40px;font-size:16px">${esc(avInitial(r.name))}</span>
       <span class="lb-main"><span class="lb-name">${esc(r.name)}${circleBadge(r)}</span>
-        <span class="lb-sub">${e ? `${e.rank}位 ・ ${e.p.n}試合 ・ 平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)} ・ ${fmtScore(e.p.score)}` : 'この形式の試合はまだありません'}</span>
-        <span class="lb-sub">${r.uid ? 'ログインした本人が登録' : 'アカウントなし（名前で結びつけ）'}</span></span><span class="cc-arrow">›</span></button>`;
+        <span class="lb-sub pp-sub">${e ? `${e.rank <= 3 ? medalSvg(e.rank, 16, false) : ''}${e.rank}位 ・ ${e.p.n}試合 ・ 平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)} ・ <b class="${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>` : 'この形式の試合はまだありません'}</span>
+        ${r.uid ? '' : '<span class="lb-sub">名前で結びつけ（アカウントなし）</span>'}</span><span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
   }).join('');
   return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`)}
-    ${rows || '<div style="font-size:12px;color:#999">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
-    <div class="h2h-note"><b>✓本人</b>＝その人がログインして「これは私」と登録済み。印のない人は、誰かが名前で結びつけただけの状態です。名前を押すと、その人の成績・対戦成績が開きます。</div></div>
-    <div class="card"><details class="h2h-more" style="margin-top:0"><summary>変更の履歴（誰がいつ何をしたか）</summary>${circleLogHtml()}</details></div>`;
+    ${rows || '<div style="font-size:13px;color:#5F6E6B">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
+    <div class="h2h-note"><span class="cm-badge self" style="margin:0 2px 0 0">${ico('verified', 12)}本人</span>＝その人がログインして「これは私」と登録済み。印のない人は、誰かが名前で結びつけただけの状態です。名前を押すと、その人の成績・対戦成績が開きます。</div></div>
+    <details class="mp-join log" style="margin-top:0"><summary>変更の履歴（誰がいつ何をしたか）${ico('chevron', 14)}</summary><div style="padding-bottom:12px">${circleLogHtml()}</div></details>`;
 }
 function circleStandingsTableHtml(st, forImage = false) {
   const rows = st.list.map((p, i) => {
@@ -3258,18 +3357,18 @@ function renderBindEditor() {
   document.getElementById('form-modal-title').textContent = '名前の結びつけ';
   const rows = s.rows.map((r, idx) => {
     const status = r.cur
-      ? (r.cur.self ? `<span class="cm-badge self">✓本人が結びつけ</span>` : `${esc(r.cur.byName || 'メンバー')}さんが結びつけ（${fmtDate(r.cur.at)}）`)
-      : '<span style="color:#E75620">まだ結びつけていません</span>';
+      ? (r.cur.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}本人が結びつけ</span>` : `${esc(r.cur.byName || 'メンバー')}さんが結びつけ（${fmtDate(r.cur.at)}）`)
+      : '<span style="color:#8A6D1A;font-weight:700">まだ結びつけていません</span>';
     const opts = [`<option value=""${r.sel === '' ? ' selected' : ''}>ゲスト（通算に入れない）</option>`,
       `<option value="new"${r.sel === 'new' ? ' selected' : ''}>＋ 新しい人「${esc(r.name)}」として名簿に追加</option>`]
-      .concat(roster.map(([mid, m]) => `<option value="${mid}"${r.sel === mid ? ' selected' : ''}>${esc(m.name)}${m.uid ? '（✓本人）' : ''}${mid === myMid ? '＝あなた' : ''}</option>`)).join('');
+      .concat(roster.map(([mid, m]) => `<option value="${mid}"${r.sel === mid ? ' selected' : ''}>${esc(m.name)}${m.uid ? '（本人）' : ''}${mid === myMid ? '＝あなた' : ''}</option>`)).join('');
     return `<div class="org-row"><div class="org-name">試合での名前: ${esc(r.name)}</div>
       <div class="org-meta">${status}</div>
       <select ${r.locked ? 'disabled' : ''} onchange="bindState.rows[${idx}].sel=this.value">${opts}</select>
       ${r.locked ? '<div class="org-meta" style="color:#a05a2c">本人が結びつけたため、本人・作成者・管理者だけが変更できます</div>' : ''}</div>`;
   }).join('');
   document.getElementById('form-modal-body').innerHTML = `
-    <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:4px">「${esc(g.name || '')}」の名前を、名簿の人に結びつけます。自分の席を「あなた」に結びつけると<b>✓本人</b>の結びつけになります。</div>
+    <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:4px">「${esc(g.name || '')}」の名前を、名簿の人に結びつけます。自分の席を「あなた」に結びつけると<b>本人</b>の結びつけになります。</div>
     ${myMid ? '' : '<div class="acct-warn" style="margin-bottom:6px">名簿で「あなた」をまだ選んでいません。仲間ページの上のカードで選ぶと、自分の席を本人として結びつけられます。</div>'}
     ${rows}
     <button class="confirm-btn" style="margin-top:12px" onclick="saveBindEditor()">保存する</button>
@@ -3331,11 +3430,11 @@ function openCircleMember(mid) {
   const row = st.acc[mid] || {};
   const keys = h2hSortedKeys(row);
   const hist = p ? sortHist(p.hist) : [];
-  const modeChips = modes.length > 1 ? `<div class="mp-chips">${modes.map(m =>
-    `<button type="button" class="mp-chip${circleMode === m ? ' on' : ''}" onclick="circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+  const modeChips = modes.length > 1 ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
+    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const statHtml = p
-    ? statTilesHtml({ n: p.n, np, counts: p.counts, rankSum: p.rankSum, last: p.last, score: p.score }) + rankBarHtml(p.counts, p.n, np) + formHtml(hist, np) + sparkHtml(hist)
-    : `<div style="font-size:12px;color:#999;padding:6px 0">${modes.length > 1 ? 'この形式の' : ''}試合はまだありません</div>`;
+    ? `<div class="pf-stats">${statTilesHtml({ n: p.n, np, counts: p.counts, rankSum: p.rankSum, last: p.last, score: p.score }) + rankBarHtml(p.counts, p.n, np) + formHtml(hist, np) + sparkHtml(hist)}</div>`
+    : `<div class="pf-stats" style="font-size:13px;color:#5F6E6B">${modes.length > 1 ? 'この形式の' : ''}試合はまだありません</div>`;
   // この人に結びついている席
   const bound = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
@@ -3345,29 +3444,36 @@ function openCircleMember(mid) {
     });
   });
   const unconfirmed = bound.filter(b => !b.stt.self).length;
-  const boundHtml = bound.map(b => `<div class="org-row" style="padding:6px 0"><div class="org-name" style="font-size:12px">${esc(b.gname)}</div>
-    <div class="org-meta">試合での名前「${esc(b.seatName)}」 ・ ${b.stt.self ? '<span class="cm-badge self">✓本人が結びつけ</span>' : `${esc(b.stt.byName || 'メンバー')}さんが結びつけ`}</div></div>`).join('');
+  const boundHtml = bound.map(b => `<div class="org-row" style="padding:6px 0"><div class="org-name" style="font-size:13px">${esc(b.gname)}</div>
+    <div class="org-meta">試合での名前「${esc(b.seatName)}」 ・ ${b.stt.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}本人が結びつけ</span>` : `${esc(b.stt.byName || 'メンバー')}さんが結びつけ`}</div></div>`).join('');
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
-  document.getElementById('form-modal-title').textContent = 'メンバーの成績';
-  document.getElementById('form-modal-body').innerHTML = `
-    <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
-      <div style="min-width:0"><div class="pf-name">${esc(r.name)}${circleBadge(r)}</div>
-        <div class="pf-sub">${r.uid ? 'ログインして「これは私」と登録した本人' : 'アカウントなし（名前で結びつけただけの状態）'}</div>
-        ${p ? `<span class="pf-rank">通算 ${idx + 1}位 / ${st.list.length}人${modes.length > 1 ? `（${circleMode === '3' ? '三麻' : '四麻'}）` : ''}</span>` : ''}</div></div>
-    ${modeChips}${statHtml}
-    ${keys.length ? `<div class="card-title" style="margin:16px 0 6px">相手ごとの成績</div>${h2hSummaryHtml(row, k => rosterName(k))}${h2hRowsTableHtml(row, keys, k => rosterName(k))}` : ''}
-    <details class="h2h-more"><summary>結びついている試合（${bound.length}）</summary>${boundHtml || '<div style="font-size:12px;color:#999">なし</div>'}</details>
-    ${role ? `<div style="border-top:1px solid #eee;margin-top:14px;padding-top:10px">
-      ${!r.uid && !myMid ? `<button class="auto-btn" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人として登録）</button>` : ''}
-      ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" onclick="closeFormModal();confirmMySeats()">ほかの人が結びつけた${unconfirmed}件を、本人として確認する</button>` : ''}
-      ${canEdit ? `<div class="field" style="margin-top:6px"><label>名簿での名前</label><div style="display:flex;gap:6px"><input type="text" id="cm-rename" value="${esc(r.name)}" maxlength="${MAX_NAME_LEN}" style="flex:1;min-width:0"><button type="button" class="edit-tab" onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
-      ${canEdit && others.length ? `<div class="field"><label>同じ人としてまとめる</label><div style="display:flex;gap:6px"><select id="cm-merge" style="flex:1;min-width:0">${others.map(([m, o]) => `<option value="${m}">${esc(o.name)}${o.uid ? '（✓本人）' : ''}</option>`).join('')}</select><button type="button" class="edit-tab" onclick="mergeCircleMember('${mid}')">まとめる</button></div>
+  const rk = idx + 1;
+  const rankPill = p ? `<span class="pf-rank${rk <= 3 ? ' r' + rk : ''}">${rk <= 3 ? medalSvg(rk, 16, false) : ''}通算 ${rk}位 / ${st.list.length}人${modes.length > 1 ? `（${circleMode === '3' ? '三麻' : '四麻'}）` : ''}</span>` : '';
+  const nameOf = k => rosterName(k), avOf = k => avColor(k);
+  // 管理（名簿での名前・同じ人としてまとめる・本人の登録を外す）は別のまとまりに分ける。
+  // 「変更」は入力が空か今の名前と同じあいだは押せない
+  const admin = (canEdit || r.uid === myUid()) ? `<div class="pf-h">管理</div><div class="pf-admin">
+      ${canEdit ? `<div class="field"><label>名簿での名前</label><div style="display:flex;gap:6px"><input type="text" id="cm-rename" value="${esc(r.name)}" maxlength="${MAX_NAME_LEN}" style="flex:1;min-width:0"
+        oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="btn-tint" disabled onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
+      ${canEdit && others.length ? `<div class="field"><label>同じ人としてまとめる</label><div style="display:flex;gap:6px"><select id="cm-merge" style="flex:1;min-width:0">${others.map(([m, o]) => `<option value="${m}">${esc(o.name)}${o.uid ? '（本人）' : ''}</option>`).join('')}</select><button type="button" class="btn-tint" onclick="mergeCircleMember('${mid}')">まとめる</button></div>
         <div class="org-meta">この人の試合をすべて選んだ人に付け替え、名簿からこの名前を消します。</div></div>` : ''}
-      ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:6px" onclick="closeFormModal();unclaimCircleMember('${mid}')">本人の登録を外す</button>` : ''}
-      ${!canEdit ? '<div class="org-meta" style="color:#a05a2c">本人が登録した人の名前の変更・まとめは、本人・作成者・管理者だけができます。</div>' : ''}
-    </div>` : ''}
-    <button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal()">閉じる</button>`;
+      ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">本人の登録を外す</button>` : ''}
+    </div>` : '';
+  document.getElementById('form-modal-title').textContent = 'メンバーの成績';
+  // .sheet-body で包むとスマホでは下から出るボトムシートになる
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
+      <div class="pf-name">${esc(r.name)}${circleBadge(r)}</div>
+      <div class="pf-sub">${r.uid ? 'ログインして「これは私」と登録した本人' : 'アカウントなし（名前で結びつけただけの状態）'}</div>${rankPill}</div>
+    ${modeChips}${statHtml}
+    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hPairCardsHtml(row, nameOf, avOf)}<div class="h2-list" style="padding:0">${h2hListHtml(row, keys, nameOf, avOf)}</div>` : ''}
+    <details class="pf-more"><summary>結びついている試合（${bound.length}）${ico('chevron', 14)}</summary>${boundHtml || '<div style="font-size:13px;color:#5F6E6B;padding-bottom:10px">なし</div>'}</details>
+    ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人として登録）</button>` : ''}
+      ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が結びつけた${unconfirmed}件を、本人として確認する</button>` : ''}
+      ${admin}
+      ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人が登録した人の名前の変更・まとめは、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
   updateScrollHints();
 }
@@ -6559,8 +6665,8 @@ function rankCountHtml(rounds, s, forImage = false) {
   const bestTop = validTops.length ? Math.max(...validTops) : null;
   const bestPtMax = validPtMaxes.length ? Math.max(...validPtMaxes) : null;
   const dash = '<span style="color:#ccc">—</span>';
-  // ベスト（同値なら該当者全員）の強調は文字色のみオレンジに。背景・枠線は変えない
-  const hl = 'color:#E75620;font-weight:800';
+  // ベスト（同値なら該当者全員）は td の地を淡いゴールドに（オレンジはCTA限定。画像も td の地の色を読むので同じになる）
+  const hl = 'background:#FBF1D3;color:#7A5800;font-weight:800';
   const teamMode = s.teamMode && s.teams;
   const thBg = teamMode ? TEAM_HEAD_BG : (slots === 3 ? '#4261AA' : '#177083');
   const thS = teamMode ? ` style="background:${TEAM_HEAD_BG}"` : '';
