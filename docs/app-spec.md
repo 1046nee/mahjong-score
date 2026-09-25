@@ -615,6 +615,9 @@
   本物のルールでの動きは分からないので、database.rules.jsonを変えたら本番で手で確かめる
 
 ## 落とし穴
+- **会社PCから本番（majasco.jp）をPlaywright・ブラウザペインで開くと、Firebaseにつながらない（dbConnected=false）**ことがある（2026-09-26）。
+  社内のDNS/プロキシでFirebaseの宛先がローカルのアドレスになり、ChromeのLocal Network Accessが遮断する（`ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS`）。
+  アプリの不具合ではない。Playwrightは `launch(args=["--disable-features=LocalNetworkAccessChecks"])` で起動して確かめる（localhostから開くテストは影響なし）
 - tools/circle_rules_test.py = **本番のデータベース**で仲間ページのセキュリティルールを確認（匿名ログインで使い捨てのアカウントを3つ作り、
   「本人の席は他人が変えられない」「部外者は書けない」「参加コードが要る」などの許可／拒否を39項目。最後にデータとアカウントを消す）。
   **database.rules.json の仲間ページの部分を変えたら、コンソールに貼ってからこれを通す**（Authenticationで「匿名」を一時的に有効にする）
