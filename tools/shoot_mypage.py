@@ -8,6 +8,7 @@ account_test.py と同じスタブ（smoke_test.FIREBASE_STUB ＋ 偽のログ�
 実行: python tools/shoot_mypage.py <出力フォルダ> [接頭辞] [幅]
   例: python tools/shoot_mypage.py C:/tmp/shots before 390
 """
+import base64
 import functools
 import http.server
 import os
@@ -88,6 +89,17 @@ def main():
                 pg.screenshot(path=path, full_page=full)
             shots.append(path)
 
+        def save_canvas(name, expr):
+            """画像出力（Canvas）をPNGに書き出す。画面と画像の食い違い（メダルの数字・いちばん良い値の色など）の確認用"""
+            data = pg.evaluate(f"() => {{ const c = ({expr}); return c && c.toDataURL ? c.toDataURL('image/png') : String(c); }}")
+            if not str(data).startswith("data:image/png;base64,"):
+                errors.append(f"image {name}: {data}")
+                return
+            path = os.path.join(out, f"{prefix}_img_{name}.png")
+            with open(path, "wb") as f:
+                f.write(base64.b64decode(data.split(",", 1)[1]))
+            shots.append(path)
+
         def make_game(name, np, members, rounds, marks=False):
             pg.evaluate("showView('setup')")
             if np == 3:
@@ -160,6 +172,7 @@ def main():
         pg.evaluate("myStatsTab = 'groups'; renderMyStats()")
         shoot("mystats_groups")
         pg.evaluate("myStatsTab = 'sum'")
+        save_canvas("mystats", "buildMyStatsCanvas()")
 
         # 仲間ページを作ってゲームを入れる
         pg.evaluate("showView('history'); setMpTab('circle')")
@@ -181,6 +194,9 @@ def main():
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         shoot("circle_member", modal=True)
         pg.evaluate("closeFormModal()")
+        save_canvas("circle", """(() => { const st = circleStats(circleData, circleSess, circleMode);
+          return buildTablesCanvas(circleData.name, '撮影', '', [{ label: '通算順位', html: circleStandingsTableHtml(st, true) },
+            { label: '成績表', html: circleGridHtml(st, true) }], circleMode === '3'); })()""")
 
         # マイページの「仲間」（カードが出た状態）
         pg.evaluate("showView('history'); setMpTab('circle')")
@@ -191,6 +207,8 @@ def main():
         pg.evaluate(f"viewDetailById('{gids[0]}')")
         pg.wait_for_timeout(400)
         shoot("detail")
+        for kind in ["score", "rounds", "stats"]:
+            save_canvas(f"detail_{kind}", f"buildResultCanvas(detailGame, '{kind}')")
 
         # 共有シート
         try:
