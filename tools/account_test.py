@@ -207,9 +207,19 @@ def main():
         g2seats = circ["games"][g2]["seats"]
         g2list = g2seats if isinstance(g2seats, list) else [g2seats.get(str(i)) for i in range(4)]
         results.append(("[5d] 2試合目の「たろう」は名簿の同じ人に結びつく（重複して増えない）", True, g2list[1]["mid"] == tr))
-        txt = pg.evaluate("document.getElementById('circle-body').innerText")
-        results.append(("[5e] 通算順位・対戦成績・試合・名簿が出る", True,
-                        all(w in txt for w in ["通算順位", "対戦成績", "試合", "名簿（5人）", "むにぃ"])))
+        tabs = {}
+        for t in ["rank", "grid", "h2h", "games", "people"]:
+            pg.evaluate(f"circleTab = '{t}'; renderCircle()")
+            tabs[t] = pg.evaluate("document.getElementById('circle-body').innerText")
+        pg.evaluate("circleTab = 'rank'; renderCircle()")
+        results.append(("[5e] タブで通算順位・成績表・対戦成績（総当たり表）・試合・名簿を切り替えて見られる", True,
+                        "通算順位" in tabs["rank"] and "むにぃ" in tabs["rank"] and "平均着順" in tabs["grid"] and "トップ率" in tabs["grid"]
+                        and "対戦成績" in tabs["h2h"] and "総当たり表" in tabs["h2h"] and "金曜会1" in tabs["games"] and "名簿（5人）" in tabs["people"]))
+        pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
+        mt = pg.evaluate("document.getElementById('form-modal-body').innerText")
+        pg.evaluate("closeFormModal()")
+        results.append(("[5g] メンバーを押すと、その人の成績（タイル・着順の分布・最近の着順）と相手ごとの成績が出る", True,
+                        all(w in mt for w in ["たろう", "平均着順", "着順の分布", "最近の着順", "相手ごとの成績"])))
         pg.evaluate("openCircleInvite()")
         results.append(("[5f] 招待リンクは外のブラウザで開く形・参加コードも出る", True,
                         pg.evaluate(f"circleInviteLink === location.origin + '/?openExternalBrowser=1#join={code}' && document.getElementById('form-modal-body').innerText.includes('{code[:4]}-{code[4:]}')")))
@@ -276,6 +286,12 @@ def main():
         body = pgv.evaluate("document.getElementById('circle-body').innerText")
         results.append(("[7] ログインなしでも閲覧リンクで通算順位が見られ、招待・設定は出ない", True,
                         "通算順位" in body and "むにぃ" in body and "招待" not in acts and "設定" not in acts))
+        pgv.evaluate(f"circleTab = 'games'; renderCircle(); openCircleGameMenu('{g1}')")
+        menu_txt = pgv.evaluate("document.getElementById('form-modal-body').innerText")
+        pgv.evaluate(f"closeFormModal(); openWatchGame(circleSess['{g1}'], 'circle')")
+        results.append(("[7b] 見るだけの人が仲間ページの試合を開くと、入力できない「見るだけ」の画面になる", True,
+                        "結果を見る" in menu_txt and "入力・修正" not in menu_txt
+                        and pgv.evaluate("document.getElementById('view-watch').classList.contains('active') && !document.querySelector('#view-watch .fab') && document.getElementById('watch-body').innerText.includes('総合順位')")))
         pgv.close()
 
         # ---- 8. LINEの中で招待リンクを開く ----
@@ -301,6 +317,59 @@ def main():
         pgj.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         results.append(("[9b] ログインから戻ると自動で参加が完了し、仲間ページが開く", True,
                         db_of(pgj)["circleMembers"][cid].get(U3, {}).get("role") == "editor"))
+
+        # ---- 10. マイページ（個人｜仲間） ----
+        pg.evaluate("(u) => localStorage.setItem('__smoke_user', JSON.stringify({ uid: u, displayName: 'テスト1' }))", U1)
+        pg.reload(wait_until="load")
+        pg.wait_for_function("() => currentUser && !accountBusy", timeout=10000)
+        pg.evaluate("showView('history'); setMpTab('me')")
+        pg.wait_for_timeout(300)
+        me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
+        hero = pg.evaluate("document.getElementById('account-card').innerText")
+        results.append(("[10a] マイページの上にログイン中のカード、「個人」に成績（タイル・着順の分布）・よく打つ相手・過去の試合が出る", True,
+                        "テスト1" in hero and "ログアウト" in hero and all(w in me_txt for w in ["平均着順", "トップ率", "着順の分布", "よく打つ相手", "過去の試合", "金曜会1"])))
+        pg.evaluate("setMpTab('circle')")
+        pg.wait_for_timeout(300)
+        results.append(("[10b] 「仲間」に切り替えると、仲間ページのカードと作るボタンが出る（個人の中身は隠れる）", True,
+                        pg.evaluate("document.getElementById('mp-circle').style.display !== 'none' && document.getElementById('mp-me').style.display === 'none' && document.getElementById('hist-circles').innerText.includes('金曜会') && document.getElementById('hist-circles').innerText.includes('仲間ページを作る')")))
+        pg.evaluate(f"setMpTab('me'); openTagEditor('{g1}')")
+        tag_txt = pg.evaluate("document.getElementById('form-modal-body').innerText")
+        pg.evaluate("closeFormModal()")
+        results.append(("[10c] 「この試合での自分」に参加/観戦の区別はなく、名前か「自分は出ていない」を選ぶ", True,
+                        "観戦" not in tag_txt and "自分は出ていない" in tag_txt and "たろう" in tag_txt))
+
+        # ---- 11. 共有シート・見るだけのリンク ----
+        pg.evaluate(f"joinSession('{g1}')")
+        pg.wait_for_function("() => document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
+        pg.evaluate("openShareSheet()")
+        pg.wait_for_function("() => document.getElementById('share-sheet') && document.getElementById('share-sheet').innerText.includes('見るだけのリンクを作る')", timeout=10000)
+        sh = pg.evaluate("document.getElementById('share-sheet').innerText")
+        results.append(("[11a] 共有シートの一番上は「一緒に打つ人に送る」（入力できるURL）、その下に見るだけのリンク", True,
+                        sh.index("一緒に打つ人に送る") < sh.index("見るだけのリンク") and pg.evaluate("document.getElementById('share-sheet-url').value") == share1))
+        pg.evaluate("makeViewLink()")
+        pg.wait_for_function(f"() => viewIds['{g1}']", timeout=10000)
+        vid = pg.evaluate(f"viewIds['{g1}']")
+        d = db_of()
+        snap = d.get("views", {}).get(vid, {})
+        results.append(("[11b] 見るだけのリンクを作ると sessionViews と写しができ、写しに試合IDは入らない", True,
+                        d.get("sessionViews", {}).get(g1) == vid and snap.get("s", {}).get("name") == "金曜会1"
+                        and g1 not in json.dumps(snap.get("s", {})) and snap.get("p") == f"{g1}_{snap.get('n')}"))
+        pg.evaluate("closeFormModal()")
+        n_before = len(snap.get("s", {}).get("rounds", []))
+        pg.evaluate("""async () => { openSheet(-1); await new Promise(r => setTimeout(r, 100));
+          sheetSelected = [0, 1, 2, 3]; renderSheetMembers(); renderSheetInputs();
+          ['300', '300', '250'].forEach((v, i) => { document.getElementById('si-' + i).value = v; }); autoFill();
+          await new Promise(r => setTimeout(r, 100)); submitRound(); }""")
+        pg.wait_for_function("(a) => { const v = JSON.parse(localStorage.getItem('__smoke_db')).views[a[0]]; return v && (v.s.rounds || []).length === a[1]; }",
+                             arg=[vid, n_before + 1], timeout=15000)
+        results.append(("[11c] 点数を入れると、見るだけのリンクの写しも自動で更新される", True, True))
+        wctx = new_ctx(seed_db=db_of())
+        pw = new_page(wctx)
+        pw.goto(app + "#v=" + vid, wait_until="load")
+        pw.wait_for_function("() => document.querySelector('#view-watch').classList.contains('active') && document.getElementById('watch-body').innerText.includes('総合順位')", timeout=15000)
+        results.append(("[11d] 見るだけのリンクは入力の入口なしで結果が見られ、その端末の試合の一覧には残らない", True,
+                        pw.evaluate("(v) => !document.querySelector('#view-watch .fab') && !document.getElementById('watch-body').innerText.includes('行をタップすると点数を修正') && (appState.games || []).length === 0 && location.hash === '#v=' + v && document.getElementById('watch-title').textContent === '金曜会1'", vid)))
+        pw.close()
         br.close()
     srv.shutdown()
 

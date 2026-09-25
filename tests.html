@@ -172,6 +172,17 @@ function circleCases(w) {
       return s4.list.length === 1 && s4.list[0].n === 1 && approx(s4.list[0].score, 62)
         && s3.list.length === 1 && approx(s3.list[0].score, 25);
     }],
+    ['circleStats: 成績表・メンバーの成績用に着順の内訳（同点は按分）・最高/最低点数・1試合ごとの着順を持つ', () => {
+      const g = { settings: S(['たろう', 'じろう', 'さぶろう', 'しろう']), createdAt: '2026-09-01T10:00:00.000Z', rounds: [
+        R([0, 1, 2, 3], [42000, 31000, 18000, 9000], [62, 11, -22, -51]),
+        R([0, 1, 2, 3], [30000, 30000, 25000, 15000], [25, 25, -10, -40])] };
+      const circle = { roster: { T: { name: 'たろう' }, J: { name: 'じろう' } }, games: { g: { seats: { 0: { mid: 'T' }, 1: { mid: 'J' } } } } };
+      const st = w.circleStats(circle, { g }, '4');
+      const t = st.list.find(p => p.key === 'T'), j = st.list.find(p => p.key === 'J');
+      return arrEq(t.counts, [1.5, 0.5, 0, 0]) && arrEq(j.counts, [0.5, 1.5, 0, 0]) && t.ptMax === 42000 && t.ptMin === 30000
+        && t.hist.length === 2 && t.hist[0].rank === 1 && t.hist[0].tie === false && t.hist[1].rank === 1 && t.hist[1].tie === true
+        && j.hist[0].rank === 2 && j.hist[1].rank === 1;
+    }],
   ];
 }
 

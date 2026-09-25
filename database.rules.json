@@ -259,6 +259,31 @@
         ".write": "auth != null && ((!data.exists() && newData.isString() && root.child('circles').child(newData.val()).child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && root.child('circles').child(data.val()).child('owner').val() === auth.uid))",
         ".validate": "$code.matches(/^[A-HJ-NP-Z2-9]{8}$/) && newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/)"
       }
+    },
+    "sessionViews": {
+      "$sid": {
+        ".read": true,
+        ".write": "($sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && ((!data.exists() && root.child('sessions').child($sid).exists()) || (!newData.exists() && !root.child('sessions').child($sid).exists()))",
+        ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{12}$/)"
+      }
+    },
+    "views": {
+      "$vid": {
+        ".write": "$vid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{12}$/) && ((newData.exists() && newData.child('n').isString() && newData.child('n').val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{12}$/) && newData.child('p').isString() && newData.child('p').val().endsWith('_' + newData.child('n').val()) && newData.child('n').val() !== data.child('n').val() && root.child('sessions').child(newData.child('p').val().replace('_' + newData.child('n').val(), '')).exists() && (!data.exists() || data.child('p').val().replace('_' + data.child('n').val(), '') === newData.child('p').val().replace('_' + newData.child('n').val(), ''))) || (!newData.exists() && data.exists() && !root.child('sessions').child(data.child('p').val().replace('_' + data.child('n').val(), '')).exists()))",
+        "p": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "n": {
+          ".validate": "newData.isString()"
+        },
+        "s": {
+          ".read": true,
+          ".validate": "newData.hasChildren(['name', 'settings'])"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }
