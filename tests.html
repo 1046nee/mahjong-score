@@ -20,7 +20,7 @@ p.note { font-size: 12px; color: #888; }
 </head>
 <body>
 <h1>まじゃすこ 計算ロジックテスト</h1>
-<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp ／ 対戦成績の h2hAdd・buildPersonResolver）をそのまま検証します。このページは検証用でnoindexです。</p>
+<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp ／ 対戦成績の h2hAdd・buildPersonResolver ／ 仲間ページの extractSessionIds・autoBindNames・circleStats）をそのまま検証します。このページは検証用でnoindexです。</p>
 <div id="summary">実行中...</div>
 <div id="out"></div>
 <iframe id="app" src="/index.html" style="width:1px;height:1px;opacity:0;position:absolute"></iframe>
@@ -126,6 +126,52 @@ function buildCases(w) {
     ...opCases(w),
     // ---- 対戦成績（h2hAdd）: 同じ試合に出た2人の勝ち負け・着順・スコア差 ----
     ...h2hCases(w),
+    // ---- 仲間ページ: URLの取り出し・名前の自動結びつけ・通算 ----
+    ...circleCases(w),
+  ];
+}
+
+function circleCases(w) {
+  const S = (names, np = 4) => ({ playerNames: names, numPlayers: np, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] });
+  const R = (members, points, scores) => ({ members, points, scores });
+  return [
+    ['extractSessionIds: LINEのトーク文から試合のIDだけを出てきた順に取り出す（重複・仲間ページ・招待・引き継ぎは除く）', () => {
+      const text = `2026/09/20(土)\n20:15 たろう https://majasco.jp/#AbCdEfGhJk\n20:16 じろう 今日の結果 https://majasco.jp/?openExternalBrowser=1#MnPqRsTuVw です\n`
+        + `https://majasco.jp/#AbCdEfGhJk\nhttps://majasco.jp/#c=QwErTyUpAs\nhttps://majasco.jp/?openExternalBrowser=1#join=K7P2QX9M\nhttps://majasco.jp/#my=AbCdEfGhJkMnPq\n`
+        + `https://mahjong-score-2e8aa.web.app/#ZxCvBnMzXc と https://majasco.jp/#howto`;
+      const ids = w.extractSessionIds(text);
+      return JSON.stringify(ids) === JSON.stringify(['AbCdEfGhJk', 'MnPqRsTuVw', 'ZxCvBnMzXc']);
+    }],
+    ['extractSessionIds: 22文字の古いIDも拾い、10文字の途中で切らない', () => {
+      const id22 = 'AbCdEfGhJkMnPqRsTuVwXy';
+      return JSON.stringify(w.extractSessionIds('https://majasco.jp/#' + id22)) === JSON.stringify([id22]);
+    }],
+    ['autoBindNames: 表記ゆれ（全角半角・空白）は同じ人。仮名A・B…と名簿にない名前は null。同じ人を2席に結びつけない', () => {
+      const roster = { m1: { name: 'たろう' }, m2: { name: 'Jiro' } };
+      const r = w.autoBindNames(['たろう', 'ＪＩＲＯ', 'A', 'さぶろう', 'た ろう'], roster);
+      return JSON.stringify(r) === JSON.stringify(['m1', 'm2', null, null, null]);
+    }],
+    ['circleStats: 結びつけた席だけを名簿の人として通算する（2ゲームにまたがる同じ人を1人に）', () => {
+      const g1 = { settings: S(['たろう', 'じろう', 'さぶろう', 'しろう']), rounds: [R([0, 1, 2, 3], [42000, 31000, 18000, 9000], [62, 11, -22, -51])] };
+      const g2 = { settings: S(['太郎', 'じろう', 'ごろう', 'しろう']), rounds: [R([0, 1, 2, 3], [45000, 28000, 17000, 10000], [65, 8, -23, -50])] };
+      const circle = {
+        roster: { T: { name: 'たろう' }, J: { name: 'じろう' }, S: { name: 'しろう' } },
+        games: { g1: { seats: { 0: { mid: 'T' }, 1: { mid: 'J' }, 3: { mid: 'S' } } },
+                 g2: { seats: { 0: { mid: 'T' }, 1: { mid: 'J' }, 3: { mid: 'S' } } } } };
+      const st = w.circleStats(circle, { g1, g2 }, '4');
+      const t = st.list.find(p => p.key === 'T');
+      return st.list.length === 3 && t.n === 2 && approx(t.score, 127) && approx(t.rankSum, 2)
+        && st.list[0].key === 'T' && st.acc.T.J.n === 2 && st.acc.T.J.w === 2;
+    }],
+    ['circleStats: 三麻と四麻は別に数える・名簿から外れた人の席は数えない', () => {
+      const g4 = { settings: S(['たろう', 'じろう', 'さぶろう', 'しろう']), rounds: [R([0, 1, 2, 3], [42000, 31000, 18000, 9000], [62, 11, -22, -51])] };
+      const g3 = { settings: { playerNames: ['たろう', 'じろう', 'さぶろう'], numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] },
+        rounds: [R([0, 1, 2], [50000, 35000, 20000], [25, 0, -25])] };
+      const circle = { roster: { T: { name: 'たろう' } }, games: { a: { seats: { 0: { mid: 'T' }, 1: { mid: 'GONE' } } }, b: { seats: { 0: { mid: 'T' } } } } };
+      const s4 = w.circleStats(circle, { a: g4, b: g3 }, '4'), s3 = w.circleStats(circle, { a: g4, b: g3 }, '3');
+      return s4.list.length === 1 && s4.list[0].n === 1 && approx(s4.list[0].score, 62)
+        && s3.list.length === 1 && approx(s3.list[0].score, 25);
+    }],
   ];
 }
 
@@ -326,7 +372,7 @@ window.addEventListener('load', () => {
   const wait = () => {
     let w = null;
     try { w = frame.contentWindow; } catch (e) {}
-    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function' || typeof w.h2hAdd !== 'function' || typeof w.buildPersonResolver !== 'function') {
+    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function' || typeof w.h2hAdd !== 'function' || typeof w.buildPersonResolver !== 'function' || typeof w.circleStats !== 'function') {
       if (++tries > 100) return done(null, 'アプリの読み込みに失敗しました（関数が見つかりません）');
       return setTimeout(wait, 100);
     }

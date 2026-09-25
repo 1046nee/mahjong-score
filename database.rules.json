@@ -7,22 +7,36 @@
         ".read": true,
         ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && (data.exists() || newData.hasChildren(['id', 'name', 'settings']))",
         ".validate": "newData.hasChildren(['id', 'name', 'settings'])",
-        "id": { ".validate": "newData.isString() && newData.val() === $id" },
-        "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
-        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "id": {
+          ".validate": "newData.isString() && newData.val() === $id"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
         "settings": {
           ".validate": "newData.hasChildren(['playerNames', 'numPlayers'])",
           "playerNames": {
-            "$i": { ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length <= 60" }
+            "$i": {
+              ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length <= 60"
+            }
           }
         },
         "rounds": {
-          "$i": { ".validate": "$i.matches(/^[0-9]{1,4}$/)" }
+          "$i": {
+            ".validate": "$i.matches(/^[0-9]{1,4}$/)"
+          }
         },
         "log": {
-          "$i": { ".validate": "$i.matches(/^[0-9]{1,4}$/)" }
+          "$i": {
+            ".validate": "$i.matches(/^[0-9]{1,4}$/)"
+          }
         },
-        "$other": { ".validate": false }
+        "$other": {
+          ".validate": false
+        }
       }
     },
     "mylists": {
@@ -30,69 +44,220 @@
         ".read": true,
         ".write": "$lid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)",
         ".validate": "newData.hasChildren(['id'])",
-        "id": { ".validate": "newData.isString() && newData.val() === $lid" },
-        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "id": {
+          ".validate": "newData.isString() && newData.val() === $lid"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
         "groups": {
           "$gid": {
             ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
-            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
-            "role": { ".validate": "newData.isString() && newData.val().matches(/^(play|watch)$/)" },
-            "me": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 39" },
-            "deleted": { ".validate": "newData.isBoolean()" },
-            "$other": { ".validate": false }
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "role": {
+              ".validate": "newData.isString() && newData.val().matches(/^(play|watch)$/)"
+            },
+            "me": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 39"
+            },
+            "deleted": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
-        "series": {
-          "$sid": {
-            ".validate": "$sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.hasChildren(['at'])",
-            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
-            "deleted": { ".validate": "newData.isBoolean()" },
-            "$other": { ".validate": false }
-          }
-        },
-        "$other": { ".validate": false }
+        "$other": {
+          ".validate": false
+        }
       }
     },
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
-        "listId": { ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)" },
-        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
-        "$other": { ".validate": false }
-      }
-    },
-    "claims": {
-      "$gid": {
-        ".read": "$gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)",
-        "$seat": {
-          ".write": "auth != null && ($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && $seat.matches(/^[0-9]{1,2}$/) && (!data.exists() || data.child('uid').val() === auth.uid) && (!newData.exists() || newData.child('uid').val() === auth.uid)",
-          ".validate": "newData.hasChildren(['uid', 'at'])",
-          "uid": { ".validate": "newData.isString() && newData.val() === auth.uid" },
-          "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
-          "$other": { ".validate": false }
+        "listId": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "circles": {
+          "$cid": {
+            ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.hasChildren(['at'])",
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
         }
       }
     },
-    "series": {
-      "$sid": {
+    "circles": {
+      "$cid": {
         ".read": true,
-        ".write": "$sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && (data.exists() || newData.hasChildren(['id', 'name', 'groups']))",
-        ".validate": "newData.hasChildren(['id', 'name'])",
-        "id": { ".validate": "newData.isString() && newData.val() === $sid" },
-        "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
-        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
-        "groups": {
-          "$gid": {
-            ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
-            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
-            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
-            "$other": { ".validate": false }
+        ".write": "auth != null && ((!data.exists() && newData.child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && data.child('owner').val() === auth.uid))",
+        ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.hasChildren(['id', 'name', 'owner'])",
+        "id": {
+          ".validate": "newData.val() === $cid"
+        },
+        "owner": {
+          ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
+        },
+        "createdAt": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "name": {
+          ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists()",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "roster": {
+          "$mid": {
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.child('uid').exists() || data.child('uid').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))",
+            ".validate": "$mid.matches(/^[A-Za-z0-9]{8}$/) && newData.hasChildren(['name', 'at'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "uid": {
+              ".validate": "newData.isString() && (newData.val() === data.val() || (newData.val() === auth.uid && !data.exists()))"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
-        "$other": { ".validate": false }
+        "games": {
+          "$sid": {
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.exists() || (!newData.exists() && (data.child('addedBy').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))))",
+            ".validate": "($sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at', 'addedBy'])",
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "addedAt": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "addedByName": {
+              ".validate": "newData.isString() && newData.val().length <= 60"
+            },
+            "addedBy": {
+              ".validate": "newData.isString() && (newData.val() === data.val() || (!data.exists() && newData.val() === auth.uid))"
+            },
+            "seats": {
+              "$seat": {
+                ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (data.child('self').val() !== true || data.child('by').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))",
+                ".validate": "$seat.matches(/^[0-9]{1,2}$/) && newData.hasChildren(['mid', 'by', 'at'])",
+                "mid": {
+                  ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
+                },
+                "by": {
+                  ".validate": "newData.val() === auth.uid"
+                },
+                "byName": {
+                  ".validate": "newData.isString() && newData.val().length <= 60"
+                },
+                "at": {
+                  ".validate": "newData.isString() && newData.val().length <= 40"
+                },
+                "self": {
+                  ".validate": "newData.isBoolean() && (newData.val() === false || root.child('circles').child($cid).child('roster').child(newData.parent().child('mid').val()).child('uid').val() === auth.uid)"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "log": {
+          "$lid": {
+            ".write": "auth != null && !data.exists() && root.child('circleMembers').child($cid).child(auth.uid).exists()",
+            ".validate": "newData.hasChildren(['at', 'by', 'kind']) && newData.child('by').val() === auth.uid",
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "byName": {
+              ".validate": "newData.isString() && newData.val().length <= 60"
+            },
+            "kind": {
+              ".validate": "newData.isString() && newData.val().length <= 20"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length <= 300"
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "circleMembers": {
+      "$cid": {
+        ".read": "auth != null && data.child(auth.uid).exists()",
+        "$uid": {
+          ".write": "auth != null && (root.child('circles').child($cid).child('owner').val() === auth.uid || ($uid === auth.uid && ((!data.exists() && newData.child('role').val() === 'editor' && newData.child('code').isString() && root.child('circleInvites').child(newData.child('code').val()).val() === $cid) || (data.exists() && newData.exists() && newData.child('role').val() === data.child('role').val()) || (data.exists() && !newData.exists()))))",
+          ".validate": "newData.hasChildren(['role', 'name', 'joinedAt'])",
+          "role": {
+            ".validate": "newData.isString() && newData.val().matches(/^(owner|admin|editor)$/) && (newData.val() !== 'owner' || root.child('circles').child($cid).child('owner').val() === $uid)"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "joinedAt": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "code": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "mid": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "circleSecrets": {
+      "$cid": {
+        ".read": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists()",
+        ".write": "auth != null && root.child('circles').child($cid).child('owner').val() === auth.uid",
+        "code": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Z2-9]{8}$/)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "circleInvites": {
+      "$code": {
+        ".read": true,
+        ".write": "auth != null && ((!data.exists() && newData.isString() && root.child('circles').child(newData.val()).child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && root.child('circles').child(data.val()).child('owner').val() === auth.uid))",
+        ".validate": "$code.matches(/^[A-HJ-NP-Z2-9]{8}$/) && newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/)"
       }
     }
   }

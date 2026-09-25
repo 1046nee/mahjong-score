@@ -59,13 +59,14 @@ FIREBASE_STUB = """
     if (v === null) delete c[ks[ks.length - 1]]; else c[ks[ks.length - 1]] = v;
     fire();
   };
-  const ref = p => ({
+  const ref = (p = '') => ({ // 引数なし＝ルート（db.ref().update で複数の場所をまとめて書く）
     once: () => Promise.resolve(snap(p)),
     on: (ev, cb) => { listeners.push({ path: p, cb }); setTimeout(() => cb(snap(p)), 0); return cb; },
     off: (ev, cb) => { const i = listeners.findIndex(l => l.cb === cb); if (i >= 0) listeners.splice(i, 1); },
     set: v => { setPath(p, v); return Promise.resolve(); },
     update: o => { Object.keys(o).forEach(k => setPath(p + '/' + k, o[k])); return Promise.resolve(); },
     remove: () => { setPath(p, null); return Promise.resolve(); },
+    push: v => { const key = 'L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); setPath(p + '/' + key, v); return Promise.resolve({ key }); },
     transaction: (fn, onComplete) => {
       const cur = get(p);
       const nv = fn(cur === null ? null : JSON.parse(JSON.stringify(cur)));

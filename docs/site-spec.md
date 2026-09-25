@@ -33,11 +33,18 @@
 - **セッションに新しいトップレベルキーを追加するときは、必ずdatabase.rules.jsonにも追加してコンソールに再適用する**（忘れると保存が全部失敗する）
 - 2026-08-08: mylists/groups/$gidに`deleted`（boolean・削除印）を追加。**コンソールへの再適用が必要**
   （未適用でもアプリはremoveへフォールバックして動くが、別端末への削除の伝播が効かない）
-- **2026-09-25: users / claims / series と mylists/$lid/series を追加。コンソールへの再適用が必要**
+- **2026-09-25: users と仲間ページ（circles / circleMembers / circleSecrets / circleInvites）を追加。コンソールへの再適用が必要**
   （未適用の間は「まとめ」の欄が出ない・ログイン後の同期が失敗する。グループの記録・共有は影響なし）
   - users/$uid: 本人（auth.uid）だけが読み書き。listId（14文字）・createdAt のみ
-  - claims/$gid/$seat: 誰でも読める（gidを知っていれば）。書けるのはログインした本人の分だけ（uid=auth.uid。他人の登録は上書き・削除できない）
-  - series/$sid: sessionsと同じ「IDを知っている人が読み書き」。id・name必須、groups/$gid は at（と name）だけ
+  - circles/$cid: 誰でも読める（IDを知っていれば）。作成は owner=自分 のときだけ、削除は作成者だけ。
+    name・roster・games・log はメンバー（circleMembers にいる人）だけが書ける。
+    roster の uid 付き（本人登録）の人は、本人・作成者・管理者しか書き換えられない。uid は自分のものしか入れられない（空いているときだけ）。
+    games の追加はメンバー、外すのは追加した人・作成者・管理者。seats の self:true は、本人・作成者・管理者しか書き換えられない。
+    seats の by は必ず自分、self:true は名簿でその人が自分に本人登録されているときだけ。log は追記のみで by は自分
+  - circleMembers/$cid/$uid: メンバーだけが一覧を読める。参加は circleInvites のコードが正しいときだけ・役割は editor 固定。
+    自分の表示名などは変えられるが役割は変えられない。作成者は誰の役割も変更・削除できる。自分で抜けられる
+  - circleSecrets/$cid（参加コード）: メンバーだけ読める・作成者だけ書ける。circleInvites/$code: コードを知っていれば読める・作成者だけ作成/削除
+  - **sessions と mylists の部分は変えていない**（点数入力・引き継ぎURLはこれまでどおり）
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
 
 ## ログイン（Firebase Authentication・Google）

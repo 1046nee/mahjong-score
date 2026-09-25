@@ -46,13 +46,14 @@ FIREBASE_STUB = """
     if (v === null) delete c[ks[ks.length - 1]]; else c[ks[ks.length - 1]] = v;
     save(); fire();
   };
-  const ref = p => ({
+  const ref = (p = '') => ({ // 引数なし＝ルート（db.ref().update で複数の場所をまとめて書く）
     once: () => Promise.resolve(snap(p)),
     on: (ev, cb) => { listeners.push({ path: p, cb }); setTimeout(() => cb(snap(p)), 0); return cb; },
     off: (ev, cb) => { const i = listeners.findIndex(l => l.cb === cb); if (i >= 0) listeners.splice(i, 1); },
     set: v => { setPath(p, v); return Promise.resolve(); },
     update: o => { Object.keys(o).forEach(k => setPath(p + '/' + k, o[k])); return Promise.resolve(); },
     remove: () => { setPath(p, null); return Promise.resolve(); },
+    push: v => { const key = 'L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); setPath(p + '/' + key, v); return Promise.resolve({ key }); },
     transaction: (fn, onComplete) => {
       const cur = get(p);
       const nv = fn(cur === null ? null : JSON.parse(JSON.stringify(cur)));
@@ -133,8 +134,8 @@ def main():
         # 同一URLへのgotoはハッシュ移動扱いで再読み込みされないため、必ず新しいページで開くこと
         page = ctx.new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)))
-        # 共有URLそのもので開く（LINEで外のブラウザに出す ?openExternalBrowser=1 付き。#の前に置く）
-        assert "/?openExternalBrowser=1#" in share_url, f"共有URLに openExternalBrowser がない: {share_url}"
+        # 共有URLそのもので開く（LINEで押すとLINEの中の画面でそのまま開く形。外のブラウザに出すのは仲間ページの招待リンクだけ）
+        assert "openExternalBrowser" not in share_url, f"共有URLに openExternalBrowser が残っている: {share_url}"
         page.goto(share_url, wait_until="load", timeout=30000)
         page.wait_for_function(
             "() => { const v = document.querySelector('#view-game');"
