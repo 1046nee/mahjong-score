@@ -603,6 +603,8 @@
   メンバー削除は対局済み/最低N人なら不可。チーム戦OFFでもteams保持
 
 ## テスト
+- **実行環境**: smoke / sync / account の3本はPlaywright（Python版＋Chromium）が要る。circle_rules / view_rules は標準ライブラリだけで動く。
+  CIがpushごとに回すのはsmoke_testだけ（sync・accountは手元でしか回らない）。導入手順は docs/setup-new-pc.md
 - /tests.html = index.htmlをiframeで読み実物関数を49ケース検証（うち16件が送信キューの applyOp、対戦成績の h2hAdd・personKey、仲間ページの circleStats など）。**計算ロジック・保存処理の変更時はALL PASS確認必須**
 - tools/smoke_test.py = 主要動線のE2E（デプロイ時にCIが自動実行。ローカルは PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers python3 tools/smoke_test.py）。
   Firebaseはスタブ（transaction・.info/connected も実装済み。スタブは shoot_app_screens.py / record_app_demo.py にもあり、3つそろえること）
@@ -613,17 +615,17 @@
   マイページ（個人｜仲間）・共有シート・見るだけのリンク（写しに試合IDが入らない・点数を入れると写しも更新・入力の入口が無い）・共有URLを**スタブのFirebase**で確認（本番DB・Googleに触らない）。
   auth をスタブにして「ログインした」状態を作る。**ログイン・引き継ぎ・まとめ・共有URLを触ったら通す**。
   本物のルールでの動きは分からないので、database.rules.jsonを変えたら本番で手で確かめる
-
-## 落とし穴
-- **会社PCから本番（majasco.jp）をPlaywright・ブラウザペインで開くと、Firebaseにつながらない（dbConnected=false）**ことがある（2026-09-26）。
-  社内のDNS/プロキシでFirebaseの宛先がローカルのアドレスになり、ChromeのLocal Network Accessが遮断する（`ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS`）。
-  アプリの不具合ではない。Playwrightは `launch(args=["--disable-features=LocalNetworkAccessChecks"])` で起動して確かめる（localhostから開くテストは影響なし）
 - tools/circle_rules_test.py = **本番のデータベース**で仲間ページのセキュリティルールを確認（匿名ログインで使い捨てのアカウントを3つ作り、
   「本人の席は他人が変えられない」「部外者は書けない」「参加コードが要る」などの許可／拒否を39項目。最後にデータとアカウントを消す）。
   **database.rules.json の仲間ページの部分を変えたら、コンソールに貼ってからこれを通す**（Authenticationで「匿名」を一時的に有効にする）
 - tools/view_rules_test.py = **本番のデータベース**で見るだけのリンクのルールを確認（ログイン不要。「写しは誰でも読めるが試合IDの入った p は読めない」
   「リンクしか知らない人は書き換えられない」「別の試合のIDで乗っ取れない」など20項目。検証用の試合と写しは最後に消す）。
   **database.rules.json の views / sessionViews を変えたら、コンソールに貼ってからこれを通す**
+
+## 落とし穴
+- **会社PCから本番（majasco.jp）をPlaywright・ブラウザペインで開くと、Firebaseにつながらない（dbConnected=false）**ことがある（2026-09-26）。
+  社内のDNS/プロキシでFirebaseの宛先がローカルのアドレスになり、ChromeのLocal Network Accessが遮断する（`ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS`）。
+  アプリの不具合ではない。Playwrightは `launch(args=["--disable-features=LocalNetworkAccessChecks"])` で起動して確かめる（localhostから開くテストは影響なし）
 - **画面への導線を条件付きにすると、その画面の機能ごと見つからなくなる**（2026-08-07に発生。
   「過去の試合」への唯一の入り口が履歴3件以上でしか出ず、引き継ぎURLの発行場所が見つからないと報告された。
   新機能を置いた画面の入り口は「常に出るか」を必ず確認する）

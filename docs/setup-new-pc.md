@@ -8,6 +8,15 @@
 - **Git**（git-scm.com）
 - **Node.js**（LTS）— プレビュー用 http-server に使用
 - **Python 3** ＋ Pillow（`pip install pillow`）— 画像生成に使用
+- **Playwright**（Python版＋Chromium）— tools/ の検証テスト `smoke_test.py` / `sync_test.py` / `account_test.py` に使用。
+  **CLAUDE.mdのルール3b〜3dで該当する変更のたびに実行が必須**（CIがpushごとに自動で回すのはsmoke_testだけ。
+  sync_test・account_testは手元で回すしかないので、入っていないPCでは保存処理・ログイン・共有URLまわりの変更を検証しきれない）
+  ```
+  pip install playwright
+  python -m playwright install chromium
+  ```
+  （CIはLinuxなので `--with-deps` 付き。Windowsでは不要。ブラウザは `%LOCALAPPDATA%\ms-playwright` に入る）。
+  `circle_rules_test.py` / `view_rules_test.py` は標準ライブラリだけで動く（Playwright不要）
 - **Claude Code**（デスクトップアプリ / CLI / VS Code拡張のいずれか）→ **同じAnthropicアカウントでログイン**（プランはアカウントに紐づく）
 
 ## 2. リポジトリの取得
@@ -29,6 +38,7 @@ git clone https://github.com/1046nee/majasco-assets.git "まじゃすこ素材"
 1. 「git pull して、CLAUDE.md と docs の構成を確認して」
 2. 「プレビューを起動してトップページを表示して」
 3. 「python tools/make_ig1.py を実行して画像が生成できるか確認して」
+4. 「python tools/smoke_test.py を実行して通るか確認して」（Playwrightが入っているかの確認を兼ねる）
 
 ## 5. 自動pull（リモートセッションの成果物を手元に自動反映・推奨）
 Claude Code on the Webなどリモート環境からpushされた変更（画像素材・コード）を、手元PCが自動で取り込む仕組み。
@@ -56,8 +66,9 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
 - 画像生成ツールはWindowsフォント前提（`C:\Windows\Fonts\NotoSansJP-VF.ttf` / `seguiemj.ttf`。Windows 11なら標準搭載）。
   **Macで使う場合は tools/ 内のFONT/EMOJIパスの変更が必要**
 - gitのコミッター名を整えたい場合（任意）: `git config --global user.name "名前"` / `git config --global user.email "メール"`
-- この開発用PC（社内ネットワーク）では majasco.jp 自体がZscalerでブロックされる（docs/site-spec.md 落とし穴参照）。
-  自宅PCなど別環境なら本番サイトの確認も可能
+- 会社PC（社内ネットワーク）: majasco.jp は以前Zscalerでブロックされていたが、2026-09-25時点では取得できる。
+  ただしPlaywright・ブラウザペインで**本番**を開くとFirebaseにつながらないことがある（docs/app-spec.md 落とし穴）。
+  localhostから開くテスト（smoke / sync / account）は影響なし。本番DBへのREST（circle_rules / view_rules）も届く（2026-09-25確認）
 
 ## 落とし穴
 - タスクスケジューラの繰り返し期間に `[TimeSpan]::MaxValue` は使えない（XML値 P99999999DT... が「範囲外」で登録失敗）
