@@ -20,7 +20,7 @@ p.note { font-size: 12px; color: #888; }
 </head>
 <body>
 <h1>まじゃすこ 計算ロジックテスト</h1>
-<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp）をそのまま検証します。このページは検証用でnoindexです。</p>
+<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp ／ 対戦成績の h2hAdd）をそのまま検証します。このページは検証用でnoindexです。</p>
 <div id="summary">実行中...</div>
 <div id="out"></div>
 <iframe id="app" src="/index.html" style="width:1px;height:1px;opacity:0;position:absolute"></iframe>
@@ -124,6 +124,49 @@ function buildCases(w) {
     }],
     // ---- 送信キュー（applyOp）: 点数が消えない・二重にならない・他の人の入力を上書きしない ----
     ...opCases(w),
+    // ---- 対戦成績（h2hAdd）: 同じ試合に出た2人の勝ち負け・着順・スコア差 ----
+    ...h2hCases(w),
+  ];
+}
+
+function h2hCases(w) {
+  const S = (names, np = 4) => ({ playerNames: names, numPlayers: np, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] });
+  const idx = m => m;
+  return [
+    ['h2hAdd: 1試合なら上の着順の人に1勝・スコア差と着順も入る', () => {
+      const g = { settings: S(['A', 'B', 'C', 'D']), rounds: [{ points: [35000, 28000, 22000, 15000], scores: [55, 8, -18, -45] }] };
+      const a = w.h2hAdd({}, g, idx);
+      const e = a[0][3], r = a[3][0];
+      return e.n === 1 && e.w === 1 && e.l === 0 && r.l === 1 && approx(e.scoreA - e.scoreB, 100)
+        && approx(e.rankA, 1) && approx(e.rankB, 4);
+    }],
+    ['h2hAdd: 同じ点数は引き分け（平均順位が同じ）', () => {
+      const g = { settings: S(['A', 'B', 'C', 'D']), rounds: [{ points: [30000, 30000, 25000, 15000], scores: [30, 30, -15, -45] }] };
+      const e = w.h2hAdd({}, g, idx)[0][1];
+      return e.n === 1 && e.w === 0 && e.l === 0 && e.d === 1 && approx(e.rankA, 1.5) && approx(e.rankB, 1.5);
+    }],
+    ['h2hAdd: 抜け番の試合は数えない（同じ試合に出たときだけ）', () => {
+      const g = { settings: S(['A', 'B', 'C', 'D', 'E']), rounds: [
+        { members: [0, 1, 2, 3], points: [35000, 28000, 22000, 15000], scores: [55, 8, -18, -45] },
+        { members: [4, 1, 2, 3], points: [35000, 28000, 22000, 15000], scores: [55, 8, -18, -45] }] };
+      const a = w.h2hAdd({}, g, idx);
+      return a[0][1].n === 1 && a[1][2].n === 2 && !(a[0][4]) && a[4][1].w === 1;
+    }],
+    ['h2hAdd: keyOfで名前をまとめると、別のゲームの同じ人は1人として足される', () => {
+      const g1 = { settings: S(['自分', '太郎', 'C', 'D']), rounds: [{ points: [35000, 28000, 22000, 15000], scores: [55, 8, -18, -45] }] };
+      const g2 = { settings: S(['たろう', '自分', 'X', 'Y']), rounds: [{ points: [35000, 28000, 22000, 15000], scores: [55, 8, -18, -45] }] };
+      const acc = {};
+      w.h2hAdd(acc, g1, m => (m === 0 ? '@me' : m === 1 ? 'taro' : null));
+      w.h2hAdd(acc, g2, m => (m === 1 ? '@me' : m === 0 ? 'taro' : null));
+      const e = acc['@me'].taro;
+      return e.n === 2 && e.w === 1 && e.l === 1 && Object.keys(acc['@me']).length === 1;
+    }],
+    ['h2hAdd: 点数が欠けた試合は飛ばす（壊れたデータで落ちない）', () => {
+      const g = { settings: S(['A', 'B', 'C', 'D']), rounds: [{ points: [35000, null, 22000, 15000], scores: [55, 8, -18, -45] }] };
+      return Object.keys(w.h2hAdd({}, g, idx)).length === 0;
+    }],
+    ['personKey: 全角半角・大文字小文字・空白の違いは同じ人とみなす', () =>
+      w.personKey('Ｔａｒｏ　Y') === w.personKey('taroy') && w.personKey('たろう') !== w.personKey('太郎')],
   ];
 }
 
@@ -267,7 +310,7 @@ window.addEventListener('load', () => {
   const wait = () => {
     let w = null;
     try { w = frame.contentWindow; } catch (e) {}
-    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function') {
+    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function' || typeof w.h2hAdd !== 'function') {
       if (++tries > 100) return done(null, 'アプリの読み込みに失敗しました（関数が見つかりません）');
       return setTimeout(wait, 100);
     }
