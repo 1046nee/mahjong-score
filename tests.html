@@ -20,7 +20,7 @@ p.note { font-size: 12px; color: #888; }
 </head>
 <body>
 <h1>まじゃすこ 計算ロジックテスト</h1>
-<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp ／ 対戦成績の h2hAdd）をそのまま検証します。このページは検証用でnoindexです。</p>
+<p class="note">本番アプリ（index.html）をiframeで読み込み、実物の関数（rankGroups / calcScores / applyChombo / gameTotals / chipTotals ／ 送信キューの applyOp ／ 対戦成績の h2hAdd・buildPersonResolver）をそのまま検証します。このページは検証用でnoindexです。</p>
 <div id="summary">実行中...</div>
 <div id="out"></div>
 <iframe id="app" src="/index.html" style="width:1px;height:1px;opacity:0;position:absolute"></iframe>
@@ -167,6 +167,22 @@ function h2hCases(w) {
     }],
     ['personKey: 全角半角・大文字小文字・空白の違いは同じ人とみなす', () =>
       w.personKey('Ｔａｒｏ　Y') === w.personKey('taroy') && w.personKey('たろう') !== w.personKey('太郎')],
+    ['buildPersonResolver: アカウント登録のある席はアカウント、無い席は名前。仮名A・B…は数えない', () => {
+      const g1 = { settings: S(['たろう', 'じろう', 'A', 'B']) }, g2 = { settings: S(['タロウ', 'じろう', 'C', 'D']) };
+      const r = w.buildPersonResolver([{ g: g1, claims: { 0: 'U1' } }, { g: g2, claims: { 0: 'U1' } }]);
+      return r.keyOf(g1, { 0: 'U1' }, 0) === 'u:U1' && r.keyOf(g2, { 0: 'U1' }, 0) === 'u:U1'
+        && r.keyOf(g1, {}, 1) === r.keyOf(g2, {}, 1) && r.keyOf(g1, {}, 2) === null && r.disp['u:U1'] === 'たろう';
+    }],
+    ['buildPersonResolver: 登録の無い席でも、その名前の登録が1アカウントだけならその人とみなす', () => {
+      const g1 = { settings: S(['たろう', 'x', 'y', 'z']) }, g2 = { settings: S(['たろう', 'p', 'q', 'r']) };
+      const r = w.buildPersonResolver([{ g: g1, claims: { 0: 'U1' } }, { g: g2, claims: {} }]);
+      return r.keyOf(g2, {}, 0) === 'u:U1';
+    }],
+    ['buildPersonResolver: 同じ名前を2つのアカウントが使っていたら、登録の無い席は名前のまま（別人を混ぜない）', () => {
+      const g1 = { settings: S(['たろう', 'x', 'y', 'z']) }, g2 = { settings: S(['たろう', 'p', 'q', 'r']) }, g3 = { settings: S(['たろう', 's', 't', 'u']) };
+      const r = w.buildPersonResolver([{ g: g1, claims: { 0: 'U1' } }, { g: g2, claims: { 0: 'U2' } }, { g: g3, claims: {} }]);
+      return r.keyOf(g1, { 0: 'U1' }, 0) !== r.keyOf(g2, { 0: 'U2' }, 0) && r.keyOf(g3, {}, 0) === 'n:' + w.personKey('たろう');
+    }],
   ];
 }
 
@@ -310,7 +326,7 @@ window.addEventListener('load', () => {
   const wait = () => {
     let w = null;
     try { w = frame.contentWindow; } catch (e) {}
-    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function' || typeof w.h2hAdd !== 'function') {
+    if (!w || typeof w.rankGroups !== 'function' || typeof w.applyChombo !== 'function' || typeof w.applyOp !== 'function' || typeof w.h2hAdd !== 'function' || typeof w.buildPersonResolver !== 'function') {
       if (++tries > 100) return done(null, 'アプリの読み込みに失敗しました（関数が見つかりません）');
       return setTimeout(wait, 100);
     }

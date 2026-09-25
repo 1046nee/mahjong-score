@@ -375,6 +375,52 @@
   相手は`personKey`（NFKC・空白除去・小文字）が同じなら同じ人としてまとめる。**仮名A・B…は除外**。
   表記は最新のゲームの名前。三麻と四麻の両方があるときは「すべて/四麻/三麻」を切り替えられる。画像にも入る
 
+## ログイン（Google・任意）とアカウント同期（2026-09-25〜）
+- **目的**: iPhoneのブラウザ・ホーム画面アプリ・LINEの中のブラウザは保存領域が別々で、引き継ぎURLを手で移す作業が要っていた。
+  ログインすれば、どこでログインしても同じ「自分の記録」（過去の試合の一覧・自分の選択・まとめ）になる
+- **仕組みは引き継ぎURLの上に乗せただけ**: `users/{uid}/listId` に mylists のリストIDを1つ持つ。同期の本体は既存の
+  `mergeMyListData` / `syncGroupToMyList` / `refreshMyList`。ログインしない人の動きは何も変わらない
+- `attachAccount(user)`（onAuthStateChangedから）: ①アカウントにリストが無い＝初ログイン→この端末の引き継ぎリスト（無ければ`createMyList(true)`で作る）を
+  アカウントに付ける ②アカウントのリストと端末のリストが違う→アカウントのリストへ乗り換えて取り込み、
+  旧リストの卓・まとめは`mergeOldListInto`でアカウント側へ移す ③同じ→`refreshMyList`。最後に`claimAllTaggedSeats`
+- ログアウト（`confirmSignOut`→`signOutAccount`）: この端末の`myListId`を外すだけ。端末の履歴もアカウントの記録も消さない
+- **認証はリダイレクト方式**（`signInWithRedirect`）。iPhoneのホーム画面アプリではポップアップ方式が動かない。
+  **authDomainは本番では`majasco.jp`**（Safariが別ドメインの保存領域を遮るため、firebaseapp.comのままだとリダイレクト後に結果を受け取れない。
+  Firebase Hostingは`/__/auth/handler`を自動で配信する）。localhost・web.appはfirebaseapp.comのまま
+- **LINEの中のブラウザではGoogleがログインを拒否する**（埋め込みブラウザ禁止）。`IN_LINE_APP`（UAの`Line/`）なら
+  ログインボタンを「ブラウザで開く」にして`?openExternalBrowser=1`付きで開き直す
+- **`LOGIN_ENABLED`（index.html）がfalseの間はログインの画面を一切出さない**。Firebaseコンソールの設定（docs/site-spec.md「ログイン」）が
+  済んでからtrueにする。テスト（tools/account_test.py）は`window.__MAJASCO_TEST_LOGIN__`で有効化してスタブのauthで検証する
+- 画面: 過去の試合の`#account-card`（未ログイン=「Googleでログイン」／ログイン中=表示名とログアウト）。
+  ログインできる環境では引き継ぎURLのカードを「ログインせずに引き継ぐ（引き継ぎURL）」に畳む。ログイン中は「ログインできない端末で使う」に畳む
+
+## 共有URLと LINE（2026-09-25〜）
+- **仲間に送るURLは`shareUrlOf(hash)`＝`https://majasco.jp/?openExternalBrowser=1#ID`**（グループ・まとめ共通）。
+  LINE公式の仕様で、LINEで開くとLINEの中のブラウザではなくSafari・Chromeで開く（**#より前に置くこと**。後ろだと効かない）。
+  LINEの中のブラウザは保存領域が別で履歴が残らず、Googleログインもできないため。ほかのアプリでは何も起きない
+- 起動時に`openExternalBrowser`をアドレスから外す（`history.replaceState`。ハッシュは残す）
+- 古いURLなどでLINEの中のブラウザで開いたときは、ゲーム画面の上に`#line-note`（「Safari・Chromeで開く」リンク）。閉じたらその表示中は出さない
+- 引き継ぎURL（`#my=`）は自分専用なので付けない
+
+## 「この名前は私」の登録（claims・ログイン中のみ）
+- `claims/{gid}/{seat} = { uid, at }`。ログイン中に`setTag`で自分を選ぶと`claimSeat`が書く（前の席の自分の登録は消す）。
+  **他人の登録は上書きしない**（ルールでも自分のuidしか書けない）
+- 使い道は集計だけ: `buildPersonResolver(entries)`＝ゲームをまたいで同じ人を決める。
+  登録のある席→`u:uid`／登録の無い席→名前（`n:personKey`）。ただし**その名前の登録がちょうど1アカウントならその人**とみなす
+  （2アカウントが同じ名前を使っていたら、登録の無い席は名前のまま＝別人を混ぜない）。仮名A・B…は数えない
+- 自分の成績シートの「対戦相手別」とまとめの集計がこれを使う。表示時に`loadClaims(gids)`で読み（`claimCache`）、読めたら描き直す
+
+## まとめ（複数のゲームを1つの成績に・2026-09-25〜）
+- 大会の2日間・毎週の定例会など、別々のURLのゲームを1つにまとめて**通算順位と対戦成績**を出す。URL（`#s=ID`）で仲間と共有できる
+- `series/{sid} = { id, name, createdAt, groups: { gid: { at, name } } }`（sidは10文字）。**グループと同じく「URLを知っている人が読める・編集できる」**。
+  自分のまとめ一覧は localStorage `mahjong-series-v1` と引き継ぎリスト`mylists/{id}/series/{sid}: {at, name, deleted}`（ログインすればどこでも出る）
+- 過去の試合の`#hist-series`（「＋まとめを作る」→`openSeriesPicker`で名前とゲームを選ぶ。編集も同じモーダル・「自分の一覧から外す」はサーバーのまとめは消さない）。
+  **1つのまとめは60ゲームまで**
+- まとめ画面`view-series`: 通算順位（カード＋「詳しい成績（表）」）／対戦成績（だれから見る？）／まとめたゲーム（タップでそのゲームへ）。
+  三麻と四麻が混ざっていれば切り替え。集計は`seriesStats(mode)`（人は`buildPersonResolver`で決める）。画像は`showSeriesImage`
+- **サーバーのルールが未適用だと「まとめ」の欄を出さない**（`probeSeries`＝`series/AAAAAAAAAA`を読んで拒否されたら非表示）
+- 起動時の判定順: `#my=` → `#s=`（まとめ）→ セッションID → アンカー
+
 ## その他の機能
 - **結果の画像出力**: **画面の見え方（横スクロール中かどうか等）に関係なく、Canvasに描き直した一枚絵PNG**を生成。
   DOMスクショ方式ではなくCanvas直描画（iOS SafariのforeignObject非互換を避ける＋常に崩れない絵にするため）。
@@ -495,6 +541,9 @@
 - tools/sync_test.py = **本番のFirebaseで**2台の端末を再現して、圏外復帰で他人の試合が消えない／圏外で入力→再読み込みで消えない／
   二重登録しない／設定変更の履歴が残る／設定の同時編集で上書きしない、を確認。検証用ゲームは最後に自動で削除する。
   **保存処理を触ったら必ず通す**（本番のセキュリティルールで弾かれないことはここでしか確認できない）
+- tools/account_test.py = ログイン・アカウント同期・まとめ・共有URLを**スタブのFirebase**で確認（本番DB・Googleに触らない）。
+  auth をスタブにして「ログインした」状態を作る。**ログイン・引き継ぎ・まとめ・共有URLを触ったら通す**。
+  本物のルールでの動きは分からないので、database.rules.jsonを変えたら本番で手で確かめる
 
 ## 落とし穴
 - **画面への導線を条件付きにすると、その画面の機能ごと見つからなくなる**（2026-08-07に発生。

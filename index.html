@@ -508,6 +508,27 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .h2h-more summary { cursor: pointer; font-size: 12px; font-weight: 700; color: #177083; padding: 4px 0; }
 .sanma .h2h-more summary { color: #4261AA; }
 .h2h-matrix td { font-size: 11px; }
+/* アカウント（ログイン）カード */
+.acct-card { margin: 10px 16px 0; padding: 12px; background: #fff; border: 1.5px solid #cfe3db; border-radius: 12px; font-size: 12px; color: #33544a; line-height: 1.7; }
+.acct-head { font-size: 14px; font-weight: 800; color: #1f2a28; margin-bottom: 4px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.acct-who { font-size: 11px; font-weight: 600; color: #5f8577; overflow-wrap: anywhere; }
+.acct-warn { margin-top: 6px; padding: 7px 9px; background: #fff8e6; border: 1px solid #f2e3b3; border-radius: 8px; color: #8a6d1a; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; padding: 11px; background: #fff; color: #1f2a28; border: 1.5px solid #c9d3d0; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.google-btn .g-mark { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #4285F4; color: #fff; font-size: 12px; font-weight: 800; }
+/* LINEの中のブラウザで開いているときの案内 */
+.line-note { margin: 0 0 12px; padding: 9px 12px; background: #eef9ef; border: 1px solid #bfe3c3; border-radius: 10px; font-size: 12px; color: #2f5d35; line-height: 1.7; }
+.line-note a { color: #06c755; font-weight: 700; text-decoration: underline; cursor: pointer; }
+/* まとめ（複数のゲームを1つの成績に） */
+.series-box { margin: 10px 16px 0; padding: 12px; background: #fff; border: 1.5px solid #dbe3f2; border-radius: 12px; }
+.series-head { font-size: 14px; font-weight: 800; color: #1f2a28; margin-bottom: 2px; }
+.series-lead { font-size: 11px; color: #8a9aa5; margin-bottom: 8px; line-height: 1.6; }
+.series-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 10px 2px; background: none; border: none; border-top: 1px solid #eef1f4; cursor: pointer; text-align: left; font-size: 13px; font-weight: 700; color: #1f2a28; }
+.series-row .sr-sub { display: block; font-size: 11px; font-weight: 500; color: #8a9aa5; margin-top: 2px; }
+.series-row .sr-arrow { color: #b5c0bd; font-size: 18px; flex-shrink: 0; }
+.pick-row { display: flex; gap: 10px; align-items: flex-start; padding: 9px 2px; border-bottom: 1px solid #eee; cursor: pointer; }
+.pick-row input { margin-top: 3px; flex-shrink: 0; width: 18px; height: 18px; }
+.pick-row .pr-name { font-size: 13px; font-weight: 700; color: #333; overflow-wrap: anywhere; }
+.pick-row .pr-meta { font-size: 11px; color: #8a9aa5; }
 /* 過去の試合: 自分をまとめて選ぶ */
 .organize-card { margin: 10px 16px 0; padding: 10px 12px; background: #fdf3ea; border: 1px solid #f0c9a8; border-radius: 10px; font-size: 12px; color: #a05a2c; line-height: 1.7; }
 .org-row { padding: 10px 0; border-bottom: 1px solid #eee; }
@@ -1094,6 +1115,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
   <div class="game-body">
+    <div class="line-note" id="line-note" style="display:none"></div>
     <div class="card askme" id="askme-card" style="display:none"></div>
     <div class="card" id="team-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -1176,9 +1198,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h1>過去の試合</h1>
   </div>
   <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.8"><span id="hist-tip-text">履歴は<b>この端末だけ</b>に保存されています。</span><span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>すると消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
+  <div id="account-card" class="acct-card" style="display:none"></div>
   <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
   <div style="margin:10px 16px 0"><button class="auto-btn" onclick="showView('mystats')">📊 自分の成績シート</button></div>
   <div id="hist-organize"></div>
+  <div id="hist-series"></div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
     <input type="text" id="hist-search" placeholder="ゲーム名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
     <select id="hist-mode" onchange="renderHistory()" style="width:84px;flex-shrink:0">
@@ -1202,6 +1226,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="title-actions"><button class="edit-tab" id="mystats-img-btn" onclick="showMyStatsImage()" style="display:none">プレビュー</button></div>
   </div>
   <div class="detail-body" id="mystats-body"></div>
+</div>
+
+<!-- SERIES（まとめ: 複数のゲームを1つの成績に） -->
+<div id="view-series" class="view">
+  <div class="page-title-row">
+    <div style="min-width:0">
+      <h1 id="series-title">まとめ</h1>
+      <div id="series-sub" style="font-size:11px;color:#9aa8a4;margin-top:2px"></div>
+    </div>
+    <div class="title-actions">
+      <button class="edit-tab title-edit-btn" onclick="copySeriesUrl()">URLを共有</button>
+      <button class="edit-tab title-edit-btn" onclick="openSeriesEdit()">編集</button>
+    </div>
+  </div>
+  <div class="detail-body" id="series-body"></div>
 </div>
 
 <!-- DETAIL -->
@@ -1345,11 +1384,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyDzZPhT7OzQDpaMXorp__yZ57v16VRY4W4",
-  authDomain: "mahjong-score-2e8aa.firebaseapp.com",
+  // 本番はログイン画面の中継（/__/auth/handler）も majasco.jp で動かす。
+  // Safariは別ドメインの保存領域を遮るため、firebaseapp.com のままだとリダイレクト後にログイン結果を受け取れない
+  authDomain: location.hostname === 'majasco.jp' ? 'majasco.jp' : "mahjong-score-2e8aa.firebaseapp.com",
   databaseURL: "https://mahjong-score-2e8aa-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "mahjong-score-2e8aa",
   storageBucket: "mahjong-score-2e8aa.firebasestorage.app",
@@ -1404,6 +1446,7 @@ function toggleCard(key) {
   collapsedCards[key] = !collapsedCards[key];
   if (activeGame && document.getElementById('view-game').classList.contains('active')) renderGame();
   else if (detailGame && document.getElementById('view-detail').classList.contains('active')) renderDetailBody(detailGame);
+  else if (seriesData && document.getElementById('view-series').classList.contains('active')) renderSeries();
 }
 // 結果詳細用: タイトル行＋開閉ボタン（extraは開いているときだけ表示するボタン群）
 function detailCardHead(title, key, extra = '') {
@@ -1646,8 +1689,8 @@ function syncTagToMyList(gid) {
     .update({ at: new Date().toISOString(), ...tagPayload(gid) })
     .catch(() => {});
 }
-async function createMyList() {
-  const btn = document.getElementById('mylist-create-btn');
+async function createMyList(silent = false) {
+  const btn = silent ? null : document.getElementById('mylist-create-btn');
   // 文言はstandaloneと通常で違う（「新しく作る」/「作る」）ので、失敗時はハードコードでなく元の文言に戻す
   const origLabel = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '作成中…'; }
@@ -1677,10 +1720,10 @@ async function createMyList() {
     try { localStorage.setItem(MYLIST_KEY, id); } catch (e) {}
     (appState.games || []).forEach(g => myListSynced.add(g.id));
     renderMyListCard();
-    showToast('引き継ぎURLを作りました。忘れないうちに控えておいてください');
-    track('mylist_create', { groups: Object.keys(groups).length });
+    if (!silent) showToast('引き継ぎURLを作りました。忘れないうちに控えておいてください');
+    track('mylist_create', { groups: Object.keys(groups).length, silent });
   } catch (e) {
-    showToast('作成に失敗しました。通信環境を確認してもう一度お試しください');
+    if (!silent) showToast('作成に失敗しました。通信環境を確認してもう一度お試しください');
     if (btn) { btn.disabled = false; btn.textContent = origLabel; }
   }
 }
@@ -1712,6 +1755,7 @@ async function mergeMyListData(data) {
     else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
   });
   saveTags();
+  mergeSeriesFromList(data);
   // サーバーのリストにあってこの端末に無いグループを取り込む（最終アクセスの新しい順・最大MAX_HISTORY件）
   const entries = Object.entries(data.groups || {})
     .filter(([, meta]) => !(meta && meta.deleted)) // 削除印つきは取り込まない
@@ -1803,9 +1847,22 @@ function renderMyListCard() {
   if (!el) return;
   // 直上の注意書きは引き継ぎの有無で内容が変わる（「この端末だけ」は作成済みだと嘘になる）
   const tip = document.getElementById('hist-tip-text');
-  if (tip) tip.innerHTML = myListId
-    ? '履歴はこの端末に保存され、<b>引き継ぎURLにも自動で追記</b>されています。'
-    : '履歴は<b>この端末だけ</b>に保存されています。';
+  if (tip) tip.innerHTML = currentUser
+    ? '履歴は<b>アカウントに保存</b>され、ログインした端末で自動でそろいます。'
+    : myListId
+      ? '履歴はこの端末に保存され、<b>引き継ぎURLにも自動で追記</b>されています。'
+      : '履歴は<b>この端末だけ</b>に保存されています。';
+  if (currentUser && myListId) {
+    // ログイン中はアカウントが同期を担う。引き継ぎURLはログインできない端末（LINEの中のブラウザ等）用に畳んで残す
+    el.innerHTML = `<details><summary style="cursor:pointer;font-weight:700">🔑 引き継ぎURL（ログインできない端末で使う）</summary>
+      <div style="margin-top:6px">このURLを開くか、下の欄に貼り付けると、ログインせずにアカウントと同じ記録を読み込めます。<span style="color:#a05a2c">自分専用です。仲間に送るのはグループの共有URLで。</span></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
+          style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff;color:#555">
+        <button type="button" class="edit-tab" style="flex-shrink:0" onclick="copyMyListUrl()">コピー</button>
+      </div></details>`;
+    return;
+  }
   // 貼り付け読み込みは「別の保存領域」で開いた人の導線（ホーム画面アプリ・機種変更後の新端末など）。
   // 作成済みでも乗り換え用に必要（standaloneで誤って「新しく作る」を押すと、これが無いと二度と取り込めない）
   const pasteBlock = `
@@ -1849,6 +1906,494 @@ function renderMyListCard() {
         ${pasteBlock}
       </details>`;
   }
+  // ログインできる環境では、ログインが本線。引き継ぎURLは「ログインせずに使う人・ログインできない端末」向けに畳む
+  if (loginAvailable() && !currentUser) {
+    el.innerHTML = `<details><summary style="cursor:pointer;font-weight:700">🔑 ログインせずに引き継ぐ（引き継ぎURL）</summary><div style="margin-top:6px">${el.innerHTML}</div></details>`;
+  }
+}
+
+// ---- アカウント（Googleでログイン・任意） ----
+// ログインすると「自分の記録」（過去の試合の一覧・自分がどれか・まとめ）がアカウントに付き、
+// ブラウザ・ホーム画面のアプリ・別のスマホのどこでログインしても同じになる（URLを移す作業がいらない）。
+// 仕組みは users/{uid}/listId に引き継ぎURLのリストIDを1つ持つだけ＝同期の本体は既存の mylists。
+// ログインしない人の動きは何も変わらない（グループの共有URLもログイン不要のまま）。
+// 画面遷移はリダイレクト方式: iPhoneのホーム画面アプリではポップアップ方式が動かない。
+// LINEの中のブラウザではGoogleがログインを拒否するので、外のブラウザで開き直してもらう
+const LOGIN_ENABLED = false; // Firebaseコンソールの設定（docs/site-spec.md「ログイン」）が済んだら true
+let authApi = null;
+try { authApi = (typeof firebase.auth === 'function') ? firebase.auth() : null; } catch (e) { authApi = null; }
+const IN_LINE_APP = /\bLine\//i.test(navigator.userAgent);
+let accountBusy = false;
+function loginAvailable() { return (LOGIN_ENABLED || window.__MAJASCO_TEST_LOGIN__ === true) && !!authApi; }
+// いまの画面を外のブラウザ（Safari・Chrome）で開き直すURL
+function externalBrowserUrl() { return location.origin + '/?openExternalBrowser=1' + location.hash; }
+function signInWithGoogle() {
+  if (!loginAvailable()) { showToast('ログインは準備中です'); return; }
+  if (IN_LINE_APP) { location.href = externalBrowserUrl(); return; }
+  track('login_start');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  showLoading(true);
+  authApi.signInWithRedirect(provider).catch(e => { showLoading(false); showToast(loginErrorText(e), 6000); });
+}
+function loginErrorText(e) {
+  const c = (e && e.code) || '';
+  if (c === 'auth/operation-not-allowed' || c === 'auth/configuration-not-found') return 'ログインはまだ準備中です';
+  if (c === 'auth/unauthorized-domain') return 'このアドレスではログインできません。majasco.jp から開いてください';
+  if (c === 'auth/network-request-failed') return '通信エラーでログインできませんでした。電波のよい場所でもう一度お試しください';
+  if (c === 'auth/web-storage-unsupported') return 'このブラウザではログインできません。SafariやChromeで開いてください';
+  return 'ログインできませんでした' + (c ? `（${c}）` : '');
+}
+function confirmSignOut() {
+  document.getElementById('confirm-modal-title').textContent = 'ログアウト';
+  document.getElementById('confirm-modal-desc').textContent =
+    'この端末とアカウントの同期をやめます。この端末の過去の試合はそのまま残り、アカウントの記録も消えません。もう一度ログインすれば元に戻ります。';
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = 'ログアウトする';
+  ok.onclick = () => { closeConfirmModal(); signOutAccount(); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+async function signOutAccount() {
+  try { await authApi.signOut(); } catch (e) {}
+  // この端末をアカウントのリストから切り離す（ログアウト後に書き込み続けない）
+  myListId = null;
+  try { localStorage.removeItem(MYLIST_KEY); } catch (e) {}
+  myListSynced.clear();
+  currentUser = null;
+  renderAccountCard(); renderMyListCard(); renderRecentGames();
+  showToast('ログアウトしました（この端末の履歴は残ります）');
+  track('logout');
+}
+// ログインしたアカウントに、この端末の記録をつなぐ
+async function attachAccount(user) {
+  if (accountBusy) return;
+  accountBusy = true;
+  renderAccountCard();
+  try {
+    const uref = db.ref('users/' + user.uid);
+    const acc = (await uref.once('value')).val() || {};
+    const valid = id => typeof id === 'string' && /^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/.test(id);
+    if (!valid(acc.listId)) {
+      // はじめてのログイン: この端末の引き継ぎURLがあればそれを、無ければ新しく作ってアカウントに付ける
+      if (!myListId) await createMyList(true);
+      if (!myListId) throw new Error('mylist-create-failed');
+      await uref.update({ listId: myListId, createdAt: acc.createdAt || new Date().toISOString() });
+      showToast('ログインしました。この端末の履歴をアカウントに保存しました', 4000);
+    } else if (myListId !== acc.listId) {
+      // 別の端末で作ったアカウントの記録に乗り換える。この端末の記録はアカウント側へまとめる
+      const oldId = myListId;
+      const snap = await db.ref('mylists/' + acc.listId).once('value');
+      myListId = acc.listId;
+      myListSynced.clear();
+      try { localStorage.setItem(MYLIST_KEY, myListId); } catch (e) {}
+      const added = await mergeMyListData(snap.val() || {});
+      if (oldId) await mergeOldListInto(oldId, myListId);
+      showToast(added ? `ログインしました。アカウントの記録を${added}件読み込みました` : 'ログインしました', 4000);
+    } else {
+      await refreshMyList();
+    }
+    claimAllTaggedSeats();
+  } catch (e) {
+    showToast('アカウントとの同期に失敗しました。通信環境を確認して、もう一度開いてください', 6000);
+  } finally {
+    accountBusy = false;
+    renderAccountCard(); renderMyListCard(); renderRecentGames();
+    if (document.getElementById('view-history').classList.contains('active')) renderHistory();
+    renderAskMe();
+  }
+}
+// ログイン前に使っていた引き継ぎリストの卓・まとめを、アカウントのリストへ移す（端末にない分も取りこぼさない）
+async function mergeOldListInto(oldId, newId) {
+  try {
+    const [o, n] = await Promise.all([db.ref('mylists/' + oldId).once('value'), db.ref('mylists/' + newId).once('value')]);
+    const od = o.val() || {}, nd = n.val() || {};
+    const upd = {};
+    Object.entries(od.groups || {}).forEach(([gid, m]) => {
+      if (!m || m.deleted || (nd.groups || {})[gid]) return;
+      const v = { at: m.at || new Date().toISOString(), name: String(m.name || '').slice(0, 120) };
+      if (m.role === 'watch') v.role = 'watch';
+      else if (typeof m.me === 'number') { v.role = 'play'; v.me = m.me; }
+      upd['groups/' + gid] = v;
+    });
+    Object.entries(od.series || {}).forEach(([sid, m]) => {
+      if (!m || m.deleted || (nd.series || {})[sid]) return;
+      upd['series/' + sid] = { at: m.at || new Date().toISOString(), name: String(m.name || '').slice(0, 120) };
+    });
+    if (Object.keys(upd).length) await db.ref('mylists/' + newId).update(upd);
+  } catch (e) { /* 取りこぼしは、旧端末で開いたときの同期で戻る */ }
+}
+function renderAccountCard() {
+  const el = document.getElementById('account-card');
+  if (!el) return;
+  if (!loginAvailable()) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  if (currentUser) {
+    const who = currentUser.displayName || currentUser.email || 'Googleアカウント';
+    el.innerHTML = `<div class="acct-head">✅ ログイン中<span class="acct-who">${esc(who)}</span></div>
+      <div>過去の試合・自分の選択・まとめはアカウントに保存され、ログインした端末（ホーム画面のアプリも）で自動でそろいます。</div>
+      ${accountBusy ? '<div style="margin-top:6px;color:#5f8577">アカウントと同期しています…</div>' : ''}
+      <button type="button" class="edit-tab" style="margin-top:8px" onclick="confirmSignOut()">ログアウト</button>`;
+    return;
+  }
+  el.innerHTML = `<div class="acct-head">🔐 ログインすると、どの端末でも同じ記録</div>
+    <div>ブラウザ・ホーム画面のアプリ・別のスマホで、過去の試合と自分の成績が自動でそろいます。URLを移す作業はいりません。ログインしなくても、今までどおり使えます。</div>
+    ${IN_LINE_APP ? '<div class="acct-warn">LINEの中のブラウザではGoogleにログインできません。下のボタンでSafariなどに移ってからログインしてください。</div>' : ''}
+    <button type="button" class="google-btn" onclick="signInWithGoogle()">${IN_LINE_APP ? 'ブラウザで開く' : '<span class="g-mark">G</span>Googleでログイン'}</button>`;
+}
+function initAuth() {
+  if (!loginAvailable()) return;
+  authApi.getRedirectResult().then(r => { if (r && r.user) track('login_done'); })
+    .catch(e => showToast(loginErrorText(e), 6000));
+  authApi.onAuthStateChanged(user => {
+    showLoading(false);
+    currentUser = user || null;
+    renderAccountCard();
+    renderMyListCard();
+    if (user) attachAccount(user);
+  });
+}
+// LINEの中のブラウザで開いているときの案内（ゲーム画面の上）。閉じたらこの表示中は出さない
+function renderLineNote() {
+  const el = document.getElementById('line-note');
+  if (!el) return;
+  let closed = false;
+  try { closed = sessionStorage.getItem('mahjong-line-note') === '1'; } catch (e) {}
+  if (!IN_LINE_APP || closed) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = `LINEの中で開いています。<a onclick="location.href=externalBrowserUrl()">Safari・Chromeで開く</a>と、過去の試合が残り、ログインもできます。
+    <a onclick="try{sessionStorage.setItem('mahjong-line-note','1')}catch(e){};renderLineNote()" style="color:#8a9aa5;font-weight:500;margin-left:6px">閉じる</a>`;
+}
+
+// ---- 「この名前は私」の登録（ログイン中のみ）: グループをまたいで同じ人を見分ける ----
+// claims/{gid}/{seat} = { uid, at }。自分の分だけ書ける（ルールで保証）。
+// 対戦相手別・まとめの集計で、相手もログインして自分を選んでいれば、名前ではなくアカウントで同じ人を見分ける
+// （違う表記の同じ人をまとめ、同じ名前の別人を分けられる）
+const claimCache = {}; // gid → { seat: uid }
+function claimSeat(gid, me) {
+  if (!currentUser) return;
+  const uid = currentUser.uid;
+  const ref = db.ref('claims/' + gid);
+  ref.once('value').then(snap => {
+    const cur = snap.val() || {};
+    const upd = {};
+    Object.entries(cur).forEach(([seat, v]) => { if (v && v.uid === uid && Number(seat) !== me) upd[seat] = null; });
+    const mine = me != null ? cur[me] : null;
+    if (me != null && !(mine && mine.uid === uid) && !(mine && mine.uid && mine.uid !== uid)) {
+      upd[me] = { uid, at: new Date().toISOString() };
+    }
+    if (Object.keys(upd).length) return ref.update(upd);
+  }).then(() => { delete claimCache[gid]; }).catch(() => {});
+}
+// ログインした直後に、これまで選んだ「自分」をまとめて登録する（端末で選んだ分もアカウントの人として数えられるように）
+function claimAllTaggedSeats() {
+  if (!currentUser) return;
+  Object.keys(gameTags).forEach(gid => {
+    const t = tagOf(gid);
+    if (t.role === 'play' && t.me != null) claimSeat(gid, t.me);
+  });
+}
+// 表示用にclaimsを読む（読めなかった卓は空＝名前で見分ける）。新しく読めた卓があればtrue
+async function loadClaims(gids) {
+  const need = gids.filter(gid => !claimCache[gid]);
+  if (!need.length) return false;
+  let changed = false;
+  await Promise.all(need.map(gid => db.ref('claims/' + gid).once('value').then(snap => {
+    const m = {};
+    Object.entries(snap.val() || {}).forEach(([seat, v]) => { if (v && v.uid) m[seat] = v.uid; });
+    claimCache[gid] = m;
+    if (Object.keys(m).length) changed = true;
+  }).catch(() => { claimCache[gid] = {}; })));
+  return changed;
+}
+// ゲームをまたいで「同じ人」を決める関数を作る。entries = [{ g, claims }]（新しい順）
+// ・その席にアカウントの登録があればアカウントで見分ける
+// ・登録の無い席は名前で見分ける。ただしその名前の登録がちょうど1アカウントなら、その人とみなす
+// ・仮名A・B…は数えない
+function buildPersonResolver(entries) {
+  const nameToUids = {};
+  entries.forEach(({ g, claims }) => ((g.settings && g.settings.playerNames) || []).forEach((nm, m) => {
+    const u = claims && claims[m];
+    if (u) (nameToUids[personKey(nm)] = nameToUids[personKey(nm)] || new Set()).add(u);
+  }));
+  const disp = {};
+  const keyOf = (g, claims, m) => {
+    const nm = ((g.settings && g.settings.playerNames) || [])[m];
+    const u = claims && claims[m];
+    let k = null;
+    if (u) k = 'u:' + u;
+    else if (nm != null && !isPlaceholderName(nm)) {
+      const us = nameToUids[personKey(nm)];
+      k = (us && us.size === 1) ? 'u:' + [...us][0] : 'n:' + personKey(nm);
+    }
+    if (k && !disp[k]) disp[k] = nm; // entriesは新しい順＝最初に見た名前が最新の表記
+    return k;
+  };
+  return { keyOf, disp };
+}
+
+// ---- まとめ（複数のゲームを1つの成績に） ----
+// 大会の2日間・毎週の定例会など、ばらばらのURL（ゲーム）をひとまとめにして通算順位と対戦成績を出す。
+// series/{sid} = { id, name, createdAt, groups: { gid: { at, name } } }。グループと同じく「URLを知っている人だけが読める・編集できる」。
+// 自分のまとめ一覧は端末（localStorage）と引き継ぎリスト（mylists/{id}/series）に持つ＝ログインすればどこでも出る
+const SERIES_KEY = 'mahjong-series-v1';
+let seriesList = {};
+try { seriesList = JSON.parse(localStorage.getItem(SERIES_KEY)) || {}; } catch (e) { seriesList = {}; }
+function saveSeriesList() { try { localStorage.setItem(SERIES_KEY, JSON.stringify(seriesList)); } catch (e) {} }
+let seriesAvailable = null; // サーバーのルールが「まとめ」に対応しているか（null=未確認）
+function probeSeries() {
+  if (seriesAvailable !== null) return Promise.resolve(seriesAvailable);
+  return db.ref('series/AAAAAAAAAA').once('value')
+    .then(() => (seriesAvailable = true)).catch(() => (seriesAvailable = false));
+}
+function rememberSeries(sid, name) {
+  seriesList[sid] = { name: String(name || '').slice(0, 120), at: new Date().toISOString() };
+  saveSeriesList();
+  if (myListId) db.ref(`mylists/${myListId}/series/${sid}`).set({ at: seriesList[sid].at, name: seriesList[sid].name }).catch(() => {});
+}
+function forgetSeries(sid) {
+  delete seriesList[sid];
+  saveSeriesList();
+  if (myListId) db.ref(`mylists/${myListId}/series/${sid}`).set({ at: new Date().toISOString(), name: '', deleted: true }).catch(() => {});
+}
+// 引き継ぎリストのまとめ一覧をこの端末に取り込み、この端末にだけあるものは上げる
+function mergeSeriesFromList(data) {
+  const remote = data.series || {};
+  Object.entries(remote).forEach(([sid, m]) => {
+    if (!m) return;
+    if (m.deleted) { delete seriesList[sid]; return; }
+    if (!seriesList[sid] || new Date(m.at || 0) > new Date(seriesList[sid].at || 0)) seriesList[sid] = { name: m.name || '', at: m.at || '' };
+  });
+  saveSeriesList();
+  if (myListId) Object.entries(seriesList).forEach(([sid, m]) => {
+    if (!remote[sid]) db.ref(`mylists/${myListId}/series/${sid}`).set({ at: m.at || new Date().toISOString(), name: m.name || '' }).catch(() => {});
+  });
+}
+function renderSeriesSection() {
+  const el = document.getElementById('hist-series');
+  if (!el) return;
+  if (seriesAvailable === null) { probeSeries().then(renderSeriesSection); return; }
+  if (!seriesAvailable) { el.innerHTML = ''; return; }
+  const rows = Object.entries(seriesList).sort((a, b) => new Date(b[1].at || 0) - new Date(a[1].at || 0)).map(([sid, m]) =>
+    `<button type="button" class="series-row" onclick="openSeries('${esc(sid)}')"><span>${esc(m.name || 'まとめ')}<span class="sr-sub">${m.at ? fmtDate(m.at) + ' 更新' : ''}</span></span><span class="sr-arrow">›</span></button>`).join('');
+  el.innerHTML = `<div class="series-box">
+    <div class="series-head">📚 まとめ</div>
+    <div class="series-lead">大会の2日間や毎週の定例会など、別々のURLの試合を1つにまとめて、通算順位と対戦成績を出せます。まとめのURLを仲間に送れば、全員で同じ結果を見られます。</div>
+    ${rows}
+    <button type="button" class="auto-btn sub" style="margin:8px 0 0" onclick="openSeriesPicker(null)">＋ まとめを作る</button>
+  </div>`;
+}
+function generateSeriesId() { return generateSessionId(); } // 10文字（セッションIDと同じ文字種）
+// まとめる試合を選ぶモーダル（新規作成と編集で共用）
+let seriesPick = null; // { sid|null, name, checked: Set(gid), extra: {gid:{name,at}} }
+function openSeriesPicker(sid) {
+  const cur = sid && seriesData && seriesData.id === sid ? seriesData : null;
+  seriesPick = {
+    sid: sid || null,
+    name: cur ? cur.name : '',
+    checked: new Set(cur ? Object.keys(cur.groups || {}) : []),
+    extra: cur ? Object.fromEntries(Object.entries(cur.groups || {}).filter(([gid]) => !(appState.games || []).some(g => g.id === gid))) : {},
+    q: ''
+  };
+  document.getElementById('form-modal-title').textContent = sid ? 'まとめを編集' : 'まとめを作る';
+  renderSeriesPicker();
+  document.getElementById('form-modal').classList.add('open');
+}
+function renderSeriesPicker() {
+  const p = seriesPick;
+  const q = p.q.trim().toLowerCase();
+  const games = (appState.games || []).filter(g => (g.rounds || []).length || p.checked.has(g.id));
+  const rows = Object.entries(p.extra).map(([gid, m]) => ({ id: gid, name: m.name, createdAt: m.at, extra: true }))
+    .concat(games.map(g => ({ id: g.id, name: g.name, createdAt: g.createdAt, n: (g.rounds || []).length, np: g.settings && g.settings.numPlayers, members: (g.settings && g.settings.playerNames) || [] })))
+    .filter(r => !q || (String(r.name || '') + ' ' + (r.members || []).join(' ')).toLowerCase().includes(q))
+    .map(r => `<label class="pick-row"><input type="checkbox" ${p.checked.has(r.id) ? 'checked' : ''} onchange="seriesPick.checked[this.checked?'add':'delete']('${esc(r.id)}');document.getElementById('sp-count').textContent=seriesPick.checked.size">
+      <span><span class="pr-name">${esc(r.name || '')}</span><br><span class="pr-meta">${r.extra ? 'このまとめに入っているゲーム' : `${fmtDate(r.createdAt)} ・ ${r.n}試合 ・ ${r.np === 3 ? '三麻' : '四麻'} ・ ${r.members.map(esc).join('・')}`}</span></span></label>`).join('');
+  document.getElementById('form-modal-body').innerHTML = `
+    <div class="field"><label>まとめの名前</label><input type="text" id="sp-name" maxlength="${MAX_GROUP_LEN}" value="${esc(p.name)}" placeholder="例: 2026 夏合宿 / 金曜会 2026年" oninput="seriesPick.name=this.value"></div>
+    <div style="font-size:12px;color:#555;margin:4px 0 6px">まとめるゲームを選んでください（<b id="sp-count">${p.checked.size}</b>件選択中）</div>
+    <input type="text" placeholder="ゲーム名・メンバー名で絞り込み" value="${esc(p.q)}" oninput="seriesPick.q=this.value;renderSeriesPicker();const el=document.querySelector('#form-modal-body input[placeholder^=ゲーム名]');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}" style="width:100%;margin-bottom:4px">
+    ${rows || '<div style="color:#999;font-size:12px;padding:10px 0">過去の試合にゲームがありません</div>'}
+    <button class="confirm-btn" style="margin-top:12px" onclick="saveSeriesPicker()">${p.sid ? '保存する' : 'まとめを作る'}</button>
+    ${p.sid ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="closeFormModal();forgetSeries('${esc(p.sid)}');showView('history');showToast('一覧から外しました（URLを知っている人は引き続き見られます）')">自分の一覧から外す</button>` : ''}
+    <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
+}
+async function saveSeriesPicker() {
+  const p = seriesPick;
+  const name = clampName(p.name, MAX_GROUP_LEN) || ('まとめ ' + todayStr());
+  if (!p.checked.size) { showToast('ゲームを1つ以上選んでください'); return; }
+  if (p.checked.size > 60) { showToast('1つのまとめに入れられるゲームは60件までです'); return; }
+  const groups = {};
+  p.checked.forEach(gid => {
+    const g = (appState.games || []).find(x => x.id === gid);
+    const ex = p.extra[gid];
+    groups[gid] = { at: (g && (g.createdAt || g.lastAccess)) || (ex && ex.at) || new Date().toISOString(), name: String((g && g.name) || (ex && ex.name) || '').slice(0, 120) };
+  });
+  showLoading(true);
+  try {
+    let sid = p.sid;
+    if (sid) {
+      await db.ref('series/' + sid).update({ name, groups });
+    } else {
+      for (let i = 0; i < 5 && !sid; i++) {
+        const cand = generateSeriesId();
+        if (!(await db.ref('series/' + cand).once('value')).exists()) sid = cand;
+      }
+      if (!sid) throw new Error('series-id-collision');
+      await db.ref('series/' + sid).set({ id: sid, name, createdAt: new Date().toISOString(), groups });
+      track('series_create', { groups: p.checked.size });
+    }
+    rememberSeries(sid, name);
+    closeFormModal();
+    showLoading(false);
+    await openSeries(sid);
+    showToast(p.sid ? 'まとめを更新しました' : 'まとめを作りました。「URLを共有」で仲間にも送れます', 4000);
+  } catch (e) {
+    showLoading(false);
+    showToast('保存できませんでした。通信環境を確認してもう一度お試しください');
+  }
+}
+function openSeriesEdit() { if (seriesData) openSeriesPicker(seriesData.id); }
+function copySeriesUrl() {
+  if (!seriesData) return;
+  const url = shareUrlOf('s=' + seriesData.id);
+  track('share_copy', { from: 'series' });
+  if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('まとめのURLをコピーしました'));
+  else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('まとめのURLをコピーしました'); }
+}
+let seriesData = null;   // 開いているまとめ（series/{sid}の中身）
+let seriesGames = [];    // そのゲームの中身（sessions/{gid}。新しい順）
+let seriesFocus = null;  // 対戦成績で「だれから見るか」（人のキー）
+let seriesMode = null;   // 四麻/三麻（両方あるときの切り替え）
+let seriesKeys = [];     // いま並んでいる人のキー（チップの位置→キー）
+async function openSeries(sid) {
+  showLoading(true);
+  try {
+    const snap = await db.ref('series/' + sid).once('value');
+    if (!snap.exists()) { alert('このまとめは見つかりませんでした。'); return; }
+    seriesData = snap.val();
+    const gids = Object.keys(seriesData.groups || {});
+    const vals = await Promise.all(gids.map(gid => db.ref('sessions/' + gid).once('value').then(s => s.val()).catch(() => null)));
+    seriesGames = vals.filter(Boolean).map(v => normGame(v))
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    await loadClaims(seriesGames.map(g => g.id));
+    rememberSeries(sid, seriesData.name);
+    seriesFocus = null; seriesMode = null;
+    renderSeries();
+    showView('series');
+    track('series_open', { groups: gids.length });
+  } catch (e) {
+    alert('接続エラーが発生しました。');
+  } finally { showLoading(false); }
+}
+// まとめの集計: 人ごとの通算（四麻・三麻は別）と、対戦成績
+function seriesStats(mode) {
+  const entries = seriesGames.map(g => ({ g, claims: claimCache[g.id] || {} }));
+  const { keyOf, disp } = buildPersonResolver(entries);
+  const people = {};
+  const acc = {};
+  entries.forEach(({ g, claims }) => {
+    const s = g.settings || {};
+    const np = s.numPlayers === 3 ? '3' : '4';
+    if (mode && np !== mode) return;
+    const kOf = m => keyOf(g, claims, m);
+    h2hAdd(acc, g, kOf);
+    (g.rounds || []).forEach(r => {
+      const mem = roundMembers(r, s);
+      const raw = (r.points || r.scores || []).slice(0, mem.length);
+      if (raw.length !== mem.length || raw.some(v => v == null || v === '')) return;
+      const grp = rankGroups(raw.map(Number));
+      mem.forEach((m, k) => {
+        const key = kOf(m);
+        if (!key) return;
+        const p = people[key] || (people[key] = { key, n: 0, score: 0, rankSum: 0, top: 0, last: 0, games: new Set() });
+        const gi = grp[k];
+        p.n++; p.score += Number(r.scores && r.scores[k]) || 0; p.rankSum += gi.avgRank;
+        if (gi.isTop) p.top += 1 / gi.size;
+        if (gi.isLast) p.last += 1 / gi.size;
+        p.games.add(g.id);
+      });
+    });
+  });
+  const list = Object.values(people).sort((a, b) => b.score - a.score);
+  return { list, acc, disp };
+}
+function seriesModes() {
+  const ms = new Set(seriesGames.map(g => (g.settings && g.settings.numPlayers === 3) ? '3' : '4'));
+  return ['4', '3'].filter(m => ms.has(m));
+}
+function seriesStandingsTableHtml(st, forImage = false) {
+  const rows = st.list.map((p, i) => {
+    const sc = Math.round(p.score * 10) / 10;
+    return `<tr><td class="sticky-col">${i + 1}. ${esc(st.disp[p.key] || '')}</td>
+      <td style="font-weight:700;color:${h2hColor(sc)}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>
+      <td>${p.n}</td>
+      <td>${(p.rankSum / p.n).toFixed(2)}</td>
+      <td>${Math.round(p.top / p.n * 100)}%</td>
+      <td>${Math.round((p.n - p.last) / p.n * 100)}%</td></tr>`;
+  }).join('');
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${96 + 5 * 58}px">
+    <thead><tr><th class="sticky-col" style="width:96px">順位</th><th>スコア</th><th>試合</th><th>平均着順</th><th>トップ率</th><th>ラス回避</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function renderSeries() {
+  if (!seriesData) return;
+  const modes = seriesModes();
+  if (!seriesMode || !modes.includes(seriesMode)) seriesMode = modes[0] || '4';
+  document.getElementById('series-title').textContent = seriesData.name || 'まとめ';
+  const nRounds = seriesGames.reduce((a, g) => a + (g.rounds || []).length, 0);
+  document.getElementById('series-sub').textContent = `${seriesGames.length}ゲーム・計${nRounds}試合`;
+  const st = seriesStats(seriesMode);
+  const modeTabs = modes.length > 1 ? `<div class="h2h-chips">${modes.map(m =>
+    `<button type="button" class="h2h-chip${seriesMode === m ? ' on' : ''}" onclick="seriesMode='${m}';seriesFocus=null;renderSeries()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+  let html = '';
+  if (!st.list.length) {
+    html += `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ集計できる試合がありません。</div></div>`;
+  } else {
+    // 総合順位（カード）
+    const cards = st.list.map((p, i) => {
+      const prev = i ? st.list[i - 1] : null;
+      const sc = Math.round(p.score * 10) / 10;
+      return `<div class="score-card">${rankBadgeHtml(i, false, i === st.list.length - 1 && st.list.length > 1)}
+        <div class="score-info"><div class="score-name">${esc(st.disp[p.key] || '')}</div>
+          <div class="score-bonus">${p.n}試合・平均着順 ${(p.rankSum / p.n).toFixed(2)}${p.games.size > 1 ? `・${p.games.size}ゲーム` : ''}</div></div>
+        <div class="score-val ${sc >= 0 ? 'pos' : 'neg'}">${sc >= 0 ? '+' : ''}${sc.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div></div>`;
+    }).join('');
+    html += `<div class="card">${detailCardHead('通算順位', 's_rank', `<button class="edit-tab" onclick="showSeriesImage()">プレビュー</button>`)}
+      ${collapsedCards.s_rank ? '' : `${modeTabs}<div class="score-cards">${cards}</div>
+      <details class="h2h-more"><summary>詳しい成績（表）</summary>${seriesStandingsTableHtml(st)}</details>
+      <div class="h2h-note">スコアは各ゲームのルール（ウマ・返し点・罰符）で計算された値の合計です。ゲームをまたいで同じ名前の人をまとめています（ログインして自分を選んでいる人はアカウントで見分けます。仮の名前A・B…は除きます）。</div>`}</div>`;
+    // 対戦成績
+    if (!seriesFocus || !st.acc[seriesFocus]) seriesFocus = st.list[0].key;
+    const row = st.acc[seriesFocus] || {};
+    const keys = h2hSortedKeys(row);
+    seriesKeys = st.list.map(p => p.key); // チップのonclickは位置で渡す（名前をHTML属性に埋め込まない）
+    const chips = st.list.map((p, i) =>
+      `<button type="button" class="h2h-chip${p.key === seriesFocus ? ' on' : ''}" onclick="seriesFocus=seriesKeys[${i}];renderSeries()">${esc(st.disp[p.key] || '')}</button>`).join('');
+    html += `<div class="card">${detailCardHead('対戦成績', 's_h2h')}
+      ${collapsedCards.s_h2h ? '' : `<div style="font-size:11px;color:#8a9aa5;margin-bottom:6px">だれから見る？</div><div class="h2h-chips">${chips}</div>
+      ${h2hSummaryHtml(row, k => st.disp[k])}
+      ${keys.length ? h2hRowsTableHtml(row, keys, k => st.disp[k]) : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
+      <div class="h2h-note">${H2H_NOTE}</div>`}</div>`;
+  }
+  // ゲーム一覧
+  const glist = seriesGames.map(g => `<button type="button" class="series-row" onclick="joinSession('${esc(g.id)}')">
+      <span>${esc(g.name || '')}<span class="sr-sub">${fmtDate(g.createdAt)} ・ ${(g.rounds || []).length}試合 ・ ${g.settings && g.settings.numPlayers === 3 ? '三麻' : '四麻'}</span></span><span class="sr-arrow">›</span></button>`).join('');
+  const missing = Object.keys(seriesData.groups || {}).length - seriesGames.length;
+  html += `<div class="card">${detailCardHead('まとめたゲーム', 's_games')}${collapsedCards.s_games ? '' : glist +
+    (missing > 0 ? `<div class="h2h-note">見つからないゲームが${missing}件あります（削除された可能性があります）。</div>` : '')}</div>`;
+  document.getElementById('series-body').innerHTML = html;
+  updateScrollHints();
+}
+async function showSeriesImage() {
+  if (!seriesData) return;
+  const st = seriesStats(seriesMode);
+  const modes = seriesModes();
+  const nRounds = seriesGames.reduce((a, g) => a + (g.rounds || []).length, 0);
+  const canvas = buildTablesCanvas(seriesData.name || 'まとめ', `${seriesGames.length}ゲーム・計${nRounds}試合`,
+    modes.length > 1 ? (seriesMode === '3' ? '三麻' : '四麻') : '', [{ label: '通算順位', html: seriesStandingsTableHtml(st, true) }], seriesMode === '3');
+  if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
+  if (!canvas) return;
+  track('image_preview', { kind: 'series' });
+  await openImagePreview(canvas, { name: seriesData.name || '' }, '通算順位');
 }
 function startListening() {
   stopListening();
@@ -2286,14 +2831,16 @@ function showView(name, skipHistory = false) {
   backBtn.style.display = backTo ? 'block' : 'none';
   backBtn.onclick = backTo === 'game-leave' ? goHome : () => showView(backTo);
 
-  if (name === 'history') { renderMyListCard(); renderHistory(); refreshMyList(); }
+  if (name === 'history') { renderAccountCard(); renderMyListCard(); renderHistory(); refreshMyList(); }
+  if (name === 'series') renderSeries();
   if (name === 'mystats') renderMyStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { checkPendingSession(); renderRecentGames(); }
 
   // ブラウザの履歴（戻る・進む）に追加（popstateからの呼び出し時はスキップ）
   if (!skipHistory) {
-    const hash = (sessionId && name !== 'home' && name !== 'setup') ? '#' + sessionId : '';
+    const hash = (name === 'series' && seriesData) ? '#s=' + seriesData.id
+      : (sessionId && name !== 'home' && name !== 'setup') ? '#' + sessionId : '';
     history.pushState({ view: name }, '', hash || location.pathname);
   }
 }
@@ -2303,7 +2850,7 @@ function showView(name, skipHistory = false) {
 // detailは入り口が2つ（過去の試合／自分の成績）あるので、開いたときに記録した先へ戻す
 function backTargetOf(name) {
   if (name === 'setup' || name === 'history') return 'home';
-  if (name === 'mystats') return 'history';
+  if (name === 'mystats' || name === 'series') return 'history';
   if (name === 'detail') return detailBackTo || 'history';
   if (name === 'game') return 'game-leave'; // 対局からの退出はgoHome（保存・リスナー停止を通す）
   return null; // home・share（作成完了の順方向フロー）には出さない
@@ -2383,8 +2930,14 @@ function featuresScroll(dir) {
 function track(event, params) {
   try { (window.dataLayer = window.dataLayer || []).push(Object.assign({ event }, params || {})); } catch (e) {}
 }
+// 仲間に送るURL。?openExternalBrowser=1 を付けると、LINEで開いたときにLINEの中のブラウザではなく
+// Safari・Chromeで開く（LINE公式の仕様。#より前に置く）。LINEの中のブラウザは保存領域が別で、
+// 履歴が残らずGoogleログインも拒否されるため。ほかのアプリでは何も起きない（読み込み時にアドレスから外す）
+function shareUrlOf(hashPart) {
+  return location.origin + '/?openExternalBrowser=1#' + hashPart;
+}
 function copyUrl() {
-  const url = location.href;
+  const url = sessionId ? shareUrlOf(sessionId) : location.href;
   track('share_copy', { from: 'game' });
   if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('URLをコピーしました'));
   else { const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('URLをコピーしました'); }
@@ -2780,7 +3333,7 @@ async function createGame(name, settings, opts = {}) {
       showView('game');
     } else {
       // Walica風: まずURL共有画面を表示してからスコア入力へ
-      document.getElementById('share-url').value = location.href;
+      document.getElementById('share-url').value = shareUrlOf(sessionId);
       showView('share');
     }
     track('group_create', { num_players: settings.numPlayers, member_count: settings.playerNames.length, team_mode: !!settings.teamMode, bonus_enabled: settings.bonusEnabled, quick_start: !!opts.toGame });
@@ -4809,9 +5362,10 @@ function renderGame() {
     rankCard.style.display = 'none';
   }
 
-  // 対戦成績（個人成績の下）と「あなたはどれ？」
+  // 対戦成績（個人成績の下）と「あなたはどれ？」・LINEの中のブラウザの案内
   renderH2HCard();
   renderAskMe();
+  renderLineNote();
 
   // スコア推移グラフ
   const chartCard = document.getElementById('chart-card');
@@ -5569,6 +6123,7 @@ function setTag(gid, role, me) {
   else delete gameTags[gid]; // 既定（参加・自分未選択）は保存しない
   saveTags();
   syncTagToMyList(gid);
+  if (currentUser) claimSeat(gid, role === 'play' ? me : null);
 }
 // カードに出すバッジ。未設定はオレンジ系で「選べる」ことに気づかせる
 function tagBadgeHtml(g) {
@@ -5652,7 +6207,7 @@ function renderAskMe() {
   const known = myKnownNameKeys();
   let guess = -1;
   for (const k of known) { guess = names.findIndex(n => personKey(n) === k); if (guess >= 0) break; }
-  const sub = `<div class="askme-sub">選ぶと、ほかの日の試合とまとめた「自分の成績」と対戦成績に入ります。${currentUser ? 'アカウントに保存されます。' : 'この端末に保存されます。'}</div>`;
+  const sub = `<div class="askme-sub">選ぶと、ほかの日の試合とまとめた「自分の成績」と対戦成績に入ります。${currentUser ? 'アカウントに保存されます。' : loginAvailable() ? 'この端末に保存されます（ログインすると、どの端末でも見られます）。' : 'この端末に保存されます。'}</div>`;
   el.style.display = 'block';
   if (guess >= 0 && !askmeShowAll) {
     el.innerHTML = `<div class="askme-q">このゲームのあなたは<b>「${esc(names[guess])}」</b>ですか？</div>
@@ -5788,23 +6343,20 @@ function saveOrganize() {
 // ---- 自分の成績: 対戦相手別（グループをまたいで、同じ名前の人をまとめる） ----
 let myH2HMode = 'all';
 function collectMyH2H(mode) {
-  const acc = {}, disp = {};
-  (appState.games || []).forEach(g => { // appState.gamesは新しい順＝最初に見た名前が最新の表記
-    const s = g.settings || {};
+  const acc = {};
+  // appState.gamesは新しい順＝最初に見た名前が最新の表記
+  const mine = (appState.games || []).filter(g => {
     const t = tagOf(g.id);
-    const names = s.playerNames || [];
-    if (t.role === 'watch' || t.me == null || t.me >= names.length) return;
-    const np = s.numPlayers === 3 ? '3' : '4';
+    const names = (g.settings && g.settings.playerNames) || [];
+    return t.role !== 'watch' && t.me != null && t.me < names.length;
+  });
+  const { keyOf, disp } = buildPersonResolver(mine.map(g => ({ g, claims: claimCache[g.id] || {} })));
+  mine.forEach(g => {
+    const np = g.settings.numPlayers === 3 ? '3' : '4';
     if (mode !== 'all' && mode !== np) return;
-    const keyOf = m => {
-      if (m === t.me) return '@me';
-      const nm = names[m];
-      if (nm == null || isPlaceholderName(nm)) return null;
-      const k = personKey(nm);
-      if (!disp[k]) disp[k] = nm;
-      return k;
-    };
-    h2hAdd(acc, g, keyOf);
+    const me = tagOf(g.id).me;
+    const claims = claimCache[g.id] || {};
+    h2hAdd(acc, g, m => (m === me ? '@me' : keyOf(g, claims, m)));
   });
   return { row: acc['@me'] || {}, disp };
 }
@@ -5822,7 +6374,7 @@ function myH2HCardHtml() {
     ${tabs}
     ${h2hSummaryHtml(row, k => disp[k])}
     ${h2hRowsTableHtml(row, keys, k => disp[k])}
-    <div class="h2h-note">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。</div>
+    <div class="h2h-note">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（相手がログインして自分を選んでいれば、アカウントで見分けます。仮の名前A・B…は除きます）。</div>
   </div>`;
 }
 
@@ -5917,7 +6469,17 @@ function myStatsGroupsTableHtml(st, forImage = false) {
     <thead><tr><th class="sticky-col" style="width:110px">グループ</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
+let myStatsClaimsLoading = false;
 function renderMyStats() {
+  // 相手がログインして自分を選んでいれば、名前ではなくアカウントで見分ける（読み込めたら描き直す）
+  if (!myStatsClaimsLoading) {
+    const gids = (appState.games || []).filter(g => tagOf(g.id).me != null).map(g => g.id);
+    myStatsClaimsLoading = true;
+    loadClaims(gids).then(changed => {
+      myStatsClaimsLoading = false;
+      if (changed && document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
+    });
+  }
   const body = document.getElementById('mystats-body');
   const st = collectMyStats();
   const imgBtn = document.getElementById('mystats-img-btn');
@@ -6075,6 +6637,8 @@ function showInstallHelp() {
       とくにiPhoneでは、<b>7日間使わないとブラウザの保存データが自動削除される仕組み</b>があり、
       ホーム画面から開くまじゃすこはその対象外になるため、履歴が消えにくくなります。
     </div>
+    ${loginAvailable() ? `<div style="font-size:12px;color:#2f5d35;background:#eef9ef;border:1px solid #bfe3c3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:10px">
+      ✅ <b>いちばんかんたんなのはログイン</b>です。ブラウザとホーム画面のアプリの両方で「Googleでログイン」するだけで、同じ記録になります（下の引き継ぎURLの手順はいりません）。</div>` : ''}
     <div style="font-size:12px;color:#8a6d1a;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:14px">
       ⚠ ホーム画面に追加したまじゃすこは、<b>ブラウザとは別の保存場所</b>で動きます（OSの仕様）。
       いま見えている履歴は自動では引き継がれないため、おすすめの順番は——<br>
@@ -6093,6 +6657,7 @@ function showInstallHelp() {
 }
 function renderHistory() {
   renderOrganizeCard();
+  renderSeriesSection();
   const body = document.getElementById('history-body');
   if (!appState.games || appState.games.length === 0) {
     body.innerHTML = '<div class="empty-msg">まだ試合の履歴がありません</div>'; return;
@@ -6286,6 +6851,11 @@ function esc(s) {
 }
 
 // ---- 起動 ----
+// LINE用に共有URLへ付けた ?openExternalBrowser=1 はアドレスから外す（ブックマーク・再共有に残さない）
+if (/[?&]openExternalBrowser=/.test(location.search)) {
+  const q = location.search.replace(/[?&]openExternalBrowser=[^&]*/, '').replace(/^&/, '?');
+  history.replaceState(null, '', location.pathname + (q === '?' ? '' : q) + location.hash);
+}
 loadStorage();
 // 送信キュー: 接続状態を見張り、つながったら・画面に戻ったら・15秒ごとに未送信を送る
 db.ref('.info/connected').on('value', snap => {
@@ -6304,10 +6874,14 @@ renderRecentGames();
 initSetupForm();
 initFeaturesCarousel();
 const urlHash = location.hash.slice(1);
-// 判定順に注意: #my=（引き継ぎURL）→ セッションID（8文字以上）→ ページ内アンカー。
+// 判定順に注意: #my=（引き継ぎURL）→ #s=（まとめ）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
+initAuth();
 if (urlHash.startsWith('my=')) {
   openMyListFromUrl(urlHash.slice(3));
+} else if (/^s=[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/.test(urlHash)) {
+  openSeries(urlHash.slice(2));
+  if (myListId) refreshMyList();
 } else if (urlHash && urlHash.length >= 8) {
   pendingSessionId = urlHash;
   document.getElementById('join-banner').style.display = 'block';

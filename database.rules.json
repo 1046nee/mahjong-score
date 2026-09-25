@@ -43,6 +43,55 @@
             "$other": { ".validate": false }
           }
         },
+        "series": {
+          "$sid": {
+            ".validate": "$sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.hasChildren(['at'])",
+            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+            "deleted": { ".validate": "newData.isBoolean()" },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "listId": { ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)" },
+        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "$other": { ".validate": false }
+      }
+    },
+    "claims": {
+      "$gid": {
+        ".read": "$gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)",
+        "$seat": {
+          ".write": "auth != null && ($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && $seat.matches(/^[0-9]{1,2}$/) && (!data.exists() || data.child('uid').val() === auth.uid) && (!newData.exists() || newData.child('uid').val() === auth.uid)",
+          ".validate": "newData.hasChildren(['uid', 'at'])",
+          "uid": { ".validate": "newData.isString() && newData.val() === auth.uid" },
+          "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
+          "$other": { ".validate": false }
+        }
+      }
+    },
+    "series": {
+      "$sid": {
+        ".read": true,
+        ".write": "$sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && (data.exists() || newData.hasChildren(['id', 'name', 'groups']))",
+        ".validate": "newData.hasChildren(['id', 'name'])",
+        "id": { ".validate": "newData.isString() && newData.val() === $sid" },
+        "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+        "createdAt": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "groups": {
+          "$gid": {
+            ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
+            "at": { ".validate": "newData.isString() && newData.val().length <= 40" },
+            "name": { ".validate": "newData.isString() && newData.val().length <= 120" },
+            "$other": { ".validate": false }
+          }
+        },
         "$other": { ".validate": false }
       }
     }

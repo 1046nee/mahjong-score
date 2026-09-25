@@ -33,7 +33,26 @@
 - **セッションに新しいトップレベルキーを追加するときは、必ずdatabase.rules.jsonにも追加してコンソールに再適用する**（忘れると保存が全部失敗する）
 - 2026-08-08: mylists/groups/$gidに`deleted`（boolean・削除印）を追加。**コンソールへの再適用が必要**
   （未適用でもアプリはremoveへフォールバックして動くが、別端末への削除の伝播が効かない）
+- **2026-09-25: users / claims / series と mylists/$lid/series を追加。コンソールへの再適用が必要**
+  （未適用の間は「まとめ」の欄が出ない・ログイン後の同期が失敗する。グループの記録・共有は影響なし）
+  - users/$uid: 本人（auth.uid）だけが読み書き。listId（14文字）・createdAt のみ
+  - claims/$gid/$seat: 誰でも読める（gidを知っていれば）。書けるのはログインした本人の分だけ（uid=auth.uid。他人の登録は上書き・削除できない）
+  - series/$sid: sessionsと同じ「IDを知っている人が読み書き」。id・name必須、groups/$gid は at（と name）だけ
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
+
+## ログイン（Firebase Authentication・Google）
+- アプリ側は index.html の **`LOGIN_ENABLED`**。**下のコンソール設定がすべて済むまで false のまま**にする
+  （true にすると過去の試合に「Googleでログイン」が出る。設定前に押されるとGoogleのエラー画面になる）
+- コンソール設定（ユーザー作業）:
+  1. Firebaseコンソール → Authentication →「始める」→ Sign-in method → Google を有効化（サポートメールを選んで保存）
+  2. Authentication → 設定 → 承認済みドメイン に `majasco.jp` があることを確認（無ければ追加）
+  3. Google Cloud コンソール → APIとサービス → 認証情報 → OAuth 2.0 クライアントID「Web client (auto created by Google Service)」→
+     承認済みのリダイレクトURI に `https://majasco.jp/__/auth/handler`、承認済みのJavaScript生成元に `https://majasco.jp` を追加
+  4. Googleの同意画面に出るアプリ名: Firebaseのプロジェクトの設定 → 全般 →「一般公開名」を「まじゃすこ」に
+  5. Realtime Database → ルール に database.rules.json を貼り付けて公開
+- 設定できたかの確認: `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig?key=（index.htmlのapiKey）` が
+  CONFIGURATION_NOT_FOUND ではなく authorizedDomains に majasco.jp を含むJSONを返せば1・2は済んでいる
+- 開発PC（社内ネットワーク）からは majasco.jp が見られない＝**ログインの実機確認はユーザーのスマホで**（Safari・ホーム画面アプリ・LINEから開いた場合の3つ）
 
 ## 新ページのheadチェックリスト（blog記事のheadを参照）
 1. GTMスクリプト（viewport直後・titleより上）+ body直後にGTM noscript
@@ -81,7 +100,7 @@
   「高さ280pxの空白＋スポンサーリンク」が記事ごとに2つ並んで未完成のページに見えていた。
   審査に必要なのは<head>のadsbygoogle.jsだけ。**承認されたら ads.js の ADS_APPROVED を true にしてpush**
 - スロットID空欄=非表示。追加時はAdSenseでディスプレイ広告ユニット作成→IDをAD_SLOTSへ（min-height:280px自動でCLS対策）
-- **置かない場所**: スコア入力・ゲーム画面・設定モーダル・privacy/terms・404（誤クリック防止）
+- **置かない場所**: スコア入力・ゲーム画面・まとめ画面・設定モーダル・privacy/terms・404（誤クリック防止）
 
 ## 計測
 - GTM `GTM-KMRMGKKV` 全ページ設置済み。index.htmlの`track()`がdataLayerへ送信

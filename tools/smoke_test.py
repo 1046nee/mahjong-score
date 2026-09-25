@@ -133,7 +133,9 @@ def main():
         # 同一URLへのgotoはハッシュ移動扱いで再読み込みされないため、必ず新しいページで開くこと
         page = ctx.new_page()
         page.on("pageerror", lambda e: page_errors.append(str(e)))
-        page.goto(f"http://127.0.0.1:{PORT}/index.html#{sid}", wait_until="load", timeout=30000)
+        # 共有URLそのもので開く（LINEで外のブラウザに出す ?openExternalBrowser=1 付き。#の前に置く）
+        assert "/?openExternalBrowser=1#" in share_url, f"共有URLに openExternalBrowser がない: {share_url}"
+        page.goto(share_url, wait_until="load", timeout=30000)
         page.wait_for_function(
             "() => { const v = document.querySelector('#view-game');"
             " const b = document.querySelector('#score-main-body');"
