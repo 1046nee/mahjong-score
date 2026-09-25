@@ -755,7 +755,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .seg .seg-n { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #D5E9E2; color: #177083; font-size: 11px; font-weight: 800; line-height: 18px; }
 .seg.sm { margin: 0; }
 .seg.sm button { height: 34px; font-size: 13px; letter-spacing: -.2px; }
-.seg.xs { display: inline-flex; margin: 0 0 14px; padding: 2px; border-radius: 9px; }
+.seg.xs { display: inline-flex; align-self: flex-start; margin: 0 0 14px; padding: 2px; border-radius: 9px; } /* 縦並びの flex の中でも横に伸ばさない */
 .seg.xs button { flex: none; min-width: 56px; height: 26px; padding: 0 12px; border-radius: 7px; font-size: 13px; }
 .seg.xs button.on[data-np="3"], .sanma .seg button.on { color: #4261AA; }
 /* ---- iOSの角丸リスト ---- */
@@ -955,6 +955,49 @@ button.ios-row:active { background: #F2F6F5; }
 .mp-join[open] summary .ico { transform: rotate(-90deg); }
 .mp-join .row { display: flex; gap: 6px; padding-bottom: 12px; }
 .mp-join input { flex: 1; min-width: 0; font-size: 16px; height: 36px; padding: 0 10px; border: 1px solid #cfe3db; border-radius: 10px; }
+/* ---- 自分の成績（［まとめ｜相手別｜ゲーム別］のタブ。画面は一覧、画像は表） ---- */
+#view-mystats .page-title-row { padding: 20px 16px 0; align-items: center; }
+#view-mystats .page-title-row h1 { font-size: 24px; font-weight: 800; letter-spacing: -.3px; color: #1F2A28; }
+#view-mystats .detail-body { gap: 0; padding: 0 16px 32px; }
+.ms-sub { margin: 4px 4px 0; font-size: 13px; color: #5F6E6B; overflow-wrap: anywhere; }
+.ms-tabs { margin: 14px 0 0; }
+#view-mystats .warn-box { margin-top: 12px; }
+/* 相性のカード（相性がいい相手／手ごわい相手） */
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.pair.one .pc { grid-column: 1 / -1; }
+.pc { min-width: 0; padding: 12px; border-radius: 14px; }
+.pc.good { background: #E8EAF6; } .pc.bad { background: #FDECEC; }
+.pc-l { font-size: 11px; font-weight: 800; } .pc.good .pc-l { color: #1A237E; } .pc.bad .pc-l { color: #C62828; }
+.pc-who { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-width: 0; }
+.pc-who .rv-av { width: 28px; height: 28px; font-size: 12px; }
+.pc-who b { font-size: 15px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pc-s { margin-top: 4px; font-size: 12px; color: #4F5C5A; }
+/* 相手ごとの行（押すと開いて、同じ試合・平均着順・スコア差）。
+   Safariは <summary> 自体を grid にできない版があるので、中の .h2-sum を grid にする */
+.h2-list { padding: 0 16px; }
+.h2-row { position: relative; }
+.h2-row + .h2-row::before { content: ''; position: absolute; top: 0; left: 48px; right: 0; border-top: .5px solid #D5DEDB; }
+.h2-row > summary { list-style: none; cursor: pointer; }
+.h2-row > summary::-webkit-details-marker { display: none; }
+.h2-sum { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto 12px; grid-template-areas: "av name pct chev" "av wl wl chev" ". sub sub chev";
+  column-gap: 12px; row-gap: 6px; align-items: center; padding: 12px 0; }
+.h2-chev { grid-area: chev; color: #B5C0BD; display: grid; transition: transform .15s; }
+.h2-row[open] .h2-chev { transform: rotate(90deg); }
+.h2-detail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 12px 48px; padding: 10px; background: #F4F7F6; border-radius: 10px; }
+.h2-detail span { display: block; font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.h2-detail b { display: block; font-size: 15px; font-weight: 800; color: #1F2A28; font-variant-numeric: tabular-nums; }
+.h2-detail b.pos { color: #1A237E; } .h2-detail b.neg { color: #C62828; }
+.h2-detail em { display: block; font-style: normal; font-size: 11px; color: #5F6E6B; }
+/* ゲーム別の行 */
+.gp-row { min-height: 60px; padding: 10px 16px; }
+.gp-row + .gp-row::before { left: 62px; }
+.gp-tile { width: 34px; height: 34px; flex: none; border-radius: 9px; display: grid; place-items: center; background: #E4F3EC; color: #177083; font-size: 15px; font-weight: 800; }
+.gp-tile.s3 { background: #EAF0FB; color: #4261AA; }
+.gp-main { flex: 1; min-width: 0; }
+.gp-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-size: 15px; font-weight: 600; color: #1F2A28; }
+.gp-sub { display: block; margin-top: 2px; font-size: 12px; color: #5F6E6B; }
+.gp-sc { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; } .gp-sc.pos { color: #1A237E; } .gp-sc.neg { color: #C62828; }
+.gp-row > .ico { color: #B5C0BD; }
 /* 仲間ページ: 順位（表彰台＋リスト） */
 .podium { display: grid; grid-template-columns: 1fr 1.12fr 1fr; align-items: end; gap: 8px; margin: 4px 0 12px; }
 .pd { text-align: center; cursor: pointer; min-width: 0; }
@@ -1653,7 +1696,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-mystats" class="view">
   <div class="page-title-row">
     <h1>自分の成績</h1>
-    <div class="title-actions"><button class="edit-tab" id="mystats-img-btn" onclick="showMyStatsImage()" style="display:none">プレビュー</button></div>
+    <div class="title-actions"><button class="btn-tint" id="mystats-img-btn" onclick="showMyStatsImage()" style="display:none"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>プレビュー</button></div>
   </div>
   <div class="detail-body" id="mystats-body"></div>
 </div>
@@ -6067,7 +6110,7 @@ function buildComposedCanvas(g, kinds, compact = false) {
 }
 
 // ===== 自分の成績シートの画像 =====
-// 帯（緑・タイトル「自分の成績」）＋成績まとめ＋グループ別＋フッターの縦1枚
+// 帯（緑・タイトル「自分の成績」）＋成績まとめ＋対戦相手別＋ゲーム別＋フッターの縦1枚
 function buildMyStatsCanvas() {
   const st = collectMyStats();
   if (!st.groups.length) return null;
@@ -6089,7 +6132,7 @@ function buildMyStatsCanvas() {
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
   ctx.fillText('自分の成績', IMG_PAD, IMG_BAND / 2 - 8);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${fmtDate(new Date().toISOString())} 時点 ・ ${st.groups.length}グループ・計${total}試合`, IMG_PAD, IMG_BAND / 2 + 11);
+  ctx.fillText(`${fmtDate(new Date().toISOString())} 時点 ・ ${st.groups.length}ゲーム・計${total}試合`, IMG_PAD, IMG_BAND / 2 + 11);
   ctx.globalAlpha = 1;
   ctx.font = imgFont(13, true); ctx.textAlign = 'right';
   ctx.fillText(st.myNames.join('・'), W - IMG_PAD, IMG_BAND / 2, W / 2 - IMG_PAD);
@@ -6106,13 +6149,13 @@ function buildMyStatsCanvas() {
   section('成績まとめ', b1, s1);
   if (b3) { y += GAP; section('対戦相手別', b3, s3); }
   y += GAP;
-  section('グループ別', b2, s2);
+  section('ゲーム別', b2, s2);
   drawImgFooter(ctx, W, H);
   return c;
 }
 async function showMyStatsImage() {
   const canvas = buildMyStatsCanvas();
-  if (canvas === IMG_TOO_LARGE) { showToast('グループが多すぎて1枚の画像に収まりません'); return; }
+  if (canvas === IMG_TOO_LARGE) { showToast('ゲームが多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) { showToast('まだ集計できる試合がありません'); return; }
   track('image_preview', { kind: 'mystats' });
   await openImagePreview(canvas, { name: '' }, '自分の成績');
@@ -7958,7 +8001,7 @@ function saveOrganize() {
 
 // ---- 自分の成績: 対戦相手別（グループをまたいで、同じ名前の人をまとめる） ----
 let myH2HMode = 'all';
-let myStatsTab = 'sum'; // 自分の成績のタブ（sum まとめ｜h2h 相手別｜groups グループ別）
+let myStatsTab = 'sum'; // 自分の成績のタブ（sum まとめ｜h2h 相手別｜groups ゲーム別）
 function collectMyH2H(mode) {
   const acc = {};
   // appState.gamesは新しい順＝最初に見た名前が最新の表記
@@ -7982,16 +8025,49 @@ function myH2HCardHtml() {
   if (!modes.has(myH2HMode) && myH2HMode !== 'all') myH2HMode = 'all';
   const { row, disp } = collectMyH2H(myH2HMode);
   const keys = h2hSortedKeys(row);
-  if (!keys.length) return '';
-  const tabs = modes.size > 1 ? `<div class="h2h-chips">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
-    `<button type="button" class="h2h-chip${myH2HMode === k ? ' on' : ''}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
-  return `<div class="card">
-    <div class="card-title">対戦相手別</div>
-    ${tabs}
-    ${h2hSummaryHtml(row, k => disp[k])}
-    ${h2hRowsTableHtml(row, keys, k => disp[k])}
-    <div class="h2h-note">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>
-  </div>`;
+  const seg = modes.size > 1 ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
+    `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
+  if (!keys.length) return `${seg}<div class="ios-group" style="margin-top:16px;padding:20px 16px;font-size:14px;color:#4F5C5A">まだ同じ試合に出た相手がいません</div>`;
+  const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
+  return `${seg}${h2hPairCardsHtml(row, nameOf, avOf)}
+    <div class="ios-head">相手（${keys.length}人）・同じ試合の多い順</div>
+    <div class="ios-group h2-list">${h2hListHtml(row, keys, nameOf, avOf)}</div>
+    <div class="ios-foot">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>`;
+}
+// 「相性がいい相手／手ごわい相手」のカード（選び方は h2hSummaryHtml と同じ＝3試合以上・勝率60%以上／40%以下）。
+// h2hSummaryHtml（1行の文）は結果詳細・試合の画面で使うので残す
+function h2hPairCardsHtml(row, nameOf, avOf) {
+  const ks = Object.keys(row).filter(k => row[k].n >= 3 && h2hWinPct(row[k]) != null);
+  if (!ks.length) return '';
+  const best = ks.reduce((a, b) => (h2hWinPct(row[b]) > h2hWinPct(row[a]) ? b : a));
+  const worst = ks.reduce((a, b) => (h2hWinPct(row[b]) < h2hWinPct(row[a]) ? b : a));
+  const card = (k, cls, label) => {
+    const e = row[k], nm = nameOf(k);
+    return `<div class="pc ${cls}"><div class="pc-l">${label}</div><div class="pc-who"><span class="rv-av" style="background:${avOf(k)}">${esc(avInitial(nm))}</span><b>${esc(nm)}</b></div>
+      <div class="pc-s">${h2hRecordText(e)} ・ 勝率${h2hWinPct(e)}%</div></div>`;
+  };
+  const cards = [];
+  if (h2hWinPct(row[best]) >= 60) cards.push(card(best, 'good', '相性がいい相手'));
+  if (worst !== best && h2hWinPct(row[worst]) <= 40) cards.push(card(worst, 'bad', '手ごわい相手'));
+  return cards.length ? `<div class="pair${cards.length === 1 ? ' one' : ''}">${cards.join('')}</div>` : '';
+}
+// 相手ごとの行（横スクロールの表の代わり）。押すと開いて、同じ試合・平均着順（自分／相手）・スコア差を出す。
+// 自分の成績の相手別・仲間ページの対戦・メンバーの成績で共用。画像は今までどおり h2hRowsTableHtml(…, true) の表
+function h2hListHtml(row, keys, nameOf, avOf) {
+  return keys.map(k => {
+    const e = row[k], nm = nameOf(k);
+    const pct = h2hWinPct(e);
+    const pc = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
+    const diff = e.scoreA - e.scoreB;
+    return `<details class="h2-row"><summary><div class="h2-sum">
+        <span class="rv-av" style="background:${avOf(k)}">${esc(avInitial(nm))}</span><span class="rv-name">${esc(nm)}</span>
+        <span class="rv-pct ${pc}">${pct == null ? '—' : pct + '%'}<small>勝率</small></span>
+        ${wlBarHtml(e)}<span class="rv-sub">${e.d ? `${e.d}分 ・ ` : ''}${e.n}試合 ・ 差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span>
+        <span class="h2-chev">${ico('chevron', 12)}</span></div></summary>
+      <div class="h2-detail"><div><span>同じ試合</span><b>${e.n}</b></div>
+        <div><span>平均着順</span><b>${(e.rankA / e.n).toFixed(2)}</b><em>相手 ${(e.rankB / e.n).toFixed(2)}</em></div>
+        <div><span>スコア差</span><b class="${scoreCls(diff)}">${fmtScore(diff)}</b></div></div></details>`;
+  }).join('');
 }
 
 // ---- 自分の成績の集計 ----
@@ -8068,7 +8144,7 @@ function myStatsTableHtml(st) {
   return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${78 + cols.length * 96}px">
     <thead><tr><th class="sticky-col" style="width:78px">項目</th>${head}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
 }
-// グループ別内訳の表（forImage=trueでタップ用の属性を外す）
+// ゲーム別内訳の表（画像出力用。forImage=trueでタップ用の属性を外す。画面は myStatsGroupsHtml の一覧）
 function myStatsGroupsTableHtml(st, forImage = false) {
   const rows = st.groups.map(gr => {
     const sc = Math.round(gr.score * 10) / 10;
@@ -8083,7 +8159,7 @@ function myStatsGroupsTableHtml(st, forImage = false) {
       <td>${gr.avgRank.toFixed(2)}</td></tr>`;
   }).join('');
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${110 + 4 * 68}px">
-    <thead><tr><th class="sticky-col" style="width:110px">グループ</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
+    <thead><tr><th class="sticky-col" style="width:110px">ゲーム</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
 function renderMyStats() {
@@ -8092,31 +8168,46 @@ function renderMyStats() {
   const imgBtn = document.getElementById('mystats-img-btn');
   if (!st.groups.length) {
     imgBtn.style.display = 'none';
-    body.innerHTML = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.9">
+    body.innerHTML = `<div class="ios-group" style="margin-top:16px;padding:20px 16px"><div style="font-size:14px;color:#4F5C5A;line-height:1.9">
       まだ集計できる試合がありません。<br>
       マイページの過去の試合にある<b>「自分を選ぶ」</b>から、その卓での自分の名前を選ぶと、
-      グループをまたいだ自分の通算成績がここにまとまります。${st.untagged ? `<br><span style="color:#a05a2c">自分をまだ選んでいない卓が${st.untagged}件あります。</span>` : ''}
+      ゲームをまたいだ自分の通算成績がここにまとまります。${st.untagged ? `<br><span style="color:#8A6D1A">自分をまだ選んでいない卓が${st.untagged}件あります。</span>` : ''}
       </div>
-      <button class="auto-btn" style="margin-top:12px" onclick="showView('history')">マイページへ</button></div>`;
+      <button class="auto-btn" style="margin:14px 0 0" onclick="showView('history')">マイページへ</button></div>`;
     return;
   }
-  imgBtn.style.display = 'inline-block';
+  imgBtn.style.display = 'inline-flex';
+  if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'sum';
   const total = st.groups.reduce((a, g) => a + g.games, 0);
-  body.innerHTML = `
-    <div class="card">
-      <div class="card-title" style="margin-bottom:4px">成績まとめ</div>
-      <div style="font-size:12px;color:#8a9aa5;margin-bottom:10px;overflow-wrap:anywhere">自分: ${st.myNames.map(esc).join('・')} ／ ${st.groups.length}グループ・計${total}試合</div>
-      ${myStatsTableHtml(st)}
-      <div style="font-size:11px;color:#aaa;margin-top:8px;line-height:1.7">スコアは各グループのルール（ウマ・返し点・罰符）で計算された値の合計です。</div>
-    </div>
-    ${myH2HCardHtml()}
-    <div class="card">
-      <div class="card-title">グループ別</div>
-      ${myStatsGroupsTableHtml(st)}
-      <div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると結果詳細が開きます</div>
-    </div>
-    ${st.untagged ? `<div style="margin:0 0 8px;padding:9px 12px;background:#fdf3ea;border:1px solid #f0c9a8;border-radius:10px;font-size:12px;color:#a05a2c;line-height:1.7">自分をまだ選んでいない卓が${st.untagged}件あります。<a onclick="showView('history')" style="text-decoration:underline;cursor:pointer;font-weight:700">マイページ</a>で設定すると集計に加わります。</div>` : ''}`;
-  updateScrollHints();
+  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['sum', 'まとめ'], ['h2h', '相手別'], ['groups', 'ゲーム別']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+  const warn = st.untagged ? `<div class="warn-box">${ico('checklist', 16)}<div>自分をまだ選んでいない卓が${st.untagged}件あります。<a onclick="showView('history')">マイページで選ぶ</a></div></div>` : '';
+  const inner = myStatsTab === 'h2h' ? myH2HCardHtml() : myStatsTab === 'groups' ? myStatsGroupsHtml(st) : myStatsSumHtml(st);
+  body.innerHTML = `<div class="ms-sub">${st.myNames.map(esc).join('・')} ・ ${st.groups.length}ゲーム ・ 計${total}試合</div>${warn}${tabs}${inner}`;
+}
+// まとめ: 選んでいる形式（マイページの mpMode と共有）の成績を、1行に値1つのiOSのリストで
+function myStatsSumHtml(st) {
+  const modes = [4, 3].filter(np => st.modes[np]);
+  if (!modes.includes(mpMode)) mpMode = modes.slice().sort((a, b) => st.modes[b].games - st.modes[a].games)[0];
+  const np = mpMode, m = st.modes[np], n = m.games;
+  const seg = modes.length > 1 ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${modes.map(k =>
+    `<button type="button" role="tab" data-np="${k}" class="${k === np ? 'on' : ''}" aria-selected="${k === np}" onclick="mpMode=${k};renderMyStats()">${k === 3 ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+  const row = (k, v, s = '', cls = '') => `<div class="ios-row"><span class="ios-k">${k}</span>${s ? `<span class="ios-s">${s}</span>` : ''}<span class="ios-v ${cls}">${v}</span></div>`;
+  const c1 = m.counts[0] || 0, c2 = m.counts[1] || 0, per = m.score / n;
+  return `${seg}
+    <div class="ios-head">試合</div><div class="ios-group">${row('ゲーム数', m.groups)}${row('試合数', n)}${row('平均着順', (m.avgRankSum / n).toFixed(2))}</div>
+    <div class="ios-head">着順</div><div class="ios-group pad">${rankBarHtml(m.counts, n, np)}</div>
+    <div class="ios-head">率</div><div class="ios-group">${row('トップ率', pctText(c1 / n), `1着 ${fmtCnt(c1)}/${n}`)}${row('連対率', pctText((c1 + c2) / n), `2着以内 ${fmtCnt(c1 + c2)}/${n}`)}${row('ラス回避', pctText((n - m.lastCount) / n), `${np}着 ${fmtCnt(m.lastCount)}/${n}`)}</div>
+    <div class="ios-head">スコア</div><div class="ios-group">${row('通算スコア', fmtScore(m.score), '', scoreCls(m.score))}${row('1試合平均', fmtScore(per), '', scoreCls(per))}${row('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${row('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
+    <div class="ios-foot">スコアは各ゲームのルール（ウマ・返し点・罰符）で計算した値の合計です。</div>`;
+}
+// ゲーム別: 1ゲーム1行（形式のタイル・名前・試合数と平均着順・スコア）。押すと結果詳細
+function myStatsGroupsHtml(st) {
+  const rows = st.groups.map(gr => `<button type="button" class="ios-row gp-row" onclick="viewDetailById('${esc(gr.id)}')">
+      <span class="gp-tile${gr.np === 3 ? ' s3' : ''}">${gr.np === 3 ? '三' : '四'}</span>
+      <span class="gp-main"><span class="gp-name">${esc(gr.name)}</span><span class="gp-sub">${gr.games}試合 ・ 平均着順 ${gr.avgRank.toFixed(2)}${gr.team ? ' ・ チーム戦' : ''}</span></span>
+      <span class="gp-sc ${scoreCls(gr.score)}">${fmtScore(gr.score)}</span>${ico('chevron', 13)}</button>`).join('');
+  return `<div class="ios-head">ゲーム（${st.groups.length}）</div><div class="ios-group">${rows}</div><div class="ios-foot">押すと結果詳細が開きます</div>`;
 }
 
 // ---- 成績の見せ方の部品（マイページの「個人」・仲間ページのメンバーで共用） ----
