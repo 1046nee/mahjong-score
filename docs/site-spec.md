@@ -5,7 +5,7 @@
 - `blog.html` / `blog-*.html` / `mahjong/` `news/` `blog/` — ブログ（→ docs/blog-spec.md）
 - `about.html` — 運営者情報（むにぃ名義・ProfilePage JSON-LD。著者ブロック/フッターからリンク。広告枠は置かない）
 - `score-basics.html` — スコア計算の基本（Article JSON-LD・関連記事への内部リンク・lp_bottom枠）
-- `faq.html` — よくある質問**19問**（**FAQPage JSON-LDはここ。問数・文言とも本文と一致させる**。増やしたら両方直す）
+- `faq.html` — よくある質問**21問**（**FAQPage JSON-LDはここ。問数・文言とも本文と一致させる**。増やしたら両方直す）
 - `contact.html` — お問い合わせ（Googleフォームをiframeでサイト内に埋め込み＋受付内容・返信目安・運営者情報。広告枠は置かない）
 - `terms.html` / `privacy.html` — 規約・PP（AdSense必須文言含む。広告枠は置かない）
 - `404.html` — カスタム404（noindex。blog-site.jsは読み込む）

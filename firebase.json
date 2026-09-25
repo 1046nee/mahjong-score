@@ -16,8 +16,23 @@
       {
         "source": "**",
         "headers": [
-          { "key": "Cache-Control", "value": "no-cache" }
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
         ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/blog-fu-han.html",
+        "destination": "/blog-score-table.html#fu",
+        "type": 301
+      },
+      {
+        "source": "/blog-hai-types.html",
+        "destination": "/blog-rule-basics.html#hai",
+        "type": 301
       }
     ]
   },

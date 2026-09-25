@@ -58,33 +58,34 @@
 - NG例: 「点数計算の基本」という見出しでウマ・オカを説明（→見出しは「スコア計算」に）
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
-## 公開済み記事一覧（18記事）
+## 公開済み記事一覧（19記事＋お知らせ3本）
 0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
 0b. blog-team-tournament.html — 10人以上のチーム対抗戦・トーナメントの開き方（遊び方ガイド）
-1. blog-why-majasco.html — 開発ストーリー（2026-07-13に開発タイムライン・セッション数・最終目標を追記）
+0c. blog-season-ranking.html — 日をまたいだ通算成績と相性（直接対決・スコア差）の読み方（2026-09-25。実例はアプリの関数で検算済み）
+1. blog-why-majasco.html — 開発ストーリー
 2. blog-uma-oka.html — ウマ・オカ入門
-3. blog-score-table.html — 翻・符の点数早見表
+3. blog-score-table.html — 翻・符の点数早見表（**2026-09-25に blog-fu-han を統合**。#fu=符の数え方・実例・符のズレ）
 4. blog-yaku-list.html — 基本役10選
-5. blog-fu-han.html — 符と翻の仕組み
-6. blog-sanma-yonma.html — 三麻と四麻の違い
-7. blog-app-guide.html — スコア記録アプリの選び方
-8. blog-hai-types.html — 麻雀牌の種類と名前
-9. blog-rule-basics.html — 半荘・東風戦とは
-10. blog-riichi.html — リーチとは
-11. blog-manner.html — マナーとチョンボ・途中流局
-12. blog-starter-kit.html — 持ち物リスト
-13. blog-dora.html — ドラの仕組み
-14. blog-naki.html — 鳴きの基本
-15. news/update-2026-07.html — 大型アップデートのお知らせ
-16. news/csv-export.html — 試合結果のCSVエクスポート対応のお知らせ
-17. news/hikitsugi-url.html — 引き継ぎURLのお知らせ
-18. blog-score-examples.html — スコア計算 実例12パターン（2026-08-25。全数値を検算済み。おすすめ）
-19. blog-house-rules.html — 打つ前に決める10項目チェックリスト（2026-08-25。おすすめ）
-20. blog-score-mismatch.html — 点数が合わないときのチェックリスト（2026-08-25）
-21. blog-mawashi-uchi.html — 5人以上での回し方と成績の見方（2026-08-25）
+5. blog-sanma-yonma.html — 三麻と四麻の違い
+6. blog-app-guide.html — スコア記録アプリの選び方
+7. blog-rule-basics.html — 半荘・東風戦・牌の種類と読み方（**2026-09-25に blog-hai-types を統合**。#hai=牌・#136=枚数の確認）
+8. blog-riichi.html — リーチとは
+9. blog-manner.html — マナーとチョンボ・途中流局
+10. blog-starter-kit.html — 持ち物リスト
+11. blog-dora.html — ドラの仕組み
+12. blog-naki.html — 鳴きの基本
+13. blog-score-examples.html — スコア計算 実例12パターン
+14. blog-house-rules.html — 打つ前に決める10項目
+15. blog-score-mismatch.html — 点数が合わないときのチェックリスト
+16. blog-mawashi-uchi.html — 5人以上の回し方・試合数が違う人の比べ方
+- お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html
 
-※18〜21は2度目のAdSense不合格を受けて追加した「独自性の柱」。
-　1〜16のルール解説記事にも、記事ごとに別の切り口で一次情報セクションを追記済み（→ docs/site-spec.md の広告セクション）
+## 統合した記事（2026-09-25）
+- **blog-fu-han → blog-score-table#fu、blog-hai-types → blog-rule-basics#hai**。firebase.json の redirects（301）で転送。
+  AdSenseの「有用性の低いコンテンツ」対策として、どこにでもあるルール解説のうち**内容が重なる2本だけ**を統合した
+  （残りのルール記事は検索で表示されていて、集計係の視点の節＝このサイトならではの部分があるため残した）
+- 統合するときは、元記事の「集計・運営の側から見た節」を必ず持っていく（そこが独自の部分）。
+  元記事へのサイト内リンクはすべて統合先のアンカーに張り替える（転送に頼らない）
 
 ## 記事の直し方は Search Console のクエリで決める（2026-09-18〜）
 - **新規記事を足す前に、Search Consoleの「検索パフォーマンス → クエリ」を表示回数の降順で見る**。
