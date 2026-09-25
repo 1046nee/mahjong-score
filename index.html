@@ -79,6 +79,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .global-logo { cursor: pointer; user-select: none; display: inline-flex; align-items: center; min-width: 0; }
 /* 右上「使い方」はテキストリンク風（ピル背景なし）。ヒーローのCTAと視覚的に競合させない */
 .global-nav-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 600; color: #5f6e6b; background: transparent; border: none; padding: 7px 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+/* ヘッダー右上: 未ログイン＝「ログイン」／ログイン中＝アイコン＋「マイページ」。ログイン状態が分かるまでは見せない（ちらつき防止） */
+.hdr-acct { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 999px; padding: 6px 13px; cursor: pointer; visibility: hidden; white-space: nowrap; }
+.hdr-acct.ready { visibility: visible; }
+.hdr-acct.in { background: #eef7f4; border-color: #b7dccd; padding: 3px 11px 3px 3px; }
+.hdr-av { width: 26px; height: 26px; border-radius: 50%; background: #177083; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
+.hdr-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-width: 380px) { .hdr-acct.in .hdr-label { display: none; } .hdr-acct.in { padding: 3px; } } /* 幅の狭いスマホはアイコンだけ（ロゴと重ならないように） */
+/* ログイン画面 */
+.login-wrap { padding: 20px 16px 30px; max-width: 520px; margin: 0 auto; }
+.login-title { font-size: 22px; font-weight: 900; color: #1f2a28; line-height: 1.45; text-align: center; margin: 4px 0 10px; }
+.login-title .brand-green { color: #177083; }
+.login-lead { font-size: 13px; color: #5f6e6b; line-height: 1.8; text-align: center; margin-bottom: 16px; }
+.login-benefit { display: flex; gap: 12px; align-items: flex-start; background: #fff; border-radius: 14px; padding: 13px 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.login-benefit .feature-icon { width: 44px; height: 44px; margin: 0; flex-shrink: 0; }
+.login-benefit b { display: block; font-size: 14px; color: #1f2a28; margin-bottom: 2px; }
+.login-benefit span { font-size: 12px; color: #5f6e6b; line-height: 1.7; }
+.login-note { font-size: 11px; color: #8a9aa5; line-height: 1.7; margin-top: 12px; text-align: center; }
+.login-note a { color: #177083; }
+.login-local { margin-top: 12px; padding: 9px 12px; background: #fff8e6; border: 1px solid #f2e3b3; border-radius: 10px; font-size: 12px; color: #8a6d1a; line-height: 1.7; }
 /* ゲーム設定画面だけ左上に表示する「戻る」ボタン */
 .header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: none; background: #f0f5f4; color: #177083; font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
 
@@ -672,7 +691,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="global-header">
     <button type="button" class="header-back" id="header-back" aria-label="前のページに戻る">‹</button>
     <span class="global-logo" onclick="goHome()"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></span>
-    <button type="button" class="global-nav-link" onclick="goUsage()">使い方</button>
+    <button type="button" class="hdr-acct" id="hdr-acct" onclick="goMyPage()" aria-label="ログイン">ログイン</button>
   </div>
 </div>
 <div id="sync-bar" class="sync-bar" hidden aria-live="polite"></div>
@@ -900,8 +919,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="10" width="17" height="30" rx="4" fill="#9fc3bd"/><rect x="11" y="14" width="11" height="18" rx="2" fill="#ffffff"/><rect x="24" y="8" width="17" height="30" rx="4" fill="#177083"/><rect x="27" y="12" width="11" height="18" rx="2" fill="#E4F3EC"/><g transform="translate(15 30)"><circle cx="6" cy="6" r="5" fill="none" stroke="#E75620" stroke-width="3.2"/><line x1="9.8" y1="9.8" x2="19" y2="19" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="15" x2="18" y2="12" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/></g></svg></div>
-          <h3>機種変更しても引き継げる</h3>
-          <p>「引き継ぎURL」を作っておけば、スマホやブラウザを変えてもURLを開くだけで履歴がまるごと復活。会員登録なしのまま、記録をずっと持ち運べます。</p>
+          <h3>ログインで記録がずっと残る</h3>
+          <p>Googleでログインすると、過去の試合と自分の成績がアカウントに残ります。機種変更しても、ホーム画面のアプリでも同じ一覧。記録するだけならログインは不要です。</p>
         </div>
         </div>
         <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
@@ -1209,23 +1228,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
     <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()">👥 仲間ページに追加</button>
     <div style="text-align:center;margin-top:14px">
-      <button type="button" onclick="leaveGame();showView('history')" style="background:none;border:none;font-size:13px;font-weight:600;color:#5f6e6b;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px">過去の試合・引き継ぎURL ›</button>
+      <button type="button" onclick="goMyPage()" style="background:none;border:none;font-size:13px;font-weight:600;color:#5f6e6b;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:8px">マイページ（過去の試合・自分の成績） ›</button>
     </div>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
 </div>
 
+<!-- LOGIN（ログインでできること＋Googleでログイン） -->
+<div id="view-login" class="view">
+  <div class="login-wrap">
+    <h1 class="login-title">ログインすると、<br>麻雀の記録が<span class="brand-green">ずっと残る</span>。</h1>
+    <p class="login-lead">試合を作って記録・共有するだけなら、ログインはいりません。<br>ログインすると、こんなことができるようになります。</p>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="10" width="17" height="30" rx="4" fill="#9fc3bd"/><rect x="11" y="14" width="11" height="18" rx="2" fill="#ffffff"/><rect x="24" y="8" width="17" height="30" rx="4" fill="#177083"/><rect x="27" y="12" width="11" height="18" rx="2" fill="#E4F3EC"/><g transform="translate(15 30)"><circle cx="6" cy="6" r="5" fill="none" stroke="#E75620" stroke-width="3.2"/><line x1="9.8" y1="9.8" x2="19" y2="19" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="15" x2="18" y2="12" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/></g></svg></div><div><b>過去の試合がずっと残る</b><span>アカウントに保存されるので、ブラウザのデータが消えても、機種変更しても、ホーム画面のアプリでも同じ一覧が見られます。</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div><div><b>自分の成績がわかる</b><span>試合をまたいで、通算スコア・平均着順・着順の分布・トップ率を自動で集計します。</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="15" cy="17" r="6" fill="#177083"/><path d="M5 36 a10 9 0 0 1 20 0 Z" fill="#177083"/><circle cx="33" cy="17" r="6" fill="#9fc3bd"/><path d="M23 36 a10 9 0 0 1 20 0 Z" fill="#9fc3bd"/><circle cx="24" cy="26" r="7" fill="#E75620"/><text x="24" y="29.2" font-size="7.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">VS</text></svg></div><div><b>相手ごとの対戦成績</b><span>いつもの仲間の誰に強くて誰が手ごわいか、直接対決の勝ち負けとスコア差でわかります。</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="13" width="24" height="28" rx="4" fill="#9fc3bd"/><rect x="13" y="9" width="24" height="28" rx="4" fill="#ffffff" stroke="#177083" stroke-width="2"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M18 17 H32"/><path d="M18 23 H32"/><path d="M18 29 H27"/></g><path d="M31 31 h10 v5 a5 5 0 0 1 -10 0 Z" fill="#E75620"/><rect x="35" y="40" width="2" height="3" fill="#E75620"/><rect x="32.5" y="43" width="7" height="2" rx="1" fill="#E75620"/></svg></div><div><b>仲間ページで通算順位</b><span>定例会や大会の試合を集めて、自分が入っていない試合も含めた通算順位を仲間全員で見られます。</span></div></div>
+    <div id="login-action"></div>
+    <p class="login-note">使うのはGoogleアカウントの識別子だけです。表示名・メールアドレスは、ログイン中であることの表示にだけ使います（<a href="/privacy.html">プライバシーポリシー</a>）。</p>
+  </div>
+</div>
+
 <!-- HISTORY -->
 <div id="view-history" class="view">
   <div class="page-title-row">
-    <h1>過去の試合</h1>
+    <h1>マイページ</h1>
   </div>
-  <div style="margin:0 16px;padding:9px 12px;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;font-size:12px;color:#8a6d1a;line-height:1.8"><span id="hist-tip-text">履歴は<b>この端末だけ</b>に保存されています。</span><span id="hist-tip-install"><br>📲 <b>ホーム画面に追加</b>すると消えにくくなります。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></span></div>
   <div id="account-card" class="acct-card" style="display:none"></div>
-  <div id="mylist-card" style="margin:10px 16px 0;padding:10px 12px;background:#eef7f4;border:1px solid #cfe3db;border-radius:10px;font-size:12px;color:#33544a;line-height:1.7"></div>
   <div style="margin:10px 16px 0"><button class="auto-btn" onclick="showView('mystats')">📊 自分の成績シート</button></div>
   <div id="hist-organize"></div>
   <div id="hist-circles"></div>
+  <div class="card-title" style="margin:18px 16px 0">過去の試合</div>
   <div style="display:flex;gap:8px;margin:10px 16px 0">
     <input type="text" id="hist-search" placeholder="ゲーム名・メンバー名で検索" oninput="renderHistory()" style="flex:1;min-width:0">
     <select id="hist-mode" onchange="renderHistory()" style="width:84px;flex-shrink:0">
@@ -1240,6 +1272,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </select>
   </div>
   <div class="history-body" id="history-body"></div>
+  <div style="margin:4px 16px 20px;font-size:12px;color:#8a9aa5;line-height:1.7">📲 ホーム画面に追加すると、アプリのように1タップで開けます。追加したアプリでも一度Googleでログインすれば、同じ記録が見られます。<a onclick="showInstallHelp()" style="color:#177083;font-weight:600;text-decoration:underline;cursor:pointer">追加のしかた</a></div>
 </div>
 
 <!-- MYSTATS（自分の成績シート） -->
@@ -1816,25 +1849,33 @@ async function mergeMyListData(data) {
   });
   return added;
 }
-// #my=ID で開いたとき: サーバーのリストをこの端末に取り込み、以後この端末も同じリストに追記していく
+// #my=ID（以前の「引き継ぎURL」）で開いたとき: ログインしてアカウントに移す。
+// 過去の試合はログインした人だけが見られる形にしたので、引き継ぎURLは「アカウントへ移す入り口」としてだけ残している
+const PENDING_MYLIST_KEY = 'mahjong-pending-mylist';
 async function openMyListFromUrl(lid) {
-  showLoading(true);
+  try { localStorage.setItem(PENDING_MYLIST_KEY, lid); } catch (e) {}
+  history.replaceState(null, '', location.pathname);
+  if (currentUser && myListId) { await importPendingMyList(); showView('history'); return; }
+  pendingMyPage = true;
+  showView('login');
+  showToast('引き継ぎURLの過去の試合は、ログインするとアカウントに移せます', 6000);
+}
+async function importPendingMyList() {
+  let lid = null;
+  try { lid = localStorage.getItem(PENDING_MYLIST_KEY); } catch (e) {}
+  if (!lid || !currentUser || !myListId) return;
   try {
-    const snap = await db.ref('mylists/' + lid).once('value');
-    if (!snap.exists()) { alert('この引き継ぎURLは見つかりませんでした。'); return; }
-    myListId = lid;
-    myListSynced.clear(); // 「送信済み」の記録は前のリストのもの。別のリストに乗り換えたら白紙に戻す
-    try { localStorage.setItem(MYLIST_KEY, lid); } catch (e) {}
-    const added = await mergeMyListData(snap.val() || {});
-    // 取り込みが終わったらURLからIDを外す（再読み込みのたびに取り込み直さない。
-    // 起動時のreplaceStateはhash保持が必須だが、ここは処理完了後なので意図的に外す）
-    history.replaceState(null, '', location.pathname);
-    showView('history');
-    showToast(added ? `履歴を読み込みました（新たに${added}件）` : '履歴は最新の状態です');
-    track('mylist_restore', { added });
-  } catch (e) {
-    alert('接続エラーが発生しました。');
-  } finally { showLoading(false); }
+    if (lid !== myListId) {
+      const snap = await db.ref('mylists/' + lid).once('value');
+      if (snap.exists()) {
+        const added = await mergeMyListData(snap.val() || {});
+        await mergeOldListInto(lid, myListId);
+        showToast(`引き継ぎURLの過去の試合（${added}件）をアカウントに移しました`, 5000);
+      }
+    }
+    localStorage.removeItem(PENDING_MYLIST_KEY);
+    if (document.getElementById('view-history').classList.contains('active')) renderHistory();
+  } catch (e) { /* 次にログインしたときにもう一度試す */ }
 }
 // 引き継ぎURL（または14文字のIDだけ）を貼り付けて読み込む。
 // ホーム画面に追加したアプリはアドレスバーが無くURLを直接開けないため、この入力欄が取り込みの導線になる
@@ -1865,75 +1906,44 @@ async function refreshMyList() {
   } catch (e) { /* オフライン等。次の機会に取り込む */ }
   finally { myListRefreshing = false; }
 }
-// 過去の試合画面のカード（未作成なら作成ボタン、作成済みならURLとコピー）
-function renderMyListCard() {
-  const el = document.getElementById('mylist-card');
-  if (!el) return;
-  // 直上の注意書きは引き継ぎの有無で内容が変わる（「この端末だけ」は作成済みだと嘘になる）
-  const tip = document.getElementById('hist-tip-text');
-  if (tip) tip.innerHTML = currentUser
-    ? '履歴は<b>アカウントに保存</b>され、ログインした端末で自動でそろいます。'
-    : myListId
-      ? '履歴はこの端末に保存され、<b>引き継ぎURLにも自動で追記</b>されています。'
-      : '履歴は<b>この端末だけ</b>に保存されています。';
-  if (currentUser && myListId) {
-    // ログイン中はアカウントが同期を担う。引き継ぎURLはログインできない端末（LINEの中のブラウザ等）用に畳んで残す
-    el.innerHTML = `<details><summary style="cursor:pointer;font-weight:700">🔑 引き継ぎURL（ログインできない端末で使う）</summary>
-      <div style="margin-top:6px">このURLを開くか、下の欄に貼り付けると、ログインせずにアカウントと同じ記録を読み込めます。<span style="color:#a05a2c">自分専用です。仲間に送るのはグループの共有URLで。</span></div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
-          style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff;color:#555">
-        <button type="button" class="edit-tab" style="flex-shrink:0" onclick="copyMyListUrl()">コピー</button>
-      </div></details>`;
-    return;
-  }
-  // 貼り付け読み込みは「別の保存領域」で開いた人の導線（ホーム画面アプリ・機種変更後の新端末など）。
-  // 作成済みでも乗り換え用に必要（standaloneで誤って「新しく作る」を押すと、これが無いと二度と取り込めない）
-  const pasteBlock = `
-    <div style="display:flex;gap:6px;margin-top:4px">
-      <input type="text" id="mylist-import-input" placeholder="引き継ぎURLをここに貼り付け"
-        style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff">
-      <button type="button" class="edit-tab" style="flex-shrink:0" onclick="importMyListFromInput()">読み込む</button>
-    </div>`;
-  if (!myListId) {
-    // 主役の出し分けは**standalone判定ではなく履歴の件数**で決める。
-    // 判定は端末によって外れる（＝アプリなのに「作る」が主役になり、誤タップで空のリストを作ってしまう）が、
-    // 「履歴0件でこの画面に来た＝持ってくるものが無い＝引き継ぎたい」は判定に依存せず必ず正しい。
-    // ホームの入り口（renderRecentGames）も同じく件数で出しているので、案内と着地の主役が一致する
-    if (!(appState.games || []).length) {
-      el.innerHTML = `<b>🔑 ブラウザで使っていた履歴を引き継ぐ</b><br>
-        前に使っていた端末（ブラウザ）の「過去の試合」で引き継ぎURLを作ってコピーし、ここに貼り付けてください。
-        読み込みは最初の1回だけ。以降はどちらで遊んでも自動で同期されます。
-        ${pasteBlock}
-        <div style="margin-top:8px;color:#5f8577">引き継ぐものが無い（この端末で新しく始める）場合:</div>
-        <button type="button" class="edit-tab" id="mylist-create-btn" style="margin-top:4px" onclick="createMyList()">引き継ぎURLを新しく作る</button>`;
-    } else {
-      // 一瞬でメリットが伝わる短さを最優先（詳細は作ったあとの表示とお知らせ記事が担う）
-      el.innerHTML = `<b>🔑 機種変更しても、履歴を引き継げます</b><br>
-        引き継ぎURLを1回作って控えておくだけ。あとの試合は自動で追記されます（登録不要）。
-        <button type="button" class="auto-btn" id="mylist-create-btn" style="margin-top:8px" onclick="createMyList()">引き継ぎURLを作る</button>
-        <div style="margin-top:2px;color:#5f8577">すでに引き継ぎURLを持っている場合（別の端末・ホーム画面に追加したアプリ）:</div>
-        ${pasteBlock}`;
-    }
+// 引き継ぎURLのカードは廃止した（2026-09-25。過去の試合はログインしてアカウントに残す形にした）。
+// 呼び出し元がまだあるので、何もしない関数として残す。#my= のURLは openMyListFromUrl がアカウントへ移す
+function renderMyListCard() {}
+
+// ---- ヘッダー右上（ログイン／マイページ）とログイン画面 ----
+let authKnown = false;   // ログイン状態がもう分かったか（分かるまではヘッダーのボタンを見せない）
+let pendingMyPage = false; // #mypage・#login で開いたとき、ログイン状態が分かってから行き先を決める
+function renderHeaderAccount() {
+  const b = document.getElementById('hdr-acct');
+  if (!b) return;
+  if (!loginAvailable()) { b.style.display = 'none'; return; }
+  b.classList.toggle('ready', authKnown);
+  if (currentUser) {
+    const nm = String(currentUser.displayName || currentUser.email || '').trim();
+    const av = currentUser.photoURL
+      ? `<img src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${esc((nm[0] || 'M').toUpperCase()).replace(/'/g, '')}'))">`
+      : esc((nm[0] || 'M').toUpperCase());
+    b.classList.add('in');
+    b.innerHTML = `<span class="hdr-av">${av}</span><span class="hdr-label">マイページ</span>`;
+    b.setAttribute('aria-label', 'マイページ（ログイン中）');
   } else {
-    el.innerHTML = `<b>🔑 引き継ぎURL</b><span style="color:#5f8577">（作成済み・自動で追記中）</span><br>
-      機種変更したら、新しい端末でこのURLを開くだけで履歴が戻ります。<br>
-      <span style="color:#a05a2c">⚠ 自分専用です。仲間に送るのはグループの共有URLで。</span>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <input type="text" readonly value="${esc(location.origin + '/#my=' + myListId)}" onclick="this.select()"
-          style="flex:1;min-width:0;font-size:11px;padding:8px;border:1px solid #cfe3db;border-radius:8px;background:#fff;color:#555">
-        <button type="button" class="edit-tab" style="flex-shrink:0" onclick="copyMyListUrl()">コピー</button>
-      </div>
-      <details style="margin-top:8px">
-        <summary style="cursor:pointer;color:#5f8577">別の引き継ぎURLを読み込む（乗り換え）</summary>
-        <div style="margin-top:4px">間違えて新しく作ってしまったときは、本来のURLをここに貼り付ければ乗り換えられます。いまの履歴は読み込んだURL側の一覧にまとめられます。</div>
-        ${pasteBlock}
-      </details>`;
+    b.classList.remove('in');
+    b.textContent = 'ログイン';
+    b.setAttribute('aria-label', 'ログイン');
   }
-  // ログインできる環境では、ログインが本線。引き継ぎURLは「ログインせずに使う人・ログインできない端末」向けに畳む
-  if (loginAvailable() && !currentUser) {
-    el.innerHTML = `<details><summary style="cursor:pointer;font-weight:700">🔑 ログインせずに引き継ぐ（引き継ぎURL）</summary><div style="margin-top:6px">${el.innerHTML}</div></details>`;
-  }
+}
+// ヘッダーのボタン・試合の画面の下のリンク: ログイン中はマイページ、未ログインはログイン画面
+function goMyPage() {
+  if (activeGame) leaveGame();
+  showView(currentUser || !loginAvailable() ? 'history' : 'login');
+}
+function renderLogin() {
+  const el = document.getElementById('login-action');
+  if (!el) return;
+  const n = (appState.games || []).length;
+  el.innerHTML = `${IN_LINE_APP ? '<div class="acct-warn" style="margin-top:6px">LINEの中の画面ではGoogleにログインできません。下のボタンでSafari・Chromeに移ってからログインしてください。</div>' : ''}
+    <button type="button" class="google-btn" style="margin-top:14px;padding:13px" onclick="signInWithGoogle()">${IN_LINE_APP ? 'Safari・Chromeで開く' : '<span class="g-mark">G</span>Googleでログイン'}</button>
+    ${n ? `<div class="login-local">この端末に残っている過去の試合（${n}件）も、ログインするとアカウントに引き継がれ、ずっと残ります。</div>` : ''}`;
 }
 
 // ---- アカウント（Googleでログイン・任意） ----
@@ -1955,6 +1965,12 @@ function signInWithGoogle() {
   if (!loginAvailable()) { showToast('ログインは準備中です'); return; }
   if (IN_LINE_APP) { location.href = externalBrowserUrl(); return; }
   track('login_start');
+  // ログインのリダイレクトから戻ると、押したときのURL（ログイン画面は / ）に戻る。
+  // ログイン画面から押した場合は、戻ったあとマイページを開く
+  try {
+    const act = (document.querySelector('.view.active') || {}).id || '';
+    if (act === 'view-login' || act === 'view-history' || act === 'view-mystats') localStorage.setItem('mahjong-after-login', String(Date.now()));
+  } catch (e) {}
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   showLoading(true);
@@ -1971,7 +1987,7 @@ function loginErrorText(e) {
 function confirmSignOut() {
   document.getElementById('confirm-modal-title').textContent = 'ログアウト';
   document.getElementById('confirm-modal-desc').textContent =
-    'この端末とアカウントの同期をやめます。この端末の過去の試合はそのまま残り、アカウントの記録も消えません。もう一度ログインすれば元に戻ります。';
+    'この端末からログアウトします。過去の試合・自分の成績・仲間ページはアカウントに残っていて、もう一度ログインすればすぐに見られます。';
   const ok = document.getElementById('confirm-modal-ok');
   ok.textContent = 'ログアウトする';
   ok.onclick = () => { closeConfirmModal(); signOutAccount(); };
@@ -1983,9 +1999,15 @@ async function signOutAccount() {
   myListId = null;
   try { localStorage.removeItem(MYLIST_KEY); } catch (e) {}
   myListSynced.clear();
+  // この端末の控え（過去の試合・自分の選択・仲間ページの一覧）も消す。記録はアカウントに残っている。
+  // 残すと、同じ端末で次に別の人がログインしたとき、その人のアカウントに混ざってしまう
+  appState.games = []; saveStorage();
+  gameTags = {}; saveTags();
+  myCircles = {}; circleSeen = {}; saveCircleSeen();
   currentUser = null;
-  renderAccountCard(); renderMyListCard(); renderRecentGames();
-  showToast('ログアウトしました（この端末の履歴は残ります）');
+  renderHeaderAccount(); renderRecentGames();
+  showView('home');
+  showToast('ログアウトしました');
   track('logout');
 }
 // ログインしたアカウントに、この端末の記録をつなぐ
@@ -2017,6 +2039,7 @@ async function attachAccount(user) {
       await refreshMyList();
     }
     await loadMyCircles();
+    await importPendingMyList();
   } catch (e) {
     showToast('アカウントとの同期に失敗しました。通信環境を確認して、もう一度開いてください', 6000);
   } finally {
@@ -2063,12 +2086,28 @@ function renderAccountCard() {
     <button type="button" class="google-btn" onclick="signInWithGoogle()">${IN_LINE_APP ? 'ブラウザで開く' : '<span class="g-mark">G</span>Googleでログイン'}</button>`;
 }
 function initAuth() {
-  if (!loginAvailable()) return;
+  if (!loginAvailable()) { authKnown = true; renderHeaderAccount(); return; }
+  // ログインはこの端末に保存し、サイトを開き直しても続ける（Firebaseの既定と同じだが明示しておく）。
+  // iPhoneのSafariは7日間開かないとサイトのデータを消すことがあり、そのときだけログインし直しになる（記録はアカウント側に残る）
+  try { authApi.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {}); } catch (e) {}
+  setTimeout(() => { if (!authKnown) { authKnown = true; renderHeaderAccount(); } }, 3000);
   authApi.getRedirectResult().then(r => { if (r && r.user) track('login_done'); })
     .catch(e => showToast(loginErrorText(e), 6000));
   authApi.onAuthStateChanged(user => {
     showLoading(false);
     currentUser = user || null;
+    authKnown = true;
+    renderHeaderAccount();
+    renderRecentGames();
+    if (activeGame) renderAskMe();
+    // #mypage で開いた・ログイン画面にいる・マイページにいたのにログアウトした、の行き先を決め直す
+    const act = (document.querySelector('.view.active') || {}).id || '';
+    let afterLogin = false;
+    try { const t = Number(localStorage.getItem('mahjong-after-login')); afterLogin = t && Date.now() - t < 10 * 60 * 1000; if (user) localStorage.removeItem('mahjong-after-login'); } catch (e) {}
+    if (pendingMyPage) { pendingMyPage = false; showView(user ? 'history' : 'login', true); }
+    else if (user && afterLogin && !activeGame && !location.hash) showView('history');
+    else if (user && act === 'view-login') showView('history');
+    else if (!user && (act === 'view-history' || act === 'view-mystats')) showView('login', true);
     renderAccountCard();
     renderMyListCard();
     if (user) { attachAccount(user); resumePendingJoin(); }
@@ -3064,7 +3103,7 @@ function renderCircleSection() {
     `<button type="button" class="series-row" onclick="openCircle('${esc(cid)}')"><span>${esc(m.name || '仲間ページ')}<span class="sr-sub">${m.member ? 'メンバー' : '見るだけ'}</span></span><span class="sr-arrow">›</span></button>`).join('');
   el.innerHTML = `<div class="series-box">
     <div class="series-head">👥 仲間ページ</div>
-    <div class="series-lead">仲間の試合をまとめて、通算順位と対戦成績を全員で見られるページです。自分が入っていない試合も入れられます。見るだけならログインはいりません。</div>
+    <div class="series-lead">仲間の試合をまとめて、通算順位と対戦成績を全員で見られるページです。自分が入っていない試合も入れられます。結果のリンクは、ログインしていない人も見られます。</div>
     ${rows}
     ${loginAvailable() ? `<button type="button" class="auto-btn sub" style="margin:8px 0 0" onclick="${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}">＋ 仲間ページを作る</button>` : ''}
     <div style="display:flex;gap:6px;margin-top:8px">
@@ -3605,6 +3644,11 @@ if (!history.state) {
 }
 
 function showView(name, skipHistory = false) {
+  // 過去の試合・自分の成績はアカウントに残す機能＝ログインが必要（ブラウザだけに残る履歴は画面に出さない）
+  if (loginAvailable()) {
+    if ((name === 'history' || name === 'mystats') && !currentUser) name = 'login';
+    else if (name === 'login' && currentUser) name = 'history';
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + name).classList.add('active');
   window.scrollTo(0, 0); // 画面遷移時に一番上へ
@@ -3617,6 +3661,7 @@ function showView(name, skipHistory = false) {
 
   if (name === 'history') { renderAccountCard(); renderMyListCard(); renderHistory(); refreshMyList(); }
   if (name === 'circle') renderCircle();
+  if (name === 'login') renderLogin();
   if (name === 'mystats') renderMyStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') { checkPendingSession(); renderRecentGames(); }
@@ -3635,7 +3680,7 @@ function showView(name, skipHistory = false) {
 function backTargetOf(name) {
   if (name === 'setup' || name === 'history') return 'home';
   if (name === 'mystats' || name === 'circle') return 'history';
-  if (name === 'join') return 'home';
+  if (name === 'join' || name === 'login') return 'home';
   if (name === 'detail') return detailBackTo || 'history';
   if (name === 'game') return 'game-leave'; // 対局からの退出はgoHome（保存・リスナー停止を通す）
   return null; // home・share（作成完了の順方向フロー）には出さない
@@ -3790,26 +3835,20 @@ function renderRecentGames() {
   if (!wrap || !list) return;
   const games = appState.games || [];
   const title = wrap.querySelector('.rg-title');
-  if (!games.length) {
-    // 履歴0件でも**必ず**引き継ぎの入り口を出す。
-    // ホーム画面に追加したアプリはブラウザと別の保存領域で始まるため履歴が空になるが、
-    // ここを隠すと「過去の試合」＝引き継ぎ欄のある唯一の画面に一生たどり着けない。
-    // standalone判定は端末によって外れることがある（＝判定に頼ると「表示されない人」が出る）ので、
-    // 判定は文言の出し分けだけに使い、入り口そのものは無条件に出す。
-    // 新規訪問者にも1行出るが、履歴が1件でも入れば「最近の試合」に置き換わって消える
+  if (currentUser || !loginAvailable()) {
+    if (!games.length) { wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    if (title) title.textContent = '履歴の引き継ぎ';
-    const label = myListId ? '過去の試合・引き継ぎURL'
-      : isStandaloneApp() ? 'ブラウザで使っていた履歴を引き継ぐ'
-      : '別の端末の履歴を引き継ぐ';
-    list.innerHTML = `<button type="button" class="rg-row" onclick="showView('history')"><span class="rg-name">${label}</span><span class="rg-arrow">›</span></button>`;
+    if (title) title.textContent = '最近の試合';
+    list.innerHTML = games.slice(0, 2).map(g =>
+      `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
+    ).join('') + `<a class="rg-more" onclick="goMyPage()">マイページで過去の試合をすべて見る ›</a>`;
     return;
   }
+  // 未ログイン: 過去の試合は出さない（ブラウザのデータは消えることがあるため、残すのはログインしてから）
+  if (!games.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
-  if (title) title.textContent = '最近の試合';
-  list.innerHTML = games.slice(0, 2).map(g =>
-    `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
-  ).join('') + `<a class="rg-more" onclick="showView('history')">過去の試合をすべて見る ›</a>`;
+  if (title) title.textContent = 'この端末の過去の試合';
+  list.innerHTML = `<button type="button" class="rg-row" onclick="goMyPage()"><span class="rg-name">${games.length}件あります。ログインすると、ずっと残せます</span><span class="rg-arrow">›</span></button>`;
 }
 
 // ---- Setup ----
@@ -6984,13 +7023,13 @@ function renderAskMe() {
   const g = activeGame;
   const names = (g && g.settings && g.settings.playerNames) || [];
   const t = g ? tagOf(g.id) : null;
-  if (!g || t.role === 'watch' || t.me != null || askmeSkip[g.id] || !names.length || names.every(isPlaceholderName)) {
+  if (!g || !currentUser || t.role === 'watch' || t.me != null || askmeSkip[g.id] || !names.length || names.every(isPlaceholderName)) {
     el.style.display = 'none'; el.innerHTML = ''; return;
   }
   const known = myKnownNameKeys();
   let guess = -1;
   for (const k of known) { guess = names.findIndex(n => personKey(n) === k); if (guess >= 0) break; }
-  const sub = `<div class="askme-sub">選ぶと、ほかの日の試合とまとめた「自分の成績」と対戦成績に入ります。${currentUser ? 'アカウントに保存されます。' : loginAvailable() ? 'この端末に保存されます（ログインすると、どの端末でも見られます）。' : 'この端末に保存されます。'}</div>`;
+  const sub = `<div class="askme-sub">選ぶと、マイページの「自分の成績」と対戦成績に入ります（アカウントに保存）。</div>`;
   el.style.display = 'block';
   if (guess >= 0 && !askmeShowAll) {
     el.innerHTML = `<div class="askme-q">このゲームのあなたは<b>「${esc(names[guess])}」</b>ですか？</div>
@@ -7259,10 +7298,10 @@ function renderMyStats() {
     imgBtn.style.display = 'none';
     body.innerHTML = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.9">
       まだ集計できる試合がありません。<br>
-      「過去の試合」の各カードにある<b>「🀄 参加 · 自分を選ぶ」</b>から、その卓での自分の名前を選ぶと、
+      マイページの過去の試合の各カードにある<b>「🀄 参加 · 自分を選ぶ」</b>から、その卓での自分の名前を選ぶと、
       グループをまたいだ自分の通算成績がここにまとまります。${st.untagged ? `<br><span style="color:#a05a2c">自分をまだ選んでいない卓が${st.untagged}件あります。</span>` : ''}
       </div>
-      <button class="auto-btn" style="margin-top:12px" onclick="showView('history')">過去の試合へ</button></div>`;
+      <button class="auto-btn" style="margin-top:12px" onclick="showView('history')">マイページへ</button></div>`;
     return;
   }
   imgBtn.style.display = 'inline-block';
@@ -7280,7 +7319,7 @@ function renderMyStats() {
       ${myStatsGroupsTableHtml(st)}
       <div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると結果詳細が開きます</div>
     </div>
-    ${st.untagged ? `<div style="margin:0 0 8px;padding:9px 12px;background:#fdf3ea;border:1px solid #f0c9a8;border-radius:10px;font-size:12px;color:#a05a2c;line-height:1.7">自分をまだ選んでいない「参加」の卓が${st.untagged}件あります。<a onclick="showView('history')" style="text-decoration:underline;cursor:pointer;font-weight:700">過去の試合</a>で設定すると集計に加わります。</div>` : ''}`;
+    ${st.untagged ? `<div style="margin:0 0 8px;padding:9px 12px;background:#fdf3ea;border:1px solid #f0c9a8;border-radius:10px;font-size:12px;color:#a05a2c;line-height:1.7">自分をまだ選んでいない「参加」の卓が${st.untagged}件あります。<a onclick="showView('history')" style="text-decoration:underline;cursor:pointer;font-weight:700">マイページ</a>で設定すると集計に加わります。</div>` : ''}`;
   updateScrollHints();
 }
 
@@ -7406,17 +7445,9 @@ function showInstallHelp() {
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px">
       ホーム画面に追加すると、アプリのようにワンタップで開けるようになります。
-      とくにiPhoneでは、<b>7日間使わないとブラウザの保存データが自動削除される仕組み</b>があり、
-      ホーム画面から開くまじゃすこはその対象外になるため、履歴が消えにくくなります。
     </div>
-    ${loginAvailable() ? `<div style="font-size:12px;color:#2f5d35;background:#eef9ef;border:1px solid #bfe3c3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:10px">
-      ✅ <b>いちばんかんたんなのはログイン</b>です。ブラウザとホーム画面のアプリの両方で「Googleでログイン」するだけで、同じ記録になります（下の引き継ぎURLの手順はいりません）。</div>` : ''}
-    <div style="font-size:12px;color:#8a6d1a;background:#fff8e6;border:1px solid #f2e3b3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:14px">
-      ⚠ ホーム画面に追加したまじゃすこは、<b>ブラウザとは別の保存場所</b>で動きます（OSの仕様）。
-      いま見えている履歴は自動では引き継がれないため、おすすめの順番は——<br>
-      <b>① 上の「引き継ぎURL」を作ってコピー → ② ホーム画面に追加 → ③ 追加したアプリを開き、
-      「ブラウザで使っていた履歴を引き継ぐ」にURLを貼り付けて「読み込む」</b><br>
-      ③は最初の1回だけ。以降はブラウザ・アプリのどちらで遊んでも、開いたときに自動で同期されます。
+    <div style="font-size:12px;color:#2f5d35;background:#eef9ef;border:1px solid #bfe3c3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:14px">
+      ホーム画面に追加したまじゃすこは、ブラウザとは別のアプリとして開きます（OSの仕様）。<b>追加したアプリでも一度「Googleでログイン」</b>すれば、ブラウザと同じ過去の試合・成績・仲間ページが見られます。
     </div>
     <div style="font-size:13px;color:#333">
       ${iosBlock}
@@ -7432,7 +7463,7 @@ function renderHistory() {
   renderCircleSection();
   const body = document.getElementById('history-body');
   if (!appState.games || appState.games.length === 0) {
-    body.innerHTML = '<div class="empty-msg">まだ試合の履歴がありません</div>'; return;
+    body.innerHTML = '<div class="empty-msg">まだ試合がありません。試合を作るか、共有された試合を開くと、ここに自動で残ります。</div>'; return;
   }
   // 絞り込み: グループ名・メンバー名のキーワード検索 ＋ 対局形式（4人/3人）
   const q = (document.getElementById('hist-search').value || '').trim().toLowerCase();
@@ -7642,7 +7673,6 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) flus
 setInterval(updateSyncUi, 1000);
 flushOutbox();
 if (appState.games && appState.games.length) requestPersistentStorage(); // 履歴を持つ端末は保存データの保護を要求
-if (isStandaloneApp()) { const el = document.getElementById('hist-tip-install'); if (el) el.style.display = 'none'; }
 renderRecentGames();
 initSetupForm();
 initFeaturesCarousel();
@@ -7650,7 +7680,12 @@ const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
 initAuth();
-if (urlHash.startsWith('my=')) {
+if (urlHash === 'mypage' || urlHash === 'login') {
+  // ログイン状態が分かってから、マイページかログイン画面かを決める（onAuthStateChanged）
+  pendingMyPage = true;
+  history.replaceState(null, '', location.pathname);
+  if (!loginAvailable()) { pendingMyPage = false; showView('home'); }
+} else if (urlHash.startsWith('my=')) {
   openMyListFromUrl(urlHash.slice(3));
 } else if (/^join=/.test(urlHash)) {
   const code = normInviteCode(urlHash.slice(5));

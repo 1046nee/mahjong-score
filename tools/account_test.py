@@ -136,20 +136,34 @@ def main():
 
         # ---- 2〜4. アカウント同期 ----
         pg.evaluate(f"setTag('{g1}', 'play', 0)")
+        results.append(("[2a] 未ログインのヘッダー右上は「ログイン」（使い方ではない）", True,
+                        pg.evaluate("(() => { const b = document.getElementById('hdr-acct'); return !!b && b.textContent.trim() === 'ログイン' && b.classList.contains('ready'); })()")))
         pg.evaluate("showView('history')")
-        results.append(("[2a] 未ログインでは「Googleでログイン」のカードが出る", True,
-                        pg.evaluate("document.getElementById('account-card').innerText.includes('Googleでログイン')")))
+        results.append(("[2b] 未ログインでマイページ（過去の試合）を開くと、ログイン画面になる（ブラウザだけの履歴は出さない）", True,
+                        pg.evaluate("document.getElementById('view-login').classList.contains('active') && document.getElementById('login-action').innerText.includes('Googleでログイン') && document.getElementById('login-action').innerText.includes('この端末に残っている過去の試合')")))
+        results.append(("[2c] 未ログインではトップに過去の試合を並べず、ログインして残す入り口だけ出す", True,
+                        pg.evaluate("(showView('home'), document.getElementById('recent-games-list').innerText.includes('ログインすると'))")))
         login_as(pg, U1)
+        results.append(("[2d] ログイン後はヘッダーが「マイページ」（ログイン中とわかる）になり、ログイン画面からマイページへ移る", True,
+                        pg.evaluate("document.getElementById('hdr-acct').textContent.includes('マイページ') && document.getElementById('hdr-acct').classList.contains('in')")))
         pg.wait_for_function("() => myListId", timeout=10000)
         db = db_of()
         lid = db.get("users", {}).get(U1, {}).get("listId")
-        results.append(("[2b] users/{uid}/listId ができ、端末の履歴がそのリストに入る", True,
+        results.append(("[2e] users/{uid}/listId ができ、端末の履歴がそのリストに入る", True,
                         bool(lid) and g1 in db.get("mylists", {}).get(lid, {}).get("groups", {})))
         pg.evaluate("() => { const keep = ['__smoke_db', '__smoke_user']; Object.keys(localStorage).forEach(k => { if (!keep.includes(k)) localStorage.removeItem(k); }); }")
         pg.reload(wait_until="load")
         pg.wait_for_function("() => currentUser && !accountBusy && (appState.games || []).length", timeout=10000)
         results.append(("[3] 空の端末でログインすると、過去の試合と「自分」の選択が戻る", True,
                         pg.evaluate(f"appState.games.some(g => g.id === '{g1}') && tagOf('{g1}').me === 0")))
+        pg.evaluate("signOutAccount()")
+        pg.wait_for_timeout(300)
+        results.append(("[3b] ログアウトすると、この端末の過去の試合の控えも消える（次に別の人がログインしても混ざらない）", True,
+                        pg.evaluate("(appState.games || []).length === 0 && !myListId && document.getElementById('hdr-acct').textContent.trim() === 'ログイン'")))
+        # もう一度ログインすれば、アカウントから戻る
+        login_as(pg, U1)
+        pg.wait_for_function("() => (appState.games || []).length", timeout=10000)
+        results.append(("[3c] もう一度ログインすれば、過去の試合がアカウントから戻る", True, pg.evaluate(f"appState.games.some(g => g.id === '{g1}')")))
         pg.evaluate("signOutAccount()")
         pg.wait_for_timeout(300)
         g2, _ = make_game("金曜会2", ["むにぃ", "たろう", "じろう", "しろう"], [([0, 1, 2, 3], ["380", "200", "250"])])

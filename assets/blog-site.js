@@ -126,7 +126,7 @@ const BLOG_POSTS = [
     if (head) {
       head.innerHTML = `<div class="site-head-inner">
         <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></a>
-        <a class="head-app-link" href="/#howto">使い方</a>
+        <a class="head-app-link" href="/#mypage">マイページ</a>
       </div>`;
     }
     const foot = document.querySelector('.site-foot');
