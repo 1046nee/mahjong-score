@@ -5,8 +5,8 @@
     "sessions": {
       "$id": {
         ".read": true,
-        ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && (data.exists() || newData.hasChildren(['id', 'name', 'settings']))",
-        ".validate": "newData.hasChildren(['id', 'name', 'settings'])",
+        ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && (data.exists() || newData.hasChildren(['id', 'name', 'settings'])) && (!data.child('lockAt').exists() || now < data.child('lockAt').val())",
+        ".validate": "newData.hasChildren(['id', 'name', 'settings']) && (!data.child('lockAt').exists() || newData.child('lockAt').exists()) && (!newData.child('endedAt').exists() || (newData.child('lockAt').isNumber() && newData.child('lockAt').val() <= newData.child('endedAt').val() + 46800000))",
         "id": {
           ".validate": "newData.isString() && newData.val() === $id"
         },
@@ -15,6 +15,12 @@
         },
         "createdAt": {
           ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "lockAt": {
+          ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now + 39600000 && newData.val() <= now + 90000000))"
+        },
+        "endedAt": {
+          ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now - 600000 && newData.val() <= now + 600000))"
         },
         "settings": {
           ".validate": "newData.hasChildren(['playerNames', 'numPlayers'])",
