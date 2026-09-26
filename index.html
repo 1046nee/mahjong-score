@@ -911,7 +911,7 @@ button.ios-row:active { background: #F2F6F5; }
 .gm-meta { font-size: 12px; color: #5F6E6B; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .gm-me { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; font-size: 12px; }
 /* 自分の順位（位）はメダルの色。4位以下は灰色 */
-.gm-res { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.gm-res { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 2px 8px; line-height: 1.4; border-radius: 11px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .gm-res.r1, .gm-res.r2, .gm-res.r3 { padding-left: 3px; }
 .gm-res.r1 { background: var(--md1-tint); color: var(--md1-ink); }
 .gm-res.r2 { background: var(--md2-tint); color: var(--md2-ink); }
@@ -944,7 +944,7 @@ button.ios-row:active { background: #F2F6F5; }
 .cc-name { display: block; font-size: 16px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cc-meta { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #5F6E6B; margin-top: 2px; }
 .cc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.cc-me { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 11px; margin: 0; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; }
+.cc-me { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 2px 8px; line-height: 1.4; border-radius: 11px; margin: 0; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; }
 .cc-me.r1, .cc-me.r2, .cc-me.r3 { padding-left: 3px; }
 .cc-me.r1 { background: var(--md1-tint); color: var(--md1-ink); }
 .cc-me.r2 { background: var(--md2-tint); color: var(--md2-ink); }
@@ -992,6 +992,7 @@ button.ios-row:active { background: #F2F6F5; }
 .h2-detail b { display: block; font-size: 15px; font-weight: 800; color: #1F2A28; font-variant-numeric: tabular-nums; }
 .h2-detail b.pos { color: #1A237E; } .h2-detail b.neg { color: #C62828; }
 .h2-detail em { display: block; font-style: normal; font-size: 11px; color: #5F6E6B; }
+@media (max-width: 360px) { .h2-detail { margin-left: 0; } } /* 320px幅で「+1234.5」がはみ出さないように */
 /* ゲーム別の行 */
 .gp-row { min-height: 60px; padding: 10px 16px; }
 .gp-row + .gp-row::before { left: 62px; }
@@ -1037,7 +1038,10 @@ button.ios-row:active { background: #F2F6F5; }
 .lb-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 0; background: none; border: none; border-top: .5px solid #D5DEDB; cursor: pointer; text-align: left; }
 .lb-rank { width: 24px; flex-shrink: 0; text-align: center; font-size: 15px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .lb-main { flex: 1; min-width: 0; display: block; }
-.lb-name { display: block; font-size: 15px; font-weight: 700; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-name { display: flex; align-items: center; min-width: 0; font-size: 15px; font-weight: 700; color: #1F2A28; }
+/* 名前だけを … で省略し、「本人」の印は必ず見えるように残す */
+.lb-nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-name .cm-badge { flex: none; }
 .lb-sub { display: block; font-size: 12px; color: #5F6E6B; margin-top: 2px; }
 /* 順位の棒: 通算スコア・1試合平均は0を中央に置いて左右に伸ばす（-6.0 と -285.0 が同じ向きに見えないように）。それ以外は左から */
 .lb-bar { position: relative; display: block; height: 6px; margin-top: 6px; border-radius: 3px; background: #EEF2F1; }
@@ -1046,7 +1050,7 @@ button.ios-row:active { background: #F2F6F5; }
 .lb-bar i.neg { right: 50%; background: #E57373; }
 .lb-bar i.mag { left: 0; background: #8FA6A2; }
 .lb-bar.div::after { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: #C9D3D1; }
-.lb-val { flex-shrink: 0; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lb-val { flex-shrink: 0; min-width: 68px; text-align: right; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; } /* 幅をそろえて、0が中央の棒の軸を全部の行で同じ位置にする */
 .lb-val.pos { color: #1A237E; } .lb-val.neg { color: #C62828; }
 .lb-div { padding: 16px 0 4px; font-size: 13px; font-weight: 700; color: #5F6E6B; border-top: .5px solid #D5DEDB; }
 .lb-row.dim { opacity: .6; }
@@ -1084,18 +1088,20 @@ button.ios-row:active { background: #F2F6F5; }
 .cg-main { flex: 1; min-width: 0; display: block; }
 .cg-name { display: block; font-size: 15px; font-weight: 700; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cg-sub { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 12px; font-weight: 500; color: #5F6E6B; }
-.st-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; margin-top: 6px; padding: 0 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+.st-pill { display: inline-flex; align-items: center; gap: 4px; min-height: 20px; margin-top: 6px; padding: 2px 8px; line-height: 1.4; border-radius: 10px; font-size: 11px; font-weight: 700; }
 .st-pill.warn { background: #FFF8E6; color: #8A6D1A; box-shadow: inset 0 0 0 1px #F2E3B3; }
 .st-pill.ok { background: #EEF2F1; color: #4F5C5A; }
 .cg-row > .ico { flex: none; color: #B5C0BD; }
 /* ---- メンバータブ・メンバーの成績（ボトムシート） ---- */
-.pp-sub { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.pp-sub { display: block; } /* flex にすると文がひとかたまりで折り返し、メダルだけが1行目に残る */
+.pp-sub .medal { vertical-align: -3px; margin-right: 3px; }
+.pp-sub .nw { white-space: nowrap; }
 .pp-sub b.pos { color: #1A237E; } .pp-sub b.neg { color: #C62828; }
 .pf-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin-bottom: 14px; }
 .pf-av { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 26px; font-weight: 800; }
 .pf-name { font-size: 20px; font-weight: 800; color: #1F2A28; overflow-wrap: anywhere; }
 .pf-sub { font-size: 12px; color: #5F6E6B; line-height: 1.6; }
-.pf-rank { display: inline-flex; align-items: center; gap: 4px; height: 24px; margin-top: 2px; padding: 0 10px; border-radius: 12px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; }
+.pf-rank { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; margin-top: 2px; padding: 2px 10px; line-height: 1.4; border-radius: 12px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; }
 .pf-rank.r1, .pf-rank.r2, .pf-rank.r3 { padding-left: 4px; }
 .pf-rank.r1 { background: var(--md1-tint); color: var(--md1-ink); } .pf-rank.r2 { background: var(--md2-tint); color: var(--md2-ink); } .pf-rank.r3 { background: var(--md3-tint); color: var(--md3-ink); }
 .pf-stats { margin-top: 4px; padding: 14px; border-radius: 14px; background: #F4F7F6; --track: #E3E9E7; }
@@ -2972,7 +2978,7 @@ function circleRankTabHtml(st, modeChips, noBind) {
       : `<span class="lb-bar"><i class="mag" style="width:${Math.max(3, Math.round(barOf(v) * 100))}%"></i></span>`;
     return `<button type="button" class="lb-row${dim ? ' dim' : ''}" onclick="openCircleMember('${p.key}')"><span class="lb-rank">${rank}</span>
       <span class="lb-av" style="background:${avColor(p.key)};width:32px;height:32px;font-size:14px">${esc(avInitial(nm))}</span>
-      <span class="lb-main"><span class="lb-name">${esc(nm)}${circleBadge(rosterOf()[p.key])}</span>
+      <span class="lb-main"><span class="lb-name"><span class="lb-nm">${esc(nm)}</span>${circleBadge(rosterOf()[p.key])}</span>
         <span class="lb-sub">${[`${p.n}試合`, m === 'avg' ? '' : `平均着順 ${(p.rankSum / p.n).toFixed(2)}`, m === 'score' ? '' : fmtScore(p.score)].filter(Boolean).join(' ・ ')}</span>
         ${bar}</span>
       <span class="lb-val ${clsOf(v)}">${circleMetricText(v, m)}</span></button>`;
@@ -3092,9 +3098,10 @@ function circlePeopleTabHtml(st) {
   const rows = ents.map(([mid, r]) => {
     const e = byKey[mid];
     return `<button type="button" class="lb-row pp-row" onclick="openCircleMember('${mid}')"><span class="lb-av" style="background:${avColor(mid)};width:40px;height:40px;font-size:16px">${esc(avInitial(r.name))}</span>
-      <span class="lb-main"><span class="lb-name">${esc(r.name)}${circleBadge(r)}</span>
-        <span class="lb-sub pp-sub">${e ? `${e.rank <= 3 ? medalSvg(e.rank, 16, false) : ''}${e.rank}位 ・ ${e.p.n}試合 ・ 平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)} ・ <b class="${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>` : 'この形式の試合はまだありません'}</span>
-        ${r.uid ? '' : '<span class="lb-sub">名前で結びつけ（アカウントなし）</span>'}</span><span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
+      <span class="lb-main"><span class="lb-name"><span class="lb-nm">${esc(r.name)}</span>${circleBadge(r)}</span>
+        <span class="lb-sub pp-sub">${e ? [`${e.rank <= 3 ? medalSvg(e.rank, 16, false) : ''}${e.rank}位`, `・ ${e.p.n}試合`, `・ 平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)}`,
+          `・ <b class="${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>`].map(t => `<span class="nw">${t}</span>`).join(' ') : 'この形式の試合はまだありません'}</span>
+        ${r.uid ? '' : '<span class="lb-sub">名前で結びつけ</span>'}</span><span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
   }).join('');
   return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`)}
     ${rows || '<div style="font-size:13px;color:#5F6E6B">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
@@ -4795,11 +4802,15 @@ function renderRecentGames() {
     ).join('') + `<a class="rg-more" onclick="goMyPage()">マイページで過去の試合をすべて見る ›</a>`;
     return;
   }
-  // 未ログイン: 過去の試合は出さない（ブラウザのデータは消えることがあるため、残すのはログインしてから）
+  // 未ログイン: 一覧は出さない（ブラウザのデータは消えることがあるため、残すのはログインしてから）。
+  // ただし最後に開いた試合1件だけは戻れるようにする。共有URLから入ったメンバーはたいてい未ログインで、
+  // 試合から戻ったあとLPに入口がないと、LINEのリンクを開き直すまで点数入力に戻れない
   if (!games.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
-  if (title) title.textContent = 'この端末の過去の試合';
-  list.innerHTML = `<button type="button" class="rg-row" onclick="goMyPage()"><span class="rg-name">${games.length}件あります。ログインすると、ずっと残せます</span><span class="rg-arrow">›</span></button>`;
+  if (title) title.textContent = '最近の試合';
+  const last = [...games].sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0))[0];
+  list.innerHTML = `<button type="button" class="rg-row" onclick="joinSession('${esc(last.id)}')"><span class="rg-name">${esc(last.name)}</span><span class="rg-arrow">›</span></button>`
+    + `<a class="rg-more" onclick="goMyPage()">${games.length > 1 ? `この端末にほかに${games.length - 1}件あります。` : ''}ログインすると、過去の試合をずっと残せます ›</a>`;
 }
 
 // ---- Setup ----
@@ -8229,6 +8240,8 @@ function collectMyStats() {
     groupsOut.push({ id: g.id, name: g.name || '', np, team: !!(s.teamMode && s.teams),
       games: played, score: scoreSum, avgRank: rankSum / played });
   });
+  // 自分を選んだだけで試合が0件の形式は出さない（成績の部品が0で割って NaN になるため）
+  Object.keys(modes).forEach(np => { if (!modes[np].games) delete modes[np]; });
   return { modes, groups: groupsOut, myNames, untagged };
 }
 // 成績まとめの表（列=四麻/三麻・行=項目。rounds-table系にして画像出力と共用）
@@ -8336,10 +8349,8 @@ function fmtScore(v) { const r = Math.round(v * 10) / 10; return (r > 0 ? '+' : 
 function scoreCls(v) { const r = Math.round(v * 10) / 10; return r > 0 ? 'pos' : r < 0 ? 'neg' : ''; }
 function pctText(x) { return Math.round(x * 100) + '%'; }
 function fmtCnt(v) { const r = Math.round(v * 10) / 10; return Number.isInteger(r) ? String(r) : r.toFixed(1); }
-// 着順の色（CSSの --rk1〜--rk4 と同じ値）。1着ゴールド・2着スチール・3着グレー・ラスはクリムゾン。
-// 三麻は3色で、3着＝ラスの色。トップとラスだけが目に入り、真ん中は控えめにする
-const RANK_COLORS = { 4: ['#D4A017', '#6E8CA8', '#B4C0BD', '#C92F42'], 3: ['#D4A017', '#6E8CA8', '#C92F42'] };
-// 着順のクラス（rank は1始まり）。三麻の3着＝ラス＝r4
+// 着順のクラス（rank は1始まり）。三麻の3着＝ラス＝r4。色はCSSの --rk1〜--rk4
+// （1着ゴールド・2着スチール・3着グレー・ラスはクリムゾン。トップとラスだけが目に入り、真ん中は控えめにする）
 const rkCls = (rank, np) => (rank >= np ? 'r4' : 'r' + rank);
 // 1試合ごとの着順の記録を古い順に（t=入力日時、o=ゲーム内の試合番号）
 function sortHist(h) { return (h || []).slice().sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : a.o - b.o)); }
