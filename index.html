@@ -3296,7 +3296,7 @@ function renderCircle() {
     });
     topHtml += mine[mpMode]
       ? `<button type="button" class="mc-card${mpMode === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(mpMode, mine[mpMode], true, 'この仲間ページ')}</button>`
-      : `<div class="mp-panel mp-empty"><b>${myM ? `${periodLabel()}のこの仲間ページでの${mpMode === 3 ? '三麻' : '四麻'}の成績はまだありません` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
+      : `<div class="mp-panel mp-empty"><b>${myM ? `上記の期間、この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
   applyMpTheme();
@@ -9199,7 +9199,7 @@ function renderMyStats() {
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
   document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${seg}${st.modes[mpMode]
     ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
-    : `<div class="mp-panel mp-empty"><b>${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `${periodLabel()}の成績はまだありません`}</b></div>`}</div>`;
+    : `<div class="mp-panel mp-empty"><b>${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `上記の期間、あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`}</b></div>`}</div>`;
   applyMpTheme();
   let inner;
   if (myStatsTab === 'h2h') inner = myH2HCardHtml();
@@ -9594,10 +9594,10 @@ function mpStatsHtml(st) {
     const any = (appState.games || []).some(g => (g.rounds || []).length);
     const msg = !any ? ['まだ試合がありません', '試合を作るか、「＋ 試合を追加」で送ってもらった試合を取り込むと、ここに成績が出ます。']
       : st.untagged ? ['自分を選ぶと、成績が出ます', '下の試合の「あなたはどれ？」で自分の名前を押してください。']
-      : [`${periodLabel()}の成績はまだありません`, '期間を切り替えると、ほかの期間の成績が見られます。'];
+      : ['上記の期間、あなたの対戦成績はありません。', '期間を切り替えると、ほかの期間の成績が見られます。'];
     return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('chart', 34, 'ico-l')}</div><b>${msg[0]}</b><span>${msg[1]}</span></div></div>`;
   }
-  if (!st.modes[mpMode]) return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><b>${periodLabel()}の${mpMode === 3 ? '三麻' : '四麻'}の成績はまだありません</b><span>${st.untagged ? '下の試合で自分を選ぶと、ここに成績が出ます。' : ''}</span></div></div>`;
+  if (!st.modes[mpMode]) return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><b>上記の期間、あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。</b><span>${st.untagged ? '下の試合で自分を選ぶと、ここに成績が出ます。' : ''}</span></div></div>`;
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}</div>`;
 }
 
