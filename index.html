@@ -758,8 +758,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gr-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .gr-meta { font-size: 12px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .gr.out { background: #F6F8F7; }
-/* 形式は文字ではなく左の色で（四麻＝緑・三麻＝青。画面の四麻｜三麻のタブと同じ色） */
-.gr.m4 { box-shadow: inset 4px 0 0 #177083; } .gr.m3 { box-shadow: inset 4px 0 0 #4261AA; }
+.gm-res.nil { background: #EEF2F1; color: #8A9AA5; min-width: 44px; justify-content: center; }
+.gm-sc.nil { color: #AEBBB8; }
+.gr-meta .st-pill { vertical-align: 1px; margin-left: 2px; }
+.gr .gr-go { flex: none; align-self: center; color: #AEBBB8; }
 .gr-opp { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 6px; font-size: 12.5px; color: #33413E; font-weight: 700; }
 .gr-vs { font-size: 11px; font-weight: 800; color: #8A9AA5; }
 .gr-op { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
@@ -909,6 +911,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 #circle-top:empty { display: none; }
 .mode-seg button small { font-size: 10px; font-weight: 700; }
 .mode-seg button:disabled { color: #AEBBB8; cursor: default; }
+.cg-games { margin: -4px 0 14px; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -3183,12 +3186,12 @@ function renderCircle() {
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
   const st = gids.length ? circleStats(circleData, circleSess, circleMode, periodFilter()) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
-  const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h'].includes(circleTab)) ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
+  const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h', 'games'].includes(circleTab)) ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
   const noBind = `<div style="font-size:13px;color:#5F6E6B">名前を名簿の人に結びつけると、ここに通算が出ます。</div>`;
-  if (circleTab === 'games') html += circleGamesTabHtml(role, gids);
+  if (circleTab === 'games') html += circleGamesTabHtml(role, gids, modeChips);
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
   else if (!gids.length) html += noGames;
   else if (circleTab === 'grid') {
@@ -3345,51 +3348,51 @@ function circleH2HTabHtml(st, modeChips, noBind) {
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。平均着順は「自分 / 相手」、差は同じ試合での合計スコアの差。</div></div>
     <div class="card">${circleCardHead('総当たり表')}${mxLegendHtml()}${circleMatrixHtml(st)}</div>`;
 }
-function circleGamesTabHtml(role, gids) {
-  const games = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
+function circleGamesTabHtml(role, gids, modeChips) {
+  const all = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
     .sort((a, b) => (b.g ? gameDayMs(b.g) : Date.parse(b.ge.at) || 0) - (a.g ? gameDayMs(a.g) : Date.parse(a.ge.at) || 0));
-  const myMid = myCircleMid(); // 名簿で自分が本人登録していれば、自分が出た試合／出ていない試合を見分けて見せる
+  // 形式は行に印を付けず、上の「四麻｜三麻」で切り替える（読み込めなかった試合はどちらにも出す）
+  const games = all.filter(x => !x.g || String((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === circleMode);
+  const myMid = myCircleMid(); // 名簿で自分が本人登録していれば、自分の結果を出す（出ていない試合は「—」）
+  // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
-    if (!g) return `<button type="button" class="series-row cg-row" onclick="openCircleGameMenu('${sid}')"><span class="cg-main"><span class="cg-name">${esc(ge.name || '')}</span><span class="cg-sub">読み込めませんでした（削除された可能性があります）</span></span>${ico('chevron', 14)}</button>`;
+    if (!g) return `<div class="gr" onclick="openCircleGameMenu('${sid}')"><div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(ge.name || '')}</span></div>
+      <div class="gr-sub"><span class="gr-meta">読み込めませんでした（削除された可能性があります）</span></div></div><span class="gr-go">${ico('chevron', 14)}</span></div>`;
     const played = playedFlags(g);
     const seats = (ge && ge.seats) || {};
     const nPlayed = played.filter(Boolean).length;
     const nBound = played.reduce((a, p, i) => a + (p && seats[i] && seats[i].mid ? 1 : 0), 0);
-    const tot = gameTotals(g);
-    let top = -1; played.forEach((p, i) => { if (p && (top < 0 || tot[i] > tot[top])) top = i; });
-    const d = new Date(gameDayMs(g));
+    const s = g.settings || {};
     const mySeat = myMid ? Object.keys(seats).find(k => seats[k] && seats[k].mid === myMid && played[k]) : undefined;
-    let mine = '';
-    if (mySeat != null) {
-      const i = Number(mySeat), rank = 1 + played.reduce((a, p, j) => a + (p && tot[j] > tot[i] ? 1 : 0), 0);
-      mine = `<span class="gm-res${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 16, false) : ''}あなた ${rank}位<span class="of"> / ${nPlayed}人</span></span> `;
-    } else if (myMid) mine = '<span class="gr-out">出ていない</span> ';
-    return `<button type="button" class="series-row cg-row${g.settings && g.settings.numPlayers === 3 ? ' gm-3' : ''}${myMid && mySeat == null ? ' cg-out' : ''}" onclick="openCircleGameMenu('${sid}')">
-      <span class="gm-date"><span>${d.getMonth() + 1}月</span><b>${d.getDate()}</b></span>
-      <span class="cg-main"><span class="cg-name">${esc(g.name || ge.name || '')}</span>
-        <span class="cg-sub cg-flow">${mine}${fmtGameDays(g)} ・ ${(g.rounds || []).length}試合${top >= 0 ? ` ・ 1位 ${esc(g.settings.playerNames[top])}` : ''}</span>
-        <span class="cg-mem">${memberDisplayOrder(g.settings).filter(i => played[i]).map(i => esc(g.settings.playerNames[i])).join('・')}</span>
-        ${nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : `<span class="st-pill ok">${ico('check', 12)}結びつけ済み</span>`}</span>
-      ${ico('chevron', 14)}</button>`;
+    const me = mySeat != null ? Number(mySeat) : null;
+    const rel = relDay(gameDayMs(g));
+    const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
+    const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : '';
+    return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">
+      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
+        <div class="gr-sub">${seatResultHtml(g, me)}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
+      <span class="gr-go">${ico('chevron', 14)}</span></div>`;
   };
   // 打った日（読み込めなかった試合は追加した日）
   const dayOf = x => (x.g ? ymdToMs(gameDaysList(x.g)[0]) : Date.parse(x.ge.at) || 0);
   let glist = '';
-  if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, rowOf);
+  if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, x => `<div class="gm-list" style="margin-bottom:8px">${rowOf(x)}</div>`);
   else {
     let prev = null;
     games.forEach(x => {
       const d = new Date(dayOf(x)), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-      if (key !== prev) { glist += `<div class="gm-month cg-month">${key}</div>`; prev = key; }
+      if (key !== prev) { glist += `${prev ? '</div>' : ''}<div class="gm-month">${key}</div><div class="gm-list">`; prev = key; }
       glist += rowOf(x);
     });
+    if (prev) glist += '</div>';
   }
-  const viewSeg = games.length ? `<div class="seg xs" role="tablist" aria-label="試合の見せ方" style="margin:0 0 10px">${[['list', '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
+  const viewSeg = all.length ? `<div class="seg xs" role="tablist" aria-label="試合の見せ方" style="margin:0 0 10px">${[['list', '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
     `<button type="button" role="tab" class="${circleGamesView === k ? 'on' : ''}" aria-selected="${circleGamesView === k}" onclick="circleGamesView='${k}';renderCircle()">${l}</button>`).join('')}</div>` : '';
   return `<div class="card">${circleCardHead(`試合（${gids.length}ゲーム）`, role ? `<button class="btn-tint" onclick="openCircleAddGames()">＋ 追加</button>` : '')}
-    ${viewSeg}${glist || `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
+    ${modeChips}${viewSeg}${all.length ? '' : `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
     ${role && !gids.length ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}
-    <div class="h2h-note">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。</div></div>`;
+    <div class="h2h-note" style="margin-top:0">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。${myMid ? '自分が出ていない試合は、順位・点数を「—」にしています。' : ''}</div></div>
+    ${glist ? `<div class="cg-games">${glist}</div>` : (all.length ? `<div class="empty-msg">${circleMode === '3' ? '三麻' : '四麻'}の試合はありません</div>` : '')}`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
 let circleGamesView = 'list';
@@ -9382,15 +9385,19 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   let cum = end - sum;
   const ys = [cum].concat(h.map(x => (cum += Number(x.sc) || 0)));
   const W = 300, H = 80, L = 40, R = 58, T = 10, B = 10;
-  const min = Math.min(...ys), max = Math.max(...ys), span = (max - min) || 1;
+  // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
+  let step = 100;
+  const lo0 = Math.min(...ys), hi0 = Math.max(...ys);
+  while ((Math.ceil(hi0 / step) - Math.floor(lo0 / step)) > 4) step = [100, 200, 500, 1000, 2000, 5000].find(v => v > step) || step * 2;
+  let min = Math.floor(lo0 / step) * step, max = Math.ceil(hi0 / step) * step;
+  if (max === min) max = min + step;
+  const span = max - min;
   const x = i => L + (W - L - R) * i / Math.max(1, ys.length - 1);
   const y = v => T + (H - T - B) * (1 - (v - min) / span);
   const lab = v => { const r = Math.round(v); return (r > 0 ? '+' : '') + r.toLocaleString(); };
-  // 目盛り: いちばん上・いちばん下、0 をまたぐときは 0 も（近すぎる目盛りは出さない）
-  const ticks = [max, min];
-  if (min < 0 && max > 0) ticks.push(0);
-  const drawn = [];
-  const grid = ticks.filter(v => { const yy = y(v); if (drawn.some(d => Math.abs(d - yy) < 11)) return false; drawn.push(yy); return true; })
+  const ticks = [];
+  for (let v = min; v <= max + 1e-9; v += step) ticks.push(v);
+  const grid = ticks
     .map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`
       + `<text x="${L - 6}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="tk">${max === min && v === min ? lab(v) : lab(v)}</text>`).join('');
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
@@ -9471,25 +9478,37 @@ function historyItemHtml(g) {
   const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
   let sub;
   if (st === 'me') sub = `<div class="gr-sub">${myResultHtml(g)}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, tagOf(g.id).me)}`;
-  else if (st === 'out') sub = `<div class="gr-sub"><span class="gr-out">出ていない</span><span class="gr-meta">${meta}</span></div>`;
-  else if (st === 'ask' && !mpSelecting) sub = `<div class="gr-sub"><span class="gr-meta">${meta}</span></div><div class="gr-ask">あなたはどれ？</div><div class="gr-chips">${askChipsHtml(g)}</div>`;
-  else sub = `<div class="gr-sub"><span class="gr-meta">${meta} ・ ${esc((s.playerNames || []).join('・'))}</span></div>`;
+  else if (st === 'out') sub = `<div class="gr-sub">${NIL_RESULT}<span class="gr-out">出ていない</span><span class="gr-meta">${meta}</span></div>${oppLineHtml(g, null)}`;
+  else if (st === 'ask' && !mpSelecting) sub = `<div class="gr-sub">${NIL_RESULT}<span class="gr-meta">${meta}</span></div><div class="gr-ask">あなたはどれ？</div><div class="gr-chips">${askChipsHtml(g)}</div>`;
+  else sub = `<div class="gr-sub">${(g.rounds || []).length ? NIL_RESULT : ''}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, null)}`;
   const on = mpSelecting && mpSel.has(g.id);
-  return `<div class="gr ${st} ${s.numPlayers === 3 ? 'm3' : 'm4'}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
+  return `<div class="gr ${st}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}
     <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
 }
 
-// 一緒に打った相手（自分以外で出た人）。多いときは先頭の数人＋「ほかn人」
+// 対戦した人。自分が出ていれば自分以外（「相手」）、出ていなければ全員（「対戦」）。多いときは先頭の数人＋「ほかn人」
 function oppLineHtml(g, me) {
   const s = g.settings || {}, names = s.playerNames || [];
   const played = playedFlags(g);
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i]));
   if (!opp.length) return '';
   const MAX = 5, shown = opp.slice(0, MAX);
-  return `<div class="gr-opp"><span class="gr-vs">相手</span>${shown.map(i => `<span class="gr-op"><i style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${shown.map(i => `<span class="gr-op"><i style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+}
+// 自分が出ていない試合の結果の欄（順位・点数の位置に「—」）
+const NIL_RESULT = '<span class="gm-res nil">—</span><span class="gm-sc nil">—</span>';
+// その席の結果（順位のピル・スコア・その席の名前）。出ていなければ「—」
+function seatResultHtml(g, me) {
+  const names = (g.settings && g.settings.playerNames) || [];
+  const played = playedFlags(g), tot = gameTotals(g);
+  if (me == null || me >= names.length || !played[me]) return NIL_RESULT;
+  const rank = 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0);
+  const nP = played.filter(Boolean).length;
+  return `<span class="gm-res${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 16, false) : ''}${rank}位<span class="of"> / ${nP}人</span></span>`
+    + `<span class="gm-sc ${scoreCls(tot[me])}">${fmtScore(tot[me])}</span><span class="gm-as">${ico('person', 12)}${esc(names[me])}</span>`;
 }
 // ---- マイページの描画 ----
 function renderHistory() {
@@ -9538,13 +9557,13 @@ function renderHistoryList() {
   const list = games.map(g => ({ g, ms: gameDayMs(g) }))
     .filter(x => !inP || inP(x.ms))
     .filter(x => !q || (String(x.g.name || '') + ' ' + ((x.g.settings && x.g.settings.playerNames) || []).join(' ')).toLowerCase().includes(q))
-    .filter(x => q || ((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === mpMode) // 上の四麻｜三麻のタブで切り替え（検索中は両方）
+    .filter(x => ((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === mpMode) // 上の四麻｜三麻のタブで切り替え（行には形式の印を付けない）
     .sort((a, b) => b.ms - a.ms).slice(0, MAX_HISTORY);
   srch.closest('.srch').style.display = (games.length > 8 || q) ? '' : 'none';
   const vs = document.getElementById('hist-viewseg');
   if (vs) vs.innerHTML = `<div class="seg xs" role="tablist" aria-label="過去の試合の見せ方">${[['list', '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
     `<button type="button" role="tab" class="${histView === k ? 'on' : ''}" aria-selected="${histView === k}" onclick="histView='${k}';renderHistoryList()">${l}</button>`).join('')}</div>`;
-  const modeName = q ? '' : (mpMode === 3 ? '三麻 ' : '四麻 ');
+  const modeName = mpMode === 3 ? '三麻 ' : '四麻 ';
 
   if (!list.length) {
     body.innerHTML = `<div class="empty-msg" style="margin-top:14px">${q ? '条件に一致する試合がありません' : `${periodLabel()}の${modeName}試合はありません`}</div>`

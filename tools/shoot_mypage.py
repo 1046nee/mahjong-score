@@ -160,6 +160,10 @@ def main():
         pg.evaluate("histView = 'cal'; calS.hist.day = null; renderHistoryList(); const b = document.querySelector('#history-body .cal-c.has'); if (b) b.click();")
         shoot("mypage_hist_cal")
         pg.evaluate("histView = 'list'; renderHistoryList()")
+        # 自分が出ていない試合（順位・点数は「—」、対戦した人は全員）
+        pg.evaluate(f"setTag('{gids[1]}', 'watch', null); histOthersOpen = true; renderHistory()")
+        shoot("mypage_hist_out")
+        pg.evaluate(f"setTag('{gids[1]}', 'play', 1); histOthersOpen = false; renderHistory()")
 
         # 過去の試合の「…」メニュー
         pg.evaluate(f"openHistMenu('{gids[0]}')")
