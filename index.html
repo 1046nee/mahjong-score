@@ -721,6 +721,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pills::-webkit-scrollbar { display: none; }
 .mp-pills button { flex: none; height: 32px; padding: 0 14px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mp-pills button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; }
+/* 年の中の月: 年より一段小さく・選んだ月は緑の地（年の黒と区別） */
+.mp-pills.mp-months { margin-top: -4px; gap: 4px; }
+.mp-pills.mp-months button { height: 28px; padding: 0 11px; font-size: 12px; border-color: #E3E9E8; }
+.mp-pills.mp-months button.on { background: #E4F3EC; border-color: #177083; color: #0F4F5C; }
 .mc-card { display: block; width: 100%; text-align: left; background: #fff; border: 0; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--sh-1); cursor: pointer; font: inherit; color: inherit; }
 .mc-card:active { opacity: .8; }
 .mc-card.mc-static { cursor: default; background: #F5F8F7; box-shadow: none; margin-top: 10px; }
@@ -4261,7 +4265,7 @@ function openCreateCircle() {
   if (!currentUser) { openAddToCircleLogin(); return; }
   document.getElementById('form-modal-title').textContent = '仲間ページを作る';
   document.getElementById('form-modal-body').innerHTML = `
-    <div class="field"><label>仲間ページの名前</label><input type="text" id="cc-name" maxlength="${MAX_GROUP_LEN}" placeholder="例: 金曜会／2026 夏の大会"></div>
+    <div class="field"><label>仲間ページの名前</label><input type="text" id="cc-name" maxlength="${MAX_GROUP_LEN}" placeholder="例: Mリーグ／〇〇株式会社"></div>
     <div class="field"><label>あなたの名前（試合で使う名前・名簿に入ります）</label><input type="text" id="cc-me" maxlength="${MAX_NAME_LEN}" placeholder="例: むにぃ"></div>
     <div style="font-size:11px;color:#8a9aa5;line-height:1.6;margin-bottom:6px">作ったあと、仲間を招待リンクで招待し、「試合を追加」で過去の試合をまとめて取り込めます。結果は「結果のリンク」でログインなしの人にも見せられます。</div>
     <button class="confirm-btn" onclick="runCreateCircle()">作る</button>
@@ -9326,30 +9330,40 @@ function relDay(ms) {
   const n = Math.round((a - b) / 86400000);
   return n === 0 ? '今日' : n === 1 ? '昨日' : (n > 1 && n < 7) ? `${n}日前` : '';
 }
-// 期間: 'y2026'（年）/ '3m'（直近3か月）/ 'all'。既定は今年（今年の試合が無ければすべて）
+// 期間: 'y2026'（年）/ 'm2026-09'（年の中の月）/ 'all'。既定は今年（今年の試合が無ければすべて）
 const MP_PERIOD_KEY = 'mahjong-mp-period';
 let mpPeriod = null;
+// 期間を選べる試合（マイページ・自分の成績＝自分の過去の試合、仲間ページを見ているときはその試合も）。打った日が2日以上なら全部の日
+function periodGameDays() {
+  const out = [];
+  const add = g => { if (g) gameDaysList(g).forEach(k => out.push(k)); };
+  (appState.games || []).forEach(add);
+  if (document.getElementById('view-circle').classList.contains('active')) Object.values(circleSess || {}).forEach(add);
+  return out;
+}
 function gameYears() {
-  const ys = new Set();
-  (appState.games || []).forEach(g => ys.add(new Date(gameDayMs(g)).getFullYear()));
-  if (document.getElementById('view-circle').classList.contains('active')) Object.values(circleSess || {}).forEach(g => { if (g) ys.add(new Date(gameDayMs(g)).getFullYear()); });
+  const ys = new Set(periodGameDays().map(k => +k.slice(0, 4)));
   return [...ys].sort((a, b) => b - a);
+}
+// その年で試合のある月（1〜12）
+function gameMonths(y) {
+  return [...new Set(periodGameDays().filter(k => +k.slice(0, 4) === y).map(k => +k.slice(5, 7)))].sort((a, b) => a - b);
 }
 function curPeriod() {
   if (!mpPeriod) { try { mpPeriod = localStorage.getItem(MP_PERIOD_KEY); } catch (e) {} }
   const ys = gameYears();
-  const ok = p => p === 'all' || (/^y\d{4}$/.test(p || '') && ys.includes(+p.slice(1)));
+  const ok = p => p === 'all' || (/^[ym]\d{4}/.test(p || '') && ys.includes(+p.slice(1, 5)));
   if (!ok(mpPeriod)) mpPeriod = ys.includes(new Date().getFullYear()) ? 'y' + new Date().getFullYear() : 'all';
   return mpPeriod;
 }
 function periodFilter(p) {
   p = p || curPeriod();
   if (p === 'all') return null;
-  if (p === '3m') { const from = Date.now() - 92 * 86400000; return ms => ms >= from; }
-  const y = +p.slice(1);
+  const y = +p.slice(1, 5);
+  if (p[0] === 'm') { const mo = +p.slice(6) - 1; return ms => { const d = new Date(ms); return d.getFullYear() === y && d.getMonth() === mo; }; }
   return ms => new Date(ms).getFullYear() === y;
 }
-function periodLabel(p) { p = p || curPeriod(); return p === 'all' ? 'すべての期間' : p === '3m' ? '直近3か月' : p.slice(1) + '年'; }
+function periodLabel(p) { p = p || curPeriod(); return p === 'all' ? 'すべての期間' : p[0] === 'm' ? `${p.slice(1, 5)}年${+p.slice(6)}月` : p.slice(1) + '年'; }
 function setMpPeriod(p) {
   mpPeriod = p;
   try { localStorage.setItem(MP_PERIOD_KEY, p); } catch (e) {}
@@ -9362,9 +9376,14 @@ function mpPeriodHtml() {
   const ys = gameYears();
   if (!ys.length) return '';
   const cur = curPeriod();
+  const curY = cur === 'all' ? null : +cur.slice(1, 5);
   const opts = ys.map(y => ['y' + y, y + '年']).concat([['all', 'すべて']]);
+  // 年を選んでいるときは、その下に「年間｜1月｜2月…」（試合のある月だけ）
+  const months = curY ? gameMonths(curY) : [];
+  const mrow = curY ? `<div class="mp-pills mp-months" role="tablist" aria-label="月">${[['y' + curY, '年間']].concat(months.map(mo => [`m${curY}-${String(mo).padStart(2, '0')}`, mo + '月'])).map(([k, l]) =>
+    `<button type="button" role="tab" class="${k === cur ? 'on' : ''}" aria-selected="${k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>` : '';
   return `<div class="mp-pills" role="tablist" aria-label="成績の期間">${opts.map(([k, l]) =>
-    `<button type="button" role="tab" class="${k === cur ? 'on' : ''}" aria-selected="${k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${k === 'y' + curY || k === cur ? 'on' : ''}" aria-selected="${k === 'y' + curY || k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>${mrow}`;
 }
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
