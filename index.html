@@ -758,6 +758,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gr-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .gr-meta { font-size: 12px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .gr.out { background: #F6F8F7; }
+/* 形式の印（卓）: 四麻＝緑の四角に4点・三麻＝藍の三角に3点。大人数は右下に人数の丸 */
+.gk { position: relative; flex: none; width: 30px; height: 30px; margin-top: 1px; line-height: 0; }
+.gk.k4 .gk-bg { fill: #E4F3EC; } .gk.k4 .gk-dot { fill: #177083; }
+.gk.k3 .gk-bg { fill: #E6ECF7; } .gk.k3 .gk-dot { fill: #4261AA; }
+.gk-n { position: absolute; right: -6px; bottom: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #C07A22; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff; font-variant-numeric: tabular-nums; }
+.gk.multi .gk-bg { stroke: #C07A22; stroke-width: 1.6; }
+.gk-tab { display: inline-block; width: 18px; height: 18px; margin: 0 5px -4px 0; }
+.gr.out .gk { opacity: .55; }
 .gm-res.nil { background: #EEF2F1; color: #8A9AA5; min-width: 44px; justify-content: center; }
 .gm-sc.nil { color: #AEBBB8; }
 .gr-meta .st-pill { vertical-align: 1px; margin-left: 2px; }
@@ -3108,7 +3116,7 @@ async function refreshCircle() {
 
 // ---- 仲間ページの画面 ----
 function circleBadge(r) {
-  return r && r.uid ? `<span class="cm-badge self" title="本人がログインして「これは私」と登録">${ico('verified', 12)}本人</span>` : '';
+  return r && r.uid ? `<span class="cm-badge self" title="本人がログインして「これは私」と確認済み">${ico('verified', 12)}確認済み</span>` : '';
 }
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
@@ -3161,12 +3169,19 @@ function renderCircle() {
     html += `<div class="card askme"><div class="askme-q">この仲間ページで、あなたは名簿のどの人ですか？</div>
       <div class="askme-row">${cand.map(([mid, r]) => `<button type="button" class="askme-chip" onclick="claimCircleMember('${mid}')">${esc(r.name)}</button>`).join('')}
         <button type="button" class="askme-chip" onclick="openClaimNew()">名簿にいない（名前を入れる）</button></div>
-      <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}本人</span>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
+      <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}確認済み</span>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
   }
   // 期間（マイページと同じ）＋この仲間ページの中だけでの自分の成績（マイページの成績カードと同じ形・同じ位置）
   renderAccountBar('circle-acct');
   let topHtml = '';
   const myM = myCircleMid();
+  if (gids.length) {
+    // 押せる形式＝この仲間ページに試合がある形式（自分が出ていなくても、仲間の三麻の順位は見られる）
+    const gc = { 4: 0, 3: 0 };
+    gids.forEach(sid => { const g = circleSess[sid]; if (g) gc[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
+    topHtml = modeSegHtml(gc, 'circleFocus=null;renderCircle()');
+    circleMode = String(mpMode);
+  }
   if (currentUser && gids.length) {
     const mine = {};
     ['4', '3'].forEach(md => {
@@ -3174,10 +3189,9 @@ function renderCircle() {
       const p = sx.list.find(x => x.key === myM);
       if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
     });
-    topHtml = modeSegHtml({ 4: mine[4] ? mine[4].games : 0, 3: mine[3] ? mine[3].games : 0 }, 'renderCircle()');
     topHtml += mine[mpMode]
       ? `<button type="button" class="mc-card${mpMode === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(mpMode, mine[mpMode], true, 'この仲間ページ')}</button>`
-      : `<div class="mp-panel mp-empty"><b>${myM ? `${periodLabel()}のこの仲間ページでの成績はまだありません` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
+      : `<div class="mp-panel mp-empty"><b>${myM ? `${periodLabel()}のこの仲間ページでの${mpMode === 3 ? '三麻' : '四麻'}の成績はまだありません` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
@@ -3186,7 +3200,7 @@ function renderCircle() {
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
   const st = gids.length ? circleStats(circleData, circleSess, circleMode, periodFilter()) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
-  const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h', 'games'].includes(circleTab)) ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
+  const modeChips = false ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
@@ -3368,7 +3382,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     const rel = relDay(gameDayMs(g));
     const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
     const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : '';
-    return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">
+    return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">${gameKindHtml(g)}
       <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
       <span class="gr-go">${ico('chevron', 14)}</span></div>`;
@@ -3459,11 +3473,11 @@ function circlePeopleTabHtml(st) {
       <span class="lb-main"><span class="lb-name"><span class="lb-nm">${esc(r.name)}</span>${circleBadge(r)}</span>
         <span class="lb-sub pp-sub">${e ? [`${e.rank <= 3 ? medalSvg(e.rank, 16, false) : ''}${e.rank}位`, `・ ${e.p.n}試合`, `・ 平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)}`,
           `・ <b class="${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>`].map(t => `<span class="nw">${t}</span>`).join(' ') : 'この形式の試合はまだありません'}</span>
-        ${r.uid ? '' : '<span class="lb-sub">名前で結びつけ</span>'}</span><span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
+</span><span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
   }).join('');
   return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`)}
     ${rows || '<div style="font-size:13px;color:#5F6E6B">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
-    <div class="h2h-note"><span class="cm-badge self" style="margin:0 2px 0 0">${ico('verified', 12)}本人</span>＝その人がログインして「これは私」と登録済み。印のない人は、誰かが名前で結びつけただけの状態です。名前を押すと、その人の成績・対戦成績が開きます。</div></div>
+    <div class="h2h-note"><span class="cm-badge self" style="margin:0 2px 0 0">${ico('verified', 12)}確認済み</span>＝その人がログインして「これは私」と確かめた人。名前を押すと、その人の成績・対戦成績が開きます。</div></div>
     <details class="mp-join log" style="margin-top:0"><summary>変更の履歴（誰がいつ何をしたか）${ico('chevron', 14)}</summary><div style="padding-bottom:12px">${circleLogHtml()}</div></details>`;
 }
 function circleStandingsTableHtml(st, forImage = false) {
@@ -3877,11 +3891,11 @@ function renderBindEditor() {
   document.getElementById('form-modal-title').textContent = '名前の結びつけ';
   const rows = s.rows.map((r, idx) => {
     const status = r.cur
-      ? (r.cur.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}本人が結びつけ</span>` : `${esc(r.cur.byName || 'メンバー')}さんが結びつけ（${fmtDate(r.cur.at)}）`)
+      ? (r.cur.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}確認済み</span>` : '')
       : '<span style="color:#8A6D1A;font-weight:700">まだ結びつけていません</span>';
     const opts = [`<option value=""${r.sel === '' ? ' selected' : ''}>ゲスト（通算に入れない）</option>`,
       `<option value="new"${r.sel === 'new' ? ' selected' : ''}>＋ 新しい人「${esc(r.name)}」として名簿に追加</option>`]
-      .concat(roster.map(([mid, m]) => `<option value="${mid}"${r.sel === mid ? ' selected' : ''}>${esc(m.name)}${m.uid ? '（本人）' : ''}${mid === myMid ? '＝あなた' : ''}</option>`)).join('');
+      .concat(roster.map(([mid, m]) => `<option value="${mid}"${r.sel === mid ? ' selected' : ''}>${esc(m.name)}${m.uid ? '（確認済み）' : ''}${mid === myMid ? '＝あなた' : ''}</option>`)).join('');
     return `<div class="org-row"><div class="org-name">試合での名前: ${esc(r.name)}</div>
       <div class="org-meta">${status}</div>
       <select ${r.locked ? 'disabled' : ''} onchange="bindState.rows[${idx}].sel=this.value">${opts}</select>
@@ -3954,7 +3968,7 @@ function openCircleMember(mid) {
   const keys = h2hSortedKeys(row);
   const hist = p ? sortHist(p.hist) : [];
   const modeChips = modes.length > 1 ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
-    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="mpMode=${m};circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
@@ -3969,7 +3983,7 @@ function openCircleMember(mid) {
   });
   const unconfirmed = bound.filter(b => !b.stt.self).length;
   const boundHtml = bound.map(b => `<div class="org-row" style="padding:6px 0"><div class="org-name" style="font-size:13px">${esc(b.gname)}</div>
-    <div class="org-meta">試合での名前「${esc(b.seatName)}」 ・ ${b.stt.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}本人が結びつけ</span>` : `${esc(b.stt.byName || 'メンバー')}さんが結びつけ`}</div></div>`).join('');
+    <div class="org-meta">試合での名前「${esc(b.seatName)}」 ${b.stt.self ? ` ・ <span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}確認済み</span>` : ''}</div></div>`).join('');
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
   const rk = idx + 1;
@@ -9415,7 +9429,7 @@ function modeSegHtml(counts, rerender) {
   const avail = [4, 3].filter(np => counts[np]);
   if (!avail.includes(mpMode)) mpMode = avail.length ? avail.slice().sort((a, b) => counts[b] - counts[a])[0] : 4;
   return `<div class="seg xs mode-seg" role="tablist" aria-label="形式">${[4, 3].map(np =>
-    `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}">${np === 3 ? '三麻' : '四麻'}${counts[np] ? '' : '<small>（なし）</small>'}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}"><span class="gk k${np} gk-tab">${kindSvg(np, 18)}</span>${np === 3 ? '三麻' : '四麻'}${counts[np] ? '' : '<small>（なし）</small>'}</button>`).join('')}</div>`;
 }
 // 期間内の過去の試合の、形式ごとの件数
 function histModeCounts() {
@@ -9483,7 +9497,7 @@ function historyItemHtml(g) {
   else sub = `<div class="gr-sub">${(g.rounds || []).length ? NIL_RESULT : ''}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, null)}`;
   const on = mpSelecting && mpSel.has(g.id);
   return `<div class="gr ${st}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
-    ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}
+    ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}${gameKindHtml(g)}
     <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
@@ -9497,6 +9511,17 @@ function oppLineHtml(g, me) {
   if (!opp.length) return '';
   const MAX = 5, shown = opp.slice(0, MAX);
   return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${shown.map(i => `<span class="gr-op"><i style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+}
+// 形式の印（行の先頭・四麻｜三麻のタブにも同じ印）。文字や色帯でなく、点の並び（形）と色で見分ける
+function kindSvg(np, size = 30) {
+  const dots = np === 3 ? [[15, 9.5], [9.5, 19], [20.5, 19]] : [[10, 10], [20, 10], [10, 20], [20, 20]];
+  return `<svg class="gk-svg" viewBox="0 0 30 30" width="${size}" height="${size}" aria-hidden="true" focusable="false"><rect x="1" y="1" width="28" height="28" rx="8" class="gk-bg"/>${dots.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" class="gk-dot"/>`).join('')}</svg>`;
+}
+function gameKindHtml(g) {
+  const np = (g.settings && g.settings.numPlayers) === 3 ? 3 : 4;
+  const n = playedFlags(g).filter(Boolean).length;
+  const multi = n > np;
+  return `<span class="gk k${np}${multi ? ' multi' : ''}" role="img" aria-label="${np === 3 ? '三麻' : '四麻'}${multi ? `・${n}人で回した試合` : ''}">${kindSvg(np)}${multi ? `<b class="gk-n">${n}</b>` : ''}</span>`;
 }
 // 自分が出ていない試合の結果の欄（順位・点数の位置に「—」）
 const NIL_RESULT = '<span class="gm-res nil">—</span><span class="gm-sc nil">—</span>';
