@@ -896,6 +896,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-scope { font-style: normal; font-size: 11px; font-weight: 800; color: #5F6E6B; background: #EEF2F1; border-radius: 8px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; }
 .ch-title-row { padding-top: 6px; }
 #circle-top:empty { display: none; }
+.mode-seg button small { font-size: 10px; font-weight: 700; }
+.mode-seg button:disabled { color: #AEBBB8; cursor: default; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -1985,7 +1987,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- MYSTATS（自分の成績シート） -->
 <div id="view-mystats" class="view">
-  <div class="page-title-row">
+  <div id="ms-acct" class="mp-bar" style="display:none"></div>
+  <div id="ms-switch" class="sw-wrap"></div>
+  <div id="ms-top"></div>
+  <div class="page-title-row ch-title-row">
     <h1>自分の成績</h1>
     <div class="title-actions"><button class="btn-tint" id="mystats-img-btn" onclick="showMyStatsImage()" style="display:none"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>プレビュー</button></div>
   </div>
@@ -3114,16 +3119,17 @@ function renderCircle() {
   renderAccountBar('circle-acct');
   let topHtml = '';
   const myM = myCircleMid();
-  if (myM && gids.length) {
-    const cards = circleModes().map(md => {
+  if (currentUser && gids.length) {
+    const mine = {};
+    ['4', '3'].forEach(md => {
       const sx = circleStats(circleData, circleSess, md, periodFilter());
-      const idx = sx.list.findIndex(x => x.key === myM);
-      if (idx < 0) return '';
-      const p = sx.list[idx], np = md === '3' ? 3 : 4;
-      const m = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
-      return `<button type="button" class="mc-card${np === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(np, m, true, 'この仲間ページ')}</button>`;
-    }).join('');
-    topHtml = cards;
+      const p = sx.list.find(x => x.key === myM);
+      if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
+    });
+    topHtml = modeSegHtml({ 4: mine[4] ? mine[4].games : 0, 3: mine[3] ? mine[3].games : 0 }, 'renderCircle()');
+    topHtml += mine[mpMode]
+      ? `<button type="button" class="mc-card${mpMode === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(mpMode, mine[mpMode], true, 'この仲間ページ')}</button>`
+      : `<div class="mp-panel mp-empty"><b>${myM ? `${periodLabel()}のこの仲間ページでの成績はまだありません` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
@@ -3830,7 +3836,7 @@ function openCircleMember(mid) {
       <div class="pf-name">${esc(r.name)}${circleBadge(r)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
     ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績とくらべる${ico('chevron', 12)}</button>` : ''}
-    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}<div style="height:8px"></div>${h2hGridHtml(row, keys, nameOf, avOf)}` : ''}
+    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : ''}
     <details class="pf-more"><summary>結びついている試合（${bound.length}）${ico('chevron', 14)}</summary>${boundHtml || '<div style="font-size:13px;color:#5F6E6B;padding-bottom:10px">なし</div>'}</details>
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人として登録）</button>` : ''}
       ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が結びつけた${unconfirmed}件を、本人として確認する</button>` : ''}
@@ -8646,10 +8652,10 @@ function collectMyH2H(mode) {
 function myH2HCardHtml() {
   const modes = new Set();
   (appState.games || []).forEach(g => { const t = tagOf(g.id); if (t.role !== 'watch' && t.me != null) modes.add(g.settings && g.settings.numPlayers === 3 ? '3' : '4'); });
-  if (!modes.has(myH2HMode) && myH2HMode !== 'all') myH2HMode = 'all';
+  myH2HMode = String(mpMode); // 形式は上の「四麻｜三麻」に合わせる（タブを二重に出さない）
   const { row, disp } = collectMyH2H(myH2HMode);
   const keys = h2hSortedKeys(row);
-  const seg = modes.size > 1 ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
+  const seg = false ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
     `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
   if (!keys.length) return `${seg}<div class="ios-group" style="margin-top:16px;padding:20px 16px;font-size:14px;color:#4F5C5A">まだ同じ試合に出た相手がいません</div>`;
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
@@ -8855,8 +8861,7 @@ function msCompareHtml(np) {
 function msModeHtml(np, m) {
   const r = msRow(np, m), hist = sortHist(m.hist);
   const tile = (l, v, cls = '') => `<div class="ms-tile"><span>${l}</span><b class="${cls}">${v}</b></div>`;
-  return `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}" style="margin-top:0">${mpStatsInnerHtml(np, m, false)}</div>
-    <div class="ms-tiles">${tile('連対率', pctText(r.ren))}${tile('1試合平均', fmtScore(r.per), scoreCls(r.per))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
+  return `<div class="ms-tiles">${tile('連対率', pctText(r.ren))}${tile('1試合平均', fmtScore(r.per), scoreCls(r.per))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
     ${hist.length > 1 ? `<div class="ms-panel">${sparkHtml(hist)}</div>` : ''}`;
 }
 function msGamesHtml(st) {
@@ -8888,21 +8893,25 @@ function renderMyStats() {
   const imgBtn = document.getElementById('mystats-img-btn');
   imgBtn.style.display = collectMyStats().groups.length ? 'inline-flex' : 'none';
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'sum';
-  const scopeRow = scopes.length > 1 ? `<div class="sw-row ms-scope" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
-    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="msScope='${esc(k)}';renderMyStats()">${k === 'all' ? ico('person', 16) : `<span class="sw-av" style="background:${avColor(k)}">${esc(avInitial(l))}</span>`}${esc(l)}</button>`).join('')}</div>` : '';
+  // 範囲の切り替えは、マイページの「個人｜仲間ページ」と同じ位置・同じ形（押すと範囲が変わるだけで画面は移らない）
+  const scopeRow = `<div class="sw-row" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
+    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="msScope='${esc(k)}';renderMyStats()">${k === 'all' ? `${ico('person', 16)}個人` : `<span class="sw-av" style="background:${avColor(k)}">${esc(avInitial(l))}</span>${esc(l)}`}</button>`).join('')}</div>`;
+  renderAccountBar('ms-acct');
+  document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['sum', '成績'], ['h2h', '相手'], ['groups', 'ゲーム']].map(([k, l]) =>
     `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+  // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
+  const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
+  const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
+  document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${seg}${st.modes[mpMode]
+    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
+    : `<div class="mp-panel mp-empty"><b>${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `${periodLabel()}の成績はまだありません`}</b></div>`}</div>`;
   let inner;
   if (myStatsTab === 'h2h') inner = myH2HCardHtml();
   else if (myStatsTab === 'groups') inner = msGamesHtml(st);
-  else {
-    const modes = [4, 3].filter(np => st.modes[np]);
-    inner = modes.length ? modes.map(np => msModeHtml(np, st.modes[np]) + msCompareHtml(np)).join('<div style="height:18px"></div>')
-      : `<div class="ms-empty">${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます。' : `${periodLabel()}の${msScope === 'all' ? '' : 'この仲間ページの'}成績はまだありません。`}</div>`;
-  }
+  else inner = st.modes[mpMode] ? msModeHtml(mpMode, st.modes[mpMode]) + msCompareHtml(mpMode) : '';
   const total = st.groups.reduce((a, g) => a + g.games, 0);
-  body.innerHTML = `<div class="ms-top">${mpPeriodHtml()}${scopeRow}</div>
-    <div class="ms-sub">${periodLabel()} ・ ${scopes.find(([k]) => k === msScope)[1]} ・ ${st.groups.length}ゲーム ・ 計${total}試合${st.myNames.length ? ` ・ 自分: ${st.myNames.map(esc).join('・')}` : ''}</div>
+  body.innerHTML = `<div class="ms-sub">${periodLabel()} ・ ${scopes.find(([k]) => k === msScope)[1]} ・ ${st.groups.length}ゲーム ・ 計${total}試合${st.myNames.length ? ` ・ 自分: ${st.myNames.map(esc).join('・')}` : ''}</div>
     ${tabs}${inner}`;
 }
 
@@ -9225,9 +9234,16 @@ function miniSparkHtml(h, np = 4) {
     <line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#CFDCD9" stroke-width="1" stroke-dasharray="4 4"/>
     <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
 }
+// 四麻｜三麻の切り替え（マイページ・仲間ページ・自分の成績で共用。mpMode は3つの画面で共通）
+function modeSegHtml(counts, rerender) {
+  const avail = [4, 3].filter(np => counts[np]);
+  if (!avail.includes(mpMode)) mpMode = avail.length ? avail.slice().sort((a, b) => counts[b] - counts[a])[0] : 4;
+  return `<div class="seg xs mode-seg" role="tablist" aria-label="形式">${[4, 3].map(np =>
+    `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}">${np === 3 ? '三麻' : '四麻'}${counts[np] ? '' : '<small>（なし）</small>'}</button>`).join('')}</div>`;
+}
 function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);
-  const period = mpPeriodHtml();
+  const period = mpPeriodHtml() + modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderHistory()');
   if (!modes.length) {
     const any = (appState.games || []).some(g => (g.rounds || []).length);
     const msg = !any ? ['まだ試合がありません', '試合を作るか、「＋ 試合を追加」で送ってもらった試合を取り込むと、ここに成績が出ます。']
@@ -9235,7 +9251,7 @@ function mpStatsHtml(st) {
       : [`${periodLabel()}の成績はまだありません`, '期間を切り替えると、ほかの期間の成績が見られます。'];
     return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('chart', 34, 'ico-l')}</div><b>${msg[0]}</b><span>${msg[1]}</span></div></div>`;
   }
-  return `<div class="mp-sec">${period}${modes.map(np => mpModeCardHtml(np, st.modes[np])).join('')}</div>`;
+  return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}</div>`;
 }
 
 // ---- 過去の試合の1行（自分が出た／出ていない／まだ選んでいない、がひと目でわかる形） ----
