@@ -863,6 +863,25 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-cmp th.on, .ms-cmp td.on { background: #EEF7F4 !important; }
 .ms-cmp th.on .mx-nm { color: #177083; font-weight: 900; }
 .ms-empty { font-size: 14px; color: #4F5C5A; background: #fff; border-radius: 14px; padding: 20px 16px; margin-top: 10px; line-height: 1.8; }
+.hg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hg-card { background: #fff; border-radius: 14px; padding: 10px; box-shadow: inset 0 0 0 1px #E3E9E7; min-width: 0; }
+.hg-card.pos { box-shadow: inset 0 0 0 1.5px #9FA8DA; background: #F7F8FD; }
+.hg-card.neg { box-shadow: inset 0 0 0 1.5px #EF9A9A; background: #FEF8F8; }
+.hg-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.hg-name { font-size: 13px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hg-rec { display: flex; align-items: baseline; gap: 2px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.hg-rec b { font-size: 24px; font-weight: 900; line-height: 1.1; }
+.hg-rec b.w { color: #1A237E; } .hg-rec b.l { color: #C62828; margin-left: 6px; }
+.hg-rec span { font-size: 12px; font-weight: 800; color: #5F6E6B; }
+.hg-rec small { font-size: 11px; color: #5F6E6B; margin-left: 6px; }
+.hg-bar { height: 6px; border-radius: 3px; background: #F3C7C7; overflow: hidden; margin-top: 6px; }
+.hg-bar i { display: block; height: 100%; background: #5C6BC0; border-radius: 3px; }
+.hg-pct { font-size: 12px; color: #5F6E6B; margin-top: 4px; }
+.hg-pct b { font-size: 14px; color: #1F2A28; } .hg-pct b.pos { color: #1A237E; } .hg-pct b.neg { color: #C62828; }
+.hg-meta { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; color: #5F6E6B; margin-top: 3px; white-space: nowrap; }
+.hg-meta b { color: #1F2A28; } .hg-meta b.pos { color: #1A237E; } .hg-meta b.neg { color: #C62828; }
+.hg-total { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #F5F8F7; font-size: 12px; color: #4F5C5A; margin-top: 8px; }
+.hg-total b { color: #1F2A28; } .hg-total b.w { color: #1A237E; font-size: 15px; } .hg-total b.l { color: #C62828; font-size: 15px; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -3100,11 +3119,9 @@ function circleRankTabHtml(st, modeChips, noBind) {
   if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
   const m = circleMetric;
   const np = circleMode === '3' ? 3 : 4;
-  const maxN = Math.max(...st.list.map(p => p.n));
-  const minN = m === 'score' ? 1 : Math.max(1, Math.ceil(maxN / 3));
+  // 試合数の多い少ないに関係なく、全員をまとめて順位にする（2026-09-29・ユーザーの判断。以前は率・平均で試合数の少ない人を「参考」に分けていた）
   const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || b.n - a.n;
-  const q = st.list.filter(p => p.n >= minN).sort(cmp);
-  const rest = st.list.filter(p => p.n < minN).sort(cmp);
+  const q = st.list.slice().sort(cmp);
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m)))) || 1;
   const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : Math.abs(v) / maxAbs;
   const clsOf = v => (m === 'score' || m === 'per') ? scoreCls(v) : '';
@@ -3130,10 +3147,8 @@ function circleRankTabHtml(st, modeChips, noBind) {
         ${bar}</span>
       <span class="lb-val ${clsOf(v)}">${circleMetricText(v, m)}</span></button>`;
   };
-  const rows = q.slice(3).map((p, i) => row(p, i + 4)).join('')
-    + (rest.length ? `<div class="lb-div">${minN}試合未満の人（参考）</div>` + rest.map(p => row(p, '–', true)).join('') : '');
-  return `<div class="card">${head}${modeChips}${chips}${podium}${rows}
-    <div class="h2h-note">自分が入っていない試合も、仲間ページに入っていれば数えます。${m === 'score' ? '' : `平均・率の順位は、いちばん多く打った人の3分の1（${minN}試合）以上の人だけで決めています。`}名前を押すとその人の成績が開きます。</div></div>`;
+  const rows = q.slice(3).map((p, i) => row(p, i + 4)).join('');
+  return `<div class="card">${head}${modeChips}${chips}${podium}${rows}</div>`;
 }
 // 成績表（列＝メンバー・行＝成績項目。ゲームの「個人成績」と同じ向き）
 function circleGridHtml(st, forImage = false) {
@@ -3220,8 +3235,8 @@ function circleH2HTabHtml(st, modeChips, noBind) {
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
   return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
-    ${keys.length ? `<div class="h2-list" style="padding:0;margin-top:6px">${h2hListHtml(row, keys, nameOf, avOf)}</div>` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
-    <div class="h2h-note">${H2H_NOTE}</div></div>
+    ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
+    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。平均着順は「自分 / 相手」、差は同じ試合での合計スコアの差。</div></div>
     <div class="card">${circleCardHead('総当たり表')}${mxLegendHtml()}${circleMatrixHtml(st)}</div>`;
 }
 function circleGamesTabHtml(role, gids) {
@@ -8570,7 +8585,7 @@ function myH2HCardHtml() {
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
   return `${seg}
     <div class="ios-head">相手（${keys.length}人）・同じ試合の多い順</div>
-    <div class="ios-group h2-list">${h2hListHtml(row, keys, nameOf, avOf)}</div>
+    ${h2hSortSegHtml('renderMyStats()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}
     <div class="ios-foot">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>`;
 }
 // 「相性がいい相手／手ごわい相手」のカード（選び方は h2hSummaryHtml と同じ＝3試合以上・勝率60%以上／40%以下）。
@@ -8592,6 +8607,40 @@ function h2hPairCardsHtml(row, nameOf, avOf) {
 }
 // 相手ごとの行（横スクロールの表の代わり）。押すと開いて、同じ試合・平均着順（自分／相手）・スコア差を出す。
 // 自分の成績の相手別・仲間ページの対戦・メンバーの成績で共用。画像は今までどおり h2hRowsTableHtml(…, true) の表
+// 相手ごとのカード（2列）。選んだ人から見た、相手1人ずつの直接対決
+function h2hGridHtml(row, keys, nameOf, avOf) {
+  return `<div class="hg-grid">${keys.map(k => {
+    const e = row[k], nm = nameOf(k);
+    const pct = h2hWinPct(e);
+    const cls = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
+    const diff = e.scoreA - e.scoreB;
+    return `<div class="hg-card ${cls}">
+      <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${esc(avInitial(nm))}</span><span class="hg-name">${esc(nm)}</span></div>
+      <div class="hg-rec"><b class="w">${e.w}</b><span>勝</span><b class="l">${e.l}</b><span>敗</span>${e.d ? `<small>${e.d}分</small>` : ''}</div>
+      <div class="hg-bar"><i style="width:${pct == null ? 50 : pct}%"></i></div>
+      <div class="hg-pct">勝率 <b class="${cls}">${pct == null ? '—' : pct + '%'}</b></div>
+      <div class="hg-meta"><span>${e.n}試合</span><span>差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span></div>
+      <div class="hg-meta"><span>平均着順</span><span><b>${(e.rankA / e.n).toFixed(2)}</b> / ${(e.rankB / e.n).toFixed(2)}</span></div>
+    </div>`;
+  }).join('')}</div>`;
+}
+// 選んだ人の対戦の合計（全員に対して何勝何敗か）
+function h2hTotalHtml(row, name) {
+  const ks = Object.keys(row);
+  if (!ks.length) return '';
+  const t = ks.reduce((a, k) => ({ w: a.w + row[k].w, l: a.l + row[k].l, d: a.d + (row[k].d || 0) }), { w: 0, l: 0, d: 0 });
+  const pct = t.w + t.l ? Math.round(t.w / (t.w + t.l) * 100) : null;
+  return `<div class="hg-total"><span><b>${esc(name)}</b> の直接対決の合計</span><span><b class="w">${t.w}</b>勝 <b class="l">${t.l}</b>敗${t.d ? ` ${t.d}分` : ''}・勝率 <b>${pct == null ? '—' : pct + '%'}</b>・相手${ks.length}人</span></div>`;
+}
+let h2hSort = 'n';
+function h2hSortKeys(row, keys) {
+  if (h2hSort === 'pct') return keys.slice().sort((a, b) => (h2hWinPct(row[b]) ?? -1) - (h2hWinPct(row[a]) ?? -1) || row[b].n - row[a].n);
+  return keys;
+}
+function h2hSortSegHtml(rerender) {
+  return `<div class="seg xs" role="tablist" aria-label="並び順" style="margin:10px 0 8px">${[['n', '試合数順'], ['pct', '勝率順']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${h2hSort === k ? 'on' : ''}" aria-selected="${h2hSort === k}" onclick="h2hSort='${k}';${rerender}">${l}</button>`).join('')}</div>`;
+}
 function h2hListHtml(row, keys, nameOf, avOf) {
   return keys.map(k => {
     const e = row[k], nm = nameOf(k);
