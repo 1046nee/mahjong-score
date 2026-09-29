@@ -727,6 +727,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pills button { flex: none; height: 32px; padding: 0 14px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mp-pills button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; }
 /* 期間は1つのボタン（黒いピル）。中の select を透明に重ねて、押すと端末の選択肢が開く */
+.mp-filters { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.mp-filters .seg.xs { margin-left: auto; }
 .mp-period { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 14px; margin: 0 8px 14px 0; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; }
 .mp-period .ico { transform: rotate(90deg); --i1: #fff; --i2: #fff; }
 .mp-period select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
@@ -960,13 +962,17 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
 .sw-wrap { margin: 10px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
-.sw-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 16px; }
+/* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
+.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1px solid #D5DEDB; }
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
-.sw-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px; border: 1px solid #D5DEDB; border-radius: 19px; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.sw-chip.on { background: var(--pc); border-color: var(--pc); color: #fff; }
-.sw-chip.on .ico { --i1: #fff; --i2: var(--pc-line); }
-.sw-chip.add { border-style: dashed; color: var(--pc); font-weight: 700; padding: 0 14px; }
+.sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: none; color: #5F6E6B; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.sw-chip .ico { --i1: #8A9AA5; --i2: #C9D3D1; }
+.sw-chip.on { color: var(--pc); }
+.sw-chip.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
+.sw-chip.on .ico { --i1: var(--pc); --i2: var(--pc-soft); }
+.sw-chip:not(.on) .sw-av { opacity: .75; }
+.sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
 .sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; }
 .mp-others { margin-top: 12px; }
@@ -985,8 +991,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
 .ms-tiles5 { grid-template-columns: repeat(6, 1fr); } .ms-tiles5 > .ms-tile { grid-column: span 2; } .ms-tiles5 > .ms-tile:nth-child(n+4) { grid-column: span 3; } /* 3・2・2 の3段 */
 .ms-tile { background: #fff; border-radius: 12px; padding: 8px 6px; text-align: center; box-shadow: var(--sh-1); min-width: 0; }
-.ms-tile span { display: block; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
-.ms-tile b { display: block; font-size: 15px; font-weight: 900; color: #1F2A28; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ms-tile span { display: block; height: 15px; line-height: 15px; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
+.ms-tile b { display: block; height: 20px; line-height: 20px; font-size: 15px; font-weight: 900; color: #1F2A28; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-tile b.pos { color: #1A237E; } .ms-tile b.neg { color: #C62828; }
 .ms-panel { background: #fff; border-radius: 14px; padding: 4px 12px 10px; margin-top: 8px; box-shadow: var(--sh-1); }
 /* くらべる表: ほかの表と同じ白いカードに載せる（地の色と紛れないように） */
@@ -1216,7 +1222,7 @@ button.ios-row:active { background: #F2F6F5; }
 .st-gauge::after { content: ''; position: absolute; left: var(--exp); top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: rgba(31,42,40,.45); }
 .st-foot { margin-top: 8px; font-size: 11px; color: #5F6E6B; }
 .st-block { margin-top: 16px; }
-.st-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 800; color: #1F2A28; }
+.st-cap { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; height: 20px; margin-bottom: 8px; font-size: 13px; font-weight: 800; color: #1F2A28; }
 .st-cap span { font-size: 12px; font-weight: 600; color: #5F6E6B; }
 .st-cap span b.pos { color: #1A237E; } .st-cap span b.neg { color: #C62828; }
 /* 着順の分布: 「1着」のタイル・横棒・％・回数を1行ずつ（凡例と帯を見比べなくていい） */
@@ -1240,7 +1246,8 @@ button.ios-row:active { background: #F2F6F5; }
 .form-chip.tie::after { content: '='; position: absolute; right: -5px; top: -6px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #D5DEDB; font-size: 11px; font-weight: 800; color: #1F2A28; line-height: 15px; text-align: center; }
 /* スコアの推移（0より上は紺・下は赤で塗り分け。終点の点はHTMLで置く＝preserveAspectRatio=none で円がつぶれないように） */
 .spark-wrap { position: relative; height: 84px; }
-.spark-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.spark-none { display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #F5F7F7; font-size: 12.5px; font-weight: 700; color: #5F6E6B; }
+.spark-ends { display: flex; justify-content: space-between; height: 16px; line-height: 16px; margin-top: 4px; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .spark { display: block; width: 100%; height: 84px; }
 .spark-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; transform: translate(-50%, -50%); }
 /* ---- よく打つ相手（勝ち負けの棒。中央の線が五分） ---- */
@@ -3425,13 +3432,13 @@ function renderCircle() {
   }
   // 期間（マイページと同じ）＋この仲間ページの中だけでの自分の成績（マイページの成績カードと同じ形・同じ位置）
   renderAccountBar('circle-acct');
-  let topHtml = '';
+  let topHtml = '', segHtml = '';
   const myM = myCircleMid();
   if (gids.length || currentUser) {
     // 押せる形式＝この仲間ページに試合がある形式（自分が出ていなくても、仲間の三麻の順位は見られる）
     const gc = { 4: 0, 3: 0 };
     gids.forEach(sid => { const g = circleSess[sid]; if (g) gc[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
-    topHtml = modeSegHtml(gc, 'circleFocus=null;renderCircle()');
+    segHtml = modeSegHtml(gc, 'circleFocus=null;renderCircle()');
     circleMode = String(mpMode);
   }
   if (currentUser) {
@@ -3445,7 +3452,7 @@ function renderCircle() {
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます');
   }
-  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
+  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${topHtml}</div>`;
   applyMpTheme();
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -4275,7 +4282,8 @@ function openCircleMember(mid) {
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
       + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over })}</div>` // 個人ページの「成績」と同じタイル＋推移
-    : `<div class="pf-stats" style="font-size:13px;color:#5F6E6B">${modes.length > 1 ? 'この形式の' : ''}試合はまだありません</div>`;
+    : `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, '', `${rosterName(mid)}さんの${np === 3 ? '三麻' : '四麻'}の成績はありません。`)}</div>`
+      + `<div class="pf-ms"><div class="ms-tiles ms-tiles5">${['連対率', '素点', '順位点', '最高点数', '最低点数', '箱下', '5万点超'].map(l => `<div class="ms-tile"><span>${l}</span><b style="color:#AEBBB8">—</b></div>`).join('')}</div><div class="ms-panel">${sparkEmptyHtml()}</div></div>`; // 成績が無くても同じ形（切り替えで画面が動かない）
   // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
@@ -4319,7 +4327,8 @@ function openCircleMember(mid) {
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
   const rk = idx + 1;
-  const rankPill = p ? `<span class="pf-rank${rk <= 3 ? ' r' + rk : ''}">${rk <= 3 ? medalSvg(rk, 16, false) : ''}通算 ${rk}位 / ${st.list.length}人${modes.length > 1 ? `（${circleMode === '3' ? '三麻' : '四麻'}）` : ''}</span>` : '';
+  const rankPill = p ? `<span class="pf-rank${rk <= 3 ? ' r' + rk : ''}">${rk <= 3 ? medalSvg(rk, 16, false) : ''}通算 ${rk}位 / ${st.list.length}人${modes.length > 1 ? `（${circleMode === '3' ? '三麻' : '四麻'}）` : ''}</span>`
+    : `<span class="pf-rank">通算 —${modes.length > 1 ? `（${circleMode === '3' ? '三麻' : '四麻'}）` : ''}</span>`;
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
   // 管理（名簿での名前・同じ人としてまとめる・本人の登録を外す）は別のまとまりに分ける。
   // 「変更」は入力が空か今の名前と同じあいだは押せない
@@ -9369,7 +9378,7 @@ function msModeHtml(np, m) {
   const pv = v => v == null ? '—' : fmtScore(v), pc = v => v == null ? '' : scoreCls(v);
   const cv = v => v == null ? '—' : v + '回';
   return `<div class="ms-tiles ms-tiles5">${tile('連対率', pctText(r.ren))}${tile('素点', pv(r.raw), pc(r.raw))}${tile('順位点', pv(r.rp), pc(r.rp))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}${tile('箱下', cv(r.box))}${tile('5万点超', cv(r.over))}</div>
-    ${hist.length > 1 ? `<div class="ms-panel">${sparkHtml(hist)}</div>` : ''}`;
+    <div class="ms-panel">${sparkHtml(hist)}</div>`;
 }
 function msGamesHtml(st) {
   const all = st.groups.map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
@@ -9411,7 +9420,7 @@ function renderMyStats() {
   // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
-  document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${seg}${st.modes[mpMode]
+  document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(seg)}${st.modes[mpMode]
     ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
     : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`)}</div>`;
   applyMpTheme();
@@ -9486,8 +9495,12 @@ function sparkEnds(hist) {
   const f = d => `${d.getFullYear() !== nowY || ds[0].getFullYear() !== ds[ds.length - 1].getFullYear() ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}`;
   return `<div class="spark-ends"><span>${f(ds[0])}</span><span>${f(ds[ds.length - 1])}</span></div>`;
 }
+// 記録が2試合より少ないときも同じ高さの枠（成績の有る無しで画面が動かない）
+function sparkEmptyHtml() {
+  return `<div class="st-block"><div class="st-cap">スコアの推移<span>—</span></div><div class="spark-wrap spark-none"><span>2試合以上になると出ます</span></div><div class="spark-ends"><span>&nbsp;</span></div></div>`;
+}
 function sparkHtml(hist) {
-  if (!hist || hist.length < 2) return '';
+  if (!hist || hist.length < 2) return sparkEmptyHtml();
   let cum = 0;
   const ys = [0].concat(hist.map(h => (cum += Number(h.sc) || 0)));
   const W = 300, H = 84, P = 6;
@@ -9718,6 +9731,8 @@ function setMpPeriod(p) {
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
   else renderHistory();
 }
+// 期間（左）と四麻｜三麻（右詰め）の1行。期間のボタンの幅が変わっても四麻｜三麻の位置は動かない
+function mpFiltersHtml(seg) { return `<div class="mp-filters">${mpPeriodHtml()}${seg || ''}</div>`; }
 function mpPeriodHtml() {
   const ys = gameYears();
   if (!ys.length) return '';
@@ -9867,7 +9882,7 @@ function histModeCounts() {
 function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);
   const hc = histModeCounts();
-  const period = mpPeriodHtml() + modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : hc[4] ? 0.5 : 0, 3: st.modes[3] ? st.modes[3].games : hc[3] ? 0.5 : 0 }, 'renderHistory()');
+  const period = mpFiltersHtml(modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : hc[4] ? 0.5 : 0, 3: st.modes[3] ? st.modes[3].games : hc[3] ? 0.5 : 0 }, 'renderHistory()'));
   if (!st.modes[mpMode]) {
     const any = (appState.games || []).some(g => (g.rounds || []).length);
     const msg = !any ? 'まだ試合がありません。試合を作るか「試合を追加」で取り込むと、ここに成績が出ます'
