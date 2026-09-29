@@ -830,6 +830,19 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cal-m.cur { box-shadow: inset 0 0 0 2px #177083; }
 .cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
+.sw-wrap { margin: 10px 0 0; }
+.sw-wrap.in-circle { margin: 0 0 12px; }
+.sw-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 16px; }
+.sw-wrap.in-circle .sw-row { margin: 0 -16px; }
+.sw-row::-webkit-scrollbar { display: none; }
+.sw-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px; border: 1px solid #D5DEDB; border-radius: 19px; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.sw-chip.on { background: #177083; border-color: #177083; color: #fff; }
+.sw-chip.on .ico { --i1: #fff; --i2: #CFE3DB; }
+.sw-chip.add { border-style: dashed; color: #177083; font-weight: 700; padding: 0 14px; }
+.sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 900; }
+.mp-others { margin-top: 12px; }
+.mp-others summary { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; font-size: 13px; font-weight: 800; color: #5F6E6B; cursor: pointer; list-style: none; }
+.mp-others summary::-webkit-details-marker { display: none; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -1892,6 +1905,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- HISTORY（マイページ: 上に自分のカード、下は「個人｜仲間」の切り替え） -->
 <div id="view-history" class="view">
   <div id="account-card" class="mp-bar" style="display:none"></div>
+  <div id="hist-circles" class="sw-wrap"></div>
   <div id="mp-me">
     <div id="mp-stats"></div>
     <div id="hist-organize"></div>
@@ -1906,7 +1920,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="history-body" id="history-body" style="margin-top:8px"></div>
     <div id="mp-sendbar" class="mp-sendbar" style="display:none"></div>
-    <div id="mp-circle"><div id="hist-circles"></div></div>
+    <div id="mp-circle"></div>
     <div class="mp-foot"><span class="mp-foot-ico"><svg class="ico" width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-phoneAdd"/></svg></span><div>ホーム画面に追加すると、アプリのように1タップで開けます。<a onclick="showInstallHelp()">追加のしかた</a></div></div>
   </div>
 </div>
@@ -1922,6 +1936,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- CIRCLE（仲間ページ: 複数のゲームを仲間ごとにまとめる） -->
 <div id="view-circle" class="view">
+  <div id="circle-switch" class="sw-wrap"></div>
   <div class="page-title-row">
     <div style="min-width:0">
       <h1 id="circle-title">仲間ページ</h1>
@@ -3007,6 +3022,7 @@ function renderCircle() {
   document.getElementById('circle-actions').innerHTML =
     `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 22)}共有</button>` +
     (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 22)}設定</button>` : '');
+  document.getElementById('circle-switch').innerHTML = currentUser ? mpSwitchHtml(circleId) : '';
   let html = '';
   // 立場ごとの案内
   if (!currentUser) {
@@ -4029,33 +4045,35 @@ async function loadCircleCardInfo() {
   circleCardLoading = false;
   if (document.getElementById('view-history').classList.contains('active')) renderCircleSection();
 }
+// マイページの上（#hist-circles）と仲間ページの上に同じ切り替えを出す: 「個人」＋参加している・見た仲間ページ＋「＋ 作る」
+function mpSwitchHtml(active) {
+  const list = allCircleEntries();
+  const chip = (on, label, js, extra = '') => `<button type="button" class="sw-chip${on ? ' on' : ''}${extra}" onclick="${js}">${label}</button>`;
+  return `<div class="sw-row" role="tablist" aria-label="個人と仲間ページの切り替え">
+    ${chip(active === 'me', `${ico('person', 16)}個人`, "showView('history')")}
+    ${list.map(([cid, m]) => {
+      const info = circleCardInfo[cid] || {};
+      const name = m.name || info.name || '仲間ページ';
+      return chip(active === cid, `<span class="sw-av" style="background:${avColor(cid)}">${esc(avInitial(name))}</span>${esc(name)}`, `openCircle('${esc(cid)}')`);
+    }).join('')}
+    ${loginAvailable() ? chip(false, '＋ 作る・参加する', 'openCircleEntryMenu()', ' add') : ''}
+  </div>`;
+}
 function renderCircleSection() {
   const el = document.getElementById('hist-circles');
   if (!el) return;
-  const list = allCircleEntries();
-  const badge = document.getElementById('mp-circle-n');
-  if (badge) { badge.textContent = list.length || ''; badge.style.display = list.length ? '' : 'none'; }
-  const cards = list.map(([cid, m]) => {
-    const info = circleCardInfo[cid] || {};
-    const sum = (circleSeen[cid] && circleSeen[cid].sum) || null;
-    const name = m.name || info.name || '仲間ページ';
-    const people = info.people != null ? info.people : sum && sum.people;
-    const games = info.games != null ? info.games : sum && sum.games;
-    const meta = people != null ? `${people}人 ・ ${games}ゲーム` : '';
-    const r = sum && sum.rank;
-    const me = r ? `<span class="cc-me${r <= 3 ? ' r' + r : ''}">${r <= 3 ? medalSvg(r, 16, false) : ''}あなた ${r}位 / ${sum.of}人${sum.mode === '3' ? '（三麻）' : ''}</span>` : '';
-    const role = m.member ? ({ owner: '作成者', admin: '管理者' }[sum && sum.role] || 'メンバー') : '見るだけ';
-    return `<button type="button" class="cc-card" onclick="openCircle('${esc(cid)}')"><span class="cc-icon" style="background:${avColor(cid)}">${esc(avInitial(name))}</span>
-      <span class="cc-main"><span class="cc-name">${esc(name)}</span>${meta ? `<span class="cc-meta">${ico('people', 12)}${meta}</span>` : ''}
-        <span class="cc-tags">${me}<span class="cc-role">${role}</span></span></span>
-      <span class="cc-arrow">${ico('chevron', 14)}</span></button>`;
-  }).join('');
-  el.innerHTML = `<div class="mp-sec"><div class="mp-sec-head"><div class="mp-sec-title">仲間ページ</div></div>
-    ${cards || `<div class="mp-note" style="margin:0 4px 8px">定例会や大会の試合をまとめて、通算順位を仲間全員で見られるページです。</div>`}
-    ${loginAvailable() ? `<button type="button" class="mp-add" onclick="${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}">＋ 仲間ページを作る</button>` : ''}
-    <details class="mp-join"><summary>招待リンク・参加コードを持っている${ico('chevron', 14)}</summary><div class="row">
-      <input type="text" id="circle-open-input" placeholder="招待リンク・参加コード・仲間ページのリンク">
-      <button type="button" class="btn-tint" style="height:36px;border-radius:10px" onclick="openCircleFromInput()">開く</button></div></details></div>`;
+  el.innerHTML = mpSwitchHtml('me');
+}
+function openCircleEntryMenu() {
+  document.getElementById('form-modal-title').textContent = '仲間ページ';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="mp-note" style="margin:0 2px 10px">定例会や大会の試合をまとめて、通算順位・成績表・対戦成績を仲間全員で見られるページです。</div>
+    <div class="mn-group">${menuBtnHtml('people', '仲間ページを作る', 'いつものメンバーで1つ作る', `closeFormModal();${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}`)}</div>
+    <div class="mn-group" style="padding:12px"><div style="font-size:13px;font-weight:700;color:#33544A;margin-bottom:6px">招待リンク・参加コードを持っている</div>
+      <div style="display:flex;gap:6px"><input type="text" id="circle-open-input" placeholder="招待リンク・参加コード・仲間ページのリンク" style="flex:1;min-width:0;font-size:16px;padding:8px;border:1px solid #CFE3DB;border-radius:10px">
+      <button type="button" class="btn-tint" style="height:40px;border-radius:10px" onclick="const v=document.getElementById('circle-open-input').value;closeFormModal();openCircleFromInput(v)">開く</button></div></div>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
 }
 // 貼り付けたもの（仲間ページのリンク／招待リンク／参加コード）を見分けて開く
 function openCircleFromInput(v) {
@@ -4824,23 +4842,16 @@ async function openShareSheet(id) {
 function renderShareSheet() {
   const g = shareCtxGame();
   if (!g) return;
-  const vid = viewIds[g.id];
-  const viewPart = viewFeature === false ? '' : `<div class="sh-opt ro"><div class="sh-h"><span class="sh-ico">${ico('eye', 22)}</span>見るだけのリンク<span class="sh-perm">${ico('eye', 12)}見るだけ</span></div>
-      <div class="sh-d"><b>点数は変えられない</b>リンクです。SNSに載せる・観戦している人や来られなかった人に送るときはこちら。入力するとそのまま反映されます。</div>
-      ${vid ? `<div class="sh-url"><input type="text" readonly value="${esc(viewUrlOf(vid))}" onclick="this.select()"><button type="button" onclick="shareCopy('view')">コピー</button></div>
-        <div class="sh-btns">${navigator.share ? `<button type="button" onclick="shareNative('view')">SNS・ほかのアプリへ</button>` : ''}<button type="button" class="line" onclick="shareLine('view')">LINEで送る</button></div>`
-      : viewFeature === null && !(g.id in viewIds) ? '<div class="sh-d" style="margin:0">確認しています…</div>'
-      : `<button type="button" class="sh-make" onclick="makeViewLink()">見るだけのリンクを作る</button>`}
-    </div>`;
+  // 2026-09-29: 「一緒に打つ人に送る」と「見るだけのリンク」を分けるのはやめ、試合のURL1つにした（ユーザーの判断）。
+  // 見るだけのリンク（#v=）の仕組みは残す（すでに送ったリンク・仲間ページを見ているだけの人の「結果を見る」で使う）
   document.getElementById('form-modal-title').textContent = '共有';
   // .sheet-body で包むとスマホでは下から出るボトムシートになる。並び順と #share-sheet-url はテスト（[11a]）が見ている
   document.getElementById('form-modal-body').innerHTML = `<div id="share-sheet" class="sheet-body">
-    <div class="sh-opt main"><div class="sh-h"><span class="sh-ico">${ico('pencil', 22)}</span>一緒に打つ人に送る<span class="sh-perm">${ico('pencil', 12)}入力できる</span></div>
-      <div class="sh-d">このURLを開いた人は<b>点数の入力・修正ができます</b>。同じ卓のメンバーだけに送ってください。</div>
+    <div class="sh-opt main"><div class="sh-h"><span class="sh-ico">${ico('link', 22)}</span>この試合のURL</div>
+      <div class="sh-d">開いた人は結果を見られ、点数の入力・修正もできます。仲間に送るときはこちら。</div>
       <div class="sh-url"><input type="text" id="share-sheet-url" readonly value="${esc(shareUrlOf(g.id))}" onclick="this.select()"><button type="button" onclick="shareCopy('member')">コピー</button></div>
-      <div class="sh-btns"><button type="button" class="line" onclick="shareLine('member')">LINEで送る</button></div>
+      <div class="sh-btns">${navigator.share ? `<button type="button" onclick="shareNative('member')">ほかのアプリへ</button>` : ''}<button type="button" class="line" onclick="shareLine('member')">LINEで送る</button></div>
     </div>
-    ${viewPart}
     ${(g.rounds || []).length ? `<button type="button" class="auto-btn sub" style="margin:2px 0 0" onclick="closeFormModal();openComposeModal(shareCtxGame())">${ico('image', 18, 'ico-in')}結果を画像にする</button>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
@@ -4848,7 +4859,7 @@ function shareLinkOf(kind) {
   const g = shareCtxGame();
   if (!g) return null;
   if (kind === 'view') return viewIds[g.id] ? { g, url: viewUrlOf(viewIds[g.id]), text: `${g.name || '麻雀'} の結果（まじゃすこ）` } : null;
-  return { g, url: shareUrlOf(g.id), text: `${g.name || '麻雀'}（まじゃすこ）点数はここに入れてね` };
+  return { g, url: shareUrlOf(g.id), text: `${g.name || '麻雀'}（まじゃすこ）` };
 }
 function shareCopy(kind) {
   const l = shareLinkOf(kind);
@@ -8832,7 +8843,7 @@ function openHistMenu(id) {
     <div class="mn-group">${
     menuBtnHtml('table', '結果を見る', '総合順位・試合結果・個人成績・対戦成績', `closeFormModal();viewDetailById('${j}')`) +
     menuBtnHtml('pencil', '続きを入力する', '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`) +
-    menuBtnHtml('share', '共有する', '一緒に打つ人に送るURL・見るだけのリンク', `closeFormModal();openShareSheet('${j}')`) +
+    menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${j}')`) +
     menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`)}</div>
     <div class="mn-group">${menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -9078,14 +9089,18 @@ function renderHistoryList() {
     .filter(x => !q || (String(x.g.name || '') + ' ' + ((x.g.settings && x.g.settings.playerNames) || []).join(' ')).toLowerCase().includes(q))
     .sort((a, b) => b.ms - a.ms).slice(0, MAX_HISTORY);
   srch.closest('.srch').style.display = (games.length > 8 || q) ? '' : 'none';
-  if (cnt) cnt.textContent = `${periodLabel()} ${list.length}件`;
+
   if (!list.length) {
     body.innerHTML = `<div class="empty-msg" style="margin-top:14px">${q ? '条件に一致する試合がありません' : `${periodLabel()}の試合はありません`}</div>`
       + (curPeriod() !== 'all' && !q ? `<button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '');
     renderSendBar();
     return;
   }
-  const shown = (histShowAll || q || mpSelecting) ? list : list.slice(0, HIST_PREVIEW);
+  // 自分が出た試合だけを一覧にする。自分を選んでいない・出ていない試合は下の「その他の試合」にたたむ
+  const mine = list.filter(x => histState(x.g) === 'me');
+  const others = list.filter(x => histState(x.g) !== 'me');
+  if (cnt) cnt.textContent = `${periodLabel()} ${mine.length}件`;
+  const shown = (histShowAll || q || mpSelecting) ? mine : mine.slice(0, HIST_PREVIEW);
   const months = [];
   shown.forEach(x => {
     const d = new Date(x.ms), key = d.getFullYear() * 100 + d.getMonth();
@@ -9093,13 +9108,17 @@ function renderHistoryList() {
     if (!m || m.key !== key) months.push(m = { key, label: `${d.getFullYear()}年${d.getMonth() + 1}月`, items: [] });
     m.items.push(x.g);
   });
-  body.innerHTML = months.map(m => `<div class="gm-month">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
-    + (shown.length < list.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${list.length - shown.length}件）</button>` : '');
+  const nAsk = others.filter(x => histState(x.g) === 'ask').length, nOut = others.length - nAsk;
+  body.innerHTML = (months.length ? months.map(m => `<div class="gm-month">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
+      : `<div class="empty-msg" style="margin-top:10px">${periodLabel()}に自分が出た試合はまだありません${nAsk ? '（下の「その他の試合」で自分を選べます）' : ''}</div>`)
+    + (shown.length < mine.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${mine.length - shown.length}件）</button>` : '')
+    + (others.length ? `<details class="mp-others"${histOthersOpen || mpSelecting ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}件` : '', nOut ? `出ていない ${nOut}件` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
+        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '');
   renderSendBar();
 }
 
 // ---- まとめて送る（選んだ試合の名前とURLを1つの文にしてLINEへ。受け取った人は「試合を追加」に貼るだけ） ----
-let mpSelecting = false, mpSel = new Set();
+let mpSelecting = false, mpSel = new Set(), histOthersOpen = false;
 function startSelectSend() {
   if (!(appState.games || []).length) { showToast('送れる試合がまだありません'); return; }
   mpSelecting = true; mpSel = new Set();

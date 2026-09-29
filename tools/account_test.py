@@ -188,7 +188,7 @@ def main():
         pg.evaluate("showView('history')")
         pg.wait_for_timeout(300)
         results.append(("[5a] 過去の試合に「仲間ページ」欄と「作る」ボタンが出る", True,
-                        pg.evaluate("document.getElementById('hist-circles').innerText.includes('仲間ページを作る')")))
+                        pg.evaluate("document.getElementById('hist-circles').innerText.includes('作る・参加する')")))
         pg.evaluate("openCreateCircle(); document.getElementById('cc-name').value = '金曜会'; document.getElementById('cc-me').value = 'むにぃ';")
         pg.evaluate("runCreateCircle()")
         pg.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=10000)
@@ -350,11 +350,13 @@ def main():
         results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・最近）", True,
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "最近"])))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
-        results.append(("[10b] 成績の下に「試合を追加」「まとめて送る」、過去の試合（月の見出し）と仲間ページが1画面に並ぶ", True,
-                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "過去の試合", "年", "月", "金曜会1", "仲間ページを作る"])))
+        sw = pg.evaluate("document.getElementById('hist-circles').innerText")
+        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、成績の下に「試合を追加」「まとめて送る」、自分が出た試合（月の見出し）", True,
+                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "過去の試合", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+        pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
-        results.append(("[10c] 自分を選んでいない試合は、その行に名前が並び「いつもの名前」と「出ていない」が出る", True,
-                        " ask" in row3 and "いつもの名前" in row3 and "出ていない" in row3))
+        results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,
+                        " ask" in row3 and pg.evaluate("!!document.querySelector('#history-body details.mp-others .gr.ask')") and "いつもの名前" in row3 and "出ていない" in row3))
         pg.evaluate(f"quickTag('{g3}', 0)")
         results.append(("[10d] 名前を1回押すと自分に決まり、行が「自分の順位・スコア」の形に変わる", True,
                         pg.evaluate(f"tagOf('{g3}').me === 0 && [...document.querySelectorAll('#history-body .gr.me')].some(x => x.innerText.includes('金曜会3') && x.innerText.includes('位'))")))
@@ -391,11 +393,11 @@ def main():
         pg.evaluate("leaveGame()")
         pg.evaluate("showView('history')")
         pills = pg.evaluate("document.querySelector('.mp-pills') ? document.querySelector('.mp-pills').innerText : ''")
-        pg.evaluate("setMpPeriod('y2025')")
+        pg.evaluate("histOthersOpen = true; setMpPeriod('y2025')")
         rows25 = pg.evaluate("document.getElementById('history-body').innerText")
         pg.evaluate("setMpPeriod('all')")
         results.append(("[10i] 期間（年）で成績と一覧を切り替えられ、過去の日付の試合はその年に入る", True,
-                        "2025年" in pills and f"{__import__('datetime').date.today().year}年" in pills and "2025年5月" in rows25 and "金曜会1" not in rows25))
+                        "2025年" in pills and f"{__import__('datetime').date.today().year}年" in pills and "2025.05.10" in rows25 and "金曜会1" not in rows25))
         # 対局日をあとから変える（結果の編集から）
         pg.evaluate(f"viewDetailById('{g1}')")
         pg.evaluate("openDetailEdit()")
@@ -421,10 +423,10 @@ def main():
         pg.evaluate(f"joinSession('{g1}')")
         pg.wait_for_function(SAFE % "document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.evaluate("openShareSheet()")
-        pg.wait_for_function(SAFE % "document.getElementById('share-sheet') && document.getElementById('share-sheet').innerText.includes('見るだけのリンクを作る')", timeout=10000)
+        pg.wait_for_function(SAFE % "document.getElementById('share-sheet') && document.getElementById('share-sheet').innerText.includes('この試合のURL')", timeout=10000)
         sh = pg.evaluate("document.getElementById('share-sheet').innerText")
-        results.append(("[11a] 共有シートの一番上は「一緒に打つ人に送る」（入力できるURL）、その下に見るだけのリンク", True,
-                        sh.index("一緒に打つ人に送る") < sh.index("見るだけのリンク") and pg.evaluate("document.getElementById('share-sheet-url').value") == share1))
+        results.append(("[11a] 共有シートは試合のURL1つだけ（一緒に打つ人・見る人でリンクを分けない）", True,
+                        "この試合のURL" in sh and "見るだけ" not in sh and pg.evaluate("document.getElementById('share-sheet-url').value") == share1))
         pg.evaluate("makeViewLink()")
         pg.wait_for_function(f"() => viewIds['{g1}']", timeout=10000)
         vid = pg.evaluate(f"viewIds['{g1}']")
