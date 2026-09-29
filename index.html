@@ -3249,9 +3249,8 @@ function circleCalendarHtml(games, dayOf, rowOf) {
     // 年: 月ごとの「ゲーム数・打った日数」。押すとその月のカレンダー
     const perMonth = Array.from({ length: 12 }, () => ({ games: new Set(), days: 0 }));
     keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
-    const maxG = Math.max(1, ...perMonth.map(p => p.games.size));
     const cells = perMonth.map((p, i) => p.games.size
-      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="circleCalMonth=${y * 12 + i};circleCalMode='month';circleCalDay=null;renderCircle()"><b>${i + 1}月</b><span>${p.games.size}ゲーム・${p.days}日</span><i><u style="width:${Math.round(p.games.size / maxG * 100)}%"></u></i></button>`
+      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="circleCalMonth=${y * 12 + i};circleCalMode='month';circleCalDay=null;renderCircle()"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
       : `<span class="cal-m none"><b>${i + 1}月</b><span>—</span></span>`).join('');
     const total = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid))).size;
     const ynav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir * 12};renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
