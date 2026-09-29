@@ -116,7 +116,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-body { font-size: 15px; color: #444; line-height: 1.8; margin-bottom: 20px; }
 
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
-.lp-solution { background: transparent; } /* LPの地（#E6F1EC）のまま */
+.lp-solution { background: #fff; }
 .lp-solution h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
 /* 特徴カードのカルーセル（横スクロール＋スナップ。常に次のカードが見える幅にする） */
 .features-wrap { position: relative; max-width: 960px; margin: 0 auto; }
@@ -202,8 +202,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-close { background: #E4F3EC; text-align: center; }
 .lp-close .close-illust { margin: 0 auto 10px; max-width: 210px; }
 .lp-close .close-illust svg { width: 100%; height: auto; display: block; }
-.close-badges { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-.close-badges span { background: #177083; color: #fff; border-radius: 20px; padding: 8.5px 15.5px; font-size: 13px; font-weight: 700; }
 .lp-close h2 { font-size: 22px; font-weight: 900; color: #1a1a1a; margin-bottom: 16px; line-height: 1.6; }
 .lp-close h2 .brand-green { color: #177083; }
 .lp-close .cta-btn { margin-top: 0; }
@@ -220,12 +218,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
    スモークテストの「要素静止待ち」で落ちる点に注意） */
 .hero .cta-btn { margin-bottom: 10px; font-size: 18px; padding: 19px 20px; }
 /* 信頼テキスト: 緑のチェック付きでブランドに馴染ませる（ボタン風にはしない） */
-.cta-trust { display: flex; justify-content: center; gap: 14px; color: #5f6e6b; font-size: 12.5px; font-weight: 600; flex-wrap: wrap; }
+.cta-trust { display: flex; justify-content: center; gap: 14px; color: #1F2A28; font-size: 13px; font-weight: 700; flex-wrap: wrap; }
+.cta-trust.close-trust { margin-bottom: 16px; }
 .cta-trust span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin: 0 4px -1px 0; background: #177083;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
 
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
+/* 使い方（＋お気に入り登録の案内）は白の地。中身の幅は600pxのまま、白は画面の端まで広げる */
+.lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
 .info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
@@ -1584,7 +1585,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- 使い方＋番外編（ヒーロー直下。特徴系セクションより先に見せる） -->
-<div class="home-content">
+<div class="home-content lp-howto-wrap">
     <section class="howto" id="howto">
       <h2>1分でわかるまじゃすこの使い方</h2>
       <p style="text-align:center">会員登録もインストールも不要。<br>ブラウザだけで、この4ステップです。</p>
@@ -1773,9 +1774,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>麻雀のスコア記録は、<br><span class="brand-green">まじゃすこ</span>で。</h2>
       <p class="lp-body" style="text-align:center">紙とペンを片付けたら、あとは打つだけ。<br>今日の対局から、記録はぜんぶスマホにおまかせ。</p>
       <p class="lp-body" style="text-align:center;font-size:13px;color:#5f6e6b;margin-top:10px">仲間内のセット麻雀はもちろん、サークルの定例会・社内の麻雀大会・麻雀教室の練習記録にもそのまま使えます。</p>
-      <div class="close-badges">
-        <span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span>
-      </div>
+      <p class="cta-trust close-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
       <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
     </div>
   </section>
