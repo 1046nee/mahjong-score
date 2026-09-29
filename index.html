@@ -159,12 +159,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   --sh-2: 0 1px 2px rgba(16,40,36,.06), 0 4px 14px rgba(16,40,36,.05);
   --sh-thumb: 0 3px 8px rgba(0,0,0,.12), 0 3px 1px rgba(0,0,0,.04);
 }
-.sanma, body.sanma-mode .sheet { --i1: #4261AA; --i2: #a9b8dc; --i3: #EAF0FB; }
-/* 主色（操作・選択・見出し）。四麻＝ティール・三麻（.sanma）＝青。マイページ・自分の成績・仲間ページは
-   個人の成績の「四麻｜三麻」に合わせて画面ごと .sanma を付け外しする（applyMpTheme。ヘッダーは body.mp-s3） */
-:root { --pc: #177083; --pc-tint: #E4F3EC; --pc-soft: #9FC3BD; --pc-ink: #0F4F5C; --pc-line: #CFE3DB; --pc-line2: #B7DCCD; --pc-bg: #EEF7F4; --pc-bd: #D5E9E2; }
-.sanma, body.mp-s3 .global-header { --pc: #4261AA; --pc-tint: #EAF0FB; --pc-soft: #A9B8DC; --pc-ink: #2C4580; --pc-line: #D3DCEF; --pc-line2: #BFCBE8; --pc-bg: #EEF2FA; --pc-bd: #D9E2F4; }
-body.mp-s3 .global-header { --i1: #4261AA; --i2: #a9b8dc; --i3: #EAF0FB; }
+.sanma, body.sanma-mode { --i1: #4261AA; --i2: #a9b8dc; --i3: #EAF0FB; }
+/* 主色（操作・選択・見出し）。四麻＝ティール・三麻＝青。三麻の画面では .sanma（画面）と body.sanma-mode（ヘッダー・シート・メニューまで）で
+   同じ値に切り替わる。body.sanma-mode は開いている画面の .sanma に合わせる（syncSanmaBody）。マイページ・自分の成績・仲間ページは個人の成績の「四麻｜三麻」 */
+:root { --pc: #177083; --pc-tint: #E4F3EC; --pc-soft: #9FC3BD; --pc-ink: #0F4F5C; --pc-line: #CFE3DB; --pc-line2: #B7DCCD; --pc-bg: #EEF7F4; --pc-bd: #D5E9E2; --pc-wash: #E0F2F5; --pc-a15: rgba(23,112,131,.15); }
+.sanma, body.sanma-mode { --pc: #4261AA; --pc-tint: #EAF0FB; --pc-soft: #A9B8DC; --pc-ink: #2C4580; --pc-line: #D3DCEF; --pc-line2: #BFCBE8; --pc-bg: #EEF2FA; --pc-bd: #D9E2F4; --pc-wash: #E3EAF7; --pc-a15: rgba(66,97,170,.15); }
 .danger { --i1: #c62828; --i2: #f0a8a8; --i3: #fdecec; }
 .ico, .medal { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 /* オレンジはCTAボタン限定。アイコンの差し色（--i4）は主色に置き換え、空の状態の大きい挿絵（.ico-l）だけLPと同じオレンジを1点残す。
@@ -323,8 +322,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .add-member-btn { background: var(--pc); color: #fff; border: none; border-radius: 8px; padding: 0 20px; font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 .add-member-btn:disabled { background: #aaa; cursor: not-allowed; }
 .member-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.member-tag { display: inline-flex; align-items: center; gap: 6px; background: #e0f2f5; color: var(--pc); border-radius: 20px; padding: 8px 8px 8px 14px; font-size: 14px; font-weight: 600; }
-.member-tag button { background: rgba(23,112,131,0.15); border: none; color: var(--pc); width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 0; padding: 0; display: inline-grid; place-items: center; }
+.member-tag { display: inline-flex; align-items: center; gap: 6px; background: var(--pc-wash); color: var(--pc); border-radius: 20px; padding: 8px 8px 8px 14px; font-size: 14px; font-weight: 600; }
+.member-tag button { background: var(--pc-a15); border: none; color: var(--pc); width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 0; padding: 0; display: inline-grid; place-items: center; }
 
 /* グループ作成完了・共有画面 */
 #view-share { background: #DBF4F9; }
@@ -405,7 +404,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
    白地＋枠線で輪郭を作る。文字も12pxに上げ、高さはタップしやすい36pxを確保する */
 .title-edit-btn { color: var(--pc); background: #fff; border: 1.5px solid var(--pc); border-radius: 8px;
   padding: 8px 12px; font-size: 12px; font-weight: 700; line-height: 1.15; white-space: nowrap; }
-.title-edit-btn:active { background: #e0f2f5; }
+.title-edit-btn:active { background: var(--pc-wash); }
 #view-game.sanma .title-edit-btn, #view-detail.sanma .title-edit-btn { color: #4261AA; background: #fff; border-color: #4261AA; }
 #view-game.sanma .title-edit-btn:active, #view-detail.sanma .title-edit-btn:active { background: #eaf0fb; }
 
@@ -416,7 +415,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* タイムライン形式の履歴 */
 .log-list { margin-top: 8px; display: flex; flex-direction: column; gap: 0; }
 .log-row { font-size: 12px; color: #666; display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; position: relative; }
-.log-date { font-size: 11px; font-weight: 700; color: var(--pc); background: #eef7f9; border-radius: 6px; padding: 3px 10px; margin: 8px 0 4px; display: inline-block; align-self: flex-start; }
+.log-date { font-size: 11px; font-weight: 700; color: var(--pc); background: var(--pc-bg); border-radius: 6px; padding: 3px 10px; margin: 8px 0 4px; display: inline-block; align-self: flex-start; }
 .log-arrow { color: #b9cdd2; font-size: 11px; line-height: 1; padding-left: 15px; }
 .log-time { color: var(--pc); font-weight: 700; font-variant-numeric: tabular-nums; font-size: 12px; flex-shrink: 0; width: 42px; padding-top: 1px; }
 .log-tag { flex-shrink: 0; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 2px 6px; color: #fff; margin-top: 1px; }
@@ -551,7 +550,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
 /* カード右上の開閉ボタン（▾=表示中 / ▸=たたんだ状態） */
-.card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: #f2f7f6; color: var(--pc); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
+.card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--pc-bg); color: var(--pc); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
 
 
@@ -652,7 +651,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ih-cap b { color: #E75620; }
 
 /* 参加/観戦タグ（過去の試合カード・タグ編集モーダル） */
-.tag-chip { border: 1px solid var(--pc-line); background: #f4faf8; color: #33544a; border-radius: 12px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 6px; }
+.tag-chip { border: 1px solid var(--pc-line); background: var(--pc-bg); color: #33544a; border-radius: 12px; padding: 3px 10px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 6px; }
 .tag-chip.watch { background: #f3f3f6; border-color: #d9d9e0; color: #667; }
 .tag-chip.unset { border-color: #F2E3B3; background: #FFF8E6; color: #8A6D1A; }
 .tag-role-btn { flex: 1; border: 1.5px solid #ddd; background: #fff; color: #555; border-radius: 10px; padding: 10px 0; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -799,6 +798,26 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hist-kinds button.on { background: var(--pc-tint); border-color: var(--pc); color: var(--pc-ink); }
 .hist-kinds button.on small { color: var(--pc); }
 .hist-kinds button:disabled { color: #AEBBB8; background: #F7F9F8; cursor: default; }
+/* 過去の試合のタイル（小さな正方形。3列〜。空＝点線・灰色、少ない＝琥珀色の縁） */
+.ht-legend { margin: 12px 2px 8px; font-size: 12px; font-weight: 700; color: #5F6E6B; }
+.ht-lg.empty { color: #6B7A77; } .ht-lg.few { color: #9A5B12; }
+.ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.ht { aspect-ratio: 1 / 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
+.ht:active { opacity: .75; }
+.ht-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.ht-k { width: 14px; height: 14px; margin: 0; }
+.ht-d { font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.ht-name { flex: 1; min-height: 0; font-size: 13px; font-weight: 800; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.ht-n { display: flex; align-items: baseline; gap: 2px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.ht-n b { font-size: 22px; font-weight: 900; color: var(--pc); line-height: 1; font-variant-numeric: tabular-nums; }
+.ht-n em { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
+.ht.empty { background: #F3F5F5; border: 1.5px dashed #AEBBB8; box-shadow: none; }
+.ht.empty .ht-name { color: #6B7A77; }
+.ht.empty .ht-n b { color: #AEBBB8; }
+.ht.empty .ht-n em { background: #E3E9E8; color: #5F6E6B; }
+.ht.few { border-color: #E2B06A; background: #FFF9EE; }
+.ht.few .ht-n b { color: #9A5B12; }
+.ht.few .ht-n em { background: #F8E3C2; color: #7A4A0E; }
 .hist-viewseg .seg { margin: 0; }
 .gr.out .gr-name, .gr.out .gr-date { color: #8A9AA5; font-weight: 700; }
 .gr-out { font-size: 11px; font-weight: 800; color: #6B7A77; border: 1px dashed #AEBBB8; border-radius: 10px; padding: 1px 8px; }
@@ -973,7 +992,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
    淡い地 #F2F6F5 の上に白い角丸のグループ。大きな数字と小さなラベル。区切り線は .5px #D5DEDB を文字の始まる位置から。
    文字は11px以上・補足の色は #5F6E6B（#8A9AA5 などの薄い灰色は白の上で4.5:1に届かないので使わない） */
 #view-history, #view-mystats, #view-circle { background: #F2F6F5; }
-#view-history.sanma, #view-mystats.sanma, #view-circle.sanma { background: #EDF1F9; }
+#view-history.sanma, #view-mystats.sanma, #view-circle.sanma { background: #EAF0FB; } /* スコア入力の画面の三麻と同じ地 */
 #view-history .history-body { padding: 10px 16px 0; gap: 0; }
 /* ---- 上部の自分のカード ---- */
 .mp-hero { margin: 12px 16px 0; padding: 16px 16px 14px; border-radius: 20px; color: #fff; position: relative; overflow: hidden;
@@ -1181,7 +1200,7 @@ button.ios-row:active { background: #F2F6F5; }
 .gm-sc { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .gm-sc.pos { color: #1A237E; } .gm-sc.neg { color: #C62828; }
 .gm-as { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: #5F6E6B; }
-.gm-pick { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 10px 0 6px; border: 1px dashed var(--pc-soft); border-radius: 12px; background: #F2F9F6; color: var(--pc); font-size: 12px; font-weight: 800; cursor: pointer; }
+.gm-pick { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 10px 0 6px; border: 1px dashed var(--pc-soft); border-radius: 12px; background: var(--pc-bg); color: var(--pc); font-size: 12px; font-weight: 800; cursor: pointer; }
 .gm-none { font-size: 12px; color: #5F6E6B; }
 .gm-dots { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border: 0; border-radius: 50%; background: #EEF2F1; color: #4F5C5A; cursor: pointer; }
 /* ---- …メニュー（ボトムシート） ---- */
@@ -3307,7 +3326,7 @@ function renderCircle() {
       if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
     });
     topHtml += mine[mpMode]
-      ? `<button type="button" class="mc-card${mpMode === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(mpMode, mine[mpMode], true, 'この仲間ページ')}</button>`
+      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, 'この仲間ページ')}</div>`
       : `<div class="mp-panel mp-empty"><b>${myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
@@ -3849,7 +3868,7 @@ function openCircleAddGames() {
     <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:6px">この端末で開いたことのある試合です（名簿と名前がよく重なる順。重なる試合は最初からチェックしています）。</div>
     ${rows || '<div style="font-size:12px;color:#999;padding:6px 0">追加できる試合はありません</div>'}
     <div style="font-size:12px;color:#555;line-height:1.7;margin:14px 0 6px"><b>LINEのトークから取り込む</b>：トーク画面の「≡」→「設定」→「トーク履歴を送信」で書き出した文章や、試合のURLを何行でも貼り付けてください。中のまじゃすこの試合を全部拾います。</div>
-    <textarea id="cadd-text" rows="4" style="width:100%;font-size:12px;padding:8px;border:1px solid #cfe3db;border-radius:8px" placeholder="ここに貼り付け"></textarea>
+    <textarea id="cadd-text" rows="4" style="width:100%;font-size:12px;padding:8px;border:1px solid var(--pc-line);border-radius:8px" placeholder="ここに貼り付け"></textarea>
     <div style="font-size:11px;color:#8a9aa5;margin-top:6px;line-height:1.6">名簿と同じ名前は自動で結びつけ、名簿にいない名前は新しい人として名簿に足します（あとから「同じ人としてまとめる」で直せます）。仮の名前（A・B…）の席は、あとで結びつけてください。</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="runCircleAddGames()">追加する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
@@ -4293,8 +4312,7 @@ async function openCircleSettings() {
     <div class="org-meta" style="margin-bottom:4px">管理者は、本人が結びつけた試合や本人が登録した人の名前も変更できます。${owner ? '権限は作成者だけが変えられます。' : ''}</div>
     ${memberRows}
     ${owner ? `<button class="auto-btn sub" style="margin-top:10px" onclick="regenerateCircleCode()">参加コードを作り直す（古い招待リンクは使えなくなります）</button>` : ''}
-    ${owner ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="deleteCircle()">この仲間ページを削除</button>`
-      : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
+    ${owner ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -4362,25 +4380,6 @@ async function leaveCircle() {
     renderCircle();
     showToast('抜けました');
   } catch (e) { showToast('抜けられませんでした'); }
-}
-async function deleteCircle() {
-  if (!confirm(`「${circleData.name}」を削除します。通算順位・名簿・結びつけがすべて消え、元に戻せません（試合そのものは消えません）。削除しますか？`)) return;
-  closeFormModal();
-  const cid = circleId;
-  try {
-    stopCircle();
-    // 順番が大事: ルールは「作成者か」を仲間ページ本体で見るので、本体の削除は最後
-    const members = Object.keys(circleMembers || {});
-    await Promise.all(members.map(u => db.ref(`circleMembers/${cid}/${u}`).remove()));
-    if (circleSecret) await db.ref('circleInvites/' + circleSecret).remove().catch(() => {});
-    await db.ref('circleSecrets/' + cid).remove().catch(() => {});
-    await db.ref('circles/' + cid).remove();
-    await db.ref(`users/${myUid()}/circles/${cid}`).remove().catch(() => {});
-    delete myCircles[cid]; delete circleSeen[cid]; saveCircleSeen();
-    circleId = null; circleData = null;
-    showView('history');
-    showToast('仲間ページを削除しました');
-  } catch (e) { showToast('削除できませんでした'); }
 }
 // 新しい仲間ページを作る（作った人が作成者。自分の名前を名簿に入れて本人として登録する）
 function openCreateCircle() {
@@ -5152,7 +5151,7 @@ function showView(name, skipHistory = false) {
   if (name === 'mystats') renderMyStats();
   if (name === 'setup') initSetupForm();
   if (name === 'home') renderRecentGames();
-  applyMpTheme(); // マイページ・自分の成績・仲間ページを離れたらヘッダーの青を戻す
+  if (MP_VIEWS.includes(name)) applyMpTheme(); else syncSanmaBody(); // 画面ごとの三麻の青（ヘッダー・シートも）
 
   // ブラウザの履歴（戻る・進む）に追加（popstateからの呼び出し時はスキップ）
   if (!skipHistory) {
@@ -5621,7 +5620,7 @@ function openPlayersManage(keepMode) {
     } else {
       actions = setupMembers.includes(name)
         ? `<button class="edit-tab" style="flex-shrink:0;color:#c62828;background:#fdecea" onclick="removeSavedPlayerFromGame(${i})">取り消し</button>`
-        : `<button class="edit-tab" style="flex-shrink:0;color:#177083;background:#e0f2f5" onclick="addSavedPlayerToGame(${i})">ゲームに追加</button>`;
+        : `<button class="edit-tab" style="flex-shrink:0;color:var(--pc);background:var(--pc-wash)" onclick="addSavedPlayerToGame(${i})">ゲームに追加</button>`;
     }
     return `<div style="display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid #eee">
       <span style="font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(name)}</span>
@@ -5731,6 +5730,7 @@ function applyMode(n) {
   document.getElementById('mode-3').classList.toggle('active', n === 3);
   refreshUmaSelect();
   document.getElementById('view-setup').classList.toggle('sanma', n === 3); // 三麻はサンマカラー（青）に
+  syncSanmaBody();
   document.getElementById('s-start').value = n === 3 ? 35000 : 25000;
   document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
   onUmaChange();
@@ -7741,7 +7741,7 @@ function renderLogModal() {
   const g = logSrc === 'detail' ? detailGame : activeGame;
   if (!g) return;
   // タブの色は履歴タグ（.log-tag）と同じ配色: 入力=緑 / 修正=オレンジ / 削除=赤 / 設定=青灰
-  const TAB_COLORS = { all: '#555', add: '#177083', edit: '#E75620', delete: '#c62828', settings: '#5b6b8c' };
+  const TAB_COLORS = { all: '#555', add: 'var(--pc)', edit: '#E75620', delete: '#c62828', settings: '#5b6b8c' };
   const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除'], ['settings', '設定']].map(([k, l]) =>
     `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
@@ -8633,7 +8633,7 @@ function openGameEdit() {
   // フォームが長いので、ヘッダー右にも小さい保存/キャンセルを置く
   document.getElementById('form-modal-actions').innerHTML =
     `<button type="button" class="edit-tab" onclick="closeFormModal()">キャンセル</button>
-     <button type="button" class="edit-tab" style="background:#177083;color:#fff" onclick="saveGameEdit()">保存</button>`;
+     <button type="button" class="edit-tab" style="background:var(--pc);color:#fff" onclick="saveGameEdit()">保存</button>`;
   document.getElementById('form-modal-body').innerHTML =
     settingsFormHtml(activeGame.name, s) +
     `<button class="confirm-btn" style="margin-top:10px" onclick="saveGameEdit()">保存する</button>
@@ -8919,7 +8919,7 @@ function renderOrganize() {
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:8px">あなたの名前をタップすると、その名前が出てくる試合を自動で選びます（かっこ内は出てくる件数）。違う名前で打った日は、下で個別に直せます。</div>
     <div class="h2h-chips">${chips}</div>
-    <div style="font-size:12px;color:#177083;font-weight:700;margin:6px 0 2px">${list.length}件中 ${found}件を選択中</div>
+    <div style="font-size:12px;color:var(--pc);font-weight:700;margin:6px 0 2px">${list.length}件中 ${found}件を選択中</div>
     ${rows}
     <button class="confirm-btn" style="margin-top:12px" onclick="saveOrganize()">まとめて保存する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
@@ -9178,6 +9178,7 @@ function msGamesHtml(st) {
   const gs = all.filter(x => histKindMatch(x.g, histKind)).sort((a, b) => histView === 'old' ? a.gr.ms - b.gr.ms : b.gr.ms - a.gr.ms);
   const seg = `${kinds}<div class="hist-viewseg" style="margin-bottom:4px">${histOrderSegHtml('renderMyStats()')}</div>`;
   if (!gs.length) return seg + `<div class="ms-empty">この範囲の試合はありません</div>`;
+  if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => x.g));
   if (histView === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
     x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'ms', 'renderMyStats()');
   let prev = null, html = '';
@@ -9579,13 +9580,18 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     <text x="${ex.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="start" class="ev" fill="${col}">${fmtScore(end)}</text></svg>`;
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
-// （スコア記録の画面と同じ切り替え。色は CSS の --pc… が .sanma で青になる。ヘッダーは開いている間だけ body.mp-s3）
+// （スコア記録の画面と同じ切り替え。色は CSS の --pc… が .sanma で青になる。ヘッダー・シートは body.sanma-mode＝syncSanmaBody）
 const MP_VIEWS = ['history', 'mystats', 'circle'];
 function applyMpTheme() {
   const s3 = mpMode === 3;
   MP_VIEWS.forEach(v => document.getElementById('view-' + v).classList.toggle('sanma', s3));
+  syncSanmaBody();
+}
+// body.sanma-mode（ヘッダー・シート・メニューの青）は、いま開いている画面が三麻（.sanma）かどうかに合わせる。
+// 画面を移るたび（showView）と、画面の .sanma を付け外ししたときに呼ぶ
+function syncSanmaBody() {
   const act = document.querySelector('.view.active');
-  document.body.classList.toggle('mp-s3', s3 && !!act && MP_VIEWS.includes(act.id.replace('view-', '')));
+  document.body.classList.toggle('sanma-mode', !!act && act.classList.contains('sanma'));
 }
 // 四麻｜三麻の切り替え（マイページ・仲間ページ・自分の成績で共用。mpMode は3つの画面で共通）
 function modeSegHtml(counts, rerender) {
@@ -9798,6 +9804,12 @@ function renderHistoryList() {
     if (!m || m.key !== key) months.push(m = { key, label: `${d.getFullYear()}年${d.getMonth() + 1}月`, items: [] });
     m.items.push(x.g);
   });
+  if (histView === 'tile' && !mpSelecting) {
+    if (cnt) cnt.textContent = `${periodLabel()} ${histKind === 'all' ? '' : modeName.slice(0, -1) + ' '}${list.length}件（自分が出ていない試合も）`;
+    body.innerHTML = histTilesHtml(list.slice().sort((a, b) => b.ms - a.ms).map(x => x.g));
+    renderSendBar();
+    return;
+  }
   const nAsk = others.filter(x => histState(x.g) === 'ask').length, nOut = others.length - nAsk;
   const main = (histView === 'cal' && !mpSelecting && mine.length)
     ? circleCalendarHtml(mine.map(x => ({ sid: x.g.id, g: x.g })), x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'hist', 'renderHistoryList()')
@@ -9824,8 +9836,27 @@ function histKindPillsHtml(games, rerender) {
     `<button type="button" role="tab" class="${histKind === k ? 'on' : ''}" aria-selected="${histKind === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="histKind='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
 function histOrderSegHtml(rerender) {
-  return `<div class="seg xs" role="tablist" aria-label="過去の試合の並び順">${[['new', '新しい順'], ['old', '古い順'], ['cal', 'カレンダー']].map(([k, l]) =>
+  return `<div class="seg xs" role="tablist" aria-label="過去の試合の並び順">${[['new', '新しい順'], ['old', '古い順'], ['cal', 'カレンダー'], ['tile', 'タイル']].map(([k, l]) =>
     `<button type="button" role="tab" class="${histView === k ? 'on' : ''}" aria-selected="${histView === k}" onclick="histView='${k}';${rerender}">${l}</button>`).join('')}</div>`;
+}
+// タイル: 試合名と試合数だけの小さな正方形を新しい順に敷き詰める。空（0試合）と少ない（3試合以下）の試合を目立たせ、
+// 間違えて作った・試しに作っただけの試合をすぐ見つけられるようにする。押すと「…」と同じメニュー（結果を見る・削除）
+const HIST_FEW = 3;
+function histTilesHtml(games) {
+  if (!games.length) return '';
+  const nEmpty = games.filter(g => !(g.rounds || []).length).length;
+  const nFew = games.filter(g => { const n = (g.rounds || []).length; return n > 0 && n <= HIST_FEW; }).length;
+  const tiles = games.map(g => {
+    const n = (g.rounds || []).length, np = (g.settings && g.settings.numPlayers) === 3 ? 3 : 4;
+    const st = !n ? ' empty' : n <= HIST_FEW ? ' few' : '';
+    const d = new Date(gameDayMs(g));
+    return `<button type="button" class="ht${st}" onclick="openHistMenu('${esc(g.id)}')" aria-label="${esc(g.name || '')} ${n}試合">
+      <span class="ht-top"><span class="gk k${np} ht-k">${kindSvg(np, 14)}</span><span class="ht-d">${d.getMonth() + 1}/${d.getDate()}</span></span>
+      <span class="ht-name">${esc(g.name || '（名前なし）')}</span>
+      <span class="ht-n"><b>${n}</b>試合${!n ? '<em>空</em>' : n <= HIST_FEW ? '<em>少ない</em>' : ''}</span></button>`;
+  }).join('');
+  return `<div class="ht-legend">${games.length}件${nEmpty ? ` ・ <span class="ht-lg empty">空（0試合） ${nEmpty}件</span>` : ''}${nFew ? ` ・ <span class="ht-lg few">少ない（${HIST_FEW}試合以下） ${nFew}件</span>` : ''}</div>
+    <div class="ht-grid">${tiles}</div>`;
 }
 function histKindMatch(g, k) {
   const s = g.settings || {}, np = s.numPlayers === 3 ? 3 : 4;
