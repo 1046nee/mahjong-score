@@ -1022,7 +1022,24 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-cmp td { font-weight: 700; font-variant-numeric: tabular-nums; }
 .ms-cmp td.pos { color: #1A237E; } .ms-cmp td.neg { color: #C62828; }
 .ms-empty { font-size: 14px; color: #4F5C5A; background: #fff; border-radius: 14px; padding: 20px 16px; margin-top: 10px; line-height: 1.8; }
-.hg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* 相手ごとの成績のカードは3列（個人ページ・仲間ページの対戦・メンバーの成績、試合数順・勝率順すべて）。文字は3列に収まる大きさ */
+.hg-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.hg-grid .hg-card { padding: 8px 7px; border-radius: 12px; }
+.hg-grid .hg-top { gap: 4px; }
+.hg-grid .hg-top .rv-av { width: 22px !important; height: 22px !important; font-size: 11px !important; }
+.hg-grid .hg-name { font-size: 12px; }
+.hg-grid .hg-rec { margin-top: 4px; }
+.hg-grid .hg-rec b { font-size: 19px; }
+.hg-grid .hg-rec b.l { margin-left: 3px; }
+.hg-grid .hg-rec span { font-size: 10px; }
+.hg-grid .hg-rec small { font-size: 10px; margin-left: 3px; }
+.hg-grid .hg-bar { height: 5px; margin-top: 5px; }
+.hg-grid .hg-pct { font-size: 10.5px; margin-top: 3px; }
+.hg-grid .hg-pct b { font-size: 12.5px; }
+.hg-grid .hg-meta { font-size: 9.5px; gap: 2px; margin-top: 2px; }
+.hg-grid .hg-meta b { font-size: 10px; }
+/* 狭い画面（〜360px）の仲間ページのカードの中では、3列が入るよう外側の余白を詰める */
+@media (max-width: 360px) { #view-circle .card:has(.hg-grid) { padding-left: 10px; padding-right: 10px; } .hg-grid { gap: 5px; } .hg-grid .hg-card { padding: 8px 6px; } }
 .hg-card { background: #fff; border-radius: 14px; padding: 10px; box-shadow: inset 0 0 0 1px #E3E9E7; min-width: 0; }
 .hg-card.pos { box-shadow: inset 0 0 0 1.5px #9FA8DA; background: #F7F8FD; }
 .hg-card.neg { box-shadow: inset 0 0 0 1.5px #EF9A9A; background: #FEF8F8; }
@@ -3657,7 +3674,7 @@ function circleH2HTabHtml(st, modeChips, noBind) {
   return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
-    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。平均着順は「自分 / 相手」、差は同じ試合での合計スコアの差。</div></div>`;
+    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>`;
 }
 function circleGamesTabHtml(role, gids, modeChips) {
   const all = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
@@ -7800,7 +7817,7 @@ function h2hRowsTableHtml(row, keys, nameOf, dotOf, forImage = false) {
     <thead><tr><th class="sticky-col" style="width:72px">相手</th><th>同じ試合</th><th>直接対決</th><th>平均着順</th><th>スコア差</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
-const H2H_NOTE = '直接対決＝同じ試合で相手より上の着順だった回数（同じ点数は引き分け）。平均着順は上が自分・下が相手、スコア差は同じ試合での自分の合計−相手の合計です。';
+const H2H_NOTE = '直接対決＝同じ試合で相手より上の着順だった回数（同じ点数は引き分け）。着順は平均着順（自分/相手）、スコア差は同じ試合での自分の合計−相手の合計です。';
 // ---- グループ内の対戦成績カード ----
 let h2hFocus = {}; // gid → 誰から見るか（メンバーindex）
 function h2hFocusOf(g) {
@@ -7861,7 +7878,7 @@ function h2hCardBodyHtml(g) {
   const keys = h2hSortedKeys(row);
   return `<div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${esc(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => avColor(names[k]))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
-    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。平均着順は「自分 / 相手」、差は同じ試合での合計スコアの差。</div>
+    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div>
     <div class="mx-title">総当たり表</div>${mxLegendHtml()}${h2hMatrixHtml(g)}`;
 }
 function renderH2HCard() {
@@ -9276,7 +9293,7 @@ function h2hGridHtml(row, keys, nameOf, avOf) {
       <div class="hg-bar"><i style="width:${pct == null ? 50 : pct}%"></i></div>
       <div class="hg-pct">勝率 <b class="${cls}">${pct == null ? '—' : pct + '%'}</b></div>
       <div class="hg-meta"><span>${e.n}試合</span><span>差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span></div>
-      <div class="hg-meta"><span>平均着順</span><span><b>${(e.rankA / e.n).toFixed(2)}</b> / ${(e.rankB / e.n).toFixed(2)}</span></div>
+      <div class="hg-meta"><span>着順</span><span><b>${(e.rankA / e.n).toFixed(2)}</b>/${(e.rankB / e.n).toFixed(2)}</span></div>
     </div>`;
   }).join('')}</div>`;
 }
