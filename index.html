@@ -831,6 +831,18 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht-tag { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
 .ht-sc b { font-size: 17px; } .ht-sc b.pos { color: #1A237E; } .ht-sc b.neg { color: #C62828; } .ht-sc b.nil, .ht-sc b:not(.pos):not(.neg) { color: #1F2A28; }
 /* メンバーの成績: 結びついている試合の1行（日付・試合名・その人のスコア） */
+/* メンバーの成績のシート: 地を選んでいる形式の色に（四麻＝少し緑・三麻＝淡い青）。カード・タイルは白で浮かせる */
+:root { --pc-page: #E6F1EC; }
+.sanma, body.sanma-mode { --pc-page: #EAF0FB; }
+#form-modal:has(.pf-sheet) .form-modal-box { background: var(--pc-page); }
+#form-modal:has(.pf-sheet) .form-modal-box > div:first-child { background: var(--pc-page) !important; } /* 上に貼り付く見出しも同じ地 */
+.pf-sheet .mc-card.mc-static { background: #fff; box-shadow: var(--sh-1); }
+.pf-sheet .pf-admin { background: #fff; border-radius: 14px; padding: 4px 12px 10px; box-shadow: var(--sh-1); }
+/* 結びついている試合は地の上に直接並べる（一覧は白い行・タイルは白いカードで浮かせる） */
+.pf-sheet .cb-row { background: #fff; border-radius: 12px; padding: 8px 12px; margin-top: 6px; border-top: 0; box-shadow: var(--sh-1); }
+.cb-year { display: flex; align-items: baseline; gap: 8px; margin: 12px 0 2px; font-size: 14px; font-weight: 900; color: #1F2A28; }
+.cb-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; }
+.cb-year + .cb-row { border-top: 0; }
 .cb-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: .5px solid #E3E9E8; }
 .cb-row:first-of-type { border-top: 0; }
 .cb-date { flex: none; width: 44px; font-size: 12px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; }
@@ -979,7 +991,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .mc-trend-h b { font-size: 14px; font-weight: 900; } .mc-trend-h b.pos { color: #1A237E; } .mc-trend-h b.neg { color: #C62828; }
 .mc-spark { display: block; width: 100%; height: auto; margin-top: 4px; overflow: visible; }
-.mc-spark .tk { font-size: 10px; font-weight: 700; fill: #8A9AA5; font-variant-numeric: tabular-nums; }
+.mc-spark .tk { font-size: 8.5px; font-weight: 700; fill: #8A9AA5; font-variant-numeric: tabular-nums; }
 .mc-spark .ev { font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .mc-spark .dot { stroke: #fff; stroke-width: 1.2; }
 .mc-spark .dot.dp { fill: #1A237E; } .mc-spark .dot.dn { fill: #C62828; } .mc-spark .dot.dz { fill: #AEBBB8; }
@@ -4204,6 +4216,8 @@ function openCircleMember(mid) {
     const g = circleSess[sid];
     Object.entries((ge && ge.seats) || {}).forEach(([seat, stt]) => {
       if (stt && stt.mid === mid) {
+        // 上の「四麻｜三麻」で選んでいる形式の試合だけ（読み込めなかった試合はどちらにも出す）
+        if (g && g.settings && String(g.settings.numPlayers === 3 ? 3 : 4) !== String(np)) return;
         const played = g ? playedFlags(g)[seat] : false;
         bound.push({ sid, seat: Number(seat), stt, g, gname: (g && g.name) || ge.name || '', seatName: g ? g.settings.playerNames[seat] : '',
           ms: g ? gameDayMs(g) : (Date.parse(ge.at) || 0), score: g && played ? gameTotals(g)[seat] : null });
@@ -4217,9 +4231,10 @@ function openCircleMember(mid) {
     `<button type="button" role="tab" class="${cmBoundView === k ? 'on' : ''}" aria-selected="${cmBoundView === k}" onclick="cmBoundView='${k}';cmBoundOpen=true;openCircleMember('${mid}')">${l}</button>`).join('')}</div>` : '';
   const boundHtml = cmBoundView === 'tile'
     ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `closeFormModal();openCircleGameMenu('${b.sid}')` })))
-    : bound.map(b => {
-      const d = new Date(b.ms);
-      return `<div class="cb-row"><span class="cb-date">${d.getFullYear() !== new Date().getFullYear() ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}</span>
+    : bound.map((b, i) => {
+      const d = new Date(b.ms), y = d.getFullYear();
+      const yh = (i === 0 || new Date(bound[i - 1].ms).getFullYear() !== y) ? `<div class="cb-year">${y}年<span>${bound.filter(x => new Date(x.ms).getFullYear() === y).length}件</span></div>` : '';
+      return `${yh}<div class="cb-row"><span class="cb-date">${d.getMonth() + 1}/${d.getDate()}</span>
         <div class="cb-main"><div class="org-name" style="font-size:13px">${esc(b.gname)}</div>
         <div class="org-meta">試合での名前「${esc(b.seatName)}」 ${b.stt.self ? ` ・ <span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}確認済み</span>` : ''}</div></div>
         <span class="cb-sc ${b.score == null ? 'nil' : scoreCls(b.score)}">${b.score == null ? '—' : fmtScore(b.score)}</span></div>`;
@@ -4241,7 +4256,7 @@ function openCircleMember(mid) {
     </div>` : '';
   document.getElementById('form-modal-title').textContent = 'メンバーの成績';
   // .sheet-body で包むとスマホでは下から出るボトムシートになる
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet">
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
@@ -9629,7 +9644,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近7日の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近9日の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
@@ -9642,7 +9657,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
   const nDays = new Set(hist.map(x => ymdLocal(new Date(x.t)))).size;
-  const SPARK_DAYS = 7; // 点の下の日付が重ならない日数（300×98の枠で「12/28」が並ぶ幅）
+  const SPARK_DAYS = 9; // 点の下の日付が重ならない日数（miniSparkHtml と同じ値）
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
@@ -9656,9 +9671,9 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
 // endVal＝いまの通算スコア。直近の前の時点（endVal − 直近の合計）から積み上げる
-// 通算スコアの推移（打った日ごと。直近7日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
-// 左に目盛りの数値、最後の点に最終の通算スコア。endVal＝いまの通算スコア（直近7日より前の分から積み上げる）。
-// 10日だと点の間隔が約20（viewBoxの単位）で「12/28」（約25）が重なるため7日にした（間隔は約29）
+// 通算スコアの推移（打った日ごと。直近9日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
+// 左に目盛りの数値、最後の点に最終の通算スコア。endVal＝いまの通算スコア（直近9日より前の分から積み上げる）。
+// 最後の点の右の通算スコアの数字は出さない（カードの上に通算スコアがある）。その幅と左の目盛りを詰めて9日ぶん並べる
 function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
   const byDay = [];
@@ -9668,12 +9683,12 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     if (!b || b.k !== k) byDay.push(b = { k, d, sc: 0 });
     b.sc += Number(x.sc) || 0;
   });
-  const days = byDay.slice(-7);
+  const days = byDay.slice(-9);
   const sum = days.reduce((a, x) => a + x.sc, 0);
   const end = endVal == null ? sum : Number(endVal);
   let cum = end - sum;
   const ys = [cum].concat(days.map(x => (cum += x.sc)));
-  const W = 300, H = 98, L = 40, R = 56, T = 10, B = 26;
+  const W = 300, H = 98, L = 30, R = 16, T = 10, B = 26;
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
   const lo0 = Math.min(...ys), hi0 = Math.max(...ys);
@@ -9688,18 +9703,14 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   for (let v = min; v <= max + 1e-9; v += step) ticks.push(v);
   const grid = ticks
     .map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`
-      + `<text x="${L - 6}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="tk">${lab(v)}</text>`).join('');
+      + `<text x="${L - 4}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end" class="tk">${lab(v)}</text>`).join('');
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
   const col = end >= 0 ? '#1A237E' : '#C62828';
   // 点の色＝その日のスコアの正負（プラス＝紺・マイナス＝赤・0＝灰）
   const dots = days.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
   const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.d.getMonth() + 1}/${d.d.getDate()}</text>`).join('');
-  // 最終スコア: 最後の点の右（線と重ならない）
-  const ex = x(ys.length - 1) + 8, ey = y(end);
-  const ly = Math.min(H - B + 2, Math.max(10, ey + 4.5));
   return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近${days.length}日の通算スコアの推移。最後は${fmtScore(end)}">${grid}
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${dates}
-    <text x="${ex.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="start" class="ev" fill="${col}">${fmtScore(end)}</text></svg>`;
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${dates}</svg>`;
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
 // （スコア記録の画面と同じ切り替え。色は CSS の --pc… が .sanma で青になる。ヘッダー・シートは body.sanma-mode＝syncSanmaBody）
@@ -9997,7 +10008,7 @@ function histTilesHtml(items) {
     b.list.push(x);
   });
   const tiles = years.map(b => `<div class="ht-year">${b.y}年<span>${b.list.length}件</span></div><div class="ht-grid">${b.list.map(tileOf).join('')}</div>`).join('');
-  return `<div class="ht-legend">${items.length}件${nEmpty ? ` ・ <span class="ht-lg empty">空（0試合） ${nEmpty}件</span>` : ''}${nFew ? ` ・ <span class="ht-lg few">少ない（${HIST_FEW}試合以下） ${nFew}件</span>` : ''}</div>
+  return `${nEmpty || nFew ? `<div class="ht-legend">${items.length}件${nEmpty ? ` ・ <span class="ht-lg empty">空（0試合） ${nEmpty}件</span>` : ''}${nFew ? ` ・ <span class="ht-lg few">少ない（${HIST_FEW}試合以下） ${nFew}件</span>` : ''}</div>` : ''}
     ${tiles}`;
 }
 function histKindMatch(g, k) {
