@@ -799,10 +799,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hist-viewseg { margin-top: 8px; }
 /* 過去の試合の形式の絞り込み（すべて｜四麻｜三麻｜複数人｜チーム戦）。期間の月と同じ一段小さいピル＋件数 */
 .hist-kinds { margin: 8px -16px 0; gap: 4px; }
-.hist-kinds button { height: 30px; padding: 0 11px; font-size: 12.5px; border-color: #E3E9E8; }
+.hist-kinds button { height: 30px; padding: 0 11px; font-size: 12.5px; }
 .hist-kinds button small { margin-left: 4px; font-size: 11px; font-weight: 800; color: #8A9AA5; font-variant-numeric: tabular-nums; }
-.hist-kinds button.on { background: var(--pc-tint); border-color: var(--pc); color: var(--pc-ink); }
-.hist-kinds button.on small { color: var(--pc); }
+.hist-kinds button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; } /* 期間（すべて｜2026年）の選択中と同じ黒 */
+.hist-kinds button.on small { color: rgba(255,255,255,.75); }
 .hist-kinds button:disabled { color: #AEBBB8; background: #F7F9F8; cursor: default; }
 /* 過去の試合のタイル（小さな正方形。大きさは固定＝中身が増えても変わらない。空＝点線・灰色、少ない＝琥珀色の縁、不参加＝斜線の地） */
 .ht-legend { margin: 12px 2px 8px; font-size: 12px; font-weight: 700; color: #5F6E6B; }
