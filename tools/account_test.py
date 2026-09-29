@@ -406,10 +406,17 @@ def main():
         bar = pg.evaluate("document.getElementById('account-card').innerText")
         results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）", True,
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
+        tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
+        sum_txt = pg.evaluate("document.getElementById('mp-pane-sum').innerText")
+        hidden = pg.evaluate("document.getElementById('mp-pane-hist').style.display === 'none'")
+        results.append(("[10a2] 成績カードの下に［成績｜相手｜過去の試合］、最初は成績（連対率など）が出ていて、ホーム画面に追加の案内は無い", True,
+                        all(w in tabs for w in ["成績", "相手", "過去の試合"]) and "連対率" in sum_txt and hidden
+                        and "ホーム画面に追加" not in pg.evaluate("document.getElementById('mp-me').innerText")))
+        pg.evaluate("setMpPane('hist')")
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
-        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、成績の下に「試合を追加」「まとめて送る」、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "過去の試合", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「試合を追加」「まとめて送る」・形式のピル・並び順、自分が出た試合（月の見出し）", True,
+                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "すべて", "新しい順", "古い順", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,

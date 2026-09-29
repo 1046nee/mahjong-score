@@ -160,9 +160,9 @@ def main():
         pg.evaluate("mpMode = 3; renderHistory()")
         shoot("mypage_me_sanma")
         pg.evaluate("mpMode = 4; renderHistory()")
-        pg.evaluate("histView = 'cal'; calS.hist.day = null; renderHistoryList(); const b = document.querySelector('#history-body .cal-c.has'); if (b) b.click();")
+        pg.evaluate("setMpPane('hist'); histView = 'cal'; calS.hist.day = null; renderHistoryList(); const b = document.querySelector('#history-body .cal-c.has'); if (b) b.click();")
         shoot("mypage_hist_cal")
-        pg.evaluate("histView = 'list'; renderHistoryList()")
+        pg.evaluate("histView = 'new'; renderHistoryList()")
         # 自分が出ていない試合（順位・点数は「—」、対戦した人は全員）
         pg.evaluate(f"setTag('{gids[1]}', 'watch', null); histOthersOpen = true; renderHistory()")
         shoot("mypage_hist_out")
@@ -174,17 +174,15 @@ def main():
         pg.evaluate("closeFormModal()")
 
         # 自分の成績（まとめ・相手別・ゲーム別の3タブ。相手別は先頭の行を開いた状態）
-        pg.evaluate("myStatsTab = 'sum'; showView('mystats')")
-        pg.wait_for_timeout(400)
-        shoot("mystats_sum")
-        pg.evaluate("myStatsTab = 'h2h'; renderMyStats(); const d = document.querySelector('#mystats-body details.h2-row'); if (d) d.open = true;")
-        shoot("mystats_h2h")
-        pg.evaluate("myStatsTab = 'groups'; renderMyStats()")
-        shoot("mystats_groups")
-        pg.evaluate("msGameOrder = 'cal'; renderMyStats()")
-        shoot("mystats_groups_cal")
-        pg.evaluate("msGameOrder = 'new'")
-        pg.evaluate("myStatsTab = 'sum'")
+        # マイページの［成績｜相手｜過去の試合］（自分の成績はマイページに載っている）
+        pg.evaluate("setMpPane('sum')")
+        pg.wait_for_timeout(300)
+        shoot("mypage_pane_sum")
+        pg.evaluate("setMpPane('h2h'); const d = document.querySelector('#mp-pane-h2h details.h2-row'); if (d) d.open = true;")
+        shoot("mypage_pane_h2h")
+        pg.evaluate("setMpPane('hist'); histView = 'old'; renderHistoryList()")
+        shoot("mypage_pane_hist_old")
+        pg.evaluate("histView = 'new'; histKind = 'all'; mpPane = null; renderHistory()")
         save_canvas("mystats", "buildMyStatsCanvas()")
 
         # 仲間ページを作ってゲームを入れる
@@ -215,6 +213,11 @@ def main():
             { label: '成績表', html: circleGridHtml(st, true) }], circleMode === '3'); })()""")
 
         circleTab_ok = pg.evaluate("circleTab = 'rank'; renderCircle(); true")
+        # 仲間ページの範囲の自分の成績（過去の試合のタブ）
+        pg.evaluate("msScope = circleId; myStatsTab = 'groups'; showView('mystats')")
+        pg.wait_for_timeout(300)
+        shoot("mystats_circle_hist")
+        pg.evaluate("myStatsTab = 'sum'; showView('circle')")
         save_canvas("circle_rank", "circleRankCanvas(circleStats(circleData, circleSess, circleMode, periodFilter()))")
 
         # マイページの「仲間」（カードが出た状態）
