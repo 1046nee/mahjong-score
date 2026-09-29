@@ -3027,6 +3027,7 @@ async function attachAccount(user) {
     accountBusy = false;
     renderAccountCard(); renderMyListCard(); renderRecentGames();
     if (document.getElementById('view-history').classList.contains('active')) renderHistory();
+    if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
     renderAskMe();
     // 仲間ページを見ているあいだにログインしたら、メンバーかどうかを読み直す
     if (circleId && circleActive()) loadCircleMembers().then(renderCircle);
@@ -4728,18 +4729,22 @@ function allCircleEntries() {
   return Object.entries(all).sort((a, b) => (b[1].member - a[1].member) || new Date(b[1].at || 0) - new Date(a[1].at || 0));
 }
 // カードに出す人数・ゲーム数（名簿と試合の一覧だけ読む。成績は開いたときに控えた値を出す）
-let circleCardInfo = {}, circleCardLoading = false;
-async function loadCircleCardInfo() {
-  if (circleCardLoading) return;
+// 読み込み中にもう一度呼ばれたら、同じ読み込みの終わりを待つ（すぐ返すと、待っていた画面が描き直されない）
+let circleCardInfo = {}, circleCardLoading = null;
+function loadCircleCardInfo() {
+  if (circleCardLoading) return circleCardLoading;
   const ids = allCircleEntries().map(([cid]) => cid).filter(cid => !circleCardInfo[cid] || !circleCardInfo[cid].sids);
-  if (!ids.length) return;
-  circleCardLoading = true;
+  if (!ids.length) return Promise.resolve();
+  return circleCardLoading = loadCircleCardInfoIds(ids).finally(() => { circleCardLoading = null; });
+}
+async function loadCircleCardInfoIds(ids) {
   await Promise.all(ids.map(cid => Promise.all([
     db.ref(`circles/${cid}/roster`).once('value'), db.ref(`circles/${cid}/games`).once('value'), db.ref(`circles/${cid}/name`).once('value')])
     .then(([r, g, n]) => { circleCardInfo[cid] = { people: Object.keys(r.val() || {}).length, games: Object.keys(g.val() || {}).length, name: n.val() || '', sids: Object.keys(g.val() || {}) }; })
     .catch(() => { circleCardInfo[cid] = { err: true }; })));
-  circleCardLoading = false;
-  if (document.getElementById('view-history').classList.contains('active')) renderCircleSection();
+  // マイページの成績タブの「くらべる」表も、仲間ページの試合の一覧が届いてから描き直す（前は切り替えだけ描き直し、表が出なかった）
+  if (document.getElementById('view-history').classList.contains('active')) { renderCircleSection(); renderMpPanes(collectMyStats()); }
+  if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
 }
 // マイページの上（#hist-circles）と仲間ページの上に同じ切り替えを出す: 「個人」＋参加している・見た仲間ページ＋「＋ 作る」
 function mpSwitchHtml(active) {
@@ -9514,20 +9519,23 @@ function rawPtsOf(m) { return m && m.rawN ? m.raw : null; }
 function rankPtsOf(m) { return m && m.rawN ? m.rawSc - m.raw : null; }
 function msRow(np, m) {
   const n = m.games, c = m.counts;
-  return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, raw: rawPtsOf(m), rp: rankPtsOf(m), box: boxOf(m), over: overOf(m) };
+  return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, raw: rawPtsOf(m), rp: rankPtsOf(m), box: boxOf(m), over: overOf(m), ptMax: m.ptMax, ptMin: m.ptMin };
 }
 function msCompareHtml(np) {
   const cols = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { k, label: k === 'all' ? '個人' : label, r: msRow(np, m) } : null; }).filter(Boolean);
   if (cols.length < 2) return '';
-  const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top)], ['連対率', r => pctText(r.ren)],
-    ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score)],
+  // [見出し, 値, 色のクラス, 区切り線]。区切りは 試合数・平均着順｜率｜スコア｜点数 の切れ目（仲間ページの成績表と同じ線）
+  const pt = v => v == null ? '—' : v.toLocaleString();
+  const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top), null, 1], ['連対率', r => pctText(r.ren)],
+    ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score), 1],
     ['素点', r => r.raw == null ? '—' : fmtScore(r.raw), r => r.raw == null ? '' : scoreCls(r.raw)], ['順位点', r => r.rp == null ? '—' : fmtScore(r.rp), r => r.rp == null ? '' : scoreCls(r.rp)],
+    ['最高点数', r => pt(r.ptMax), null, 1], ['最低点数', r => pt(r.ptMin)],
     ['5万点以上', r => r.over == null ? '—' : r.over + '回'], ['箱下', r => r.box == null ? '—' : r.box + '回']];
   const w = 84, cw = 96; // 列（範囲）が増えると表が画面より広くなり、横にスクロールして見る
   return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
     <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
       <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}"><span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span></th>`).join('')}</tr></thead>
-      <tbody>${rows.map(([label, f, cls]) => `<tr><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <tbody>${rows.map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
 // 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜5万点以上・箱下）。スコアの推移は2026-09-30にやめた
@@ -9569,9 +9577,8 @@ function msGamesHtml(st) {
 function renderMyStats() {
   const body = document.getElementById('mystats-body');
   // 仲間ページごとの試合の一覧がまだ無ければ読んでから描き直す
-  if (allCircleEntries().some(([cid]) => !circleSidsOf(cid))) {
-    loadCircleCardInfo().then(() => { if (document.getElementById('view-mystats').classList.contains('active') && allCircleEntries().every(([cid]) => circleSidsOf(cid))) renderMyStats(); });
-  }
+  // （描き直しは loadCircleCardInfo の終わりで。読めなかった仲間ページ＝err は待たない＝何度も読み直さない）
+  if (allCircleEntries().some(([cid]) => !circleSidsOf(cid) && !(circleCardInfo[cid] || {}).err)) loadCircleCardInfo();
   const scopes = msScopes();
   if (!scopes.some(([k]) => k === msScope)) msScope = 'all';
   const st = msStatsFor(msScope);
