@@ -4,7 +4,7 @@
 account_test.py はスタブ（ルールなし）なので、「見るだけのリンクを知っていても点数（写し）は書き換えられない」
 「写しから試合IDは読めない」が本当にサーバーで効いているかはここでしか分からない。
 ログインは使わない（アプリの見るだけのリンクもログインなしで動く）。検証用の試合を2つ作り、
-REST API で読み書きを試して許可／拒否が期待どおりかを見る。最後に作ったデータを全部消す。
+REST API で読み書きを試して許可／拒否が期待どおりかを見る。検証用のデータは本番に残る（試合は誰も消せないルールのため。残る試合は24時間後に記録が確定する）。
 
 前提: database.rules.json をFirebaseコンソール（Realtime Database → ルール）に貼って「公開」してから実行する。
 実行: python tools/view_rules_test.py
@@ -39,7 +39,7 @@ def http(method, path, body=None):
 def main():
     sid, other = rnd(10), rnd(10)
     vid, vid2 = rnd(12), rnd(12)
-    game = lambda i: {"id": i, "name": "ルール確認用（自動で消えます）", "createdAt": "2026-09-26T00:00:00.000Z",
+    game = lambda i: {"id": i, "name": "ルール確認用", "createdAt": "2026-09-26T00:00:00.000Z",
                       "settings": {"playerNames": ["A", "B", "C", "D"], "numPlayers": 4}}
     snap = lambda name: {"name": name, "createdAt": "2026-09-26T00:00:00.000Z", "settings": {"playerNames": ["A", "B", "C", "D"], "numPlayers": 4},
                          "rounds": [{"points": [40000, 30000, 20000, 10000], "scores": [50, 10, -20, -40]}], "h": "x", "lv": 1, "at": "2026-09-26T00:00:00.000Z"}
@@ -90,14 +90,16 @@ def main():
         st, body = http("GET", f"views/{vid}/s")
         check("[18] いたずらは反映されておらず、正しい更新だけが見える", True, st if (body or {}).get("name") == "更新" else 500)
     finally:
-        # 後片付け: 試合を消すと、見るだけのリンクの写しと sessionViews も消せるようになる
-        http("DELETE", f"sessions/{sid}")
+        # 後片付け: 2026-09-29 から試合そのものは誰も消せない（ルール）。写しも試合がある間は消せないので、
+        # 検証用の試合・写しは本番に残る。残る試合には確定の期限（24時間後）を付けて、翌日以降は書き換えられなくする
+        a = http("DELETE", f"sessions/{sid}")[0]
         http("DELETE", f"sessions/{other}")
-        a = http("DELETE", f"views/{vid}")[0]
-        b = http("DELETE", f"sessionViews/{sid}")[0]
-        results.append(("[19] 試合が消えたあとは、写しと sessionViews を片付けられる", a == 200 and b == 200, (a, b)))
-        left = http("GET", f"views/{vid}/s")[1], http("GET", f"sessionViews/{sid}")[1], http("GET", f"sessions/{sid}")[1]
-        results.append(("[20] 検証用のデータが残っていない", left == (None, None, None), left))
+        results.append(("[19] 試合そのものは消せない（削除は拒否）", a in (401, 403), a))
+        left = http("GET", f"sessions/{sid}/id")[1]
+        results.append(("[20] 検証用の試合は残っている（写しも試合がある間は残る）", left == sid, left))
+        import time
+        for x in (sid, other):
+            http("PUT", f"sessions/{x}/lockAt", int(time.time() * 1000) + 24 * 3600 * 1000)
 
     ok = True
     for label, passed, st in results:

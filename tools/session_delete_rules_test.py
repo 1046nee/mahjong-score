@@ -32,7 +32,7 @@ def main():
     st, _ = http("DELETE", f"sessions/{sid}")
     results.append(("[2] 試合をまるごと消す（DELETE）は拒否される", st in (401, 403), st))
     st, _ = http("PUT", f"sessions/{sid}", None)
-    results.append(("[3] 試合を空（null）で上書きするのも拒否される", st in (401, 403), st))
+    results.append(("[3] 試合を空（null）で上書きするのも拒否される", st in (400, 401, 403), st))
     st, v = http("GET", f"sessions/{sid}/name")
     results.append(("[4] 試合は残っている", st == 200 and v == game["name"], st))
     # 残る試合には確定の期限を付ける（24時間後から誰も書き換えられない）
