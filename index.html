@@ -787,6 +787,14 @@ button.ios-row:active { background: #F2F6F5; }
 .warn-box .ico { margin-top: 3px; }
 .warn-box a { color: #177083; font-weight: 700; text-decoration: underline; cursor: pointer; }
 /* 淡いボタン（CTAではない操作：画像・＋追加・変更・まとめる） */
+.gs-box { border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.7; }
+.gs-box.ended { background: #EAF0FB; border: 1px solid #C9D6EE; color: #2F4A7A; }
+.gs-box.locked { background: #F1F3F2; border: 1px solid #D5DEDB; color: #3F4D4A; }
+.gs-box b { color: inherit; }
+.gs-box .gs-btn { display: block; width: 100%; margin-top: 10px; height: 40px; border: 1.5px solid currentColor; border-radius: 10px; background: #fff; color: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.end-game-btn { display: block; width: 100%; margin-top: 4px; height: 46px; border: 1.5px solid #177083; border-radius: 12px; background: #fff; color: #177083; font-size: 15px; font-weight: 800; cursor: pointer; }
+.sanma .end-game-btn { border-color: #4261AA; color: #4261AA; }
+.end-game-note { font-size: 12px; color: #5F6E6B; line-height: 1.7; margin: 6px 2px 0; }
 .btn-tint { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 30px; padding: 0 12px 0 10px; border: 0; border-radius: 15px; background: #E4F3EC; color: #177083; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .btn-tint:disabled { background: #EEF2F1; color: #9AA6A4; cursor: not-allowed; }
 /* ---- ボトムシート（…メニュー・共有シート・メンバーの成績。中身を .sheet-body で包むとシートになる） ---- */
@@ -1652,6 +1660,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
   <div class="game-body">
+    <div id="game-state" style="display:none"></div>
     <div class="card askme" id="askme-card" style="display:none"></div>
     <div class="card" id="team-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -1719,6 +1728,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
+    <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
+      <div class="end-game-note">終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。</div></div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
     <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()"><svg class="ico" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-people"/></svg>仲間ページに追加</button>
@@ -1812,7 +1823,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="title-actions">
       <button class="edit-tab title-edit-btn" onclick="openShareSheet()">共有</button>
-      <button class="edit-tab title-edit-btn" onclick="openDetailEdit()">設定の編集</button>
+      <button class="edit-tab title-edit-btn" id="detail-edit-btn" onclick="openDetailEdit()">設定の編集</button>
     </div>
   </div>
   <div class="detail-body" id="detail-body"></div>
@@ -4174,6 +4185,84 @@ function overlayPending(base, sid) {
   return g;
 }
 // サーバーへ書く形に戻す。sessions/{id} の既存キーはそのまま残し、変えるのは name/settings/rounds/log だけ
+// ---- 対局の終了と記録の確定（sessions/{id} の endedAt・lockAt。ルールは database.rules.json） ----
+// 過去の試合をいつまでも誰でも書き換えられると、誤操作や意図的な改ざんの余地になる。
+// 「対局を終了」から12時間で記録を確定し、それ以降はサーバーのルールで誰も書き換えられない（読むのはできる）。
+// ・終了: endedAt＝今・lockAt＝今＋12時間（それまでは修正できる・再開できる）
+// ・再開: endedAt を消し、lockAt＝最後の入力から24時間（入力のたびに延びる）。lockAt は一度付いたら消せない（ルール）
+// ・終了を押していない試合は確定しない（1つのゲームで毎週の定例会を続ける使い方があるため。自動の確定はしない）
+// ・時刻はサーバーの時刻（.info/serverTimeOffset）で見る。ルールの now と端末の時計がずれていても弾かれないように
+const LOCK_AFTER_END_MS = 12 * 3600 * 1000;
+const LOCK_SLIDE_MS = 24 * 3600 * 1000;
+let serverTimeOffset = 0;
+function serverNow() { return Date.now() + serverTimeOffset; }
+function isGameLocked(g) { return !!(g && typeof g.lockAt === 'number' && serverNow() >= g.lockAt); }
+function isGameEnded(g) { return !!(g && g.endedAt); }
+function fmtDateTime(ms) { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
+function lockedToast() { showToast('この試合は記録が確定しているため、変更できません'); }
+function endedToast() { showToast('対局は終了しています。入力するときは「再開する」を押してください'); }
+function gameStateHtml(g, withButton) {
+  if (isGameLocked(g)) {
+    return `<div class="gs-box locked"><b>記録は確定しています</b>（${fmtDateTime(g.lockAt)}）。点数の入力・修正はできません。結果を見る・共有する・画像にするのはこれまでどおりできます。</div>`;
+  }
+  if (isGameEnded(g)) {
+    return `<div class="gs-box ended"><b>対局は終了しました。</b>${fmtDateTime(g.lockAt)} に記録が確定し、それ以降は誰も書き換えられなくなります。それまでは点数の修正ができます。
+      ${withButton ? '<button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button>' : ''}</div>`;
+  }
+  return '';
+}
+function confirmEndGame() {
+  if (!activeGame) return;
+  document.getElementById('confirm-modal-title').textContent = '対局を終了';
+  document.getElementById('confirm-modal-desc').textContent =
+    `「${activeGame.name || ''}」の対局を終了します。12時間後に記録が確定し、それ以降は誰も点数を書き換えられなくなります（見る・共有するのはできます）。確定するまでは修正・再開できます。`;
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = '終了する';
+  ok.onclick = () => { closeConfirmModal(); setGameEnded(true); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function confirmReopenGame() {
+  if (!activeGame) return;
+  document.getElementById('confirm-modal-title').textContent = '対局を再開';
+  document.getElementById('confirm-modal-desc').textContent =
+    '対局を再開して、続きを入力できるようにします。再開したあとは、最後の入力から24時間で自動的に記録が確定します（もう一度「対局を終了」を押すと、その12時間後に確定します）。';
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = '再開する';
+  ok.onclick = () => { closeConfirmModal(); setGameEnded(false); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+async function setGameEnded(ended) {
+  const sid = sessionId;
+  if (!sid) return;
+  if (!dbConnected) { showToast('電波がつながってから、もう一度押してください'); return; }
+  if (outbox.some(o => o.sid === sid && !o.failed)) { showToast('送信中の入力があります。送り終わってから、もう一度押してください'); flushOutbox(); return; }
+  let why = '';
+  showLoading(true);
+  try {
+    const res = await db.ref('sessions/' + sid).transaction(cur => {
+      if (cur === null) return null; // 手元に無いときはサーバーの値で呼び直される
+      if (isGameLocked(cur)) { why = 'locked'; return; }
+      const now = serverNow();
+      if (ended) {
+        if (cur.endedAt) { why = 'same'; return; }
+        why = '';
+        return { ...cur, endedAt: now, lockAt: now + LOCK_AFTER_END_MS };
+      }
+      if (!cur.endedAt) { why = 'same'; return; }
+      why = '';
+      const next = { ...cur, lockAt: now + LOCK_SLIDE_MS };
+      delete next.endedAt;
+      return next;
+    }, undefined, false);
+    if (res.committed) {
+      showToast(ended ? '対局を終了しました。12時間後に記録が確定します' : '対局を再開しました');
+      track(ended ? 'game_end' : 'game_reopen');
+    } else if (why === 'locked') lockedToast();
+    else if (why === 'same') showToast(ended ? 'すでに終了しています' : 'すでに再開しています');
+  } catch (e) {
+    showToast('変更できませんでした。通信環境を確認してください', 5000);
+  } finally { showLoading(false); }
+}
 function toServerGame(g, cur) {
   return { ...cur, name: g.name, settings: g.settings,
     rounds: g.rounds.length ? g.rounds : null, log: g.log.length ? g.log : null };
@@ -4203,9 +4292,15 @@ function sendOp(op) {
         // 手元にデータが無いと最初はnullで呼ばれる。そのままnullを返すとサーバーの値で呼び直される
         //（本当にゲームが消えていたときだけnullのまま確定する＝gone）
         if (cur === null) { decision = 'gone'; msg = ''; return null; }
+        // 記録が確定した試合は書き換えない（ルールでも弾かれる）
+        if (isGameLocked(cur)) { decision = 'locked'; msg = 'この試合は記録が確定しているため、保存できませんでした'; return; }
         const r = applyOp(normGame(cur), op);
         decision = r.status; msg = r.msg || '';
-        return r.status === 'apply' ? toServerGame(r.game, cur) : undefined; // undefined＝中止（適用済み・衝突）
+        if (r.status !== 'apply') return undefined; // 中止（適用済み・衝突）
+        const out = toServerGame(r.game, cur);
+        // 再開した試合（締め切りあり・終了なし）は、入力のたびに締め切りを「今から24時間後」に延ばす
+        if (typeof cur.lockAt === 'number' && !cur.endedAt) out.lockAt = serverNow() + LOCK_SLIDE_MS;
+        return out;
       }, (err, committed, snap) => {
         if (err) {
           const code = String((err && (err.code || err.message)) || err);
@@ -4217,7 +4312,7 @@ function sendOp(op) {
             ? { status: 'gone', msg: 'このゲームはサーバーから削除されていたため、保存できませんでした' }
             : { status: 'applied' });
         }
-        finish({ status: decision === 'conflict' ? 'conflict' : 'already', msg });
+        finish({ status: decision === 'conflict' ? 'conflict' : decision === 'locked' ? 'locked' : 'already', msg });
       }, false);
     } catch (e) {
       finish({ status: 'failed', msg: String((e && e.message) || e) });
@@ -4240,7 +4335,7 @@ async function flushOutbox() {
       outbox = outbox.filter(o => o.id !== op.id);
       outboxChanged();
       if (res.status === 'applied') noteGameChanged(op.sid);
-      if (res.status === 'conflict' || res.status === 'gone') reportDroppedOp(op, res.msg);
+      if (res.status === 'conflict' || res.status === 'gone' || res.status === 'locked') reportDroppedOp(op, res.msg);
     }
   } finally {
     flushing = false;
@@ -4612,6 +4707,8 @@ async function loadViewId(sid) {
 // 写しに載せるのは結果の表示に要る部分だけ（試合IDと操作の記録は載せない）
 function viewSnapOf(g) {
   const core = { name: String(g.name || ''), createdAt: g.createdAt || '', settings: g.settings || {}, rounds: g.rounds || [] };
+  if (typeof g.lockAt === 'number') core.lockAt = g.lockAt;
+  if (typeof g.endedAt === 'number') core.endedAt = g.endedAt;
   const fp = fpOf(core);
   let h = 0x811c9dc5;
   for (let i = 0; i < fp.length; i++) { h ^= fp.charCodeAt(i); h = Math.imul(h, 16777619); }
@@ -7084,6 +7181,14 @@ function renderGame() {
   // 総合順位カード（順位リスト＋スコア/チップ切替）
   const hasRounds = activeGame.rounds.length > 0;
   document.getElementById('score-main-body').innerHTML = scoreMainHtml(activeGame);
+  // 対局の終了・記録の確定
+  const gLocked = isGameLocked(activeGame), gEnded = isGameEnded(activeGame);
+  const stEl = document.getElementById('game-state');
+  const stHtml = gameStateHtml(activeGame, true);
+  stEl.innerHTML = stHtml; stEl.style.display = stHtml ? '' : 'none';
+  document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
+  document.querySelector('#view-game .title-actions button[onclick="openGameEdit()"]').style.display = gLocked ? 'none' : '';
+  document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
 
   // チーム順位（チーム戦が有効なグループのみ）
   const teamCard = document.getElementById('team-card');
@@ -7107,7 +7212,7 @@ function renderGame() {
   if (hasRounds) {
     // 試合数が多いときは直近だけ描く（下のボタンで全件に切り替えられる）
     tableHtml += visibleRoundIdx(activeGame.rounds.length)
-      .map(idx => roundRowHtml(activeGame.rounds[idx], idx, `openRoundMenu(${idx})`, s)).join('');
+      .map(idx => roundRowHtml(activeGame.rounds[idx], idx, gLocked ? '' : `openRoundMenu(${idx})`, s)).join('');
     tableHtml += roundsTotalRowHtml(activeGame);
   } else {
     // 作りたてのグループはここが最初に目に入るので、次にどこを押せばいいかまで書く
@@ -7123,7 +7228,7 @@ function renderGame() {
     wrap.closest('.card').appendChild(logEl);
   }
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds)
-    ? '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>'
+    ? (gLocked ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>')
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
@@ -7194,6 +7299,7 @@ function leaveGame() {
 
 // ---- 局の編集メニュー ----
 function openRoundMenu(idx) {
+  if (isGameLocked(activeGame)) { lockedToast(); return; }
   document.getElementById('action-modal-title').textContent = `第${idx+1}試合`;
   document.getElementById('action-modal-body').innerHTML =
     `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
@@ -7238,6 +7344,8 @@ function liveSheetCtx() {
 }
 // idx = -1: 新規, idx >= 0: 修正
 function openSheet(idx) {
+  if (isGameLocked(activeGame)) { lockedToast(); return; }
+  if (idx < 0 && isGameEnded(activeGame)) { endedToast(); return; }
   openSheetCtx(liveSheetCtx(), idx);
 }
 // 対局メンバー選択の状態
@@ -7814,6 +7922,7 @@ function initEditTeamEditor() {
 }
 function openGameEdit() {
   if (!activeGame) return;
+  if (isGameLocked(activeGame)) { lockedToast(); return; }
   const s = activeGame.settings;
   editMembersState = s.playerNames.map((nm, i) => ({ orig: i, name: nm }));
   // 現在のチーム編成を編集用にコピー（origのindexは初期状態では位置と一致する）
@@ -8728,8 +8837,10 @@ function renderDetailBody(g) {
   document.getElementById(P + '-date').textContent = g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
+  const gLocked = isGameLocked(g);
+  if (!detailRO) document.getElementById('detail-edit-btn').style.display = gLocked ? 'none' : '';
 
-  let html = '';
+  let html = gameStateHtml(g, false);
   // チーム順位（チーム戦が有効なグループのみ）
   if (s.teamMode && s.teams && hasRounds) {
     const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
@@ -8742,7 +8853,7 @@ function renderDetailBody(g) {
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
   const rows = visibleRoundIdx(g.rounds.length)
-    .map(ridx => roundRowHtml(g.rounds[ridx], ridx, detailRO ? '' : `editDetailRound(${ridx})`, s)).join('')
+    .map(ridx => roundRowHtml(g.rounds[ridx], ridx, (detailRO || gLocked) ? '' : `editDetailRound(${ridx})`, s)).join('')
     + (hasRounds ? roundsTotalRowHtml(g) : '');
   const roundsHtml = `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
@@ -8752,7 +8863,7 @@ function renderDetailBody(g) {
     ${detailCardHead('試合結果', 'rounds', logBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds)
-      ? (detailRO ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>') + roundsMoreBtnHtml(g.rounds.length)
+      ? ((detailRO || gLocked) ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>') + roundsMoreBtnHtml(g.rounds.length)
       : ''}</div>`;
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">プレビュー</button>`;
@@ -8800,6 +8911,7 @@ const normalizeSession = v => v ? (Array.isArray(v) ? v : Object.values(v)).filt
 // 局の点数編集: 点数入力シートを過去ゲーム用コンテキストで開く
 async function editDetailRound(ridx) {
   if (!detailGame) return;
+  if (isGameLocked(detailGame)) { lockedToast(); return; }
   const g = detailGame;
   // 編集前に最新を取り込む。古い控えのまま全試合を書き戻すと、
   // その後に他のメンバーが入力した試合が消えてしまう
@@ -8830,6 +8942,7 @@ async function editDetailRound(ridx) {
 // ゲーム名・プレイヤー名の編集
 async function openDetailEdit() {
   if (!detailGame) return;
+  if (isGameLocked(detailGame)) { lockedToast(); return; }
   const g = detailGame;
   // 開く前に最新を取り込む（古い控えを基準にすると、保存時に他の人の変更とぶつかりやすい）
   try {
@@ -8900,6 +9013,7 @@ if (/[?&]openExternalBrowser=/.test(location.search)) {
 }
 loadStorage();
 // 送信キュー: 接続状態を見張り、つながったら・画面に戻ったら・15秒ごとに未送信を送る
+db.ref('.info/serverTimeOffset').on('value', snap => { serverTimeOffset = Number(snap.val()) || 0; });
 db.ref('.info/connected').on('value', snap => {
   dbConnected = snap.val() === true;
   offlineSince = dbConnected ? null : (offlineSince || Date.now());
