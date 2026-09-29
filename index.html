@@ -843,6 +843,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-others { margin-top: 12px; }
 .mp-others summary { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; font-size: 13px; font-weight: 800; color: #5F6E6B; cursor: pointer; list-style: none; }
 .mp-others summary::-webkit-details-marker { display: none; }
+.gc-box { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: #EEF7F4; border: 1px solid #CFE3DB; font-size: 13px; color: #1F2A28; line-height: 1.7; }
+.gc-box a { color: #177083; font-weight: 800; text-decoration: underline; cursor: pointer; }
+.gc-by { font-size: 12px; color: #5F6E6B; }
+#game-circles:empty, #detail-circles:empty { display: none; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -1809,6 +1813,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
   <div class="game-body">
     <div id="game-state" style="display:none"></div>
+    <div id="game-circles"></div>
     <div class="card askme" id="askme-card" style="display:none"></div>
     <div class="card" id="team-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -3406,9 +3411,12 @@ async function undoCircleLog(lid) {
 // ---- 試合の追加 ----
 // 1試合を仲間ページに入れる。名簿と同じ名前は自動で結びつけ、createNew=true なら名簿にいない名前を新しい人として足す。
 // 戻り値 { added, already, unbound }
+// 同じ試合は1つの仲間ページに1回だけ（games/{試合ID} がキーなので2件にはならない。ルールでも「無いときだけ作れる」）。
+// ほぼ同時に2人が追加したときに名簿の人が二重にできないよう、試合の登録を先に書き、通ったときだけ名簿に新しい人を足す
 async function addGameToCircle(cid, g, createNew) {
   const circ = (await db.ref('circles/' + cid).once('value')).val() || {};
-  if (circ.games && circ.games[g.id]) return { already: true };
+  const had = circ.games && circ.games[g.id];
+  if (had) return { already: true, by: had.addedByName || 'メンバー', at: had.addedAt };
   const uid = myUid();
   const at = new Date().toISOString();
   const roster = { ...(circ.roster || {}) };
@@ -3424,7 +3432,6 @@ async function addGameToCircle(cid, g, createNew) {
       roster[mid] = newRoster[mid];
       auto[i] = mid;
     });
-    if (Object.keys(newRoster).length) await db.ref(`circles/${cid}/roster`).update(newRoster);
   }
   const myMidEntry = Object.entries(roster).find(([, r]) => r && r.uid === uid);
   const myMid = myMidEntry ? myMidEntry[0] : null;
@@ -3438,7 +3445,17 @@ async function addGameToCircle(cid, g, createNew) {
   });
   const entry = { at: g.createdAt || at, name: String(g.name || '').slice(0, 120), addedBy: uid, addedByName: byName, addedAt: at };
   if (Object.keys(seats).length) entry.seats = seats;
-  await db.ref(`circles/${cid}/games/${g.id}`).set(entry);
+  try {
+    await db.ref(`circles/${cid}/games/${g.id}`).set(entry);
+  } catch (err) {
+    // ほかの人が先に追加していた（ルールで上書きできない）
+    const now = (await db.ref(`circles/${cid}/games/${g.id}`).once('value').catch(() => null));
+    const v = now && now.val();
+    if (v) return { already: true, by: v.addedByName || 'メンバー', at: v.addedAt };
+    throw err;
+  }
+  if (Object.keys(newRoster).length) await db.ref(`circles/${cid}/roster`).update(newRoster);
+  delete gameCircleCache[g.id];
   const e = { at, by: uid, byName, kind: 'add_game', text: `試合「${entry.name}」を追加${Object.keys(newRoster).length ? `（名簿に${Object.values(newRoster).map(r => r.name).join('・')}を追加）` : ''}`.slice(0, 300), undo: { sid: g.id } };
   db.ref(`circles/${cid}/log`).push(e).catch(() => {});
   return { added: true, unbound };
@@ -3515,10 +3532,11 @@ async function openAddToCircle() {
   const list = await Promise.all(Object.entries(myCircles).map(([cid, m]) => db.ref('circles/' + cid).once('value')
     .then(s => { const c = s.val(); if (!c) return null;
       const keys = new Set(Object.values(c.roster || {}).map(r => personKey(r.name)));
-      return { cid, name: c.name || m.name || '', overlap: names.filter(k => keys.has(k)).length, already: !!(c.games && c.games[g.id]) }; })
+      const ge = c.games && c.games[g.id];
+      return { cid, name: c.name || m.name || '', overlap: names.filter(k => keys.has(k)).length, already: !!ge, by: ge ? (ge.addedByName || 'メンバー') : '', at: ge ? ge.addedAt : '' }; })
     .catch(() => null)));
   const rows = list.filter(Boolean).sort((a, b) => b.overlap - a.overlap).map(c =>
-    `<button type="button" class="series-row" ${c.already ? 'disabled style="opacity:.55"' : `onclick="addThisGameToCircle('${c.cid}')"`}><span>${esc(c.name)}<span class="sr-sub">${c.already ? '追加済み' : c.overlap ? `名簿と${c.overlap}人一致` : '名簿と一致する名前なし'}</span></span><span class="sr-arrow">›</span></button>`).join('');
+    `<button type="button" class="series-row" ${c.already ? 'disabled style="opacity:.55"' : `onclick="addThisGameToCircle('${c.cid}')"`}><span>${esc(c.name)}<span class="sr-sub">${c.already ? `追加済み（${esc(c.by)}さん・${fmtDay(Date.parse(c.at) || Date.now())}）` : c.overlap ? `名簿と${c.overlap}人一致` : '名簿と一致する名前なし'}</span></span><span class="sr-arrow">›</span></button>`).join('');
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:6px">「${esc(g.name || '')}」を入れる仲間ページを選んでください（名前がよく重なる順）。</div>
     ${rows || '<div style="font-size:12px;color:#999;padding:6px 0">参加している仲間ページはまだありません</div>'}
@@ -3534,7 +3552,7 @@ async function addThisGameToCircle(cid) {
     const r = await addGameToCircle(cid, g, false);
     showLoading(false);
     await openCircle(cid);
-    if (r.already) { showToast('この試合はもう入っています'); return; }
+    if (r.already) { showToast(`この試合は${r.by}さんがすでに追加しています`, 4000); return; }
     // 名簿にいない名前があれば、その場で結びつけを確かめてもらう（新しい人として足すか、既存の人か）
     if (r.unbound) openBindEditor(g.id); else showToast('追加しました（名前はすべて名簿の人に結びつけました）', 4000);
     track('circle_add_game', { unbound: r.unbound });
@@ -3544,6 +3562,28 @@ async function addThisGameToCircle(cid) {
   }
 }
 
+// ---- この試合が入っている仲間ページ（試合の画面・結果詳細の上に「○○に追加済み（△△さん）」）----
+// 自分が参加している・見たことのある仲間ページを調べる（1分は結果を使い回す）
+const gameCircleCache = {};
+async function loadGameCircles(sid, force) {
+  const c = gameCircleCache[sid];
+  if (c && !force && Date.now() - c.t < 60000) return c.list;
+  const ents = allCircleEntries();
+  const list = (await Promise.all(ents.map(([cid, m]) => db.ref(`circles/${cid}/games/${sid}`).once('value')
+    .then(s2 => { const v = s2.val(); return v ? { cid, name: m.name || (circleCardInfo[cid] || {}).name || '仲間ページ', by: v.addedByName || 'メンバー', at: v.addedAt } : null; })
+    .catch(() => null)))).filter(Boolean);
+  gameCircleCache[sid] = { t: Date.now(), list };
+  return list;
+}
+async function renderGameCircles(g, elId) {
+  const el = document.getElementById(elId);
+  if (!el || !g || !g.id || String(g.id).startsWith('v_')) { if (el) el.innerHTML = ''; return; }
+  const list = await loadGameCircles(g.id);
+  const el2 = document.getElementById(elId);
+  if (!el2) return;
+  el2.innerHTML = list.length ? `<div class="gc-box">${ico('people', 18)}<div>${list.map(x =>
+    `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>`).join('<br>')}</div></div>` : '';
+}
 // ---- 試合ごとのメニューと名前の結びつけ ----
 function openCircleGameMenu(sid) {
   const ge = circleData.games[sid];
@@ -7415,6 +7455,7 @@ function renderGame() {
   document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
   document.querySelector('#view-game .title-actions button[onclick="openGameEdit()"]').style.display = gLocked ? 'none' : '';
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
+  renderGameCircles(activeGame, 'game-circles');
 
   // チーム順位（チーム戦が有効なグループのみ）
   const teamCard = document.getElementById('team-card');
@@ -9371,7 +9412,7 @@ function renderDetailBody(g) {
   const gLocked = isGameLocked(g);
   if (!detailRO) document.getElementById('detail-edit-btn').style.display = gLocked ? 'none' : '';
 
-  let html = gameStateHtml(g, false);
+  let html = gameStateHtml(g, false) + '<div id="detail-circles"></div>';
   // チーム順位（チーム戦が有効なグループのみ）
   if (s.teamMode && s.teams && hasRounds) {
     const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
@@ -9428,6 +9469,7 @@ function renderDetailBody(g) {
   }
   if (detailRO && watchVid) html += watchCtaHtml();
   document.getElementById(P + '-body').innerHTML = html;
+  if (!detailRO) renderGameCircles(g, 'detail-circles');
   updateScrollHints();
   document.getElementById('view-' + P).classList.toggle('sanma', s.numPlayers === 3);
   document.body.classList.toggle('sanma-mode', s.numPlayers === 3);

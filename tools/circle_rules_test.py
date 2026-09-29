@@ -100,6 +100,8 @@ def main():
         check("B: 自分が本人登録していない人の席を「本人」にはできない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": B["uid"], "at": now, "self": True}))
         check("B: 結びつけた人を他人の名前で記録できない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": A["uid"], "at": now, "self": False}))
         check("B: 他人が追加した試合を外せない（管理者でない）", False, op(B, "DELETE", f"circles/{cid}/games/{sid}"))
+        check("B: Aが追加した試合を追加し直して上書きできない（同じ試合は二重に入らない）", False, op(B, "PUT", f"circles/{cid}/games/{sid}", {
+            "at": now, "name": "二重", "addedBy": B["uid"], "addedByName": "びー", "addedAt": now}))
         check("B: 自分の役割を管理者に上げられない", False, op(B, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))
         check("A（作成者）: Bを管理者にできる", True, op(A, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))
         check("B（管理者）: 本人が結びつけた席も変えられる", True, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/0", {"mid": m1, "by": B["uid"], "byName": "びー", "at": now, "self": False}))

@@ -295,6 +295,17 @@ def main():
         pgb.evaluate(f"openBindEditor('{g1}')")
         results.append(("[6g] 作成者が管理者にすると、本人が結びつけた席も変更できるようになる", True,
                         pgb.evaluate("circleRole() === 'admin' && bindState.rows[0].locked === false")))
+        # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
+        pgb.evaluate("closeFormModal()")
+        dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")
+        n_games = len(db_of(pgb)["circles"][cid]["games"])
+        results.append(("[6h] 同じ試合を別のアカウントから追加しても二重にならず「○○さんが追加済み」と返る", True,
+                        bool(dup.get("already")) and dup.get("by") == "むにぃ" and n_games == 2 and db_of(pgb)["circles"][cid]["games"][g1]["addedBy"] == U1))
+        pgb.evaluate(f"joinSession('{g1}')")
+        pgb.wait_for_function("() => document.getElementById('game-circles').innerText.includes('追加済み')", timeout=10000)
+        gc = pgb.evaluate("document.getElementById('game-circles').innerText")
+        results.append(("[6i] 仲間ページに入っている試合は、ほかのメンバーの試合の画面にも「金曜会 に追加済み（むにぃさん）」と出る", True,
+                        "金曜会" in gc and "むにぃさん" in gc))
         pgb.close()
 
         # ---- 7. ログインしていない人が閲覧リンクで見る ----
