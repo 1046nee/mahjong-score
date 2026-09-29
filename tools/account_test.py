@@ -226,8 +226,8 @@ def main():
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         mt = pg.evaluate("document.getElementById('form-modal-body').innerText")
         pg.evaluate("closeFormModal()")
-        results.append(("[5g] メンバーを押すと、その人の成績（タイル・着順の分布・最近の着順）と相手ごとの成績が出る", True,
-                        all(w in mt for w in ["たろう", "平均着順", "着順の分布", "最近の着順", "相手ごとの成績"])))
+        results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・最近）と相手ごとの成績が出る", True,
+                        all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "最近", "相手ごとの成績"])))
         pg.evaluate("openCircleInvite()")
         results.append(("[5f] 招待リンクは外のブラウザで開く形・参加コードも出る", True,
                         pg.evaluate(f"circleInviteLink === location.origin + '/?openExternalBrowser=1#join={code}' && document.getElementById('form-modal-body').innerText.includes('{code[:4]}-{code[4:]}')")))
@@ -384,6 +384,15 @@ def main():
         pg.evaluate("setMpPeriod('all')")
         results.append(("[10i] 期間（年）で成績と一覧を切り替えられ、過去の日付の試合はその年に入る", True,
                         "2025年" in pills and f"{__import__('datetime').date.today().year}年" in pills and "2025年5月" in rows25 and "金曜会1" not in rows25))
+        # 対局日をあとから変える（結果の編集から）
+        pg.evaluate(f"viewDetailById('{g1}')")
+        pg.evaluate("openDetailEdit()")
+        pg.wait_for_function("() => document.getElementById('d-date')", timeout=10000)
+        pg.evaluate("document.getElementById('d-date').value = '2025-12-24'; saveDetailEdit()")
+        pg.wait_for_function(f"() => {{ const d = JSON.parse(localStorage.getItem('__smoke_db')); return d.sessions['{g1}'].settings.playDate === '2025-12-24'; }}", timeout=15000)
+        results.append(("[10j] 結果の編集から対局日を変えられ、変更の履歴にも残る", True,
+                        any("対局日" in str(e) for e in (db_of()["sessions"][g1].get("log") or []))))
+        pg.evaluate("showView('history')")
 
         # ---- 11. 共有シート・見るだけのリンク ----
         pg.evaluate(f"joinSession('{g1}')")
