@@ -220,6 +220,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* 信頼テキスト: 緑のチェック付きでブランドに馴染ませる（ボタン風にはしない） */
 .cta-trust { display: flex; justify-content: center; gap: 14px; color: #1F2A28; font-size: 13px; font-weight: 700; flex-wrap: wrap; }
 .cta-trust.close-trust { margin-bottom: 16px; }
+/* 最近の試合（Walicaの「最近のグループ」風。ローカル履歴の新しい2件＋もっとみる） */
+.recent-games { max-width: 420px; margin: 30px auto 0; text-align: left; }
+.recent-games .rg-title { font-size: 13px; font-weight: 700; color: #667571; margin-bottom: 8px; }
+.rg-row { display: flex; justify-content: space-between; align-items: center; width: 100%; background: #fff; border: 1.5px solid #e2ece7; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; font-size: 15px; font-weight: 700; color: #1a1a1a; cursor: pointer; text-align: left; }
+.rg-row .rg-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rg-row .rg-arrow { color: #9fb7b2; flex-shrink: 0; margin-left: 10px; }
+.rg-more { display: block; text-align: center; color: #177083; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 2px; }
 .cta-trust span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin: 0 4px -1px 0; background: #177083;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
 
@@ -1582,6 +1589,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
   <p class="cta-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
+  <div class="recent-games" id="recent-games" style="display:none">
+    <p class="rg-title">最近の試合</p>
+    <div id="recent-games-list"></div>
+  </div>
 </section>
 
 <!-- 使い方＋番外編（ヒーロー直下。特徴系セクションより先に見せる） -->
@@ -5592,8 +5603,21 @@ async function joinSession(id) {
   } catch(e) { alert('接続エラーが発生しました。'); } finally { showLoading(false); }
 }
 
-// LPに「最近の試合」は出さない（2026-09-29 ユーザー判断）。呼び出し元が多いので関数だけ残す
-function renderRecentGames() {}
+// LPの「最近の試合」: 最後に開いた順に2件まで（ログインしていなくても）。押すとその試合へ。
+// 下にマイページへの入り口（未ログインはログインして残す案内）。履歴が無ければ丸ごと出さない
+function renderRecentGames() {
+  const wrap = document.getElementById('recent-games');
+  const list = document.getElementById('recent-games-list');
+  if (!wrap || !list) return;
+  const games = [...(appState.games || [])].sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0));
+  if (!games.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = games.slice(0, 2).map(g =>
+    `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
+  ).join('') + (currentUser || !loginAvailable()
+    ? `<a class="rg-more" onclick="goMyPage()">マイページで過去の試合をすべて見る ›</a>`
+    : `<a class="rg-more" onclick="goMyPage()">ログインすると、過去の試合をずっと残せます ›</a>`);
+}
 
 // ---- Setup ----
 function todayStr() {

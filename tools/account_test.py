@@ -149,8 +149,8 @@ def main():
         pg.evaluate("showView('history')")
         results.append(("[2b] 未ログインでマイページ（過去の試合）を開くと、ログイン画面になる（ブラウザだけの履歴は出さない）", True,
                         pg.evaluate("document.getElementById('view-login').classList.contains('active') && document.getElementById('login-action').innerText.includes('Googleでログイン') && document.getElementById('login-action').innerText.includes('この端末に残っている過去の試合')")))
-        results.append(("[2c] トップ（LP）に「最近の試合」を出さない", True,
-                        pg.evaluate("(showView('home'), !document.getElementById('recent-games') && !document.getElementById('view-home').innerText.includes('最近の試合'))")))
+        results.append(("[2c] トップ（LP）の「最近の試合」は2件まで。未ログインはログインして残す案内", True,
+                        pg.evaluate("(showView('home'), (() => { const n = document.querySelectorAll('#recent-games-list .rg-row').length; return n >= 1 && n <= 2 && document.getElementById('recent-games-list').innerText.includes('ログインすると'); })())")))
         login_as(pg, U1)
         results.append(("[2d] ログイン後はヘッダーが「マイページ」（ログイン中とわかる）になり、ログイン画面からマイページへ移る", True,
                         pg.evaluate("document.getElementById('hdr-acct').textContent.includes('マイページ') && document.getElementById('hdr-acct').classList.contains('in')")))
