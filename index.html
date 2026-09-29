@@ -846,7 +846,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pf-sheet .cb-row { background: #fff; border-radius: 12px; padding: 8px 12px; margin-top: 6px; border-top: 0; box-shadow: var(--sh-1); }
 /* 連携済みの試合の一覧（相手ごとの成績のカードと同じ .hg-card の見せ方で1列に） */
 .cg-list { display: flex; flex-direction: column; gap: 8px; }
-.cg-card { cursor: pointer; padding: 10px 12px; }
+.cg-card { cursor: pointer; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+.cg-main { flex: 1; min-width: 0; }
+.cg-l1 { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.cg-l1 .cg-date { margin-left: 0; }
+.cg-avs { display: flex; align-items: center; gap: 3px; margin-top: 4px; }
+.cg-avs span { font-size: 10.5px; font-weight: 800; color: #8A9AA5; margin-right: 2px; }
+.cg-avs i { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; font-weight: 800; flex: none; }
+.cg-avs i.more { width: auto; padding: 0 4px; border-radius: 9px; background: #E3E9E8; color: #4F5C5A; }
+.cg-sc { flex: none; font-size: 20px; font-weight: 900; font-variant-numeric: tabular-nums; color: #1F2A28; }
+.cg-sc.pos { color: #1A237E; } .cg-sc.neg { color: #C62828; } .cg-sc.nil { color: #AEBBB8; }
 .cg-card:active { opacity: .8; }
 .cg-card .hg-rec small { margin-left: 8px; font-size: 12px; font-weight: 700; }
 .cg-card .hg-rec b.pos { color: #1A237E; } .cg-card .hg-rec b.neg { color: #C62828; } .cg-card .hg-rec b:not(.pos):not(.neg) { color: #1F2A28; }
@@ -1222,6 +1231,7 @@ button.ios-row:active { background: #F2F6F5; }
 .form-chip.tie::after { content: '='; position: absolute; right: -5px; top: -6px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px #D5DEDB; font-size: 11px; font-weight: 800; color: #1F2A28; line-height: 15px; text-align: center; }
 /* スコアの推移（0より上は紺・下は赤で塗り分け。終点の点はHTMLで置く＝preserveAspectRatio=none で円がつぶれないように） */
 .spark-wrap { position: relative; height: 84px; }
+.spark-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .spark { display: block; width: 100%; height: 84px; }
 .spark-dot { position: absolute; width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; transform: translate(-50%, -50%); }
 /* ---- よく打つ相手（勝ち負けの棒。中央の線が五分） ---- */
@@ -4277,14 +4287,16 @@ function openCircleMember(mid) {
   const cgCard = b => {
     const g = b.g;
     if (!g) return `<div class="hg-card cg-card"><div class="hg-top"><span class="hg-name">${esc(b.gname)}</span></div><div class="hg-meta"><span>読み込めませんでした</span></div></div>`;
-    const d = new Date(b.ms), played = playedFlags(g), tot = gameTotals(g);
-    const nP = played.filter(Boolean).length, nr = (g.rounds || []).length, gnp = g.settings.numPlayers === 3 ? 3 : 4;
-    const rank = b.score == null ? null : 1 + played.reduce((a, pl, i) => a + (pl && tot[i] > tot[b.seat] ? 1 : 0), 0);
+    // 試合数・人数・順位は書かない（人数は形式の印の右下の丸＝タイルと同じ）。相手は頭文字（その試合の順位順）
+    const d = new Date(b.ms), played = playedFlags(g), tot = gameTotals(g), names = g.settings.playerNames || [];
+    const opp = memberDisplayOrder(g.settings).filter(i => i !== b.seat && played[i] && !isPlaceholderName(names[i])).sort((x, y) => (tot[y] || 0) - (tot[x] || 0));
+    const MAXO = 6;
+    const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
     return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="closeFormModal();openCircleGameMenu('${b.sid}')">
-      <div class="hg-top">${gameKindHtml(g).replace('class="gk ', 'class="gk cg-k ')}<span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
-      <div class="hg-rec">${b.score == null ? '<b>—</b><span>出ていない</span>' : `<b class="${scoreCls(b.score)}">${fmtScore(b.score)}</b><span>pts</span><small>${rank}位 / ${nP}人</small>`}</div>
-      <div class="hg-meta"><span>${nr}試合 ・ ${nP}人${nP > gnp ? `（${gnp}人卓）` : ''}</span></div>
-      ${oppLineHtml(g, b.score == null ? null : b.seat)}
+      ${gameKindHtml(g)}
+      <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
+        <div class="cg-avs"><span>相手</span>${avs}</div></div>
+      <b class="cg-sc ${b.score == null ? 'nil' : scoreCls(b.score)}">${b.score == null ? '—' : fmtScore(b.score)}</b>
     </div>`;
   };
   const byYear = [];
@@ -9281,13 +9293,13 @@ function myStatsTableHtml(st) {
 }
 // ゲーム別内訳の表（画像出力用。forImage=trueでタップ用の属性を外す。画面は myStatsGroupsHtml の一覧）
 function myStatsGroupsTableHtml(st, forImage = false) {
-  const rows = st.groups.map(gr => {
+  const rows = st.groups.slice().sort((a, b) => b.ms - a.ms).map(gr => { // 打った日の新しい順
     const sc = Math.round(gr.score * 10) / 10;
     const col = sc > 0 ? '#1a237e' : sc < 0 ? '#c62828' : '#1a1a1a';
     // グループ名は内側spanで3行打ち切り＋折り返し（全文はtitle）。
     // 「チーム戦」は列幅を押し広げないよう9pxのサブ行にする（<div>2つ＝画像側ではメイン＋subsとして描かれる）
     return `<tr${forImage ? '' : ` onclick="viewDetailById('${esc(gr.id)}')" style="cursor:pointer"`}>
-      <td class="sticky-col"><span class="ms-gname" title="${esc(gr.name)}">${esc(gr.name)}</span></td>
+      <td class="sticky-col"><div class="ms-gname" title="${esc(gr.name)}">${esc(gr.name)}</div><div style="font-size:9px;color:#8a9aa5;margin-top:1px">${fmtDay(gr.ms)}</div></td>
       <td><div>${gr.np === 3 ? '三麻' : '四麻'}</div>${gr.team ? '<div style="font-size:9px;color:#8a9aa5;margin-top:1px">チーム戦</div>' : ''}</td>
       <td>${gr.games}</td>
       <td style="font-weight:700;color:${col}">${sc > 0 ? '+' : ''}${sc.toFixed(1)}</td>
@@ -9442,6 +9454,14 @@ function formHtml(hist, np) {
 // 通算スコアの推移（1試合ごとの累計）。0より上は紺・下は赤で塗り分ける。
 // clipPath の id はマイページとメンバーの成績が同時にDOMにあってもぶつからないよう毎回変える
 let sparkSeq = 0;
+// スコアの推移の下: 一番左（最初の試合）と一番右（最後の試合）の日付だけ。今年以外なら年も
+function sparkEnds(hist) {
+  const ds = hist.map(h => h.t ? new Date(h.t) : null).filter(d => d && !isNaN(d));
+  if (!ds.length) return '';
+  const nowY = new Date().getFullYear();
+  const f = d => `${d.getFullYear() !== nowY || ds[0].getFullYear() !== ds[ds.length - 1].getFullYear() ? d.getFullYear() + '/' : ''}${d.getMonth() + 1}/${d.getDate()}`;
+  return `<div class="spark-ends"><span>${f(ds[0])}</span><span>${f(ds[ds.length - 1])}</span></div>`;
+}
 function sparkHtml(hist) {
   if (!hist || hist.length < 2) return '';
   let cum = 0;
@@ -9467,7 +9487,7 @@ function sparkHtml(hist) {
       <path d="${area}" fill="#C62828" fill-opacity=".10" clip-path="url(#${id}d)"/>
       <line x1="${P}" x2="${W - P}" y1="${zero}" y2="${zero}" stroke="#C9D3D1" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
       <polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    </svg><span class="spark-dot" style="left:${(x(ys.length - 1) / W * 100).toFixed(2)}%;top:${(y(end) / H * 100).toFixed(2)}%;background:${col}"></span>${yrs}</div></div>`;
+    </svg><span class="spark-dot" style="left:${(x(ys.length - 1) / W * 100).toFixed(2)}%;top:${(y(end) / H * 100).toFixed(2)}%;background:${col}"></span>${yrs}</div>${sparkEnds(hist)}</div>`;
 }
 // 直接対決の勝ち負けの棒（左の青＝勝ち・右の赤＝負け。中央の線が五分。引き分けは除く）
 function wlBarHtml(e) {
