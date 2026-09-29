@@ -847,6 +847,22 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gc-box a { color: #177083; font-weight: 800; text-decoration: underline; cursor: pointer; }
 .gc-by { font-size: 12px; color: #5F6E6B; }
 #game-circles:empty, #detail-circles:empty { display: none; }
+.ms-top .mp-pills { margin-bottom: 8px; }
+.ms-scope { margin: 0 -16px 4px; }
+.ms-sub { font-size: 12px; color: #5F6E6B; margin: 6px 2px 10px; line-height: 1.6; }
+.ms-h { font-size: 13px; font-weight: 900; color: #1F2A28; margin: 16px 2px 6px; }
+.ms-note { font-size: 11px; color: #5F6E6B; margin: 6px 2px 0; line-height: 1.6; }
+.ms-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.ms-tile { background: #fff; border-radius: 12px; padding: 8px 6px; text-align: center; box-shadow: var(--sh-1); min-width: 0; }
+.ms-tile span { display: block; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
+.ms-tile b { display: block; font-size: 15px; font-weight: 900; color: #1F2A28; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ms-tile b.pos { color: #1A237E; } .ms-tile b.neg { color: #C62828; }
+.ms-panel { background: #fff; border-radius: 14px; padding: 4px 12px 10px; margin-top: 8px; box-shadow: var(--sh-1); }
+.ms-cmp td { font-weight: 700; font-variant-numeric: tabular-nums; }
+.ms-cmp td.pos { color: #1A237E; } .ms-cmp td.neg { color: #C62828; }
+.ms-cmp th.on, .ms-cmp td.on { background: #EEF7F4 !important; }
+.ms-cmp th.on .mx-nm { color: #177083; font-weight: 900; }
+.ms-empty { font-size: 14px; color: #4F5C5A; background: #fff; border-radius: 14px; padding: 20px 16px; margin-top: 10px; line-height: 1.8; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -3073,7 +3089,7 @@ function saveCircleSummary(st, nGames) {
   const idx = my ? st.list.findIndex(p => p.key === my) : -1;
   const sum = { people: Object.keys(rosterOf()).length, games: nGames, rank: idx >= 0 ? idx + 1 : null, of: st.list.length, mode: circleMode, role: circleRole() };
   const cur = circleSeen[circleId] || {};
-  circleCardInfo[circleId] = { people: sum.people, games: sum.games, name: circleData.name || '' };
+  circleCardInfo[circleId] = { people: sum.people, games: sum.games, name: circleData.name || '', sids: Object.keys(circleData.games || {}) };
   if (fpOf(cur.sum || null) === fpOf(sum) && cur.name === (circleData.name || '')) return;
   circleSeen[circleId] = { ...cur, name: circleData.name || '', at: cur.at || new Date().toISOString(), sum };
   saveCircleSeen();
@@ -3748,6 +3764,7 @@ function openCircleMember(mid) {
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
+    ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績とくらべる${ico('chevron', 12)}</button>` : ''}
     ${keys.length ? `<div class="pf-h">相手ごとの成績</div><div class="h2-list" style="padding:0">${h2hListHtml(row, keys, nameOf, avOf)}</div>` : ''}
     <details class="pf-more"><summary>結びついている試合（${bound.length}）${ico('chevron', 14)}</summary>${boundHtml || '<div style="font-size:13px;color:#5F6E6B;padding-bottom:10px">なし</div>'}</details>
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人として登録）</button>` : ''}
@@ -4075,12 +4092,12 @@ function allCircleEntries() {
 let circleCardInfo = {}, circleCardLoading = false;
 async function loadCircleCardInfo() {
   if (circleCardLoading) return;
-  const ids = allCircleEntries().map(([cid]) => cid).filter(cid => !circleCardInfo[cid]);
+  const ids = allCircleEntries().map(([cid]) => cid).filter(cid => !circleCardInfo[cid] || !circleCardInfo[cid].sids);
   if (!ids.length) return;
   circleCardLoading = true;
   await Promise.all(ids.map(cid => Promise.all([
     db.ref(`circles/${cid}/roster`).once('value'), db.ref(`circles/${cid}/games`).once('value'), db.ref(`circles/${cid}/name`).once('value')])
-    .then(([r, g, n]) => { circleCardInfo[cid] = { people: Object.keys(r.val() || {}).length, games: Object.keys(g.val() || {}).length, name: n.val() || '' }; })
+    .then(([r, g, n]) => { circleCardInfo[cid] = { people: Object.keys(r.val() || {}).length, games: Object.keys(g.val() || {}).length, name: n.val() || '', sids: Object.keys(g.val() || {}) }; })
     .catch(() => { circleCardInfo[cid] = { err: true }; })));
   circleCardLoading = false;
   if (document.getElementById('view-history').classList.contains('active')) renderCircleSection();
@@ -8595,12 +8612,13 @@ function h2hListHtml(row, keys, nameOf, avOf) {
 // ---- 自分の成績の集計 ----
 // 参加（role=play）かつ自分が設定済みのグループを横断して集計する。
 // 四麻と三麻は着順の意味が違うので別バケツ。同点の按分（rankGroups）は個人成績と同じ数え方
-function collectMyStats(inP = periodFilter()) {
+function collectMyStats(inP = periodFilter(), only = null) {
   const modes = {};
   const groupsOut = [];
   const myNames = [];
   let untagged = 0;
   (appState.games || []).forEach(g => {
+    if (only && !only.has(g.id)) return; // 仲間ページの範囲: その仲間ページに入っている試合だけ
     const s = g.settings || {};
     const t = tagOf(g.id);
     if (t.role === 'watch') return;
@@ -8633,7 +8651,7 @@ function collectMyStats(inP = periodFilter()) {
     b.games += played; b.groups++; b.score += scoreSum;
     const nm = s.playerNames[me];
     if (nm && !myNames.includes(nm)) myNames.push(nm);
-    groupsOut.push({ id: g.id, name: g.name || '', np, team: !!(s.teamMode && s.teams),
+    groupsOut.push({ id: g.id, name: g.name || '', np, team: !!(s.teamMode && s.teams), ms: gameDayMs(g), days: fmtGameDays(g),
       games: played, score: scoreSum, avgRank: rankSum / played });
   });
   // 自分を選んだだけで試合が0件の形式は出さない（成績の部品が0で割って NaN になるため）
@@ -8688,52 +8706,85 @@ function myStatsGroupsTableHtml(st, forImage = false) {
     <thead><tr><th class="sticky-col" style="width:110px">ゲーム</th><th>形式</th><th>試合数</th><th>スコア</th><th>平均着順</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
+// ---- 自分の成績（2026-09-29 作り直し）----
+// 上から: 期間 → 範囲（個人すべて｜仲間ページごと）→［成績｜相手｜ゲーム］。
+// 成績はマイページと同じカード＋細かい数字のタイル＋推移。範囲が2つ以上あれば「くらべる」表で、
+// 個人の成績と仲間ページの中だけの成績を同じ項目で横に並べる（仲間ページで打つときだけ強い／弱い、がわかる）
+let msScope = 'all', msGameOrder = 'new';
+function circleSidsOf(cid) { const i = circleCardInfo[cid]; return i && i.sids ? new Set(i.sids) : null; }
+function msScopes() {
+  return [['all', '個人（すべて）']].concat(allCircleEntries().map(([cid, m]) => [cid, m.name || (circleCardInfo[cid] || {}).name || '仲間ページ']));
+}
+// 範囲の成績: 個人＝自分を選んだ全部の試合、仲間ページ＝そのうち仲間ページに入っている試合だけ（自分の選択で数えるので形式がそろう）
+function msStatsFor(scope) { return collectMyStats(periodFilter(), scope === 'all' ? null : (circleSidsOf(scope) || new Set())); }
+function msRow(np, m) {
+  const n = m.games, c = m.counts;
+  return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, per: m.score / n };
+}
+function msCompareHtml(np) {
+  const cols = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { k, label: k === 'all' ? '個人' : label, r: msRow(np, m) } : null; }).filter(Boolean);
+  if (cols.length < 2) return '';
+  const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top)], ['連対率', r => pctText(r.ren)],
+    ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score)], ['1試合平均', r => fmtScore(r.per), r => scoreCls(r.per)]];
+  const w = 84, cw = 84;
+  return `<div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
+    <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:${w + cols.length * cw}px">
+      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th class="${c2.k === msScope ? 'on' : ''}" title="${esc(c2.label)}"><span class="mx-nm">${esc(c2.label)}</span></th>`).join('')}</tr></thead>
+      <tbody>${rows.map(([label, f, cls]) => `<tr><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${c2.k === msScope ? 'on ' : ''}${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div>`;
+}
+function msModeHtml(np, m) {
+  const r = msRow(np, m), hist = sortHist(m.hist);
+  const tile = (l, v, cls = '') => `<div class="ms-tile"><span>${l}</span><b class="${cls}">${v}</b></div>`;
+  return `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}" style="margin-top:0">${mpStatsInnerHtml(np, m, false)}</div>
+    <div class="ms-tiles">${tile('連対率', pctText(r.ren))}${tile('1試合平均', fmtScore(r.per), scoreCls(r.per))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
+    ${hist.length > 1 ? `<div class="ms-panel">${sparkHtml(hist)}</div>` : ''}`;
+}
+function msGamesHtml(st) {
+  const gs = st.groups.slice().sort((a, b) => msGameOrder === 'old' ? a.ms - b.ms : b.ms - a.ms);
+  if (!gs.length) return `<div class="ms-empty">この範囲の試合はありません</div>`;
+  let prev = null, html = '';
+  gs.forEach(gr => {
+    const d = new Date(gr.ms), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month">${key}</div><div class="ios-group">`; prev = key; }
+    html += `<button type="button" class="ios-row gp-row" onclick="viewDetailById('${esc(gr.id)}')">
+      <span class="gp-tile${gr.np === 3 ? ' s3' : ''}">${gr.np === 3 ? '三' : '四'}</span>
+      <span class="gp-main"><span class="gp-name">${esc(gr.name)}</span><span class="gp-sub">${esc(gr.days)} ・ ${gr.games}試合 ・ 平均着順 ${gr.avgRank.toFixed(2)}${gr.team ? ' ・ チーム戦' : ''}</span></span>
+      <span class="gp-sc ${scoreCls(gr.score)}">${fmtScore(gr.score)}</span>${ico('chevron', 13)}</button>`;
+  });
+  html += '</div>';
+  const seg = `<div class="seg xs" role="tablist" aria-label="並び順" style="margin:0 0 4px">${[['new', '新しい順'], ['old', '古い順']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${msGameOrder === k ? 'on' : ''}" aria-selected="${msGameOrder === k}" onclick="msGameOrder='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+  return seg + html;
+}
 function renderMyStats() {
   const body = document.getElementById('mystats-body');
-  const st = collectMyStats();
-  const imgBtn = document.getElementById('mystats-img-btn');
-  if (!st.groups.length) {
-    imgBtn.style.display = 'none';
-    body.innerHTML = `<div class="ios-group" style="margin-top:16px;padding:20px 16px"><div style="font-size:14px;color:#4F5C5A;line-height:1.9">
-      まだ集計できる試合がありません。<br>
-      マイページの過去の試合にある<b>「自分を選ぶ」</b>から、その卓での自分の名前を選ぶと、
-      ゲームをまたいだ自分の通算成績がここにまとまります。${st.untagged ? `<br><span style="color:#8A6D1A">自分をまだ選んでいない卓が${st.untagged}件あります。</span>` : ''}
-      </div>
-      <button class="auto-btn" style="margin:14px 0 0" onclick="showView('history')">マイページへ</button></div>`;
-    return;
+  // 仲間ページごとの試合の一覧がまだ無ければ読んでから描き直す
+  if (allCircleEntries().some(([cid]) => !circleSidsOf(cid))) {
+    loadCircleCardInfo().then(() => { if (document.getElementById('view-mystats').classList.contains('active') && allCircleEntries().every(([cid]) => circleSidsOf(cid))) renderMyStats(); });
   }
-  imgBtn.style.display = 'inline-flex';
+  const scopes = msScopes();
+  if (!scopes.some(([k]) => k === msScope)) msScope = 'all';
+  const st = msStatsFor(msScope);
+  const imgBtn = document.getElementById('mystats-img-btn');
+  imgBtn.style.display = collectMyStats().groups.length ? 'inline-flex' : 'none';
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'sum';
-  const total = st.groups.reduce((a, g) => a + g.games, 0);
-  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['sum', 'まとめ'], ['h2h', '相手別'], ['groups', 'ゲーム別']].map(([k, l]) =>
+  const scopeRow = scopes.length > 1 ? `<div class="sw-row ms-scope" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
+    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="msScope='${esc(k)}';renderMyStats()">${k === 'all' ? ico('person', 16) : `<span class="sw-av" style="background:${avColor(k)}">${esc(avInitial(l))}</span>`}${esc(l)}</button>`).join('')}</div>` : '';
+  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['sum', '成績'], ['h2h', '相手'], ['groups', 'ゲーム']].map(([k, l]) =>
     `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
-  const warn = st.untagged ? `<div class="warn-box">${ico('checklist', 16)}<div>自分をまだ選んでいない卓が${st.untagged}件あります。<a onclick="showView('history')">マイページで選ぶ</a></div></div>` : '';
-  const inner = myStatsTab === 'h2h' ? myH2HCardHtml() : myStatsTab === 'groups' ? myStatsGroupsHtml(st) : myStatsSumHtml(st);
-  body.innerHTML = `<div class="ms-sub">${periodLabel()} ・ ${st.myNames.map(esc).join('・')} ・ ${st.groups.length}ゲーム ・ 計${total}試合</div>${warn}${tabs}${inner}`;
-}
-// まとめ: 選んでいる形式（マイページの mpMode と共有）の成績を、1行に値1つのiOSのリストで
-function myStatsSumHtml(st) {
-  const modes = [4, 3].filter(np => st.modes[np]);
-  if (!modes.includes(mpMode)) mpMode = modes.slice().sort((a, b) => st.modes[b].games - st.modes[a].games)[0];
-  const np = mpMode, m = st.modes[np], n = m.games;
-  const seg = modes.length > 1 ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${modes.map(k =>
-    `<button type="button" role="tab" data-np="${k}" class="${k === np ? 'on' : ''}" aria-selected="${k === np}" onclick="mpMode=${k};renderMyStats()">${k === 3 ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
-  const row = (k, v, s = '', cls = '') => `<div class="ios-row"><span class="ios-k">${k}</span>${s ? `<span class="ios-s">${s}</span>` : ''}<span class="ios-v ${cls}">${v}</span></div>`;
-  const c1 = m.counts[0] || 0, c2 = m.counts[1] || 0, per = m.score / n;
-  return `${seg}
-    <div class="ios-head">試合</div><div class="ios-group">${row('ゲーム数', m.groups)}${row('試合数', n)}${row('平均着順', (m.avgRankSum / n).toFixed(2))}</div>
-    <div class="ios-head">着順</div><div class="ios-group pad">${rankBarHtml(m.counts, n, np)}</div>
-    <div class="ios-head">率</div><div class="ios-group">${row('トップ率', pctText(c1 / n), `1着 ${fmtCnt(c1)}/${n}`)}${row('連対率', pctText((c1 + c2) / n), `2着以内 ${fmtCnt(c1 + c2)}/${n}`)}${row('ラス回避', pctText((n - m.lastCount) / n), `${np}着 ${fmtCnt(m.lastCount)}/${n}`)}</div>
-    <div class="ios-head">スコア</div><div class="ios-group">${row('通算スコア', fmtScore(m.score), '', scoreCls(m.score))}${row('1試合平均', fmtScore(per), '', scoreCls(per))}${row('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${row('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
-    <div class="ios-foot">スコアは各ゲームのルール（ウマ・返し点・罰符）で計算した値の合計です。</div>`;
-}
-// ゲーム別: 1ゲーム1行（形式のタイル・名前・試合数と平均着順・スコア）。押すと結果詳細
-function myStatsGroupsHtml(st) {
-  const rows = st.groups.map(gr => `<button type="button" class="ios-row gp-row" onclick="viewDetailById('${esc(gr.id)}')">
-      <span class="gp-tile${gr.np === 3 ? ' s3' : ''}">${gr.np === 3 ? '三' : '四'}</span>
-      <span class="gp-main"><span class="gp-name">${esc(gr.name)}</span><span class="gp-sub">${gr.games}試合 ・ 平均着順 ${gr.avgRank.toFixed(2)}${gr.team ? ' ・ チーム戦' : ''}</span></span>
-      <span class="gp-sc ${scoreCls(gr.score)}">${fmtScore(gr.score)}</span>${ico('chevron', 13)}</button>`).join('');
-  return `<div class="ios-head">ゲーム（${st.groups.length}）</div><div class="ios-group">${rows}</div><div class="ios-foot">押すと結果詳細が開きます</div>`;
+  let inner;
+  if (myStatsTab === 'h2h') inner = myH2HCardHtml();
+  else if (myStatsTab === 'groups') inner = msGamesHtml(st);
+  else {
+    const modes = [4, 3].filter(np => st.modes[np]);
+    inner = modes.length ? modes.map(np => msModeHtml(np, st.modes[np]) + msCompareHtml(np)).join('<div style="height:18px"></div>')
+      : `<div class="ms-empty">${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます。' : `${periodLabel()}の${msScope === 'all' ? '' : 'この仲間ページの'}成績はまだありません。`}</div>`;
+  }
+  const total = st.groups.reduce((a, g) => a + g.games, 0);
+  body.innerHTML = `<div class="ms-top">${mpPeriodHtml()}${scopeRow}</div>
+    <div class="ms-sub">${periodLabel()} ・ ${scopes.find(([k]) => k === msScope)[1]} ・ ${st.groups.length}ゲーム ・ 計${total}試合${st.myNames.length ? ` ・ 自分: ${st.myNames.map(esc).join('・')}` : ''}</div>
+    ${tabs}${inner}`;
 }
 
 // ---- 成績の見せ方の部品（マイページの「個人」・仲間ページのメンバーで共用） ----
@@ -9002,7 +9053,7 @@ function setMpPeriod(p) {
   mpPeriod = p;
   try { localStorage.setItem(MP_PERIOD_KEY, p); } catch (e) {}
   histShowAll = false;
-  renderHistory();
+  if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats(); else renderHistory();
 }
 function mpPeriodHtml() {
   const ys = gameYears();
