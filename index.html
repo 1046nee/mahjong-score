@@ -882,6 +882,17 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hg-meta b { color: #1F2A28; } .hg-meta b.pos { color: #1A237E; } .hg-meta b.neg { color: #C62828; }
 .hg-total { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #F5F8F7; font-size: 12px; color: #4F5C5A; margin-top: 8px; }
 .hg-total b { color: #1F2A28; } .hg-total b.w { color: #1A237E; font-size: 15px; } .hg-total b.l { color: #C62828; font-size: 15px; }
+.mc-trend { display: block; }
+.mc-trend-h { display: flex; justify-content: space-between; align-items: baseline; }
+.mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.mc-trend-h b { font-size: 14px; font-weight: 900; } .mc-trend-h b.pos { color: #1A237E; } .mc-trend-h b.neg { color: #C62828; }
+.mc-spark { display: block; width: 100%; height: 56px; margin-top: 2px; }
+.mc-spark .dot { stroke: #fff; stroke-width: 1.2; }
+.mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
+.mc-foot { justify-content: flex-end; margin-top: 4px; }
+.cc-mine-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; }
+.cc-mine-h b { font-size: 16px; font-weight: 900; color: #1F2A28; }
+.cc-mine-h small { font-size: 12px; color: #5F6E6B; font-weight: 700; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -2888,7 +2899,7 @@ function autoBindNames(names, roster) {
 }
 // 仲間ページの通算: 名簿の人に結びつけた席だけを数える（ゲスト・未結びつけの席は数えない）。
 // sessions = { sid: 試合の中身 }。mode = '4' | '3'（着順の数が違うので混ぜない）
-function circleStats(circle, sessions, mode) {
+function circleStats(circle, sessions, mode, inP) {
   const people = {}, acc = {};
   const roster = (circle && circle.roster) || {};
   Object.entries((circle && circle.games) || {}).forEach(([sid, ge]) => {
@@ -2898,8 +2909,9 @@ function circleStats(circle, sessions, mode) {
     if (mode && np !== mode) return;
     const seats = (ge && ge.seats) || {};
     const kOf = m => { const st = seats[m]; return (st && st.mid && roster[st.mid]) ? st.mid : null; };
-    h2hAdd(acc, g, kOf);
-    (g.rounds || []).forEach((r, ridx) => {
+    const gF = inP ? { ...g, rounds: (g.rounds || []).filter(r => inP(roundMs(g, r))) } : g; // 期間の外の試合は数えない
+    h2hAdd(acc, gF, kOf);
+    (gF.rounds || []).forEach((r, ridx) => {
       const mem = roundMembers(r, g.settings);
       const raw = (r.points || r.scores || []).slice(0, mem.length);
       if (raw.length !== mem.length || raw.some(v => v == null || v === '')) return;
@@ -3076,11 +3088,25 @@ function renderCircle() {
         <button type="button" class="askme-chip" onclick="openClaimNew()">名簿にいない（名前を入れる）</button></div>
       <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}本人</span>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
   }
+  // 期間（マイページと同じ）＋この仲間ページの中だけでの自分の成績（マイページの成績カードと同じ形）
+  html += mpPeriodHtml();
+  const myM = myCircleMid();
+  if (myM && gids.length) {
+    const cards = circleModes().map(md => {
+      const sx = circleStats(circleData, circleSess, md, periodFilter());
+      const idx = sx.list.findIndex(x => x.key === myM);
+      if (idx < 0) return '';
+      const p = sx.list[idx], np = md === '3' ? 3 : 4;
+      const m = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
+      return `<button type="button" class="mc-card${np === 3 ? ' s3' : ''}" onclick="msScope=circleId;myStatsTab='sum';showView('mystats')">${mpStatsInnerHtml(np, m, true)}</button>`;
+    }).join('');
+    if (cards) html += `<div class="cc-mine-h"><b>あなたの成績</b><small>この仲間ページの試合だけ</small></div>${cards}`;
+  }
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
   const modes = circleModes();
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
-  const st = gids.length ? circleStats(circleData, circleSess, circleMode) : { list: [], acc: {} };
+  const st = gids.length ? circleStats(circleData, circleSess, circleMode, periodFilter()) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
   const modeChips = (modes.length > 1 && ['rank', 'grid', 'h2h'].includes(circleTab)) ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
@@ -3368,7 +3394,7 @@ function circleStandingsTableHtml(st, forImage = false) {
 }
 async function showCircleImage() {
   if (!circleData) return;
-  const st = circleStats(circleData, circleSess, circleMode);
+  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
   if (!st.list.length) { showToast('まだ通算がありません'); return; }
   const modes = circleModes();
   const gids = Object.keys(circleData.games || {});
@@ -3736,7 +3762,7 @@ function openCircleMember(mid) {
   const myMid = myCircleMid();
   const modes = circleModes();
   const np = circleMode === '3' ? 3 : 4;
-  const st = circleStats(circleData, circleSess, circleMode);
+  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
   const idx = st.list.findIndex(x => x.key === mid);
   const p = idx >= 0 ? st.list[idx] : null;
   const row = st.acc[mid] || {};
@@ -9081,12 +9107,13 @@ let mpPeriod = null;
 function gameYears() {
   const ys = new Set();
   (appState.games || []).forEach(g => ys.add(new Date(gameDayMs(g)).getFullYear()));
+  if (document.getElementById('view-circle').classList.contains('active')) Object.values(circleSess || {}).forEach(g => { if (g) ys.add(new Date(gameDayMs(g)).getFullYear()); });
   return [...ys].sort((a, b) => b - a);
 }
 function curPeriod() {
   if (!mpPeriod) { try { mpPeriod = localStorage.getItem(MP_PERIOD_KEY); } catch (e) {} }
   const ys = gameYears();
-  const ok = p => p === 'all' || p === '3m' || (/^y\d{4}$/.test(p || '') && ys.includes(+p.slice(1)));
+  const ok = p => p === 'all' || (/^y\d{4}$/.test(p || '') && ys.includes(+p.slice(1)));
   if (!ok(mpPeriod)) mpPeriod = ys.includes(new Date().getFullYear()) ? 'y' + new Date().getFullYear() : 'all';
   return mpPeriod;
 }
@@ -9102,13 +9129,15 @@ function setMpPeriod(p) {
   mpPeriod = p;
   try { localStorage.setItem(MP_PERIOD_KEY, p); } catch (e) {}
   histShowAll = false;
-  if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats(); else renderHistory();
+  if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
+  else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
+  else renderHistory();
 }
 function mpPeriodHtml() {
   const ys = gameYears();
   if (!ys.length) return '';
   const cur = curPeriod();
-  const opts = ys.map(y => ['y' + y, y + '年']).concat([['3m', '直近3か月'], ['all', 'すべて']]);
+  const opts = ys.map(y => ['y' + y, y + '年']).concat([['all', 'すべて']]);
   return `<div class="mp-pills" role="tablist" aria-label="成績の期間">${opts.map(([k, l]) =>
     `<button type="button" role="tab" class="${k === cur ? 'on' : ''}" aria-selected="${k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>`;
 }
@@ -9124,7 +9153,7 @@ function mpStatsInnerHtml(np, m, withMore) {
     if (w <= 0) return '';
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
-  const form = hist.slice(-8).map(h => `<span class="form-chip ${rkCls(h.rank, np)}${h.tie ? ' tie' : ''}">${h.rank}</span>`).join('');
+  const last = hist.slice(-10), sum10 = last.reduce((a, h) => a + (Number(h.sc) || 0), 0);
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
@@ -9133,7 +9162,24 @@ function mpStatsInnerHtml(np, m, withMore) {
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
-    <span class="mc-foot"><small>最近</small><span class="mc-form">${form}</span>${withMore ? `<span class="mc-more">詳しく${ico('chevron', 12)}</span>` : ''}</span>`;
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近${last.length}試合のスコアの推移</small><b class="${scoreCls(sum10)}">${fmtScore(sum10)}</b></span>${miniSparkHtml(last, np)}</span>
+    ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
+}
+// 直近の試合のスコアの推移（0から積み上げた折れ線。点は1試合ごと・色は着順）
+function miniSparkHtml(h, np = 4) {
+  if (!h.length) return '';
+  let cum = 0;
+  const ys = [0].concat(h.map(x => (cum += Number(x.sc) || 0)));
+  const W = 300, H = 56, P = 7;
+  const min = Math.min(...ys), max = Math.max(...ys), span = (max - min) || 1;
+  const x = i => P + (W - 2 * P) * i / Math.max(1, ys.length - 1);
+  const y = v => P + (H - 2 * P) * (1 - (v - min) / span);
+  const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const col = cum >= 0 ? '#1A237E' : '#C62828';
+  const dots = h.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" class="dot ${rkCls(d.rank, np)}"/>`).join('');
+  return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近の試合のスコアの推移">
+    <line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#CFDCD9" stroke-width="1" stroke-dasharray="4 4"/>
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
 }
 function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);

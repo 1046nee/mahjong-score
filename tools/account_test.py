@@ -226,8 +226,8 @@ def main():
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         mt = pg.evaluate("document.getElementById('form-modal-body').innerText")
         pg.evaluate("closeFormModal()")
-        results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・最近）と相手ごとの成績が出る", True,
-                        all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "最近", "相手ごとの成績"])))
+        results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）と相手ごとの成績が出る", True,
+                        all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "スコアの推移", "相手ごとの成績"])))
         # 仲間ページに入れたあとで、試合にメンバーを足して入力した → そのメンバーも結びつけられる
         pg.evaluate(f"""async () => {{ const r = (await db.ref('sessions/{g1}').once('value')).val();
           r.settings.playerNames.push('ろくろう'); r.rounds.push({{ members: [0, 1, 2, 5], points: [40000, 30000, 20000, 10000], scores: [50, 10, -20, -40], at: new Date().toISOString() }});
@@ -358,8 +358,8 @@ def main():
         pg.wait_for_timeout(300)
         top = pg.evaluate("document.getElementById('mp-me').firstElementChild.innerText")
         bar = pg.evaluate("document.getElementById('account-card').innerText")
-        results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・最近）", True,
-                        "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "最近"])))
+        results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）", True,
+                        "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、成績の下に「試合を追加」「まとめて送る」、自分が出た試合（月の見出し）", True,
