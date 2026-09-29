@@ -9413,7 +9413,8 @@ function mpPeriodHtml() {
   if (!ys.length) return '';
   const cur = curPeriod();
   const curY = cur === 'all' ? null : +cur.slice(1, 5);
-  const opts = ys.map(y => ['y' + y, y + '年']).concat([['all', 'すべて']]);
+  // 「すべて」をいちばん左に固定し、その右に新しい年から（年が増えても「すべて」の位置が動かない）
+  const opts = [['all', 'すべて']].concat(ys.map(y => ['y' + y, y + '年']));
   // 年を選んでいるときは、その下に「年間｜1月｜2月…」（試合のある月だけ）
   const months = curY ? gameMonths(curY) : [];
   const mrow = curY ? `<div class="mp-pills mp-months" role="tablist" aria-label="月">${[['y' + curY, '年間']].concat(months.map(mo => [`m${curY}-${String(mo).padStart(2, '0')}`, mo + '月'])).map(([k, l]) =>
