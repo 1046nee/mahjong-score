@@ -9512,7 +9512,8 @@ function gameMonths(y) {
 function curPeriod() {
   if (!mpPeriod) { try { mpPeriod = localStorage.getItem(MP_PERIOD_KEY); } catch (e) {} }
   const ys = gameYears();
-  const ok = p => p === 'all' || (/^[ym]\d{4}/.test(p || '') && ys.includes(+p.slice(1, 5)));
+  if (/^m\d{4}/.test(mpPeriod || '')) mpPeriod = 'y' + mpPeriod.slice(1, 5); // 月ごとの表示はいったんやめた（2026-09-29）。残っている月は、その年に
+  const ok = p => p === 'all' || (/^y\d{4}/.test(p || '') && ys.includes(+p.slice(1, 5)));
   if (!ok(mpPeriod)) mpPeriod = ys.includes(new Date().getFullYear()) ? 'y' + new Date().getFullYear() : 'all';
   return mpPeriod;
 }
@@ -9539,10 +9540,7 @@ function mpPeriodHtml() {
   const curY = cur === 'all' ? null : +cur.slice(1, 5);
   // 「すべて」をいちばん左に固定し、その右に新しい年から（年が増えても「すべて」の位置が動かない）
   const opts = [['all', 'すべて']].concat(ys.map(y => ['y' + y, y + '年']));
-  // 年を選んでいるときは、その下に「年間｜1月｜2月…」（試合のある月だけ）
-  const months = curY ? gameMonths(curY) : [];
-  const mrow = curY ? `<div class="mp-pills mp-months" role="tablist" aria-label="月">${[['y' + curY, '年間']].concat(months.map(mo => [`m${curY}-${String(mo).padStart(2, '0')}`, mo + '月'])).map(([k, l]) =>
-    `<button type="button" role="tab" class="${k === cur ? 'on' : ''}" aria-selected="${k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>` : '';
+  const mrow = ''; // 年の下の「年間｜1月｜2月…」はいったんなし（2026-09-29 ユーザー判断。戻すときは git log）
   return `<div class="mp-pills" role="tablist" aria-label="成績の期間">${opts.map(([k, l]) =>
     `<button type="button" role="tab" class="${k === 'y' + curY || k === cur ? 'on' : ''}" aria-selected="${k === 'y' + curY || k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>${mrow}`;
 }

@@ -154,7 +154,7 @@ def main():
         pg.evaluate("showView('history'); setMpTab('me')")
         pg.wait_for_timeout(500)
         shoot("mypage_me")
-        pg.evaluate("setMpPeriod('m' + new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0'))")
+        pg.evaluate("setMpPeriod('all')")
         shoot("mypage_month", full=False)
         pg.evaluate("setMpPeriod('y' + new Date().getFullYear())")
         pg.evaluate("mpMode = 3; renderHistory()")
