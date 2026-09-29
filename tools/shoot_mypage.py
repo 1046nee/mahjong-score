@@ -180,8 +180,8 @@ def main():
         shoot("mypage_pane_sum")
         pg.evaluate("setMpPane('h2h'); const d = document.querySelector('#mp-pane-h2h details.h2-row'); if (d) d.open = true;")
         shoot("mypage_pane_h2h")
-        pg.evaluate("setMpPane('hist'); histView = 'old'; renderHistoryList()")
-        shoot("mypage_pane_hist_old")
+        pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()")
+        shoot("mypage_pane_hist")
         pg.evaluate("histView = 'new'; histKind = 'all'; mpPane = null; renderHistory()")
         save_canvas("mystats", "buildMyStatsCanvas()")
 

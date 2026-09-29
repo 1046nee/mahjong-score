@@ -416,7 +416,7 @@ def main():
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「試合を追加」「まとめて送る」・形式のピル・並び順、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "すべて", "新しい順", "古い順", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,
@@ -456,7 +456,7 @@ def main():
                         and "対局日 2025/5/10" in pg.evaluate("document.getElementById('game-date').textContent")))
         pg.evaluate("leaveGame()")
         pg.evaluate("showView('history')")
-        pills = pg.evaluate("document.querySelector('.mp-pills') ? document.querySelector('.mp-pills').innerText : ''")
+        pills = pg.evaluate("(() => { const sel = document.querySelector('#mp-stats .mp-period select'); return sel ? [...sel.options].map(o => o.text).join(' ') : ''; })()")  # 期間は1つのボタン（選択肢）
         pg.evaluate("histOthersOpen = true; setMpPeriod('y2025')")
         rows25 = pg.evaluate("document.getElementById('history-body').innerText")
         pg.evaluate("setMpPeriod('all')")

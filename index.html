@@ -726,6 +726,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pills::-webkit-scrollbar { display: none; }
 .mp-pills button { flex: none; height: 32px; padding: 0 14px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mp-pills button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; }
+/* 期間は1つのボタン（黒いピル）。中の select を透明に重ねて、押すと端末の選択肢が開く */
+.mp-period { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 14px; margin: 0 8px 14px 0; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; }
+.mp-period .ico { transform: rotate(90deg); --i1: #fff; --i2: #fff; }
+.mp-period select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
 /* 年の中の月: 年より一段小さく・選んだ月は緑の地（年の黒と区別） */
 .mp-pills.mp-months { margin-top: -4px; gap: 4px; }
 .mp-pills.mp-months button { height: 28px; padding: 0 11px; font-size: 12px; border-color: #E3E9E8; }
@@ -830,7 +834,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht-n .ht-d { margin-left: auto; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .ht-tag { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
 .ht-sc b { font-size: 17px; } .ht-sc b.pos { color: #1A237E; } .ht-sc b.neg { color: #C62828; } .ht-sc b.nil, .ht-sc b:not(.pos):not(.neg) { color: #1F2A28; }
-/* メンバーの成績: 結びついている試合の1行（日付・試合名・その人のスコア） */
+/* メンバーの成績: 連携している試合の1行（日付・試合名・その人のスコア） */
 /* メンバーの成績のシート: 地を選んでいる形式の色に（四麻＝少し緑・三麻＝淡い青）。カード・タイルは白で浮かせる */
 :root { --pc-page: #E6F1EC; }
 .sanma, body.sanma-mode { --pc-page: #EAF0FB; }
@@ -838,11 +842,17 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 #form-modal:has(.pf-sheet) .form-modal-box > div:first-child { background: var(--pc-page) !important; } /* 上に貼り付く見出しも同じ地 */
 .pf-sheet .mc-card.mc-static { background: #fff; box-shadow: var(--sh-1); }
 .pf-sheet .pf-admin { background: #fff; border-radius: 14px; padding: 4px 12px 10px; box-shadow: var(--sh-1); }
-/* 結びついている試合は地の上に直接並べる（一覧は白い行・タイルは白いカードで浮かせる） */
+/* 連携している試合は地の上に直接並べる（一覧は白い行・タイルは白いカードで浮かせる） */
 .pf-sheet .cb-row { background: #fff; border-radius: 12px; padding: 8px 12px; margin-top: 6px; border-top: 0; box-shadow: var(--sh-1); }
-.cb-year { display: flex; align-items: baseline; gap: 8px; margin: 12px 0 2px; font-size: 14px; font-weight: 900; color: #1F2A28; }
-.cb-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; }
-.cb-year + .cb-row { border-top: 0; }
+/* 連携済みの試合の一覧（相手ごとの成績のカードと同じ .hg-card の見せ方で1列に） */
+.cg-list { display: flex; flex-direction: column; gap: 8px; }
+.cg-card { cursor: pointer; padding: 10px 12px; }
+.cg-card:active { opacity: .8; }
+.cg-card .hg-rec small { margin-left: 8px; font-size: 12px; font-weight: 700; }
+.cg-card .hg-rec b.pos { color: #1A237E; } .cg-card .hg-rec b.neg { color: #C62828; } .cg-card .hg-rec b:not(.pos):not(.neg) { color: #1F2A28; }
+.cg-card .gr-opp { margin-top: 6px; }
+.cg-k { width: 22px; height: 22px; margin: 0; } .cg-k .gk-svg { width: 22px; height: 22px; }
+.cg-date { margin-left: auto; flex: none; font-size: 12px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .cb-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: .5px solid #E3E9E8; }
 .cb-row:first-of-type { border-top: 0; }
 .cb-date { flex: none; width: 44px; font-size: 12px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; }
@@ -887,6 +897,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cg-row.cg-out { background: #F6F8F7; }
 .cg-row.cg-out .cg-name { color: #8A9AA5; }
 .h2h-matrix th, .h2h-matrix td { padding-left: 2px; padding-right: 2px; }
+/* くらべるの見出し: 成績カードの範囲の札と同じマーク＋名前 */
+.cmp-h { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 12px; font-weight: 800; color: #1F2A28; }
+.cmp-h > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.cmp-h .ico { --i1: #4F5C5A; --i2: #AEBBB8; flex: none; }
+.pf-sheet .pf-ms .ms-tiles { margin-top: 10px; }
 .mx-nm { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 .h2h-matrix td.mx-rh { overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; font-size: 12px; padding-left: 8px; }
 .h2h-matrix td.mx-rh.me { font-weight: 800; box-shadow: inset 3px 0 0 var(--pc); }
@@ -948,6 +963,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-others summary::-webkit-details-marker { display: none; }
 .gc-box { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--pc-bg); border: 1px solid var(--pc-line); font-size: 13px; color: #1F2A28; line-height: 1.7; }
 .gc-box a { color: var(--pc); font-weight: 800; text-decoration: underline; cursor: pointer; }
+.gc-bind { display: inline-flex; align-items: center; gap: 4px; height: 26px; margin: 4px 0 0 6px; padding: 0 10px 0 8px; border: 1.5px solid var(--pc); border-radius: 13px; background: #fff; color: var(--pc); font-size: 12px; font-weight: 800; cursor: pointer; vertical-align: middle; }
 .gc-by { font-size: 12px; color: #5F6E6B; }
 #game-circles:empty, #detail-circles:empty { display: none; }
 .ms-top .mp-pills { margin-bottom: 8px; }
@@ -995,6 +1011,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .ev { font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .mc-spark .dot { stroke: #fff; stroke-width: 1.2; }
 .mc-spark .dot.dp { fill: #1A237E; } .mc-spark .dot.dn { fill: #C62828; } .mc-spark .dot.dz { fill: #AEBBB8; }
+.spark-yl { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed #8A9AA5; pointer-events: none; }
+.spark-yl em { position: absolute; top: 0; left: 3px; font-style: normal; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
+.mc-spark .yr-l, .spark-yr { stroke: #8A9AA5; stroke-width: 1; stroke-dasharray: 3 3; }
+.mc-spark .yr-t { font-size: 8.5px; font-weight: 800; fill: #5F6E6B; }
 .mc-spark .dt { font-size: 9px; font-weight: 700; fill: #5F6E6B; font-variant-numeric: tabular-nums; }
 .mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
 .mc-foot { justify-content: flex-end; margin-top: 4px; }
@@ -1095,7 +1115,7 @@ button.ios-row:active { background: #F2F6F5; }
 .pill-row, .who-row { display: flex; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 24px 0 16px;
   -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
 .pill-row::-webkit-scrollbar, .who-row::-webkit-scrollbar { display: none; }
-/* 注意の箱（未結びつけ・自分をまだ選んでいない）。オレンジはCTA限定なので琥珀色 */
+/* 注意の箱（未連携・自分をまだ選んでいない）。オレンジはCTA限定なので琥珀色 */
 .warn-box { display: flex; gap: 8px; align-items: flex-start; padding: 12px 14px; background: #FFF8E6; border: 1px solid #F2E3B3; border-radius: 14px; font-size: 13px; color: #8A6D1A; line-height: 1.7; }
 .warn-box .ico { margin-top: 3px; }
 .warn-box a { color: var(--pc); font-weight: 700; text-decoration: underline; cursor: pointer; }
@@ -3000,10 +3020,10 @@ function buildPersonResolver(entries) {
 // circles/{cid} = { id, name, createdAt, owner, roster: {mid: {name, at, uid?}},
 //                   games: {sid: {at, name, addedBy, addedByName, addedAt, seats: {席: {mid, by, byName, at, self}}}}, log }
 // ・見るのは誰でも（閲覧リンク #c=ID。ログイン不要・LINEの中でもそのまま開ける）
-// ・試合の追加・名前の結びつけ・名簿の編集は、ログインして参加したメンバー（circleMembers/{cid}/{uid}）だけ
+// ・試合の追加・名前の連携・名簿の編集は、ログインして参加したメンバー（circleMembers/{cid}/{uid}）だけ
 // ・立場: 作成者（owner）／管理者（admin・作成者が任命）／編集メンバー（editor）
 // ・「本人」の区別: 名簿の人に uid があれば、その人がログインして「これは私」と選んだ＝本人確認済み。
-//   席の結びつけに self:true があれば本人が自分で結びつけた。self の席は本人・作成者・管理者だけが変えられる
+//   席の連携に self:true があれば本人が自分で連携した。self の席は本人・作成者・管理者だけが変えられる
 //   （database.rules.json でも同じ制限をかけている＝画面を細工しても変えられない）
 // ・参加は招待リンク（#join=コード。LINEで押すと外のブラウザで開く＝Googleログインが通る）か参加コードの入力
 const CIRCLE_KEY = 'mahjong-circles-v1';        // この端末で見た仲間ページ（ログインなしでも一覧に出す）
@@ -3039,8 +3059,8 @@ function extractSessionIds(text) {
   while ((m = re.exec(String(text || '')))) if (!out.includes(m[1])) out.push(m[1]);
   return out;
 }
-// 試合での名前を名簿の人に自動で結びつける（全角半角・大文字小文字・空白の違いは同じとみなす）。
-// 仮名A・B…と、名簿にいない名前は null。同じ人を2つの席に結びつけない。戻り値は席の順の mid|null
+// 試合での名前を名簿の人に自動で連携する（全角半角・大文字小文字・空白の違いは同じとみなす）。
+// 仮名A・B…と、名簿にいない名前は null。同じ人を2つの席に連携しない。戻り値は席の順の mid|null
 function autoBindNames(names, roster) {
   const byKey = {};
   Object.entries(roster || {}).forEach(([mid, r]) => {
@@ -3055,7 +3075,7 @@ function autoBindNames(names, roster) {
     return mid;
   });
 }
-// 仲間ページの通算: 名簿の人に結びつけた席だけを数える（ゲスト・未結びつけの席は数えない）。
+// 仲間ページの通算: 名簿の人に連携した席だけを数える（ゲスト・未連携の席は数えない）。
 // sessions = { sid: 試合の中身 }。mode = '4' | '3'（着順の数が違うので混ぜない）
 function circleStats(circle, sessions, mode, inP) {
   const people = {}, acc = {};
@@ -3147,7 +3167,7 @@ function lockCircleGames(sids) {
     }, undefined, false).then(r => { if (r && r.committed && r.snapshot.exists() && circleSess[sid]) circleSess[sid].lockAt = r.snapshot.val().lockAt; }).catch(() => {});
   });
 }
-// 仲間ページで自分（名簿で本人登録した人）に結びついている試合を、自分の「過去の試合」に入れ、その席を「自分」にする。
+// 仲間ページで自分（名簿で本人確認した人）に連携している試合を、自分の「過去の試合」に入れ、その席を「自分」にする。
 // ＝仲間のリンクからログインして自分を選ぶだけで、個人の成績にも入る。
 // ・自分で一覧から削除した試合（削除印）は入れ直さない
 // ・すでに自分の選択（名前・出ていない）がある試合は、その選択を変えない
@@ -3208,7 +3228,7 @@ async function openCircle(cid) {
     lockCircleGames(Object.keys(circleData.games || {}));
     fillMyIdentity();
     syncCircleGamesToMine(false);
-    // 見ているあいだに誰かが追加・結びつけをしたら反映する（名簿・結びつけは数KBなので丸ごと聞いてよい）
+    // 見ているあいだに誰かが追加・連携をしたら反映する（名簿・連携は数KBなので丸ごと聞いてよい）
     circleRef = db.ref('circles/' + cid);
     circleCb = circleRef.on('value', s => {
       if (!s.exists() || circleId !== cid) return;
@@ -3288,7 +3308,7 @@ function openVerifyInfo(mid) {
 async function adminUnclaimCircleMember(mid) {
   const r = rosterOf()[mid];
   if (!r || !r.uid || !isCircleAdmin()) return;
-  if (!confirm(`「${r.name}」の確認済みを外しますか？\n外すと、その人はもう一度名簿で自分を選び直せます（試合の結びつけは残ります）。`)) return;
+  if (!confirm(`「${r.name}」の確認済みを外しますか？\n外すと、その人はもう一度名簿で自分を選び直せます（試合の連携は残ります）。`)) return;
   try {
     await db.ref(`circles/${circleId}/roster/${mid}`).update({ uid: null, gname: null, gphoto: null, gat: null });
     await addCircleLog('claim', `「${r.name}」の確認済みを外しました（作成者・管理者）`);
@@ -3330,7 +3350,7 @@ function revealOnInRows(root) {
     else if (d.left < b.left) r.scrollLeft -= b.left - d.left + 16;
   });
 }
-// 仲間ページの見出しの下: 四麻と三麻を分けて「対戦した人数・ゲーム数・計試合数」（名簿に結びついた人は名簿の人、ほかは名前で数える）
+// 仲間ページの見出しの下: 四麻と三麻を分けて「対戦した人数・ゲーム数・計試合数」（名簿に連携した人は名簿の人、ほかは名前で数える）
 function circleCountsHtml(gids) {
   const row = np => {
     const gs = gids.map(sid => ({ sid, g: circleSess[sid] })).filter(x => x.g && x.g.settings && ((x.g.settings.numPlayers === 3 ? 3 : 4) === np));
@@ -3368,15 +3388,15 @@ function renderCircle() {
     html += `<div class="card askme"><div class="askme-q">結果はログインなしで見られます。<b>Googleでログインすると参加して</b>、名簿で自分を選んで自分の成績に入れたり、試合を追加したりできます。</div>
       <button type="button" class="google-btn" style="margin-top:4px" onclick="startCircleJoin()"><span class="g-mark">G</span>Googleでログインして参加</button></div>`;
   } else if (!currentUser) {
-    html += `<div class="cm-note">見るだけならログインはいりません。${loginAvailable() ? '<b>Googleでログインすると、名簿で自分を選んで、ここでの試合を自分の成績に入れられます。</b>' : ''}試合の追加や名前の結びつけは、招待リンクから参加したメンバーができます。${loginAvailable() ? `<br><a onclick="openJoinByCodePrompt()">参加コードを持っている</a>` : ''}</div>`;
+    html += `<div class="cm-note">見るだけならログインはいりません。${loginAvailable() ? '<b>Googleでログインすると、名簿で自分を選んで、ここでの試合を自分の成績に入れられます。</b>' : ''}試合の追加や名前の連携は、招待リンクから参加したメンバーができます。${loginAvailable() ? `<br><a onclick="openJoinByCodePrompt()">参加コードを持っている</a>` : ''}</div>`;
   } else if (!role && myCircleMid()) {
-    html += `<div class="cm-note">試合の追加や名前の結びつけは、招待リンクか参加コードで参加したメンバーができます。<br><a onclick="openJoinByCodePrompt()">参加コードを入力する</a></div>`;
+    html += `<div class="cm-note">試合の追加や名前の連携は、招待リンクか参加コードで参加したメンバーができます。<br><a onclick="openJoinByCodePrompt()">参加コードを入力する</a></div>`;
   } else if (!myCircleMid()) {
     const cand = Object.entries(roster).filter(([, r]) => r && !r.uid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
     html += `<div class="card askme"><div class="askme-q">この仲間ページで、あなたは名簿のどの人ですか？</div>
       <div class="askme-row">${cand.map(([mid, r]) => `<button type="button" class="askme-chip" onclick="claimCircleMember('${mid}')">${esc(r.name)}</button>`).join('')}
         ${role ? `<button type="button" class="askme-chip" onclick="openClaimNew()">名簿にいない（名前を入れる）</button>` : ''}</div>
-      <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}確認済み</span>の印が付き、その人の結びつけは本人・作成者・管理者しか変えられなくなります。</div></div>`;
+      <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}確認済み</span>の印が付き、その人の連携は本人・作成者・管理者しか変えられなくなります。</div></div>`;
   }
   // 期間（マイページと同じ）＋この仲間ページの中だけでの自分の成績（マイページの成績カードと同じ形・同じ位置）
   renderAccountBar('circle-acct');
@@ -3412,7 +3432,7 @@ function renderCircle() {
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
-  const noBind = `<div style="font-size:13px;color:#5F6E6B">名前を名簿の人に結びつけると、ここに通算が出ます。</div>`;
+  const noBind = `<div style="font-size:13px;color:#5F6E6B">名前を名簿の人と連携すると、ここに通算が出ます。</div>`;
   if (circleTab === 'games') html += circleGamesTabHtml(role, gids, modeChips);
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
   else if (!gids.length) html += noGames;
@@ -3586,7 +3606,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     .sort((a, b) => (b.g ? gameDayMs(b.g) : Date.parse(b.ge.at) || 0) - (a.g ? gameDayMs(a.g) : Date.parse(a.ge.at) || 0));
   // 形式は行に印を付けず、上の「四麻｜三麻」で切り替える（読み込めなかった試合はどちらにも出す）
   const games = all.filter(x => !x.g || String((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === circleMode);
-  const myMid = myCircleMid(); // 名簿で自分が本人登録していれば、自分の結果を出す（出ていない試合は「—」）
+  const myMid = myCircleMid(); // 名簿で自分が本人確認していれば、自分の結果を出す（出ていない試合は「—」）
   // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
     if (!g) return `<div class="gr" onclick="openCircleGameMenu('${sid}')"><div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(ge.name || '')}</span></div>
@@ -3600,7 +3620,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     const me = mySeat != null ? Number(mySeat) : null;
     const rel = relDay(gameDayMs(g));
     const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
-    const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : '';
+    const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未連携 ${nPlayed - nBound}人</span>` : '';
     return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">${gameKindHtml(g)}
       <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}${me == null && myMid ? '<span class="gr-out">出ていない</span>' : ''}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
@@ -3851,7 +3871,7 @@ function circleLogHtml() {
   if (!log.length) return '<div style="font-size:12px;color:#999">まだ変更はありません</div>';
   const undone = new Set(log.filter(e => e.kind === 'undo' && e.undo && e.undo.ref).map(e => e.undo.ref));
   // 試合の「履歴」と同じ形: 日付ごとの見出し＋行は「時刻・種類のタグ・だれが何をしたか」（日付と時刻を同じ欄に詰めると文字が重なる）
-  const TAG = { add_game: ['add', '追加'], remove_game: ['del', '外す'], bind: ['set', '結びつけ'], confirm: ['set', '確認'], rename: ['edit', '名前'],
+  const TAG = { add_game: ['add', '追加'], remove_game: ['del', '外す'], bind: ['set', '連携'], confirm: ['set', '確認'], rename: ['edit', '名前'],
     rename_circle: ['edit', '名前'], merge: ['edit', 'まとめ'], claim: ['add', '本人'], create: ['add', '作成'], join: ['add', '参加'], leave: ['del', '退出'],
     role: ['set', '権限'], code: ['set', 'コード'], undo: ['set', '戻す'] };
   let rows = '', prevDate = null;
@@ -3892,12 +3912,12 @@ async function undoCircleLog(lid) {
     await addCircleLog('undo', `「${e.text}」を元に戻しました`, { ref: lid });
     showToast('元に戻しました');
   } catch (err) {
-    showToast(err && err.message === 'locked' ? '本人が結びつけた内容が含まれるため、本人・作成者・管理者だけが戻せます' : '元に戻せませんでした。通信環境を確認してください', 5000);
+    showToast(err && err.message === 'locked' ? '本人が連携した内容が含まれるため、本人・作成者・管理者だけが戻せます' : '元に戻せませんでした。通信環境を確認してください', 5000);
   }
 }
 
 // ---- 試合の追加 ----
-// 1試合を仲間ページに入れる。名簿と同じ名前は自動で結びつけ、createNew=true なら名簿にいない名前を新しい人として足す。
+// 1試合を仲間ページに入れる。名簿と同じ名前は自動で連携し、createNew=true なら名簿にいない名前を新しい人として足す。
 // 戻り値 { added, already, unbound }
 // 同じ試合は1つの仲間ページに1回だけ（games/{試合ID} がキーなので2件にはならない。ルールでも「無いときだけ作れる」）。
 // ほぼ同時に2人が追加したときに名簿の人が二重にできないよう、試合の登録を先に書き、通ったときだけ名簿に新しい人を足す
@@ -3966,7 +3986,7 @@ function openCircleAddGames() {
     ${rows || '<div style="font-size:12px;color:#999;padding:6px 0">追加できる試合はありません</div>'}
     <div style="font-size:12px;color:#555;line-height:1.7;margin:14px 0 6px"><b>LINEのトークから取り込む</b>：トーク画面の「≡」→「設定」→「トーク履歴を送信」で書き出した文章や、試合のURLを何行でも貼り付けてください。中のまじゃすこの試合を全部拾います。</div>
     <textarea id="cadd-text" rows="4" style="width:100%;font-size:12px;padding:8px;border:1px solid var(--pc-line);border-radius:8px" placeholder="ここに貼り付け"></textarea>
-    <div style="font-size:11px;color:#8a9aa5;margin-top:6px;line-height:1.6">名簿と同じ名前は自動で結びつけ、名簿にいない名前は新しい人として名簿に足します（あとから「同じ人としてまとめる」で直せます）。仮の名前（A・B…）の席は、あとで結びつけてください。</div>
+    <div style="font-size:11px;color:#8a9aa5;margin-top:6px;line-height:1.6">名簿と同じ名前は自動で連携し、名簿にいない名前は新しい人として名簿に足します（あとから「同じ人としてまとめる」で直せます）。仮の名前（A・B…）の席は、あとで連携してください。</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="runCircleAddGames()">追加する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
@@ -3992,7 +4012,7 @@ async function runCircleAddGames() {
   } finally { showLoading(false); }
   await loadCircleSessions();
   renderCircle();
-  showToast(`${added}試合を追加しました${missing ? `（見つからない試合${missing}件）` : ''}${unbound ? `。仮の名前などで未結びつけの席が${unbound}あります` : ''}`, 5000);
+  showToast(`${added}試合を追加しました${missing ? `（見つからない試合${missing}件）` : ''}${unbound ? `。仮の名前などで未連携の席が${unbound}あります` : ''}`, 5000);
   track('circle_add_games', { count: added, pasted: pasted.length });
 }
 // 試合の画面・結果詳細の「仲間ページに追加」
@@ -4006,7 +4026,7 @@ async function openAddToCircle() {
   document.getElementById('form-modal-title').textContent = '仲間ページに追加';
   if (!currentUser) {
     document.getElementById('form-modal-body').innerHTML = `
-      <div style="font-size:13px;color:#555;line-height:1.8">仲間ページへの追加と名前の結びつけは、ログインしたメンバーができます（誰が結びつけたかを残すため）。この試合の点数入力や共有は、ログインしなくても今までどおり使えます。</div>
+      <div style="font-size:13px;color:#555;line-height:1.8">仲間ページへの追加と名前の連携は、ログインしたメンバーができます（誰が連携したかを残すため）。この試合の点数入力や共有は、ログインしなくても今までどおり使えます。</div>
       ${IN_LINE_APP ? '<div class="acct-warn">LINEの中ではGoogleにログインできません。下のボタンでSafari・Chromeに移ってから押してください。</div>' : ''}
       <button type="button" class="google-btn" onclick="closeFormModal();signInWithGoogle()">${IN_LINE_APP ? 'Safari・Chromeで開く' : '<span class="g-mark">G</span>Googleでログイン'}</button>
       <button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal()">閉じる</button>`;
@@ -4041,8 +4061,8 @@ async function addThisGameToCircle(cid) {
     showLoading(false);
     await openCircle(cid);
     if (r.already) { showToast(`この試合は${r.by}さんがすでに追加しています`, 4000); return; }
-    // 名簿にいない名前があれば、その場で結びつけを確かめてもらう（新しい人として足すか、既存の人か）
-    if (r.unbound) openBindEditor(g.id); else showToast('追加しました（名前はすべて名簿の人に結びつけました）', 4000);
+    // 名簿にいない名前があれば、その場で連携を確かめてもらう（新しい人として足すか、既存の人か）
+    if (r.unbound) openBindEditor(g.id); else showToast('追加しました（名前はすべて名簿の人と連携しました）', 4000);
     track('circle_add_game', { unbound: r.unbound });
   } catch (e) {
     showLoading(false);
@@ -4070,9 +4090,26 @@ async function renderGameCircles(g, elId) {
   const el2 = document.getElementById(elId);
   if (!el2) return;
   el2.innerHTML = list.length ? `<div class="gc-box">${ico('people', 18)}<div>${list.map(x =>
-    `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>`).join('<br>')}</div></div>` : '';
+    `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>`
+    + (currentUser ? `<button type="button" class="gc-bind" onclick="openBindFromGame('${esc(x.cid)}','${esc(g.id)}')">${ico('people', 14)}名前の連携</button>` : '')).join('<br>')}</div></div>` : '';
 }
-// ---- 試合ごとのメニューと名前の結びつけ ----
+// スコア画面から、この試合の名前を仲間ページの名簿の人と連携する（仲間ページへ移らずにその場で開く）
+async function openBindFromGame(cid, sid) {
+  if (!currentUser) return;
+  showLoading(true);
+  try {
+    if (circleId !== cid || !circleData) {
+      const snap = await db.ref('circles/' + cid).once('value');
+      if (!snap.exists()) { showToast('仲間ページが見つかりませんでした'); return; }
+      stopCircle();
+      circleId = cid; circleData = snap.val(); circleSess = {}; circleMode = null; circleFocus = null;
+      await loadCircleMembers();
+    }
+    if (!circleRole()) { showToast('名前の連携は、仲間ページに参加したメンバーができます', 4000); return; }
+    await openBindEditor(sid);
+  } catch (e) { showToast('開けませんでした。通信環境を確認してください'); } finally { showLoading(false); }
+}
+// ---- 試合ごとのメニューと名前の連携 ----
 function openCircleGameMenu(sid) {
   const ge = circleData.games[sid];
   const role = circleRole();
@@ -4083,8 +4120,8 @@ function openCircleGameMenu(sid) {
     ${circleSess[sid] ? (role
       ? `<button class="auto-btn sub" onclick="closeFormModal();joinSession('${sid}')">試合を開く（入力・修正）</button>`
       : `<button class="auto-btn sub" onclick="closeFormModal();openWatchGame(circleSess['${sid}'],'circle')">結果を見る</button>`) : ''}
-    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の結びつけ</button>` : ''}
-    ${!role ? '<div class="h2h-note">名前の結びつけは、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
+    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の連携</button>` : ''}
+    ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
     ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>` : ''}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
@@ -4123,22 +4160,22 @@ function renderBindEditor() {
   const g = circleSess[s.sid];
   const roster = Object.entries(rosterOf()).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
   const myMid = myCircleMid();
-  document.getElementById('form-modal-title').textContent = '名前の結びつけ';
+  document.getElementById('form-modal-title').textContent = '名前の連携';
   const rows = s.rows.map((r, idx) => {
     const status = r.cur
       ? (r.cur.self ? `<span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}確認済み</span>` : '')
-      : '<span style="color:#8A6D1A;font-weight:700">まだ結びつけていません</span>';
+      : '<span style="color:#8A6D1A;font-weight:700">まだ連携していません</span>';
     const opts = [`<option value=""${r.sel === '' ? ' selected' : ''}>ゲスト（通算に入れない）</option>`,
       `<option value="new"${r.sel === 'new' ? ' selected' : ''}>＋ 新しい人「${esc(r.name)}」として名簿に追加</option>`]
       .concat(roster.map(([mid, m]) => `<option value="${mid}"${r.sel === mid ? ' selected' : ''}>${esc(m.name)}${m.uid ? '（確認済み）' : ''}${mid === myMid ? '＝あなた' : ''}</option>`)).join('');
     return `<div class="org-row"><div class="org-name">試合での名前: ${esc(r.name)}</div>
       <div class="org-meta">${status}</div>
       <select ${r.locked ? 'disabled' : ''} onchange="bindState.rows[${idx}].sel=this.value">${opts}</select>
-      ${r.locked ? '<div class="org-meta" style="color:#a05a2c">本人が結びつけたため、本人・作成者・管理者だけが変更できます</div>' : ''}</div>`;
+      ${r.locked ? '<div class="org-meta" style="color:#a05a2c">本人が連携したため、本人・作成者・管理者だけが変更できます</div>' : ''}</div>`;
   }).join('');
   document.getElementById('form-modal-body').innerHTML = `
-    <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:4px">「${esc(g.name || '')}」の名前を、名簿の人に結びつけます。自分の席を「あなた」に結びつけると<b>本人</b>の結びつけになります。</div>
-    ${myMid ? '' : '<div class="acct-warn" style="margin-bottom:6px">名簿で「あなた」をまだ選んでいません。仲間ページの上のカードで選ぶと、自分の席を本人として結びつけられます。</div>'}
+    <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:4px">「${esc(g.name || '')}」の名前を、名簿の人と連携します。自分の席を「あなた」と連携すると<b>本人による連携</b>になります。</div>
+    ${myMid ? '' : '<div class="acct-warn" style="margin-bottom:6px">名簿で「あなた」をまだ選んでいません。仲間ページの上のカードで選ぶと、自分の席を本人として連携できます。</div>'}
     ${rows}
     <button class="confirm-btn" style="margin-top:12px" onclick="saveBindEditor()">保存する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
@@ -4148,7 +4185,7 @@ async function saveBindEditor() {
   const g = circleSess[s.sid];
   const at = new Date().toISOString();
   const uid = myUid();
-  // 同じ人を2つの席に結びつけていないか
+  // 同じ人を2つの席に連携ていないか
   const chosen = s.rows.filter(r => r.sel && r.sel !== 'new').map(r => r.sel);
   if (new Set(chosen).size !== chosen.length) { showToast('同じ人が2つの席に選ばれています'); return; }
   closeFormModal();
@@ -4162,7 +4199,7 @@ async function saveBindEditor() {
       newRoster[mid] = { name: String(r.name).slice(0, 60), at };
     });
     if (Object.keys(newRoster).length) await db.ref(`circles/${circleId}/roster`).update(newRoster);
-    // 2) 席の結びつけ（変わった席だけ。自分の席を本人として確かめ直す場合も書く）
+    // 2) 席の連携（変わった席だけ。自分の席を本人として確かめ直す場合も書く）
     const myMid = myCircleMid();
     const upd = {}, before = {}, changes = [];
     s.rows.forEach(r => {
@@ -4177,21 +4214,20 @@ async function saveBindEditor() {
     });
     if (!changes.length) { showToast('変更はありませんでした'); return; }
     await db.ref('circles/' + circleId).update(upd);
-    await addCircleLog('bind', `「${g.name || ''}」の結びつけ: ${changes.join('、')}`, { sid: s.sid, seats: before });
-    showToast('結びつけを保存しました');
+    await addCircleLog('bind', `「${g.name || ''}」の連携: ${changes.join('、')}`, { sid: s.sid, seats: before });
+    showToast('連携を保存しました');
     circleData.games[s.sid] = circleData.games[s.sid] || {};
     circleData.games[s.sid].seats = { ...(circleData.games[s.sid].seats || {}), ...Object.fromEntries(Object.entries(upd).map(([k, v]) => [k.split('/').pop(), v]).filter(([, v]) => v)) };
     setTimeout(() => syncCircleGamesToMine(false), 2600);
     track('circle_bind', { changes: changes.length });
   } catch (e) {
-    showToast('保存できませんでした。本人が結びつけた席は、本人・作成者・管理者だけが変更できます', 5000);
+    showToast('保存できませんでした。本人が連携した席は、本人・作成者・管理者だけが変更できます', 5000);
   }
 }
 
 // ---- 名簿の人のページ ----
-let cmBoundView = 'list', cmBoundOpen = false, cmLastMid = null; // メンバーの成績の「結びついている試合」: 一覧｜タイル・開いているか
+let cmBoundView = 'list'; // メンバーの成績の「連携済みの試合」: 一覧｜タイル
 function openCircleMember(mid) {
-  if (cmLastMid !== mid) { cmBoundOpen = false; cmLastMid = mid; }
   const r = rosterOf()[mid];
   if (!r) return;
   const role = circleRole();
@@ -4209,8 +4245,9 @@ function openCircleMember(mid) {
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
+      + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist })}</div>` // 個人ページの「成績」と同じタイル＋推移
     : `<div class="pf-stats" style="font-size:13px;color:#5F6E6B">${modes.length > 1 ? 'この形式の' : ''}試合はまだありません</div>`;
-  // この人に結びついている席
+  // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
     const g = circleSess[sid];
@@ -4227,18 +4264,27 @@ function openCircleMember(mid) {
   bound.sort((a, b) => b.ms - a.ms); // 打った日の新しい順
   const unconfirmed = bound.filter(b => !b.stt.self).length;
   // 一覧（日付・試合名・試合での名前・その人のスコア）とタイル（試合数の代わりにその人のスコア）を切り替える
-  const boundSeg = bound.length ? `<div class="seg xs" role="tablist" aria-label="結びついている試合の見せ方" style="margin:0 0 8px">${[['list', '一覧'], ['tile', 'タイル']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${cmBoundView === k ? 'on' : ''}" aria-selected="${cmBoundView === k}" onclick="cmBoundView='${k}';cmBoundOpen=true;openCircleMember('${mid}')">${l}</button>`).join('')}</div>` : '';
+  const boundSeg = bound.length ? `<div class="seg xs" role="tablist" aria-label="連携済みの試合の見せ方" style="margin:0 0 4px">${[['list', '一覧'], ['tile', 'タイル']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${cmBoundView === k ? 'on' : ''}" aria-selected="${cmBoundView === k}" onclick="cmBoundView='${k}';openCircleMember('${mid}')">${l}</button>`).join('')}</div>` : '';
+  // 一覧: 相手ごとの成績のカードと同じ雰囲気（名前・大きな数字・小さな補足）。1枚＝1ゲーム。その人のスコア・順位・人数・試合数・相手
+  const cgCard = b => {
+    const g = b.g;
+    if (!g) return `<div class="hg-card cg-card"><div class="hg-top"><span class="hg-name">${esc(b.gname)}</span></div><div class="hg-meta"><span>読み込めませんでした</span></div></div>`;
+    const d = new Date(b.ms), played = playedFlags(g), tot = gameTotals(g);
+    const nP = played.filter(Boolean).length, nr = (g.rounds || []).length, gnp = g.settings.numPlayers === 3 ? 3 : 4;
+    const rank = b.score == null ? null : 1 + played.reduce((a, pl, i) => a + (pl && tot[i] > tot[b.seat] ? 1 : 0), 0);
+    return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="closeFormModal();openCircleGameMenu('${b.sid}')">
+      <div class="hg-top">${gameKindHtml(g).replace('class="gk ', 'class="gk cg-k ')}<span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
+      <div class="hg-rec">${b.score == null ? '<b>—</b><span>出ていない</span>' : `<b class="${scoreCls(b.score)}">${fmtScore(b.score)}</b><span>pts</span><small>${rank}位 / ${nP}人</small>`}</div>
+      <div class="hg-meta"><span>${nr}試合 ・ ${nP}人${nP > gnp ? `（${gnp}人卓）` : ''}</span></div>
+      ${oppLineHtml(g, b.score == null ? null : b.seat)}
+    </div>`;
+  };
+  const byYear = [];
+  bound.forEach(b => { const y = new Date(b.ms).getFullYear(); let e = byYear[byYear.length - 1]; if (!e || e.y !== y) byYear.push(e = { y, list: [] }); e.list.push(b); });
   const boundHtml = cmBoundView === 'tile'
     ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `closeFormModal();openCircleGameMenu('${b.sid}')` })))
-    : bound.map((b, i) => {
-      const d = new Date(b.ms), y = d.getFullYear();
-      const yh = (i === 0 || new Date(bound[i - 1].ms).getFullYear() !== y) ? `<div class="cb-year">${y}年<span>${bound.filter(x => new Date(x.ms).getFullYear() === y).length}件</span></div>` : '';
-      return `${yh}<div class="cb-row"><span class="cb-date">${d.getMonth() + 1}/${d.getDate()}</span>
-        <div class="cb-main"><div class="org-name" style="font-size:13px">${esc(b.gname)}</div>
-        <div class="org-meta">試合での名前「${esc(b.seatName)}」 ${b.stt.self ? ` ・ <span class="cm-badge self" style="margin-left:0">${ico('verified', 12)}確認済み</span>` : ''}</div></div>
-        <span class="cb-sc ${b.score == null ? 'nil' : scoreCls(b.score)}">${b.score == null ? '—' : fmtScore(b.score)}</span></div>`;
-    }).join('');
+    : byYear.map(e => `<div class="ht-year">${e.y}年<span>${e.list.length}件</span></div><div class="cg-list">${e.list.map(cgCard).join('')}</div>`).join('');
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
   const rk = idx + 1;
@@ -4262,11 +4308,11 @@ function openCircleMember(mid) {
     ${modeChips}${statHtml}
     ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績とくらべる${ico('chevron', 12)}</button>` : ''}
     ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : ''}
-    <details class="pf-more"${cmBoundOpen ? ' open' : ''} ontoggle="cmBoundOpen=this.open"><summary>結びついている試合（${bound.length}）${ico('chevron', 14)}</summary>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B;padding-bottom:10px">なし</div>'}</details>
-    ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人として登録）</button>` : ''}
-      ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が結びつけた${unconfirmed}件を、本人として確認する</button>` : ''}
+    <div class="pf-h">連携済みの試合（${bound.length}）</div>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B">まだありません</div>'}
+    ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
+      ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が連携した${unconfirmed}件を、本人として確認する</button>` : ''}
       ${admin}
-      ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人が登録した人の名前の変更・まとめは、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
+      ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人確認済みの人の名前の変更・まとめは、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
   updateScrollHints();
@@ -4290,20 +4336,20 @@ async function claimCircleMember(mid) {
     circleData.roster[mid].uid = uid;
     fillMyIdentity(); // 顔アイコン・表示名は別に書く（確認済みにすること自体は、これが書けなくても通す）
     if (circleMembers && circleMembers[uid]) { circleMembers[uid].mid = mid; circleMembers[uid].name = rosterName(mid); }
-    await addCircleLog('claim', `名簿の「${rosterName(mid)}」を本人として登録しました`);
+    await addCircleLog('claim', `名簿の「${rosterName(mid)}」を本人確認しました`);
     renderCircle();
-    // すでに誰かが結びつけている席を、本人の結びつけに切り替えるか聞く
+    // すでに誰かが連携している席を、本人による連携に切り替えるか聞く
     const n = Object.values(circleData.games || {}).reduce((a, ge) => a + Object.values((ge && ge.seats) || {}).filter(s => s && s.mid === mid && !s.self).length, 0);
-    // 自分に結びついている試合は、確認の返事を待たずに自分の過去の試合へ（個人の成績に入れる）
+    // 自分に連携している試合は、確認の返事を待たずに自分の過去の試合へ（個人の成績に入れる）
     const synced = syncCircleGamesToMine(true);
-    if (n) confirmMySeats(); else showToast(synced ? '本人として登録しました。仲間ページのあなたの試合は個人の成績にも入ります' : '本人として登録しました', 4000);
-  } catch (e) { showToast('登録できませんでした。ほかの人がすでに本人として登録しています', 5000); }
+    if (n) confirmMySeats(); else showToast(synced ? '本人確認しました。仲間ページのあなたの試合は個人の成績にも入ります' : '本人確認しました', 4000);
+  } catch (e) { showToast('本人確認できませんでした。ほかの人がすでに本人確認しています', 5000); }
 }
 function openClaimNew() {
   document.getElementById('form-modal-title').textContent = '名簿に自分を追加';
   document.getElementById('form-modal-body').innerHTML = `
     <div class="field"><label>名簿での名前（試合で使う名前）</label><input type="text" id="cm-newname" maxlength="${MAX_NAME_LEN}" placeholder="例: むにぃ"></div>
-    <button class="confirm-btn" onclick="claimNewMember()">追加して本人として登録</button>
+    <button class="confirm-btn" onclick="claimNewMember()">追加して本人確認する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -4312,7 +4358,7 @@ async function claimNewMember() {
   if (!name) { showToast('名前を入れてください'); return; }
   const dup = Object.entries(rosterOf()).find(([, r]) => personKey(r.name) === personKey(name));
   closeFormModal();
-  if (dup) { if (dup[1].uid) { showToast('同じ名前の人がすでに本人として登録しています'); return; } return claimCircleMember(dup[0]); }
+  if (dup) { if (dup[1].uid) { showToast('同じ名前の人がすでに本人確認しています'); return; } return claimCircleMember(dup[0]); }
   const mid = randStr(8, MID_CHARS);
   try {
     await db.ref(`circles/${circleId}/roster/${mid}`).set({ name, at: new Date().toISOString() });
@@ -4320,7 +4366,7 @@ async function claimNewMember() {
     await claimCircleMember(mid);
   } catch (e) { showToast('追加できませんでした'); }
 }
-// 自分に結びついているのに本人の確認がない席を、本人の結びつけに書き直す
+// 自分に連携しているのに本人の確認がない席を、本人による連携に書き直す
 async function confirmMySeats() {
   const mid = myCircleMid();
   if (!mid) return;
@@ -4331,16 +4377,16 @@ async function confirmMySeats() {
   }));
   const n = Object.keys(upd).length;
   if (!n) return;
-  if (!confirm(`ほかの人があなた（${rosterName(mid)}）に結びつけた試合が${n}件あります。自分の試合として確認しますか？\n確認すると、その結びつけは本人・作成者・管理者しか変えられなくなります。`)) return;
+  if (!confirm(`ほかの人があなた（${rosterName(mid)}）と連携した試合が${n}件あります。自分の試合として確認しますか？\n確認すると、その連携は本人・作成者・管理者しか変えられなくなります。`)) return;
   try {
     await db.ref('circles/' + circleId).update(upd);
-    await addCircleLog('confirm', `${n}件の結びつけを本人として確認しました`);
+    await addCircleLog('confirm', `${n}件の連携を本人確認しました`);
     showToast(`${n}件を本人として確認しました`);
     setTimeout(() => syncCircleGamesToMine(false), 2600);
   } catch (e) { showToast('確認できませんでした'); }
 }
 async function unclaimCircleMember(mid) {
-  if (!confirm('確認済みを外して、名簿で自分を選び直しますか？（試合の結びつけは残ります）')) return;
+  if (!confirm('確認済みを外して、名簿で自分を選び直しますか？（試合の連携は残ります）')) return;
   try {
     const upd = { [`circles/${circleId}/roster/${mid}/uid`]: null, [`circles/${circleId}/roster/${mid}/gname`]: null,
       [`circles/${circleId}/roster/${mid}/gphoto`]: null, [`circles/${circleId}/roster/${mid}/gat`]: null };
@@ -4359,17 +4405,17 @@ async function renameCircleMember(mid) {
     await db.ref(`circles/${circleId}/roster/${mid}/name`).set(name);
     await addCircleLog('rename', `名簿の名前: ${before} → ${name}`, { mid, before });
     showToast('名前を変更しました');
-  } catch (e) { showToast('変更できませんでした（本人が登録した人は、本人・作成者・管理者だけが変更できます）', 5000); }
+  } catch (e) { showToast('変更できませんでした（本人確認済みの人は、本人・作成者・管理者だけが変更できます）', 5000); }
 }
 async function mergeCircleMember(mid) {
   const into = document.getElementById('cm-merge').value;
   const from = rosterOf()[mid], to = rosterOf()[into];
   if (!from || !to) return;
-  if (from.uid) { showToast(to.uid ? '本人として登録された2人はまとめられません' : `本人が登録した人は消せないので、反対に「${to.name}」のページから「${from.name}」にまとめてください`, 6000); return; }
-  // 付け替える席に、変更できない（本人が結びつけた）席がないか
+  if (from.uid) { showToast(to.uid ? '本人確認済みの2人はまとめられません' : `本人確認済みの人は消せないので、反対に「${to.name}」のページから「${from.name}」にまとめてください`, 6000); return; }
+  // 付け替える席に、変更できない（本人が連携した）席がないか
   const seats = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => Object.entries((ge && ge.seats) || {}).forEach(([seat, s]) => { if (s && s.mid === mid) seats.push({ sid, seat, s }); }));
-  if (seats.some(x => !canChangeSeat(x.s))) { showToast('本人が結びつけた試合が含まれるため、本人・作成者・管理者だけがまとめられます', 5000); return; }
+  if (seats.some(x => !canChangeSeat(x.s))) { showToast('本人が連携した試合が含まれるため、本人・作成者・管理者だけがまとめられます', 5000); return; }
   if (!confirm(`「${from.name}」の試合${seats.length}件を「${to.name}」に付け替えて、名簿から「${from.name}」を消します。よろしいですか？`)) return;
   closeFormModal();
   try {
@@ -4426,7 +4472,7 @@ async function openCircleSettings() {
   document.getElementById('form-modal-body').innerHTML = `
     <div class="field"><label>仲間ページの名前</label><div style="display:flex;gap:6px"><input type="text" id="cs-name" value="${esc(circleData.name || '')}" maxlength="${MAX_GROUP_LEN}" style="flex:1;min-width:0"><button type="button" class="edit-tab" onclick="renameCircle()">変更</button></div></div>
     <div class="card-title" style="margin:10px 0 4px">メンバーと権限</div>
-    <div class="org-meta" style="margin-bottom:4px">管理者は、本人が結びつけた試合や本人が登録した人の名前も変更できます。${owner ? '権限は作成者だけが変えられます。' : ''}</div>
+    <div class="org-meta" style="margin-bottom:4px">管理者は、本人が連携した試合や本人確認済みの人の名前も変更できます。${owner ? '権限は作成者だけが変えられます。' : ''}</div>
     ${memberRows}
     ${owner ? `<button class="auto-btn sub" style="margin-top:10px" onclick="regenerateCircleCode()">参加コードを作り直す（古い招待リンクは使えなくなります）</button>` : ''}
     ${owner ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
@@ -4498,7 +4544,7 @@ async function leaveCircle() {
     showToast('抜けました');
   } catch (e) { showToast('抜けられませんでした'); }
 }
-// 新しい仲間ページを作る（作った人が作成者。自分の名前を名簿に入れて本人として登録する）
+// 新しい仲間ページを作る（作った人が作成者。自分の名前を名簿に入れて本人確認する）
 function openCreateCircle() {
   if (!currentUser) { openAddToCircleLogin(); return; }
   document.getElementById('form-modal-title').textContent = '仲間ページを作る';
@@ -4513,7 +4559,7 @@ function openCreateCircle() {
 function openAddToCircleLogin() {
   document.getElementById('form-modal-title').textContent = 'ログインが必要です';
   document.getElementById('form-modal-body').innerHTML = `
-    <div style="font-size:13px;color:#555;line-height:1.8">仲間ページを作る・参加する・試合を追加するには、Googleでログインしてください（誰が結びつけたかを残すため）。見るだけならログインはいりません。</div>
+    <div style="font-size:13px;color:#555;line-height:1.8">仲間ページを作る・参加する・試合を追加するには、Googleでログインしてください（誰が連携したかを残すため）。見るだけならログインはいりません。</div>
     ${IN_LINE_APP ? '<div class="acct-warn">LINEの中ではGoogleにログインできません。下のボタンでSafari・Chromeに移ってから押してください。</div>' : ''}
     <button type="button" class="google-btn" onclick="closeFormModal();signInWithGoogle()">${IN_LINE_APP ? 'Safari・Chromeで開く' : '<span class="g-mark">G</span>Googleでログイン'}</button>
     <button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal()">閉じる</button>`;
@@ -4679,7 +4725,7 @@ function renderJoin() {
       <div class="invite-code">${fmtInviteCode(joinCode)}</div>
       <button class="edit-tab" onclick="copyText('${fmtInviteCode(joinCode)}','参加コードをコピーしました')">コードをコピー</button>`;
   } else if (!currentUser) {
-    main = `<div style="font-size:13px;color:#555;line-height:1.8">参加すると、試合の追加や名前の結びつけができます（誰が結びつけたかを残すため、Googleでのログインが必要です）。ログインしたら、自動でこの画面に戻って参加します。</div>
+    main = `<div style="font-size:13px;color:#555;line-height:1.8">参加すると、試合の追加や名前の連携ができます（誰が連携したかを残すため、Googleでのログインが必要です）。ログインしたら、自動でこの画面に戻って参加します。</div>
       <button type="button" class="google-btn" onclick="startJoinLogin()"><span class="g-mark">G</span>Googleでログインして参加</button>`;
   } else if (joinBusy) {
     main = `<div style="font-size:13px;color:#555">参加しています…</div>`;
@@ -9263,10 +9309,10 @@ function msCompareHtml(np) {
   if (cols.length < 2) return '';
   const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top)], ['連対率', r => pctText(r.ren)],
     ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score)], ['1試合平均', r => fmtScore(r.per), r => scoreCls(r.per)]];
-  const w = 84, cw = 84;
+  const w = 84, cw = 96; // 列（範囲）が増えると表が画面より広くなり、横にスクロールして見る
   return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
     <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
-      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}"><span class="mx-nm">${esc(c2.label)}</span></th>`).join('')}</tr></thead>
+      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}"><span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span></th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, f, cls]) => `<tr><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
@@ -9279,7 +9325,7 @@ function msModeHtml(np, m) {
 function msGamesHtml(st) {
   const all = st.groups.map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
   const kinds = histKindPillsHtml(all.map(x => x.g), 'renderMyStats()');
-  const gs = all.filter(x => histKindMatch(x.g, histKind)).sort((a, b) => histView === 'old' ? a.gr.ms - b.gr.ms : b.gr.ms - a.gr.ms);
+  const gs = all.filter(x => histKindMatch(x.g, histKind)).sort((a, b) => b.gr.ms - a.gr.ms);
   const seg = `${kinds}<div class="hist-viewseg" style="margin-bottom:4px">${histOrderSegHtml('renderMyStats()')}</div>`;
   if (!gs.length) return seg + `<div class="ms-empty">この範囲の試合はありません</div>`;
   if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openHistMenu('${esc(x.g.id)}')` })));
@@ -9398,6 +9444,10 @@ function sparkHtml(hist) {
   const col = end >= 0 ? '#1A237E' : '#C62828';
   const id = 'spk' + (++sparkSeq);
   const area = `M${x(0).toFixed(1)},${zero} L${pts.join(' L')} L${x(ys.length - 1).toFixed(1)},${zero} Z`;
+  // 年の切り替わり（成績カードの推移と同じ見せ方: 縦の点線＋「2026年」）
+  const yOf = h => new Date(h.t).getFullYear();
+  const yrs = hist.map((h, i) => (i === 0 || !h.t || !hist[i - 1].t || yOf(h) === yOf(hist[i - 1])) ? ''
+    : `<span class="spark-yl" style="left:${((x(i) + x(i + 1)) / 2 / W * 100).toFixed(2)}%"><em>${yOf(h)}年</em></span>`).join('');
   return `<div class="st-block"><div class="st-cap">スコアの推移<span>${hist.length}試合 ・ 通算 <b class="${scoreCls(end)}">${fmtScore(end)}</b></span></div>
     <div class="spark-wrap"><svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
       <defs><clipPath id="${id}u"><rect x="0" y="0" width="${W}" height="${zero}"/></clipPath><clipPath id="${id}d"><rect x="0" y="${zero}" width="${W}" height="${H}"/></clipPath></defs>
@@ -9405,7 +9455,7 @@ function sparkHtml(hist) {
       <path d="${area}" fill="#C62828" fill-opacity=".10" clip-path="url(#${id}d)"/>
       <line x1="${P}" x2="${W - P}" y1="${zero}" y2="${zero}" stroke="#C9D3D1" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
       <polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    </svg><span class="spark-dot" style="left:${(x(ys.length - 1) / W * 100).toFixed(2)}%;top:${(y(end) / H * 100).toFixed(2)}%;background:${col}"></span></div></div>`;
+    </svg><span class="spark-dot" style="left:${(x(ys.length - 1) / W * 100).toFixed(2)}%;top:${(y(end) / H * 100).toFixed(2)}%;background:${col}"></span>${yrs}</div></div>`;
 }
 // 直接対決の勝ち負けの棒（左の青＝勝ち・右の赤＝負け。中央の線が五分。引き分けは除く）
 function wlBarHtml(e) {
@@ -9620,8 +9670,10 @@ function mpPeriodHtml() {
   // 「すべて」をいちばん左に固定し、その右に新しい年から（年が増えても「すべて」の位置が動かない）
   const opts = [['all', 'すべて']].concat(ys.map(y => ['y' + y, y + '年']));
   const mrow = ''; // 年の下の「年間｜1月｜2月…」はいったんなし（2026-09-29 ユーザー判断。戻すときは git log）
-  return `<div class="mp-pills" role="tablist" aria-label="成績の期間">${opts.map(([k, l]) =>
-    `<button type="button" role="tab" class="${k === 'y' + curY || k === cur ? 'on' : ''}" aria-selected="${k === 'y' + curY || k === cur}" onclick="setMpPeriod('${k}')">${l}</button>`).join('')}</div>${mrow}`;
+  // 1つのボタンで選ぶ（押すと端末の選択肢が開く）。見た目は黒いピル＋▾
+  const curK = cur === 'all' ? 'all' : 'y' + curY;
+  return `<label class="mp-period"><span>${esc((opts.find(([k]) => k === curK) || opts[0])[1])}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="setMpPeriod(this.value)">${opts.map(([k, l]) =>
+    `<option value="${k}"${k === curK ? ' selected' : ''}>${l}</option>`).join('')}</select></label>${mrow}`;
 }
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
@@ -9709,8 +9761,14 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   // 点の色＝その日のスコアの正負（プラス＝紺・マイナス＝赤・0＝灰）
   const dots = days.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
   const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.d.getMonth() + 1}/${d.d.getDate()}</text>`).join('');
+  // 年の切り替わり: 前の日と年が違う点の手前に縦の点線と「2026年」（スコアの推移のグラフは全部この見せ方）
+  const years = days.map((d, i) => {
+    if (i === 0 || d.d.getFullYear() === days[i - 1].d.getFullYear()) return '';
+    const xm = ((x(i) + x(i + 1)) / 2).toFixed(1);
+    return `<line x1="${xm}" x2="${xm}" y1="${T - 2}" y2="${H - B + 4}" class="yr-l"/><text x="${(+xm + 3).toFixed(1)}" y="${T + 5}" class="yr-t">${d.d.getFullYear()}年</text>`;
+  }).join('');
   return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近${days.length}日の通算スコアの推移。最後は${fmtScore(end)}">${grid}
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${dates}</svg>`;
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}${dates}</svg>`;
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
 // （スコア記録の画面と同じ切り替え。色は CSS の --pc… が .sanma で青になる。ヘッダー・シートは body.sanma-mode＝syncSanmaBody）
@@ -9913,7 +9971,6 @@ function renderHistoryList() {
   const kindHtml = histKindPillsHtml(list.map(x => x.g), 'renderHistoryList()');
   if (kindEl) kindEl.innerHTML = kindHtml;
   list = list.filter(x => histKindMatch(x.g, histKind));
-  if (histView === 'old') list.reverse();
   const vs = document.getElementById('hist-viewseg');
   if (vs) vs.innerHTML = histOrderSegHtml('renderHistoryList()');
   const modeName = histKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === histKind)[1] + 'の';
@@ -9959,7 +10016,7 @@ function renderHistoryList() {
 }
 
 // ---- まとめて送る（選んだ試合の名前とURLを1つの文にしてLINEへ。受け取った人は「試合を追加」に貼るだけ） ----
-let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = 'new'; // histView: 並び順 new｜old｜cal
+let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = 'new'; // histView: 見せ方 new（一覧＝新しい順）｜cal｜tile
 // 過去の試合の形式の絞り込み。複数人＝席より多い人数で回した試合（行の印の人数の丸と同じ）
 let histKind = 'all';
 const HIST_KINDS = [['all', 'すべて'], ['4', '四麻'], ['3', '三麻'], ['multi', '複数人'], ['team', 'チーム戦']];
@@ -9971,7 +10028,7 @@ function histKindPillsHtml(games, rerender) {
     `<button type="button" role="tab" class="${histKind === k ? 'on' : ''}" aria-selected="${histKind === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="histKind='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
 function histOrderSegHtml(rerender) {
-  return `<div class="seg xs" role="tablist" aria-label="過去の試合の並び順">${[['new', '新しい順'], ['old', '古い順'], ['cal', 'カレンダー'], ['tile', 'タイル']].map(([k, l]) =>
+  return `<div class="seg xs" role="tablist" aria-label="過去の試合の並び順">${[['new', '一覧'], ['cal', 'カレンダー'], ['tile', 'タイル']].map(([k, l]) =>
     `<button type="button" role="tab" class="${histView === k ? 'on' : ''}" aria-selected="${histView === k}" onclick="histView='${k}';${rerender}">${l}</button>`).join('')}</div>`;
 }
 // タイル: 試合名と試合数だけの小さな正方形を新しい順に敷き詰める。空（0試合）と少ない（3試合以下）の試合を目立たせ、
