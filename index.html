@@ -749,8 +749,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-head > span { flex: none; margin-left: 8px; }
 .mc-card.s3 .mc-head b { color: #4261AA; }
 .mc-head span { font-size: 12px; color: #5F6E6B; font-weight: 700; }
-.mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 10px; }
-.mc-grid > span { display: block; }
+.mc-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px 12px; margin-bottom: 10px; }
+.mc-grid > span { display: block; grid-column: span 3; min-width: 0; } /* 上の段: 平均着順・通算スコア（大） */
+.mc-grid > span:nth-child(n+3) { grid-column: span 2; } /* 下の段: トップ率・連対率・ラス回避 */
 .mc-grid small { display: block; font-size: 11px; color: #5F6E6B; font-weight: 700; }
 .mc-grid b { display: block; font-size: 24px; font-weight: 900; color: #1F2A28; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .mc-grid b.sm { font-size: 18px; }
@@ -909,6 +910,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cg-row.cg-out .cg-name { color: #8A9AA5; }
 .h2h-matrix th, .h2h-matrix td { padding-left: 2px; padding-right: 2px; }
 /* くらべるの見出し: 成績カードの範囲の札と同じマーク＋名前 */
+.grid-cmp td { font-size: 12.5px !important; padding: 9px 2px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid-cmp td.sticky-col { font-size: 12px !important; padding-left: 8px !important; }
+.grid-cmp th { font-size: 11.5px !important; overflow-wrap: anywhere; }
 .rounds-table th.th-link { cursor: pointer; }
 .rounds-table th.th-link:active { opacity: .6; }
 .cmp-h { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 12px; font-weight: 800; color: #1F2A28; }
@@ -989,6 +993,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-h { font-size: 13px; font-weight: 900; color: #1F2A28; margin: 16px 2px 6px; }
 .ms-note { font-size: 11px; color: #5F6E6B; margin: 6px 2px 0; line-height: 1.6; }
 .ms-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+/* 点数の細かい数字（1枚・3列×2段。列の間に細い線） */
+.ms-pts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; padding: 10px 4px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
+.mp-col { display: flex; flex-direction: column; gap: 6px; padding: 0 10px; min-width: 0; }
+.mp-col + .mp-col { border-left: .5px solid #E3E9E8; }
+.mp-it { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; height: 20px; min-width: 0; }
+.mp-it span { flex: none; font-size: 10.5px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
+.mp-it b { font-size: 13.5px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-it b.pos { color: #1A237E; } .mp-it b.neg { color: #C62828; }
 .ms-tiles5 { grid-template-columns: repeat(6, 1fr); } .ms-tiles5 > .ms-tile { grid-column: span 2; } .ms-tiles5 > .ms-tile:nth-child(n+4) { grid-column: span 3; } /* 3・2・2 の3段 */
 .ms-tile { background: #fff; border-radius: 12px; padding: 8px 6px; text-align: center; box-shadow: var(--sh-1); min-width: 0; }
 .ms-tile span { display: block; height: 15px; line-height: 15px; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
@@ -3569,13 +3581,14 @@ function circleGridHtml(st, forImage = false) {
   add('通算スコア', L.map(p => p.score), fmtScore, null, 'cat-break', h2hColor);
   add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor);
   add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor);
-  add('箱下', L.map(p => boxOf(p)), v => v + '回');
-  add('5万点超', L.map(p => overOf(p)), v => v + '回');
   add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
   add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
+  add('箱下', L.map(p => boxOf(p)), v => v + '回');
+  add('5万点超', L.map(p => overOf(p)), v => v + '回');
   const w = forImage ? 90 : 76;
   // 画面も画像も同じ明るい見出し（.tbl-soft）。画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
-  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 60}px">
+  // 数字は1行で収まる大きさ（12.5px）にし、列の幅を最も長い値（「-1,234.0」「45,000」）が入る72pxにする（スコアの表と同じく、はみ出す代わりに横スクロール）
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft grid-cmp" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 72}px">
     <thead><tr><th class="sticky-col" style="width:${w}px">メンバー</th>${L.map(p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
@@ -4283,7 +4296,7 @@ function openCircleMember(mid) {
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
       + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over })}</div>` // 個人ページの「成績」と同じタイル＋推移
     : `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, '', `${rosterName(mid)}さんの${np === 3 ? '三麻' : '四麻'}の成績はありません。`)}</div>`
-      + `<div class="pf-ms"><div class="ms-tiles ms-tiles5">${['連対率', '素点', '順位点', '最高点数', '最低点数', '箱下', '5万点超'].map(l => `<div class="ms-tile"><span>${l}</span><b style="color:#AEBBB8">—</b></div>`).join('')}</div><div class="ms-panel">${sparkEmptyHtml()}</div></div>`; // 成績が無くても同じ形（切り替えで画面が動かない）
+      + `<div class="pf-ms">${msPtsEmptyHtml()}</div>`; // 成績が無くても同じ形（切り替えで画面が動かない）
   // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
@@ -4340,7 +4353,7 @@ function openCircleMember(mid) {
       ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
       ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す</button>` : ''}
     </div>` : '';
-  document.getElementById('form-modal-title').textContent = r.name || 'メンバーの成績'; // 名簿に登録されている名前
+  document.getElementById('form-modal-title').textContent = `${r.name || 'メンバー'}の成績`; // 名簿に登録されている名前＋「の成績」
   // .sheet-body で包むとスマホでは下から出るボトムシートになる
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet">
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
@@ -9371,14 +9384,23 @@ function msCompareHtml(np) {
       <tbody>${rows.map(([label, f, cls]) => `<tr><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
+// 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜箱下・5万点超）。スコアの推移は2026-09-30にやめた
+function msPtsHtml(...cols) {
+  return `<div class="ms-pts">${cols.map(col => `<div class="mp-col">${col.map(([l, v, cls]) => `<div class="mp-it"><span>${l}</span><b class="${cls || ''}">${v}</b></div>`).join('')}</div>`).join('')}</div>`;
+}
+function msPtsEmptyHtml() {
+  const d = '<b style="color:#AEBBB8">—</b>';
+  return `<div class="ms-pts">${[['素点', '順位点'], ['最高点数', '最低点数'], ['箱下', '5万点超']].map(col => `<div class="mp-col">${col.map(l => `<div class="mp-it"><span>${l}</span>${d}</div>`).join('')}</div>`).join('')}</div>`;
+}
 function msModeHtml(np, m) {
   const r = msRow(np, m), hist = sortHist(m.hist);
   const tile = (l, v, cls = '') => `<div class="ms-tile"><span>${l}</span><b class="${cls}">${v}</b></div>`;
   // 上の段: 連対率・素点・順位点／下の段: 最高点数・最低点数（素点＋順位点＝通算スコア。点数の記録が無い試合は素点・順位点に入らない）
   const pv = v => v == null ? '—' : fmtScore(v), pc = v => v == null ? '' : scoreCls(v);
   const cv = v => v == null ? '—' : v + '回';
-  return `<div class="ms-tiles ms-tiles5">${tile('連対率', pctText(r.ren))}${tile('素点', pv(r.raw), pc(r.raw))}${tile('順位点', pv(r.rp), pc(r.rp))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}${tile('箱下', cv(r.box))}${tile('5万点超', cv(r.over))}</div>
-    <div class="ms-panel">${sparkHtml(hist)}</div>`;
+  return msPtsHtml([['素点', pv(r.raw), pc(r.raw)], ['順位点', pv(r.rp), pc(r.rp)]],
+    [['最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—'], ['最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—']],
+    [['箱下', cv(r.box)], ['5万点超', cv(r.over)]]);
 }
 function msGamesHtml(st) {
   const all = st.groups.map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
@@ -9764,6 +9786,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
       <span><small>平均着順</small><b>—</b></span>
       <span><small>通算スコア</small><b>—</b></span>
       <span><small>トップ率</small><b class="sm">—</b></span>
+      <span><small>連対率</small><b class="sm">—</b></span>
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
@@ -9785,6 +9808,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
       <span><small>通算スコア</small><b class="${scoreCls(m.score)}">${fmtScore(m.score)}</b></span>
       <span><small>トップ率</small><b class="sm">${pctText((c[0] || 0) / n)}</b></span>
+      <span><small>連対率</small><b class="sm">${pctText(((c[0] || 0) + (c[1] || 0)) / n)}</b></span>
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
