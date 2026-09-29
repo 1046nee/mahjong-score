@@ -149,8 +149,8 @@ def main():
         pg.evaluate("showView('history')")
         results.append(("[2b] 未ログインでマイページ（過去の試合）を開くと、ログイン画面になる（ブラウザだけの履歴は出さない）", True,
                         pg.evaluate("document.getElementById('view-login').classList.contains('active') && document.getElementById('login-action').innerText.includes('Googleでログイン') && document.getElementById('login-action').innerText.includes('この端末に残っている過去の試合')")))
-        results.append(("[2c] 未ログインではトップに過去の試合を並べず、ログインして残す入り口だけ出す", True,
-                        pg.evaluate("(showView('home'), document.getElementById('recent-games-list').innerText.includes('ログインすると'))")))
+        results.append(("[2c] トップ（LP）に「最近の試合」を出さない", True,
+                        pg.evaluate("(showView('home'), !document.getElementById('recent-games') && !document.getElementById('view-home').innerText.includes('最近の試合'))")))
         login_as(pg, U1)
         results.append(("[2d] ログイン後はヘッダーが「マイページ」（ログイン中とわかる）になり、ログイン画面からマイページへ移る", True,
                         pg.evaluate("document.getElementById('hdr-acct').textContent.includes('マイページ') && document.getElementById('hdr-acct').classList.contains('in')")))

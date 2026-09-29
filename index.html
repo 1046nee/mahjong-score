@@ -71,7 +71,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .sanma .card, .sanma .score-card, .sanma .history-item { border-color: #4261AA; }
 
 /* Home (LP型) */
-#view-home { background: #fff; }
+#view-home { background: #E6F1EC; } /* マイページの四麻と同じ地（2026-09-29） */
 
 /* 全画面共通ヘッダー（ロゴを大きく・右上に使い方リンク） */
 .global-header-wrap { background: #fff; border-bottom: 1px solid #eef3f2; max-width: 960px; margin: 0 auto; }
@@ -116,7 +116,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-body { font-size: 15px; color: #444; line-height: 1.8; margin-bottom: 20px; }
 
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
-.lp-solution { background: #fff; }
+.lp-solution { background: transparent; } /* LPの地（#E6F1EC）のまま */
 .lp-solution h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
 /* 特徴カードのカルーセル（横スクロール＋スナップ。常に次のカードが見える幅にする） */
 .features-wrap { position: relative; max-width: 960px; margin: 0 auto; }
@@ -209,7 +209,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-close .cta-btn { margin-top: 0; }
 
 /* ヒーロー */
-.hero { text-align: center; padding: 16px 20px 40px; background: #fff; }
+.hero { text-align: center; padding: 16px 20px 40px; background: transparent; }
 .hero h1 { font-size: 33px; line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
@@ -223,13 +223,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .cta-trust { display: flex; justify-content: center; gap: 14px; color: #5f6e6b; font-size: 12.5px; font-weight: 600; flex-wrap: wrap; }
 .cta-trust span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin: 0 4px -1px 0; background: #177083;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
-/* 最近の試合（Walicaの「最近のグループ」風。ローカル履歴の新しい2件＋もっとみる） */
-.recent-games { max-width: 420px; margin: 30px auto 0; text-align: left; }
-.recent-games .rg-title { font-size: 13px; font-weight: 700; color: #667571; margin-bottom: 8px; }
-.rg-row { display: flex; justify-content: space-between; align-items: center; width: 100%; background: #fff; border: 1.5px solid #e2ece7; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; font-size: 15px; font-weight: 700; color: #1a1a1a; cursor: pointer; text-align: left; }
-.rg-row .rg-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rg-row .rg-arrow { color: #9fb7b2; flex-shrink: 0; margin-left: 10px; }
-.rg-more { display: block; text-align: center; color: #177083; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 2px; }
 
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
@@ -1588,10 +1581,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
   <p class="cta-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
-  <div class="recent-games" id="recent-games" style="display:none">
-    <p class="rg-title">最近の試合</p>
-    <div id="recent-games-list"></div>
-  </div>
 </section>
 
 <!-- 使い方＋番外編（ヒーロー直下。特徴系セクションより先に見せる） -->
@@ -5604,34 +5593,8 @@ async function joinSession(id) {
   } catch(e) { alert('接続エラーが発生しました。'); } finally { showLoading(false); }
 }
 
-// ヒーローの「最近の試合」（Walica風）: ローカル履歴の新しい2件を表示。履歴なしなら丸ごと非表示。
-// 「過去の試合」画面への入り口はここが本線なので、履歴が1件でもあれば必ずリンクを出す
-// （以前は3件以上のときだけ「もっとみる」を出していて、1〜2件の人は画面にたどり着けなかった）
-function renderRecentGames() {
-  const wrap = document.getElementById('recent-games');
-  const list = document.getElementById('recent-games-list');
-  if (!wrap || !list) return;
-  const games = appState.games || [];
-  const title = wrap.querySelector('.rg-title');
-  if (currentUser || !loginAvailable()) {
-    if (!games.length) { wrap.style.display = 'none'; return; }
-    wrap.style.display = 'block';
-    if (title) title.textContent = '最近の試合';
-    list.innerHTML = games.slice(0, 2).map(g =>
-      `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
-    ).join('') + `<a class="rg-more" onclick="goMyPage()">マイページで過去の試合をすべて見る ›</a>`;
-    return;
-  }
-  // 未ログイン: 一覧は出さない（ブラウザのデータは消えることがあるため、残すのはログインしてから）。
-  // ただし最後に開いた試合1件だけは戻れるようにする。共有URLから入ったメンバーはたいてい未ログインで、
-  // 試合から戻ったあとLPに入口がないと、LINEのリンクを開き直すまで点数入力に戻れない
-  if (!games.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  if (title) title.textContent = '最近の試合';
-  const last = [...games].sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0))[0];
-  list.innerHTML = `<button type="button" class="rg-row" onclick="joinSession('${esc(last.id)}')"><span class="rg-name">${esc(last.name)}</span><span class="rg-arrow">›</span></button>`
-    + `<a class="rg-more" onclick="goMyPage()">${games.length > 1 ? `この端末にほかに${games.length - 1}件あります。` : ''}ログインすると、過去の試合をずっと残せます ›</a>`;
-}
+// LPに「最近の試合」は出さない（2026-09-29 ユーザー判断）。呼び出し元が多いので関数だけ残す
+function renderRecentGames() {}
 
 // ---- Setup ----
 function todayStr() {
