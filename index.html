@@ -419,6 +419,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .log-tag.edit { background: #E75620; }
 .log-tag.del { background: #c62828; }
 .log-tag.set { background: #5b6b8c; }
+.log-content { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.log-text { font-size: 12px; color: #4F5C5A; line-height: 1.6; margin-top: 1px; }
 .log-changes { margin: 3px 0 0; padding: 0; list-style: none; }
 .log-changes li { font-size: 11px; color: #6b7a78; line-height: 1.6; }
 .log-changes li::before { content: '・'; }
@@ -3228,12 +3230,21 @@ function circleLogHtml() {
     .sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
   if (!log.length) return '<div style="font-size:12px;color:#999">まだ変更はありません</div>';
   const undone = new Set(log.filter(e => e.kind === 'undo' && e.undo && e.undo.ref).map(e => e.undo.ref));
-  return `<div class="log-list">${log.slice(0, 50).map(e => {
+  // 試合の「履歴」と同じ形: 日付ごとの見出し＋行は「時刻・種類のタグ・だれが何をしたか」（日付と時刻を同じ欄に詰めると文字が重なる）
+  const TAG = { add_game: ['add', '追加'], remove_game: ['del', '外す'], bind: ['set', '結びつけ'], confirm: ['set', '確認'], rename: ['edit', '名前'],
+    rename_circle: ['edit', '名前'], merge: ['edit', 'まとめ'], claim: ['add', '本人'], create: ['add', '作成'], join: ['add', '参加'], leave: ['del', '退出'],
+    role: ['set', '権限'], code: ['set', 'コード'], undo: ['set', '戻す'] };
+  let rows = '', prevDate = null;
+  log.slice(0, 50).forEach(e => {
+    const date = fmtDate(e.at);
+    if (date !== prevDate) { rows += `<div class="log-date">${date || '日時不明'}</div>`; prevDate = date; }
+    const [cls, label] = TAG[e.kind] || ['set', '変更'];
     const canUndo = circleRole() && e.undo && e.kind !== 'undo' && !undone.has(e.id) && ['bind', 'add_game', 'rename'].includes(e.kind);
-    return `<div class="log-row"><span class="log-time">${fmtDate(e.at)}<br>${fmtTime(e.at)}</span>
-      <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b>：${esc(e.text || '')}${undone.has(e.id) ? '<span style="color:#aaa">（元に戻しました）</span>' : ''}
-      ${canUndo ? `<div><button type="button" class="edit-tab" style="margin-top:4px" onclick="undoCircleLog('${e.id}')">元に戻す</button></div>` : ''}</div></div>`;
-  }).join('')}</div>${log.length > 50 ? `<div class="h2h-note">最新50件を表示しています（全${log.length}件）</div>` : ''}`;
+    rows += `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span><span class="log-tag ${cls}">${label}</span>
+      <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}${undone.has(e.id) ? '<span style="color:#8A9AA5">（元に戻しました）</span>' : ''}</div>
+      ${canUndo ? `<button type="button" class="btn-tint" style="margin-top:6px;height:28px" onclick="undoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`;
+  });
+  return `<div class="log-list">${rows}</div>${log.length > 50 ? `<div class="h2h-note">最新50件を表示しています（全${log.length}件）</div>` : ''}`;
 }
 async function undoCircleLog(lid) {
   const e = circleData && circleData.log && circleData.log[lid];
