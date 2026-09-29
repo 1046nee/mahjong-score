@@ -258,10 +258,17 @@ def main():
                         db_of(pgb)["circleMembers"][cid][U2]["role"] == "editor" and pgb.evaluate("location.search === ''")))
         results.append(("[6b] 参加直後は「名簿のどの人ですか？」を聞く", True,
                         "あなたは名簿のどの人ですか" in pgb.evaluate("document.getElementById('circle-body').innerText")))
+        # 2人目の端末ではまだその試合を持っていない状態にする（テストのブラウザは1人目と保存領域を共有しているため）
+        pgb.evaluate(f"() => {{ ['{g1}', '{g2}'].forEach(id => {{ delete gameTags[id]; }}); saveTags(); appState.games = appState.games.filter(g => g.id !== '{g1}' && g.id !== '{g2}'); saveStorage(); }}")
         pgb.evaluate(f"claimCircleMember('{tr}')")
         pgb.wait_for_timeout(600)
         results.append(("[6c] 「たろう」を本人として登録（名簿に✓本人・結びつけ済みの席は本人の確認に切り替わる）", True,
                         db_of(pgb)["circles"][cid]["roster"][tr].get("uid") == U2))
+        pgb.wait_for_function(f"() => (appState.games || []).some(g => g.id === '{g1}') && (appState.games || []).some(g => g.id === '{g2}')", timeout=15000)
+        results.append(("[6j] 仲間ページで自分（たろう）を選ぶと、その試合が自分の過去の試合に入り、たろうの席が「自分」になる（個人の成績に入る）", True,
+                        pgb.evaluate(f"tagOf('{g1}').me === 1 && tagOf('{g2}').me === 1 && collectMyStats(null).groups.length >= 2")))
+        # 1人目（むにぃ）の選択に戻しておく（保存領域を共有しているため、あとの確認に影響しないように）
+        pgb.evaluate(f"setTag('{g1}', 'play', 0); setTag('{g2}', 'play', 0)")
         pgb.evaluate(f"openBindEditor('{g1}')")
         locked = pgb.evaluate("bindState.rows.map(r => r.locked)")
         results.append(("[6d] 2人目の画面では、作成者が本人として結びつけた「むにぃ」の席は変更できない", True,

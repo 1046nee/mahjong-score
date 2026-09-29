@@ -2990,6 +2990,38 @@ function circleModes() {
 }
 
 const circleStore = {}; // cid → { data, sess, members, secret }（前に開いた・先読みした中身）
+// 仲間ページで自分（名簿で本人登録した人）に結びついている試合を、自分の「過去の試合」に入れ、その席を「自分」にする。
+// ＝仲間のリンクからログインして自分を選ぶだけで、個人の成績にも入る。
+// ・自分で一覧から削除した試合（削除印）は入れ直さない
+// ・すでに自分の選択（名前・出ていない）がある試合は、その選択を変えない
+function syncCircleGamesToMine(quiet) {
+  if (!currentUser || !circleData) return 0;
+  const myMid = myCircleMid();
+  if (!myMid) return 0;
+  let added = 0, tagged = 0;
+  Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
+    const seatKey = Object.keys((ge && ge.seats) || {}).find(k => ge.seats[k] && ge.seats[k].mid === myMid);
+    if (seatKey == null) return;
+    const src = circleSess[sid];
+    if (!src || deletedGids[sid]) return;
+    let g = (appState.games || []).find(x => x.id === sid);
+    if (!g) {
+      g = { ...src, lastAccess: new Date(gameDayMs(src)).toISOString() };
+      appState.games.push(g);
+      myListSynced.delete(sid);
+      syncGroupToMyList(g);
+      added++;
+    }
+    if (!gameTags[sid]) { setTag(sid, 'play', Number(seatKey)); tagged++; }
+  });
+  if (added) {
+    appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
+    appState.games = appState.games.slice(0, MAX_HISTORY);
+    saveStorage();
+  }
+  if ((added || tagged) && !quiet) showToast(`仲間ページのあなたの試合${added ? ` ${added}件を過去の試合に入れ` : ''}${added && tagged ? '、' : ''}${tagged ? `${tagged}件で自分を選び` : ''}ました。個人の成績にも入ります`, 5000);
+  return added + tagged;
+}
 async function openCircle(cid) {
   const cached = circleStore[cid];
   if (cached) {
@@ -3015,6 +3047,7 @@ async function openCircle(cid) {
     await Promise.all([loadCircleMembers(), loadCircleSessions(true)]); // 試合は毎回最新を読む（あとから足したメンバー・試合を反映する）
     if (circleId !== cid) return; // 読んでいるあいだに別の仲間ページへ切り替えた
     circleStore[cid] = { data: circleData, sess: circleSess, members: circleMembers, secret: circleSecret };
+    syncCircleGamesToMine(false);
     // 見ているあいだに誰かが追加・結びつけをしたら反映する（名簿・結びつけは数KBなので丸ごと聞いてよい）
     circleRef = db.ref('circles/' + cid);
     circleCb = circleRef.on('value', s => {
@@ -3778,6 +3811,9 @@ async function saveBindEditor() {
     await db.ref('circles/' + circleId).update(upd);
     await addCircleLog('bind', `「${g.name || ''}」の結びつけ: ${changes.join('、')}`, { sid: s.sid, seats: before });
     showToast('結びつけを保存しました');
+    circleData.games[s.sid] = circleData.games[s.sid] || {};
+    circleData.games[s.sid].seats = { ...(circleData.games[s.sid].seats || {}), ...Object.fromEntries(Object.entries(upd).map(([k, v]) => [k.split('/').pop(), v]).filter(([, v]) => v)) };
+    setTimeout(() => syncCircleGamesToMine(false), 2600);
     track('circle_bind', { changes: changes.length });
   } catch (e) {
     showToast('保存できませんでした。本人が結びつけた席は、本人・作成者・管理者だけが変更できます', 5000);
@@ -3863,7 +3899,9 @@ async function claimCircleMember(mid) {
     renderCircle();
     // すでに誰かが結びつけている席を、本人の結びつけに切り替えるか聞く
     const n = Object.values(circleData.games || {}).reduce((a, ge) => a + Object.values((ge && ge.seats) || {}).filter(s => s && s.mid === mid && !s.self).length, 0);
-    if (n) confirmMySeats(); else showToast('本人として登録しました');
+    // 自分に結びついている試合は、確認の返事を待たずに自分の過去の試合へ（個人の成績に入れる）
+    const synced = syncCircleGamesToMine(true);
+    if (n) confirmMySeats(); else showToast(synced ? '本人として登録しました。仲間ページのあなたの試合は個人の成績にも入ります' : '本人として登録しました', 4000);
   } catch (e) { showToast('登録できませんでした。ほかの人がすでに本人として登録しています', 5000); }
 }
 function openClaimNew() {
@@ -3903,6 +3941,7 @@ async function confirmMySeats() {
     await db.ref('circles/' + circleId).update(upd);
     await addCircleLog('confirm', `${n}件の結びつけを本人として確認しました`);
     showToast(`${n}件を本人として確認しました`);
+    setTimeout(() => syncCircleGamesToMine(false), 2600);
   } catch (e) { showToast('確認できませんでした'); }
 }
 async function unclaimCircleMember(mid) {
