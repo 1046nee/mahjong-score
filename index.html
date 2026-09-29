@@ -1006,7 +1006,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* ==== マイページ（個人｜仲間）・自分の成績・仲間ページ（2026-09-26 iOS風に作り直し） ====
    淡い地 #F2F6F5 の上に白い角丸のグループ。大きな数字と小さなラベル。区切り線は .5px #D5DEDB を文字の始まる位置から。
    文字は11px以上・補足の色は #5F6E6B（#8A9AA5 などの薄い灰色は白の上で4.5:1に届かないので使わない） */
-#view-history, #view-mystats, #view-circle { background: #F2F6F5; }
+#view-history, #view-mystats, #view-circle { background: #E6F1EC; } /* 四麻＝少し緑の地（三麻の #EAF0FB と対になる濃さ） */
 #view-history.sanma, #view-mystats.sanma, #view-circle.sanma { background: #EAF0FB; } /* スコア入力の画面の三麻と同じ地 */
 #view-history .history-body { padding: 10px 16px 0; gap: 0; }
 /* ---- 上部の自分のカード ---- */
@@ -1303,18 +1303,19 @@ button.ios-row:active { background: #F2F6F5; }
 #circle-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-size: 24px; font-weight: 800; letter-spacing: -.3px; line-height: 1.3; color: #1F2A28; }
 #circle-sub { margin-top: 4px; font-size: 13px; color: #5F6E6B; }
 .ch-role { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: #E3E9E7; color: #4F5C5A; font-size: 11px; font-weight: 700; vertical-align: 1px; }
-/* 名前の下: 左に四麻・三麻の数と立場、右に共有・設定（縦に積む）。縦にかさばらないように */
-.ch-meta { display: flex; align-items: flex-start; gap: 10px; margin-top: 6px; }
-.ch-meta #circle-sub { flex: 1; min-width: 0; margin-top: 0; }
-#circle-actions { display: flex; flex-direction: column; gap: 6px; flex: none; margin: 0; }
+/* 名前の下: 左に四麻・三麻の数と立場、右に共有・設定（横に並べる）。狭い画面で入らなければ下の右へ回る */
+.ch-meta { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-start; gap: 8px 10px; margin-top: 6px; }
+.ch-meta #circle-sub { flex: 1 1 auto; min-width: 0; margin-top: 0; }
+#circle-actions { display: flex; flex-direction: row; gap: 6px; flex: none; margin: 0; }
 /* 見出しの下の四麻・三麻ごとの数 */
 .cc-rows { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
 .cc-rows + .ch-role { margin-left: 0; }
-.cc-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4F5C5A; font-variant-numeric: tabular-nums; }
+.cc-row { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: #4F5C5A; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cc-row b { flex: none; }
 .cc-row b { font-weight: 800; color: #1F2A28; }
 .cc-row.none { color: #8A9AA5; } .cc-row.none b { color: #8A9AA5; } .cc-row.none .cc-k { opacity: .5; }
 .cc-k { width: 16px; height: 16px; margin: 0; }
-.ch-act { display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 30px; padding: 0 12px 0 10px; border: 0; border-radius: 15px; background: #fff; box-shadow: var(--sh-1); font-size: 12.5px; font-weight: 800; color: var(--pc); cursor: pointer; white-space: nowrap; }
+.ch-act { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 30px; padding: 0 10px 0 8px; border: 0; border-radius: 15px; background: #fff; box-shadow: var(--sh-1); font-size: 12px; font-weight: 800; color: var(--pc); cursor: pointer; white-space: nowrap; }
 .ch-act:active { background: #F2F6F5; }
 #view-circle .card { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
 #view-circle .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
@@ -3328,8 +3329,8 @@ function renderCircle() {
     + (meMid ? `<span class="ch-me">名簿のあなた：<b>${esc(rosterName(meMid))}</b>${circleBadge(roster[meMid], meMid)}</span>` : '');
   // 操作は連絡先アプリ風のタイル（結果のリンク／招待／設定）。招待・設定はメンバーだけ
   document.getElementById('circle-actions').innerHTML =
-    `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 16)}共有</button>` +
-    (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 16)}設定</button>` : '');
+    `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 14)}共有</button>` +
+    (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 14)}設定</button>` : '');
   document.getElementById('circle-switch').innerHTML = currentUser ? mpSwitchHtml(circleId) : '';
   let html = '';
   // 立場ごとの案内
