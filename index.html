@@ -226,6 +226,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .rg-row { display: flex; justify-content: space-between; align-items: center; width: 100%; background: #fff; border: 1.5px solid #e2ece7; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; font-size: 15px; font-weight: 700; color: #1a1a1a; cursor: pointer; text-align: left; }
 .rg-row .rg-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rg-row .rg-arrow { color: #9fb7b2; flex-shrink: 0; margin-left: 10px; }
+.rg-row2 { gap: 10px; justify-content: flex-start; padding: 10px 12px; border: 0; box-shadow: inset 0 0 0 1.5px var(--kb, #e2ece7); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
+.rg-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rg-l1 { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.rg-l1 .rg-name { font-size: 15px; font-weight: 800; min-width: 0; }
+.rg-date { flex: none; font-size: 11.5px; font-weight: 700; color: #5F6E6B; }
+.rg-sc { flex: none; font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; } .rg-sc.pos { color: #1A237E; } .rg-sc.neg { color: #C62828; }
+.rg-n { flex: none; font-size: 12px; font-weight: 700; color: #5F6E6B; }
 .rg-more { display: block; text-align: center; color: #177083; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 2px; }
 .cta-trust span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin: 0 4px -1px 0; background: #177083;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
@@ -785,6 +792,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gr-date b { margin-left: 4px; color: var(--pc); }
 .gr-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .gr-meta { font-size: 12px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.gm-list .gr.out { background: repeating-linear-gradient(135deg, #ECEFEF 0 6px, #F6F7F7 6px 12px); }
 .gr.out { background: repeating-linear-gradient(135deg, #ECEFEF 0 6px, #F6F7F7 6px 12px); }
 /* 形式の印（卓）: 四麻＝緑の四角に4点・三麻＝藍の三角に3点。大人数は右下に人数の丸 */
 .gk { position: relative; flex: none; width: 30px; height: 30px; margin-top: 1px; line-height: 0; }
@@ -820,6 +828,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 .ht { aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; padding: 8px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
 .ht:active { opacity: .75; }
+.ht.k4, .ht.k3 { border-color: var(--kb); }
 .ht-top { display: flex; align-items: center; gap: 4px; height: 18px; }
 .ht-k { width: 14px; height: 14px; margin: 0; flex: none; }
 .ht-multi { flex: none; height: 16px; padding: 0 5px; border-radius: 8px; background: #C07A22; color: #fff; font-size: 10px; font-weight: 800; line-height: 16px; }
@@ -893,7 +902,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gr-check { width: 24px; height: 24px; flex: none; margin-top: 2px; border-radius: 50%; border: 2px solid #AEBBB8; display: grid; place-items: center; color: #fff; }
 .gr.sel .gr-check { background: var(--pc); border-color: var(--pc); }
 .gr.sel .gr-check::after { content: ''; width: 6px; height: 11px; margin-top: -2px; border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
-.gr.sel { background: var(--pc-bg); }
+.gr.sel, .gm-list .gr.sel { background: var(--pc-bg); }
 .mp-sendbar { position: sticky; bottom: 0; z-index: 20; margin: 10px 0 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4px 16px rgba(16,40,36,.12); border-radius: 16px 16px 0 0; }
 .sb-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #1F2A28; }
 .sb-x { border: 0; background: none; color: #5F6E6B; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -1325,7 +1334,10 @@ button.ios-row:active { background: #F2F6F5; }
 .rv-sub { grid-area: sub; font-size: 12px; color: #5F6E6B; }
 .rv-sub b.pos { color: #1A237E; } .rv-sub b.neg { color: #C62828; }
 /* ---- 過去の試合（1つの角丸リスト・カレンダー型の日付） ---- */
-.gm-list { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--sh-1); }
+/* 一覧: 1試合を1枚のカードにし、形式の色の枠（四麻＝緑・三麻＝青。相手ごとの成績のカードの枠と同じ考え方） */
+.gm-list { display: flex; flex-direction: column; gap: 8px; }
+.gm-list .gr { background: #fff; border-radius: 14px; border-top: 0; box-shadow: inset 0 0 0 1.5px var(--kb, #D5DEDB), var(--sh-1); }
+.gr.k4, .ht.k4, .rg-row.k4 { --kb: #9FC3BD; } .gr.k3, .ht.k3, .rg-row.k3 { --kb: #A9B8DC; }
 .gm-row { position: relative; display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 8px 12px 14px; cursor: pointer; }
 .gm-row + .gm-row::before { content: ''; position: absolute; top: 0; left: 70px; right: 0; border-top: .5px solid #D5DEDB; }
 .gm-row:active { background: #F2F6F5; }
@@ -3712,7 +3724,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     const rel = relDay(gameDayMs(g));
     const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
     const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未連携 ${nPlayed - nBound}人</span>` : '';
-    return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">${gameKindHtml(g)}
+    return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">${gameKindHtml(g)}
       <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}${me == null && myMid ? '<span class="gr-out">出ていない</span>' : ''}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
       ${dots}</div>`;
@@ -5789,6 +5801,20 @@ async function joinSession(id) {
 
 // LPの「最近の試合」: 最後に開いた順に2件まで（ログインしていなくても）。押すとその試合へ。
 // 下にマイページへの入り口（未ログインはログインして残す案内）。履歴が無ければ丸ごと出さない
+// LPの最近の試合の1行: 形式の印（席より多い人数なら右下に人数）・試合名・日付・相手の頭文字（順位順）・自分の今のスコア
+function recentRowHtml(g) {
+  const s = g.settings || {}, names = s.playerNames || [], np = s.numPlayers === 3 ? 3 : 4;
+  const t = tagOf(g.id), me = (t.role !== 'watch' && t.me != null && t.me < names.length) ? t.me : null;
+  const played = playedFlags(g), tot = gameTotals(g);
+  const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
+  const MAXO = 6;
+  const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
+  const sc = me != null && played[me] ? tot[me] : null;
+  return `<button type="button" class="rg-row rg-row2 k${np}" onclick="joinSession('${esc(g.id)}')">${gameKindHtml(g)}
+    <span class="rg-main"><span class="rg-l1"><span class="rg-name">${esc(g.name)}</span><span class="rg-date">${esc(fmtGameDays(g))}</span></span>
+      ${avs ? `<span class="cg-avs"><span>${me != null ? '相手' : '対戦'}</span>${avs}</span>` : ''}</span>
+    ${sc != null ? `<b class="rg-sc ${scoreCls(sc)}">${fmtScore(sc)}</b>` : `<span class="rg-n">${(g.rounds || []).length}試合</span>`}</button>`;
+}
 function renderRecentGames() {
   const wrap = document.getElementById('recent-games');
   const list = document.getElementById('recent-games-list');
@@ -5796,9 +5822,7 @@ function renderRecentGames() {
   const games = [...(appState.games || [])].sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0));
   if (!games.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
-  list.innerHTML = games.slice(0, 2).map(g =>
-    `<button type="button" class="rg-row" onclick="joinSession('${esc(g.id)}')"><span class="rg-name">${esc(g.name)}</span><span class="rg-arrow">›</span></button>`
-  ).join('') + (currentUser || !loginAvailable()
+  list.innerHTML = games.slice(0, 2).map(recentRowHtml).join('') + (currentUser || !loginAvailable()
     ? `<a class="rg-more" onclick="goMyPage()">マイページで過去の試合をすべて見る ›</a>`
     : `<a class="rg-more" onclick="goMyPage()">ログインすると、過去の試合をずっと残せます ›</a>`);
 }
@@ -10094,7 +10118,7 @@ function historyItemHtml(g) {
   else if (st === 'ask' && !mpSelecting) sub = `<div class="gr-sub">${NIL_RESULT}<span class="gr-meta">${meta}</span></div><div class="gr-ask">あなたはどれ？</div><div class="gr-chips">${askChipsHtml(g)}</div>`;
   else sub = `<div class="gr-sub">${(g.rounds || []).length ? NIL_RESULT : ''}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, null)}`;
   const on = mpSelecting && mpSel.has(g.id);
-  return `<div class="gr ${st}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
+  return `<div class="gr ${st} k${(s.numPlayers === 3 ? 3 : 4)}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}${gameKindHtml(g)}
     <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
@@ -10295,7 +10319,7 @@ function histTilesHtml(items) {
     const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('')
       + (who.length > MAXAV ? `<i class="more">+${who.length - MAXAV}</i>` : '');
     const mark = hideMark ? '' : me == null ? (me === null ? '<em class="ht-out">不参加</em>' : '') : '<em class="ht-me">参加</em>';
-    return `<button type="button" class="ht${st}${me === null ? ' out' : ''}" onclick="${onclick}" aria-label="${esc(g.name || '')} ${n}試合">
+    return `<button type="button" class="ht k${np}${st}${me === null ? ' out' : ''}" onclick="${onclick}" aria-label="${esc(g.name || '')} ${n}試合">
       <span class="ht-top"><span class="gk k${np} ht-k">${kindSvg(np, 14)}</span>${nP > np ? `<span class="ht-multi">${nP}人</span>` : ''}${mark}</span>
       <span class="ht-name">${esc(g.name || '（名前なし）')}</span>
       <span class="ht-avs">${avs}</span>
