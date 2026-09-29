@@ -837,7 +837,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cb-main { flex: 1; min-width: 0; }
 .cb-sc { flex: none; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; color: #1F2A28; }
 .cb-sc.pos { color: #1A237E; } .cb-sc.neg { color: #C62828; } .cb-sc.nil { color: #AEBBB8; }
-.ht.out { background: repeating-linear-gradient(135deg, #ECEFEF 0 6px, #F6F7F7 6px 12px); box-shadow: none; }
+.ht.out { background: repeating-linear-gradient(135deg, #ECEFEF 0 6px, #F6F7F7 6px 12px); } /* 影はほかのタイルと同じ（地と紛れないように） */
 .ht.out .ht-name { color: #5F6E6B; }
 .ht.empty { background: #F3F5F5; border: 1.5px dashed #AEBBB8; box-shadow: none; }
 .ht.empty .ht-name { color: #6B7A77; }
@@ -983,7 +983,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .ev { font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .mc-spark .dot { stroke: #fff; stroke-width: 1.2; }
 .mc-spark .dot.dp { fill: #1A237E; } .mc-spark .dot.dn { fill: #C62828; } .mc-spark .dot.dz { fill: #AEBBB8; }
-.mc-spark .dt { font-size: 9.5px; font-weight: 700; fill: #5F6E6B; font-variant-numeric: tabular-nums; }
+.mc-spark .dt { font-size: 9px; font-weight: 700; fill: #5F6E6B; font-variant-numeric: tabular-nums; }
 .mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
 .mc-foot { justify-content: flex-end; margin-top: 4px; }
 .cc-mine-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; }
@@ -9629,7 +9629,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近10日の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近7日の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
@@ -9642,6 +9642,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
   const nDays = new Set(hist.map(x => ymdLocal(new Date(x.t)))).size;
+  const SPARK_DAYS = 7; // 点の下の日付が重ならない日数（300×98の枠で「12/28」が並ぶ幅）
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
@@ -9650,13 +9651,14 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近${Math.min(10, nDays)}日の通算スコアの推移</small></span>${miniSparkHtml(hist, np, m.score)}</span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近${Math.min(SPARK_DAYS, nDays)}日の通算スコアの推移</small></span>${miniSparkHtml(hist, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
 // endVal＝いまの通算スコア。直近の前の時点（endVal − 直近の合計）から積み上げる
-// 通算スコアの推移（打った日ごと。直近10日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
-// 左に目盛りの数値、最後の点に最終の通算スコア。endVal＝いまの通算スコア（直近10日より前の分から積み上げる）
+// 通算スコアの推移（打った日ごと。直近7日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
+// 左に目盛りの数値、最後の点に最終の通算スコア。endVal＝いまの通算スコア（直近7日より前の分から積み上げる）。
+// 10日だと点の間隔が約20（viewBoxの単位）で「12/28」（約25）が重なるため7日にした（間隔は約29）
 function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
   const byDay = [];
@@ -9666,12 +9668,12 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     if (!b || b.k !== k) byDay.push(b = { k, d, sc: 0 });
     b.sc += Number(x.sc) || 0;
   });
-  const days = byDay.slice(-10);
+  const days = byDay.slice(-7);
   const sum = days.reduce((a, x) => a + x.sc, 0);
   const end = endVal == null ? sum : Number(endVal);
   let cum = end - sum;
   const ys = [cum].concat(days.map(x => (cum += x.sc)));
-  const W = 300, H = 98, L = 40, R = 58, T = 10, B = 26;
+  const W = 300, H = 98, L = 40, R = 56, T = 10, B = 26;
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
   const lo0 = Math.min(...ys), hi0 = Math.max(...ys);
