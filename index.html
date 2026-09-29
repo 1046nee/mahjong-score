@@ -1166,7 +1166,18 @@ button.ios-row:active { background: #F2F6F5; }
 .mx { display: inline-block; min-width: 36px; padding: 3px 6px; border-radius: 7px; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .mx.w { background: #E8EAF6; color: #1A237E; } .mx.l { background: #FDECEC; color: #C62828; } .mx.e { background: #fff; color: #1F2A28; box-shadow: inset 0 0 0 1px #DDE4E2; }
 .mx-d { font-size: 11px; font-weight: 600; color: #5F6E6B; margin-top: 2px; }
-.mx-lg { display: flex; gap: 12px; margin-bottom: 10px; font-size: 12px; color: #4F5C5A; }
+.mx-lg { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 10px; font-size: 12px; color: #4F5C5A; }
+.mx-title { font-size: 12px; font-weight: 800; color: #555; margin: 16px 0 6px; }
+.mx-cap { font-size: 13px; color: #1F2A28; margin-bottom: 6px; }
+.mx-cap b { color: #177083; }
+.h2h-matrix th.mx-corner { position: sticky; padding: 0; height: 44px; background: #F4F7F6 linear-gradient(to top right, transparent calc(50% - .75px), #AEBBB8 50%, transparent calc(50% + .75px)) !important; }
+.mx-corner .c-top { position: absolute; top: 4px; right: 5px; font-size: 10px; font-weight: 800; color: #4F5C5A; }
+.mx-corner .c-bot { position: absolute; bottom: 4px; left: 6px; font-size: 10px; font-weight: 800; color: #177083; }
+.mx-vs { display: block; font-size: 9px; font-weight: 700; color: #8A9AA5; line-height: 1.1; }
+.h2h-matrix tr.mx-me td { background: #EEF7F4 !important; }
+.h2h-matrix tr.mx-me td.mx-rh { background: #DDF0EA !important; }
+.h2h-matrix th.me .mx-nm { color: #177083; font-weight: 800; }
+.h2h-matrix td.mx-rh[onclick] { cursor: pointer; }
 .mx-lg i { display: inline-block; width: 12px; height: 12px; margin-right: 4px; border-radius: 3px; vertical-align: -1px; }
 .mx-lg i.w { background: #E8EAF6; box-shadow: inset 0 0 0 1px #9FA8DA; } .mx-lg i.l { background: #FDECEC; box-shadow: inset 0 0 0 1px #EF9A9A; }
 /* だれから見る？（アバターの横スクロール） */
@@ -3099,12 +3110,16 @@ function circleGridHtml(st, forImage = false) {
 // 桁が増えるとセルからはみ出して読めなくなるので、表の中でいちばん長い「勝ち-負け」の文字数から列の幅を決め、全部の列を同じ幅にする
 // （幅は文字数×7.4px＋余白、最低50px。はみ出す代わりに表が横に広がり、横スクロールで見る）。名前は列の幅で省略し、全文は title。
 // 引き分けは下に小さく「n分」。マスを押すと「A → B：57勝74敗（131試合）」
-function mxTableHtml(keys, nameOf, pairOf, myKey) {
+function mxLegendHtml() {
+  return `<div class="mx-cap"><b>左の人</b>から見た、<b>上の人</b>との直接対決（勝ち-負け）</div>
+    <div class="mx-lg"><span><i class="w"></i>勝ち越し</span><span><i class="l"></i>負け越し</span><span>マスを押すと試合数</span></div>`;
+}
+function mxTableHtml(keys, nameOf, pairOf, myKey, onRow) {
   let maxLen = 3;
   keys.forEach(a => keys.forEach(b => { const e = a !== b && pairOf(a, b); if (e) maxLen = Math.max(maxLen, `${e.w}-${e.l}`.length); }));
   const colW = Math.max(50, Math.ceil(maxLen * 7.4 + 14)), headW = 76;
-  const head = keys.map(k => `<th title="${esc(nameOf(k))}"><span class="mx-nm">${esc(nameOf(k))}</span></th>`).join('');
-  const rows = keys.map(a => `<tr><td class="sticky-col mx-rh${a === myKey ? ' me' : ''}" title="${esc(nameOf(a))}">${esc(nameOf(a))}</td>${keys.map(b => {
+  const head = keys.map(k => `<th title="${esc(nameOf(k))}"${k === myKey ? ' class="me"' : ''}><small class="mx-vs">vs</small><span class="mx-nm">${esc(nameOf(k))}</span></th>`).join('');
+  const rows = keys.map((a, ai) => `<tr${a === myKey ? ' class="mx-me"' : ''}><td class="sticky-col mx-rh${a === myKey ? ' me' : ''}" title="${esc(nameOf(a))}"${onRow ? ` onclick="${onRow(a, ai)}"` : ''}>${esc(nameOf(a))}</td>${keys.map(b => {
     if (a === b) return '<td class="mx-self">—</td>';
     const e = pairOf(a, b);
     if (!e) return '<td class="mx-na">・</td>';
@@ -3113,11 +3128,12 @@ function mxTableHtml(keys, nameOf, pairOf, myKey) {
     return `<td title="${esc(txt)}" onclick="showToast(this.title)"><span class="mx ${d > 0 ? 'w' : d < 0 ? 'l' : 'e'}">${e.w}-${e.l}</span>${e.d ? `<div class="mx-d">${e.d}分</div>` : ''}</td>`;
   }).join('')}</tr>`).join('');
   return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table h2h-matrix tbl-soft" style="table-layout:fixed;width:${headW + keys.length * colW}px">
-    <thead><tr><th class="sticky-col" style="width:${headW}px">勝-負</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    <thead><tr><th class="sticky-col mx-corner" style="width:${headW}px"><span class="c-top">相手→</span><span class="c-bot">見る人↓</span></th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 const MX_NOTE = '行の人から見た、列の人との直接対決（勝ち-負け）です。マスを押すと、試合数も出ます。';
 function circleMatrixHtml(st) {
-  return mxTableHtml(st.list.map(p => p.key), k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], myCircleMid());
+  const keys = st.list.map(p => p.key);
+  return mxTableHtml(keys, k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], circleFocus, a => `circleFocus=circleKeys[circleKeys.indexOf('${a}')];renderCircle()`);
 }
 function circleH2HTabHtml(st, modeChips, noBind) {
   if (!st.list.length) return `<div class="card">${circleCardHead('対戦成績')}${modeChips}${noBind}</div>`;
@@ -3134,12 +3150,9 @@ function circleH2HTabHtml(st, modeChips, noBind) {
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
   return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
-    ${h2hPairCardsHtml(row, nameOf, avOf)}
     ${keys.length ? `<div class="h2-list" style="padding:0;margin-top:6px">${h2hListHtml(row, keys, nameOf, avOf)}</div>` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">${H2H_NOTE}</div></div>
-    <div class="card">${circleCardHead('総当たり表')}
-    <div class="mx-lg"><span><i class="w"></i>勝ち越し</span><span><i class="l"></i>負け越し</span></div>${circleMatrixHtml(st)}
-    <div class="h2h-note">${MX_NOTE}</div></div>`;
+    <div class="card">${circleCardHead('総当たり表')}${mxLegendHtml()}${circleMatrixHtml(st)}</div>`;
 }
 function circleGamesTabHtml(role, gids) {
   const games = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
@@ -7053,7 +7066,7 @@ function h2hMatrixHtml(g, forImage = false) {
   const order = memberDisplayOrder(s).filter(i => played[i]);
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   // 画面は勝率の表（幅が変わらない）。画像は今までどおり勝ち-負けの数（画像は横に広く取れる）
-  if (!forImage) return mxTableHtml(order, i => names[i], (a, b) => acc[a] && acc[a][b], tagOf(g.id).me);
+  if (!forImage) return mxTableHtml(order, i => names[i], (a, b) => acc[a] && acc[a][b], h2hFocusOf(g), a => `setH2HFocus('${esc(g.id)}',${a})`);
   const head = order.map(i => `<th>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('');
   const rows = order.map(a => `<tr><td class="sticky-col">${teamDotHtml(s, a)}${esc(names[a])}</td>${order.map(b => {
     if (a === b) return '<td style="color:#ccc;background:#f4f6f6">—</td>';
@@ -7078,11 +7091,9 @@ function h2hCardBodyHtml(g) {
   const table = h2hGroupTableHtml(g, f);
   return `<div style="font-size:11px;color:#8a9aa5;margin-bottom:6px">だれから見る？</div>
     <div class="h2h-chips">${chips}</div>
-    ${h2hSummaryHtml(acc[f] || {}, k => names[k])}
     ${table || '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">${H2H_NOTE}</div>
-    <details class="h2h-more"><summary>総当たり表（全員の直接対決）</summary>${h2hMatrixHtml(g)}
-      <div class="h2h-note">${MX_NOTE}</div></details>`;
+    <div class="mx-title">総当たり表</div>${mxLegendHtml()}${h2hMatrixHtml(g)}`;
 }
 function renderH2HCard() {
   const card = document.getElementById('h2h-card');
@@ -8379,7 +8390,7 @@ function myH2HCardHtml() {
     `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
   if (!keys.length) return `${seg}<div class="ios-group" style="margin-top:16px;padding:20px 16px;font-size:14px;color:#4F5C5A">まだ同じ試合に出た相手がいません</div>`;
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
-  return `${seg}${h2hPairCardsHtml(row, nameOf, avOf)}
+  return `${seg}
     <div class="ios-head">相手（${keys.length}人）・同じ試合の多い順</div>
     <div class="ios-group h2-list">${h2hListHtml(row, keys, nameOf, avOf)}</div>
     <div class="ios-foot">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>`;
