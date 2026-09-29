@@ -8661,10 +8661,9 @@ function renderTagEditor() {
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">${chips}</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #eee;padding-top:10px">
       <button type="button" class="tag-me-chip${tagEditRole === 'watch' ? ' on' : ''}" onclick="tagEditRole='watch';tagEditMe=null;renderTagEditor()">自分は出ていない</button>
-      <button type="button" class="tag-me-chip${tagEditRole === 'play' && tagEditMe == null ? ' on' : ''}" onclick="tagEditRole='play';tagEditMe=null;renderTagEditor()">まだ選ばない</button>
     </div>
     <div style="font-size:11px;color:#8a9aa5;margin-top:8px;line-height:1.6">「自分は出ていない」にした試合は、記録係をしただけ・見ていただけの試合として成績に入れません。</div>
-    <button class="confirm-btn" style="margin-top:12px" onclick="saveTagEditor()">保存する</button>
+    <button class="confirm-btn" style="margin-top:12px" onclick="saveTagEditor()"${tagEditRole === 'watch' || tagEditMe != null ? '' : ' disabled'}>保存する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
 }
 function saveTagEditor() {
@@ -9274,7 +9273,8 @@ function openHistMenu(id) {
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${sub}</div>
     <div class="mn-group">${
     menuBtnHtml('table', '結果を見る', '総合順位・試合結果・個人成績・対戦成績', `closeFormModal();viewDetailById('${j}')`) +
-    menuBtnHtml('pencil', '続きを入力する', '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`) +
+    // 点数の入力は記録が確定するまでだけ（確定後は開いても入力できないので出さない）
+    (isGameLocked(g) ? '' : menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '続きを入力する', g.endedAt ? `${fmtDateTime(g.lockAt)} に記録が確定するまで直せます` : '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`)) +
     menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${j}')`) +
     menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`)}</div>
     <div class="mn-group">${menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger')}</div>
