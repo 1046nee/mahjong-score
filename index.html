@@ -907,6 +907,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cg-row.cg-out .cg-name { color: #8A9AA5; }
 .h2h-matrix th, .h2h-matrix td { padding-left: 2px; padding-right: 2px; }
 /* くらべるの見出し: 成績カードの範囲の札と同じマーク＋名前 */
+.rounds-table th.th-link { cursor: pointer; }
+.rounds-table th.th-link:active { opacity: .6; }
 .cmp-h { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 12px; font-weight: 800; color: #1F2A28; }
 .cmp-h > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .cmp-h .ico { --i1: #4F5C5A; --i2: #AEBBB8; flex: none; }
@@ -981,7 +983,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-h { font-size: 13px; font-weight: 900; color: #1F2A28; margin: 16px 2px 6px; }
 .ms-note { font-size: 11px; color: #5F6E6B; margin: 6px 2px 0; line-height: 1.6; }
 .ms-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
-.ms-tiles5 { grid-template-columns: repeat(6, 1fr); } .ms-tiles5 > .ms-tile { grid-column: span 2; } .ms-tiles5 > .ms-tile:nth-child(n+4) { grid-column: span 3; }
+.ms-tiles5 { grid-template-columns: repeat(6, 1fr); } .ms-tiles5 > .ms-tile { grid-column: span 2; } .ms-tiles5 > .ms-tile:nth-child(n+4) { grid-column: span 3; } /* 3・2・2 の3段 */
 .ms-tile { background: #fff; border-radius: 12px; padding: 8px 6px; text-align: center; box-shadow: var(--sh-1); min-width: 0; }
 .ms-tile span { display: block; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
 .ms-tile b { display: block; font-size: 15px; font-weight: 900; color: #1F2A28; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1023,6 +1025,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .dot.dp { fill: #1A237E; } .mc-spark .dot.dn { fill: #C62828; } .mc-spark .dot.dz { fill: #AEBBB8; }
 .spark-yl { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed #8A9AA5; pointer-events: none; }
 .spark-yl em { position: absolute; top: 0; left: 3px; font-style: normal; font-size: 10px; font-weight: 800; color: #5F6E6B; white-space: nowrap; }
+/* 成績カードの推移: 左の目盛り（固定・幅10%）＋横スクロールのグラフ（幅90%）。スクロールバーは出さない（カードの高さを変えない） */
+.mc-spark-row { display: flex; margin-top: 4px; }
+.mc-axis { flex: none; width: 10%; height: auto; overflow: visible; }
+.mc-axis .tk { font-size: 8.5px; font-weight: 700; fill: #8A9AA5; font-variant-numeric: tabular-nums; }
+.mc-scroll { flex: none; width: 90%; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.mc-scroll::-webkit-scrollbar { display: none; }
+.mc-scroll .mc-spark { margin-top: 0; max-width: none; }
 .mc-spark .yr-l, .spark-yr { stroke: #8A9AA5; stroke-width: 1; stroke-dasharray: 3 3; }
 .mc-spark .yr-t { font-size: 8.5px; font-weight: 800; fill: #5F6E6B; }
 .mc-spark .dt { font-size: 9px; font-weight: 700; fill: #5F6E6B; font-variant-numeric: tabular-nums; }
@@ -3109,7 +3118,7 @@ function circleStats(circle, sessions, mode, inP) {
         const key = kOf(m);
         if (!key) return;
         const p = people[key] || (people[key] = { key, n: 0, score: 0, rankSum: 0, top: 0, last: 0, games: new Set(),
-          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0 });
+          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
         const gi = grp[k];
         const sc = Number(r.scores && r.scores[k]) || 0;
         p.n++; p.score += sc; p.rankSum += gi.avgRank;
@@ -3121,6 +3130,7 @@ function circleStats(circle, sessions, mode, inP) {
           if (p.ptMax == null || pt > p.ptMax) p.ptMax = pt;
           if (p.ptMin == null || pt < p.ptMin) p.ptMin = pt;
           p.raw += (pt - g.settings.returnPoints) / 1000; p.rawSc += sc; p.rawN++; // 素点・順位点（点数のある試合だけ）
+          if (pt < 0) p.box++; if (pt > BIG_POINTS) p.over++; // 箱下・5万点超
         }
         p.hist.push({ t: new Date(roundMs(g, r)).toISOString(), o: ridx, rank: gi.start + 1, tie: gi.size > 1, sc }); // 最近の着順・推移用（打った日）
         p.games.add(sid);
@@ -3552,12 +3562,14 @@ function circleGridHtml(st, forImage = false) {
   add('通算スコア', L.map(p => p.score), fmtScore, null, 'cat-break', h2hColor);
   add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor);
   add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor);
+  add('箱下', L.map(p => boxOf(p)), v => v + '回');
+  add('5万点超', L.map(p => overOf(p)), v => v + '回');
   add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
   add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
   const w = forImage ? 90 : 76;
   // 画面も画像も同じ明るい見出し（.tbl-soft）。画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 60}px">
-    <thead><tr><th class="sticky-col" style="width:${w}px">メンバー</th>${L.map(p => `<th>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
+    <thead><tr><th class="sticky-col" style="width:${w}px">メンバー</th>${L.map(p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
 // 総当たり表（行の人から見た、列の人との直接対決）。画面だけ（画像出力の対象外）
@@ -4262,7 +4274,7 @@ function openCircleMember(mid) {
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
-      + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN })}</div>` // 個人ページの「成績」と同じタイル＋推移
+      + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over })}</div>` // 個人ページの「成績」と同じタイル＋推移
     : `<div class="pf-stats" style="font-size:13px;color:#5F6E6B">${modes.length > 1 ? 'この形式の' : ''}試合はまだありません</div>`;
   // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
@@ -4319,7 +4331,7 @@ function openCircleMember(mid) {
       ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
       ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す</button>` : ''}
     </div>` : '';
-  document.getElementById('form-modal-title').textContent = 'メンバーの成績';
+  document.getElementById('form-modal-title').textContent = r.name || 'メンバーの成績'; // 名簿に登録されている名前
   // .sheet-body で包むとスマホでは下から出るボトムシートになる
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet">
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
@@ -4335,6 +4347,7 @@ function openCircleMember(mid) {
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
   updateScrollHints();
+  setTimeout(scrollSparksEnd, 0);
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
 async function claimCircleMember(mid) {
@@ -7572,6 +7585,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   const ptsCnt = new Array(N).fill(0);
   const ptsMax = new Array(N).fill(null);
   const ptsMin = new Array(N).fill(null);
+  const boxCnt = new Array(N).fill(0), overCnt = new Array(N).fill(0); // 箱下（0点未満）・5万点超
   rounds.forEach(r => {
     const mem = roundMembers(r, s);
     const groups = rankGroups((r.points || r.scores).slice(0, mem.length));
@@ -7588,6 +7602,8 @@ function rankCountHtml(rounds, s, forImage = false) {
         ptsCnt[m]++;
         if (ptsMax[m] == null || pt > ptsMax[m]) ptsMax[m] = pt;
         if (ptsMin[m] == null || pt < ptsMin[m]) ptsMin[m] = pt;
+        if (pt < 0) boxCnt[m]++;
+        if (pt > BIG_POINTS) overCnt[m]++;
       }
     });
   });
@@ -7628,7 +7644,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
   const statLabels = ['試合数', '平均着順', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
-    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数'];
+    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数', '箱下', '5万点超'];
   // チップ・焼き鳥・チョンボは記録しているグループだけ（旧データは記録があれば出す）。回数は単位なし
   const useChips = !!s.bonusEnabled || rounds.some(r => r.chips);
   const useYaki = !!s.yakitori || rounds.some(r => r.yakitori);
@@ -7662,9 +7678,10 @@ function rankCountHtml(rounds, s, forImage = false) {
         `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
         `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
       if (ptsCnt[i]) {
-        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`,
+          `<td style="${boxCnt[i] ? 'font-weight:700;color:#c62828' : 'color:#ccc'}">${boxCnt[i]}</td>`, `<td style="${overCnt[i] ? 'font-weight:700;color:#1a237e' : 'color:#ccc'}">${overCnt[i]}</td>`);
       } else {
-        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
+        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`);
       }
       if (useChips) {
         const c = extra.chips[i] || 0;
@@ -9229,7 +9246,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
     if (t.me == null || t.me >= N) { if (rounds.length && (!inP || inP(gameDayMs(g)))) untagged++; return; }
     const me = t.me;
     const np = s.numPlayers === 3 ? 3 : 4;
-    const b = modes[np] = modes[np] || { games: 0, groups: 0, counts: new Array(np).fill(0), avgRankSum: 0, lastCount: 0, score: 0, ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0 };
+    const b = modes[np] = modes[np] || { games: 0, groups: 0, counts: new Array(np).fill(0), avgRankSum: 0, lastCount: 0, score: 0, ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 };
     let played = 0, scoreSum = 0, rankSum = 0;
     rounds.forEach((r, ridx) => {
       const mem = roundMembers(r, s);
@@ -9248,6 +9265,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
         if (b.ptMax == null || pt > b.ptMax) b.ptMax = pt;
         if (b.ptMin == null || pt < b.ptMin) b.ptMin = pt;
         b.raw += (pt - s.returnPoints) / 1000; b.rawSc += Number(r.scores[k]) || 0; b.rawN++; // 素点・順位点（点数のある試合だけ）
+        if (pt < 0) b.box++; if (pt > BIG_POINTS) b.over++; // 箱下・5万点超
       }
     });
     if (!played) return;
@@ -9320,18 +9338,23 @@ function msScopes() {
 }
 // 範囲の成績: 個人＝自分を選んだ全部の試合、仲間ページ＝そのうち仲間ページに入っている試合だけ（自分の選択で数えるので形式がそろう）
 function msStatsFor(scope) { return collectMyStats(periodFilter(), scope === 'all' ? null : (circleSidsOf(scope) || new Set())); }
+// 箱下＝持ち点が0点を下回った回数、5万点超＝50,000点を上回った回数（点数の記録がある試合だけ）
+const BIG_POINTS = 50000;
+function boxOf(m) { return m && m.rawN ? m.box || 0 : null; }
+function overOf(m) { return m && m.rawN ? m.over || 0 : null; }
 function rawPtsOf(m) { return m && m.rawN ? m.raw : null; }
 function rankPtsOf(m) { return m && m.rawN ? m.rawSc - m.raw : null; }
 function msRow(np, m) {
   const n = m.games, c = m.counts;
-  return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, raw: rawPtsOf(m), rp: rankPtsOf(m) };
+  return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, raw: rawPtsOf(m), rp: rankPtsOf(m), box: boxOf(m), over: overOf(m) };
 }
 function msCompareHtml(np) {
   const cols = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { k, label: k === 'all' ? '個人' : label, r: msRow(np, m) } : null; }).filter(Boolean);
   if (cols.length < 2) return '';
   const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top)], ['連対率', r => pctText(r.ren)],
     ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score)],
-    ['素点', r => r.raw == null ? '—' : fmtScore(r.raw), r => r.raw == null ? '' : scoreCls(r.raw)], ['順位点', r => r.rp == null ? '—' : fmtScore(r.rp), r => r.rp == null ? '' : scoreCls(r.rp)]];
+    ['素点', r => r.raw == null ? '—' : fmtScore(r.raw), r => r.raw == null ? '' : scoreCls(r.raw)], ['順位点', r => r.rp == null ? '—' : fmtScore(r.rp), r => r.rp == null ? '' : scoreCls(r.rp)],
+    ['箱下', r => r.box == null ? '—' : r.box + '回'], ['5万点超', r => r.over == null ? '—' : r.over + '回']];
   const w = 84, cw = 96; // 列（範囲）が増えると表が画面より広くなり、横にスクロールして見る
   return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
     <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
@@ -9344,7 +9367,8 @@ function msModeHtml(np, m) {
   const tile = (l, v, cls = '') => `<div class="ms-tile"><span>${l}</span><b class="${cls}">${v}</b></div>`;
   // 上の段: 連対率・素点・順位点／下の段: 最高点数・最低点数（素点＋順位点＝通算スコア。点数の記録が無い試合は素点・順位点に入らない）
   const pv = v => v == null ? '—' : fmtScore(v), pc = v => v == null ? '' : scoreCls(v);
-  return `<div class="ms-tiles ms-tiles5">${tile('連対率', pctText(r.ren))}${tile('素点', pv(r.raw), pc(r.raw))}${tile('順位点', pv(r.rp), pc(r.rp))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}</div>
+  const cv = v => v == null ? '—' : v + '回';
+  return `<div class="ms-tiles ms-tiles5">${tile('連対率', pctText(r.ren))}${tile('素点', pv(r.raw), pc(r.raw))}${tile('順位点', pv(r.rp), pc(r.rp))}${tile('最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—')}${tile('最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—')}${tile('箱下', cv(r.box))}${tile('5万点超', cv(r.over))}</div>
     ${hist.length > 1 ? `<div class="ms-panel">${sparkHtml(hist)}</div>` : ''}`;
 }
 function msGamesHtml(st) {
@@ -9728,7 +9752,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近9日の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
+    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
@@ -9741,7 +9765,6 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
   const nDays = new Set(hist.map(x => ymdLocal(new Date(x.t)))).size;
-  const SPARK_DAYS = 9; // 点の下の日付が重ならない日数（miniSparkHtml と同じ値）
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
@@ -9750,14 +9773,14 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近${Math.min(SPARK_DAYS, nDays)}日の通算スコアの推移</small></span>${miniSparkHtml(hist, np, m.score)}</span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${nDays}日${nDays > 9 ? '・横にスクロール' : ''}）</small></span>${miniSparkHtml(hist, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
 // endVal＝いまの通算スコア。直近の前の時点（endVal − 直近の合計）から積み上げる
-// 通算スコアの推移（打った日ごと。直近9日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
-// 左に目盛りの数値、最後の点に最終の通算スコア。endVal＝いまの通算スコア（直近9日より前の分から積み上げる）。
-// 最後の点の右の通算スコアの数字は出さない（カードの上に通算スコアがある）。その幅と左の目盛りを詰めて9日ぶん並べる
+// 通算スコアの推移（打った日ごと・全部の日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
+// 日数が多いときは横にスクロールして見る（左の目盛りは固定の別の svg。最初は右端＝最新の日を見せる＝scrollSparksEnd）。
+// 高さはどの日数でも同じ（目盛り 30:98 を幅10%・グラフ Wp:98 を幅 Wp/270×90% にして、両方の高さがそろう）
 function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
   const byDay = [];
@@ -9767,12 +9790,14 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     if (!b || b.k !== k) byDay.push(b = { k, d, sc: 0 });
     b.sc += Number(x.sc) || 0;
   });
-  const days = byDay.slice(-9);
+  const days = byDay;
   const sum = days.reduce((a, x) => a + x.sc, 0);
   const end = endVal == null ? sum : Number(endVal);
   let cum = end - sum;
   const ys = [cum].concat(days.map(x => (cum += x.sc)));
-  const W = 300, H = 98, L = 30, R = 16, T = 10, B = 26;
+  const H = 98, T = 10, B = 26, SP = 28, PL = 6, PR = 16;
+  const n = days.length;
+  const Wp = Math.max(270, PL + n * SP + PR);
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
   const lo0 = Math.min(...ys), hi0 = Math.max(...ys);
@@ -9780,14 +9805,13 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   let min = Math.floor(lo0 / step) * step, max = Math.ceil(hi0 / step) * step;
   if (max === min) max = min + step;
   const span = max - min;
-  const x = i => L + (W - L - R) * i / Math.max(1, ys.length - 1);
+  const x = i => PL + (Wp - PL - PR) * i / Math.max(1, n);
   const y = v => T + (H - T - B) * (1 - (v - min) / span);
   const lab = v => { const r = Math.round(v); return (r > 0 ? '+' : '') + r.toLocaleString(); };
   const ticks = [];
   for (let v = min; v <= max + 1e-9; v += step) ticks.push(v);
-  const grid = ticks
-    .map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`
-      + `<text x="${L - 4}" y="${(y(v) + 3).toFixed(1)}" text-anchor="end" class="tk">${lab(v)}</text>`).join('');
+  const grid = ticks.map(v => `<line x1="0" x2="${Wp}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`).join('');
+  const axis = ticks.map(v => `<text x="27" y="${(y(v) + 3).toFixed(1)}" text-anchor="end" class="tk">${lab(v)}</text>`).join('');
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
   const col = end >= 0 ? '#1A237E' : '#C62828';
   // 点の色＝その日のスコアの正負（プラス＝紺・マイナス＝赤・0＝灰）
@@ -9799,8 +9823,19 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     const xm = ((x(i) + x(i + 1)) / 2).toFixed(1);
     return `<line x1="${xm}" x2="${xm}" y1="${T - 2}" y2="${H - B + 4}" class="yr-l"/><text x="${(+xm + 3).toFixed(1)}" y="${T + 5}" class="yr-t">${d.d.getFullYear()}年</text>`;
   }).join('');
-  return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近${days.length}日の通算スコアの推移。最後は${fmtScore(end)}">${grid}
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}${dates}</svg>`;
+  setTimeout(scrollSparksEnd, 0);
+  return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}">
+    <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
+    <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true">${grid}
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}${dates}</svg></span></span>`;
+}
+// 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
+function scrollSparksEnd() {
+  document.querySelectorAll('.mc-scroll[data-end]').forEach(el => {
+    if (!el.scrollWidth) return; // まだ見えていない（あとで表示されたときにもう一度）
+    el.scrollLeft = el.scrollWidth;
+    el.removeAttribute('data-end');
+  });
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
 // （スコア記録の画面と同じ切り替え。色は CSS の --pc… が .sanma で青になる。ヘッダー・シートは body.sanma-mode＝syncSanmaBody）
@@ -9950,6 +9985,7 @@ function curMpPane(st) {
 }
 function setMpPane(k) { mpPane = k; renderMpPanes(collectMyStats()); }
 function renderMpPanes(st) {
+  setTimeout(scrollSparksEnd, 0);
   const pane = curMpPane(st);
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['sum', '成績'], ['h2h', '相手'], ['hist', '過去の試合']].map(([k, l]) =>
@@ -9957,7 +9993,7 @@ function renderMpPanes(st) {
   const m = st.modes[mpMode];
   document.getElementById('mp-pane-sum').innerHTML = pane !== 'sum' ? ''
     : m ? `${msModeHtml(mpMode, m)}${msCompareHtml(mpMode)}<div class="mp-pane-tools"><button type="button" class="btn-tint" onclick="showMyStatsImage()">${ico('image', 16)}画像で見る</button></div>`
-    : `<div class="ms-empty">成績が出ると、ここに連対率・素点・順位点・最高/最低点数とスコアの推移が出ます。</div>`;
+    : `<div class="ms-empty">成績が出ると、ここに連対率・素点・順位点・最高/最低点数・箱下・5万点超とスコアの推移が出ます。</div>`;
   document.getElementById('mp-pane-h2h').innerHTML = pane === 'h2h' ? myH2HCardHtml('renderMpPanes(collectMyStats())') : '';
   document.getElementById('mp-pane-hist').style.display = pane === 'hist' ? '' : 'none';
 }
