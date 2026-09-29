@@ -738,7 +738,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-nil b { color: #AEBBB8 !important; }
 .mc-spark-empty { display: flex; align-items: center; justify-content: center; aspect-ratio: 300 / 80; margin-top: 4px; border-radius: 10px; background: #F5F7F7; padding: 0 16px; text-align: center; }
 .mc-spark-empty span { font-size: 12.5px; font-weight: 700; color: #5F6E6B; line-height: 1.6; }
-.mc-head b { font-size: 16px; font-weight: 900; color: var(--pc); }
+.mc-head b { display: inline-flex; align-items: center; min-width: 0; font-size: 16px; font-weight: 900; color: var(--pc); }
+.mc-head > span { flex: none; margin-left: 8px; }
 .mc-card.s3 .mc-head b { color: #4261AA; }
 .mc-head span { font-size: 12px; color: #5F6E6B; font-weight: 700; }
 .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; margin-bottom: 10px; }
@@ -805,6 +806,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 過去の試合のタイル（小さな正方形。大きさは固定＝中身が増えても変わらない。空＝点線・灰色、少ない＝琥珀色の縁、不参加＝斜線の地） */
 .ht-legend { margin: 12px 2px 8px; font-size: 12px; font-weight: 700; color: #5F6E6B; }
 .ht-lg.empty { color: #6B7A77; } .ht-lg.few { color: #9A5B12; }
+.ht-year { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; font-size: 15px; font-weight: 900; color: #1F2A28; }
+.ht-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; }
+.ht-legend + .ht-year { margin-top: 4px; }
 .ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 .ht { aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; padding: 8px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
 .ht:active { opacity: .75; }
@@ -816,8 +820,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht-out { background: #6B7A77; color: #fff; }
 .ht-name { flex: 1; min-height: 0; font-size: 12.5px; font-weight: 800; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .ht-avs { display: flex; height: 20px; align-items: center; padding-left: 2px; overflow: hidden; }
-.ht-avs i { width: 17px; height: 17px; margin-right: 2px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; flex: none; }
+.ht-avs i { width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; flex: none; }
 .ht-avs i.me { box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--pc); z-index: 1; margin: 0 4px 0 2px; }
+.ht-avs i.more { width: auto; min-width: 16px; padding: 0 3px; border-radius: 8px; }
 .ht-avs i.more { background: #E3E9E8; color: #4F5C5A; font-size: 9px; }
 .ht-n { display: flex; align-items: baseline; gap: 2px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .ht-n b { font-size: 20px; font-weight: 900; color: var(--pc); line-height: 1; font-variant-numeric: tabular-nums; }
@@ -973,7 +978,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cc-mine-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; }
 .cc-mine-h b { font-size: 16px; font-weight: 900; color: #1F2A28; }
 .cc-mine-h small { font-size: 12px; color: #5F6E6B; font-weight: 700; }
-.mc-scope { font-style: normal; font-size: 11px; font-weight: 800; color: #5F6E6B; background: #EEF2F1; border-radius: 8px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; }
+.mc-scope { display: inline-flex; align-items: center; gap: 4px; max-width: 150px; height: 20px; font-style: normal; font-size: 11.5px; font-weight: 800; color: #4F5C5A; background: #EEF2F1; border-radius: 10px; padding: 0 8px 0 4px; margin-left: 6px; vertical-align: 2px; }
+.mc-scope span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.mc-scope .ico { --i1: #4F5C5A; --i2: #AEBBB8; }
+.mc-scope-av { flex: none; width: 15px; height: 15px; border-radius: 4px; display: inline-grid; place-items: center; background: #E75620; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 900; }
 .ch-title-row { padding-top: 6px; }
 #circle-top:empty { display: none; }
 .mode-seg button small { font-size: 10px; font-weight: 700; }
@@ -3368,8 +3376,8 @@ function renderCircle() {
       if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin };
     });
     topHtml += mine[mpMode]
-      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, 'この仲間ページ')}</div>`
-      : mpEmptyCardHtml(mpMode, 'この仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます');
+      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
+      : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます');
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
   applyMpTheme();
@@ -9590,11 +9598,17 @@ function mpPeriodHtml() {
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
 function mpModeCardHtml(np, m) {
-  return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(np, m, false)}</div>`;
+  return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(np, m, false, '個人')}</div>`;
 }
 // 成績が無いときも同じ組み方・同じ高さのカード（四麻／三麻・個人／仲間ページのどれでもカードの高さが変わらない）
+// 成績カードの見出しの右: どの範囲の成績か（個人＝人のマーク／仲間ページ＝オレンジの頭文字＋名前）
+function mcScopeHtml(label) {
+  if (!label) return '';
+  const mark = label === '個人' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(label))}</i>`;
+  return `<em class="mc-scope">${mark}<span>${esc(label)}</span></em>`;
+}
 function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
-  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${scopeLabel ? `<em class="mc-scope">${esc(scopeLabel)}</em>` : ''}</b><span>0試合 ・ 0ゲーム</span></span>
+  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>0試合 ・ 0ゲーム</span></span>
     <span class="mc-grid mc-nil">
       <span><small>平均着順</small><b>—</b></span>
       <span><small>通算スコア</small><b>—</b></span>
@@ -9615,7 +9629,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
   const last = hist.slice(-10);
-  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${scopeLabel ? `<em class="mc-scope">${esc(scopeLabel)}</em>` : ''}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
+  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
       <span><small>通算スコア</small><b class="${scoreCls(m.score)}">${fmtScore(m.score)}</b></span>
@@ -9696,7 +9710,7 @@ function mpStatsHtml(st) {
     const msg = !any ? 'まだ試合がありません。試合を作るか「試合を追加」で取り込むと、ここに成績が出ます'
       : st.untagged ? `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。<br>過去の試合で自分を選ぶと、ここに成績が出ます`
       : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`;
-    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '', msg)}</div>`;
+    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}</div>`;
   }
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}</div>`;
 }
@@ -9930,7 +9944,7 @@ function histTilesHtml(items) {
   if (!items.length) return '';
   const nEmpty = items.filter(x => !(x.g.rounds || []).length).length;
   const nFew = items.filter(x => { const n = (x.g.rounds || []).length; return n > 0 && n <= HIST_FEW; }).length;
-  const tiles = items.map(({ g, me, onclick }) => {
+  const tileOf = ({ g, me, onclick }) => {
     const n = (g.rounds || []).length, s = g.settings || {}, np = s.numPlayers === 3 ? 3 : 4;
     const names = s.playerNames || [], played = playedFlags(g), tot = gameTotals(g);
     const who = memberDisplayOrder(s).filter(i => played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
@@ -9946,9 +9960,18 @@ function histTilesHtml(items) {
       <span class="ht-name">${esc(g.name || '（名前なし）')}</span>
       <span class="ht-avs">${avs}</span>
       <span class="ht-n"><b>${n}</b>試合${!n ? '<em class="ht-tag">空</em>' : n <= HIST_FEW ? '<em class="ht-tag">少ない</em>' : `<span class="ht-d">${d.getMonth() + 1}/${d.getDate()}</span>`}</span></button>`;
-  }).join('');
+  };
+  // 年ごとに区切る（items は新しい順）
+  const years = [];
+  items.forEach(x => {
+    const y = new Date(gameDayMs(x.g)).getFullYear();
+    let b = years[years.length - 1];
+    if (!b || b.y !== y) years.push(b = { y, list: [] });
+    b.list.push(x);
+  });
+  const tiles = years.map(b => `<div class="ht-year">${b.y}年<span>${b.list.length}件</span></div><div class="ht-grid">${b.list.map(tileOf).join('')}</div>`).join('');
   return `<div class="ht-legend">${items.length}件${nEmpty ? ` ・ <span class="ht-lg empty">空（0試合） ${nEmpty}件</span>` : ''}${nFew ? ` ・ <span class="ht-lg few">少ない（${HIST_FEW}試合以下） ${nFew}件</span>` : ''}</div>
-    <div class="ht-grid">${tiles}</div>`;
+    ${tiles}`;
 }
 function histKindMatch(g, k) {
   const s = g.settings || {}, np = s.numPlayers === 3 ? 3 : 4;
