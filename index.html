@@ -811,6 +811,23 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cal-c.has.on { background: #177083; box-shadow: none; } .cal-c.has.on b, .cal-c.has.on i { color: #fff; }
 .cal-c.today { outline: 2px solid #E3B341; outline-offset: -2px; }
 .cal-hint { font-size: 12px; color: #5F6E6B; margin: 10px 2px 2px; line-height: 1.7; }
+.dr-row { display: flex; align-items: center; gap: 6px; }
+.dr-row input { flex: 1; min-width: 0; height: 46px; padding: 0 10px; border: 1.5px solid #ddd; border-radius: 10px; background: #fff; font-size: 15px; color: #1a1a1a; font-family: inherit; }
+.dr-row [hidden] { display: none !important; }
+.dr-to { flex: none; font-weight: 800; color: #5F6E6B; }
+.dr-multi { display: flex !important; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px !important; font-weight: 600 !important; color: #33544A; cursor: pointer; }
+.dr-multi input { width: 18px; height: 18px; }
+.cg-mem { display: block; font-size: 12px; color: #4F5C5A; margin-top: 2px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cal-mode { display: flex; justify-content: center; margin-bottom: 8px; }
+.cal-year { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.cal-m { border: 0; border-radius: 12px; background: #fff; padding: 8px 4px; text-align: center; font: inherit; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
+.cal-m b { display: block; font-size: 14px; font-weight: 900; color: #1F2A28; }
+.cal-m span { display: block; font-size: 11px; color: #5F6E6B; font-weight: 700; margin-top: 2px; }
+.cal-m i { display: block; height: 5px; border-radius: 3px; background: #E3E9E7; margin: 6px 6px 0; overflow: hidden; }
+.cal-m i u { display: block; height: 100%; background: #177083; }
+.cal-m.none { background: transparent; box-shadow: none; cursor: default; }
+.cal-m.none b { color: #AEBBB8; }
+.cal-m.cur { box-shadow: inset 0 0 0 2px #177083; }
 .cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
 /* History */
@@ -1636,11 +1653,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <label>ゲーム名</label>
         <input type="text" id="s-name" placeholder="まじゃすこ学園サッカー部" maxlength="40">
       </div>
-      <div class="field">
-        <label>対局日</label>
-        <input type="date" id="s-date" onchange="onSetupDateChange()">
-        <div style="font-size:11px;color:#5F6E6B;margin-top:4px">過去の試合をあとから入力するときは、打った日にしてください。成績の期間はこの日で分けます。</div>
-      </div>
+      <div id="s-date-field"></div>
       <div class="field">
         <div style="display:flex;align-items:center;justify-content:space-between">
           <label>メンバー名（最大40人）</label>
@@ -3194,14 +3207,15 @@ function circleGamesTabHtml(role, gids) {
       mine = `<span class="gm-res${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 16, false) : ''}あなた ${rank}位<span class="of"> / ${nPlayed}人</span></span> `;
     } else if (myMid) mine = '<span class="gr-out">出ていない</span> ';
     return `<button type="button" class="series-row cg-row${g.settings && g.settings.numPlayers === 3 ? ' gm-3' : ''}${myMid && mySeat == null ? ' cg-out' : ''}" onclick="openCircleGameMenu('${sid}')">
-      <span class="gm-date"><span>${d.getMonth() + 1}月（${YOUBI[d.getDay()]}）</span><b>${d.getDate()}</b></span>
+      <span class="gm-date"><span>${d.getMonth() + 1}月</span><b>${d.getDate()}</b></span>
       <span class="cg-main"><span class="cg-name">${esc(g.name || ge.name || '')}</span>
-        <span class="cg-sub cg-flow">${mine}${(g.rounds || []).length}試合${top >= 0 ? ` ・ 1位 ${esc(g.settings.playerNames[top])}` : ''}</span>
+        <span class="cg-sub cg-flow">${mine}${fmtGameDays(g)} ・ ${(g.rounds || []).length}試合${top >= 0 ? ` ・ 1位 ${esc(g.settings.playerNames[top])}` : ''}</span>
+        <span class="cg-mem">${memberDisplayOrder(g.settings).filter(i => played[i]).map(i => esc(g.settings.playerNames[i])).join('・')}</span>
         ${nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : `<span class="st-pill ok">${ico('check', 12)}結びつけ済み</span>`}</span>
       ${ico('chevron', 14)}</button>`;
   };
   // 打った日（読み込めなかった試合は追加した日）
-  const dayOf = x => (x.g ? gameDayMs(x.g) : Date.parse(x.ge.at) || 0);
+  const dayOf = x => (x.g ? ymdToMs(gameDaysList(x.g)[0]) : Date.parse(x.ge.at) || 0);
   let glist = '';
   if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, rowOf);
   else {
@@ -3220,34 +3234,52 @@ function circleGamesTabHtml(role, gids) {
     <div class="h2h-note">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。</div></div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
-let circleGamesView = 'list', circleCalMonth = null, circleCalDay = null;
+let circleGamesView = 'list', circleCalMonth = null, circleCalDay = null, circleCalMode = 'month';
 function circleCalendarHtml(games, dayOf, rowOf) {
   const byDay = {};
-  games.forEach(x => { const d = new Date(dayOf(x)); const k = ymdLocal(d); (byDay[k] = byDay[k] || []).push(x); });
+  games.forEach(x => { (x.g ? gameDaysList(x.g) : [ymdLocal(new Date(dayOf(x)))]).forEach(k => { (byDay[k] = byDay[k] || []).push(x); }); });
   const latest = new Date(dayOf(games[0]));
   if (circleCalMonth == null) circleCalMonth = latest.getFullYear() * 12 + latest.getMonth();
   const y = Math.floor(circleCalMonth / 12), m = circleCalMonth % 12;
+  const keys = Object.keys(byDay);
+  const years = [...new Set(keys.map(k => +k.slice(0, 4)))].sort((a, b) => a - b);
+  const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['month', '月'], ['year', '年']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${circleCalMode === k ? 'on' : ''}" aria-selected="${circleCalMode === k}" onclick="circleCalMode='${k}';renderCircle()">${l}</button>`).join('')}</div></div>`;
+  if (circleCalMode === 'year') {
+    // 年: 月ごとの「ゲーム数・打った日数」。押すとその月のカレンダー
+    const perMonth = Array.from({ length: 12 }, () => ({ games: new Set(), days: 0 }));
+    keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
+    const maxG = Math.max(1, ...perMonth.map(p => p.games.size));
+    const cells = perMonth.map((p, i) => p.games.size
+      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="circleCalMonth=${y * 12 + i};circleCalMode='month';circleCalDay=null;renderCircle()"><b>${i + 1}月</b><span>${p.games.size}ゲーム・${p.days}日</span><i><u style="width:${Math.round(p.games.size / maxG * 100)}%"></u></i></button>`
+      : `<span class="cal-m none"><b>${i + 1}月</b><span>—</span></span>`).join('');
+    const total = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid))).size;
+    const ynav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir * 12};renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
+    return `<div class="cal">${modeSeg}<div class="cal-head">${ynav(-1, years[0] < y)}<b>${y}年</b>${ynav(1, years[years.length - 1] > y)}</div>
+      <div class="cal-year">${cells}</div></div><div class="cal-hint">${y}年は${total}ゲーム。月を押すと、その月のカレンダーになります。</div>`;
+  }
   const first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate();
   const today = ymdLocal(new Date());
-  const monthCount = Object.keys(byDay).filter(k => k.startsWith(`${y}-${String(m + 1).padStart(2, '0')}-`)).reduce((a, k) => a + byDay[k].length, 0);
+  const pre = `${y}-${String(m + 1).padStart(2, '0')}-`;
+  const monthGames = new Set(keys.filter(k => k.startsWith(pre)).flatMap(k => byDay[k].map(x => x.sid))).size;
   let cells = '';
   for (let i = 0; i < first.getDay(); i++) cells += '<span class="cal-c empty"></span>';
   for (let d = 1; d <= days; d++) {
-    const k = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const k = pre + String(d).padStart(2, '0');
     const n = (byDay[k] || []).length;
     const dow = (first.getDay() + d - 1) % 7;
     cells += n
       ? `<button type="button" class="cal-c has${circleCalDay === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="circleCalDay='${k}';renderCircle()"><b>${d}</b><i>${n > 1 ? n + '件' : '●'}</i></button>`
       : `<span class="cal-c${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}"><b>${d}</b></span>`;
   }
-  const allMonths = games.map(x => { const d = new Date(dayOf(x)); return d.getFullYear() * 12 + d.getMonth(); });
-  const minM = Math.min(...allMonths), maxM = Math.max(...allMonths, latest.getFullYear() * 12 + latest.getMonth());
+  const allMonths = keys.map(k => +k.slice(0, 4) * 12 + (+k.slice(5, 7) - 1));
+  const minM = Math.min(...allMonths), maxM = Math.max(...allMonths);
   const nav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の月' : '次の月'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir};circleCalDay=null;renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
-  const sel = circleCalDay && byDay[circleCalDay] && circleCalDay.startsWith(`${y}-${String(m + 1).padStart(2, '0')}-`) ? circleCalDay : null;
+  const sel = circleCalDay && byDay[circleCalDay] && circleCalDay.startsWith(pre) ? circleCalDay : null;
   const dayList = sel
-    ? `<div class="gm-month cg-month">${fmtDay(new Date(sel.replace(/-/g, '/') + ' 12:00').getTime(), true)}の試合</div>${byDay[sel].map(rowOf).join('')}`
-    : `<div class="cal-hint">${monthCount ? `この月は${monthCount}ゲーム。印のある日を押すと、その日の試合が出ます。` : 'この月の試合はありません。'}</div>`;
-  return `<div class="cal">
+    ? `<div class="gm-month cg-month">${fmtDay(ymdToMs(sel), true)}の試合</div>${byDay[sel].map(rowOf).join('')}`
+    : `<div class="cal-hint">${monthGames ? `この月は${monthGames}ゲーム。印のある日を押すと、その日の試合が出ます（2日以上にわたる試合は、その全部の日に印）。` : 'この月の試合はありません。'}</div>`;
+  return `<div class="cal">${modeSeg}
     <div class="cal-head">${nav(-1, circleCalMonth > minM)}<b>${y}年${m + 1}月</b>${nav(1, circleCalMonth < maxM)}</div>
     <div class="cal-grid">${'日月火水木金土'.split('').map((w, i) => `<span class="cal-w${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}">${w}</span>`).join('')}${cells}</div>
   </div>${dayList}`;
@@ -4599,7 +4631,7 @@ function describeSettingsChanges(base, next, membersState) {
   const penStr = p => (Number(p) > 0 ? `罰符 −${Number(p)}pts` : 'マークのみ');
   const teamSig = st => (st.teams ? normalizedTeams(st).map(t => ({ name: t.name, members: t.members.map(m => (st.playerNames || [])[m]) })) : []);
   if ((base.name || '') !== (next.name || '')) out.push(`ゲーム名: ${base.name || ''} → ${next.name || ''}`);
-  if ((a.playDate || '') !== (b.playDate || '')) out.push(`対局日: ${fmtYmd(a.playDate || '')} → ${fmtYmd(b.playDate || '')}`);
+  if ((a.playDate || '') !== (b.playDate || '') || (a.playDateEnd || '') !== (b.playDateEnd || '')) out.push(`対局日: ${fmtYmdRange(a)} → ${fmtYmdRange(b)}`);
   if (membersState) {
     const oldNames = a.playerNames || [];
     const newNames = b.playerNames || [];
@@ -5098,7 +5130,7 @@ function initSetupForm() {
   // ゲーム名は今日の日付を初期値にする（そのまま作成してもよく、消して書き換えてもよい。
   // 全部消したまま作成した場合もstartGameが日付名にフォールバックする）
   document.getElementById('s-name').value = todayStr();
-  document.getElementById('s-date').value = ymdLocal(new Date());
+  document.getElementById('s-date-field').innerHTML = dateRangeFieldHtml('s', ymdLocal(new Date()), '', '過去の試合をあとから入力するときは、打った日にしてください。成績の期間はこの日で分けます。');
   setupMembers = [];
   document.getElementById('member-input').value = '';
   numPlayers = 4;
@@ -5373,9 +5405,10 @@ async function startGame() {
     if (teams.some(t => t.members.length === 0)) { showToast('メンバーがいないチームがあります。編成を確認してください'); return; }
   }
   // 対局日: 今日以外を選んだときだけ持たせる（今日なら、打った日は入力日時からわかる）
-  const pd = document.getElementById('s-date').value;
-  const playDate = (/^\d{4}-\d{2}-\d{2}$/.test(pd) && pd !== ymdLocal(new Date())) ? pd : null;
-  await createGame(name, { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}), ...(playDate ? { playDate } : {}) });
+  const dr = readDateRange('s');
+  const playDate = dr.start && (dr.end || dr.start !== ymdLocal(new Date())) ? dr.start : null; // 2日以上にわたるときは今日始まりでも持たせる
+  await createGame(name, { playerNames, numPlayers, startPoints, returnPoints, uma, rate, bonusEnabled, chipRate, startChips, yakitori, chombo, chomboPenalty, teamMode, ...(teams ? { teams } : {}),
+    ...(playDate ? { playDate } : {}), ...(playDate && dr.end ? { playDateEnd: dr.end } : {}) });
 }
 
 // グループの作成〜画面遷移までの共通処理。設定画面からの startGame と、
@@ -7358,7 +7391,7 @@ function renderGame() {
   const s = activeGame.settings;
   document.getElementById('game-title').textContent = activeGame.name;
   // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
-  document.getElementById('game-date').textContent = playDateMs(activeGame) != null ? '対局日 ' + fmtDay(playDateMs(activeGame), true)
+  document.getElementById('game-date').textContent = playDateMs(activeGame) != null ? '対局日 ' + fmtGameDays(activeGame)
     : activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
   // 総合順位カード（順位リスト＋スコア/チップ切替）
@@ -8013,14 +8046,20 @@ function removeEditMember(pos) {
   if (teamOn && teamOn.checked) initEditTeamEditor();
 }
 // 設定の編集・結果の編集に出す対局日の初期値（指定が無ければ打った日）
-let editDateDefault = '';
-function editDateOf(g) { return (g.settings && g.settings.playDate) || ymdLocal(new Date(gameDayMs(g))); }
+let editDateDefault = '', editDateEndDefault = '';
+function editDateOf(g) { return (g.settings && g.settings.playDate) || gameDaysList(g)[0]; }
+function editDateEndOf(g) { if (g.settings && g.settings.playDate) return g.settings.playDateEnd || ''; const ds = gameDaysList(g); return ds.length > 1 ? ds[ds.length - 1] : ''; }
+function setEditDateDefaults(g) { editDateDefault = editDateOf(g); editDateEndDefault = editDateEndOf(g); }
 // 入力された対局日を settings に反映する（初期値のままなら何も変えない）
-function applyEditDate(settings, v) {
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v || '') && v !== editDateDefault) settings.playDate = v;
+function applyEditDate(settings, p) {
+  const dr = readDateRange(p);
+  if (!dr.start || (dr.start === editDateDefault && (dr.end || '') === editDateEndDefault)) return settings;
+  settings.playDate = dr.start;
+  if (dr.end) settings.playDateEnd = dr.end; else delete settings.playDateEnd;
   return settings;
 }
 function fmtYmd(v) { const [y, m, d] = String(v).split('-').map(Number); return v ? fmtDay(new Date(y, m - 1, d, 12).getTime(), true) : 'なし'; }
+function fmtYmdRange(st) { return st.playDate ? fmtYmd(st.playDate) + (st.playDateEnd ? '〜' + fmtYmd(st.playDateEnd) : '') : 'なし'; }
 function settingsFormHtml(name, s) {
   const n = s.numPlayers;
   const umaKey = umaKeyOf(s.uma, n);
@@ -8029,7 +8068,7 @@ function settingsFormHtml(name, s) {
     .map(([v,l]) => `<option value="${v}" ${v===umaKey?'selected':''}>${l}</option>`).join('');
   return `
     <div class="field"><label>ゲーム名</label><input type="text" id="e-name" value="${esc(name)}" maxlength="${MAX_GROUP_LEN}"></div>
-    <div class="field"><label>対局日</label><input type="date" id="e-date" value="${editDateDefault}"></div>
+    ${dateRangeFieldHtml('e', editDateDefault, editDateEndDefault)}
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
@@ -8121,7 +8160,7 @@ function openGameEdit() {
   // 現在のチーム編成を編集用にコピー（origのindexは初期状態では位置と一致する）
   editTeams = s.teams ? normalizedTeams(s).map(t => ({ name: t.name, members: t.members.slice() })) : null;
   editBase = { name: activeGame.name, settings: JSON.parse(JSON.stringify(s)) };
-  editDateDefault = editDateOf(activeGame);
+  setEditDateDefaults(activeGame);
   document.getElementById('form-modal-title').textContent = 'ゲーム設定を編集';
   // フォームが長いので、ヘッダー右にも小さい保存/キャンセルを置く
   document.getElementById('form-modal-actions').innerHTML =
@@ -8169,7 +8208,7 @@ async function saveGameEdit() {
   }
   // rate / chipRate は画面に出さない旧キー。...s でそのまま持ち越す（旧データを書き換えない）
   const settings = applyEditDate({ ...s, playerNames, startPoints, returnPoints, uma, bonusEnabled, startChips, yakitori, chombo, chomboPenalty, teamMode },
-    document.getElementById('e-date').value);
+    'e');
   if (teams) settings.teams = teams;
   else delete settings.teams;
   // メンバーの削除・並び替えに合わせて、各試合のmembers indexを旧→新に振り直すための対応表
@@ -8812,6 +8851,55 @@ function playDateMs(g) {
   const [y, m, d] = p.split('-').map(Number);
   return new Date(y, m - 1, d, 12).getTime();
 }
+function ymdToMs(v) { const [y, m, d] = String(v).split('-').map(Number); return new Date(y, m - 1, d, 12).getTime(); }
+// その試合を打った日の一覧（YYYY-MM-DD・古い順）。対局日の指定があればその範囲（2日以上なら playDateEnd まで・最大14日）、
+// 無ければ各試合の入力日時の日（試合が2日にまたがれば2日）
+function gameDaysList(g) {
+  const s = (g && g.settings) || {};
+  if (s.playDate && /^\d{4}-\d{2}-\d{2}$/.test(s.playDate)) {
+    const out = [s.playDate];
+    if (s.playDateEnd && /^\d{4}-\d{2}-\d{2}$/.test(s.playDateEnd) && s.playDateEnd > s.playDate) {
+      let t = ymdToMs(s.playDate);
+      const end = ymdToMs(s.playDateEnd);
+      while ((t += 86400000) <= end + 3600000 && out.length < 14) out.push(ymdLocal(new Date(t)));
+    }
+    return out;
+  }
+  const set = new Set();
+  ((g && g.rounds) || []).forEach(r => { const t = Date.parse(r && r.at); if (t) set.add(ymdLocal(new Date(t))); });
+  if (!set.size) set.add(ymdLocal(new Date(gameDayMs(g))));
+  return [...set].sort();
+}
+// 「9/13（日）」／2日以上なら「8/24（土）〜25（日）」
+function fmtGameDays(g) {
+  const ds = gameDaysList(g);
+  const a = ymdToMs(ds[0]);
+  if (ds.length === 1) return fmtDay(a);
+  const b = ymdToMs(ds[ds.length - 1]), da = new Date(a), db = new Date(b);
+  return `${fmtDay(a)}〜${da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() ? `${db.getDate()}（${YOUBI[db.getDay()]}）` : fmtDay(b)}`;
+}
+// 対局日の入力（開始日＋「2日以上にわたる」で終了日）。設定画面・設定の編集・結果の編集で共用
+function dateRangeFieldHtml(p, start, end, note) {
+  return `<div class="field"><label>対局日</label>
+    <div class="dr-row"><input type="date" id="${p}-date" value="${start}"${p === 's' ? ' onchange="onSetupDateChange()"' : ''}>
+      <span class="dr-to" id="${p}-to"${end ? '' : ' hidden'}>〜</span><input type="date" id="${p}-date-end" value="${end || ''}"${end ? '' : ' hidden'}></div>
+    <label class="dr-multi"><input type="checkbox" id="${p}-multi"${end ? ' checked' : ''} onchange="toggleDateEnd('${p}')">2日以上にわたる（大会など）</label>
+    ${note ? `<div style="font-size:11px;color:#5F6E6B;margin-top:4px">${note}</div>` : ''}</div>`;
+}
+function toggleDateEnd(p) {
+  const on = document.getElementById(p + '-multi').checked;
+  const st = document.getElementById(p + '-date'), en = document.getElementById(p + '-date-end');
+  en.hidden = !on; document.getElementById(p + '-to').hidden = !on;
+  if (on && !(en.value > st.value) && /^\d{4}-\d{2}-\d{2}$/.test(st.value)) en.value = ymdLocal(new Date(ymdToMs(st.value) + 86400000));
+}
+// { start, end|null }（終了日は「2日以上にわたる」がONで開始日より後のときだけ）
+function readDateRange(p) {
+  const st = (document.getElementById(p + '-date') || {}).value || '';
+  const en = (document.getElementById(p + '-date-end') || {}).value || '';
+  const on = (document.getElementById(p + '-multi') || {}).checked;
+  const ok = v => /^\d{4}-\d{2}-\d{2}$/.test(v);
+  return { start: ok(st) ? st : '', end: (on && ok(st) && ok(en) && en > st) ? en : null };
+}
 function gameDayMs(g) {
   const p = playDateMs(g);
   if (p != null) return p;
@@ -8955,7 +9043,7 @@ function historyItemHtml(g) {
   const on = mpSelecting && mpSel.has(g.id);
   return `<div class="gr ${st}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}
-    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtDay(ms)}${rel ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
+    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
 }
@@ -9258,7 +9346,7 @@ function renderDetailBody(g) {
   detailGame = g;
   const P = detailRO ? 'watch' : 'detail'; // 見るだけの画面（view-watch）は同じ部品で、入力・修正の入り口を出さない
   document.getElementById(P + '-title').textContent = g.name;
-  document.getElementById(P + '-date').textContent = playDateMs(g) != null ? '対局日 ' + fmtDay(playDateMs(g), true)
+  document.getElementById(P + '-date').textContent = playDateMs(g) != null ? '対局日 ' + fmtGameDays(g)
     : g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
@@ -9377,7 +9465,7 @@ async function openDetailEdit() {
   document.getElementById('form-modal-title').textContent = '結果を編集';
   document.getElementById('form-modal-body').innerHTML = `
     <div class="field"><label>ゲーム名</label><input type="text" id="d-name" value="${esc(g.name)}" maxlength="${MAX_GROUP_LEN}"></div>
-    <div class="field"><label>対局日</label><input type="date" id="d-date" value="${editDateDefault = editDateOf(g)}"></div>
+    ${(setEditDateDefaults(g), dateRangeFieldHtml('d', editDateDefault, editDateEndDefault))}
     <div class="field"><label>プレイヤー名</label>
       ${g.settings.playerNames.map((nm, i) => `<input type="text" id="d-p-${i}" value="${esc(nm)}" style="margin-bottom:6px" maxlength="${MAX_NAME_LEN}">`).join('')}
     </div>
@@ -9392,14 +9480,14 @@ function saveDetailEdit() {
     clampName(document.getElementById(`d-p-${i}`).value, MAX_NAME_LEN) || nm);
   const baseFp = fpOf({ name: g.name, names: g.settings.playerNames });
   // 対局日は設定の変更として先に送る（名前の変更は設定を変えないので、あとの名前の変更とはぶつからない）
-  const nextSettings = applyEditDate({ ...g.settings }, document.getElementById('d-date').value);
-  const dateChanged = (nextSettings.playDate || '') !== (g.settings.playDate || '');
+  const nextSettings = applyEditDate({ ...g.settings }, 'd');
+  const dateChanged = (nextSettings.playDate || '') !== (g.settings.playDate || '') || (nextSettings.playDateEnd || '') !== (g.settings.playDateEnd || '');
   if (baseFp === fpOf({ name: newName, names: newPlayers }) && !dateChanged) { closeFormModal(); showToast('変更はありませんでした'); return; }
   if (dateChanged) {
     const base = { name: g.name, settings: g.settings };
     const memberMap = {}; g.settings.playerNames.forEach((_, i) => { memberMap[i] = i; });
     const sop = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'settings', baseFp: fpOf(base), name: g.name, settings: nextSettings,
-      memberMap, changes: [`対局日: ${fmtYmd(g.settings.playDate || '')} → ${fmtYmd(nextSettings.playDate)}`] });
+      memberMap, changes: [`対局日: ${fmtYmdRange(g.settings)} → ${fmtYmdRange(nextSettings)}`] });
     const r0 = applyOp(g, sop);
     if (r0.status === 'apply') Object.assign(g, r0.game);
     if (baseFp === fpOf({ name: newName, names: newPlayers })) { saveStorage(); closeFormModal(); viewDetail(g); showToast('対局日を変更しました'); return; }

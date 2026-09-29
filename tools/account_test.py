@@ -405,6 +405,17 @@ def main():
         results.append(("[10j] 結果の編集から対局日を変えられ、変更の履歴にも残る", True,
                         any("対局日" in str(e) for e in (db_of()["sessions"][g1].get("log") or []))))
         pg.evaluate("showView('history')")
+        # 2日以上にわたる対局: 設定画面で終了日を選ぶ → 両方の日が打った日になる
+        pg.evaluate("showView('setup')")
+        pg.evaluate("() => { setupMembers = ['むにぃ', 'たろう', 'じろう', 'しろう']; renderMembers(); document.getElementById('s-date').value = '2025-08-23'; document.getElementById('s-multi').checked = true; toggleDateEnd('s'); }")
+        pg.evaluate("startGame()")
+        pg.wait_for_function(SAFE % "document.querySelector('#view-share').classList.contains('active')", timeout=10000)
+        g5 = pg.evaluate("sessionId")
+        st5 = db_of()["sessions"][g5]["settings"]
+        days5 = pg.evaluate("gameDaysList(activeGame || { settings: %s })" % json.dumps(st5))
+        pg.evaluate("leaveGame()")
+        results.append(("[10k] 2日以上にわたる対局は開始日と終了日を持ち、打った日が2日になる", True,
+                        st5.get("playDate") == "2025-08-23" and st5.get("playDateEnd") == "2025-08-24" and days5 == ["2025-08-23", "2025-08-24"]))
 
         # ---- 11. 共有シート・見るだけのリンク ----
         pg.evaluate(f"joinSession('{g1}')")
