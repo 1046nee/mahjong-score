@@ -786,7 +786,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mx-nm { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 .h2h-matrix td.mx-rh { overflow: hidden; text-overflow: ellipsis; white-space: nowrap !important; font-size: 12px; padding-left: 8px; }
 .h2h-matrix td.mx-rh.me { font-weight: 800; box-shadow: inset 3px 0 0 #177083; }
-.h2h-matrix .mx { min-width: 0; width: 44px; padding: 3px 0; font-size: 12px; text-align: center; }
+.h2h-matrix .mx { min-width: 0; display: block; width: 100%; padding: 3px 0; font-size: 12px; text-align: center; white-space: nowrap; }
 .h2h-matrix td.mx-self { color: #B5C0BD; background: #F4F7F6; }
 .h2h-matrix td.mx-na { color: #B5C0BD; }
 .h2h-matrix td[onclick] { cursor: pointer; }
@@ -3093,24 +3093,27 @@ function circleGridHtml(st, forImage = false) {
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
 // 総当たり表（行の人から見た、列の人との直接対決）。画面だけ（画像出力の対象外）
-// 総当たり表（画面用）。セルは「行の人から見た直接対決の勝率」＝常に4文字以内なので、試合数が何百になっても列の幅が変わらない。
-// 勝ち負けの数は押すと出す（title にも入れる）。名前は列の幅で省略し、全文は title
+// 総当たり表（画面用）。セルは「勝ち-負け」（例 57-74）。
+// 桁が増えるとセルからはみ出して読めなくなるので、表の中でいちばん長い「勝ち-負け」の文字数から列の幅を決め、全部の列を同じ幅にする
+// （幅は文字数×7.4px＋余白、最低50px。はみ出す代わりに表が横に広がり、横スクロールで見る）。名前は列の幅で省略し、全文は title。
+// 引き分けは下に小さく「n分」。マスを押すと「A → B：57勝74敗（131試合）」
 function mxTableHtml(keys, nameOf, pairOf, myKey) {
-  const colW = 50, headW = 76;
+  let maxLen = 3;
+  keys.forEach(a => keys.forEach(b => { const e = a !== b && pairOf(a, b); if (e) maxLen = Math.max(maxLen, `${e.w}-${e.l}`.length); }));
+  const colW = Math.max(50, Math.ceil(maxLen * 7.4 + 14)), headW = 76;
   const head = keys.map(k => `<th title="${esc(nameOf(k))}"><span class="mx-nm">${esc(nameOf(k))}</span></th>`).join('');
   const rows = keys.map(a => `<tr><td class="sticky-col mx-rh${a === myKey ? ' me' : ''}" title="${esc(nameOf(a))}">${esc(nameOf(a))}</td>${keys.map(b => {
     if (a === b) return '<td class="mx-self">—</td>';
     const e = pairOf(a, b);
     if (!e) return '<td class="mx-na">・</td>';
-    const pct = h2hWinPct(e);
-    const cls = pct == null || pct === 50 ? 'e' : pct > 50 ? 'w' : 'l';
+    const d = e.w - e.l;
     const txt = `${nameOf(a)} → ${nameOf(b)}：${h2hRecordText(e)}（${e.n}試合）`;
-    return `<td title="${esc(txt)}" onclick="showToast(this.title)"><span class="mx ${cls}">${pct == null ? '五分' : pct + '%'}</span></td>`;
+    return `<td title="${esc(txt)}" onclick="showToast(this.title)"><span class="mx ${d > 0 ? 'w' : d < 0 ? 'l' : 'e'}">${e.w}-${e.l}</span>${e.d ? `<div class="mx-d">${e.d}分</div>` : ''}</td>`;
   }).join('')}</tr>`).join('');
   return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table h2h-matrix tbl-soft" style="table-layout:fixed;width:${headW + keys.length * colW}px">
-    <thead><tr><th class="sticky-col" style="width:${headW}px">勝率</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+    <thead><tr><th class="sticky-col" style="width:${headW}px">勝-負</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-const MX_NOTE = '行の人から見た、列の人との直接対決の勝率（同じ試合で上の着順だった割合・引き分けは除く）。マスを押すと勝ち負けの数が出ます。';
+const MX_NOTE = '行の人から見た、列の人との直接対決（勝ち-負け）です。マスを押すと、試合数も出ます。';
 function circleMatrixHtml(st) {
   return mxTableHtml(st.list.map(p => p.key), k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], myCircleMid());
 }
