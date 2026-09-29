@@ -31,7 +31,7 @@ from playwright.sync_api import sync_playwright  # noqa: E402
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PORT = 8795
-U1, U2, U3 = 'uidTEST0001', 'uidTEST0002', 'uidTEST0003'
+U1, U2, U3, U4 = 'uidTEST0001', 'uidTEST0002', 'uidTEST0003', 'uidTEST0004'
 
 AUTH_STUB = """
 (() => {
@@ -314,6 +314,30 @@ def main():
         results.append(("[6i] 仲間ページに入っている試合は、ほかのメンバーの試合の画面にも「金曜会 に追加済み（むにぃさん）」と出る", True,
                         "金曜会" in gc and "むにぃさん" in gc))
         pgb.close()
+
+        # ---- 6k. 参加していない人（見るだけのリンク）も、ログインすれば名簿で自分を選べる。仲間ページの試合には確定の期限が付く ----
+        pg.evaluate(f"(u) => localStorage.setItem('__smoke_user', JSON.stringify({{ uid: u, displayName: 'テスト4' }}))", U4)
+        pgk = new_page()
+        pgk.goto(app + "#c=" + cid, wait_until="load")
+        pgk.wait_for_function(SAFE % "currentUser && document.querySelector('#view-circle').classList.contains('active') && circleData && circleStore[circleId]", timeout=15000)
+        pgk.wait_for_timeout(500)
+        kb = pgk.evaluate("document.getElementById('circle-body').innerText")
+        jr = [m for m, r in db_of(pgk)["circles"][cid]["roster"].items() if r["name"] == "じろう"][0]
+        results.append(("[6k] 参加していない人にも「名簿のどの人ですか？」が出る（名簿にない名前を足す入口は出ない）", True,
+                        "あなたは名簿のどの人ですか" in kb and "名簿にいない" not in kb and pgk.evaluate("circleRole() === null")))
+        pgk.evaluate(f"claimCircleMember('{jr}')")
+        pgk.wait_for_timeout(700)
+        d = db_of(pgk)
+        klog = list(d["circles"][cid].get("log", {}).values())
+        results.append(("[6l] 参加していない人が「じろう」を自分にすると確認済みになり、メンバー（編集できる人）にはならない", True,
+                        d["circles"][cid]["roster"][jr].get("uid") == U4 and U4 not in d["circleMembers"][cid]
+                        and any(e.get("by") == U4 and e.get("kind") == "claim" for e in klog)))
+        results.append(("[6m] 仲間ページの試合には記録の確定の期限（最後の入力から24時間）が付く", True,
+                        all(isinstance(d["sessions"][x].get("lockAt"), (int, float)) for x in [g1, g2])))
+        # あとの確認に影響しないように、じろうの本人登録を外す
+        pgk.evaluate(f"db.ref('circles/{cid}/roster/{jr}/uid').remove()")
+        pgk.wait_for_timeout(300)
+        pgk.close()
 
         # ---- 7. ログインしていない人が閲覧リンクで見る ----
         pg.evaluate("localStorage.removeItem('__smoke_user')")

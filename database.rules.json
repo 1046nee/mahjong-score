@@ -5,7 +5,7 @@
     "sessions": {
       "$id": {
         ".read": true,
-        ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && (data.exists() || newData.hasChildren(['id', 'name', 'settings'])) && (!data.child('lockAt').exists() || now < data.child('lockAt').val())",
+        ".write": "($id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $id.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.exists() && (data.exists() || newData.hasChildren(['id', 'name', 'settings'])) && (!data.child('lockAt').exists() || now < data.child('lockAt').val())",
         ".validate": "newData.hasChildren(['id', 'name', 'settings']) && (!data.child('lockAt').exists() || newData.child('lockAt').exists()) && (!newData.child('endedAt').exists() || (newData.child('lockAt').isNumber() && newData.child('lockAt').val() <= newData.child('endedAt').val() + 46800000))",
         "id": {
           ".validate": "newData.isString() && newData.val() === $id"
@@ -133,7 +133,7 @@
         },
         "roster": {
           "$mid": {
-            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.child('uid').exists() || data.child('uid').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))",
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.child('uid').exists() || data.child('uid').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin')) || (auth != null && data.exists() && newData.exists() && newData.child('name').val() === data.child('name').val() && newData.child('at').val() === data.child('at').val() && ((!data.child('uid').exists() && newData.child('uid').val() === auth.uid) || (data.child('uid').val() === auth.uid && !newData.child('uid').exists())))",
             ".validate": "$mid.matches(/^[A-Za-z0-9]{8}$/) && newData.hasChildren(['name', 'at'])",
             "name": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
@@ -170,7 +170,7 @@
             },
             "seats": {
               "$seat": {
-                ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (data.child('self').val() !== true || data.child('by').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))",
+                ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (data.child('self').val() !== true || data.child('by').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin')) || (auth != null && data.exists() && data.child('mid').val() === newData.child('mid').val() && newData.child('self').val() === true)",
                 ".validate": "$seat.matches(/^[0-9]{1,2}$/) && newData.hasChildren(['mid', 'by', 'at'])",
                 "mid": {
                   ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
@@ -199,7 +199,7 @@
         },
         "log": {
           "$lid": {
-            ".write": "auth != null && !data.exists() && root.child('circleMembers').child($cid).child(auth.uid).exists()",
+            ".write": "auth != null && !data.exists() && (root.child('circleMembers').child($cid).child(auth.uid).exists() || newData.child('kind').val() === 'claim' || newData.child('kind').val() === 'confirm')",
             ".validate": "newData.hasChildren(['at', 'by', 'kind']) && newData.child('by').val() === auth.uid",
             "at": {
               ".validate": "newData.isString() && newData.val().length <= 40"
