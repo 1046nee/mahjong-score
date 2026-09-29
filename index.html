@@ -733,7 +733,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-card:active { opacity: .8; }
 .mc-card.mc-static { cursor: default; background: #F5F8F7; box-shadow: none; margin-top: 10px; }
 .mc-card.mc-static:active { opacity: 1; }
-.mc-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.mc-head { display: flex; align-items: baseline; justify-content: space-between; height: 22px; margin-bottom: 8px; white-space: nowrap; }
+/* 成績が無いときのカード（同じ高さ）。推移の欄は折れ線と同じ縦横比（300:80） */
+.mc-nil b { color: #AEBBB8 !important; }
+.mc-spark-empty { display: flex; align-items: center; justify-content: center; aspect-ratio: 300 / 80; margin-top: 4px; border-radius: 10px; background: #F5F7F7; padding: 0 16px; text-align: center; }
+.mc-spark-empty span { font-size: 12.5px; font-weight: 700; color: #5F6E6B; line-height: 1.6; }
 .mc-head b { font-size: 16px; font-weight: 900; color: var(--pc); }
 .mc-card.s3 .mc-head b { color: #4261AA; }
 .mc-head span { font-size: 12px; color: #5F6E6B; font-weight: 700; }
@@ -1288,8 +1292,15 @@ button.ios-row:active { background: #F2F6F5; }
 #circle-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; font-size: 24px; font-weight: 800; letter-spacing: -.3px; line-height: 1.3; color: #1F2A28; }
 #circle-sub { margin-top: 4px; font-size: 13px; color: #5F6E6B; }
 .ch-role { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 10px; background: #E3E9E7; color: #4F5C5A; font-size: 11px; font-weight: 700; vertical-align: 1px; }
-#circle-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-.ch-act { height: 58px; border: 0; border-radius: 12px; background: #fff; box-shadow: var(--sh-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 12px; font-weight: 700; color: var(--pc); cursor: pointer; }
+#circle-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+/* 見出しの下の四麻・三麻ごとの数 */
+.cc-rows { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.cc-rows + .ch-role { margin-left: 0; }
+.cc-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #4F5C5A; font-variant-numeric: tabular-nums; }
+.cc-row b { font-weight: 800; color: #1F2A28; }
+.cc-row.none { color: #8A9AA5; } .cc-row.none b { color: #8A9AA5; } .cc-row.none .cc-k { opacity: .5; }
+.cc-k { width: 16px; height: 16px; margin: 0; }
+.ch-act { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 12px; border: 0; border-radius: 17px; background: #fff; box-shadow: var(--sh-1); font-size: 13px; font-weight: 800; color: var(--pc); cursor: pointer; }
 .ch-act:active { background: #F2F6F5; }
 #view-circle .card { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
 #view-circle .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
@@ -2056,8 +2067,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div class="mp-sec" id="hist-head">
         <div class="mp-sec-head"><span class="mp-sec-note" id="hist-count"></span></div>
-        <div class="srch"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
-          <input type="text" id="hist-search" placeholder="ゲーム名・メンバー名で検索" oninput="renderHistoryList()"></div>
         <div id="hist-kind"></div>
         <div id="hist-viewseg" class="hist-viewseg"></div>
       </div>
@@ -3275,6 +3284,22 @@ function revealOnInRows(root) {
     else if (d.left < b.left) r.scrollLeft -= b.left - d.left + 16;
   });
 }
+// 仲間ページの見出しの下: 四麻と三麻を分けて「対戦した人数・ゲーム数・計試合数」（名簿に結びついた人は名簿の人、ほかは名前で数える）
+function circleCountsHtml(gids) {
+  const row = np => {
+    const gs = gids.map(sid => ({ sid, g: circleSess[sid] })).filter(x => x.g && x.g.settings && ((x.g.settings.numPlayers === 3 ? 3 : 4) === np));
+    const people = new Set();
+    let rounds = 0;
+    gs.forEach(({ sid, g }) => {
+      const seats = ((circleData.games || {})[sid] || {}).seats || {};
+      const names = g.settings.playerNames || [];
+      playedFlags(g).forEach((p, i) => { if (!p || isPlaceholderName(names[i])) return; const st = seats[i]; people.add(st && st.mid ? 'm:' + st.mid : 'n:' + personKey(names[i])); });
+      rounds += (g.rounds || []).length;
+    });
+    return `<span class="cc-row${gs.length ? '' : ' none'}"><span class="gk k${np} cc-k">${kindSvg(np, 16)}</span><b>${np === 3 ? '三麻' : '四麻'}</b>${gs.length ? `${people.size}人 ・ ${gs.length}ゲーム ・ 計${rounds}試合` : 'まだありません'}</span>`;
+  };
+  return `<span class="cc-rows">${row(4)}${row(3)}</span>`;
+}
 function renderCircle() {
   if (!circleData) return;
   const role = circleRole();
@@ -3284,12 +3309,12 @@ function renderCircle() {
   document.getElementById('circle-title').textContent = circleData.name || '仲間ページ';
   const roleLabel = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[role] || (currentUser ? '閲覧中' : '閲覧中（ログインなし）');
   const meMid = myCircleMid();
-  document.getElementById('circle-sub').innerHTML = `${Object.keys(roster).length}人 ・ ${gids.length}ゲーム ・ 計${nRounds}試合<span class="ch-role">あなた：${esc(roleLabel)}</span>`
+  document.getElementById('circle-sub').innerHTML = circleCountsHtml(gids) + `<span class="ch-role">あなた：${esc(roleLabel)}</span>`
     + (meMid ? `<span class="ch-me">名簿のあなた：<b>${esc(rosterName(meMid))}</b>${circleBadge(roster[meMid], meMid)}</span>` : '');
   // 操作は連絡先アプリ風のタイル（結果のリンク／招待／設定）。招待・設定はメンバーだけ
   document.getElementById('circle-actions').innerHTML =
-    `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 22)}共有</button>` +
-    (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 22)}設定</button>` : '');
+    `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 16)}共有</button>` +
+    (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 16)}設定</button>` : '');
   document.getElementById('circle-switch').innerHTML = currentUser ? mpSwitchHtml(circleId) : '';
   let html = '';
   // 立場ごとの案内
@@ -3311,14 +3336,14 @@ function renderCircle() {
   renderAccountBar('circle-acct');
   let topHtml = '';
   const myM = myCircleMid();
-  if (gids.length) {
+  if (gids.length || currentUser) {
     // 押せる形式＝この仲間ページに試合がある形式（自分が出ていなくても、仲間の三麻の順位は見られる）
     const gc = { 4: 0, 3: 0 };
     gids.forEach(sid => { const g = circleSess[sid]; if (g) gc[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
     topHtml = modeSegHtml(gc, 'circleFocus=null;renderCircle()');
     circleMode = String(mpMode);
   }
-  if (currentUser && gids.length) {
+  if (currentUser) {
     const mine = {};
     ['4', '3'].forEach(md => {
       const sx = circleStats(circleData, circleSess, md, periodFilter());
@@ -3327,7 +3352,7 @@ function renderCircle() {
     });
     topHtml += mine[mpMode]
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, 'この仲間ページ')}</div>`
-      : `<div class="mp-panel mp-empty"><b>${myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'}</b></div>`;
+      : mpEmptyCardHtml(mpMode, 'この仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます');
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${topHtml}</div>`;
   applyMpTheme();
@@ -9214,7 +9239,7 @@ function renderMyStats() {
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
   document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpPeriodHtml()}${seg}${st.modes[mpMode]
     ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
-    : `<div class="mp-panel mp-empty"><b>${st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`}</b></div>`}</div>`;
+    : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`)}</div>`;
   applyMpTheme();
   let inner;
   if (myStatsTab === 'h2h') inner = myH2HCardHtml();
@@ -9526,6 +9551,21 @@ function mpPeriodHtml() {
 function mpModeCardHtml(np, m) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(np, m, false)}</div>`;
 }
+// 成績が無いときも同じ組み方・同じ高さのカード（四麻／三麻・個人／仲間ページのどれでもカードの高さが変わらない）
+function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
+  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${scopeLabel ? `<em class="mc-scope">${esc(scopeLabel)}</em>` : ''}</b><span>0試合 ・ 0ゲーム</span></span>
+    <span class="mc-grid mc-nil">
+      <span><small>平均着順</small><b>—</b></span>
+      <span><small>通算スコア</small><b>—</b></span>
+      <span><small>トップ率</small><b class="sm">—</b></span>
+      <span><small>ラス回避</small><b class="sm">—</b></span>
+    </span>
+    <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近の通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
+}
+function mpEmptyCardHtml(np, scopeLabel, msg) {
+  return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
+}
 function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   const n = m.games, c = m.counts, hist = sortHist(m.hist);
   const bar = c.slice(0, np).map((v, i) => {
@@ -9548,7 +9588,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
 // endVal＝いまの通算スコア。直近の前の時点（endVal − 直近の合計）から積み上げる
 function miniSparkHtml(h, np = 4, endVal = null) {
-  if (!h.length) return '';
+  if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
   const sum = h.reduce((a, x) => a + (Number(x.sc) || 0), 0);
   const end = endVal == null ? sum : Number(endVal);
   let cum = end - sum;
@@ -9610,14 +9650,13 @@ function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);
   const hc = histModeCounts();
   const period = mpPeriodHtml() + modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : hc[4] ? 0.5 : 0, 3: st.modes[3] ? st.modes[3].games : hc[3] ? 0.5 : 0 }, 'renderHistory()');
-  if (!modes.length) {
+  if (!st.modes[mpMode]) {
     const any = (appState.games || []).some(g => (g.rounds || []).length);
-    const msg = !any ? ['まだ試合がありません', '試合を作るか、「＋ 試合を追加」で送ってもらった試合を取り込むと、ここに成績が出ます。']
-      : st.untagged ? ['自分を選ぶと、成績が出ます', '下の試合の「あなたはどれ？」で自分の名前を押してください。']
-      : ['あなたの対戦成績はありません。', '期間を切り替えると、ほかの期間の成績が見られます。'];
-    return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('chart', 34, 'ico-l')}</div><b>${msg[0]}</b><span>${msg[1]}</span></div></div>`;
+    const msg = !any ? 'まだ試合がありません。試合を作るか「試合を追加」で取り込むと、ここに成績が出ます'
+      : st.untagged ? `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。<br>過去の試合で自分を選ぶと、ここに成績が出ます`
+      : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`;
+    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '', msg)}</div>`;
   }
-  if (!st.modes[mpMode]) return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><b>あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。</b><span>${st.untagged ? '下の試合で自分を選ぶと、ここに成績が出ます。' : ''}</span></div></div>`;
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}</div>`;
 }
 
@@ -9733,7 +9772,7 @@ function renderMpPanes(st) {
   const m = st.modes[mpMode];
   document.getElementById('mp-pane-sum').innerHTML = pane !== 'sum' ? ''
     : m ? `${msModeHtml(mpMode, m)}${msCompareHtml(mpMode)}<div class="mp-pane-tools"><button type="button" class="btn-tint" onclick="showMyStatsImage()">${ico('image', 16)}画像で見る</button></div>`
-    : `<div class="ms-empty">あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。</div>`;
+    : `<div class="ms-empty">成績が出ると、ここに連対率・1試合平均・最高/最低点数とスコアの推移が出ます。</div>`;
   document.getElementById('mp-pane-h2h').innerHTML = pane === 'h2h' ? myH2HCardHtml('renderMpPanes(collectMyStats())') : '';
   document.getElementById('mp-pane-hist').style.display = pane === 'hist' ? '' : 'none';
 }
@@ -9762,7 +9801,6 @@ function renderHistoryList() {
   const srch = document.getElementById('hist-search');
   if (!games.length) {
     if (cnt) cnt.textContent = '';
-    srch.closest('.srch').style.display = 'none';
     document.getElementById('hist-kind').innerHTML = '';
     body.innerHTML = `<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('tile', 34, 'ico-l')}</div><b>まだ試合がありません</b>
       <span>試合を作るか、共有された試合のURLを開く・「＋ 試合を追加」に貼ると、ここに残ります。</span></div>`;
@@ -9770,7 +9808,7 @@ function renderHistoryList() {
     return;
   }
   const inP = periodFilter();
-  const q = (srch.value || '').trim().toLowerCase();
+  const q = srch ? (srch.value || '').trim().toLowerCase() : ''; // 検索欄はいったん外した（2026-09-29）
   let list = games.map(g => ({ g, ms: gameDayMs(g) }))
     .filter(x => !inP || inP(x.ms))
     .filter(x => !q || (String(x.g.name || '') + ' ' + ((x.g.settings && x.g.settings.playerNames) || []).join(' ')).toLowerCase().includes(q))
@@ -9781,7 +9819,6 @@ function renderHistoryList() {
   if (kindEl) kindEl.innerHTML = kindHtml;
   list = list.filter(x => histKindMatch(x.g, histKind));
   if (histView === 'old') list.reverse();
-  srch.closest('.srch').style.display = (games.length > 8 || q) ? '' : 'none';
   const vs = document.getElementById('hist-viewseg');
   if (vs) vs.innerHTML = histOrderSegHtml('renderHistoryList()');
   const modeName = histKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === histKind)[1] + 'の';
