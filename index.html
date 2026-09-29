@@ -8113,8 +8113,9 @@ function renderGame() {
   const s = activeGame.settings;
   document.getElementById('game-title').textContent = activeGame.name;
   // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
-  const multiDay = playDateMs(activeGame) != null && gameDaysList(activeGame).length > 1;
-  document.getElementById('game-date').innerHTML = playDateMs(activeGame) != null ? '対局日 ' + esc(fmtGameDays(activeGame))
+  // 2日以上にわたる試合（対局日を2日以上にした・入力した日が2日以上にわたる）には必ず日の区切り（記録が確定したあとは要約だけ）
+  const multiDay = gameDaysList(activeGame).length > 1;
+  document.getElementById('game-date').innerHTML = (playDateMs(activeGame) != null || multiDay) ? '対局日 ' + esc(fmtGameDays(activeGame))
     + (multiDay && !isGameLocked(activeGame) ? ` <button type="button" class="day-split-btn" onclick="openDaySplit()">${ico('pencil', 12)}日の区切り</button>` : '')
     + (multiDay ? `<span class="day-split-sum">${daySplitSummary(activeGame).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
@@ -9854,6 +9855,12 @@ function roundMs(g, r) {
     const days = gameDaysList(g);
     return days.length > 1 ? ymdToMs(days[roundDayIdx(g, r, days)]) : p;
   }
+  // 対局日の指定が無く、入力した日が2日以上にわたる試合: 日の区切りがあればその日（無ければ入力した日時のまま）
+  const st = g && g.settings && g.settings.dayStarts;
+  if (Array.isArray(st) && st.length) {
+    const days = gameDaysList(g);
+    if (days.length > 1) return ymdToMs(days[roundDayIdx(g, r, days)]);
+  }
   return Date.parse(r && r.at) || Date.parse(g && g.createdAt) || 0;
 }
 function fmtDay(ms, withYear) {
@@ -10593,8 +10600,8 @@ function renderDetailBody(g) {
   detailGame = g;
   const P = detailRO ? 'watch' : 'detail'; // 見るだけの画面（view-watch）は同じ部品で、入力・修正の入り口を出さない
   document.getElementById(P + '-title').textContent = g.name;
-  const multiDayD = playDateMs(g) != null && gameDaysList(g).length > 1;
-  document.getElementById(P + '-date').innerHTML = playDateMs(g) != null ? '対局日 ' + esc(fmtGameDays(g))
+  const multiDayD = gameDaysList(g).length > 1; // 試合の画面と同じく、2日以上にわたる試合には必ず日の区切り
+  document.getElementById(P + '-date').innerHTML = (playDateMs(g) != null || multiDayD) ? '対局日 ' + esc(fmtGameDays(g))
     + (multiDayD && !detailRO && !isGameLocked(g) ? ` <button type="button" class="day-split-btn" onclick="openDaySplit('detail')">${ico('pencil', 12)}日の区切り</button>` : '')
     + (multiDayD ? `<span class="day-split-sum">${daySplitSummary(g).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
