@@ -326,25 +326,64 @@ def main():
         results.append(("[9b] ログインから戻ると自動で参加が完了し、仲間ページが開く", True,
                         db_of(pgj)["circleMembers"][cid].get(U3, {}).get("role") == "editor"))
 
-        # ---- 10. マイページ（個人｜仲間） ----
+        # ---- 10. マイページ（成績が最初・四麻/三麻は別カード・期間・自分をその場で選ぶ・まとめて送る/取り込む・対局日） ----
         pg.evaluate("(u) => localStorage.setItem('__smoke_user', JSON.stringify({ uid: u, displayName: 'テスト1' }))", U1)
         pg.reload(wait_until="load")
         pg.wait_for_function(SAFE % "currentUser && !accountBusy", timeout=10000)
-        pg.evaluate("showView('history'); setMpTab('me')")
+        g3, _ = make_game("金曜会3", ["むにぃ", "たろう", "じろう", "しろう"], [([0, 1, 2, 3], ["420", "300", "200"])])
+        pg.evaluate("showView('history')")
         pg.wait_for_timeout(300)
+        top = pg.evaluate("document.getElementById('mp-me').firstElementChild.innerText")
+        bar = pg.evaluate("document.getElementById('account-card').innerText")
+        results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・最近）", True,
+                        "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "最近"])))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
-        hero = pg.evaluate("document.getElementById('account-card').innerText")
-        results.append(("[10a] マイページの上にログイン中のカード、「個人」に成績（タイル・着順の分布）・よく打つ相手・過去の試合が出る", True,
-                        "テスト1" in hero and "ログアウト" in hero and all(w in me_txt for w in ["平均着順", "トップ率", "着順の分布", "よく打つ相手", "過去の試合", "金曜会1"])))
-        pg.evaluate("setMpTab('circle')")
-        pg.wait_for_timeout(300)
-        results.append(("[10b] 「仲間」に切り替えると、仲間ページのカードと作るボタンが出る（個人の中身は隠れる）", True,
-                        pg.evaluate("document.getElementById('mp-circle').style.display !== 'none' && document.getElementById('mp-me').style.display === 'none' && document.getElementById('hist-circles').innerText.includes('金曜会') && document.getElementById('hist-circles').innerText.includes('仲間ページを作る')")))
-        pg.evaluate(f"setMpTab('me'); openTagEditor('{g1}')")
+        results.append(("[10b] 成績の下に「試合を追加」「まとめて送る」、過去の試合（月の見出し）と仲間ページが1画面に並ぶ", True,
+                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "過去の試合", "年", "月", "金曜会1", "仲間ページを作る"])))
+        row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
+        results.append(("[10c] 自分を選んでいない試合は、その行に名前が並び「いつもの名前」と「出ていない」が出る", True,
+                        " ask" in row3 and "いつもの名前" in row3 and "出ていない" in row3))
+        pg.evaluate(f"quickTag('{g3}', 0)")
+        results.append(("[10d] 名前を1回押すと自分に決まり、行が「自分の順位・スコア」の形に変わる", True,
+                        pg.evaluate(f"tagOf('{g3}').me === 0 && [...document.querySelectorAll('#history-body .gr.me')].some(x => x.innerText.includes('金曜会3') && x.innerText.includes('位'))")))
+        pg.evaluate(f"openTagEditor('{g1}')")
         tag_txt = pg.evaluate("document.getElementById('form-modal-body').innerText")
         pg.evaluate("closeFormModal()")
-        results.append(("[10c] 「この試合での自分」に参加/観戦の区別はなく、名前か「自分は出ていない」を選ぶ", True,
+        results.append(("[10e] 「この試合での自分」に参加/観戦の区別はなく、名前か「自分は出ていない」を選ぶ", True,
                         "観戦" not in tag_txt and "自分は出ていない" in tag_txt and "たろう" in tag_txt))
+        pg.evaluate(f"startSelectSend(); toggleMpSel('{g1}'); toggleMpSel('{g3}')")
+        text = pg.evaluate("bundleText()")
+        bar_txt = pg.evaluate("document.getElementById('mp-sendbar').innerText")
+        results.append(("[10f] 「まとめて送る」で選んだ試合の名前とURLが1つの文になる", True,
+                        "2件を選択中" in bar_txt and f"#{g1}" in text and f"#{g3}" in text and "試合を追加" in text))
+        pg.evaluate("endSelectSend()")
+        # 受け取った人の側: 一覧から消してから、送られた文を「試合を追加」に貼る（アプリが拾うのは majasco.jp のURL）
+        pg.evaluate(f"deleteHistoryItem('{g3}'); delete gameTags['{g3}']; saveTags()")
+        pg.evaluate("openAddGames()")
+        pg.evaluate("(t) => { document.getElementById('ag-text').value = t; }", text.replace(app.rstrip("/"), "https://majasco.jp"))
+        pg.evaluate("runAddGames()")
+        pg.wait_for_function(f"() => (appState.games || []).some(g => g.id === '{g3}')", timeout=10000)
+        results.append(("[10g] 送られた文を「試合を追加」に貼ると取り込まれ、いつもの名前が自分に自動で決まる", True,
+                        pg.evaluate(f"tagOf('{g3}').me === 0")))
+        # 過去の試合をあとから入力: 対局日を選んで作る → その年の期間で絞れる
+        pg.evaluate("showView('setup')")
+        pg.evaluate("() => { setupMembers = ['むにぃ', 'たろう', 'じろう', 'しろう']; renderMembers(); document.getElementById('s-date').value = '2025-05-10'; onSetupDateChange(); }")
+        nm = pg.evaluate("document.getElementById('s-name').value")
+        pg.evaluate("startGame()")
+        pg.wait_for_function(SAFE % "document.querySelector('#view-share').classList.contains('active')", timeout=10000)
+        g4 = pg.evaluate("sessionId")
+        pg.evaluate("showView('game')")
+        results.append(("[10h] 対局日を過去にして作れる（ゲーム名もその日付に合わせ、画面に「対局日」が出る）", True,
+                        db_of()["sessions"][g4]["settings"].get("playDate") == "2025-05-10" and nm.startswith("2025.05.10")
+                        and "対局日 2025/5/10" in pg.evaluate("document.getElementById('game-date').textContent")))
+        pg.evaluate("leaveGame()")
+        pg.evaluate("showView('history')")
+        pills = pg.evaluate("document.querySelector('.mp-pills') ? document.querySelector('.mp-pills').innerText : ''")
+        pg.evaluate("setMpPeriod('y2025')")
+        rows25 = pg.evaluate("document.getElementById('history-body').innerText")
+        pg.evaluate("setMpPeriod('all')")
+        results.append(("[10i] 期間（年）で成績と一覧を切り替えられ、過去の日付の試合はその年に入る", True,
+                        "2025年" in pills and f"{__import__('datetime').date.today().year}年" in pills and "2025年5月" in rows25 and "金曜会1" not in rows25))
 
         # ---- 11. 共有シート・見るだけのリンク ----
         pg.evaluate(f"joinSession('{g1}')")
