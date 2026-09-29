@@ -758,6 +758,15 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gr-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
 .gr-meta { font-size: 12px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .gr.out { background: #F6F8F7; }
+/* 形式は文字ではなく左の色で（四麻＝緑・三麻＝青。画面の四麻｜三麻のタブと同じ色） */
+.gr.m4 { box-shadow: inset 4px 0 0 #177083; } .gr.m3 { box-shadow: inset 4px 0 0 #4261AA; }
+.gr-opp { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 6px; font-size: 12.5px; color: #33413E; font-weight: 700; }
+.gr-vs { font-size: 11px; font-weight: 800; color: #8A9AA5; }
+.gr-op { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.gr-op i { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; font-weight: 800; flex: none; }
+.gr-more { font-size: 11.5px; color: #5F6E6B; font-weight: 700; }
+.hist-viewseg { margin-top: 8px; }
+.hist-viewseg .seg { margin: 0; }
 .gr.out .gr-name, .gr.out .gr-date { color: #8A9AA5; font-weight: 700; }
 .gr-out { font-size: 11px; font-weight: 800; color: #6B7A77; border: 1px dashed #AEBBB8; border-radius: 10px; padding: 1px 8px; }
 .gr-ask { font-size: 12px; font-weight: 800; color: #8A6D1A; margin-top: 8px; }
@@ -886,7 +895,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-trend-h { display: flex; justify-content: space-between; align-items: baseline; }
 .mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .mc-trend-h b { font-size: 14px; font-weight: 900; } .mc-trend-h b.pos { color: #1A237E; } .mc-trend-h b.neg { color: #C62828; }
-.mc-spark { display: block; width: 100%; height: 56px; margin-top: 2px; }
+.mc-spark { display: block; width: 100%; height: auto; margin-top: 4px; overflow: visible; }
+.mc-spark .tk { font-size: 10px; font-weight: 700; fill: #8A9AA5; font-variant-numeric: tabular-nums; }
+.mc-spark .ev { font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .mc-spark .dot { stroke: #fff; stroke-width: 1.2; }
 .mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
 .mc-foot { justify-content: flex-end; margin-top: 4px; }
@@ -1977,6 +1988,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="mp-sec-head"><div class="mp-sec-title">過去の試合</div><span class="mp-sec-note" id="hist-count"></span></div>
       <div class="srch"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-search"/></svg>
         <input type="text" id="hist-search" placeholder="ゲーム名・メンバー名で検索" oninput="renderHistoryList()"></div>
+      <div id="hist-viewseg" class="hist-viewseg"></div>
     </div>
     <div class="history-body" id="history-body" style="margin-top:8px"></div>
     <div id="mp-sendbar" class="mp-sendbar" style="display:none"></div>
@@ -3180,7 +3192,7 @@ function renderCircle() {
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
   else if (!gids.length) html += noGames;
   else if (circleTab === 'grid') {
-    html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`)}${modeChips}
+    html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}まとめ画像</button>`)}${modeChips}
       ${st.list.length ? circleGridHtml(st) + `<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>` : noBind}</div>`;
   } else if (circleTab === 'h2h') html += circleH2HTabHtml(st, modeChips, noBind);
   else html += circleRankTabHtml(st, modeChips, noBind);
@@ -3203,9 +3215,8 @@ function saveCircleSummary(st, nGames) {
   saveCircleSeen();
 }
 // 順位タブ: 表彰台＋リスト。率・平均の項目は試合数が少ない人を分けて「参考」にする（規定打席と同じ考え方）
-function circleRankTabHtml(st, modeChips, noBind) {
-  const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`);
-  if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
+// 通算順位の並びと棒の長さ（画面と画像で共用）
+function circleRankOrder(st) {
   const m = circleMetric;
   const np = circleMode === '3' ? 3 : 4;
   // 試合数の多い少ないに関係なく、全員をまとめて順位にする（2026-09-29・ユーザーの判断。以前は率・平均で試合数の少ない人を「参考」に分けていた）
@@ -3214,6 +3225,12 @@ function circleRankTabHtml(st, modeChips, noBind) {
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m)))) || 1;
   const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : Math.abs(v) / maxAbs;
   const clsOf = v => (m === 'score' || m === 'per') ? scoreCls(v) : '';
+  return { m, np, q, maxAbs, barOf, clsOf };
+}
+function circleRankTabHtml(st, modeChips, noBind) {
+  const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleRankImage()">${ico('image', 16)}画像</button>`);
+  if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
+  const { m, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const chips = `<div class="pill-row" role="tablist" aria-label="指標">${CIRCLE_METRICS.map(([k, l]) =>
     `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
   const top3 = q.slice(0, 3);
@@ -3375,26 +3392,29 @@ function circleGamesTabHtml(role, gids) {
     <div class="h2h-note">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。</div></div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
-let circleGamesView = 'list', circleCalMonth = null, circleCalDay = null, circleCalMode = 'month';
-function circleCalendarHtml(games, dayOf, rowOf) {
+let circleGamesView = 'list';
+// 画面ごとのカレンダーの状態（circle＝仲間ページ・hist＝過去の試合・ms＝自分の成績のゲーム）
+const calS = { circle: { month: null, day: null, mode: 'month' }, hist: { month: null, day: null, mode: 'month' }, ms: { month: null, day: null, mode: 'month' } };
+function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCircle()') {
+  const S = calS[key], SK = 'calS.' + key;
   const byDay = {};
   games.forEach(x => { (x.g ? gameDaysList(x.g) : [ymdLocal(new Date(dayOf(x)))]).forEach(k => { (byDay[k] = byDay[k] || []).push(x); }); });
   const latest = new Date(dayOf(games[0]));
-  if (circleCalMonth == null) circleCalMonth = latest.getFullYear() * 12 + latest.getMonth();
-  const y = Math.floor(circleCalMonth / 12), m = circleCalMonth % 12;
+  if (S.month == null) S.month = latest.getFullYear() * 12 + latest.getMonth();
+  const y = Math.floor(S.month / 12), m = S.month % 12;
   const keys = Object.keys(byDay);
   const years = [...new Set(keys.map(k => +k.slice(0, 4)))].sort((a, b) => a - b);
   const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['month', '月'], ['year', '年']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${circleCalMode === k ? 'on' : ''}" aria-selected="${circleCalMode === k}" onclick="circleCalMode='${k}';renderCircle()">${l}</button>`).join('')}</div></div>`;
-  if (circleCalMode === 'year') {
+    `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${k}';${rr}">${l}</button>`).join('')}</div></div>`;
+  if (S.mode === 'year') {
     // 年: 月ごとの「ゲーム数・打った日数」。押すとその月のカレンダー
     const perMonth = Array.from({ length: 12 }, () => ({ games: new Set(), days: 0 }));
     keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
     const cells = perMonth.map((p, i) => p.games.size
-      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="circleCalMonth=${y * 12 + i};circleCalMode='month';circleCalDay=null;renderCircle()"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
+      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
       : `<span class="cal-m none"><b>${i + 1}月</b><span>—</span></span>`).join('');
     const total = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid))).size;
-    const ynav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir * 12};renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
+    const ynav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="${SK}.month+=${dir * 12};${rr}">${dir < 0 ? '‹' : '›'}</button>`;
     return `<div class="cal">${modeSeg}<div class="cal-head">${ynav(-1, years[0] < y)}<b>${y}年</b>${ynav(1, years[years.length - 1] > y)}</div>
       <div class="cal-year">${cells}</div></div><div class="cal-hint">${y}年は${total}ゲーム。月を押すと、その月のカレンダーになります。</div>`;
   }
@@ -3409,18 +3429,18 @@ function circleCalendarHtml(games, dayOf, rowOf) {
     const n = (byDay[k] || []).length;
     const dow = (first.getDay() + d - 1) % 7;
     cells += n
-      ? `<button type="button" class="cal-c has${circleCalDay === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="circleCalDay='${k}';renderCircle()"><b>${d}</b><i>${n > 1 ? n + '件' : '●'}</i></button>`
+      ? `<button type="button" class="cal-c has${S.day === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="${SK}.day='${k}';${rr}"><b>${d}</b><i>${n > 1 ? n + '件' : '●'}</i></button>`
       : `<span class="cal-c${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}"><b>${d}</b></span>`;
   }
   const allMonths = keys.map(k => +k.slice(0, 4) * 12 + (+k.slice(5, 7) - 1));
   const minM = Math.min(...allMonths), maxM = Math.max(...allMonths);
-  const nav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の月' : '次の月'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir};circleCalDay=null;renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
-  const sel = circleCalDay && byDay[circleCalDay] && circleCalDay.startsWith(pre) ? circleCalDay : null;
+  const nav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の月' : '次の月'}"${ok ? '' : ' disabled'} onclick="${SK}.month+=${dir};${SK}.day=null;${rr}">${dir < 0 ? '‹' : '›'}</button>`;
+  const sel = S.day && byDay[S.day] && S.day.startsWith(pre) ? S.day : null;
   const dayList = sel
     ? `<div class="gm-month cg-month">${fmtDay(ymdToMs(sel), true)}の試合</div>${byDay[sel].map(rowOf).join('')}`
     : `<div class="cal-hint">${monthGames ? `この月は${monthGames}ゲーム。印のある日を押すと、その日の試合が出ます（2日以上にわたる試合は、その全部の日に印）。` : 'この月の試合はありません。'}</div>`;
   return `<div class="cal">${modeSeg}
-    <div class="cal-head">${nav(-1, circleCalMonth > minM)}<b>${y}年${m + 1}月</b>${nav(1, circleCalMonth < maxM)}</div>
+    <div class="cal-head">${nav(-1, S.month > minM)}<b>${y}年${m + 1}月</b>${nav(1, S.month < maxM)}</div>
     <div class="cal-grid">${'日月火水木金土'.split('').map((w, i) => `<span class="cal-w${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}">${w}</span>`).join('')}${cells}</div>
   </div>${dayList}`;
 }
@@ -3467,6 +3487,102 @@ async function showCircleImage() {
   if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'circle' });
+  await openImagePreview(canvas, { name: circleData.name || '' }, '通算順位');
+}
+
+// 通算順位を、画面の見た目のまま（表彰台＋順位の行・選んでいる指標）で1枚の画像にする
+function circleRankCanvas(st) {
+  const { m, np, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
+  const W = COMPOSE_W, P = IMG_PAD, PODIUM = 196, ROW = 62;
+  const rest = q.slice(3);
+  const H = IMG_BAND + 14 + PODIUM + rest.length * ROW + 14 + IMG_FOOT;
+  const sc = imgFitScale(W, H);
+  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
+  const { c, ctx } = imgCanvas(W, H, sc);
+  const theme = np === 3 ? '#4261AA' : '#177083';
+  const colOf = v => { const k = clsOf(v); return k === 'neg' ? '#C62828' : k === 'pos' ? '#1A237E' : '#1F2A28'; };
+  const metricLabel = (CIRCLE_METRICS.find(([k]) => k === m) || [0, ''])[1];
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = theme; ctx.fillRect(0, 0, W, IMG_BAND);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
+  ctx.fillText(circleData.name || '仲間ページ', P, IMG_BAND / 2 - 8, W - P * 2 - 150);
+  ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
+  ctx.fillText(`${periodLabel()} ・ ${np === 3 ? '三麻' : '四麻'} ・ ${q.length}人 ・ ${fmtDate(new Date().toISOString())} 時点`, P, IMG_BAND / 2 + 11, W - P * 2 - 150);
+  ctx.globalAlpha = 1;
+  ctx.font = imgFont(13, true); ctx.textAlign = 'right';
+  ctx.fillText(`通算順位（${metricLabel}）`, W - P, IMG_BAND / 2);
+  ctx.textAlign = 'left';
+  const fit = (t, w) => imgWrap(ctx, t, w, 1)[0] || '';
+  const avatar = (cx, cy, r, key, nm, fs) => {
+    ctx.beginPath(); ctx.arc(cx, cy, r + 3, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = avColor(key); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.font = imgFont(fs, true); ctx.textAlign = 'center';
+    ctx.fillText(avInitial(nm), cx, cy + 1); ctx.textAlign = 'left';
+  };
+  // 表彰台（2位・1位・3位の順に並べる。台の高さは画面と同じ）
+  const top = IMG_BAND + 14, bottom = top + PODIUM;
+  const order = [1, 0, 2].filter(i => q[i]);
+  const fr = order.map(i => (i === 0 ? 1.12 : 1)), GAP = 8;
+  const unit = (W - P * 2 - GAP * (order.length - 1)) / fr.reduce((a, b) => a + b, 0);
+  let x0 = P;
+  order.forEach((i, k) => {
+    const w = unit * fr[k], cx = x0 + w / 2, p = q[i], v = circleMetricVal(p, m), nm = rosterName(p.key);
+    const baseH = [64, 48, 36][i], r = i === 0 ? 32 : 26;
+    const [bg, fg] = MEDAL[i];
+    imgRoundRect(ctx, x0, bottom - baseH, w, baseH + 6, 12); ctx.fillStyle = bg; ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(x0, bottom, w, 6);
+    ctx.fillStyle = fg; ctx.font = imgFont(20, true); ctx.textAlign = 'center';
+    ctx.fillText(String(i + 1), cx, bottom - baseH + 18);
+    let yy = bottom - baseH - 12;
+    ctx.fillStyle = colOf(v); ctx.font = imgFont(15, true); ctx.fillText(circleMetricText(v, m), cx, yy - 2);
+    yy -= 20;
+    ctx.fillStyle = '#1F2A28'; ctx.font = imgFont(13, true); ctx.fillText(fit(nm, w - 6), cx, yy);
+    ctx.textAlign = 'left';
+    const cy = yy - 14 - r;
+    avatar(cx, cy, r, p.key, nm, i === 0 ? 26 : 21);
+    // メダル（右下）
+    const mx = cx + r * 0.72, my = cy + r * 0.72;
+    ctx.beginPath(); ctx.arc(mx, my, 12, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(mx, my, 10, 0, Math.PI * 2); ctx.fillStyle = bg; ctx.fill();
+    ctx.fillStyle = fg; ctx.font = imgFont(11, true); ctx.textAlign = 'center'; ctx.fillText(String(i + 1), mx, my + 0.5); ctx.textAlign = 'left';
+    x0 += w + GAP;
+  });
+  // 4位から下の行（順位・顔・名前・試合数など・棒・値）
+  let y = bottom + 6;
+  rest.forEach((p, k) => {
+    const v = circleMetricVal(p, m), nm = rosterName(p.key);
+    ctx.fillStyle = '#D5DEDB'; ctx.fillRect(P, y, W - P * 2, 0.8);
+    const cy = y + ROW / 2;
+    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(15, true); ctx.textAlign = 'center'; ctx.fillText(String(k + 4), P + 12, cy); ctx.textAlign = 'left';
+    avatar(P + 50, cy, 16, p.key, nm, 14);
+    const tx = P + 76, valW = 86, mainW = W - P - valW - tx - 8;
+    ctx.fillStyle = '#1F2A28'; ctx.font = imgFont(15, true); ctx.fillText(fit(nm, mainW), tx, cy - 15);
+    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(12, false);
+    ctx.fillText(fit([`${p.n}試合`, m === 'avg' ? '' : `平均着順 ${(p.rankSum / p.n).toFixed(2)}`, m === 'score' ? '' : fmtScore(p.score)].filter(Boolean).join(' ・ '), mainW), tx, cy + 2);
+    const by = cy + 15;
+    imgRoundRect(ctx, tx, by, mainW, 6, 3); ctx.fillStyle = '#EEF2F1'; ctx.fill();
+    if (m === 'score' || m === 'per') {
+      const half = mainW / 2, bw = Math.max(0.015, Math.abs(v) / maxAbs * 0.5) * mainW;
+      imgRoundRect(ctx, v >= 0 ? tx + half : tx + half - bw, by, bw, 6, 3); ctx.fillStyle = v >= 0 ? '#5C6BC0' : '#E57373'; ctx.fill();
+      ctx.fillStyle = '#C9D3D1'; ctx.fillRect(tx + half - 1, by - 3, 2, 12);
+    } else {
+      imgRoundRect(ctx, tx, by, Math.max(0.03, barOf(v)) * mainW, 6, 3); ctx.fillStyle = '#8FA6A2'; ctx.fill();
+    }
+    ctx.fillStyle = colOf(v); ctx.font = imgFont(17, true); ctx.textAlign = 'right';
+    ctx.fillText(circleMetricText(v, m), W - P, cy); ctx.textAlign = 'left';
+    y += ROW;
+  });
+  drawImgFooter(ctx, W, H);
+  return c;
+}
+async function showCircleRankImage() {
+  if (!circleData) return;
+  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
+  if (!st.list.length) { showToast('まだ通算がありません'); return; }
+  const canvas = circleRankCanvas(st);
+  if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
+  if (!canvas) return;
+  track('image_preview', { kind: 'circle_rank' });
   await openImagePreview(canvas, { name: circleData.name || '' }, '通算順位');
 }
 
@@ -8904,20 +9020,20 @@ function msModeHtml(np, m) {
     ${hist.length > 1 ? `<div class="ms-panel">${sparkHtml(hist)}</div>` : ''}`;
 }
 function msGamesHtml(st) {
-  const gs = st.groups.slice().sort((a, b) => msGameOrder === 'old' ? a.ms - b.ms : b.ms - a.ms);
-  if (!gs.length) return `<div class="ms-empty">この範囲の試合はありません</div>`;
+  const gs = st.groups.filter(gr => gr.np === mpMode).sort((a, b) => msGameOrder === 'old' ? a.ms - b.ms : b.ms - a.ms)
+    .map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
+  const seg = `<div class="seg xs" role="tablist" aria-label="並び順" style="margin:0 0 4px">${[['new', '新しい順'], ['old', '古い順'], ['cal', 'カレンダー']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${msGameOrder === k ? 'on' : ''}" aria-selected="${msGameOrder === k}" onclick="msGameOrder='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+  if (!gs.length) return seg + `<div class="ms-empty">この範囲の${mpMode === 3 ? '三麻' : '四麻'}の試合はありません</div>`;
+  if (msGameOrder === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
+    x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'ms', 'renderMyStats()');
   let prev = null, html = '';
-  gs.forEach(gr => {
+  gs.forEach(({ gr, g }) => {
     const d = new Date(gr.ms), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month">${key}</div><div class="ios-group">`; prev = key; }
-    html += `<button type="button" class="ios-row gp-row" onclick="viewDetailById('${esc(gr.id)}')">
-      <span class="gp-tile${gr.np === 3 ? ' s3' : ''}">${gr.np === 3 ? '三' : '四'}</span>
-      <span class="gp-main"><span class="gp-name">${esc(gr.name)}</span><span class="gp-sub">${esc(gr.days)} ・ ${gr.games}試合 ・ 平均着順 ${gr.avgRank.toFixed(2)}${gr.team ? ' ・ チーム戦' : ''}</span></span>
-      <span class="gp-sc ${scoreCls(gr.score)}">${fmtScore(gr.score)}</span>${ico('chevron', 13)}</button>`;
+    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month">${key}</div><div class="gm-list">`; prev = key; }
+    html += historyItemHtml(g);
   });
   html += '</div>';
-  const seg = `<div class="seg xs" role="tablist" aria-label="並び順" style="margin:0 0 4px">${[['new', '新しい順'], ['old', '古い順']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${msGameOrder === k ? 'on' : ''}" aria-selected="${msGameOrder === k}" onclick="msGameOrder='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
   return seg + html;
 }
 function renderMyStats() {
@@ -9245,7 +9361,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     if (w <= 0) return '';
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
-  const last = hist.slice(-10), sum10 = last.reduce((a, h) => a + (Number(h.sc) || 0), 0);
+  const last = hist.slice(-10);
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${scopeLabel ? `<em class="mc-scope">${esc(scopeLabel)}</em>` : ''}</b><span>${n}試合 ・ ${m.groups}ゲーム</span></span>
     <span class="mc-grid">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
@@ -9254,24 +9370,38 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
-    <span class="mc-trend"><span class="mc-trend-h"><small>直近${last.length}試合のスコアの推移</small><b class="${scoreCls(sum10)}">${fmtScore(sum10)}</b></span>${miniSparkHtml(last, np)}</span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>直近${last.length}試合の通算スコアの推移</small></span>${miniSparkHtml(last, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
-// 直近の試合のスコアの推移（0から積み上げた折れ線。点は1試合ごと・色は着順）
-function miniSparkHtml(h, np = 4) {
+// 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
+// endVal＝いまの通算スコア。直近の前の時点（endVal − 直近の合計）から積み上げる
+function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '';
-  let cum = 0;
-  const ys = [0].concat(h.map(x => (cum += Number(x.sc) || 0)));
-  const W = 300, H = 56, P = 7;
+  const sum = h.reduce((a, x) => a + (Number(x.sc) || 0), 0);
+  const end = endVal == null ? sum : Number(endVal);
+  let cum = end - sum;
+  const ys = [cum].concat(h.map(x => (cum += Number(x.sc) || 0)));
+  const W = 300, H = 80, L = 40, R = 58, T = 10, B = 10;
   const min = Math.min(...ys), max = Math.max(...ys), span = (max - min) || 1;
-  const x = i => P + (W - 2 * P) * i / Math.max(1, ys.length - 1);
-  const y = v => P + (H - 2 * P) * (1 - (v - min) / span);
+  const x = i => L + (W - L - R) * i / Math.max(1, ys.length - 1);
+  const y = v => T + (H - T - B) * (1 - (v - min) / span);
+  const lab = v => { const r = Math.round(v); return (r > 0 ? '+' : '') + r.toLocaleString(); };
+  // 目盛り: いちばん上・いちばん下、0 をまたぐときは 0 も（近すぎる目盛りは出さない）
+  const ticks = [max, min];
+  if (min < 0 && max > 0) ticks.push(0);
+  const drawn = [];
+  const grid = ticks.filter(v => { const yy = y(v); if (drawn.some(d => Math.abs(d - yy) < 11)) return false; drawn.push(yy); return true; })
+    .map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`
+      + `<text x="${L - 6}" y="${(y(v) + 3.5).toFixed(1)}" text-anchor="end" class="tk">${max === min && v === min ? lab(v) : lab(v)}</text>`).join('');
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-  const col = cum >= 0 ? '#1A237E' : '#C62828';
+  const col = end >= 0 ? '#1A237E' : '#C62828';
   const dots = h.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" class="dot ${rkCls(d.rank, np)}"/>`).join('');
-  return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近の試合のスコアの推移">
-    <line x1="${P}" x2="${W - P}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="#CFDCD9" stroke-width="1" stroke-dasharray="4 4"/>
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg>`;
+  // 最終スコア: 最後の点の右（線と重ならない）
+  const ex = x(ys.length - 1) + 8, ey = y(end);
+  const ly = Math.min(H - 2, Math.max(10, ey + 4.5));
+  return `<svg class="mc-spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="直近の試合の通算スコアの推移。最後は${fmtScore(end)}">${grid}
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}
+    <text x="${ex.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="start" class="ev" fill="${col}">${fmtScore(end)}</text></svg>`;
 }
 // 四麻｜三麻の切り替え（マイページ・仲間ページ・自分の成績で共用。mpMode は3つの画面で共通）
 function modeSegHtml(counts, rerender) {
@@ -9280,9 +9410,16 @@ function modeSegHtml(counts, rerender) {
   return `<div class="seg xs mode-seg" role="tablist" aria-label="形式">${[4, 3].map(np =>
     `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}">${np === 3 ? '三麻' : '四麻'}${counts[np] ? '' : '<small>（なし）</small>'}</button>`).join('')}</div>`;
 }
+// 期間内の過去の試合の、形式ごとの件数
+function histModeCounts() {
+  const inP = periodFilter(), c = { 4: 0, 3: 0 };
+  (appState.games || []).forEach(g => { if (!inP || inP(gameDayMs(g))) c[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
+  return c;
+}
 function mpStatsHtml(st) {
   const modes = [4, 3].filter(np => st.modes[np]);
-  const period = mpPeriodHtml() + modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderHistory()');
+  const hc = histModeCounts();
+  const period = mpPeriodHtml() + modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : hc[4] ? 0.5 : 0, 3: st.modes[3] ? st.modes[3].games : hc[3] ? 0.5 : 0 }, 'renderHistory()');
   if (!modes.length) {
     const any = (appState.games || []).some(g => (g.rounds || []).length);
     const msg = !any ? ['まだ試合がありません', '試合を作るか、「＋ 試合を追加」で送ってもらった試合を取り込むと、ここに成績が出ます。']
@@ -9290,6 +9427,7 @@ function mpStatsHtml(st) {
       : [`${periodLabel()}の成績はまだありません`, '期間を切り替えると、ほかの期間の成績が見られます。'];
     return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('chart', 34, 'ico-l')}</div><b>${msg[0]}</b><span>${msg[1]}</span></div></div>`;
   }
+  if (!st.modes[mpMode]) return `<div class="mp-sec">${period}<div class="mp-panel mp-empty"><b>${periodLabel()}の${mpMode === 3 ? '三麻' : '四麻'}の成績はまだありません</b><span>${st.untagged ? '下の試合で自分を選ぶと、ここに成績が出ます。' : ''}</span></div></div>`;
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}</div>`;
 }
 
@@ -9330,20 +9468,29 @@ function historyItemHtml(g) {
   const st = histState(g);
   const id = esc(g.id);
   const rel = relDay(ms);
-  const meta = [s.numPlayers === 3 ? '三麻' : '四麻', `${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
+  const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
   let sub;
-  if (st === 'me') sub = `<div class="gr-sub">${myResultHtml(g)}<span class="gr-meta">${meta}</span></div>`;
+  if (st === 'me') sub = `<div class="gr-sub">${myResultHtml(g)}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, tagOf(g.id).me)}`;
   else if (st === 'out') sub = `<div class="gr-sub"><span class="gr-out">出ていない</span><span class="gr-meta">${meta}</span></div>`;
   else if (st === 'ask' && !mpSelecting) sub = `<div class="gr-sub"><span class="gr-meta">${meta}</span></div><div class="gr-ask">あなたはどれ？</div><div class="gr-chips">${askChipsHtml(g)}</div>`;
   else sub = `<div class="gr-sub"><span class="gr-meta">${meta} ・ ${esc((s.playerNames || []).join('・'))}</span></div>`;
   const on = mpSelecting && mpSel.has(g.id);
-  return `<div class="gr ${st}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
+  return `<div class="gr ${st} ${s.numPlayers === 3 ? 'm3' : 'm4'}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}
     <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
 }
 
+// 一緒に打った相手（自分以外で出た人）。多いときは先頭の数人＋「ほかn人」
+function oppLineHtml(g, me) {
+  const s = g.settings || {}, names = s.playerNames || [];
+  const played = playedFlags(g);
+  const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i]));
+  if (!opp.length) return '';
+  const MAX = 5, shown = opp.slice(0, MAX);
+  return `<div class="gr-opp"><span class="gr-vs">相手</span>${shown.map(i => `<span class="gr-op"><i style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+}
 // ---- マイページの描画 ----
 function renderHistory() {
   const st = collectMyStats();
@@ -9391,11 +9538,16 @@ function renderHistoryList() {
   const list = games.map(g => ({ g, ms: gameDayMs(g) }))
     .filter(x => !inP || inP(x.ms))
     .filter(x => !q || (String(x.g.name || '') + ' ' + ((x.g.settings && x.g.settings.playerNames) || []).join(' ')).toLowerCase().includes(q))
+    .filter(x => q || ((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === mpMode) // 上の四麻｜三麻のタブで切り替え（検索中は両方）
     .sort((a, b) => b.ms - a.ms).slice(0, MAX_HISTORY);
   srch.closest('.srch').style.display = (games.length > 8 || q) ? '' : 'none';
+  const vs = document.getElementById('hist-viewseg');
+  if (vs) vs.innerHTML = `<div class="seg xs" role="tablist" aria-label="過去の試合の見せ方">${[['list', '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${histView === k ? 'on' : ''}" aria-selected="${histView === k}" onclick="histView='${k}';renderHistoryList()">${l}</button>`).join('')}</div>`;
+  const modeName = q ? '' : (mpMode === 3 ? '三麻 ' : '四麻 ');
 
   if (!list.length) {
-    body.innerHTML = `<div class="empty-msg" style="margin-top:14px">${q ? '条件に一致する試合がありません' : `${periodLabel()}の試合はありません`}</div>`
+    body.innerHTML = `<div class="empty-msg" style="margin-top:14px">${q ? '条件に一致する試合がありません' : `${periodLabel()}の${modeName}試合はありません`}</div>`
       + (curPeriod() !== 'all' && !q ? `<button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '');
     renderSendBar();
     return;
@@ -9403,7 +9555,7 @@ function renderHistoryList() {
   // 自分が出た試合だけを一覧にする。自分を選んでいない・出ていない試合は下の「その他の試合」にたたむ
   const mine = list.filter(x => histState(x.g) === 'me');
   const others = list.filter(x => histState(x.g) !== 'me');
-  if (cnt) cnt.textContent = `${periodLabel()} ${mine.length}件`;
+  if (cnt) cnt.textContent = `${periodLabel()} ${modeName}${mine.length}件`;
   const shown = (histShowAll || q || mpSelecting) ? mine : mine.slice(0, HIST_PREVIEW);
   const months = [];
   shown.forEach(x => {
@@ -9413,7 +9565,11 @@ function renderHistoryList() {
     m.items.push(x.g);
   });
   const nAsk = others.filter(x => histState(x.g) === 'ask').length, nOut = others.length - nAsk;
-  body.innerHTML = (months.length ? months.map(m => `<div class="gm-month">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
+  const main = (histView === 'cal' && !mpSelecting && mine.length)
+    ? circleCalendarHtml(mine.map(x => ({ sid: x.g.id, g: x.g })), x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'hist', 'renderHistoryList()')
+    : null;
+  body.innerHTML = main != null ? main + (others.length ? `<details class="mp-others"${histOthersOpen ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}件` : '', nOut ? `出ていない ${nOut}件` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
+        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '') : (months.length ? months.map(m => `<div class="gm-month">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
       : `<div class="empty-msg" style="margin-top:10px">${periodLabel()}に自分が出た試合はまだありません${nAsk ? '（下の「その他の試合」で自分を選べます）' : ''}</div>`)
     + (shown.length < mine.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${mine.length - shown.length}件）</button>` : '')
     + (others.length ? `<details class="mp-others"${histOthersOpen || mpSelecting ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}件` : '', nOut ? `出ていない ${nOut}件` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
@@ -9422,7 +9578,7 @@ function renderHistoryList() {
 }
 
 // ---- まとめて送る（選んだ試合の名前とURLを1つの文にしてLINEへ。受け取った人は「試合を追加」に貼るだけ） ----
-let mpSelecting = false, mpSel = new Set(), histOthersOpen = false;
+let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = 'list';
 function startSelectSend() {
   if (!(appState.games || []).length) { showToast('送れる試合がまだありません'); return; }
   mpSelecting = true; mpSel = new Set();

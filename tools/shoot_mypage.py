@@ -157,6 +157,9 @@ def main():
         pg.evaluate("mpMode = 3; renderHistory()")
         shoot("mypage_me_sanma")
         pg.evaluate("mpMode = 4; renderHistory()")
+        pg.evaluate("histView = 'cal'; calS.hist.day = null; renderHistoryList(); const b = document.querySelector('#history-body .cal-c.has'); if (b) b.click();")
+        shoot("mypage_hist_cal")
+        pg.evaluate("histView = 'list'; renderHistoryList()")
 
         # 過去の試合の「…」メニュー
         pg.evaluate(f"openHistMenu('{gids[0]}')")
@@ -171,6 +174,9 @@ def main():
         shoot("mystats_h2h")
         pg.evaluate("myStatsTab = 'groups'; renderMyStats()")
         shoot("mystats_groups")
+        pg.evaluate("msGameOrder = 'cal'; renderMyStats()")
+        shoot("mystats_groups_cal")
+        pg.evaluate("msGameOrder = 'new'")
         pg.evaluate("myStatsTab = 'sum'")
         save_canvas("mystats", "buildMyStatsCanvas()")
 
@@ -197,6 +203,9 @@ def main():
         save_canvas("circle", """(() => { const st = circleStats(circleData, circleSess, circleMode);
           return buildTablesCanvas(circleData.name, '撮影', '', [{ label: '通算順位', html: circleStandingsTableHtml(st, true) },
             { label: '成績表', html: circleGridHtml(st, true) }], circleMode === '3'); })()""")
+
+        circleTab_ok = pg.evaluate("circleTab = 'rank'; renderCircle(); true")
+        save_canvas("circle_rank", "circleRankCanvas(circleStats(circleData, circleSess, circleMode, periodFilter()))")
 
         # マイページの「仲間」（カードが出た状態）
         pg.evaluate("showView('history'); setMpTab('circle')")
