@@ -228,6 +228,18 @@ def main():
         pg.evaluate("closeFormModal()")
         results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・最近）と相手ごとの成績が出る", True,
                         all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "最近", "相手ごとの成績"])))
+        # 仲間ページに入れたあとで、試合にメンバーを足して入力した → そのメンバーも結びつけられる
+        pg.evaluate(f"""async () => {{ const r = (await db.ref('sessions/{g1}').once('value')).val();
+          r.settings.playerNames.push('ろくろう'); r.rounds.push({{ members: [0, 1, 2, 5], points: [40000, 30000, 20000, 10000], scores: [50, 10, -20, -40], at: new Date().toISOString() }});
+          await db.ref('sessions/{g1}').set(r); }}""")
+        pg.evaluate(f"openBindEditor('{g1}')")
+        added_rows = pg.evaluate("bindState.rows.map(r => r.name)")
+        pg.evaluate("closeFormModal()")
+        results.append(("[5h] 仲間ページに入れたあとで試合に足したメンバーも、結びつけの画面に出る", True, "ろくろう" in added_rows))
+        pg.evaluate("circleTab = 'games'; circleGamesView = 'cal'; renderCircle()")
+        cal = pg.evaluate("document.getElementById('circle-body').innerText")
+        pg.evaluate("circleGamesView = 'list'; circleTab = 'rank'; renderCircle()")
+        results.append(("[5i] 試合タブはカレンダーでも見られる（年月・曜日）", True, "年" in cal and "月" in cal and "日" in cal and "土" in cal))
         pg.evaluate("openCircleInvite()")
         results.append(("[5f] 招待リンクは外のブラウザで開く形・参加コードも出る", True,
                         pg.evaluate(f"circleInviteLink === location.origin + '/?openExternalBrowser=1#join={code}' && document.getElementById('form-modal-body').innerText.includes('{code[:4]}-{code[4:]}')")))

@@ -793,6 +793,26 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .h2h-matrix td.mx-na { color: #B5C0BD; }
 .h2h-matrix td[onclick] { cursor: pointer; }
 .sh-tag { margin-left: auto; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: #fff; color: #4F5C5A; }
+.cg-month { margin: 14px 2px 4px; }
+.cg-month:first-of-type { margin-top: 4px; }
+.cal { background: #F5F8F7; border-radius: 14px; padding: 10px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-head b { font-size: 15px; font-weight: 900; color: #1F2A28; }
+.cal-nav { width: 36px; height: 36px; border: 0; border-radius: 50%; background: #fff; color: #177083; font-size: 20px; font-weight: 800; cursor: pointer; }
+.cal-nav:disabled { opacity: .3; cursor: default; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-w { text-align: center; font-size: 11px; font-weight: 800; color: #5F6E6B; padding: 2px 0; }
+.cal-c { aspect-ratio: 1; min-width: 0; border: 0; border-radius: 10px; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font: inherit; padding: 0; }
+.cal-c b { font-size: 13px; font-weight: 700; color: #4F5C5A; }
+.cal-c.sun b, .cal-w.sun { color: #C62828; } .cal-c.sat b, .cal-w.sat { color: #1565C0; }
+.cal-c.has { background: #fff; box-shadow: inset 0 0 0 1.5px #9FC9BD; cursor: pointer; }
+.cal-c.has b { font-weight: 900; color: #177083; }
+.cal-c.has i { font-style: normal; font-size: 9px; font-weight: 800; color: #177083; line-height: 1; }
+.cal-c.has.on { background: #177083; box-shadow: none; } .cal-c.has.on b, .cal-c.has.on i { color: #fff; }
+.cal-c.today { outline: 2px solid #E3B341; outline-offset: -2px; }
+.cal-hint { font-size: 12px; color: #5F6E6B; margin: 10px 2px 2px; line-height: 1.7; }
+.cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
+.cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -2888,7 +2908,7 @@ async function openCircle(cid) {
     circleId = cid; circleData = snap.val(); circleMode = null; circleFocus = null;
     circleSeen[cid] = { name: circleData.name || '', at: new Date().toISOString() };
     saveCircleSeen();
-    await Promise.all([loadCircleMembers(), loadCircleSessions()]);
+    await Promise.all([loadCircleMembers(), loadCircleSessions(true)]); // 試合は毎回最新を読む（あとから足したメンバー・試合を反映する）
     // 見ているあいだに誰かが追加・結びつけをしたら反映する（名簿・結びつけは数KBなので丸ごと聞いてよい）
     circleRef = db.ref('circles/' + cid);
     circleCb = circleRef.on('value', s => {
@@ -3158,7 +3178,7 @@ function circleGamesTabHtml(role, gids) {
   const games = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
     .sort((a, b) => (b.g ? gameDayMs(b.g) : Date.parse(b.ge.at) || 0) - (a.g ? gameDayMs(a.g) : Date.parse(a.ge.at) || 0));
   const myMid = myCircleMid(); // 名簿で自分が本人登録していれば、自分が出た試合／出ていない試合を見分けて見せる
-  const glist = games.map(({ sid, ge, g }) => {
+  const rowOf = ({ sid, ge, g }) => {
     if (!g) return `<button type="button" class="series-row cg-row" onclick="openCircleGameMenu('${sid}')"><span class="cg-main"><span class="cg-name">${esc(ge.name || '')}</span><span class="cg-sub">読み込めませんでした（削除された可能性があります）</span></span>${ico('chevron', 14)}</button>`;
     const played = playedFlags(g);
     const seats = (ge && ge.seats) || {};
@@ -3174,16 +3194,63 @@ function circleGamesTabHtml(role, gids) {
       mine = `<span class="gm-res${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 16, false) : ''}あなた ${rank}位<span class="of"> / ${nPlayed}人</span></span> `;
     } else if (myMid) mine = '<span class="gr-out">出ていない</span> ';
     return `<button type="button" class="series-row cg-row${g.settings && g.settings.numPlayers === 3 ? ' gm-3' : ''}${myMid && mySeat == null ? ' cg-out' : ''}" onclick="openCircleGameMenu('${sid}')">
-      <span class="gm-date"><span>${d.getMonth() + 1}月</span><b>${d.getDate()}</b></span>
+      <span class="gm-date"><span>${d.getMonth() + 1}月（${YOUBI[d.getDay()]}）</span><b>${d.getDate()}</b></span>
       <span class="cg-main"><span class="cg-name">${esc(g.name || ge.name || '')}</span>
-        <span class="cg-sub">${mine}${fmtDay(d.getTime())} ・ ${(g.rounds || []).length}試合${top >= 0 ? ` ・ ${medalSvg(1, 14, false)}${esc(g.settings.playerNames[top])}` : ''}</span>
+        <span class="cg-sub cg-flow">${mine}${(g.rounds || []).length}試合${top >= 0 ? ` ・ 1位 ${esc(g.settings.playerNames[top])}` : ''}</span>
         ${nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未結びつけ ${nPlayed - nBound}人</span>` : `<span class="st-pill ok">${ico('check', 12)}結びつけ済み</span>`}</span>
       ${ico('chevron', 14)}</button>`;
-  }).join('');
+  };
+  // 打った日（読み込めなかった試合は追加した日）
+  const dayOf = x => (x.g ? gameDayMs(x.g) : Date.parse(x.ge.at) || 0);
+  let glist = '';
+  if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, rowOf);
+  else {
+    let prev = null;
+    games.forEach(x => {
+      const d = new Date(dayOf(x)), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+      if (key !== prev) { glist += `<div class="gm-month cg-month">${key}</div>`; prev = key; }
+      glist += rowOf(x);
+    });
+  }
+  const viewSeg = games.length ? `<div class="seg xs" role="tablist" aria-label="試合の見せ方" style="margin:0 0 10px">${[['list', '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${circleGamesView === k ? 'on' : ''}" aria-selected="${circleGamesView === k}" onclick="circleGamesView='${k}';renderCircle()">${l}</button>`).join('')}</div>` : '';
   return `<div class="card">${circleCardHead(`試合（${gids.length}ゲーム）`, role ? `<button class="btn-tint" onclick="openCircleAddGames()">＋ 追加</button>` : '')}
-    ${glist || `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
+    ${viewSeg}${glist || `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
     ${role && !gids.length ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}
     <div class="h2h-note">試合を押すと、${role ? '開く・名前の結びつけ・仲間ページから外す' : '結果を見る'}、ができます。</div></div>`;
+}
+// ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
+let circleGamesView = 'list', circleCalMonth = null, circleCalDay = null;
+function circleCalendarHtml(games, dayOf, rowOf) {
+  const byDay = {};
+  games.forEach(x => { const d = new Date(dayOf(x)); const k = ymdLocal(d); (byDay[k] = byDay[k] || []).push(x); });
+  const latest = new Date(dayOf(games[0]));
+  if (circleCalMonth == null) circleCalMonth = latest.getFullYear() * 12 + latest.getMonth();
+  const y = Math.floor(circleCalMonth / 12), m = circleCalMonth % 12;
+  const first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate();
+  const today = ymdLocal(new Date());
+  const monthCount = Object.keys(byDay).filter(k => k.startsWith(`${y}-${String(m + 1).padStart(2, '0')}-`)).reduce((a, k) => a + byDay[k].length, 0);
+  let cells = '';
+  for (let i = 0; i < first.getDay(); i++) cells += '<span class="cal-c empty"></span>';
+  for (let d = 1; d <= days; d++) {
+    const k = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const n = (byDay[k] || []).length;
+    const dow = (first.getDay() + d - 1) % 7;
+    cells += n
+      ? `<button type="button" class="cal-c has${circleCalDay === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="circleCalDay='${k}';renderCircle()"><b>${d}</b><i>${n > 1 ? n + '件' : '●'}</i></button>`
+      : `<span class="cal-c${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}"><b>${d}</b></span>`;
+  }
+  const allMonths = games.map(x => { const d = new Date(dayOf(x)); return d.getFullYear() * 12 + d.getMonth(); });
+  const minM = Math.min(...allMonths), maxM = Math.max(...allMonths, latest.getFullYear() * 12 + latest.getMonth());
+  const nav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の月' : '次の月'}"${ok ? '' : ' disabled'} onclick="circleCalMonth+=${dir};circleCalDay=null;renderCircle()">${dir < 0 ? '‹' : '›'}</button>`;
+  const sel = circleCalDay && byDay[circleCalDay] && circleCalDay.startsWith(`${y}-${String(m + 1).padStart(2, '0')}-`) ? circleCalDay : null;
+  const dayList = sel
+    ? `<div class="gm-month cg-month">${fmtDay(new Date(sel.replace(/-/g, '/') + ' 12:00').getTime(), true)}の試合</div>${byDay[sel].map(rowOf).join('')}`
+    : `<div class="cal-hint">${monthCount ? `この月は${monthCount}ゲーム。印のある日を押すと、その日の試合が出ます。` : 'この月の試合はありません。'}</div>`;
+  return `<div class="cal">
+    <div class="cal-head">${nav(-1, circleCalMonth > minM)}<b>${y}年${m + 1}月</b>${nav(1, circleCalMonth < maxM)}</div>
+    <div class="cal-grid">${'日月火水木金土'.split('').map((w, i) => `<span class="cal-w${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}">${w}</span>`).join('')}${cells}</div>
+  </div>${dayList}`;
 }
 function circlePeopleTabHtml(st) {
   const roster = rosterOf();
@@ -3457,9 +3524,13 @@ async function removeCircleGame(sid) {
   } catch (e) { showToast('外せませんでした（追加した人・作成者・管理者だけが外せます）', 5000); }
 }
 let bindState = null; // { sid, rows: [{ seat, name, cur, sel, locked }] }
-function openBindEditor(sid) {
+async function openBindEditor(sid) {
+  if (!circleRole()) return;
+  // 仲間ページを開いたあとにメンバーを足した・試合を入力した場合に備えて、その試合だけ最新を読み直す
+  //（以前は開いた時点の中身のままで、あとから足したメンバーの席が出てこなかった）
+  try { const snap = await db.ref('sessions/' + sid).once('value'); if (snap.exists()) circleSess[sid] = normGame(snap.val()); } catch (e) {}
   const g = circleSess[sid];
-  if (!g || !circleRole()) return;
+  if (!g) return;
   const seats = circleSeatsOf(sid);
   const names = g.settings.playerNames;
   const played = playedFlags(g);
