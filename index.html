@@ -935,6 +935,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-tile b { display: block; font-size: 15px; font-weight: 900; color: #1F2A28; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-tile b.pos { color: #1A237E; } .ms-tile b.neg { color: #C62828; }
 .ms-panel { background: #fff; border-radius: 14px; padding: 4px 12px 10px; margin-top: 8px; box-shadow: var(--sh-1); }
+/* くらべる表: ほかの表と同じ白いカードに載せる（地の色と紛れないように） */
+.ms-card { background: #fff; border-radius: 16px; padding: 14px 14px 12px; margin-top: 12px; box-shadow: var(--sh-1); }
+.ms-card .ms-h { margin: 0 2px 8px; font-size: 15px; font-weight: 800; }
 .ms-cmp td { font-weight: 700; font-variant-numeric: tabular-nums; }
 .ms-cmp td.pos { color: #1A237E; } .ms-cmp td.neg { color: #C62828; }
 .ms-cmp th.on, .ms-cmp td.on { background: var(--pc-bg) !important; }
@@ -9227,11 +9230,11 @@ function msCompareHtml(np) {
   const rows = [['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top)], ['連対率', r => pctText(r.ren)],
     ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score)], ['1試合平均', r => fmtScore(r.per), r => scoreCls(r.per)]];
   const w = 84, cw = 84;
-  return `<div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
-    <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:${w + cols.length * cw}px">
+  return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
+    <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
       <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th class="${c2.k === msScope ? 'on' : ''}" title="${esc(c2.label)}"><span class="mx-nm">${esc(c2.label)}</span></th>`).join('')}</tr></thead>
       <tbody>${rows.map(([label, f, cls]) => `<tr><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${c2.k === msScope ? 'on ' : ''}${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
-    <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div>`;
+    <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
 function msModeHtml(np, m) {
   const r = msRow(np, m), hist = sortHist(m.hist);
