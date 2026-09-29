@@ -220,9 +220,9 @@ def main():
             pg.evaluate(f"circleTab = '{t}'; renderCircle()")
             tabs[t] = pg.evaluate("document.getElementById('circle-body').innerText")
         pg.evaluate("circleTab = 'rank'; renderCircle()")
-        results.append(("[5e] タブで通算順位・成績表（総当たり表）・対戦成績・試合・名簿を切り替えて見られる", True,
+        results.append(("[5e] タブで通算順位・成績表・対戦成績（総当たり表）・試合・名簿を切り替えて見られる", True,
                         "通算順位" in tabs["rank"] and "むにぃ" in tabs["rank"] and "平均着順" in tabs["grid"] and "トップ率" in tabs["grid"]
-                        and "総当たり表" in tabs["grid"] and "対戦成績" in tabs["h2h"] and "総当たり表" not in tabs["h2h"] and "金曜会1" in tabs["games"] and "名簿（5人）" in tabs["people"]))
+                        and "対戦成績" in tabs["h2h"] and "総当たり表" in tabs["h2h"] and "金曜会1" in tabs["games"] and "名簿（5人）" in tabs["people"]))
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         mt = pg.evaluate("document.getElementById('form-modal-body').innerText")
         pg.evaluate("closeFormModal()")

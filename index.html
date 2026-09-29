@@ -916,12 +916,29 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .day-split-btn { display: inline-flex; align-items: center; gap: 3px; height: 22px; margin-left: 6px; padding: 0 8px 0 6px; border: 1px solid var(--pc); border-radius: 11px; background: #fff; color: var(--pc); font-size: 11px; font-weight: 800; cursor: pointer; vertical-align: 1px; }
 .day-split-sum { display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 2px; font-size: 11px; color: #5F6E6B; }
 .day-split-sum > span { white-space: nowrap; }
+.ds-sum { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 0 2px 8px; font-size: 12px; color: #5F6E6B; }
+.ds-sum b { color: #1F2A28; }
+.ds-list { padding: 0 12px; }
+.ds-rrow { padding: 10px 0; border-top: .5px solid #E3E9E8; }
+.ds-rrow:first-child { border-top: 0; }
+.ds-rrow.brk { border-top: 2px solid var(--pc); }
+.ds-rno { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+.ds-rno b { font-size: 14px; font-weight: 900; color: #1F2A28; }
+.ds-rno span { font-size: 11px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ds-days { display: flex; gap: 6px; flex-wrap: wrap; }
+.ds-days button { display: inline-flex; align-items: baseline; gap: 4px; height: 32px; padding: 0 12px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 800; cursor: pointer; }
+.ds-days button small { font-size: 11px; font-weight: 700; color: #8A9AA5; }
+.ds-days button.on { background: var(--pc); border-color: var(--pc); color: #fff; }
+.ds-days button.on small { color: rgba(255,255,255,.8); }
 .ds-row { display: flex; align-items: center; gap: 10px; min-height: 48px; border-top: .5px solid #E3E9E8; }
 .ds-row:first-child { border-top: 0; }
 .ds-row b { flex: none; width: 44px; font-size: 14px; font-weight: 900; color: #1F2A28; }
 .ds-row span { flex: 1; min-width: 0; font-size: 13px; color: #5F6E6B; }
 .ds-row em { font-style: normal; font-size: 13px; font-weight: 700; color: #5F6E6B; }
 .ds-row select { flex: none; max-width: 56%; font-size: 16px; }
+.cg-head { align-items: center; margin-bottom: 0; }
+.cg-tab .hist-kinds { margin-top: 6px; }
+.cg-games { margin-top: 8px; }
 .rounds-table th.th-link { cursor: pointer; }
 .rounds-table th.th-link:active { opacity: .6; }
 .cmp-h { display: inline-flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 12px; font-weight: 800; color: #1F2A28; }
@@ -3509,10 +3526,6 @@ function renderCircle() {
   else if (circleTab === 'grid') {
     html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`)}${modeChips}
       ${st.list.length ? circleGridHtml(st) + `<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>` : noBind}</div>`;
-    if (st.list.length > 1) {
-      circleKeys = st.list.map(p => p.key);
-      html += `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`)}${mxLegendHtml()}${circleMatrixHtml(st)}</div>`;
-    }
   } else if (circleTab === 'h2h') html += circleH2HTabHtml(st, modeChips, noBind);
   else html += circleRankTabHtml(st, modeChips, noBind);
   html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
@@ -3674,18 +3687,21 @@ function circleH2HTabHtml(st, modeChips, noBind) {
   return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
-    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>`;
+    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>
+    ${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`)}${mxLegendHtml()}${circleMatrixHtml(st)}</div>` : ''}`;
 }
 function circleGamesTabHtml(role, gids, modeChips) {
   const all = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
     .sort((a, b) => (b.g ? gameDayMs(b.g) : Date.parse(b.ge.at) || 0) - (a.g ? gameDayMs(a.g) : Date.parse(a.ge.at) || 0));
-  // 形式は行に印を付けず、上の「四麻｜三麻」で切り替える（読み込めなかった試合はどちらにも出す）
-  const games = all.filter(x => !x.g || String((x.g.settings && x.g.settings.numPlayers) === 3 ? 3 : 4) === circleMode);
+  // 形式は個人の過去の試合と同じピル（すべて｜四麻｜三麻｜複数人｜チーム戦）で絞る（読み込めなかった試合は「すべて」だけ）
+  const kinds = histKindPillsHtml(all.filter(x => x.g).map(x => x.g), 'renderCircle()', 'circleKind');
+  const games = all.filter(x => circleKind === 'all' || (x.g && histKindMatch(x.g, circleKind)));
   const myMid = myCircleMid(); // 名簿で自分が本人確認していれば、自分の結果を出す（出ていない試合は「—」）
   // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
+    const dots = `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openCircleGameMenu('${sid}')">${ico('more', 18)}</button>`;
     if (!g) return `<div class="gr" onclick="openCircleGameMenu('${sid}')"><div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(ge.name || '')}</span></div>
-      <div class="gr-sub"><span class="gr-meta">読み込めませんでした（削除された可能性があります）</span></div></div><span class="gr-go">${ico('chevron', 14)}</span></div>`;
+      <div class="gr-sub"><span class="gr-meta">読み込めませんでした（削除された可能性があります）</span></div></div>${dots}</div>`;
     const played = playedFlags(g);
     const seats = (ge && ge.seats) || {};
     const nPlayed = played.filter(Boolean).length;
@@ -3699,7 +3715,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     return `<div class="gr${me == null && myMid ? ' out' : ''}" onclick="openCircleGameMenu('${sid}')">${gameKindHtml(g)}
       <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}${me == null && myMid ? '<span class="gr-out">出ていない</span>' : ''}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
-      <span class="gr-go">${ico('chevron', 14)}</span></div>`;
+      ${dots}</div>`;
   };
   // 打った日（読み込めなかった試合は追加した日）
   const dayOf = x => (x.g ? ymdToMs(gameDaysList(x.g)[0]) : Date.parse(x.ge.at) || 0);
@@ -3716,12 +3732,12 @@ function circleGamesTabHtml(role, gids, modeChips) {
     });
     if (prev) glist += '</div>';
   }
-  const viewSeg = all.length ? `<div class="seg xs" role="tablist" aria-label="試合の見せ方" style="margin:0 0 10px">${[['list', '一覧'], ['cal', 'カレンダー'], ['tile', 'タイル']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${circleGamesView === k ? 'on' : ''}" aria-selected="${circleGamesView === k}" onclick="circleGamesView='${k}';renderCircle()">${l}</button>`).join('')}</div>` : '';
-  return `<div class="card">${circleCardHead(`試合（${gids.length}ゲーム）`, role ? `<button class="btn-tint" onclick="openCircleAddGames()">＋ 追加</button>` : '')}
-    ${modeChips}${viewSeg}${all.length ? '' : `<div style="font-size:13px;color:#4F5C5A;line-height:1.8">まだ試合がありません。${role ? '「＋ 追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : ''}</div>`}
-    ${role && !gids.length ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>
-    ${glist ? `<div class="cg-games">${glist}</div>` : (all.length ? `<div class="empty-msg">${circleMode === '3' ? '三麻' : '四麻'}の試合はありません</div>` : '')}`;
+  // 上: 件数（左）と「＋ 試合を追加」（右）→ 形式のピル → 見せ方（個人の過去の試合と同じ並び）
+  const head = `<div class="mp-sec-head cg-head"><span class="mp-sec-note">${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${games.length}件（${gids.length}ゲーム中）</span>${role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : ''}</div>`;
+  if (!all.length) return `<div class="cg-tab">${head}<div class="mp-panel mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
+  // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
+  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
+    ${glist ? `<div class="cg-games">${glist}</div>` : '<div class="empty-msg" style="margin-top:14px">この形式の試合はありません</div>'}</div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
 let circleGamesView = 'list';
@@ -4341,7 +4357,7 @@ function openCircleMember(mid) {
   const unconfirmed = bound.filter(b => !b.stt.self).length;
   // 一覧（日付・試合名・試合での名前・その人のスコア）とタイル（試合数の代わりにその人のスコア）を切り替える
   const boundSeg = bound.length ? `<div class="seg xs" role="tablist" aria-label="連携済みの試合の見せ方" style="margin:0 0 4px">${[['list', '一覧'], ['tile', 'タイル']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${cmBoundView === k ? 'on' : ''}" aria-selected="${cmBoundView === k}" onclick="cmBoundView='${k}';openCircleMember('${mid}')">${l}</button>`).join('')}</div>` : '';
+    `<button type="button" role="tab" class="${cmBoundView === k ? 'on' : ''}" aria-selected="${cmBoundView === k}" onclick="cmBoundView='${k}';openCircleMember('${mid}')">${l}</button>`).join('')}</div>` : ''; // 一覧・タイル（左から）
   // 一覧: 相手ごとの成績のカードと同じ雰囲気（名前・大きな数字・小さな補足）。1枚＝1ゲーム。その人のスコア・順位・人数・試合数・相手
   const cgCard = b => {
     const g = b.g;
@@ -8950,47 +8966,71 @@ function daySplitSummary(g) {
   rs.forEach((r, i) => cnt[roundDayIdx(g, r, days)].push(i + 1));
   return cnt.map((a, k) => `${k + 1}日目 ${a.length ? (a.length > 1 ? `第${a[0]}〜${a[a.length - 1]}試合` : `第${a[0]}試合`) : 'なし'}`);
 }
-let daySplitState = null; // { days, starts: [2日目が始まる試合の番号, …] }
-function openDaySplit() {
-  const g = activeGame;
+// 日の区切りの画面: 1試合ずつ「何日目（日付）」を押して当てはめる。ある試合を2日目にすると、それより後の試合は2日目以降、
+// それより前の試合は2日目以前にそろう（日は試合の順にしか進まない）。保存は settings.dayStarts（2日目・3日目が始まる試合の番号）
+let daySplitState = null; // { where: 'game'|'detail', days, idx: [試合ごとの日（0始まり）] }
+function daySplitGame(where) { return where === 'detail' ? detailGame : activeGame; }
+function openDaySplit(where = 'game') {
+  const g = daySplitGame(where);
   if (!g || isGameLocked(g)) return;
-  const days = gameDaysList(g), n = (g.rounds || []).length;
-  // 今の区切り（無ければ、入力した日から分かる区切り＝その日の最初の試合）
-  const idx = (g.rounds || []).map(r => roundDayIdx(g, r, days));
-  const starts = days.slice(1).map((_, k) => { const i = idx.findIndex(d => d >= k + 1); return i >= 0 ? i + 1 : n + 1; });
-  daySplitState = { days, starts };
+  const days = gameDaysList(g);
+  if (days.length < 2) return;
+  daySplitState = { where, days, idx: (g.rounds || []).map(r => roundDayIdx(g, r, days)) };
   renderDaySplit();
   document.getElementById('form-modal').classList.add('open');
 }
+function setDaySplit(i, k) {
+  const a = daySplitState.idx;
+  a[i] = k;
+  for (let j = i + 1; j < a.length; j++) a[j] = Math.max(a[j], k);
+  for (let j = 0; j < i; j++) a[j] = Math.min(a[j], k);
+  renderDaySplit();
+}
 function renderDaySplit() {
-  const g = activeGame, st = daySplitState, n = (g.rounds || []).length;
-  const opt = (k, v) => Array.from({ length: n + 1 }, (_, i) => i + 1).map(no => `<option value="${no}"${no === v ? ' selected' : ''}>${no > n ? 'これからの試合から' : `第${no}試合から`}</option>`).join('');
+  const st = daySplitState, g = daySplitGame(st.where), rs = g.rounds || [], names = g.settings.playerNames || [];
+  const dayLbl = k => { const d = new Date(ymdToMs(st.days[k])); return `${k + 1}日目<small>${d.getMonth() + 1}/${d.getDate()}</small>`; };
+  const cnt = st.days.map((_, k) => st.idx.filter(v => v === k).length);
+  // 1試合の手がかり: 入力した日時と、その試合の1位
+  const hint = r => {
+    const mem = roundMembers(r, g.settings), pts = r.points || r.scores || [];
+    let top = -1; pts.forEach((v, k) => { if (top < 0 || Number(v) > Number(pts[top])) top = k; });
+    const t = Date.parse(r.at), d = t ? new Date(t) : null;
+    return `${d ? `入力 ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''}${top >= 0 ? ` ・ 1位 ${esc(names[mem[top]] || '')}` : ''}`;
+  };
   document.getElementById('form-modal-title').textContent = '日の区切り';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="mp-note" style="margin:0 2px 10px">2日以上にわたる試合で、何試合目からが何日目かを決めます。成績やカレンダーは、その日に打った試合として数えます。</div>
-    <div class="mn-group" style="padding:4px 12px">
-      <div class="ds-row"><b>1日目</b><span>${esc(fmtDay(ymdToMs(st.days[0])))}</span><em>第1試合から</em></div>
-      ${st.days.slice(1).map((d, k) => `<div class="ds-row"><b>${k + 2}日目</b><span>${esc(fmtDay(ymdToMs(d)))}</span>
-        <select onchange="daySplitState.starts[${k}]=Number(this.value)">${opt(k, st.starts[k])}</select></div>`).join('')}
-    </div>
+    <div class="mp-note" style="margin:0 2px 8px">試合ごとに、打った日を押してください。ある試合を2日目にすると、それより後の試合も2日目以降になります。</div>
+    <div class="ds-sum">${st.days.map((_, k) => `<span><b>${k + 1}日目</b> ${cnt[k]}試合</span>`).join('')}</div>
+    <div class="mn-group ds-list">${rs.map((r, i) => `<div class="ds-rrow${i > 0 && st.idx[i] !== st.idx[i - 1] ? ' brk' : ''}">
+        <div class="ds-rno"><b>第${i + 1}試合</b><span>${hint(r)}</span></div>
+        <div class="ds-days">${st.days.map((_, k) => `<button type="button" class="${st.idx[i] === k ? 'on' : ''}" onclick="setDaySplit(${i},${k})">${dayLbl(k)}</button>`).join('')}</div></div>`).join('')
+      || '<div style="padding:12px;font-size:13px;color:#5F6E6B">まだ試合がありません</div>'}</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveDaySplit()">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
 function saveDaySplit() {
-  const g = activeGame, st = daySplitState;
-  if (!g || !st) return;
-  // 後の日ほど後の試合から（同じ番号は、前の日が0試合になる＝その日は打っていない、として許す）
-  for (let k = 1; k < st.starts.length; k++) if (st.starts[k] < st.starts[k - 1]) { showToast(`${k + 2}日目は${k + 1}日目より後の試合からにしてください`); return; }
+  const st = daySplitState, g = st && daySplitGame(st.where);
+  if (!g) return;
+  const n = (g.rounds || []).length;
+  // 2日目・3日目…が始まる試合の番号（その日の試合が無ければ、次の日と同じ番号＝0試合の日）
+  const starts = st.days.slice(1).map((_, k) => { const i = st.idx.findIndex(v => v >= k + 1); return i >= 0 ? i + 1 : n + 1; });
   const s = g.settings, base = { name: g.name, settings: s };
-  const settings = { ...s, dayStarts: st.starts.slice() };
+  const settings = { ...s, dayStarts: starts };
   if (fpOf(base) === fpOf({ name: g.name, settings })) { closeFormModal(); showToast('変更はありませんでした'); return; }
   const map = {};
   (s.playerNames || []).forEach((_, i) => { map[i] = i; });
   closeFormModal();
-  enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'settings', baseFp: fpOf(base), name: g.name, settings, memberMap: map,
-    changes: ['日の区切り: ' + st.starts.map((no, k) => `${k + 2}日目は第${no}試合から`).join('、')] });
+  const op = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'settings', baseFp: fpOf(base), name: g.name, settings, memberMap: map,
+    changes: ['日の区切り: ' + starts.map((no, k) => `${k + 2}日目は第${no}試合から`).join('、')] });
+  if (st.where === 'detail' && op) {
+    // 結果詳細は手元の控えにも先に反映して描き直す（送信はキューが続ける）
+    const r = applyOp(g, op);
+    if (r.status === 'apply') Object.assign(g, r.game);
+    saveStorage();
+    viewDetail(g);
+  }
   showToast('日の区切りを保存しました');
-  track('day_split', { days: st.days.length });
+  track('day_split', { days: st.days.length, where: st.where });
 }
 
 // ---- 参加/観戦タグと自分の成績 ----
@@ -10220,16 +10260,21 @@ let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = '
 // 過去の試合の形式の絞り込み。複数人＝席より多い人数で回した試合（行の印の人数の丸と同じ）
 let histKind = 'all';
 const HIST_KINDS = [['all', 'すべて'], ['4', '四麻'], ['3', '三麻'], ['multi', '複数人'], ['team', 'チーム戦']];
-function histKindPillsHtml(games, rerender) {
+let circleKind = 'all'; // 仲間ページの試合の形式の絞り込み（過去の試合の histKind と同じ部品・別の状態）
+// 形式のピル。key＝状態の変数名（'histKind'｜'circleKind'）
+function histKindPillsHtml(games, rerender, key = 'histKind') {
   const kc = {};
   HIST_KINDS.forEach(([k]) => { kc[k] = games.filter(g => histKindMatch(g, k)).length; });
-  if (!kc[histKind]) histKind = 'all';
+  if (key === 'circleKind') { if (!kc[circleKind]) circleKind = 'all'; } else if (!kc[histKind]) histKind = 'all';
+  const cur = key === 'circleKind' ? circleKind : histKind;
   return `<div class="mp-pills hist-kinds" role="tablist" aria-label="試合の形式">${HIST_KINDS.map(([k, l]) =>
-    `<button type="button" role="tab" class="${histKind === k ? 'on' : ''}" aria-selected="${histKind === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="histKind='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="${key}='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
-function histOrderSegHtml(rerender) {
-  return `<div class="seg xs" role="tablist" aria-label="過去の試合の並び順">${[['new', '一覧'], ['cal', 'カレンダー'], ['tile', 'タイル']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${histView === k ? 'on' : ''}" aria-selected="${histView === k}" onclick="histView='${k}';${rerender}">${l}</button>`).join('')}</div>`;
+// 見せ方「一覧｜タイル｜カレンダー」（左から）。key＝状態の変数名、listVal＝一覧の値（過去の試合 'new'・仲間ページ 'list'）
+function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
+  const cur = key === 'circleGamesView' ? circleGamesView : histView;
+  return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[[listVal, '一覧'], ['tile', 'タイル'], ['cal', 'カレンダー']].map(([k, l]) =>
+    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}" onclick="${key}='${k}';${rerender}">${l}</button>`).join('')}</div>`;
 }
 // タイル: 試合名と試合数だけの小さな正方形を新しい順に敷き詰める。空（0試合）と少ない（3試合以下）の試合を目立たせ、
 // 間違えて作った・試しに作っただけの試合をすぐ見つけられるようにする。押すと「…」と同じメニュー（結果を見る・削除）
@@ -10524,7 +10569,10 @@ function renderDetailBody(g) {
   detailGame = g;
   const P = detailRO ? 'watch' : 'detail'; // 見るだけの画面（view-watch）は同じ部品で、入力・修正の入り口を出さない
   document.getElementById(P + '-title').textContent = g.name;
-  document.getElementById(P + '-date').textContent = playDateMs(g) != null ? '対局日 ' + fmtGameDays(g)
+  const multiDayD = playDateMs(g) != null && gameDaysList(g).length > 1;
+  document.getElementById(P + '-date').innerHTML = playDateMs(g) != null ? '対局日 ' + esc(fmtGameDays(g))
+    + (multiDayD && !detailRO && !isGameLocked(g) ? ` <button type="button" class="day-split-btn" onclick="openDaySplit('detail')">${ico('pencil', 12)}日の区切り</button>` : '')
+    + (multiDayD ? `<span class="day-split-sum">${daySplitSummary(g).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
