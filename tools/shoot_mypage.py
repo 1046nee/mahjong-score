@@ -207,6 +207,9 @@ def main():
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         shoot("circle_member", modal=True)
         pg.evaluate("closeFormModal()")
+        pg.evaluate("openVerifyInfo(Object.keys(circleData.roster).find(m => circleData.roster[m].uid))")
+        shoot("circle_verify", modal=True)
+        pg.evaluate("closeFormModal()")
         save_canvas("circle", """(() => { const st = circleStats(circleData, circleSess, circleMode);
           return buildTablesCanvas(circleData.name, '撮影', '', [{ label: '通算順位', html: circleStandingsTableHtml(st, true) },
             { label: '成績表', html: circleGridHtml(st, true) }], circleMode === '3'); })()""")

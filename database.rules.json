@@ -133,7 +133,7 @@
         },
         "roster": {
           "$mid": {
-            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.child('uid').exists() || data.child('uid').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin')) || (auth != null && data.exists() && newData.exists() && newData.child('name').val() === data.child('name').val() && newData.child('at').val() === data.child('at').val() && ((!data.child('uid').exists() && newData.child('uid').val() === auth.uid) || (data.child('uid').val() === auth.uid && !newData.child('uid').exists())))",
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.child('uid').exists() || data.child('uid').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin')) || (auth != null && data.exists() && newData.exists() && newData.child('name').val() === data.child('name').val() && newData.child('at').val() === data.child('at').val() && ((!data.child('uid').exists() && newData.child('uid').val() === auth.uid) || (data.child('uid').val() === auth.uid && !newData.child('uid').exists()))) || (auth != null && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid && newData.child('name').val() === data.child('name').val() && newData.child('at').val() === data.child('at').val())",
             ".validate": "$mid.matches(/^[A-Za-z0-9]{8}$/) && newData.hasChildren(['name', 'at'])",
             "name": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
@@ -143,6 +143,15 @@
             },
             "uid": {
               ".validate": "newData.isString() && (newData.val() === data.val() || (newData.val() === auth.uid && !data.exists()))"
+            },
+            "gname": {
+              ".validate": "newData.isString() && newData.val().length <= 60 && newData.parent().child('uid').val() === auth.uid"
+            },
+            "gphoto": {
+              ".validate": "newData.isString() && newData.val().length <= 600 && newData.val().beginsWith('https://') && newData.parent().child('uid').val() === auth.uid"
+            },
+            "gat": {
+              ".validate": "newData.isString() && newData.val().length <= 40 && newData.parent().child('uid').val() === auth.uid"
             },
             "$other": {
               ".validate": false

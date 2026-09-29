@@ -264,6 +264,12 @@ def main():
         pgb.wait_for_timeout(600)
         results.append(("[6c] 「たろう」を本人として登録（名簿に✓本人・結びつけ済みの席は本人の確認に切り替わる）", True,
                         db_of(pgb)["circles"][cid]["roster"][tr].get("uid") == U2))
+        pgb.evaluate(f"openVerifyInfo('{tr}')")
+        vf = pgb.evaluate("document.getElementById('form-modal-body').innerText")
+        pgb.evaluate("closeFormModal()")
+        results.append(("[6c2] 確認済みにしたGoogleアカウントの表示名が名簿に残り、「確認済み」を押すと見られる（メールアドレスは残さない）", True,
+                        db_of(pgb)["circles"][cid]["roster"][tr].get("gname") == "テスト2" and "テスト2" in vf and "たろう" in vf
+                        and "email" not in str(db_of(pgb)["circles"][cid]["roster"][tr])))
         pgb.wait_for_function(f"() => (appState.games || []).some(g => g.id === '{g1}') && (appState.games || []).some(g => g.id === '{g2}')", timeout=15000)
         results.append(("[6j] 仲間ページで自分（たろう）を選ぶと、その試合が自分の過去の試合に入り、たろうの席が「自分」になる（個人の成績に入る）", True,
                         pgb.evaluate(f"tagOf('{g1}').me === 1 && tagOf('{g2}').me === 1 && collectMyStats(null).groups.length >= 2")))
@@ -302,6 +308,11 @@ def main():
         pgb.evaluate(f"openBindEditor('{g1}')")
         results.append(("[6g] 作成者が管理者にすると、本人が結びつけた席も変更できるようになる", True,
                         pgb.evaluate("circleRole() === 'admin' && bindState.rows[0].locked === false")))
+        pgb.evaluate("closeFormModal()")
+        mu = [m for m, r in db_of(pgb)["circles"][cid]["roster"].items() if r.get("uid") == U1][0]
+        pgb.evaluate(f"openVerifyInfo('{mu}')")
+        results.append(("[6g2] 管理者は、ほかの人の確認済みを外す入口が見られる", True,
+                        "この人の確認済みを外す" in pgb.evaluate("document.getElementById('form-modal-body').innerText")))
         # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
         pgb.evaluate("closeFormModal()")
         dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")
