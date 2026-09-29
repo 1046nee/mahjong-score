@@ -28,12 +28,12 @@
 
 ## 絶対ルール（全タスク共通）
 1. **作業前に必ず `git pull origin main`**（ユーザーがGitHub Web UIで直接編集することがある。巻き戻し厳禁）
-2. 変更後は**ブラウザ実機で検証してから完了報告**（mcp__Claude_Browser__*。スクリーンショットはタイムアウトしやすいのでDOM評価を主体に。検証で作ったFirebaseセッションは `db.ref('sessions/ID').remove()` で削除）
+2. 変更後は**ブラウザ実機で検証してから完了報告**（mcp__Claude_Browser__*。スクリーンショットはタイムアウトしやすいのでDOM評価を主体に。試合（sessions）は誰も消せないルール（2026-09-29〜）なので、検証で作った試合は本番に残る。`sessions/ID/lockAt` に24時間後を入れて確定させておく）
 3. **計算ロジックを触ったら /tests.html がALL PASSであることを確認**してからコミット
 3b. **主要動線（LPのCTA・グループ作成・共有URL・点数入力）を触ったら `python tools/smoke_test.py` を通す**。
    これはCIがpushごとに実行し、落ちるとデプロイが止まる。動線を変えたらテスト側も同時に直すこと
 3c. **保存処理（Firebaseへの書き込み）を触ったら `python tools/sync_test.py` を通す**（本番DBで2台の端末を再現して検証。
-   検証用ゲームは自動で削除）。保存は送信キュー `enqueueOp` 経由のみ。**`sessions/{id}` 直下に新しいキーを足さない**
+   検証用ゲームは本番に残り、24時間後に確定する）。保存は送信キュー `enqueueOp` 経由のみ。**`sessions/{id}` 直下に新しいキーを足さない**
    （本番ルールで全部弾かれる。スタブのテストでは気づけない。詳細は docs/app-spec.md「送信キュー」）
 3d. **ログイン・引き継ぎ・仲間ページ・共有URLを触ったら `python tools/account_test.py` を通す**（スタブで検証。本番DBに触らない）。
    仲間ページのルールを変えたら、コンソールに貼ってから `python tools/circle_rules_test.py`（本番DB・匿名ログインが必要）も通す。

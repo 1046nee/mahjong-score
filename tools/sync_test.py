@@ -13,7 +13,7 @@
 smoke_test.py と違ってFirebaseはスタブにしない。本番のセキュリティルール
 （database.rules.json）で書き込みが弾かれないことも、ここで初めて確認できる
 （送信キューは sessions/{id} 全体をトランザクションで書くので、直下に新しいキーを足すと本番で全滅する）。
-検証用のゲームを1つ本番に作り、最後に必ず削除する（CLAUDE.md 絶対ルール2）。
+検証用のゲームを1つ本番に作る。試合は誰も消せないルール（2026-09-29〜）なので本番に残り、最後に確定の期限（24時間後）を付ける。
 GTM・GA4・広告への通信は遮断する（アクセス解析に検証アクセスを混ぜないため）。
 
 実行: python tools/sync_test.py   （要: pip install playwright ／ playwright install chromium）
@@ -116,7 +116,7 @@ def main():
             assert len(sid) in (10, 22), f"セッションIDが取れない: {sid!r}"
             b = open_game(dev_b, f"{app}#{sid}")
             wait_game(b)
-            print(f"準備: 検証用ゲーム #{sid} を作成（最後に削除します）")
+            print(f"準備: 検証用ゲーム #{sid} を作成（消せないので、最後に24時間後の確定の期限を付けます）")
 
             # ---- [1] Bが圏外のあいだに、AとBが1試合ずつ入力 → Bが復帰 ----
             b.evaluate("db.goOffline()")
@@ -189,12 +189,11 @@ def main():
             if sid:
                 try:
                     pg = dev_a.pages[0] if dev_a.pages else open_game(dev_a, app)
-                    pg.evaluate(f"db.ref('sessions/{sid}').remove()")
+                    pg.evaluate(f"db.ref('sessions/{sid}/lockAt').set(serverNow() + 24 * 3600 * 1000).catch(() => {{}})")
                     pg.wait_for_timeout(1500)
                 except Exception as ex:
-                    print("削除でエラー:", ex)
-                gone = server_get(sid) is None
-                print(f"後片付け: 検証用ゲーム #{sid} を削除 → {'削除済み' if gone else '残っている！手動で消すこと'}")
+                    print("後片付けでエラー:", ex)
+                print(f"後片付け: 検証用ゲーム #{sid} は本番に残ります（試合は消せないルール）。24時間後に記録が確定します")
             browser.close()
             server.shutdown()
 

@@ -114,9 +114,9 @@ def main():
         results.append(("[13] 読むのは誰でもでき、再開した状態が見える", st == 200 and (body or {}).get("endedAt") is None
                         and (body or {}).get("lockAt") == R + 24 * H, (st, (body or {}).get("lockAt"))))
     finally:
+        # 2026-09-29〜 試合は締め切り前でも誰も消せない（検証用の試合は本番に残り、締め切りを過ぎると確定する）
         a = http("DELETE", f"sessions/{sid}")[0]
-        results.append(("[14] 締め切り前なら試合ごと消せる（検証用のデータが残らない）",
-                        a == 200 and http("GET", f"sessions/{sid}")[1] is None, a))
+        results.append(("[14] 締め切り前でも試合ごと消すのは拒否", a in (401, 403) and http("GET", f"sessions/{sid}")[1] is not None, a))
     return report(results, "LOCK RULES TEST")
 
 

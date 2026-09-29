@@ -4,7 +4,7 @@
 lock_rules_test.py はルールだけを REST で確かめる。こちらは実際のアプリ（index.html）が
 「終了」「猶予中の修正」「再開」「再開後の入力（締め切りを延ばす）」を本番のルールに弾かれずに書けるかを見る。
 さらに、確定した試合（lockAt を過去にした状態を画面の中だけで作る）では入力の入口が出ないことも見る。
-検証用のゲームを1つ本番に作り、最後に削除する（締め切り前なので消せる）。
+検証用のゲームを1つ本番に作る。試合は誰も消せないルール（2026-09-29〜）なので本番に残る。
 
 実行: python tools/lock_app_test.py
 """
@@ -107,8 +107,8 @@ def main():
                 try:
                     urllib.request.urlopen(req, timeout=15)
                 except Exception as e:
-                    errors.append("削除に失敗: " + str(e))
-                results.append(("[8] 締め切り前なので検証用のゲームを削除できた", True, server_get(sid) is None))
+                    pass  # 消せないのが正しい（ルールで拒否）
+                results.append(("[8] 試合は締め切り前でも消せない（ルール）", True, server_get(sid) is not None))
             br.close()
     srv.shutdown()
     ok = True
