@@ -1143,8 +1143,10 @@ button.ios-row:active { background: #F2F6F5; }
 .gm-res { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 2px 8px; line-height: 1.4; border-radius: 11px; background: var(--md0-tint); color: var(--md0-ink); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .gm-res.r1, .gm-res.r2, .gm-res.r3 { padding-left: 3px; }
 .gm-res.r1 { background: var(--md1-tint); color: var(--md1-ink); }
-.gm-res.r2 { background: var(--md2-tint); color: var(--md2-ink); }
+.gm-res.r2 { background: #E1E9F1; color: #34506A; }
 .gm-res.r3 { background: var(--md3-tint); color: var(--md3-ink); }
+/* 4位以下: メダルの淡い地と並べても紛れない、渋い墨色の地に白字 */
+.gm-res:not(.r1):not(.r2):not(.r3):not(.nil) { background: #4E5654; color: #F2F4F3; }
 .gm-res .of { font-size: 11px; font-weight: 700; opacity: .75; }
 .gm-sc { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .gm-sc.pos { color: #1A237E; } .gm-sc.neg { color: #C62828; }
@@ -2852,6 +2854,11 @@ function initAuth() {
     if (user) { attachAccount(user); resumePendingJoin(); }
     // 招待リンクを開いた時点ではログイン状態がまだ分からない。分かった時点で参加の続きをする
     if (document.getElementById('view-join').classList.contains('active')) { renderJoin(); if (user) doJoin(); }
+    // 仲間のリンクで結果を開いている途中にログインが分かった → そのまま参加
+    else if (user && circleJoinCode && circleId && document.getElementById('view-circle').classList.contains('active')) {
+      joinCode = circleJoinCode; joinCid = circleId; joinName = (circleData && circleData.name) || ''; circleJoinCode = null;
+      doJoin();
+    }
   });
 }
 // ゲームをまたいで「同じ人」を決める関数を作る。entries = [{ g, claims }]（新しい順）
@@ -3064,6 +3071,7 @@ function syncCircleGamesToMine(quiet) {
   return added + tagged;
 }
 async function openCircle(cid) {
+  if (circleJoinCode && joinCid && joinCid !== cid) circleJoinCode = null;
   const cached = circleStore[cid];
   if (cached) {
     // 手元の中身ですぐ表示（押してから待たせない）。下で最新を読み直して描き直す
@@ -3179,7 +3187,10 @@ function renderCircle() {
   document.getElementById('circle-switch').innerHTML = currentUser ? mpSwitchHtml(circleId) : '';
   let html = '';
   // 立場ごとの案内
-  if (!currentUser) {
+  if (!currentUser && loginAvailable() && circleJoinCode) {
+    html += `<div class="card askme"><div class="askme-q">結果はログインなしで見られます。<b>Googleでログインすると参加して</b>、名簿で自分を選んで自分の成績に入れたり、試合を追加したりできます。</div>
+      <button type="button" class="google-btn" style="margin-top:4px" onclick="startCircleJoin()"><span class="g-mark">G</span>Googleでログインして参加</button></div>`;
+  } else if (!currentUser) {
     html += `<div class="cm-note">見るだけならログインはいりません。${loginAvailable() ? '<b>Googleでログインすると、名簿で自分を選んで、ここでの試合を自分の成績に入れられます。</b>' : ''}試合の追加や名前の結びつけは、招待リンクから参加したメンバーができます。${loginAvailable() ? `<br><a onclick="openJoinByCodePrompt()">参加コードを持っている</a>` : ''}</div>`;
   } else if (!role && myCircleMid()) {
     html += `<div class="cm-note">試合の追加や名前の結びつけは、招待リンクか参加コードで参加したメンバーができます。<br><a onclick="openJoinByCodePrompt()">参加コードを入力する</a></div>`;
@@ -4147,25 +4158,22 @@ async function mergeCircleMember(mid) {
 let circleInviteMsg = '', circleInviteLink = '';
 // 共有: 「結果を見せる（見るだけ・ログイン不要）」と「一緒に管理する人を招待する（メンバーだけに出す）」を1つのシートに。
 // 以前はボタンが「結果のリンク」「招待」に分かれていて、どちらを送ればいいか迷わせていた
+// 共有は「仲間のリンク」1本（2026-09-29 ユーザーの判断。見るリンクと招待リンクの2本はわかりにくい）。
+// 開けばログインなしで結果が見られ、Googleでログインすればそのまま参加（試合の追加・自分を選ぶ）。
+// 結果の書き換え・試合の削除は、記録の確定（lockCircleGames）とルールで守る。参加コードを持たない人（閲覧リンクで来た人）は閲覧リンクを渡す
 function openCircleShare() {
   const code = circleSecret;
   const name = circleData.name || '仲間ページ';
-  const role = circleRole();
-  circleViewMsg = `まじゃすこの仲間ページ「${name}」の結果です（ログインなしで見られます。ログインして名簿で自分を選ぶと、自分の成績にも入ります）\n${circleViewUrl(circleId)}`;
-  circleInviteLink = code ? circleInviteUrl(code) : '';
-  circleInviteMsg = `まじゃすこの仲間ページ「${name}」に招待します。試合の追加や名前の結びつけができます（Googleでログインして参加）\n${circleInviteLink}`;
+  circleInviteLink = code ? circleInviteUrl(code) : circleViewUrl(circleId);
+  circleInviteMsg = `まじゃすこの仲間ページ「${name}」です。結果はログインなしで見られます。Googleでログインすると参加して、名簿で自分を選んだり試合を追加したりできます\n${circleInviteLink}`;
   document.getElementById('form-modal-title').textContent = '共有';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body" id="circle-share">
-    <div class="sh-opt ro"><div class="sh-h"><span class="sh-ico">${ico('eye', 18)}</span>結果を見せる<span class="sh-tag">見るだけ</span></div>
-      <div class="sh-d">通算順位・成績表・対戦成績を<b>ログインなしで</b>見られます。Googleでログインすれば、名簿で自分を選んで自分の成績に入れられます（試合の追加・外す・他の人の結びつけはできません）。仲間のLINEグループに送るのはこちら。</div>
-      <div class="sh-btns"><button type="button" class="line" onclick="window.open(lineShareUrl(circleViewMsg),'_blank')">LINEで送る</button>
-        <button type="button" onclick="copyText(circleViewUrl(circleId),'結果を見るリンクをコピーしました')">リンクをコピー</button></div></div>
-    ${role ? `<div class="sh-opt"><div class="sh-h"><span class="sh-ico">${ico('userPlus', 18)}</span>一緒に管理する人を招待<span class="sh-tag">編集できる</span></div>
-      <div class="sh-d">試合の追加・名前の結びつけをしてもらう人だけに送ります。LINEで押すとSafari・Chromeで開き、Googleでログインして参加します。</div>
-      ${code ? `<div class="sh-btns"><button type="button" class="line" onclick="window.open(lineShareUrl(circleInviteMsg),'_blank')">LINEで送る</button>
-        <button type="button" onclick="copyText(circleInviteLink,'招待リンクをコピーしました')">リンクをコピー</button></div>
-        <div class="sh-d" style="margin:10px 0 0">口頭で伝えるなら参加コード <b class="invite-code" style="font-size:18px;letter-spacing:2px">${fmtInviteCode(code)}</b></div>`
-        : '<div class="sh-d">参加コードを読み込めませんでした</div>'}</div>` : ''}
+    <div class="sh-opt"><div class="sh-h"><span class="sh-ico">${ico('share', 18)}</span>仲間のリンク</div>
+      <div class="sh-d">このリンク1本で、<b>結果はログインなしで見られ</b>、Googleでログインすると<b>参加</b>して、名簿で自分を選んだり試合を追加したりできます。
+        結果の書き換えや試合の削除はできません（仲間ページの試合は最後の入力から24時間で記録が確定）。</div>
+      <div class="sh-btns"><button type="button" class="line" onclick="window.open(lineShareUrl(circleInviteMsg),'_blank')">LINEで送る</button>
+        <button type="button" onclick="copyText(circleInviteLink,'仲間のリンクをコピーしました')">リンクをコピー</button></div>
+      ${code ? `<div class="sh-d" style="margin:10px 0 0">口頭で伝えるなら参加コード <b class="invite-code" style="font-size:18px;letter-spacing:2px">${fmtInviteCode(code)}</b></div>` : ''}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -4427,9 +4435,17 @@ async function openJoin(code) {
     if (joinCid) joinName = (await db.ref(`circles/${joinCid}/name`).once('value')).val() || '';
   } catch (e) { joinCid = null; }
   finally { showLoading(false); }
+  if (currentUser && joinCid) { renderJoin(); showView('join'); doJoin(); return; }
+  if (joinCid) { circleJoinCode = code; openCircle(joinCid); return; } // 結果はログインなしで見られる。上に「ログインして参加」
   renderJoin();
   showView('join');
-  if (currentUser && joinCid) doJoin();
+}
+let circleJoinCode = null; // 仲間のリンクで開いた（ログインしていない）ときの参加コード
+function startCircleJoin() {
+  if (!circleJoinCode) return;
+  joinCode = circleJoinCode; joinCid = circleId; joinName = (circleData && circleData.name) || '';
+  if (IN_LINE_APP) { renderJoin(); showView('join'); return; } // LINEの中ではGoogleのログインが通らないので、外のブラウザへの案内
+  startJoinLogin();
 }
 function renderJoin() {
   const el = document.getElementById('join-body');

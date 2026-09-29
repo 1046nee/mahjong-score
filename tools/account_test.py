@@ -361,20 +361,24 @@ def main():
         lctx = new_ctx(ua="Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/15.1.0", seed_db=seed)
         pgl = new_page(lctx)
         pgl.goto(app + "#join=" + code, wait_until="load")
+        pgl.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=15000)
+        cb = pgl.evaluate("document.getElementById('circle-body').innerText")
+        pgl.evaluate("startCircleJoin()")
         pgl.wait_for_function(SAFE % "document.querySelector('#view-join').classList.contains('active')", timeout=15000)
         jt = pgl.evaluate("document.getElementById('join-body').innerText")
-        results.append(("[8] LINEの中で招待リンクを開くと「Safari・Chromeで開いて参加」と参加コードを出す（結果だけは見られる）", True,
-                        "Safari・Chromeで開いて参加する" in jt and f"{code[:4]}-{code[4:]}" in jt and "参加せずに結果だけ見る" in jt))
+        results.append(("[8] LINEの中で仲間のリンクを開くと結果が見られ、「ログインして参加」を押すと「Safari・Chromeで開いて参加」と参加コードを出す", True,
+                        "通算順位" in cb and "Googleでログインして参加" in cb and "Safari・Chromeで開いて参加する" in jt and f"{code[:4]}-{code[4:]}" in jt))
         lctx.close()
 
         # ---- 9. 未ログインで招待リンク→ログイン→自動で参加 ----
         pgj = new_page()
         pgj.goto(app + "?openExternalBrowser=1#join=" + code, wait_until="load")
-        pgj.wait_for_function(SAFE % "document.querySelector('#view-join').classList.contains('active')", timeout=15000)
-        results.append(("[9a] 未ログインでは「Googleでログインして参加」を出す", True,
-                        "Googleでログインして参加" in pgj.evaluate("document.getElementById('join-body').innerText")))
+        pgj.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=15000)
+        cbj = pgj.evaluate("document.getElementById('circle-body').innerText")
+        results.append(("[9a] 未ログインで仲間のリンクを開くと、結果（通算順位）がそのまま見られ、「Googleでログインして参加」も出る", True,
+                        "通算順位" in cbj and "Googleでログインして参加" in cbj))
         pgj.evaluate(f"(u) => localStorage.setItem('__smoke_next_uid', u)", U3)
-        pgj.evaluate("startJoinLogin()")
+        pgj.evaluate("startCircleJoin()")
         pgj.wait_for_load_state("load")
         pgj.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
         results.append(("[9b] ログインから戻ると自動で参加が完了し、仲間ページが開く", True,
