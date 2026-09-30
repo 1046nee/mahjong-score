@@ -413,6 +413,12 @@ def main():
                         all(w in tabs for w in ["成績", "相手", "過去の試合"]) and "連対率" in sum_txt and hidden
                         and "ホーム画面に追加" not in pg.evaluate("document.getElementById('mp-me').innerText")))
         pg.evaluate("setMpPane('hist')")
+        # ほかの人があとから試合の名前・対局日を変えた → マイページを開き直すと、過去の試合の控えも最新になる（開き直さなくても）
+        pg.evaluate(f"""async () => {{ await db.ref('sessions/{g2}/name').set('名前を変えた試合'); await db.ref('sessions/{g2}/settings/playDate').set('2026-08-15'); }}""")
+        pg.evaluate("refreshHistoryGames(true)")
+        pg.wait_for_function(f"() => (appState.games.find(g => g.id === '{g2}') || {{}}).name === '名前を変えた試合'", timeout=10000)
+        results.append(("[10a3] あとから変えた試合の名前・対局日が、開き直さなくても過去の試合に反映される", True,
+                        pg.evaluate(f"(() => {{ const g = appState.games.find(g => g.id === '{g2}'); return g.settings.playDate === '2026-08-15' && new Date(gameDayMs(g)).getMonth() === 7; }})()")))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「試合を追加」「まとめて送る」・形式のピル・並び順、自分が出た試合（月の見出し）", True,

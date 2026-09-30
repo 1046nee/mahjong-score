@@ -3270,6 +3270,10 @@ function lockCircleGames(sids) {
 // ・すでに自分の選択（名前・出ていない）がある試合は、その選択を変えない
 function syncCircleGamesToMine(quiet) {
   if (!currentUser || !circleData) return 0;
+  // 仲間ページで読んだ最新の中身を、過去の試合の控えにも反映する（あとから変えた名前・対局日・点数。自分が出ていない試合も）
+  let fresh = 0;
+  Object.values(circleSess || {}).forEach(src => { if (src && applyFreshGame(src)) fresh++; });
+  if (fresh) saveStorage();
   const myMid = myCircleMid();
   if (!myMid) return 0;
   let added = 0, tagged = 0;
@@ -9575,6 +9579,7 @@ function msGamesHtml(st) {
   return seg + html;
 }
 function renderMyStats() {
+  refreshHistoryGames();
   const body = document.getElementById('mystats-body');
   // 仲間ページごとの試合の一覧がまだ無ければ読んでから描き直す
   // （描き直しは loadCircleCardInfo の終わりで。読めなかった仲間ページ＝err は待たない＝何度も読み直さない）
@@ -10173,6 +10178,42 @@ function seatResultHtml(g, me) {
   return `<span class="gm-res${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 16, false) : ''}${rank}位<span class="of"> / ${nP}人</span></span>`
     + `<span class="gm-sc ${scoreCls(tot[me])}">${fmtScore(tot[me])}</span><span class="gm-as">${ico('person', 12)}${esc(names[me])}</span>`;
 }
+// ---- 過去の試合の控えを最新にする ----
+// 過去の試合（appState.games）は、開いたときの中身の控え。ほかの人があとから名前・対局日・点数を変えても、
+// 自分がその試合を開き直すまで古いままだった（仲間ページは毎回サーバーから読むので、そちらだけ新しくなっていた）。
+// マイページ・自分の成績を開いたとき（1分に1回まで）にサーバーの最新を読み、変わっていれば控えを置き換える。
+// 記録が確定したあとに一度読んだ試合（_final）は、もう変わらないので読まない
+let histRefreshAt = 0, histRefreshing = false;
+function applyFreshGame(src) {
+  if (!src || !src.id) return false;
+  const i = (appState.games || []).findIndex(x => x.id === src.id);
+  if (i < 0) return false;
+  const cur = appState.games[i];
+  const next = { ...normGame(src), lastAccess: cur.lastAccess };
+  if (typeof next.lockAt === 'number' && serverNow() >= next.lockAt) next._final = true;
+  const sig = g => JSON.stringify([g.name, g.settings, g.rounds, g.lockAt, g.endedAt, !!g._final]);
+  if (sig(cur) === sig(next)) return false;
+  appState.games[i] = next;
+  return true;
+}
+async function refreshHistoryGames(force) {
+  if (histRefreshing || !(appState.games || []).length || (!force && Date.now() - histRefreshAt < 60000)) return 0;
+  histRefreshing = true; histRefreshAt = Date.now();
+  let changed = 0;
+  try {
+    const targets = appState.games.filter(g => !g._final).map(g => g.id);
+    for (let i = 0; i < targets.length; i += 8) {
+      await Promise.all(targets.slice(i, i + 8).map(id => db.ref('sessions/' + id).once('value')
+        .then(sn => { if (sn.exists() && applyFreshGame({ id, ...sn.val() })) changed++; }).catch(() => {})));
+    }
+  } finally { histRefreshing = false; }
+  if (changed) {
+    saveStorage();
+    if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
+    else if (document.getElementById('view-history').classList.contains('active')) renderHistory();
+  }
+  return changed;
+}
 // ---- マイページの描画 ----
 function renderHistory() {
   const st = collectMyStats();
@@ -10185,6 +10226,7 @@ function renderHistory() {
   loadCircleCardInfo();
   applyMpTheme();
   setTimeout(prefetchCircles, 600);
+  refreshHistoryGames();
 }
 // 成績カードの下の［成績｜相手｜過去の試合］。既定は成績（まだ成績が無ければ、自分を選ぶための過去の試合）
 let mpPane = null; // 'sum' | 'h2h' | 'hist'（null＝自動）
