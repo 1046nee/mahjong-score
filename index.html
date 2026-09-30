@@ -3789,13 +3789,14 @@ function circleH2HTabHtml(st, modeChips, noBind) {
 }
 // 「同卓者で絞る」の1行（選んだ人のチップ＋×）
 function circleWithRowHtml() {
-  circleWith = circleWith.filter(m => rosterOf()[m]);
+  circleWith = circleWith.filter(m => rosterOf()[m] && m !== myCircleMid()); // 自分は選べない（自分の成績は自分が出た試合だけなので、絞る意味がない）
   if (!Object.keys(rosterOf()).length) return '';
   return `<div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${ico('people', 14)}同卓者で絞る</button>${circleWith.map(m =>
     `<span class="cw-chip"><i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>${esc(rosterName(m))}<button type="button" aria-label="${esc(rosterName(m))}を外す" onclick="toggleCircleWith('${m}')">×</button></span>`).join('')}${circleWith.length ? `<button type="button" class="cw-clear" onclick="circleWith=[];periodCutMemo=null;renderCircle()">解除</button>` : ''}</div>`;
 }
 function openCircleWith() {
-  const ents = Object.entries(rosterOf()).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
+  const me = myCircleMid();
+  const ents = Object.entries(rosterOf()).filter(([m]) => m !== me).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   document.getElementById('form-modal-title').textContent = '同卓者で絞る';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・あなたの成績を数えます。</div>
