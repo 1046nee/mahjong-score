@@ -297,7 +297,11 @@ def main():
         pgb.close()
         pg.evaluate(f"(u) => localStorage.setItem('__smoke_user', JSON.stringify({{ uid: u, displayName: 'テスト1' }}))", U1)
         pg.reload(wait_until="load")
-        pg.wait_for_function(SAFE % "currentUser && document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+        try:
+            pg.wait_for_function(SAFE % "currentUser && document.querySelector('#view-circle').classList.contains('active') && circleMembers", timeout=15000)
+        except Exception:
+            print("DEBUG6g:", pg.evaluate("({view: (document.querySelector('.view.active')||{}).id, hash: location.hash, cid: typeof circleId !== 'undefined' && circleId, m: typeof circleMembers !== 'undefined' && circleMembers, u: currentUser && currentUser.uid})"), errors[-5:])
+            raise
         pg.evaluate(f"setCircleRole('{U2}', 'admin')")
         pg.wait_for_timeout(500)
         pg.evaluate("closeFormModal()")
@@ -313,6 +317,24 @@ def main():
         pgb.evaluate(f"openVerifyInfo('{mu}')")
         results.append(("[6g2] 管理者は、ほかの人の確認済みを外す入口が見られる", True,
                         "この人の確認済みを外す" in pgb.evaluate("document.getElementById('form-modal-body').innerText")))
+        pgb.evaluate("closeFormModal()")
+        # 仲間ページに入れたあとで、名簿にいる人を試合に足した → 仲間ページを開いたときに自動で連携される
+        add_nm = pgb.evaluate(f"""(() => {{ const names = circleSess['{g2}'].settings.playerNames.map(personKey);
+          const e = Object.entries(circleData.roster).find(([m, r]) => !names.includes(personKey(r.name))); return e ? e[1].name : null; }})()""")
+        if add_nm:
+            pgb.evaluate(f"""async () => {{ const r = (await db.ref('sessions/{g2}').once('value')).val();
+              r.settings.playerNames.push('{add_nm}'); const k = r.settings.playerNames.length - 1;
+              r.rounds.push({{ members: [0, 1, 2, k], points: [40000, 30000, 20000, 10000], scores: [50, 10, -20, -40], at: new Date().toISOString() }});
+              await db.ref('sessions/{g2}').set(r); }}""")
+            pgb.evaluate(f"openCircle('{cid}')")
+            pgb.wait_for_timeout(1500)
+            seats = db_of(pgb)["circles"][cid]["games"][g2]["seats"]
+            k = pgb.evaluate(f"circleSess['{g2}'].settings.playerNames.length - 1")
+            sk = seats[k] if isinstance(seats, list) and len(seats) > k else (seats.get(str(k)) if isinstance(seats, dict) else None)
+            results.append(("[6n] 仲間ページに入れたあとで足した人（名簿にいる名前）は、仲間ページを開くと自動で連携される", True,
+                            bool(sk) and db_of(pgb)["circles"][cid]["roster"][sk["mid"]]["name"] == add_nm))
+        else:
+            results.append(("[6n] 仲間ページに入れたあとで足した人（名簿にいる名前）は、仲間ページを開くと自動で連携される", True, False))
         # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
         pgb.evaluate("closeFormModal()")
         dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")
@@ -419,6 +441,18 @@ def main():
         pg.wait_for_function(f"() => (appState.games.find(g => g.id === '{g2}') || {{}}).name === '名前を変えた試合'", timeout=10000)
         results.append(("[10a3] あとから変えた試合の名前・対局日が、開き直さなくても過去の試合に反映される", True,
                         pg.evaluate(f"(() => {{ const g = appState.games.find(g => g.id === '{g2}'); return g.settings.playDate === '2026-08-15' && new Date(gameDayMs(g)).getMonth() === 7; }})()")))
+        # 「出ていない」にしたあとでメンバーが足された → もう一度「あなたはどれ？」を聞く
+        again = pg.evaluate(f"""(() => {{ setTag('{g3}', 'watch', null); const g = appState.games.find(x => x.id === '{g3}');
+          const before = histState(g); g.settings.playerNames = g.settings.playerNames.concat(['あとから']); const after = histState(g);
+          g.settings.playerNames = g.settings.playerNames.slice(0, -1); setTag('{g3}', 'play', null); return [before, after]; }})()""")
+        results.append(("[10a4] 「出ていない」にしたあとで人が足された試合は、もう一度「あなたはどれ？」を聞く", True, again == ["out", "ask"]))
+        # 過去の試合の各行に、仲間ページへの追加と連携の状態が出る
+        pg.evaluate("circleStore && prefetchCircles()")
+        pg.wait_for_timeout(1500)
+        pg.evaluate("renderHistoryList()")
+        hl = pg.evaluate("document.getElementById('history-body').innerText")
+        results.append(("[10a5] 過去の試合の行に、仲間ページの連携の状態（全員連携済み／未連携 n人）が出る", True,
+                        "金曜会" in hl and ("未連携" in hl or "全員連携済み" in hl)))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「試合を追加」「まとめて送る」・形式のピル・並び順、自分が出た試合（月の見出し）", True,

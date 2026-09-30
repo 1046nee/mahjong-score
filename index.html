@@ -1128,6 +1128,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .vf-main { min-width: 0; }
 .vf-name { font-size: 17px; font-weight: 800; color: #1F2A28; overflow-wrap: anywhere; }
 .vf-sub { font-size: 12px; color: #5F6E6B; margin-top: 3px; line-height: 1.6; }
+.gr-cc { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 6px; }
+.cc-st { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 2px 9px; border-radius: 12px; border: 1px solid #D5DEDB; background: #fff; color: #4F5C5A; font-size: 11.5px; font-weight: 700; line-height: 1.4; cursor: pointer; font-family: inherit; text-align: left; }
+.cc-st b { font-weight: 800; }
+.cc-st.ok { border-color: #BFE0CF; background: #EAF6EF; color: #1E6B45; }
+.cc-st.warn { border-color: #F0D29A; background: #FFF6E3; color: #8A5A00; }
+.cc-st.none { border-style: dashed; color: #8A9AA5; cursor: default; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -2790,7 +2796,7 @@ async function mergeMyListData(data) {
   // サーバーのリストに保存された分類（参加/観戦・自分がどれか）をこの端末に取り込む
   Object.entries(data.groups || {}).forEach(([gid, meta]) => {
     if (!meta || meta.deleted) return;
-    if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null };
+    if (meta.role === 'watch') gameTags[gid] = { role: 'watch', me: null, n: (gameTags[gid] || {}).n }; // 「出ていない」にした時点の人数は端末の控えを残す
     else if (typeof meta.me === 'number') gameTags[gid] = { role: 'play', me: meta.me };
   });
   saveTags();
@@ -3290,7 +3296,9 @@ function syncCircleGamesToMine(quiet) {
       syncGroupToMyList(g);
       added++;
     }
-    if (!gameTags[sid]) { setTag(sid, 'play', Number(seatKey)); tagged++; }
+    // 自分に連携された席がある＝自分が出た試合。未選択・「出ていない」（あとから自分が足された）なら自分にする。別の名前を選んでいれば変えない
+    const tg = gameTags[sid];
+    if (!tg || tg.role === 'watch' || typeof tg.me !== 'number') { setTag(sid, 'play', Number(seatKey)); tagged++; }
   });
   if (added) {
     appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt) - new Date(a.lastAccess || a.createdAt));
@@ -3299,6 +3307,39 @@ function syncCircleGamesToMine(quiet) {
   }
   if ((added || tagged) && !quiet) showToast(`仲間ページのあなたの試合${added ? ` ${added}件を過去の試合に入れ` : ''}${added && tagged ? '、' : ''}${tagged ? `${tagged}件で自分を選び` : ''}ました。個人の成績にも入ります`, 5000);
   return added + tagged;
+}
+// 仲間ページに入れたあとで試合に足された人（席が未連携）を、名簿の同じ名前の人に連携する。
+// 名簿に無い名前は勝手に人を増やさず「未連携」のまま残す（ゲストにした席と区別できないため。印から連携の画面を開ける）
+async function bindLaterSeats() {
+  if (!circleRole() || !circleData) return 0;
+  const roster = circleData.roster || {};
+  const myMid = myCircleMid();
+  const at = new Date().toISOString();
+  const upd = {}, local = [];
+  Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
+    const g = circleSess[sid];
+    if (!g || !g.settings) return;
+    const seats = (ge && ge.seats) || {};
+    const names = g.settings.playerNames || [];
+    const played = playedFlags(g);
+    const used = new Set(Object.values(seats).map(x => x && x.mid).filter(Boolean));
+    const free = {};
+    Object.entries(roster).forEach(([m, r]) => { if (!used.has(m)) free[m] = r; });
+    const auto = autoBindNames(names, free);
+    names.forEach((nm, i) => {
+      if (!played[i] || seats[i] || !auto[i]) return;
+      const v = { mid: auto[i], by: myUid(), byName: myCircleName(), at, self: auto[i] === myMid };
+      upd[`games/${sid}/seats/${i}`] = v;
+      local.push([sid, i, v]);
+    });
+  });
+  if (!local.length) return 0;
+  try {
+    await db.ref('circles/' + circleId).update(upd);
+    local.forEach(([sid, i, v]) => { const ge = circleData.games[sid]; ge.seats = { ...(ge.seats || {}), [i]: v }; });
+    await addCircleLog('bind', `あとから試合に足された名前を${local.length}件、名簿の同じ名前の人に連携しました`);
+    return local.length;
+  } catch (e) { return 0; }
 }
 async function openCircle(cid) {
   if (circleJoinCode && joinCid && joinCid !== cid) circleJoinCode = null;
@@ -3328,6 +3369,7 @@ async function openCircle(cid) {
     circleStore[cid] = { data: circleData, sess: circleSess, members: circleMembers, secret: circleSecret };
     lockCircleGames(Object.keys(circleData.games || {}));
     fillMyIdentity();
+    if (await bindLaterSeats()) { renderCircle(); if (circleStore[cid]) circleStore[cid].data = circleData; }
     syncCircleGamesToMine(false);
     // 見ているあいだに誰かが追加・連携をしたら反映する（名簿・連携は数KBなので丸ごと聞いてよい）
     circleRef = db.ref('circles/' + cid);
@@ -4197,9 +4239,14 @@ async function renderGameCircles(g, elId) {
   const list = await loadGameCircles(g.id);
   const el2 = document.getElementById(elId);
   if (!el2) return;
-  el2.innerHTML = list.length ? `<div class="gc-box">${ico('people', 18)}<div>${list.map(x =>
-    `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>`
-    + (currentUser ? `<button type="button" class="gc-bind" onclick="openBindFromGame('${esc(x.cid)}','${esc(g.id)}')">${ico('people', 14)}名前の連携</button>` : '')).join('<br>')}</div></div>` : '';
+  const stOf = cid => gameCircleStatus(g).find(x => x.cid === cid);
+  el2.innerHTML = list.length ? `<div class="gc-box">${ico('people', 18)}<div>${list.map(x => {
+    const st = stOf(x.cid);
+    const bind = !st || st.unbound == null ? '' : st.unbound.length
+      ? `<span class="cc-st warn" style="margin-left:4px">未連携 ${st.unbound.length}人（${st.unbound.map(esc).join('・')}）</span>`
+      : `<span class="cc-st ok" style="margin-left:4px">全員連携済み</span>`;
+    return `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>${bind}`
+    + (currentUser ? `<button type="button" class="gc-bind" onclick="openBindFromGame('${esc(x.cid)}','${esc(g.id)}')">${ico('people', 14)}名前の連携</button>` : ''); }).join('<br>')}</div></div>` : '';
 }
 // スコア画面から、この試合の名前を仲間ページの名簿の人と連携する（仲間ページへ移らずにその場で開く）
 async function openBindFromGame(cid, sid) {
@@ -9079,8 +9126,16 @@ function tagOf(gid) {
   const t = gameTags[gid] || {};
   return { role: t.role === 'watch' ? 'watch' : 'play', me: typeof t.me === 'number' ? t.me : null };
 }
+// 「出ていない」にした時点の人数（n）を控える。あとからメンバーが足されたら（自分が足されたかもしれないので）もう一度聞く
+function gamePlayerCount(gid) {
+  const g = (appState.games || []).find(x => x.id === gid) || (activeGame && activeGame.id === gid ? activeGame : null);
+  return g && g.settings && g.settings.playerNames ? g.settings.playerNames.length : null;
+}
+function membersGrewSince(g, n) {
+  return typeof n === 'number' && !!(g && g.settings && g.settings.playerNames) && g.settings.playerNames.length > n;
+}
 function setTag(gid, role, me) {
-  if (role === 'watch') gameTags[gid] = { role: 'watch', me: null };
+  if (role === 'watch') gameTags[gid] = { role: 'watch', me: null, n: gamePlayerCount(gid) };
   else if (me != null) gameTags[gid] = { role: 'play', me };
   else delete gameTags[gid]; // 既定（参加・自分未選択）は保存しない
   saveTags();
@@ -9161,7 +9216,10 @@ function renderAskMe() {
   const g = activeGame;
   const names = (g && g.settings && g.settings.playerNames) || [];
   const t = g ? tagOf(g.id) : null;
-  if (!g || !currentUser || t.role === 'watch' || t.me != null || askmeSkip[g.id] || !names.length || names.every(isPlaceholderName)) {
+  const sk = g ? askmeSkip[g.id] : null;
+  const skipped = sk && !membersGrewSince(g, typeof sk === 'object' ? sk.n : null); // 「あとで」のあとで人が足されたら、もう一度聞く
+  const watched = !!t && t.role === 'watch' && !membersGrewSince(g, (gameTags[g.id] || {}).n);
+  if (!g || !currentUser || watched || t.me != null || skipped || !names.length || names.every(isPlaceholderName)) {
     el.style.display = 'none'; el.innerHTML = ''; return;
   }
   const known = myKnownNameKeys();
@@ -9201,9 +9259,10 @@ function answerAskMe(v) {
 }
 function skipAskMe() {
   if (!activeGame) return;
-  askmeSkip[activeGame.id] = new Date().toISOString();
+  askmeSkip[activeGame.id] = { at: new Date().toISOString(), n: ((activeGame.settings || {}).playerNames || []).length };
   const keys = Object.keys(askmeSkip);
-  if (keys.length > 300) keys.sort((a, b) => new Date(askmeSkip[a]) - new Date(askmeSkip[b])).slice(0, keys.length - 300).forEach(k => delete askmeSkip[k]);
+  const atOf = v => new Date(typeof v === 'object' && v ? v.at : v);
+  if (keys.length > 300) keys.sort((a, b) => atOf(askmeSkip[a]) - atOf(askmeSkip[b])).slice(0, keys.length - 300).forEach(k => delete askmeSkip[k]);
   try { localStorage.setItem(ASKME_KEY, JSON.stringify(askmeSkip)); } catch (e) {}
   renderAskMe();
 }
@@ -10097,7 +10156,7 @@ function mpStatsHtml(st) {
 function histState(g) {
   const t = tagOf(g.id);
   const names = (g.settings && g.settings.playerNames) || [];
-  if (t.role === 'watch') return 'out';
+  if (t.role === 'watch') return membersGrewSince(g, (gameTags[g.id] || {}).n) ? 'ask' : 'out'; // 出ていないにしたあとで人が足された → もう一度聞く
   if (t.me != null && t.me < names.length) return 'me';
   if (!(g.rounds || []).length || names.every(isPlaceholderName)) return 'none';
   return 'ask';
@@ -10139,11 +10198,41 @@ function historyItemHtml(g) {
   const on = mpSelecting && mpSel.has(g.id);
   return `<div class="gr ${st} k${(s.numPlayers === 3 ? 3 : 4)}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `viewDetailById('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}${gameKindHtml(g)}
-    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}</div>
+    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}${mpSelecting ? '' : gameCircleLineHtml(g)}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
 }
 
+// この試合が入っている仲間ページと、連携の状態（開いた・先読みした仲間ページの中身から）
+function gameCircleStatus(g) {
+  const out = [];
+  if (!g || !g.id) return out;
+  const names = (g.settings && g.settings.playerNames) || [];
+  const played = playedFlags(g);
+  allCircleEntries().forEach(([cid, m]) => {
+    const st = circleStore[cid], data = st && st.data;
+    const name = m.name || (circleCardInfo[cid] || {}).name || (data && data.name) || '仲間ページ';
+    if (!data) { const sids = circleSidsOf(cid); if (sids && sids.has(g.id)) out.push({ cid, name, unbound: null }); return; }
+    const ge = data.games && data.games[g.id];
+    if (!ge) return;
+    const seats = ge.seats || {}, roster = data.roster || {};
+    const unbound = names.map((n, i) => i).filter(i => played[i] && !isPlaceholderName(names[i]) && !(seats[i] && seats[i].mid && roster[seats[i].mid])).map(i => names[i]);
+    out.push({ cid, name, unbound });
+  });
+  return out;
+}
+// 過去の試合の1行の下: 「金曜会 ✓全員連携」「金曜会 未連携 2人」（押すと名前の連携）、どこにも入っていなければ「仲間に未追加」
+function gameCircleLineHtml(g) {
+  if (!currentUser || !allCircleEntries().length) return '';
+  const st = gameCircleStatus(g);
+  const id = esc(g.id);
+  if (!st.length) return Object.keys(myCircles || {}).length ? `<div class="gr-cc"><span class="cc-st none">${ico('people', 12)}仲間に未追加</span></div>` : '';
+  return `<div class="gr-cc">${st.map(x => {
+    const cls = x.unbound == null ? '' : x.unbound.length ? ' warn' : ' ok';
+    const txt = x.unbound == null ? '' : x.unbound.length ? `未連携 ${x.unbound.length}人（${x.unbound.slice(0, 3).map(esc).join('・')}${x.unbound.length > 3 ? '…' : ''}）` : '全員連携済み';
+    return `<button type="button" class="cc-st${cls}" onclick="event.stopPropagation();openBindFromGame('${esc(x.cid)}','${id}')">${ico('people', 12)}<b>${esc(x.name)}</b>${txt ? ` ${txt}` : ''}</button>`;
+  }).join('')}</div>`;
+}
 // 対戦した人。自分が出ていれば自分以外（「相手」）、出ていなければ全員（「対戦」）。多いときは先頭の数人＋「ほかn人」
 function oppLineHtml(g, me) {
   const s = g.settings || {}, names = s.playerNames || [];
@@ -10265,6 +10354,7 @@ async function prefetchCircles() {
       if (!circleStore[cid]) circleStore[cid] = { data, sess, members: null, secret: null };
     }
   } finally { circlePrefetching = false; }
+  if (document.getElementById('view-history').classList.contains('active')) renderHistoryList();
 }
 // 過去の試合（選んだ期間・打った日の新しい順・月ごとの見出し）
 function renderHistoryList() {
