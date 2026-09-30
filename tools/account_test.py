@@ -335,6 +335,19 @@ def main():
                             bool(sk) and db_of(pgb)["circles"][cid]["roster"][sk["mid"]]["name"] == add_nm))
         else:
             results.append(("[6n] 仲間ページに入れたあとで足した人（名簿にいる名前）は、仲間ページを開くと自動で連携される", True, False))
+        # 同卓者で絞る（仲間ページ）: 選んだ人が同じ卓にいた試合だけで数える
+        cw = pgb.evaluate(f"""(() => {{
+          const tr = '{tr}';
+          const all = circleStats(circleData, circleSess, circleMode, null);
+          circleWith = [tr]; renderCircle();
+          const w = circleStats(circleData, circleSess, circleMode, null);
+          const row = document.getElementById('circle-top').innerText;
+          circleTab = 'games'; renderCircle(); const gtxt = document.getElementById('circle-body').innerText;
+          circleWith = []; circleTab = 'rank'; renderCircle();
+          const nOf = (st, k) => (st.list.find(p => p.key === k) || {{ n: 0 }}).n;
+          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓者で絞る') && row.includes('たろう'), g: gtxt.length > 0 }};
+        }})()""")
+        results.append(("[6o] 仲間ページで同卓者（たろう）を選ぶと、たろうが同じ卓にいた試合だけで数える", True, all(cw.values())))
         # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
         pgb.evaluate("closeFormModal()")
         dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")
@@ -446,6 +459,19 @@ def main():
           const before = histState(g); g.settings.playerNames = g.settings.playerNames.concat(['あとから']); const after = histState(g);
           g.settings.playerNames = g.settings.playerNames.slice(0, -1); setTag('{g3}', 'play', null); return [before, after]; }})()""")
         results.append(("[10a4] 「出ていない」にしたあとで人が足された試合は、もう一度「あなたはどれ？」を聞く", True, again == ["out", "ask"]))
+        # 期間: すべて／年／直近の期間／直近の試合数／開始・終了を指定（区切り付き）
+        pr = pg.evaluate("""(() => {
+          const html = mpPeriodHtml();
+          const nAll = collectMyStats(periodFilter('all')).groups.length;
+          const n1m = collectMyStats(periodFilter('r1m')).groups.length;
+          const c100 = periodFilter('n100');  // 100戦に満たなければ全部（null）
+          const old = collectMyStats(periodFilter('c20200101_20200131')).groups.length;
+          setMpPeriod('c20200101_'); const lab = periodLabel(); setMpPeriod('all');
+          return { groups: ['年', '直近の期間', '直近の試合数', '期間を指定'].every(l => html.includes('label="' + l + '"')),
+            opts: ['直近1か月', '直近半年', '直近1000戦', '開始・終了を指定'].every(l => html.includes(l)), nAll, n1m, c100: c100 === null, old, lab };
+        })()""")
+        results.append(("[10p] 期間に「年」「直近の期間」「直近の試合数」「期間を指定」の区切りがあり、それぞれで数えられる", True,
+                        pr["groups"] and pr["opts"] and pr["nAll"] > 0 and 1 <= pr["n1m"] < pr["nAll"] and pr["c100"] and pr["old"] == 0 and pr["lab"] == "2020/1/1〜"))
         # 過去の試合の各行に、仲間ページへの追加と連携の状態が出る
         pg.evaluate("circleStore && prefetchCircles()")
         pg.wait_for_timeout(1500)

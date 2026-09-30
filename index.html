@@ -1134,6 +1134,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cc-st.ok { border-color: #BFE0CF; background: #EAF6EF; color: #1E6B45; }
 .cc-st.warn { border-color: #F0D29A; background: #FFF6E3; color: #8A5A00; }
 .cc-st.none { border-style: dashed; color: #8A9AA5; cursor: default; }
+.cw-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -4px 0 12px; }
+.cw-btn { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #CFDCD9; background: #fff; color: #33544A; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.cw-btn.on { border-color: #177083; color: #0F4F5C; background: #E4F3EC; }
+.cw-chip { display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 4px 0 6px; border-radius: 15px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 700; }
+.cw-chip i, .cw-opt i { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; }
+.cw-chip button { width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
+.cw-clear { border: 0; background: none; color: #177083; font-size: 12.5px; font-weight: 800; text-decoration: underline; cursor: pointer; }
+.cw-pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.cw-opt { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 4px 12px 4px 6px; border-radius: 19px; border: 1px solid #CFDCD9; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.cw-opt.on { border: 2px solid #177083; background: #E4F3EC; color: #0F4F5C; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -3178,7 +3188,17 @@ function autoBindNames(names, roster) {
 }
 // 仲間ページの通算: 名簿の人に連携した席だけを数える（ゲスト・未連携の席は数えない）。
 // sessions = { sid: 試合の中身 }。mode = '4' | '3'（着順の数が違うので混ぜない）
+// 同卓者で絞る: 選んだ名簿の人が全員その1戦に出ていたか（席の連携で見る）
+let circleWith = [];
+function circleWithOk(g, ge, r, W) {
+  W = W || circleWith;
+  if (!W.length) return true;
+  const seats = (ge && ge.seats) || {};
+  const mids = new Set(roundMembers(r, g.settings).map(m => seats[m] && seats[m].mid).filter(Boolean));
+  return W.every(m => mids.has(m));
+}
 function circleStats(circle, sessions, mode, inP) {
+  const W = circle === circleData ? circleWith : [];
   const people = {}, acc = {};
   const roster = (circle && circle.roster) || {};
   Object.entries((circle && circle.games) || {}).forEach(([sid, ge]) => {
@@ -3188,7 +3208,7 @@ function circleStats(circle, sessions, mode, inP) {
     if (mode && np !== mode) return;
     const seats = (ge && ge.seats) || {};
     const kOf = m => { const st = seats[m]; return (st && st.mid && roster[st.mid]) ? st.mid : null; };
-    const gF = inP ? { ...g, rounds: (g.rounds || []).filter(r => inP(roundMs(g, r))) } : g; // 期間の外の試合は数えない
+    const gF = (inP || W.length) ? { ...g, rounds: (g.rounds || []).filter(r => (!inP || inP(roundMs(g, r))) && circleWithOk(g, ge, r, W)) } : g; // 期間の外・同卓者のいない試合は数えない
     h2hAdd(acc, gF, kOf);
     (gF.rounds || []).forEach((r, ridx) => {
       const mem = roundMembers(r, g.settings);
@@ -3342,6 +3362,7 @@ async function bindLaterSeats() {
   } catch (e) { return 0; }
 }
 async function openCircle(cid) {
+  if (circleId !== cid) circleWith = [];
   if (circleJoinCode && joinCid && joinCid !== cid) circleJoinCode = null;
   const cached = circleStore[cid];
   if (cached) {
@@ -3566,7 +3587,7 @@ function renderCircle() {
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます');
   }
-  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${topHtml}</div>`;
+  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
   applyMpTheme();
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -3749,12 +3770,35 @@ function circleH2HTabHtml(st, modeChips, noBind) {
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>
     ${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`)}${mxLegendHtml()}${circleMatrixHtml(st)}</div>` : ''}`;
 }
+// 「同卓者で絞る」の1行（選んだ人のチップ＋×）
+function circleWithRowHtml() {
+  circleWith = circleWith.filter(m => rosterOf()[m]);
+  if (!Object.keys(rosterOf()).length) return '';
+  return `<div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${ico('people', 14)}同卓者で絞る</button>${circleWith.map(m =>
+    `<span class="cw-chip"><i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>${esc(rosterName(m))}<button type="button" aria-label="${esc(rosterName(m))}を外す" onclick="toggleCircleWith('${m}')">×</button></span>`).join('')}${circleWith.length ? `<button type="button" class="cw-clear" onclick="circleWith=[];periodCutMemo=null;renderCircle()">解除</button>` : ''}</div>`;
+}
+function openCircleWith() {
+  const ents = Object.entries(rosterOf()).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
+  document.getElementById('form-modal-title').textContent = '同卓者で絞る';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・あなたの成績を数えます。</div>
+    <div class="cw-pick">${ents.map(([m, r]) => `<button type="button" class="cw-opt${circleWith.includes(m) ? ' on' : ''}" onclick="toggleCircleWith('${m}',true)"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}</button>`).join('')}</div>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function toggleCircleWith(m, fromSheet) {
+  circleWith = circleWith.includes(m) ? circleWith.filter(x => x !== m) : circleWith.concat([m]);
+  periodCutMemo = null;
+  renderCircle();
+  if (fromSheet) openCircleWith();
+}
 function circleGamesTabHtml(role, gids, modeChips) {
   const all = gids.map(sid => ({ sid, ge: circleData.games[sid], g: circleSess[sid] }))
     .sort((a, b) => (b.g ? gameDayMs(b.g) : Date.parse(b.ge.at) || 0) - (a.g ? gameDayMs(a.g) : Date.parse(a.ge.at) || 0));
   // 形式は個人の過去の試合と同じピル（すべて｜四麻｜三麻｜複数人｜チーム戦）で絞る（読み込めなかった試合は「すべて」だけ）
   const kinds = histKindPillsHtml(all.filter(x => x.g).map(x => x.g), 'renderCircle()', 'circleKind');
-  const games = all.filter(x => circleKind === 'all' || (x.g && histKindMatch(x.g, circleKind)));
+  const games = all.filter(x => circleKind === 'all' || (x.g && histKindMatch(x.g, circleKind)))
+    .filter(x => !circleWith.length || (x.g && (x.g.rounds || []).some(r => circleWithOk(x.g, x.ge, r)))); // 同卓者で絞っていれば、その人たちが同じ卓にいた試合だけ
   const myMid = myCircleMid(); // 名簿で自分が本人確認していれば、自分の結果を出す（出ていない試合は「—」）
   // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
@@ -9964,44 +10008,130 @@ function gameYears() {
 function gameMonths(y) {
   return [...new Set(periodGameDays().filter(k => +k.slice(0, 4) === y).map(k => +k.slice(5, 7)))].sort((a, b) => a - b);
 }
+// 期間の値: 'all' / 'y2026'（年）/ 'r1m' 'r3m' 'r6m' 'r1y'（直近の期間）/ 'n100'〜'n1000'（直近の試合数）/ 'c20260101_20260630'（開始・終了を指定。片方だけも可）
+const PERIOD_RECENT = [['r1m', '直近1か月', 1], ['r3m', '直近3か月', 3], ['r6m', '直近半年', 6], ['r1y', '直近1年', 12]];
+const PERIOD_COUNTS = [100, 200, 300, 500, 1000];
 function curPeriod() {
   if (!mpPeriod) { try { mpPeriod = localStorage.getItem(MP_PERIOD_KEY); } catch (e) {} }
   const ys = gameYears();
   if (/^m\d{4}/.test(mpPeriod || '')) mpPeriod = 'y' + mpPeriod.slice(1, 5); // 月ごとの表示はいったんやめた（2026-09-29）。残っている月は、その年に
-  const ok = p => p === 'all' || (/^y\d{4}/.test(p || '') && ys.includes(+p.slice(1, 5)));
+  const ok = p => p === 'all' || (/^y\d{4}/.test(p || '') && ys.includes(+p.slice(1, 5)))
+    || PERIOD_RECENT.some(([k]) => k === p) || PERIOD_COUNTS.some(n => 'n' + n === p) || /^c(\d{8})?_(\d{8})?$/.test(p || '');
   if (!ok(mpPeriod)) mpPeriod = ys.includes(new Date().getFullYear()) ? 'y' + new Date().getFullYear() : 'all';
   return mpPeriod;
+}
+function ymd8ToMs(v, end) { const y = +v.slice(0, 4), m = +v.slice(4, 6) - 1, d = +v.slice(6, 8); return end ? new Date(y, m, d, 23, 59, 59, 999).getTime() : new Date(y, m, d).getTime(); }
+function ymd8Label(v) { return `${+v.slice(0, 4)}/${+v.slice(4, 6)}/${+v.slice(6, 8)}`; }
+// 直近n戦: その画面で数える試合（仲間ページ＝この仲間ページの試合・同卓者で絞っていればその試合、それ以外＝自分が出た試合）の、
+// 選んでいる形式（四麻｜三麻）の新しい方からn戦目の日時より後。n戦に満たなければ全部
+let periodCutMemo = null;
+function periodCountPool() {
+  const np = mpMode === 3 ? 3 : 4, out = [];
+  const npOf = g => (g.settings && g.settings.numPlayers) === 3 ? 3 : 4;
+  if (document.getElementById('view-circle').classList.contains('active') && circleData) {
+    Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
+      const g = circleSess[sid];
+      if (!g || !g.settings || npOf(g) !== np) return;
+      (g.rounds || []).forEach(r => { if (circleWithOk(g, ge, r)) out.push(roundMs(g, r)); });
+    });
+  } else {
+    (appState.games || []).forEach(g => {
+      const t = tagOf(g.id);
+      if (t.role === 'watch' || t.me == null || !g.settings || npOf(g) !== np) return;
+      (g.rounds || []).forEach(r => { if (roundMembers(r, g.settings).includes(t.me)) out.push(roundMs(g, r)); });
+    });
+  }
+  return out;
 }
 function periodFilter(p) {
   p = p || curPeriod();
   if (p === 'all') return null;
+  if (p[0] === 'r') {
+    const mo = (PERIOD_RECENT.find(([k]) => k === p) || [0, 0, 1])[2];
+    const d = new Date(); d.setMonth(d.getMonth() - mo); d.setHours(0, 0, 0, 0);
+    const from = d.getTime();
+    return ms => ms >= from;
+  }
+  if (p[0] === 'n') {
+    const n = +p.slice(1);
+    const key = [p, mpMode, document.getElementById('view-circle').classList.contains('active') ? circleId + '|' + circleWith.join(',') : 'me'].join('/');
+    if (!periodCutMemo || periodCutMemo.key !== key || Date.now() - periodCutMemo.t > 800) {
+      const pool = periodCountPool().sort((a, b) => b - a);
+      periodCutMemo = { key, t: Date.now(), cut: pool.length > n ? pool[n - 1] : null };
+    }
+    const cutMs = periodCutMemo.cut;
+    return cutMs == null ? null : ms => ms >= cutMs;
+  }
+  if (p[0] === 'c') {
+    const [a, b] = p.slice(1).split('_');
+    const from = a ? ymd8ToMs(a) : -Infinity, to = b ? ymd8ToMs(b, true) : Infinity;
+    return ms => ms >= from && ms <= to;
+  }
   const y = +p.slice(1, 5);
   if (p[0] === 'm') { const mo = +p.slice(6) - 1; return ms => { const d = new Date(ms); return d.getFullYear() === y && d.getMonth() === mo; }; }
   return ms => new Date(ms).getFullYear() === y;
 }
-function periodLabel(p) { p = p || curPeriod(); return p === 'all' ? 'すべての期間' : p[0] === 'm' ? `${p.slice(1, 5)}年${+p.slice(6)}月` : p.slice(1) + '年'; }
+function periodLabel(p) {
+  p = p || curPeriod();
+  if (p === 'all') return 'すべての期間';
+  if (p[0] === 'r') return (PERIOD_RECENT.find(([k]) => k === p) || [0, '直近'])[1];
+  if (p[0] === 'n') return `直近${p.slice(1)}戦`;
+  if (p[0] === 'c') { const [a, b] = p.slice(1).split('_'); return `${a ? ymd8Label(a) : ''}〜${b ? ymd8Label(b) : ''}`; }
+  return p[0] === 'm' ? `${p.slice(1, 5)}年${+p.slice(6)}月` : p.slice(1) + '年';
+}
 function setMpPeriod(p) {
+  if (p === 'custom') { openCustomPeriod(); return; }
   mpPeriod = p;
   try { localStorage.setItem(MP_PERIOD_KEY, p); } catch (e) {}
   histShowAll = false;
+  periodCutMemo = null;
   if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
   else renderHistory();
 }
+// 開始・終了を指定（片方だけでもよい）
+function openCustomPeriod() {
+  const cur = curPeriod();
+  const [a, b] = cur[0] === 'c' ? cur.slice(1).split('_') : ['', ''];
+  const toIso = v => v ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}` : '';
+  document.getElementById('form-modal-title').textContent = '期間を指定';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="field"><label>開始（この日から）</label><input type="date" id="pc-from" value="${toIso(a)}"></div>
+    <div class="field"><label>終了（この日まで）</label><input type="date" id="pc-to" value="${toIso(b)}"></div>
+    <div class="h2h-note" style="margin-top:0">片方だけでも指定できます（例: 開始だけ＝その日から今日まで）。</div>
+    <button class="confirm-btn" onclick="applyCustomPeriod()">この期間で見る</button>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+  // 選択肢は「指定…」のままにしない（閉じたら今の期間に戻す）
+  document.querySelectorAll('.mp-period select').forEach(el => { el.value = optValueOf(cur); });
+}
+function applyCustomPeriod() {
+  const f = (document.getElementById('pc-from').value || '').replace(/-/g, '');
+  const t = (document.getElementById('pc-to').value || '').replace(/-/g, '');
+  if (!f && !t) { showToast('開始か終了の日付を選んでください'); return; }
+  if (f && t && f > t) { showToast('開始は終了より前の日にしてください'); return; }
+  closeFormModal();
+  setMpPeriod(`c${f}_${t}`);
+}
+function optValueOf(p) { return p[0] === 'c' ? 'cur-custom' : p; }
 // 期間（左）と四麻｜三麻（右詰め）の1行。期間のボタンの幅が変わっても四麻｜三麻の位置は動かない
 function mpFiltersHtml(seg) { return `<div class="mp-filters">${mpPeriodHtml()}${seg || ''}</div>`; }
 function mpPeriodHtml() {
   const ys = gameYears();
   if (!ys.length) return '';
   const cur = curPeriod();
-  const curY = cur === 'all' ? null : +cur.slice(1, 5);
-  // 「すべて」をいちばん左に固定し、その右に新しい年から（年が増えても「すべて」の位置が動かない）
-  const opts = [['all', 'すべて']].concat(ys.map(y => ['y' + y, y + '年']));
-  const mrow = ''; // 年の下の「年間｜1月｜2月…」はいったんなし（2026-09-29 ユーザー判断。戻すときは git log）
-  // 1つのボタンで選ぶ（押すと端末の選択肢が開く）。見た目は黒いピル＋▾
-  const curK = cur === 'all' ? 'all' : 'y' + curY;
-  return `<label class="mp-period"><span>${esc((opts.find(([k]) => k === curK) || opts[0])[1])}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="setMpPeriod(this.value)">${opts.map(([k, l]) =>
-    `<option value="${k}"${k === curK ? ' selected' : ''}>${l}</option>`).join('')}</select></label>${mrow}`;
+  // 1つのボタンで選ぶ（押すと端末の選択肢が開く）。見た目は黒いピル＋▾。
+  // 意味の違うまとまり（年／直近の期間／直近の試合数／指定）は見出し付きの区切り（optgroup）で分ける
+  const curV = optValueOf(cur);
+  const opt = (v, l) => `<option value="${v}"${v === curV ? ' selected' : ''}>${l}</option>`;
+  const groups = [
+    opt('all', 'すべて'),
+    `<optgroup label="年">${ys.map(y => opt('y' + y, y + '年')).join('')}</optgroup>`,
+    `<optgroup label="直近の期間">${PERIOD_RECENT.map(([k, l]) => opt(k, l)).join('')}</optgroup>`,
+    `<optgroup label="直近の試合数">${PERIOD_COUNTS.map(n => opt('n' + n, `直近${n}戦`)).join('')}</optgroup>`,
+    `<optgroup label="期間を指定">${cur[0] === 'c' ? opt('cur-custom', periodLabel(cur)) : ''}<option value="custom">開始・終了を指定…</option></optgroup>`];
+  const label = cur === 'all' ? 'すべて' : periodLabel(cur);
+  return `<label class="mp-period"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>`;
 }
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
