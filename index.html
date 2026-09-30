@@ -1144,6 +1144,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cw-pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
 .cw-opt { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 4px 12px 4px 6px; border-radius: 19px; border: 1px solid #CFDCD9; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .cw-opt.on { border: 2px solid #177083; background: #E4F3EC; color: #0F4F5C; }
+.cf-note { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0 0 12px; padding: 6px 10px; border-radius: 10px; background: #F1F5F4; font-size: 12px; color: #33413E; line-height: 1.5; }
+.cf-note .cf-k { font-size: 10.5px; font-weight: 800; color: #fff; background: #5F6E6B; border-radius: 6px; padding: 0 6px; }
+.cf-note b { font-weight: 800; margin-right: 4px; }
+.cf-note .cf-d { color: #5F6E6B; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -3504,8 +3508,21 @@ function circleMetricVal(p, m) {
   return p.score;
 }
 function circleMetricText(v, m) { return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
+// 仲間ページのカードの見出し。期間を指定・同卓者で絞っているときは、見出しの下に「いま何で数えているか」を出す
 function circleCardHead(title, extra = '') {
-  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>`;
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>${circleFilterNoteHtml()}`;
+}
+function circleFiltered() { return curPeriod() !== 'all' || circleWith.length > 0; }
+function circleWithNames() { return circleWith.filter(m => rosterOf()[m]).map(rosterName); }
+// 画像の帯に書く条件（期間・形式・同卓者）
+function circleFilterText() {
+  const w = circleWithNames();
+  return [periodLabel(), circleMode === '3' ? '三麻' : '四麻', w.length ? `同卓：${w.join('・')}` : ''].filter(Boolean).join(' ・ ');
+}
+function circleFilterNoteHtml() {
+  if (!circleFiltered()) return '';
+  const w = circleWithNames();
+  return `<div class="cf-note">${curPeriod() !== 'all' ? `<span class="cf-k">期間</span><b>${esc(periodLabel())}</b>` : ''}${w.length ? `<span class="cf-k">同卓</span><b>${w.map(esc).join('・')}</b>` : ''}<span class="cf-d">で数えています</span></div>`;
 }
 // 横スクロールの列（指標のピル・だれから見る？）で、選んでいるものが見える位置までずらす（ページは縦に動かさない）
 function revealOnInRows(root) {
@@ -3933,7 +3950,7 @@ async function showCircleImage() {
   const modes = circleModes();
   const gids = Object.keys(circleData.games || {});
   // 画面の成績表と同じ表（同じ行・同じ並び・いちばん良い値の地）。通算順位の画像は順位のタブの「画像」
-  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${periodLabel()} ・ ${fmtDate(new Date().toISOString())} 時点・${gids.length}ゲーム`,
+  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`,
     circleMode === '3' ? '三麻' : '四麻', [{ label: '成績表', html: circleGridHtml(st, true) }], circleMode === '3');
   if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
@@ -3947,7 +3964,7 @@ async function showCircleMatrixImage() {
   if (st.list.length < 2) { showToast('まだ総当たり表がありません'); return; }
   const gids = Object.keys(circleData.games || {});
   const keys = st.list.map(p => p.key);
-  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${periodLabel()} ・ ${fmtDate(new Date().toISOString())} 時点・${gids.length}ゲーム`,
+  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`,
     circleMode === '3' ? '三麻' : '四麻', [{ label: '総当たり表（左の人から見た、上の人との勝ち-負け）', html: mxTableHtml(keys, k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], null, null, true) }], circleMode === '3');
   if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
@@ -3972,7 +3989,7 @@ function circleRankCanvas(st) {
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
   ctx.fillText(circleData.name || '仲間ページ', P, IMG_BAND / 2 - 8, W - P * 2 - 150);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${periodLabel()} ・ ${np === 3 ? '三麻' : '四麻'} ・ ${q.length}人 ・ ${fmtDate(new Date().toISOString())} 時点`, P, IMG_BAND / 2 + 11, W - P * 2 - 150);
+  ctx.fillText(`${circleFilterText()} ・ ${q.length}人 ・ ${fmtDate(new Date().toISOString())} 時点`, P, IMG_BAND / 2 + 11, W - P * 2 - 150);
   ctx.globalAlpha = 1;
   ctx.font = imgFont(13, true); ctx.textAlign = 'right';
   ctx.fillText(`通算順位（${metricLabel}）`, W - P, IMG_BAND / 2);
@@ -7390,7 +7407,7 @@ function buildMyStatsCanvas() {
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
   ctx.fillText('自分の成績', IMG_PAD, IMG_BAND / 2 - 8);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${fmtDate(new Date().toISOString())} 時点 ・ ${st.groups.length}ゲーム・計${total}試合`, IMG_PAD, IMG_BAND / 2 + 11);
+  ctx.fillText(`${periodLabel()} ・ ${fmtDate(new Date().toISOString())} 時点 ・ ${st.groups.length}ゲーム・計${total}試合`, IMG_PAD, IMG_BAND / 2 + 11, W / 2 + 40);
   ctx.globalAlpha = 1;
   ctx.font = imgFont(13, true); ctx.textAlign = 'right';
   ctx.fillText(st.myNames.join('・'), W - IMG_PAD, IMG_BAND / 2, W / 2 - IMG_PAD);

@@ -342,12 +342,13 @@ def main():
           circleWith = [tr]; renderCircle();
           const w = circleStats(circleData, circleSess, circleMode, null);
           const row = document.getElementById('circle-top').innerText;
+          const note = document.getElementById('circle-body').innerText.includes('同卓') && document.getElementById('circle-body').innerText.includes('で数えています');
           circleTab = 'games'; renderCircle(); const gtxt = document.getElementById('circle-body').innerText;
           circleWith = []; circleTab = 'rank'; renderCircle();
           const nOf = (st, k) => (st.list.find(p => p.key === k) || {{ n: 0 }}).n;
-          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓者で絞る') && row.includes('たろう'), g: gtxt.length > 0 }};
+          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓者で絞る') && row.includes('たろう'), g: gtxt.length > 0, note }};
         }})()""")
-        results.append(("[6o] 仲間ページで同卓者（たろう）を選ぶと、たろうが同じ卓にいた試合だけで数える", True, all(cw.values())))
+        results.append(("[6o] 仲間ページで同卓者（たろう）を選ぶと、たろうが同じ卓にいた試合だけで数え、カードに「同卓 たろう で数えています」と出る", True, all(cw.values())))
         # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
         pgb.evaluate("closeFormModal()")
         dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")
