@@ -254,7 +254,16 @@ def main():
         shoot("game_marks")
         # 試合の順番の入れ替え（第1試合を下へ → 保存）
         before = pg.evaluate("activeGame.rounds.map(r => r.points[0]).join(',')")
-        pg.evaluate("openReorder(); moveReorder(0, 1)")
+        pg.evaluate("openReorder()")
+        pg.wait_for_timeout(300)
+        # つまみ（≡）を押したまま下へ動かす（指で動かすのと同じ）
+        b0 = pg.query_selector('#ro-list .ro-row:nth-child(1) .ro-grip').bounding_box()
+        b1 = pg.query_selector('#ro-list .ro-row:nth-child(2) .ro-grip').bounding_box()
+        pg.mouse.move(b0["x"] + b0["width"] / 2, b0["y"] + b0["height"] / 2)
+        pg.mouse.down()
+        pg.mouse.move(b0["x"] + b0["width"] / 2, b1["y"] + b1["height"] / 2 + 10, steps=8)
+        pg.mouse.up()
+        pg.wait_for_timeout(300)
         shoot("reorder", modal=True)
         pg.evaluate("saveReorder()")
         pg.wait_for_timeout(1200)
