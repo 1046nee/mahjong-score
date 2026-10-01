@@ -162,6 +162,13 @@ def main():
         pg.evaluate("mpMode = 4; renderHistory()")
         pg.evaluate("setMpPane('hist'); histView = 'cal'; calS.hist.day = null; renderHistoryList(); const b = document.querySelector('#history-body .cal-c.has'); if (b) b.click();")
         shoot("mypage_hist_cal")
+        pg.evaluate("calS.hist.mode = 'years'; renderHistoryList()")
+        pg.evaluate("document.getElementById('history-body').scrollIntoView()")
+        print("YEARS", pg.evaluate("document.getElementById('history-body').innerText.slice(0, 200).replace(/\\n/g, ' | ')"))
+        shoot("mypage_hist_years", full=False)
+        pg.evaluate("calS.hist.mode = 'month'; histView = 'tile'; renderHistoryList(); document.getElementById('history-body').scrollIntoView()")
+        print("TILE", pg.evaluate("[...document.querySelectorAll('#history-body .ht-year')].map(e => e.textContent).join(' // ')"))
+        shoot("mypage_hist_tile", full=False)
         pg.evaluate("histView = 'new'; renderHistoryList()")
         # 自分が出ていない試合（順位・点数は「—」、対戦した人は全員）
         pg.evaluate(f"setTag('{gids[1]}', 'watch', null); histOthersOpen = true; renderHistory()")

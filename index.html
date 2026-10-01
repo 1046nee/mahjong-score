@@ -824,6 +824,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht-lg.empty { color: #6B7A77; } .ht-lg.few { color: #9A5B12; }
 .ht-year { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; font-size: 15px; font-weight: 900; color: #1F2A28; }
 .ht-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; }
+.ht-year .ht-mine { margin-left: -4px; color: #177083; }
 .ht-legend + .ht-year { margin-top: 4px; }
 .ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
 .ht { aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; padding: 8px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
@@ -3902,8 +3903,21 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
   const y = Math.floor(S.month / 12), m = S.month % 12;
   const keys = Object.keys(byDay);
   const years = [...new Set(keys.map(k => +k.slice(0, 4)))].sort((a, b) => a - b);
-  const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['month', '月'], ['year', '年']].map(([k, l]) =>
+  // 単位は左から「年一覧（年を選ぶ）｜年（12か月）｜月（日ごと）」
+  const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['years', '年一覧'], ['year', '年'], ['month', '月']].map(([k, l]) =>
     `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${k}';${rr}">${l}</button>`).join('')}</div></div>`;
+  if (S.mode === 'years') {
+    // 年一覧: 試合のある年を並べる（最初の年〜最後の年）。押すとその年の12か月
+    const ys = [];
+    for (let yy = years[years.length - 1]; yy >= years[0]; yy--) ys.push(yy);
+    const cells = ys.map(yy => {
+      const set = new Set(keys.filter(k => +k.slice(0, 4) === yy).flatMap(k => byDay[k].map(x => x.sid)));
+      return set.size
+        ? `<button type="button" class="cal-m${yy === y ? ' cur' : ''}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
+        : `<span class="cal-m none"><b>${yy}年</b><span>—</span></span>`;
+    }).join('');
+    return `<div class="cal">${modeSeg}<div class="cal-year">${cells}</div></div><div class="cal-hint">年を押すと、その年の12か月になります。</div>`;
+  }
   if (S.mode === 'year') {
     // 年: 月ごとの「ゲーム数・打った日数」。押すとその月のカレンダー
     const perMonth = Array.from({ length: 12 }, () => ({ games: new Set(), days: 0 }));
@@ -10778,7 +10792,14 @@ function histTilesHtml(items) {
     if (!b || b.y !== y) years.push(b = { y, list: [] });
     b.list.push(x);
   });
-  const tiles = years.map(b => `<div class="ht-year">${b.y}年<span>${b.list.length}件</span></div><div class="ht-grid">${b.list.map(tileOf).join('')}</div>`).join('');
+  // 年の見出し: その年のゲーム数／試合数、カッコに自分が出た分（自分の席がわかる試合だけ・自分が出た1戦を数える）
+  const yearHead = b => {
+    const nR = b.list.reduce((a, x) => a + (x.g.rounds || []).length, 0);
+    const mine = b.list.filter(x => typeof x.me === 'number');
+    const myR = mine.reduce((a, x) => a + (x.g.rounds || []).filter(r => roundMembers(r, x.g.settings || {}).includes(x.me)).length, 0);
+    return `<div class="ht-year">${b.y}年<span>${b.list.length}ゲーム / ${nR}試合</span>${mine.length ? `<span class="ht-mine">（参加 ${mine.length}ゲーム / ${myR}試合）</span>` : ''}</div>`;
+  };
+  const tiles = years.map(b => `${yearHead(b)}<div class="ht-grid">${b.list.map(tileOf).join('')}</div>`).join('');
   return `${nEmpty || nFew ? `<div class="ht-legend">${items.length}件${nEmpty ? ` ・ <span class="ht-lg empty">空（0試合） ${nEmpty}件</span>` : ''}${nFew ? ` ・ <span class="ht-lg few">少ない（${HIST_FEW}試合以下） ${nFew}件</span>` : ''}</div>` : ''}
     ${tiles}`;
 }
