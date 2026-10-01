@@ -252,6 +252,14 @@ def main():
         pg.wait_for_function("() => document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.wait_for_timeout(500)
         shoot("game_marks")
+        # 試合の順番の入れ替え（第1試合を下へ → 保存）
+        before = pg.evaluate("activeGame.rounds.map(r => r.points[0]).join(',')")
+        pg.evaluate("openReorder(); moveReorder(0, 1)")
+        shoot("reorder", modal=True)
+        pg.evaluate("saveReorder()")
+        pg.wait_for_timeout(1200)
+        after = pg.evaluate("activeGame.rounds.map(r => r.points[0]).join(',') + ' / log:' + activeGame.log.filter(e => e.type === 'add').map(e => e.no).join(',')")
+        print("REORDER", before, "->", after)
         pg.evaluate("""async () => { openSheet(-1); await new Promise(r => setTimeout(r, 80));
           sheetSelected = [0, 1, 2, 3]; renderSheetMembers(); renderSheetInputs(); toggleSheetYaki(1); toggleSheetChombo(3); }""")
         pg.wait_for_timeout(300)

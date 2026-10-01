@@ -330,6 +330,32 @@ function opCases(w) {
         && L[0].no === 1 && !L[0].old && L[1].no === 2 && L[1].old === true && L[2].no === 2 && !L[2].old
         && L[3].type === 'delete' && L[3].no === 2 && L[3].op === 'd1';
     }],
+    ['applyOp 並べ替え: 試合は入力日時・idごと動き、履歴の試合番号も新しい番号に振り直す', () => {
+      const g = withRounds(P1, P2, P3);
+      const order = [g.rounds[2], g.rounds[0], g.rounds[1]].map(r => ({ id: r.id, at: r.at }));
+      const r = apply(g, { id: 'ro1', sid: 'TESTGAME01', at: T(9), kind: 'reorder', order, changes: [] });
+      const R = r.game.rounds, L = r.game.log;
+      // 追加の履歴: op0（元の第1）→第2、op1（元の第2）→第3、op2（元の第3）→第1
+      const noOf = op => L.find(e => e.op === op).no;
+      return r.status === 'apply' && R.map(x => x.id).join() === 'op2,op0,op1' && R[0].at === T(2) && arrEq(R[0].points, P3)
+        && noOf('op0') === 2 && noOf('op1') === 3 && noOf('op2') === 1 && L[L.length - 1].label === '試合の順番を入れ替え'
+        && apply(r.game, { id: 'ro1', sid: 'TESTGAME01', at: T(9), kind: 'reorder', order, changes: [] }).status === 'already';
+    }],
+    ['applyOp 並べ替え: 並べ替えのあいだに足された試合は最後、消された試合は抜けるだけ（ぶつからない）', () => {
+      const g = withRounds(P1, P2);
+      const order = [g.rounds[1], g.rounds[0]].map(r => ({ id: r.id, at: r.at }));
+      let sv = apply(g, add('late', P3, 5)).game;                      // ほかの端末が1試合足した
+      sv = apply(sv, { id: 'dx', sid: 'TESTGAME01', at: T(6), kind: 'delete', target: w.roundTarget(sv.rounds[0]), label: '第1試合の削除' }).game; // 第1試合を消した
+      const r = apply(sv, { id: 'ro2', sid: 'TESTGAME01', at: T(9), kind: 'reorder', order, changes: [] });
+      return (r.status === 'already' || r.status === 'apply') && r.game.rounds.map(x => x.id).join() === 'op1,late';
+    }],
+    ['applyOp 並べ替え: 並べ替えのあとに来た修正・削除も、idで正しい試合に当たる', () => {
+      const g = withRounds(P1, P2, P3);
+      const target = w.roundTarget(g.rounds[0]);   // 並べ替えの前に画面で見ていた第1試合
+      const ro = apply(g, { id: 'ro3', sid: 'TESTGAME01', at: T(9), kind: 'reorder', order: [g.rounds[1], g.rounds[2], g.rounds[0]].map(r => ({ id: r.id, at: r.at })), changes: [] }).game;
+      const r = apply(ro, { id: 'e9', sid: 'TESTGAME01', at: T(9), kind: 'edit', target, label: '第1試合の修正', round: { points: [36000, 28000, 21000, 15000], members: [0, 1, 2, 3] }, names: NAMES });
+      return r.status === 'apply' && r.game.rounds[2].id === 'op0' && r.game.rounds[2].points[0] === 36000 && r.game.log[r.game.log.length - 1].no === 3;
+    }],
     ['applyOp 削除: すでに消えている試合なら何もしない（already）', () => {
       const g = withRounds(P1, P2);
       const del = { id: 'd2', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[0]), label: '第1試合の削除' };

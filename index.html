@@ -1148,6 +1148,18 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cf-note .cf-k { font-size: 10.5px; font-weight: 800; color: #fff; background: #5F6E6B; border-radius: 6px; padding: 0 6px; }
 .cf-note b { font-weight: 800; margin-right: 4px; }
 .cf-note .cf-d { color: #5F6E6B; }
+.ro-list { padding: 0; }
+.ro-row { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-top: .5px solid #E3E9E8; }
+.ro-row:first-of-type { border-top: 0; }
+.ro-row.mv { background: #FFF8E8; }
+.ro-no { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 13px; }
+.ro-no b { font-size: 14px; font-weight: 800; color: #1F2A28; }
+.ro-no small { font-size: 11px; font-weight: 800; color: #8A5A00; }
+.ro-no span { font-size: 11.5px; color: #5F6E6B; }
+.ro-btns { display: flex; gap: 6px; flex: none; }
+.ro-btns button { width: 40px; height: 36px; border-radius: 10px; border: 1px solid #CFDCD9; background: #fff; font-size: 17px; font-weight: 800; color: #177083; cursor: pointer; }
+.ro-btns button:disabled { color: #CFDCD9; cursor: default; }
+.ro-day { padding: 6px 12px; font-size: 11.5px; font-weight: 800; color: #fff; background: #5F6E6B; }
 /* History */
 #view-history { background: #DBF4F9; }
 .history-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -2158,6 +2170,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab" id="reorder-btn" onclick="openReorder()" style="display:none">並べ替え</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">プレビュー</button>
           <span id="rounds-collapse"></span>
@@ -5199,6 +5212,24 @@ function applyOp(game, op) {
     g.name = op.name;
     g.settings = { ...s, playerNames: op.playerNames };
     g.log = appendLog(g.log, { type: 'settings', at: op.at, label: '名前を変更', changes: op.changes || [], op: op.id });
+    return done();
+  }
+  if (op.kind === 'reorder') {
+    // op.order＝新しい順番に並べた試合の目印（id、古い試合は入力日時）。中身の指紋は見ない（並べ替えのあいだに点数を直されても、その試合ごと動かす）
+    const used = new Set(), order = [];
+    (op.order || []).forEach(t => {
+      const i = findRoundIdx(g.rounds, { id: t.id || null, at: t.at || null, fp: null });
+      if (i >= 0 && !used.has(i)) { used.add(i); order.push(i); }
+    });
+    // 並べ替えのあいだに足された試合は、今の順のまま最後に（消された試合は目印が見つからないので自然に抜ける）
+    g.rounds.forEach((_, i) => { if (!used.has(i)) order.push(i); });
+    if (order.every((v, k) => v === k)) return { status: 'already', game };
+    const map = {};
+    order.forEach((oldI, newI) => { map[oldI + 1] = newI + 1; });
+    g.rounds = order.map(i => g.rounds[i]);
+    // 履歴の「第n試合」を新しい番号に（削除済みの「旧」はそのまま）
+    g.log = g.log.map(e => (!e || e.old || typeof e.no !== 'number' || !map[e.no]) ? e : { ...e, no: map[e.no] });
+    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: '試合の順番を入れ替え', changes: op.changes || [], op: op.id });
     return done();
   }
   if (op.kind === 'restore') {
@@ -8293,6 +8324,7 @@ function renderGame() {
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
+  { const rb = document.getElementById('reorder-btn'); if (rb) rb.style.display = ((activeGame.rounds || []).length >= 2 && !collapsedCards.rounds && !isGameLocked(activeGame)) ? 'inline-block' : 'none'; }
   document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
@@ -9150,6 +9182,66 @@ function renderDaySplit() {
       || '<div style="padding:12px;font-size:13px;color:#5F6E6B">まだ試合がありません</div>'}</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveDaySplit()">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+}
+// ---- 試合の順番の入れ替え ----
+// 1試合ずつ↑↓で動かし、最後にまとめて保存（1つの操作として送る＝途中の順番は誰にも見えない）。
+// 試合は入力した日時・修正の印ごと動き、履歴の「第n試合」は新しい番号に振り直す。日の区切り（2日目は第n試合から）は位置で決まる
+let reorderState = null; // { idx: [元の番号（0始まり）を新しい順に] }
+function openReorder() {
+  const g = activeGame;
+  if (!g || isGameLocked(g) || (g.rounds || []).length < 2) return;
+  reorderState = { idx: g.rounds.map((_, i) => i) };
+  renderReorder();
+  document.getElementById('form-modal').classList.add('open');
+}
+function moveReorder(k, d) {
+  const a = reorderState.idx, j = k + d;
+  if (j < 0 || j >= a.length) return;
+  [a[k], a[j]] = [a[j], a[k]];
+  renderReorder();
+}
+function sortReorderByTime() {
+  const rs = activeGame.rounds || [];
+  reorderState.idx.sort((x, y) => (Date.parse(rs[x].at) || 0) - (Date.parse(rs[y].at) || 0) || x - y);
+  renderReorder();
+}
+function renderReorder() {
+  const g = activeGame, rs = g.rounds || [], names = g.settings.playerNames || [], a = reorderState.idx;
+  const days = gameDaysList(g), st = g.settings.dayStarts;
+  const dayAt = pos => (Array.isArray(st) && st.length && days.length > 1) ? Math.min(days.length - 1, st.filter(n => Number(n) >= 2 && pos + 1 >= Number(n)).length) : -1;
+  const hint = r => {
+    const mem = roundMembers(r, g.settings), pts = r.points || r.scores || [];
+    let top = -1; pts.forEach((v, k) => { if (top < 0 || Number(v) > Number(pts[top])) top = k; });
+    const t = Date.parse(r.at), d = t ? new Date(t) : null;
+    return `${d ? `入力 ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''}${top >= 0 ? ` ・ 1位 ${esc(names[mem[top]] || '')}` : ''}${r.edited ? ' ・ 修正あり' : ''}`;
+  };
+  const moved = a.some((v, k) => v !== k);
+  document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="mp-note" style="margin:0 2px 8px">↑↓で動かして、最後に「保存する」。入力した日時・修正の履歴は、その試合と一緒に動きます。</div>
+    <button type="button" class="edit-tab" style="margin:0 0 8px" onclick="sortReorderByTime()">入力した日時の順にする</button>
+    <div class="mn-group ro-list">${a.map((oi, k) => {
+      const dk = dayAt(k), brk = k > 0 && dk >= 0 && dk !== dayAt(k - 1);
+      return `${brk || (k === 0 && dk >= 0) ? `<div class="ro-day">${dk + 1}日目（日の区切りは位置で決まります）</div>` : ''}<div class="ro-row${oi !== k ? ' mv' : ''}">
+        <div class="ro-no"><b>第${k + 1}試合</b>${oi !== k ? `<small>元は第${oi + 1}試合</small>` : ''}<span>${hint(rs[oi])}</span></div>
+        <div class="ro-btns"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div></div>`;
+    }).join('')}</div>
+    <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>保存する</button>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+}
+function saveReorder() {
+  const g = activeGame, a = reorderState && reorderState.idx;
+  if (!g || !a || isGameLocked(g)) return;
+  if (a.every((v, k) => v === k)) { closeFormModal(); return; }
+  takeBackup(g, '試合の順番を入れ替え', (g.rounds || []).length); // 書き込む前の状態を控える（「もとに戻す」で戻せる）
+  const rs = g.rounds || [];
+  const moves = a.map((oi, k) => oi !== k ? `第${oi + 1}試合→第${k + 1}試合` : '').filter(Boolean);
+  closeFormModal();
+  enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'reorder',
+    order: a.map(oi => ({ id: rs[oi].id || null, at: rs[oi].at || null })),
+    changes: moves.length > 6 ? moves.slice(0, 6).concat([`ほか${moves.length - 6}件`]) : moves });
+  showToast('試合の順番を入れ替えました');
+  track('rounds_reorder', { n: rs.length, moved: moves.length });
 }
 function saveDaySplit() {
   const st = daySplitState, g = st && daySplitGame(st.where);
