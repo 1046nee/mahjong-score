@@ -46,7 +46,7 @@ CHECK_JS = r"""(sel) => {
   return page.concat(bad);
 }"""
 # 数字や短い文を出す所（欠けてはいけない所）
-NUM_SEL = ".mp-it b, .mp-it span, .mc-grid b, .mc-head > span, .mc-head b, .lb-val, .lb-sub, .pd-val, .pd-sub, .rs-sc, .rs-n, .sp-sc, .cc-row, .ch-act, .gm-sc, .gm-res, .pp-sub2, .lc-val, .lc-sub, .lc-rk"
+NUM_SEL = ".mp-it b, .mp-it span, .mc-grid b, .mc-head > span, .mc-head b, .lb-val, .lb-sub, .pd-val, .pd-sub, .rs-sc, .rs-n, .sp-sc, .cc-row, .ch-act, .gm-sc, .gm-res, .pp-sub2, .lc-val, .lc-sub, .lc-rk, .sp-c, .sp-meta"
 
 
 def main():

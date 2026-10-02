@@ -1117,12 +1117,22 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-hit { fill: transparent; cursor: pointer; }
 .mc-spark .sp-ring { fill: none; stroke: var(--pc); stroke-width: 2; pointer-events: none; }
 .mc-trend-h .mc-tap { color: #8A9AA5; font-weight: 700; font-size: 10.5px; }
-.sp-pop { display: block; margin-top: 8px; padding: 8px; border-radius: 12px; background: #F4F7F6; }
+.sp-pop { display: block; margin-top: 8px; padding: 8px; border-radius: 12px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); }
+.sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sp-top .gk svg { width: 24px; height: 24px; }
+.sp-top .sp-gn { flex: 1; }
+.sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.sp-cnts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.sp-c { display: inline-flex; align-items: baseline; gap: 3px; padding: 1px 7px; border-radius: 8px; font-size: 11px; font-weight: 800; }
+.sp-c b { font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.sp-c.r1 { background: var(--rk1); color: var(--rk1-on); } .sp-c.r2 { background: var(--rk2-tint); color: var(--rk2-ink); box-shadow: inset 0 0 0 1px var(--rk2); }
+.sp-c.r3 { background: var(--rk3-tint); color: var(--rk3-ink); box-shadow: inset 0 0 0 1px var(--rk3); } .sp-c.r4 { background: var(--rk4); color: var(--rk4-on); }
+.sp-g .gr-opp { margin-top: 5px; }
 .sp-pop[hidden] { display: none; }
 .sp-h { display: flex; align-items: center; gap: 8px; padding: 0 2px 2px; font-size: 13px; color: #1F2A28; }
 .sp-h > span { font-size: 12px; color: #5F6E6B; font-weight: 700; } .sp-h b.pos { color: #1A237E; } .sp-h b.neg { color: #C62828; }
 .sp-x { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #fff; color: #5F6E6B; font-size: 16px; font-weight: 800; cursor: pointer; }
-.sp-g { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; padding: 8px; border: 0; border-radius: 10px; background: #fff; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.sp-g { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; margin-top: 6px; padding: 8px; border: 0; border-radius: 10px; background: #fff; text-align: left; cursor: pointer; font: inherit; color: inherit; }
 .sp-g .gk svg { width: 26px; height: 26px; }
 .sp-gm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .sp-gn { font-size: 13.5px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -10763,27 +10773,40 @@ function closeSparkPop(btn) {
   const ring = pop.previousElementSibling && pop.previousElementSibling.querySelector('.sp-ring');
   if (ring) { ring.setAttribute('cx', -20); ring.setAttribute('cy', -20); }
 }
+// 1ゲーム＝過去の試合の一覧と同じ並び（順位のピル・スコア・自分の名前／相手）＋その日の試合数・平均着順・着順ごとの回数。
+// 数えるのはその日の試合だけ（そのゲームの、その日の分の合計で順位を出す）
 function sparkPopHtml(day, np, self = true) {
   const byG = new Map();
   day.items.forEach(x => {
     if (!x.g) return;
-    const e = byG.get(x.g) || { gid: x.g, m: x.m, sc: 0, list: [] };
-    e.sc += Number(x.sc) || 0; e.list.push(x);
+    const e = byG.get(x.g) || { gid: x.g, m: x.m, os: [] };
+    e.os.push(x.o);
     byG.set(x.g, e);
   });
   const rows = [...byG.values()].map(e => {
     const g = resultGameById(e.gid);
     if (!g || !g.settings) return '';
-    const s = g.settings, names = s.playerNames || [];
-    const opp = [];
-    e.list.forEach(x => { const r = (g.rounds || [])[x.o]; if (r) roundMembers(r, s).forEach(m => { if (m !== e.m && !opp.includes(m)) opp.push(m); }); });
-    const chips = e.list.map(x => `<span class="form-chip ${rkCls(x.rank, np)}${x.tie ? ' tie' : ''}">${x.rank}</span>`).join('');
-    return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${e.m == null ? 'null' : Number(e.m)},self:${self}})">${gameKindHtml(g)}
-      <span class="sp-gm"><span class="sp-gn">${esc(g.name || '')}</span><span class="sp-rk">${chips}<em>${e.list.length}試合</em></span>
-        ${opp.length ? `<span class="sp-op">相手 ${opp.map(m => esc(names[m] || '')).join('・')}</span>` : ''}</span>
-      <b class="sp-sc ${scoreCls(e.sc)}">${fmtScore(e.sc)}</b><span class="sp-ch">${ico('chevron', 14)}</span></button>`;
+    const s = g.settings, me = e.m == null ? null : Number(e.m);
+    const gDay = { ...g, rounds: e.os.map(o => (g.rounds || [])[o]).filter(Boolean) };
+    const cnt = new Array(np).fill(0);
+    let rankSum = 0, n = 0;
+    gDay.rounds.forEach(r => {
+      const mem = roundMembers(r, s), k = mem.indexOf(me);
+      const raw = (r.points || r.scores || []).slice(0, mem.length);
+      if (k < 0 || raw.some(v => v == null || v === '')) return;
+      const gr = rankGroups(raw.map(Number))[k];
+      for (let rk = gr.start; rk <= gr.end; rk++) if (rk < np) cnt[rk] += 1 / gr.size; // 同点は按分
+      rankSum += gr.avgRank; n++;
+    });
+    const cnts = cnt.map((c, i) => `<span class="sp-c ${rkCls(i + 1, np)}">${i + 1}着<b>${fmtCnt(c)}</b></span>`).join('');
+    return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self}})">
+      <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span><span class="sp-ch">${ico('chevron', 14)}</span></span>
+      <span class="gr-sub">${seatResultHtml(gDay, me)}</span>
+      <span class="sp-meta">${n}試合 ・ 平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span>
+      <span class="sp-cnts">${cnts}</span>
+      ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
-  return `<span class="sp-h"><b>${fmtDay(ymdToMs(day.k))}</b><span>この日 <b class="${scoreCls(day.sc)}">${fmtScore(day.sc)}</b></span>
+  return `<span class="sp-h"><b>${fmtDay(ymdToMs(day.k))}の結果</b>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button></span>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
