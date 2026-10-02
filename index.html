@@ -1189,6 +1189,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cg-as { font-size: 11px; color: #5F6E6B; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cg-as b { color: #1F2A28; font-weight: 800; }
 .av-pal { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
 .av-sw { aspect-ratio: 1; width: 100%; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.av-pal { gap: 5px 6px; }
+.av-mono { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; margin-top: 10px; padding-top: 10px; border-top: .5px solid #D5DEDB; }
 .av-sw.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1F2A28; }
 .chip-rows { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .chip-row { display: flex; align-items: center; gap: 6px; }
@@ -4551,16 +4553,21 @@ async function openBindFromGame(cid, sid) {
   } catch (e) { showToast('開けませんでした。通信環境を確認してください'); } finally { showLoading(false); }
 }
 // ---- 名簿の人のアイコンの色（作成者だけ。メンバーには案内しない）----
-const AV_PALETTE = ['#C62828', '#D84315', '#EF6C00', '#F9A825', '#9E9D24', '#558B2F', '#2E7D32', '#00897B', '#00838F', '#0277BD',
-  '#1565C0', '#283593', '#4527A0', '#6A1B9A', '#AD1457', '#E53935', '#F4511E', '#FB8C00', '#C0A000', '#7CB342',
-  '#43A047', '#26A69A', '#00ACC1', '#039BE5', '#1E88E5', '#3949AB', '#5E35B1', '#8E24AA', '#D81B60', '#6D4C41',
-  '#8D6E63', '#546E7A', '#78909C', '#455A64', '#37474F', '#B71C1C', '#BF360C', '#E65100', '#827717', '#33691E',
-  '#1B5E20', '#004D40', '#006064', '#01579B', '#0D47A1', '#1A237E', '#311B92', '#4A148C', '#880E4F', '#3E2723'];
+// 10色（赤・橙・黄・緑・青緑・水色・青・藍・紫・桃）× 5段階（薄い2段・基本・濃い2段）＝50色。横1列が同じ濃さで、真ん中の段が10色の基本色
+const AV_HUES = [
+  ['#E57373', '#EF5350', '#F44336', '#D32F2F', '#B71C1C'], ['#FFB74D', '#FFA726', '#FB8C00', '#EF6C00', '#E65100'],
+  ['#FFD54F', '#FFCA28', '#FFB300', '#FF8F00', '#FF6F00'], ['#81C784', '#66BB6A', '#43A047', '#2E7D32', '#1B5E20'],
+  ['#4DB6AC', '#26A69A', '#00897B', '#00695C', '#004D40'], ['#4FC3F7', '#29B6F6', '#039BE5', '#0277BD', '#01579B'],
+  ['#64B5F6', '#42A5F5', '#1E88E5', '#1565C0', '#0D47A1'], ['#7986CB', '#5C6BC0', '#3949AB', '#283593', '#1A237E'],
+  ['#BA68C8', '#AB47BC', '#8E24AA', '#6A1B9A', '#4A148C'], ['#F06292', '#EC407A', '#D81B60', '#AD1457', '#880E4F']];
+const AV_MONO = ['#BDBDBD', '#9E9E9E', '#757575', '#424242', '#212121']; // 黒・グレー系は別の1列（濃さの決まりの外）
+const AV_PALETTE = [0, 1, 2, 3, 4].flatMap(k => AV_HUES.map(h => h[k])).concat(AV_MONO);
 function isCircleOwner() { return !!(circleData && currentUser && circleData.owner === myUid()); }
 function avColorPickerHtml(mid) {
   const cur = (rosterOf()[mid] || {}).color || '';
-  return `<div class="field"><label>アイコンの色</label><div class="av-pal">${AV_PALETTE.map(c =>
-    `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>`).join('')}</div>
+  const sw = c => `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>`;
+  return `<div class="field"><label>アイコンの色</label><div class="av-pal">${[0, 1, 2, 3, 4].map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div>
+    <div class="av-mono">${AV_MONO.map(sw).join('')}</div>
     ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${mid}','')">おまかせの色に戻す</button>` : ''}</div>`;
 }
 async function setRosterColor(mid, c) {
