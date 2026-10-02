@@ -248,9 +248,13 @@ def main():
         pg.evaluate("closeFormModal()")
         results.append(("[5h] 仲間ページに入れたあとで試合に足したメンバーも、結びつけの画面に出る", True, "ろくろう" in added_rows))
         pg.evaluate("circleTab = 'games'; circleGamesView = 'cal'; renderCircle()")
+        cal0 = pg.evaluate("(() => { const on = document.querySelector('#circle-body .cal-mode .on'); const cur = document.querySelector('#circle-body .cal-year .cal-m.cur'); const seg = [...document.querySelectorAll('#circle-body .hist-viewseg button')].map(b => b.textContent).join('|'); return (on ? on.textContent : '') + '/' + (cur ? cur.textContent : '') + '/' + seg; })()")
+        pg.evaluate("calS.circle.mode = 'month'; renderCircle()")
         cal = pg.evaluate("document.getElementById('circle-body').innerText")
         pg.evaluate("circleGamesView = 'list'; circleTab = 'rank'; renderCircle()")
-        results.append(("[5i] 試合タブはカレンダーでも見られる（年月・曜日）", True, "年" in cal and "月" in cal and "日" in cal and "土" in cal))
+        results.append(("[5i] 試合タブのカレンダーは最初は年一覧（今年に枠）、見せ方は「タイル｜一覧｜カレンダー」。月にすると年月・曜日", True,
+                        cal0.startswith("年一覧/" + str(__import__('datetime').date.today().year) + "年") and cal0.endswith("タイル|一覧|カレンダー")
+                        and "年" in cal and "月" in cal and "日" in cal and "土" in cal))
         pg.evaluate("openCircleInvite()")
         results.append(("[5f] 招待リンクは外のブラウザで開く形・参加コードも出る", True,
                         pg.evaluate(f"circleInviteLink === location.origin + '/?openExternalBrowser=1#join={code}' && document.getElementById('form-modal-body').innerText.includes('{code[:4]}-{code[4:]}')")))

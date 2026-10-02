@@ -1115,16 +1115,24 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .dt { font-size: 9px; font-weight: 700; fill: #5F6E6B; font-variant-numeric: tabular-nums; }
 .mc-spark { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .mc-spark .sp-hit { fill: transparent; cursor: pointer; }
-.mc-spark .sp-ring { fill: none; stroke: var(--pc); stroke-width: 2; pointer-events: none; }
+.mc-spark .sp-ring { fill: var(--pc-a15); stroke: var(--pc-ink); stroke-width: 3; pointer-events: none; }
 .mc-trend-h .mc-tap { color: #8A9AA5; font-weight: 700; font-size: 10.5px; }
-.sp-pop { display: block; margin-top: 8px; padding: 8px; border-radius: 12px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); }
+.sp-pop { display: block; margin-top: 8px; padding: 8px; border-radius: 12px; background: var(--pc-soft); box-shadow: inset 0 0 0 1px var(--pc); }
+.sp-pop .sp-h b { color: #0F2F33; }
+.sp-body { display: flex; align-items: center; gap: 8px; }
+.sp-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sp-right { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.sp-rank { display: inline-flex; align-items: center; gap: 4px; font-size: 18px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; }
+.sp-rank small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.sp-rank.nil { color: #8A9AA5; }
+.sp-big { font-size: 22px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
 .sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .sp-top .gk svg { width: 24px; height: 24px; }
 .sp-top .sp-gn { flex: 1; }
 .sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
 .sp-cnts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .sp-c { display: inline-flex; align-items: baseline; gap: 3px; padding: 1px 7px; border-radius: 8px; font-size: 11px; font-weight: 800; }
-.sp-c b { font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.sp-c b { font-size: 12.5px; font-variant-numeric: tabular-nums; } .sp-c b small { font-size: 10.5px; margin-left: 1px; }
 .sp-c.r1 { background: var(--rk1); color: var(--rk1-on); } .sp-c.r2 { background: var(--rk2-tint); color: var(--rk2-ink); box-shadow: inset 0 0 0 1px var(--rk2); }
 .sp-c.r3 { background: var(--rk3-tint); color: var(--rk3-ink); box-shadow: inset 0 0 0 1px var(--rk3); } .sp-c.r4 { background: var(--rk4); color: var(--rk4-on); }
 .sp-g .gr-opp { margin-top: 5px; }
@@ -3648,7 +3656,7 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['raw', '素点'], ['rp', '順位点']];
+const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）
 const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
@@ -3826,9 +3834,6 @@ function rankSubParts(p, m) {
 }
 function rankSubText(p, m) { return rankSubParts(p, m).join(' ・ '); }
 function rankSubHtml(p, m) { return rankSubParts(p, m).map(t => `<span class="nw">${esc(t)}</span>`).join(' ・ '); }
-// 人数が多いと縦に長くなるので、既定は10位まで（＋そこより下にいる自分の行）。「全員を見る」で全部
-const RANK_PREVIEW = 10;
-let circleRankAll = false;
 function circleRankTabHtml(st, modeChips, noBind) {
   const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleRankImage()">${ico('image', 16)}画像</button>`);
   if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
@@ -3850,17 +3855,8 @@ function circleRankTabHtml(st, modeChips, noBind) {
       <b class="lc-val ${clsOf(v)}">${circleMetricText(v, m)}</b>
       <span class="lc-sub">${rankSubHtml(p, m)}</span></button>`;
   };
-  let rows;
-  const fold = !circleRankAll && q.length > RANK_PREVIEW + 2; // あと1〜2人なら畳まない
-  if (!fold) {
-    rows = `<div class="lb-grid">${q.slice(3).map((p, i) => row(p, i + 4)).join('')}</div>`;
-    if (circleRankAll && q.length > RANK_PREVIEW + 2) rows += `<button type="button" class="lb-more" onclick="circleRankAll=false;renderCircle()">${RANK_PREVIEW}位までにする</button>`;
-  } else {
-    rows = `<div class="lb-grid">${q.slice(3, RANK_PREVIEW).map((p, i) => row(p, i + 4)).join('')}`;
-    const mi = my ? q.findIndex(p => p.key === my) : -1;
-    if (mi >= RANK_PREVIEW) rows += `<div class="lb-gap" aria-hidden="true">⋮</div>` + row(q[mi], mi + 1);
-    rows += `</div><button type="button" class="lb-more" onclick="circleRankAll=true;renderCircle()">全員を見る（${q.length}人）</button>`;
-  }
+  // 全員を出す（10位で畳むのは2026-10-02にやめた）
+  const rows = q.length > 3 ? `<div class="lb-grid">${q.slice(3).map((p, i) => row(p, i + 4)).join('')}</div>` : '';
   return `<div class="card">${head}${modeChips}${chips}${podium}${rows}</div>`;
 }
 // 成績表（列＝メンバー・行＝成績項目。ゲームの「個人成績」と同じ向き）
@@ -4041,7 +4037,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
 let circleGamesView = 'list';
 // 画面ごとのカレンダーの状態（circle＝仲間ページ・hist＝過去の試合・ms＝自分の成績のゲーム）
-const calS = { circle: { month: null, day: null, mode: 'month' }, hist: { month: null, day: null, mode: 'month' }, ms: { month: null, day: null, mode: 'month' } };
+const calS = { circle: { month: null, day: null, mode: 'years' }, hist: { month: null, day: null, mode: 'years' }, ms: { month: null, day: null, mode: 'years' } }; // 最初は年一覧
 // カレンダーの案内に出す試合数（選んだゲームの試合の合計）
 function calRounds(games, sids) { return games.filter(x => x.g && sids.has(x.sid)).reduce((a, x) => a + (x.g.rounds || []).length, 0); }
 function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCircle()') {
@@ -4059,11 +4055,11 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
   if (S.mode === 'years') {
     // 年一覧: 試合のある年を並べる（最初の年〜最後の年）。押すとその年の12か月
     const ys = [];
-    for (let yy = years[years.length - 1]; yy >= years[0]; yy--) ys.push(yy);
+    for (let yy = years[0]; yy <= years[years.length - 1]; yy++) ys.push(yy); // 古い年から
     const cells = ys.map(yy => {
       const set = new Set(keys.filter(k => +k.slice(0, 4) === yy).flatMap(k => byDay[k].map(x => x.sid)));
       return set.size
-        ? `<button type="button" class="cal-m${yy === y ? ' cur' : ''}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
+        ? `<button type="button" class="cal-m${yy === new Date().getFullYear() ? ' cur' : ''}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
         : `<span class="cal-m none"><b>${yy}年</b><span>—</span></span>`;
     }).join('');
     return `<div class="cal">${modeSeg}<div class="cal-year">${cells}</div></div><div class="cal-hint">年を押すと、その年の12か月になります。</div>`;
@@ -4542,6 +4538,7 @@ function openCircleGameMenu(sid) {
     ${circleSess[sid] ? `<button class="auto-btn sub" onclick="openResultSheet('${sid}',{from:'circle'})">結果を見る</button>` : ''}
     ${circleSess[sid] && role && !isGameLocked(circleSess[sid]) ? `<button class="auto-btn sub" onclick="closeFormModal();joinSession('${sid}')">試合を開く（点数の入力・修正）</button>` : ''}
     ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の連携</button>` : ''}
+    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${sid}')">ゲーム名を変える</button>` : ''}
     ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
     ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>
       <div class="h2h-note">外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。それを過ぎると、この仲間ページに確定します。</div>`
@@ -8522,7 +8519,7 @@ function renderGame() {
   const stHtml = gameStateHtml(activeGame, true);
   stEl.innerHTML = stHtml; stEl.style.display = stHtml ? '' : 'none';
   document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
-  document.querySelector('#view-game .title-actions button[onclick="openGameEdit()"]').style.display = gLocked ? 'none' : '';
+  { const eb = document.querySelector('#view-game .title-actions .title-edit-btn'); eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
   { const en = document.querySelector('#end-game-wrap .end-game-note');
     if (en && !gLocked && !gEnded) en.textContent = `終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。終了しなくても、最後の入力から24時間で確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
@@ -10312,6 +10309,7 @@ function openHistMenu(id) {
     // 点数の入力は記録が確定するまでだけ（確定後は開いても入力できないので出さない）
     (isGameLocked(g) ? '' : menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '続きを入力する', g.endedAt ? `${fmtDateTime(lockAtOf(g))} に記録が確定するまで直せます` : `${fmtDateTime(lockAtOf(g))} まで入力できます（入力すると延びます）`, `closeFormModal();rejoinGame('${j}')`)) +
     menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${j}')`) +
+    menuBtnHtml('pencil', 'ゲーム名を変える', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${j}')`) +
     menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`)}</div>
     <div class="mn-group">${menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -10382,6 +10380,51 @@ function renderResultSheet() {
     <div class="rs-h">試合ごとのスコア${st.day != null ? `（${st.day + 1}日目）` : ''}</div>${table}
     <div class="mn-group" style="margin-top:14px">${acts}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+}
+
+// ---- ゲーム名の変更（記録が確定したあとも、ゲーム名だけは変えられる。2026-10-02 ユーザーの判断） ----
+// 確定前は今までどおり送信キュー（op 'rename'・履歴に残る）。確定後は sessions/{id}/name だけを書く（ルールが name だけ許す）
+function renameTargetGame(id) {
+  if (activeGame && activeGame.id === id) return activeGame;
+  if (detailGame && detailGame.id === id) return detailGame;
+  return resultGameById(id);
+}
+function openRenameGame(id) {
+  const g = renameTargetGame(id);
+  if (!g) return;
+  document.getElementById('form-modal-title').textContent = 'ゲーム名を変える';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="field"><label>ゲーム名</label><input type="text" id="rn-name" value="${esc(g.name || '')}" maxlength="${MAX_GROUP_LEN}"></div>
+    ${isGameLocked(g) ? '<div class="h2h-note" style="margin-top:0">記録は確定していますが、ゲーム名だけはいつでも変えられます（点数・メンバーは変えられません）。</div>' : ''}
+    <button class="confirm-btn" style="margin-top:10px" onclick="saveRenameGame('${esc(id)}')">保存する</button>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+async function saveRenameGame(id) {
+  const g = renameTargetGame(id);
+  if (!g) return;
+  const name = clampName(document.getElementById('rn-name').value, MAX_GROUP_LEN);
+  if (!name) { showToast('ゲーム名を入れてください'); return; }
+  if (name === g.name) { closeFormModal(); return; }
+  closeFormModal();
+  const apply = x => { if (x) x.name = name; };
+  if (!isGameLocked(g)) {
+    const names = g.settings.playerNames;
+    const op = enqueueOp({ id: newOpId(), sid: id, at: new Date().toISOString(), kind: 'rename',
+      baseFp: fpOf({ name: g.name, names }), name, playerNames: names.slice(), changes: [`ゲーム名: ${g.name} → ${name}`] });
+    const r = applyOp(g, op);
+    if (r.status === 'apply') Object.assign(g, r.game);
+  } else {
+    try { await db.ref('sessions/' + id + '/name').set(name); }
+    catch (e) { showToast('変えられませんでした。通信環境を確認してください', 5000); return; }
+  }
+  [(appState.games || []).find(x => x.id === id), circleSess && circleSess[id], detailGame && detailGame.id === id ? detailGame : null].forEach(apply);
+  if (myListId) db.ref(`mylists/${myListId}/groups/${id}`).update({ name: String(name).slice(0, 120) }).catch(() => {});
+  saveStorage();
+  showToast('ゲーム名を変えました');
+  const v = activeViewName();
+  if (v === 'history') renderHistory(); else if (v === 'circle') renderCircle(); else if (v === 'mystats') renderMyStats();
+  else if (v === 'detail' && detailGame) renderDetailBody(detailGame);
 }
 
 // ---- 打った日・期間（マイページの成績と過去の試合の一覧で共用） ----
@@ -10798,12 +10841,18 @@ function sparkPopHtml(day, np, self = true) {
       for (let rk = gr.start; rk <= gr.end; rk++) if (rk < np) cnt[rk] += 1 / gr.size; // 同点は按分
       rankSum += gr.avgRank; n++;
     });
-    const cnts = cnt.map((c, i) => `<span class="sp-c ${rkCls(i + 1, np)}">${i + 1}着<b>${fmtCnt(c)}</b></span>`).join('');
+    const cnts = cnt.map((c, i) => `<span class="sp-c ${rkCls(i + 1, np)}">${i + 1}着<b>${fmtCnt(c)}<small>回</small></b></span>`).join('');
+    const tot = gameTotals(gDay), played = playedFlags(gDay);
+    const rank = me != null && played[me] ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0) : null;
+    const nP = played.filter(Boolean).length;
     return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self}})">
-      <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span><span class="sp-ch">${ico('chevron', 14)}</span></span>
-      <span class="gr-sub">${seatResultHtml(gDay, me)}</span>
-      <span class="sp-meta">${n}試合 ・ 平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span>
-      <span class="sp-cnts">${cnts}</span>
+      <span class="sp-body"><span class="sp-left">
+        <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span></span>
+        <span class="sp-meta">${n}試合 ・ 平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span>
+        <span class="sp-cnts">${cnts}</span></span>
+      <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 22, false) : ''}${rank}位<small> / ${nP}人</small></span>
+        <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
+      <span class="sp-ch">${ico('chevron', 14)}</span></span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
   return `<span class="sp-h"><b>${fmtDay(ymdToMs(day.k))}の結果</b>
@@ -11155,7 +11204,7 @@ function histKindPillsHtml(games, rerender, key = 'histKind') {
 // 見せ方「一覧｜タイル｜カレンダー」（左から）。key＝状態の変数名、listVal＝一覧の値（過去の試合 'new'・仲間ページ 'list'）
 function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
   const cur = key === 'circleGamesView' ? circleGamesView : histView;
-  return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[[listVal, '一覧'], ['tile', 'タイル'], ['cal', 'カレンダー']].map(([k, l]) =>
+  return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[['tile', 'タイル'], [listVal, '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
     `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}" onclick="${key}='${k}';${rerender}">${l}</button>`).join('')}</div>`;
 }
 // タイル: 試合名と試合数だけの小さな正方形を新しい順に敷き詰める。空（0試合）と少ない（3試合以下）の試合を目立たせ、
@@ -11467,7 +11516,7 @@ function renderDetailBody(g) {
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
   const gLocked = isGameLocked(g);
-  if (!detailRO) document.getElementById('detail-edit-btn').style.display = gLocked ? 'none' : '';
+  if (!detailRO) { const eb = document.getElementById('detail-edit-btn'); eb.style.display = ''; eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(g.id) : openDetailEdit; }
 
   let html = gameStateHtml(g, false) + '<div id="detail-circles"></div>';
   // チーム順位（チーム戦が有効なグループのみ）

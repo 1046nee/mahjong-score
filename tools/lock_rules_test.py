@@ -12,7 +12,7 @@
 --check-canary で確かめる方法も残す（確定した試合は消せないので、確認用の試合は「ロック確認用」という名前のままDBに残る。中身はダミー）。
 
 前提: database.rules.json をFirebaseコンソール（Realtime Database → ルール）に貼って「公開」してから実行する。
-実行: python tools/lock_rules_test.py            （その場で試せる19項目）
+実行: python tools/lock_rules_test.py            （その場で試せる24項目）
       python tools/lock_rules_test.py --canary   （確認用の試合を置く。IDは %LOCALAPPDATA%\\majasco\\lock_canary.json に控える）
       python tools/lock_rules_test.py --check-canary
 """
@@ -125,6 +125,12 @@ def main():
               http("PUT", f"sessions/{old1}", game(old1, name="改ざん", lockAt=P - 24 * H))[0])
         check("[17] 確定した古い試合の締め切りを延ばして開け直すのも拒否", False,
               http("PUT", f"sessions/{old1}", game(old1, lockAt=server_now() + 24 * H))[0])
+        check("[17b] 確定した試合でも、ゲーム名だけは変えられる", True, http("PUT", f"sessions/{old1}/name", "名前だけ変更")[0])
+        check("[17c] 確定した試合のゲーム名を空にするのは拒否", False, http("PUT", f"sessions/{old1}/name", "")[0])
+        check("[17d] 確定した試合のゲーム名を消すのは拒否", False, http("DELETE", f"sessions/{old1}/name")[0])
+        check("[17e] 確定した試合の点数（rounds）はゲーム名と一緒でも変えられない", False,
+              http("PATCH", f"sessions/{old1}", {"name": "名前", "rounds": [{"points": [1, 2, 3, 4], "scores": [9, 9, 9, 9]}]})[0])
+        check("[17f] 存在しない試合にゲーム名だけを書いて作ることはできない", False, http("PUT", f"sessions/{rnd(10)}/name", "なりすまし")[0])
         check("[18] 古い試合に、近い締め切り（最後の入力が21時間前＝3時間後）を付けられる", True,
               http("PUT", f"sessions/{old2}", game(old2, name="ルール確認用（古い試合・打っている途中）", lockAt=P + 3 * H))[0])
         old3 = rnd(10)

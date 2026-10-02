@@ -11,7 +11,8 @@
           ".validate": "newData.isString() && newData.val() === $id"
         },
         "name": {
-          ".validate": "newData.isString() && newData.val().length <= 120"
+          ".write": "data.parent().exists() && newData.exists()",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
         },
         "createdAt": {
           ".validate": "newData.isString() && newData.val().length <= 40"

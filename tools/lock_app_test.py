@@ -111,10 +111,10 @@ def main():
                             n_rounds(v) == 2 and v.get("lockAt", 0) > lock2))
             # 確定した状態（画面の中だけで lockAt を過去にする）では入力の入口を出さない
             pg.evaluate("activeGame.lockAt = serverNow() - 1000; renderGame()")
-            results.append(("[7] 確定した試合は「確定しています」と出て、点数入力・設定の編集・行のタップが出ない", True,
+            results.append(("[7] 確定した試合は「確定しています」と出て、点数入力・行のタップが出ず、設定の編集の代わりに「ゲーム名を変える」", True,
                             pg.evaluate("""document.getElementById('game-state').innerText.includes('記録は確定しています')
                               && getComputedStyle(document.querySelector('#view-game .fab')).display === 'none'
-                              && document.querySelector('#view-game .title-actions button[onclick=\"openGameEdit()\"]').style.display === 'none'
+                              && document.querySelector('#view-game .title-actions .title-edit-btn').textContent === 'ゲーム名を変える'
                               && ![...document.querySelectorAll('#rounds-table tbody tr')].some(tr => (tr.getAttribute('onclick') || '').includes('openRoundMenu'))""")))
             # 締め切りの無い古い試合（2日前に作って入力したまま）を開く → 確定したものとして扱い、過ぎた締め切りを書き込む
             import random
