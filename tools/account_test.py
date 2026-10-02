@@ -361,6 +361,21 @@ def main():
           return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓者で絞る') && row.includes('じろう'), g: gtxt.length > 0, note, noMe }};
         }})()""")
         results.append(("[6o] 仲間ページで同卓者（じろう）を選ぶと、じろうが同じ卓にいた試合だけで数え、カードに「同卓 じろう で数えています」と出る（自分は選択肢に出ない）", True, all(cw.values())))
+        # 仲間ページの「直近n戦」は各自の直近n戦（一人ひとりが出た新しい方からn試合。誰が見ても同じ順位）
+        pn = pgb.evaluate("""(() => {
+          const prev = curPeriod();
+          setMpPeriod('n100');
+          const pill = document.querySelector('#circle-top .mp-period').innerText;
+          const note = document.getElementById('circle-body').innerText;
+          const opts = [...document.querySelectorAll('#circle-top .mp-period option')].map(o => o.textContent).join(' ');
+          const per = circleStatsP(circleMode), all = circleStats(circleData, circleSess, circleMode, null);
+          // 1試合だけにすると、全員が自分の直近1試合だけで数えられる
+          const one = circleStats(circleData, circleSess, circleMode, null, 1);
+          setMpPeriod(prev);
+          return { pill: pill.includes('各自の直近100戦'), note: note.includes('一人ひとりが出た'), opts: opts.includes('各自の直近1000戦'),
+            same: JSON.stringify(per.list.map(p => [p.key, p.n])) === JSON.stringify(all.list.map(p => [p.key, p.n])), one: one.list.length > 0 && one.list.every(p => p.n === 1) };
+        })()""")
+        results.append(("[6p] 仲間ページの「直近n戦」は各自の直近n戦（期間のボタン・カードの注記・選択肢に「各自の」。一人ひとりの試合数で数える）", True, all(pn.values())))
         # 同じ試合を別のアカウントからもう一度追加しても二重にならず、誰が追加したかがわかる
         pgb.evaluate("closeFormModal()")
         dup = pgb.evaluate(f"addGameToCircle(circleId, circleSess['{g1}'], true)")

@@ -3311,27 +3311,48 @@ function circleWithOk(g, ge, r, W) {
   const mids = new Set(roundMembers(r, g.settings).map(m => seats[m] && seats[m].mid).filter(Boolean));
   return W.every(m => mids.has(m));
 }
-function circleStats(circle, sessions, mode, inP) {
+// perN＝各自の直近n戦（2026-10-02 ユーザーの判断）: 人ごとに、その人が出た試合（同卓者で絞っていればその試合）の新しい方からn戦だけを数える。
+// 仲間ページ全体の直近n戦にすると、自分の直近を見たい人には合わず、自分の直近にすると見る人によって順位が変わるため。
+// 対戦（acc[a][b]）は、行の人 a の直近n戦に入っている試合で数える
+function circleStats(circle, sessions, mode, inP, perN) {
   const W = circle === circleData ? circleWith : [];
   const people = {}, acc = {};
   const roster = (circle && circle.roster) || {};
-  Object.entries((circle && circle.games) || {}).forEach(([sid, ge]) => {
+  const ents = Object.entries((circle && circle.games) || {}).filter(([sid]) => {
     const g = sessions[sid];
-    if (!g || !g.settings) return;
-    const np = g.settings.numPlayers === 3 ? '3' : '4';
-    if (mode && np !== mode) return;
-    const seats = (ge && ge.seats) || {};
-    const kOf = m => { const st = seats[m]; return (st && st.mid && roster[st.mid]) ? st.mid : null; };
+    return g && g.settings && (!mode || (g.settings.numPlayers === 3 ? '3' : '4') === mode);
+  });
+  const keyOfIn = ge => { const seats = (ge && ge.seats) || {}; return m => { const st = seats[m]; return (st && st.mid && roster[st.mid]) ? st.mid : null; }; };
+  let win = null; // 人 → その人の直近n戦（'試合ID|試合の番号'）
+  if (perN) {
+    const byKey = {};
+    ents.forEach(([sid, ge]) => {
+      const g = sessions[sid], kOf = keyOfIn(ge);
+      (g.rounds || []).forEach((r, i) => {
+        if (!circleWithOk(g, ge, r, W)) return;
+        const t = roundMs(g, r);
+        roundMembers(r, g.settings).forEach(m => { const key = kOf(m); if (key) (byKey[key] = byKey[key] || []).push({ id: sid + '|' + i, t, i }); });
+      });
+    });
+    win = {};
+    Object.entries(byKey).forEach(([key, arr]) => { arr.sort((a, b) => b.t - a.t || b.i - a.i); win[key] = new Set(arr.slice(0, perN).map(x => x.id)); });
+  }
+  ents.forEach(([sid, ge]) => {
+    const g = sessions[sid];
+    const kOf = keyOfIn(ge);
+    const idx = new Map((g.rounds || []).map((r, i) => [r, i])); // 絞ったあとも元の試合の番号で持つ（推移の点から試合を開くため）
+    const inWin = win ? (key, r) => !!(win[key] && win[key].has(sid + '|' + idx.get(r))) : null;
     const gF = (inP || W.length) ? { ...g, rounds: (g.rounds || []).filter(r => (!inP || inP(roundMs(g, r))) && circleWithOk(g, ge, r, W)) } : g; // 期間の外・同卓者のいない試合は数えない
-    h2hAdd(acc, gF, kOf);
-    (gF.rounds || []).forEach((r, ridx) => {
+    h2hAdd(acc, gF, kOf, inWin);
+    (gF.rounds || []).forEach(r => {
+      const ridx = idx.get(r);
       const mem = roundMembers(r, g.settings);
       const raw = (r.points || r.scores || []).slice(0, mem.length);
       if (raw.length !== mem.length || raw.some(v => v == null || v === '')) return;
       const grp = rankGroups(raw.map(Number));
       mem.forEach((m, k) => {
         const key = kOf(m);
-        if (!key) return;
+        if (!key || (inWin && !inWin(key, r))) return; // 各自の直近n戦の外
         const p = people[key] || (people[key] = { key, n: 0, score: 0, rankSum: 0, top: 0, last: 0, games: new Set(),
           counts: [0, 0, 0, 0], ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
         const gi = grp[k];
@@ -3618,6 +3639,9 @@ function circleCardHead(title, extra = '') {
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>${circleFilterNoteHtml()}`;
 }
 function circleFiltered() { return curPeriod() !== 'all' || circleWith.length > 0; }
+// 仲間ページの期間: 「直近n戦」は各自の直近n戦（circleStats の perN）、ほかは日付で絞る
+function circlePerN() { const p = curPeriod(); return p[0] === 'n' ? +p.slice(1) : null; }
+function circleStatsP(mode) { const n = circlePerN(); return circleStats(circleData, circleSess, mode, n ? null : periodFilter(), n); }
 function circleWithNames() { return circleWith.filter(m => rosterOf()[m]).map(rosterName); }
 // 画像の帯に書く条件（期間・形式・同卓者）
 function circleFilterText() {
@@ -3627,7 +3651,8 @@ function circleFilterText() {
 function circleFilterNoteHtml() {
   if (!circleFiltered()) return '';
   const w = circleWithNames();
-  return `<div class="cf-note">${curPeriod() !== 'all' ? `<span class="cf-k">期間</span><b>${esc(periodLabel())}</b>` : ''}${w.length ? `<span class="cf-k">同卓</span><b>${w.map(esc).join('・')}</b>` : ''}<span class="cf-d">で数えています</span></div>`;
+  const n = circlePerN();
+  return `<div class="cf-note">${curPeriod() !== 'all' ? `<span class="cf-k">期間</span><b>${esc(periodLabel())}</b>` : ''}${w.length ? `<span class="cf-k">同卓</span><b>${w.map(esc).join('・')}</b>` : ''}<span class="cf-d">で数えています${n ? `（一人ひとりが出た、新しい方から${n}試合。${n}試合に満たない人は全部）` : ''}</span></div>`;
 }
 // 横スクロールの列（指標のピル・だれから見る？）で、選んでいるものが見える位置までずらす（ページは縦に動かさない）
 function revealOnInRows(root) {
@@ -3701,7 +3726,7 @@ function renderCircle() {
   if (currentUser) {
     const mine = {};
     ['4', '3'].forEach(md => {
-      const sx = circleStats(circleData, circleSess, md, periodFilter());
+      const sx = circleStatsP(md);
       const p = sx.list.find(x => x.key === myM);
       if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin,
         raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over };
@@ -3716,7 +3741,7 @@ function renderCircle() {
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
   const modes = circleModes();
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
-  const st = gids.length ? circleStats(circleData, circleSess, circleMode, periodFilter()) : { list: [], acc: {} };
+  const st = gids.length ? circleStatsP(circleMode) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
   const modeChips = false ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
@@ -4095,7 +4120,7 @@ function circleStandingsTableHtml(st, forImage = false) {
 }
 async function showCircleImage() {
   if (!circleData) return;
-  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
+  const st = circleStatsP(circleMode);
   if (!st.list.length) { showToast('まだ通算がありません'); return; }
   const modes = circleModes();
   const gids = Object.keys(circleData.games || {});
@@ -4110,7 +4135,7 @@ async function showCircleImage() {
 // 総当たり表の画像（画面と同じ「勝ち-負け」。勝ち越し＝紺・負け越し＝赤の地）
 async function showCircleMatrixImage() {
   if (!circleData) return;
-  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
+  const st = circleStatsP(circleMode);
   if (st.list.length < 2) { showToast('まだ総当たり表がありません'); return; }
   const gids = Object.keys(circleData.games || {});
   const keys = st.list.map(p => p.key);
@@ -4216,7 +4241,7 @@ function circleRankCanvas(st) {
 }
 async function showCircleRankImage() {
   if (!circleData) return;
-  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
+  const st = circleStatsP(circleMode);
   if (!st.list.length) { showToast('まだ通算がありません'); return; }
   const canvas = circleRankCanvas(st);
   if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
@@ -4618,7 +4643,7 @@ function openCircleMember(mid) {
   const myMid = myCircleMid();
   const modes = circleModes();
   const np = circleMode === '3' ? 3 : 4;
-  const st = circleStats(circleData, circleSess, circleMode, periodFilter());
+  const st = circleStatsP(circleMode);
   const idx = st.list.findIndex(x => x.key === mid);
   const p = idx >= 0 ? st.list[idx] : null;
   const row = st.acc[mid] || {};
@@ -8148,7 +8173,8 @@ function rankCountHtml(rounds, s, forImage = false) {
 // acc[a][b] = { n: 同じ試合に出た回数, w/l/d: 勝ち/負け/引き分け, rankA/rankB: 着順の合計, scoreA/scoreB: スコアの合計 }
 // keyOf(m) = メンバーindex → 人のキー（null/undefinedは数えない）。
 // グループ内ならindexそのもの、グループをまたぐときは名前（自分の成績シート）
-function h2hAdd(acc, g, keyOf) {
+// okRow(a, r)＝行の人 a の対戦に、この試合を数えるか（各自の直近n戦。省略すると全部）
+function h2hAdd(acc, g, keyOf, okRow) {
   const s = g.settings || {};
   (g.rounds || []).forEach(r => {
     const mem = roundMembers(r, s);
@@ -8159,7 +8185,7 @@ function h2hAdd(acc, g, keyOf) {
     const keys = mem.map(m => keyOf(m));
     for (let i = 0; i < mem.length; i++) {
       const a = keys[i];
-      if (a == null) continue;
+      if (a == null || (okRow && !okRow(a, r))) continue;
       for (let j = 0; j < mem.length; j++) {
         const b = keys[j];
         if (i === j || b == null || a === b) continue;
@@ -9986,7 +10012,24 @@ function msScopes() {
   return [['all', '個人（すべて）']].concat(allCircleEntries().map(([cid, m]) => [cid, m.name || (circleCardInfo[cid] || {}).name || '仲間ページ']));
 }
 // 範囲の成績: 個人＝自分を選んだ全部の試合、仲間ページ＝そのうち仲間ページに入っている試合だけ（自分の選択で数えるので形式がそろう）
-function msStatsFor(scope) { return collectMyStats(periodFilter(), scope === 'all' ? null : (circleSidsOf(scope) || new Set())); }
+function msStatsFor(scope) {
+  const only = scope === 'all' ? null : (circleSidsOf(scope) || new Set());
+  return collectMyStats(only ? periodFilterIn(only, scope) : periodFilter(), only);
+}
+// 範囲（仲間ページの試合だけ）の中で数える期間。「直近n戦」はその範囲の中の自分の直近n戦（範囲ごとに切れ目を出す）
+const periodCutByScope = {};
+function periodFilterIn(only, scope) {
+  const p = curPeriod();
+  if (p[0] !== 'n') return periodFilter();
+  const n = +p.slice(1), key = [p, mpMode, scope, only.size].join('/');
+  const memo = periodCutByScope[scope];
+  if (!memo || memo.key !== key || Date.now() - memo.t > 800) {
+    const pool = periodCountPool(only).sort((a, b) => b - a);
+    periodCutByScope[scope] = { key, t: Date.now(), cut: pool.length > n ? pool[n - 1] : null };
+  }
+  const cutMs = periodCutByScope[scope].cut;
+  return cutMs == null ? null : ms => ms >= cutMs;
+}
 // 箱下＝持ち点が0点を下回った回数、5万点以上＝50,000点以上だった回数（点数の記録がある試合だけ）
 const BIG_POINTS = 50000;
 function boxOf(m) { return m && m.rawN ? m.box || 0 : null; }
@@ -10465,10 +10508,10 @@ function ymd8Label(v) { return `${+v.slice(0, 4)}/${+v.slice(4, 6)}/${+v.slice(6
 // 直近n戦: その画面で数える試合（仲間ページ＝この仲間ページの試合・同卓者で絞っていればその試合、それ以外＝自分が出た試合）の、
 // 選んでいる形式（四麻｜三麻）の新しい方からn戦目の日時より後。n戦に満たなければ全部
 let periodCutMemo = null;
-function periodCountPool() {
+function periodCountPool(only) {
   const np = mpMode === 3 ? 3 : 4, out = [];
   const npOf = g => (g.settings && g.settings.numPlayers) === 3 ? 3 : 4;
-  if (document.getElementById('view-circle').classList.contains('active') && circleData) {
+  if (!only && document.getElementById('view-circle').classList.contains('active') && circleData) {
     Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
       const g = circleSess[sid];
       if (!g || !g.settings || npOf(g) !== np) return;
@@ -10476,6 +10519,7 @@ function periodCountPool() {
     });
   } else {
     (appState.games || []).forEach(g => {
+      if (only && !only.has(g.id)) return; // 範囲（仲間ページの試合だけ）の中の自分の試合
       const t = tagOf(g.id);
       if (t.role === 'watch' || t.me == null || !g.settings || npOf(g) !== np) return;
       (g.rounds || []).forEach(r => { if (roundMembers(r, g.settings).includes(t.me)) out.push(roundMs(g, r)); });
@@ -10515,7 +10559,7 @@ function periodLabel(p) {
   p = p || curPeriod();
   if (p === 'all') return 'すべての期間';
   if (p[0] === 'r') return (PERIOD_RECENT.find(([k]) => k === p) || [0, '直近'])[1];
-  if (p[0] === 'n') return `直近${p.slice(1)}戦`;
+  if (p[0] === 'n') return `${circleActive() ? '各自の' : ''}直近${p.slice(1)}戦`; // 仲間ページは一人ひとりの直近
   if (p[0] === 'c') { const [a, b] = p.slice(1).split('_'); return `${a ? ymd8Label(a) : ''}〜${b ? ymd8Label(b) : ''}`; }
   return p[0] === 'm' ? `${p.slice(1, 5)}年${+p.slice(6)}月` : p.slice(1) + '年';
 }
@@ -10568,7 +10612,7 @@ function mpPeriodHtml() {
     opt('all', 'すべて'),
     `<optgroup label="年">${ys.map(y => opt('y' + y, y + '年')).join('')}</optgroup>`,
     `<optgroup label="直近の期間">${PERIOD_RECENT.map(([k, l]) => opt(k, l)).join('')}</optgroup>`,
-    `<optgroup label="直近の試合数">${PERIOD_COUNTS.map(n => opt('n' + n, `直近${n}戦`)).join('')}</optgroup>`,
+    `<optgroup label="${circleActive() ? '各自の直近の試合数' : '直近の試合数'}">${PERIOD_COUNTS.map(n => opt('n' + n, `${circleActive() ? '各自の' : ''}直近${n}戦`)).join('')}</optgroup>`,
     `<optgroup label="期間を指定">${cur[0] === 'c' ? opt('cur-custom', periodLabel(cur)) : ''}<option value="custom">開始・終了を指定…</option></optgroup>`];
   const label = cur === 'all' ? 'すべて' : periodLabel(cur);
   return `<label class="mp-period"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>`;

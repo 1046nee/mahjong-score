@@ -114,6 +114,11 @@ def main():
                 pg.evaluate(f"circleTab = '{t}'; renderCircle()")
                 pg.wait_for_timeout(200)
                 allbad += [f"[{width}] 仲間ページ {t}: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
+            # 期間の名前がいちばん長いとき（各自の直近1000戦）
+            pg.evaluate("circleTab = 'rank'; setMpPeriod('n1000')")
+            pg.wait_for_timeout(200)
+            allbad += [f"[{width}] 仲間ページ（各自の直近1000戦）: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
+            pg.evaluate("setMpPeriod('all')")
             if OUT:
                 pg.screenshot(path=os.path.join(OUT, f"fit_{width}_circle.png"), full_page=True)
             ctx.close()

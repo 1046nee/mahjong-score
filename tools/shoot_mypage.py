@@ -229,7 +229,7 @@ def main():
         pg.evaluate("setMpPeriod('r3m')")
         pg.evaluate("window.scrollTo(0, document.getElementById('circle-body').offsetTop - 20)")
         shoot("circle_with", full=False)
-        save_canvas("circle_rank_with", "circleRankCanvas(circleStats(circleData, circleSess, circleMode, periodFilter()))")
+        save_canvas("circle_rank_with", "circleRankCanvas(circleStatsP(circleMode))")
         pg.evaluate("setMpPeriod('all')")
         pg.evaluate("circleWith = []; renderCircle()")
         pg.evaluate("openVerifyInfo(Object.keys(circleData.roster).find(m => circleData.roster[m].uid))")
@@ -245,7 +245,7 @@ def main():
         pg.wait_for_timeout(300)
         shoot("mystats_circle_hist")
         pg.evaluate("myStatsTab = 'sum'; showView('circle')")
-        save_canvas("circle_rank", "circleRankCanvas(circleStats(circleData, circleSess, circleMode, periodFilter()))")
+        save_canvas("circle_rank", "circleRankCanvas(circleStatsP(circleMode))")
 
         # マイページの「仲間」（カードが出た状態）
         pg.evaluate("showView('history'); setMpTab('circle')")
