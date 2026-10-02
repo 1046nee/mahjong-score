@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀の点数が合わないときのチェックリスト｜集計係が使う原因の切り分け方", "description": "半荘の点棒の合計が合わない、スコアの合計が0にならない。そんなときに上から順に潰していける実践チェックリストです。ズレ幅から原因を特定する方法と、二度と起こさないための予防策を集計係の視点でまとめました。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-09-17", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-mismatch.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀の点数が合わないときのチェックリスト｜集計係が使う原因の切り分け方", "description": "半荘の点棒の合計が合わない、スコアの合計が0にならない。そんなときに上から順に潰していける実践チェックリストです。ズレ幅から原因を特定する方法と、二度と起こさないための予防策を集計係の視点でまとめました。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-10-02", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-mismatch.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -163,7 +163,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>ズレ方</th><th>疑うところ</th></tr></thead>
     <tbody>
-      <tr><td>合計がちょうど +20.0／−20.0（オカの額）</td><td>オカの足し忘れ、または二重に足した</td></tr>
+      <tr><td>合計がちょうど +20.0／−20.0（オカの総額）</td><td>1位のオカの受け取り（4人分）か、全員のオカの払いの片方だけ足し忘れた、または二重に足した</td></tr>
       <tr><td>合計がウマの値と同じ（+30／−30など）</td><td>同点なのに順位を詰めてしまった（後述）</td></tr>
       <tr><td>合計が ±1.0 前後の小さい値</td><td>持ち点の転記ミス（1,000点単位の桁ずれ）</td></tr>
       <tr><td>合計が罰符と同じ額</td><td>チョンボ罰符。これは<strong>0にならないのが正常</strong></td></tr>
@@ -179,7 +179,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>意外に多いのがこれです。四麻のウマ「10-30」（+30／+10／−10／−30）は4人で合計0になる設計なので、3人にそのまま使うと +30 + 10 − 10 = <strong>+30</strong> となり、毎半荘 +30 ずつズレ続けます。三麻では「10-0-10」のように<strong>2位を0にして1位と3位を対称にした形</strong>を使ってください。</p>
 
   <h3>素点を整数に丸めていないか</h3>
-  <p>41,300点の素点は +11.3 です。これを +11 に丸めると、丸めた誤差の分だけ合計が0からずれます。<strong>途中では丸めず、表示だけ小数第1位にする</strong>のが鉄則です。</p>
+  <p>25,000点持ちで41,300点なら、素点は +16.3 です。これを +16 に丸めると、丸めた誤差の分だけ合計が0からずれます。<strong>途中では丸めず、表示だけ小数第1位にする</strong>のが鉄則です。</p>
 
   <h2>ズレを見つけたあと：直し方の順番</h2>
   <ol>

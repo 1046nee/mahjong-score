@@ -8206,7 +8206,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   const avgRankSum = new Array(N).fill(0);
   const lastCount = new Array(N).fill(0);
   const gamesPlayed = new Array(N).fill(0);
-  // 素点＝(持ち点−返し点)÷1000 の合計。順位点＝スコア−素点（ウマ・オカ・罰符の分）
+  // 素点＝(持ち点−配給原点)÷1000 の合計。順位点＝スコア−素点（ウマ・オカ・罰符の分）
   const rawSum = new Array(N).fill(0);
   const ptsCnt = new Array(N).fill(0);
   const ptsMax = new Array(N).fill(null);

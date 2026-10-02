@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .site-foot .links { margin-bottom: 8px; }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-09-17", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "麻雀のスコア計算 実例12パターン｜同点・トビ・三麻・チョンボまで全部計算してみた", "description": "ウマ・オカ込みのスコア計算を、実際の持ち点から途中式ごと12パターン計算しました。同点の山分け、トビ、三麻、チョンボ罰符、複数試合の累計まで。数字はすべてアプリの計算ロジックと突き合わせて検証済みです。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-08-25", "dateModified": "2026-10-02", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-score-examples.html"}</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -104,16 +104,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>どのパターンも、やることは変わりません。</p>
   <table>
     <tbody>
-      <tr><th>① 素点</th><td>（自分の持ち点 − 返し点）÷ 1,000</td></tr>
+      <tr><th>① 素点</th><td>（終了時の持ち点 − 開始時の持ち点）÷ 1,000。配られた点から増えた・減った分</td></tr>
       <tr><th>② ウマ</th><td>順位に応じた加減点を足す（例：10-30なら 1位+30／2位+10／3位−10／4位−30）</td></tr>
-      <tr><th>③ オカ</th><td>（返し点 − 持ち点）× 人数 ÷ 1,000 を、1位だけが受け取る</td></tr>
+      <tr><th>③ オカ</th><td>全員が（返し点 − 持ち点）÷ 1,000 ずつ出し、1位がまとめて受け取る</td></tr>
     </tbody>
   </table>
-  <p>最後に<strong>全員のスコアを足して0になるか</strong>を確認します。これがこの記事で一番お伝えしたいことで、<span class="hl">0にならなければ、必ずどこかが間違っています</span>。理屈がゼロサムだからです（例外は後述のチョンボ罰符だけ）。用語そのものがあやしい方は、先に<a href="/blog-uma-oka.html">ウマ・オカとは？初心者向けスコア計算入門</a>を読むと、以下がぐっと追いやすくなります。</p>
+  <p>最後に<strong>全員のスコアを足して0になるか</strong>を確認します。これがこの記事で一番お伝えしたいことで、<span class="hl">0にならなければ、必ずどこかが間違っています</span>。理屈がゼロサムだからです（例外は後述のチョンボ罰符だけ）。素点・ウマ・オカも、<strong>それぞれ単独で合計0</strong>になります。どの列で崩れたかを見れば、間違えた場所まで絞り込めます。用語そのものがあやしい方は、先に<a href="/blog-uma-oka.html">ウマ・オカとは？初心者向けスコア計算入門</a>を読むと、以下がぐっと追いやすくなります。</p>
 
   <div class="callout">
     <div class="c-ttl">この記事の共通設定</div>
-    <p>特に断りがなければ <strong>四麻・25,000点持ち・30,000点返し・ウマ10-30</strong> です。この場合のオカは（30,000 − 25,000）× 4 ÷ 1,000 = <strong>+20.0pts</strong> で固定になります。</p>
+    <p>特に断りがなければ <strong>四麻・25,000点持ち・30,000点返し・ウマ10-30</strong> です。この場合のオカは、全員が（30,000 − 25,000）÷ 1,000 = 5.0 ずつ出して、1位が4人分の20.0を受け取ります。差し引きで<strong>1位は +15.0、2位以下は −5.0</strong> で固定です。</p>
   </div>
 
   <h2>基本編：まずは標準的な1半荘</h2>
@@ -123,13 +123,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>① 素点</th><th>② ウマ</th><th>③ オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>41,300</td><td>+11.3</td><td>+30</td><td>+20.0</td><td><strong>+61.3</strong></td></tr>
-      <tr><td>2位 B</td><td>28,200</td><td>−1.8</td><td>+10</td><td>—</td><td><strong>+8.2</strong></td></tr>
-      <tr><td>3位 C</td><td>22,500</td><td>−7.5</td><td>−10</td><td>—</td><td><strong>−17.5</strong></td></tr>
-      <tr><td>4位 D</td><td>8,000</td><td>−22.0</td><td>−30</td><td>—</td><td><strong>−52.0</strong></td></tr>
+      <tr><td>1位 A</td><td>41,300</td><td>+16.3</td><td>+30</td><td>+15.0</td><td><strong>+61.3</strong></td></tr>
+      <tr><td>2位 B</td><td>28,200</td><td>+3.2</td><td>+10</td><td>−5.0</td><td><strong>+8.2</strong></td></tr>
+      <tr><td>3位 C</td><td>22,500</td><td>−2.5</td><td>−10</td><td>−5.0</td><td><strong>−17.5</strong></td></tr>
+      <tr><td>4位 D</td><td>8,000</td><td>−17.0</td><td>−30</td><td>−5.0</td><td><strong>−52.0</strong></td></tr>
     </tbody>
   </table>
-  <p>61.3 + 8.2 − 17.5 − 52.0 = <strong>0.0</strong>。合計が0なので、この計算は正しいと確認できました。持ち点の合計も 100,000点＝25,000×4人 でぴったり合っています。</p>
+  <p>61.3 + 8.2 − 17.5 − 52.0 = <strong>0.0</strong>。合計が0なので、この計算は正しいと確認できました。持ち点の合計も 100,000点＝25,000×4人 でぴったり合っていて、素点の列（16.3 + 3.2 − 2.5 − 17.0）もオカの列（15.0 − 5.0 × 3）も、それぞれ0です。</p>
 
   <h3>パターン2｜ウマを軽くする（5-10）</h3>
   <p>同じ持ち点のまま、ウマだけ「5-10」（1位+10／2位+5／3位−5／4位−10）に変えると、こうなります。</p>
@@ -148,16 +148,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>41,300</td><td>+11.3</td><td>+20.0</td><td><strong>+31.3</strong></td></tr>
-      <tr><td>2位 B</td><td>28,200</td><td>−1.8</td><td>—</td><td><strong>−1.8</strong></td></tr>
-      <tr><td>3位 C</td><td>22,500</td><td>−7.5</td><td>—</td><td><strong>−7.5</strong></td></tr>
-      <tr><td>4位 D</td><td>8,000</td><td>−22.0</td><td>—</td><td><strong>−22.0</strong></td></tr>
+      <tr><td>1位 A</td><td>41,300</td><td>+16.3</td><td>+15.0</td><td><strong>+31.3</strong></td></tr>
+      <tr><td>2位 B</td><td>28,200</td><td>+3.2</td><td>−5.0</td><td><strong>−1.8</strong></td></tr>
+      <tr><td>3位 C</td><td>22,500</td><td>−2.5</td><td>−5.0</td><td><strong>−7.5</strong></td></tr>
+      <tr><td>4位 D</td><td>8,000</td><td>−17.0</td><td>−5.0</td><td><strong>−22.0</strong></td></tr>
     </tbody>
   </table>
-  <p>ウマがないと、2位以下は素点がそのままスコアになります。「トップだけ少し得をする」くらいの、いちばん素朴なルールです。</p>
+  <p>ウマがないと、2位以下は素点からオカの5.0を引いた値がそのままスコアになります。「トップだけ少し得をする」くらいの、いちばん素朴なルールです。</p>
 
   <h3>パターン4｜オカなし（30,000点持ちの30,000点返し）</h3>
-  <p>持ち点と返し点を同じにすると、オカは（30,000 − 30,000）×4 ÷ 1,000 = 0 になり、消えます。持ち点が A 46,300／B 33,200／C 27,500／D 13,000 の場合：</p>
+  <p>持ち点と返し点を同じにすると、全員が出すオカは（30,000 − 30,000）÷ 1,000 = 0 になり、消えます。持ち点が A 46,300／B 33,200／C 27,500／D 13,000 の場合：</p>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>スコア</th></tr></thead>
     <tbody>
@@ -167,20 +167,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <tr><td>4位 D</td><td>13,000</td><td>−17.0</td><td>−30</td><td><strong>−47.0</strong></td></tr>
     </tbody>
   </table>
-  <p>「オカって結局なに？」という質問には、この2パターンを見比べてもらうのが一番早いと思っています。<strong>オカは、持ち点と返し点の差を全員から集めて、トップに丸ごと渡す仕組み</strong>。だから持ち点＝返し点にすると、集める原資がなくなって存在ごと消えます。</p>
+  <p>「オカって結局なに？」という質問には、この2パターンを見比べてもらうのが一番早いと思っています。<strong>オカは、持ち点と返し点の差を全員から集めて、トップに丸ごと渡す仕組み</strong>（トップ自身の分も含めて集めるので、トップの差し引きは人数−1人分）。だから持ち点＝返し点にすると、集める原資がなくなって存在ごと消えます。</p>
 
   <h2>同点編：ここで手が止まる人が一番多い</h2>
   <p>集計係として断言しますが、<strong>手計算が止まるのはだいたい同点のとき</strong>です。「順位はどっちが上？」「ウマはどう分ける？」でその場の空気が止まります。公平で説明しやすいのは、<span class="hl">同点は同順位とし、その順位帯のウマとオカを人数で均等に分ける</span>やり方です。以下はすべてその方式で計算しています。</p>
 
   <h3>パターン5｜1位が同点2人</h3>
-  <p>A 35,000／B 35,000／C 20,000／D 10,000。AとBは1位と2位を分け合うので、ウマは（+30 + 10）÷ 2 = +20 ずつ。オカ +20.0 も2人で割って +10.0 ずつです。</p>
+  <p>A 35,000／B 35,000／C 20,000／D 10,000。AとBは1位と2位を分け合うので、ウマは（+30 + 10）÷ 2 = +20 ずつ。オカは4人から集めた20.0を2人で割って +10.0 ずつ受け取り、自分が出した5.0を引いて <strong>+5.0 ずつ</strong>です。</p>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ（分配後）</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>35,000</td><td>+5.0</td><td>+20.0</td><td>+10.0</td><td><strong>+35.0</strong></td></tr>
-      <tr><td>1位 B</td><td>35,000</td><td>+5.0</td><td>+20.0</td><td>+10.0</td><td><strong>+35.0</strong></td></tr>
-      <tr><td>3位 C</td><td>20,000</td><td>−10.0</td><td>−10</td><td>—</td><td><strong>−20.0</strong></td></tr>
-      <tr><td>4位 D</td><td>10,000</td><td>−20.0</td><td>−30</td><td>—</td><td><strong>−50.0</strong></td></tr>
+      <tr><td>1位 A</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
+      <tr><td>1位 B</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
+      <tr><td>3位 C</td><td>20,000</td><td>−5.0</td><td>−10</td><td>−5.0</td><td><strong>−20.0</strong></td></tr>
+      <tr><td>4位 D</td><td>10,000</td><td>−15.0</td><td>−30</td><td>−5.0</td><td><strong>−50.0</strong></td></tr>
     </tbody>
   </table>
   <p>合計は 35.0 + 35.0 − 20.0 − 50.0 = <strong>0.0</strong>。同点でもゼロサムは崩れません。<strong>3位のCが「2位」ではなく3位扱いになる</strong>点に注意してください（1位が2人いるので2位が空席になる）。ここを2位として+10を渡すと、合計が0からずれて破綻します。</p>
@@ -190,17 +190,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>40,000</td><td>+10.0</td><td>+30</td><td>+20.0</td><td><strong>+60.0</strong></td></tr>
-      <tr><td>2位 B</td><td>25,000</td><td>−5.0</td><td>0.0</td><td>—</td><td><strong>−5.0</strong></td></tr>
-      <tr><td>2位 C</td><td>25,000</td><td>−5.0</td><td>0.0</td><td>—</td><td><strong>−5.0</strong></td></tr>
-      <tr><td>4位 D</td><td>10,000</td><td>−20.0</td><td>−30</td><td>—</td><td><strong>−50.0</strong></td></tr>
+      <tr><td>1位 A</td><td>40,000</td><td>+15.0</td><td>+30</td><td>+15.0</td><td><strong>+60.0</strong></td></tr>
+      <tr><td>2位 B</td><td>25,000</td><td>0.0</td><td>0.0</td><td>−5.0</td><td><strong>−5.0</strong></td></tr>
+      <tr><td>2位 C</td><td>25,000</td><td>0.0</td><td>0.0</td><td>−5.0</td><td><strong>−5.0</strong></td></tr>
+      <tr><td>4位 D</td><td>10,000</td><td>−15.0</td><td>−30</td><td>−5.0</td><td><strong>−50.0</strong></td></tr>
     </tbody>
   </table>
   <p>ちょうど打ち消し合って、2人ともウマ0になりました。</p>
 
   <h3>パターン7｜4人全員が同点</h3>
-  <p>A〜D全員 25,000点。素点は全員 −5.0。ウマは（30 + 10 − 10 − 30）÷ 4 = 0、オカ +20.0 は4人で割って +5.0 ずつ。</p>
-  <p>結果は <strong>全員 0.0</strong> です。−5.0 + 0 + 5.0 = 0.0。誰も得も損もしない、理屈どおりの答えになります。実戦ではまず起きませんが、「同点処理の式が正しいか」を確かめるにはいい検算になります。</p>
+  <p>A〜D全員 25,000点。素点は全員 0.0。ウマは（30 + 10 − 10 − 30）÷ 4 = 0、オカは集めた20.0を4人で割って +5.0 ずつ受け取り、出した5.0と相殺して0。</p>
+  <p>結果は <strong>全員 0.0</strong> です。0.0 + 0 + 0.0 = 0.0。誰も得も損もしない、理屈どおりの答えになります。実戦ではまず起きませんが、「同点処理の式が正しいか」を確かめるにはいい検算になります。</p>
 
   <h2>例外編：トビ・三麻・チョンボ</h2>
 
@@ -209,16 +209,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>52,400</td><td>+22.4</td><td>+30</td><td>+20.0</td><td><strong>+72.4</strong></td></tr>
-      <tr><td>2位 B</td><td>30,600</td><td>+0.6</td><td>+10</td><td>—</td><td><strong>+10.6</strong></td></tr>
-      <tr><td>3位 C</td><td>21,500</td><td>−8.5</td><td>−10</td><td>—</td><td><strong>−18.5</strong></td></tr>
-      <tr><td>4位 D</td><td>−4,500</td><td>−34.5</td><td>−30</td><td>—</td><td><strong>−64.5</strong></td></tr>
+      <tr><td>1位 A</td><td>52,400</td><td>+27.4</td><td>+30</td><td>+15.0</td><td><strong>+72.4</strong></td></tr>
+      <tr><td>2位 B</td><td>30,600</td><td>+5.6</td><td>+10</td><td>−5.0</td><td><strong>+10.6</strong></td></tr>
+      <tr><td>3位 C</td><td>21,500</td><td>−3.5</td><td>−10</td><td>−5.0</td><td><strong>−18.5</strong></td></tr>
+      <tr><td>4位 D</td><td>−4,500</td><td>−29.5</td><td>−30</td><td>−5.0</td><td><strong>−64.5</strong></td></tr>
     </tbody>
   </table>
-  <p>手計算でここを間違える人が多いのは、<strong>「−4,500 − 30,000」を「−4,500 + 30,000」と打ち間違える</strong>からです。マイナスの持ち点が出た半荘は、素点の符号だけ声に出して確認するくらいでちょうどいいと思います。なお、トビ賞（飛ばした人にボーナス）を採用しているグループは、ここまで計算した<em>あと</em>に別枠で足し引きします。素点・ウマ・オカの式には混ぜないでください。</p>
+  <p>手計算でここを間違える人が多いのは、<strong>「−4,500 − 25,000」を「−4,500 + 25,000」と打ち間違える</strong>からです。マイナスの持ち点が出た半荘は、素点の符号だけ声に出して確認するくらいでちょうどいいと思います。なお、トビ賞（飛ばした人にボーナス）を採用しているグループは、ここまで計算した<em>あと</em>に別枠で足し引きします。素点・ウマ・オカの式には混ぜないでください。</p>
 
   <h3>パターン9｜三麻（35,000点持ち・35,000点返し・ウマ10-0-10）</h3>
-  <p>三麻はオカの式の「人数」が3になります。ここは持ち点と返し点が同じなので（35,000 − 35,000）× 3 ÷ 1,000 = <strong>0pts</strong>、つまり<strong>オカなし</strong>です。順位による上乗せはウマだけになります。持ち点は A 58,000／B 34,000／C 13,000（合計105,000点＝35,000×3人）。</p>
+  <p>三麻はオカを出す人数が3人になります。ここは持ち点と返し点が同じなので、出すオカは（35,000 − 35,000）÷ 1,000 = <strong>0pts</strong>、つまり<strong>オカなし</strong>です。順位による上乗せはウマだけになります。持ち点は A 58,000／B 34,000／C 13,000（合計105,000点＝35,000×3人）。</p>
   <table>
     <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
@@ -295,10 +295,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>よくある質問</h2>
 
   <h3>Q. 素点の端数（100点単位）はどう扱う？</h3>
-  <p>そのまま小数で持つのが正解です。41,300点なら +11.3 で、+11 に丸めてはいけません。丸めた瞬間に合計が0からずれて、検算が使えなくなります。1,000点未満の端数が出るルール（一本場の積み棒など）でも同じで、<strong>最後まで小数のまま計算して、表示だけ小数第1位</strong>にするのが扱いやすいです。</p>
+  <p>そのまま小数で持つのが正解です。25,000点持ちで41,300点なら +16.3 で、+16 に丸めてはいけません。丸めた瞬間に合計が0からずれて、検算が使えなくなります。1,000点未満の端数が出るルール（一本場の積み棒など）でも同じで、<strong>最後まで小数のまま計算して、表示だけ小数第1位</strong>にするのが扱いやすいです。</p>
 
   <h3>Q. 「五捨六入」で順位点をつけるルールを見たことがあるけれど？</h3>
-  <p>素点を整数に丸めてから順位点を足す方式（30,000点を基準に五捨六入する、など）を使うグループもあります。この記事の計算とは別のルール体系なので、混ぜないでください。どちらでも構いませんが、<strong>その日の全半荘で必ず統一する</strong>ことだけは守ってください。半荘ごとに方式が変わると、後から検算しても一致しなくなります。</p>
+  <p>持ち点を1,000点単位に丸めてから計算する方式（五捨六入する、など）を使うグループもあります。この記事の計算とは別のルール体系なので、混ぜないでください。どちらでも構いませんが、<strong>その日の全半荘で必ず統一する</strong>ことだけは守ってください。半荘ごとに方式が変わると、後から検算しても一致しなくなります。</p>
 
   <h3>Q. 途中でメンバーが入れ替わる場合は？</h3>
   <p>半荘は「その半荘に座っていた人の間で」ゼロサムになるので、半荘ごとに独立して計算すれば問題ありません。5人以上で抜け番を回す場合の集計は<a href="/blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方</a>で扱っています。</p>
@@ -310,10 +310,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <h2>まとめ</h2>
   <ul>
-    <li>計算は<strong>素点 → ウマ → オカ</strong>の3ステップ。どのパターンでもこれは変わらない。</li>
+    <li>計算は<strong>素点（開始時の持ち点からの増減） → ウマ → オカ</strong>の3ステップ。どのパターンでもこれは変わらない。</li>
     <li><strong>全員のスコアの合計は0</strong>。0にならなければ必ずどこかが間違っている（唯一の例外はチョンボ罰符）。</li>
     <li>同点は<strong>同順位にして、その順位帯のウマとオカを人数で割る</strong>。空席になった順位に誰かを入れない。</li>
-    <li>三麻は<strong>オカの人数が3</strong>（持ち点と返し点が同じならオカなし）、ウマは<strong>合計0になる形</strong>（10-0-10など）を使う。</li>
+    <li>三麻は<strong>オカを出す人数が3人</strong>（持ち点と返し点が同じならオカなし）、ウマは<strong>合計0になる形</strong>（10-0-10など）を使う。</li>
     <li>マイナスの持ち点は<strong>符号だけ声に出して確認</strong>。ここが手計算最大の落とし穴。</li>
   </ul>
 
