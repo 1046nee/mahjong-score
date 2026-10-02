@@ -40,6 +40,7 @@
    見るだけのリンク（views / sessionViews）のルールを変えたら `python tools/view_rules_test.py`（本番DB・ログイン不要）。
    試合の記録の確定（sessions の lockAt・endedAt）のルールを変えたら `python tools/lock_rules_test.py`（本番DB・ログイン不要）、
    アプリの終了・再開・確定を触ったら `python tools/lock_app_test.py`（本番DB）
+3e. **画面の組み方・文字の大きさを変えたら `python tools/fit_test.py`**（スタブ。320〜390px・大きな数字で、数字の欠け・はみ出し・重なりがないか）
 4. 変更ごとに `git add → commit（日本語で内容と理由）→ push origin main` まで行う
 5. **データ互換性が最優先**: 旧データはキー無し=無効扱いで計算に影響させない。保存キー名は変えない（settings.rate等bonus系のまま）
 6. 大きめの置換はscratchpadにPythonスクリプトを書いて実行する（アンカー文字列をassertで検証してから置換。ヒアドキュメント直書きはエスケープ事故のもと）

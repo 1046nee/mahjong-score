@@ -444,11 +444,36 @@ def main():
         results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）", True,
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
         tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
-        sum_txt = pg.evaluate("document.getElementById('mp-pane-sum').innerText")
-        hidden = pg.evaluate("document.getElementById('mp-pane-hist').style.display === 'none'")
-        results.append(("[10a2] 成績カードの下に［成績｜相手｜過去の試合］、最初は成績（連対率など）が出ていて、ホーム画面に追加の案内は無い", True,
-                        all(w in tabs for w in ["成績", "相手", "過去の試合"]) and "連対率" in sum_txt and hidden
+        stats_txt = pg.evaluate("document.getElementById('mp-stats').innerText")
+        shown = pg.evaluate("document.getElementById('mp-pane-hist').style.display !== 'none'")
+        results.append(("[10a2] 成績カードのすぐ下に素点・順位点・最高/最低点数などの欄、その下に［過去の試合｜相手］（最初は過去の試合）。ホーム画面に追加の案内は無い", True,
+                        all(w in stats_txt for w in ["素点", "順位点", "最高点数", "最低点数", "箱下"]) and all(w in tabs for w in ["過去の試合", "相手"]) and shown
                         and "ホーム画面に追加" not in pg.evaluate("document.getElementById('mp-me').innerText")))
+        # 過去の試合の行を押すと、画面を移らずに結果のシート（総合順位・試合ごとのスコア）。閉じればマイページのまま
+        pg.evaluate("window.scrollTo(0, 300)")
+        y0 = pg.evaluate("window.scrollY")
+        pg.evaluate("document.querySelector('#history-body .gr').click()")
+        sheet = pg.evaluate("document.getElementById('form-modal').classList.contains('open') ? document.getElementById('form-modal-body').innerText : ''")
+        pg.evaluate("closeFormModal()")
+        results.append(("[10a6] 過去の試合を押すと、その場で結果のシート（総合順位・試合ごとのスコア・詳しく見る）が開き、閉じてもマイページの同じ位置のまま", True,
+                        all(w in sheet for w in ["試合ごとのスコア", "詳しく見る"]) and pg.evaluate("document.getElementById('view-history').classList.contains('active')") and pg.evaluate("window.scrollY") == y0))
+        # 詳しく見る → 戻る で、マイページの元の位置へ
+        pg.evaluate("document.querySelector('#history-body .gr').click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('詳しく見る')).click()")
+        pg.wait_for_timeout(200)
+        in_detail = pg.evaluate("document.getElementById('view-detail').classList.contains('active')")
+        pg.evaluate("document.getElementById('header-back').click()")
+        pg.wait_for_timeout(300)
+        results.append(("[10a7] 結果のシートの「詳しく見る」→ 戻るで、マイページの見ていた位置に戻る（ホームに戻らない）", True,
+                        in_detail and pg.evaluate("document.getElementById('view-history').classList.contains('active')") and abs(pg.evaluate("window.scrollY") - y0) < 4))
+        # 点数を入れる・直す（試合の画面）→ 戻るでも、ホームではなくマイページの元の位置へ
+        pg.evaluate("document.querySelector('#history-body .gr').click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('点数を')).click()")
+        pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
+        pg.evaluate("document.getElementById('header-back').click()")
+        pg.wait_for_timeout(300)
+        results.append(("[10a8] 結果のシートから試合の画面を開いて戻ると、ホームではなくマイページの見ていた位置に戻る", True,
+                        pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame") and abs(pg.evaluate("window.scrollY") - y0) < 4))
         pg.evaluate("setMpPane('hist')")
         # ほかの人があとから試合の名前・対局日を変えた → マイページを開き直すと、過去の試合の控えも最新になる（開き直さなくても）
         pg.evaluate(f"""async () => {{ await db.ref('sessions/{g2}/name').set('名前を変えた試合'); await db.ref('sessions/{g2}/settings/playDate').set('2026-08-15'); }}""")

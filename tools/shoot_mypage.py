@@ -144,6 +144,9 @@ def main():
                               [([0, 1, 2, 3], ["450", "300", "180"]), ([0, 1, 2, 3], ["310", "300", "250"])], marks=True)
         pg.evaluate(f"setTag('{gid_marks}', 'play', 0)")
 
+        # ログイン画面（上と下にGoogleでログイン）
+        pg.evaluate("showView('login')")
+        shoot("login")
         # ---- ログイン → マイページ ----
         pg.evaluate("(u) => localStorage.setItem('__smoke_next_uid', u)", U1)
         pg.evaluate("signInWithGoogle()")
@@ -156,6 +159,15 @@ def main():
         shoot("mypage_me")
         pg.evaluate("setMpPeriod('all')")
         shoot("mypage_month", full=False)
+        # 推移のグラフの点を押す → その日の簡易結果 → ゲームを押す → 結果のシート
+        pg.evaluate("document.querySelector('#mp-stats .sp-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))")
+        pg.evaluate("document.querySelector('#mp-stats .sp-pop').scrollIntoView({ block: 'center' })")
+        shoot("spark_pop", full=False)
+        print("SPARK", pg.evaluate("document.querySelector('#mp-stats .sp-pop').innerText.split('\\n').join(' ').slice(0, 300)"))
+        pg.evaluate("document.querySelector('#mp-stats .sp-g').click()")
+        shoot("result_sheet", modal=True)
+        print("SHEET", pg.evaluate("document.getElementById('form-modal-body').innerText.split('\\n').join(' ').slice(0, 400)"))
+        pg.evaluate("closeFormModal()")
         pg.evaluate("setMpPeriod('y' + new Date().getFullYear())")
         pg.evaluate("mpMode = 3; renderHistory()")
         shoot("mypage_me_sanma")
@@ -185,6 +197,7 @@ def main():
         pg.evaluate("setMpPane('sum')")
         pg.wait_for_timeout(300)
         shoot("mypage_pane_sum")
+        print("TABS", pg.evaluate("document.getElementById('mp-pane-tabs').innerText.split('\\n').join(' ')"))
         pg.evaluate("setMpPane('h2h'); const d = document.querySelector('#mp-pane-h2h details.h2-row'); if (d) d.open = true;")
         shoot("mypage_pane_h2h")
         pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()")
