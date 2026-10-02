@@ -1018,7 +1018,6 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cal-m i u { display: block; height: 100%; background: var(--pc); }
 .cal-m.none { background: transparent; box-shadow: none; cursor: default; }
 .cal-m.none b { color: #AEBBB8; }
-.cal-m.cur { box-shadow: inset 0 0 0 2px var(--pc); }
 .cal-m.today { outline: 2px solid #E3B341; outline-offset: -2px; } /* 今年・今月（月の今日と同じ枠） */
 .cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
@@ -4120,7 +4119,7 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
     keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
     const td = i => (y === thisY && i === thisM ? ' today' : '');
     const cells = perMonth.map((p, i) => p.games.size
-      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}${td(i)}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
+      ? `<button type="button" class="cal-m${td(i)}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
       : `<span class="cal-m none${td(i)}"><b>${i + 1}月</b><span>—</span></span>`).join('');
     const yearSet = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid)));
     const total = yearSet.size, totalR = calRounds(games, yearSet);
