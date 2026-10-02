@@ -1145,11 +1145,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-body { display: flex; align-items: center; gap: 8px; }
 .sp-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 /* 右の列は幅を決めて左揃え（人数が1桁→2桁・スコアが4桁でも位置が動かない） */
-.sp-right { flex: none; width: 96px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.sp-right { flex: none; width: 96px; display: flex; flex-direction: column; align-items: stretch; gap: 1px; }
+.sp-md { flex: none; width: 18px; height: 18px; display: inline-grid; place-items: center; } /* メダルの無い順位も同じ場所を空ける */
 .sp-rank { display: inline-flex; align-items: center; gap: 3px; font-size: 15px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sp-rank small { font-size: 10.5px; font-weight: 700; color: #5F6E6B; }
 .sp-rank.nil { color: #8A9AA5; }
-.sp-big { font-size: 18px; white-space: nowrap; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
+.sp-big { font-size: 18px; white-space: nowrap; text-align: right; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
 .sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .sp-top .gk svg { width: 24px; height: 24px; }
 .sp-top .sp-gn { flex: 1; }
@@ -1201,6 +1202,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .av-sw { aspect-ratio: 1; width: 100%; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
 .av-pal { gap: 5px 6px; }
 .av-mono { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; margin-top: 10px; padding-top: 10px; border-top: .5px solid #D5DEDB; }
+.av-sw.none { visibility: hidden; }
 .av-sw.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1F2A28; }
 .chip-rows { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .chip-row { display: flex; align-items: center; gap: 6px; }
@@ -4575,9 +4577,12 @@ const AV_PALETTE = [0, 1, 2, 3, 4].flatMap(k => AV_HUES.map(h => h[k])).concat(A
 function isCircleOwner() { return !!(circleData && currentUser && circleData.owner === myUid()); }
 function avColorPickerHtml(mid) {
   const cur = (rosterOf()[mid] || {}).color || '';
-  const sw = c => `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>`;
-  return `<div class="field"><label>アイコンの色</label><div class="av-pal">${[0, 1, 2, 3, 4].map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div>
-    <div class="av-mono">${AV_MONO.map(sw).join('')}</div>
+  // 白い頭文字が読みにくい色（白とのコントラスト比3未満）は出さない。色の列がずれないよう、その場所は空けておく。全部空く段は出さない
+  const okc = c => whiteContrast(c) >= 3;
+  const sw = c => okc(c) ? `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
+  const rows = [0, 1, 2, 3, 4].filter(k => AV_HUES.some(h => okc(h[k])));
+  return `<div class="field"><label>アイコンの色</label><div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div>
+    <div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div>
     ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${mid}','')">おまかせの色に戻す</button>` : ''}</div>`;
 }
 async function setRosterColor(mid, c) {
@@ -10002,14 +10007,16 @@ function h2hPairCardsHtml(row, nameOf, avOf) {
 // 自分の成績の相手別・仲間ページの対戦・メンバーの成績で共用。画像は今までどおり h2hRowsTableHtml(…, true) の表
 // 相手ごとのカード（2列）。選んだ人から見た、相手1人ずつの直接対決
 function h2hGridHtml(row, keys, nameOf, avOf) {
+  // 文字の大きさは全部のカードでそろえる（いちばん桁の多いカードに合わせる）
+  const lv = keys.reduce((a, k) => { const e = row[k], d = e.scoreA - e.scoreB, dg = String(e.w).length + String(e.l).length, big = Math.max(String(e.n).length, fmtScore(d).length - 3);
+    return Math.max(a, dg >= 7 || big >= 5 ? 3 : dg >= 5 || big >= 4 ? 2 : 1); }, 1);
+  const sz = lv === 3 ? ' sz3' : lv === 2 ? ' sz2' : '';
   return `<div class="hg-grid">${keys.map(k => {
     const e = row[k], nm = nameOf(k);
     const pct = h2hWinPct(e);
     const cls = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
     const diff = e.scoreA - e.scoreB;
     // 数字の桁で文字の大きさを変える（4桁勝4桁敗でも1行に収める）
-    const dg = String(e.w).length + String(e.l).length, big = Math.max(String(e.n).length, fmtScore(diff).length - 3);
-    const sz = dg >= 7 || big >= 5 ? ' sz3' : dg >= 5 || big >= 4 ? ' sz2' : '';
     return `<div class="hg-card ${cls}${sz}">
       <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${esc(avInitial(nm))}</span><span class="hg-name">${esc(nm)}</span></div>
       <div class="hg-rec"><b class="w">${e.w}</b><span>勝</span><b class="l">${e.l}</b><span>敗</span></div>
@@ -11079,7 +11086,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span></span>
         <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
-      <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 18, false) : ''}${rank}位<small>/${nP}人</small></span>
+      <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}"><span class="sp-md">${rank <= 3 ? medalSvg(rank, 18, false) : ''}</span>${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
       <span class="sp-cnts">${cnts}</span>
