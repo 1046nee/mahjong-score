@@ -485,6 +485,14 @@ def main():
         pg.wait_for_timeout(300)
         results.append(("[10a8] 結果のシートから試合の画面を開いて戻ると、ホームではなくマイページの見ていた位置に戻る", True,
                         pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame") and abs(pg.evaluate("window.scrollY") - y0) < 4))
+        # 端末（ブラウザ）の「戻る」でも同じ
+        pg.evaluate("document.querySelector('#history-body .gr').click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('点数を')).click()")
+        pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
+        pg.go_back()
+        pg.wait_for_timeout(400)
+        results.append(("[10a9] 試合の画面で端末の「戻る」を押しても、マイページの見ていた位置に戻る（試合の画面の後始末もする）", True,
+                        pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame && !sessionRef") and abs(pg.evaluate("window.scrollY") - y0) < 4))
         pg.evaluate("setMpPane('hist')")
         # ほかの人があとから試合の名前・対局日を変えた → マイページを開き直すと、過去の試合の控えも最新になる（開き直さなくても）
         pg.evaluate(f"""async () => {{ await db.ref('sessions/{g2}/name').set('名前を変えた試合'); await db.ref('sessions/{g2}/settings/playDate').set('2026-08-15'); }}""")

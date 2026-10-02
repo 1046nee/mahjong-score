@@ -5736,8 +5736,10 @@ if (!history.state) {
   history.replaceState({ view: 'home' }, '', location.pathname + location.hash);
 }
 
-// 画面ごとの縦の位置（離れるときに覚え、「戻る」で戻ってきたときに元の位置へ。マイページで見ていた所に戻れるように）
+// 画面ごとの縦の位置（離れるときに覚え、「戻る」で戻ってきたときに元の位置へ。マイページで見ていた所に戻れるように）。
+// ブラウザの自動の位置の復元は切る（pushState の時点では新しい画面のいちばん上＝0 が記録され、戻ったあとに 0 へ戻されてしまう）
 const viewScroll = {};
+try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
 function activeViewName() { const v = document.querySelector('.view.active'); return v ? v.id.replace(/^view-/, '') : null; }
 function showView(name, skipHistory = false, restore = false) {
   { const cur = activeViewName(); if (cur && cur !== name) viewScroll[cur] = window.scrollY; }
@@ -5802,6 +5804,7 @@ window.addEventListener('popstate', (e) => {
     saveToLocalHistory();
     stopListening();
     activeGame = null; sessionId = null;
+    gameReturnPushed = false; gameReturnTo = null;
   }
   showView(target, true, true);
 });
@@ -6131,7 +6134,7 @@ function showLoading(show) {
   } else { if (el) el.style.display = 'none'; }
 }
 // 試合の画面を開いた画面（「戻る」で戻る先）。マイページ・仲間ページ・結果詳細から開いたときだけ
-let gameReturnTo = null;
+let gameReturnTo = null, gameReturnPushed = false;
 async function joinSession(id) {
   { const act = activeViewName(); gameReturnTo = ['history', 'circle', 'mystats', 'detail', 'watch'].includes(act) ? act : null; }
   showLoading(true);
@@ -6141,8 +6144,10 @@ async function joinSession(id) {
     sessionId = id;
     unmarkDeleted(id); // 自分から開き直した＝削除の意思は撤回。以後の同期対象に戻す
     myListSynced.delete(id); // 次のsyncGroupToMyListが削除印の解除ごと書き直せるように
-    history.replaceState(null, '', '#' + id);
+    // マイページ・仲間ページなどから開いたときは、その画面の履歴を残す（端末の「戻る」でもその画面の見ていた位置へ戻る）
+    if (!gameReturnTo) history.replaceState(null, '', '#' + id);
     startListening(); showView('game');
+    gameReturnPushed = !!gameReturnTo;
     track('group_join');
   } catch(e) { alert('接続エラーが発生しました。'); } finally { showLoading(false); }
 }
@@ -8585,6 +8590,13 @@ function renderGame() {
 
 // to＝戻る先の画面（試合の画面を開いたときの画面。無ければホーム）
 function leaveGame(to) {
+  // 開いた画面の履歴がすぐ前にあれば、端末の「戻る」と同じく1つ戻る（後始末と描き直しは popstate）
+  if (typeof to === 'string' && to && gameReturnPushed && history.state && history.state.view === 'game') {
+    gameReturnPushed = false; gameReturnTo = null;
+    history.back();
+    return;
+  }
+  gameReturnPushed = false;
   if (activeGame) saveToLocalHistory();
   stopListening();
   activeGame = null; sessionId = null;
