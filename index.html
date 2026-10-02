@@ -11059,7 +11059,6 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.d.getMonth() + 1}/${d.d.getDate()}</text>`).join('');
   // 年の見出し（スコアの推移のグラフは全部この見せ方）: 年ごとの区間（左端の年も含む）の最初に、上の帯へ年。年の切り替わりには縦の点線。
   // 見出しは必ず自分の区間に収める（入らなければ「2025年」→「2025」→「'25」）＝隣の年と重ならない。
-  // 横にスクロールして区間の途中が左端に来たら、見出しは左端に付いてくる（次の年の見出しの手前で止まる＝sparkYears）
   let years = '';
   if (showYears) {
     const segs = [];
@@ -11073,15 +11072,14 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     years = segs.map((g, k) => {
       const avail = g.e - g.s - 5;
       const label = [`${g.yy}年`, `${g.yy}`, `'${String(g.yy).slice(2)}`].find(t => estW(t) <= avail) || `'${String(g.yy).slice(2)}`;
-      const w = estW(label);
       const line = k > 0 ? `<line x1="${g.s.toFixed(1)}" x2="${g.s.toFixed(1)}" y1="2" y2="${H - B + 4}" class="yr-l"/>` : '';
-      return `${line}<text x="${(g.s + 3).toFixed(1)}" y="10" class="yr-t" data-s="${g.s.toFixed(1)}" data-e="${g.e.toFixed(1)}" data-w="${w.toFixed(1)}">${label}</text>`;
+      return `${line}<text x="${(g.s + 3).toFixed(1)}" y="10" class="yr-t">${label}</text>`;
     }).join('');
   }
   setTimeout(scrollSparksEnd, 0);
   return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}">
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
-    <span class="mc-scroll" data-end="1"${showYears ? ' onscroll="sparkYears(this)"' : ''}><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
+    <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
       data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
     <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}${hits}</svg></span></span>
     <span class="sp-pop" id="pop-${rid}" hidden></span>`;
@@ -11164,26 +11162,12 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
   return `<span class="sp-tag">${fmtDay(ymdToMs(day.k))}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
-// 推移のグラフの年の見出しを、見えている左端に合わせて動かす（区間の始まり〜次の年の手前の間で）
-function sparkYears(el) {
-  const svg = el.querySelector('svg.mc-spark');
-  if (!svg) return;
-  const vb = svg.viewBox.baseVal, px = svg.getBoundingClientRect().width;
-  if (!vb || !vb.width || !px) return;
-  const left = el.scrollLeft * vb.width / px;
-  svg.querySelectorAll('.yr-t[data-s]').forEach(t => {
-    const s = +t.dataset.s, e = +t.dataset.e, w = +t.dataset.w;
-    const xx = Math.max(s + 3, Math.min(left + 3, e - w - 2));
-    t.setAttribute('x', xx.toFixed(1));
-  });
-}
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
 function scrollSparksEnd() {
   document.querySelectorAll('.mc-scroll[data-end]').forEach(el => {
     if (!el.scrollWidth) return; // まだ見えていない（あとで表示されたときにもう一度）
     el.scrollLeft = el.scrollWidth;
     el.removeAttribute('data-end');
-    sparkYears(el); // 年の見出しを見えている左端に合わせる（スクロールしない幅でも呼ぶ）
   });
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
