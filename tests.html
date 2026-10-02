@@ -201,15 +201,15 @@ function circleCases(w) {
         && st.acc.T.J.n === 1 && st.acc.J.T.n === 1                                          // 2人とも出た第3試合だけ（第1試合は2人の直近2戦の外）
         && all.list.find(p => p.key === 'T').n === 4 && all.acc.T.J.n === 2;
     }],
-    ['circleStats: 素点（(持ち点−返し点)÷1000の合計）・順位点（スコア−素点）・5万点以上（ちょうども入る）・箱下（0点未満）の回数', () => {
+    ['circleStats: 素点（(持ち点−配給原点)÷1000の合計）・順位点（スコア−素点＝ウマ＋オカ。1位はオカの取り分、2位以下はオカの払い）・5万点以上（ちょうども入る）・箱下（0点未満）の回数', () => {
       const g = { settings: S(['たろう', 'じろう', 'さぶろう', 'しろう']), rounds: [
         R([0, 1, 2, 3], [50000, 31000, 22000, -3000], [70, 11, -18, -63]),
         R([0, 1, 2, 3], [42000, 30000, 18000, 10000], [62, 10, -22, -50])] };
       const circle = { roster: { T: { name: 'たろう' }, S: { name: 'しろう' } }, games: { g: { seats: { 0: { mid: 'T' }, 3: { mid: 'S' } } } } };
       const st = w.circleStats(circle, { g }, '4');
       const t = st.list.find(p => p.key === 'T'), s = st.list.find(p => p.key === 'S');
-      return Math.abs(w.rawPtsOf(t) - 32) < 1e-9 && Math.abs(w.rankPtsOf(t) - 100) < 1e-9 && w.overOf(t) === 1 && w.boxOf(t) === 0
-        && Math.abs(w.rawPtsOf(s) + 53) < 1e-9 && w.boxOf(s) === 1 && w.overOf(s) === 0;
+      return Math.abs(w.rawPtsOf(t) - 42) < 1e-9 && Math.abs(w.rankPtsOf(t) - 90) < 1e-9 // 1位×2: ウマ30＋オカ15（5×3人分） && w.overOf(t) === 1 && w.boxOf(t) === 0
+        && Math.abs(w.rawPtsOf(s) + 43) < 1e-9 && Math.abs(w.rankPtsOf(s) + 70) < 1e-9 // 4位×2: ウマ−30−オカ5 && w.boxOf(s) === 1 && w.overOf(s) === 0;
     }],
     ['roundMs: 2日以上にわたる試合は、日の区切り（dayStarts＝2日目・3日目が始まる試合の番号）でその試合の日になる', () => {
       const r = () => R([0, 1, 2, 3], [40000, 30000, 20000, 10000], [50, 10, -20, -40]);

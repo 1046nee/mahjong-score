@@ -3439,7 +3439,7 @@ function circleStats(circle, sessions, mode, inP, perN) {
           const pt = Number(r.points[k]);
           if (p.ptMax == null || pt > p.ptMax) p.ptMax = pt;
           if (p.ptMin == null || pt < p.ptMin) p.ptMin = pt;
-          p.raw += (pt - g.settings.returnPoints) / 1000; p.rawSc += sc; p.rawN++; // 素点・順位点（点数のある試合だけ）
+          p.raw += (pt - startPtsOf(g.settings)) / 1000; p.rawSc += sc; p.rawN++; // 素点・順位点（点数のある試合だけ）
           if (pt < 0) p.box++; if (pt >= BIG_POINTS) p.over++; // 箱下・5万点以上
         }
         p.hist.push({ t: new Date(roundMs(g, r)).toISOString(), o: ridx, rank: gi.start + 1, tie: gi.size > 1, sc, g: sid, m }); // 最近の着順・推移用（打った日。g・m＝推移の点から試合を開く）
@@ -8224,7 +8224,7 @@ function rankCountHtml(rounds, s, forImage = false) {
       gamesPlayed[m]++;
       if (r.points && r.points[k] != null) {
         const pt = Number(r.points[k]);
-        rawSum[m] += (pt - s.returnPoints) / 1000;
+        rawSum[m] += (pt - startPtsOf(s)) / 1000;
         ptsCnt[m]++;
         if (ptsMax[m] == null || pt > ptsMax[m]) ptsMax[m] = pt;
         if (ptsMin[m] == null || pt < ptsMin[m]) ptsMin[m] = pt;
@@ -10106,7 +10106,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
         const pt = Number(r.points[k]);
         if (b.ptMax == null || pt > b.ptMax) b.ptMax = pt;
         if (b.ptMin == null || pt < b.ptMin) b.ptMin = pt;
-        b.raw += (pt - s.returnPoints) / 1000; b.rawSc += Number(r.scores[k]) || 0; b.rawN++; // 素点・順位点（点数のある試合だけ）
+        b.raw += (pt - startPtsOf(s)) / 1000; b.rawSc += Number(r.scores[k]) || 0; b.rawN++; // 素点・順位点（点数のある試合だけ）
         if (pt < 0) b.box++; if (pt >= BIG_POINTS) b.over++; // 箱下・5万点以上
       }
     });
@@ -10201,6 +10201,9 @@ function periodFilterIn(only, scope) {
 const BIG_POINTS = 50000;
 function boxOf(m) { return m && m.rawN ? m.box || 0 : null; }
 function overOf(m) { return m && m.rawN ? m.over || 0 : null; }
+// 素点＝(持ち点−配給原点)÷1000（ウマ・オカに関わらず、配った点からの増減）。順位点＝スコア−素点＝ウマ＋オカ（＋罰符など）。
+// オカありなら、1位は ウマ＋オカ（(返し点−持ち点)×(人数−1)÷1000）、2位以下は ウマ−(返し点−持ち点)÷1000
+function startPtsOf(s) { const v = Number(s && s.startPoints); return Number.isFinite(v) ? v : Number(s && s.returnPoints) || 0; }
 function rawPtsOf(m) { return m && m.rawN ? m.raw : null; }
 function rankPtsOf(m) { return m && m.rawN ? m.rawSc - m.raw : null; }
 function msRow(np, m) {
