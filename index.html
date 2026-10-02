@@ -762,10 +762,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pills.mp-months { margin-top: -4px; gap: 4px; }
 .mp-pills.mp-months button { height: 28px; padding: 0 11px; font-size: 12px; border-color: #E3E9E8; }
 .mp-pills.mp-months button.on { background: var(--pc-tint); border-color: var(--pc); color: var(--pc-ink); }
-.mc-card { display: block; width: 100%; text-align: left; background: #fff; border: 0; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--sh-1); cursor: pointer; font: inherit; color: inherit; }
-.mc-card:active { opacity: .8; }
+/* 成績カードは押せない（:active で薄くすると、iPhone でグラフの横スクロールが効かなくなった） */
+.mc-card { display: block; width: 100%; text-align: left; background: #fff; border: 0; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--sh-1); font: inherit; color: inherit; }
 .mc-card.mc-static { cursor: default; background: #F5F8F7; box-shadow: none; margin-top: 10px; }
-.mc-card.mc-static:active { opacity: 1; }
 .mc-head { display: flex; align-items: baseline; justify-content: space-between; height: 22px; margin-bottom: 8px; white-space: nowrap; }
 /* 成績が無いときのカード（同じ高さ）。推移の欄は折れ線と同じ縦横比（300:80） */
 .mc-nil b { color: #AEBBB8 !important; }
@@ -1137,7 +1136,6 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .mc-spark .sp-hit { fill: transparent; cursor: pointer; }
 .mc-spark .sp-ring { fill: var(--pc-a15); stroke: var(--pc-ink); stroke-width: 3; pointer-events: none; }
-.mc-trend-h .mc-tap { color: #8A9AA5; font-weight: 700; font-size: 10.5px; }
 .sp-pop { position: relative; display: block; margin-top: 16px; padding: 4px 6px 6px; border-radius: 12px; border: 2.5px solid var(--pc); background: var(--pc-bg); }
 .sp-tag { position: absolute; top: -11px; left: 10px; padding: 1px 9px; border-radius: 10px; background: var(--pc); color: #fff; font-size: 11.5px; font-weight: 800; line-height: 1.6; }
 .sp-pop .sp-x { position: absolute; top: -13px; right: -9px; width: 26px; height: 26px; border: 2.5px solid var(--pc); background: #fff; color: var(--pc); font-size: 14px; line-height: 1; z-index: 1; }
@@ -3806,7 +3804,7 @@ function renderCircle() {
         raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over };
     });
     topHtml += mine[mpMode]
-      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
+      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
@@ -10276,7 +10274,7 @@ function renderMyStats() {
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
   document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(seg)}${st.modes[mpMode]
-    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
+    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
     : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`)}</div>`;
   applyMpTheme();
   let inner;
@@ -10921,7 +10919,7 @@ function mpPeriodHtml() {
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
 function mpModeCardHtml(np, m) {
-  return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(np, m, false, '個人')}</div>`;
+  return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, m, false, '個人')}</div>`;
 }
 // 成績が無いときも同じ組み方・同じ高さのカード（四麻／三麻・個人／仲間ページのどれでもカードの高さが変わらない）
 // 成績カードの見出しの右: どの範囲の成績か（個人＝人のマーク／仲間ページ＝オレンジの頭文字＋名前）
@@ -10944,7 +10942,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
     <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
-  return `<div class="mc-card${np === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
+  return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
 }
 function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   const n = m.games, c = m.counts, hist = sortHist(m.hist);
@@ -10964,7 +10962,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
     ${msModeHtml(np, m)}
-    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${nDays}日${nDays > 9 ? '・横にスクロール' : ''}）</small>${hist.length ? '<small class="mc-tap">点を押すと、その日の結果</small>' : ''}</span>${miniSparkHtml(hist, np, m.score)}</span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${nDays}日）</small></span>${miniSparkHtml(hist, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
@@ -11021,7 +11019,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     return `<line x1="${xm}" x2="${xm}" y1="${T - 2}" y2="${H - B + 4}" class="yr-l"/><text x="${(+xm + 3).toFixed(1)}" y="${T + 5}" class="yr-t">${d.d.getFullYear()}年</text>`;
   }).join('');
   setTimeout(scrollSparksEnd, 0);
-  return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}。点を押すとその日の結果">
+  return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}">
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
     <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
       data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
