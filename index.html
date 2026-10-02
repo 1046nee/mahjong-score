@@ -3695,11 +3695,12 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）
-const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
+const CIRCLE_METRICS = [['score', '通算スコア'], ['per', '1試合平均'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。1試合平均（通算スコア÷試合数）は2026-10-02に通算スコアの右へ戻した
+const SIGNED_METRICS = ['score', 'per', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
+  if (m === 'per') return p.score / p.n;
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
