@@ -1007,7 +1007,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .dr-multi { display: flex !important; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px !important; font-weight: 600 !important; color: #33544A; cursor: pointer; }
 .dr-multi input { width: 18px; height: 18px; }
 .cg-mem { display: block; font-size: 12px; color: #4F5C5A; margin-top: 2px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.cal-mode { display: flex; justify-content: center; margin-bottom: 8px; }
+.cal-mode { position: relative; display: flex; justify-content: center; margin-bottom: 8px; }
+/* 今日へ戻る（カレンダーの右上） */
+.cal-today { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 28px; padding: 0 10px; border: 0; border-radius: 14px; background: #fff; color: var(--pc); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
 .cal-year { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .cal-m { border: 0; border-radius: 12px; background: #fff; padding: 8px 4px; text-align: center; font: inherit; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
 .cal-m b { display: block; font-size: 14px; font-weight: 900; color: #1F2A28; }
@@ -1017,6 +1019,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cal-m.none { background: transparent; box-shadow: none; cursor: default; }
 .cal-m.none b { color: #AEBBB8; }
 .cal-m.cur { box-shadow: inset 0 0 0 2px var(--pc); }
+.cal-m.today { outline: 2px solid #E3B341; outline-offset: -2px; } /* 今年・今月（月の今日と同じ枠） */
 .cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
 .sw-wrap { margin: 10px 0 0; }
@@ -4076,7 +4079,11 @@ function circleGamesTabHtml(role, gids, modeChips) {
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
 let circleGamesView = 'list';
 // 画面ごとのカレンダーの状態（circle＝仲間ページ・hist＝過去の試合・ms＝自分の成績のゲーム）
-const calS = { circle: { month: null, day: null, mode: 'years' }, hist: { month: null, day: null, mode: 'years' }, ms: { month: null, day: null, mode: 'years' } }; // 最初は年一覧
+// yc＝年一覧の真ん中の年（null＝今年）
+const calS = { circle: { month: null, day: null, mode: 'years', yc: null }, hist: { month: null, day: null, mode: 'years', yc: null }, ms: { month: null, day: null, mode: 'years', yc: null } }; // 最初は年一覧
+const CAL_YEARS = 9; // 年一覧に並べる年の数（3×3。真ん中が今年）
+// 「今日」: どの単位でも今日のところへ戻る（年一覧＝今年が真ん中・年＝今年・月＝今月）
+function calToday(key) { const S = calS[key], t = new Date(); S.yc = null; S.month = t.getFullYear() * 12 + t.getMonth(); S.day = ymdLocal(t); }
 // カレンダーの案内に出す試合数（選んだゲームの試合の合計）
 function calRounds(games, sids) { return games.filter(x => x.g && sids.has(x.sid)).reduce((a, x) => a + (x.g.rounds || []).length, 0); }
 function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCircle()') {
@@ -4089,27 +4096,32 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
   const keys = Object.keys(byDay);
   const years = [...new Set(keys.map(k => +k.slice(0, 4)))].sort((a, b) => a - b);
   // 単位は左から「年一覧（年を選ぶ）｜年（12か月）｜月（日ごと）」
+  const now = new Date(), thisY = now.getFullYear(), thisM = now.getMonth();
   const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['years', '年一覧'], ['year', '年'], ['month', '月']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${k}';${rr}">${l}</button>`).join('')}</div></div>`;
+    `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${k}';${rr}">${l}</button>`).join('')}</div>
+    <button type="button" class="cal-today" onclick="calToday('${key}');${rr}">今日</button></div>`;
   if (S.mode === 'years') {
-    // 年一覧: 試合のある年を並べる（最初の年〜最後の年）。押すとその年の12か月
-    const ys = [];
-    for (let yy = years[0]; yy <= years[years.length - 1]; yy++) ys.push(yy); // 古い年から
-    const cells = ys.map(yy => {
+    // 年一覧: 9年（3×3）を並べる。最初は今年が真ん中。‹ › で9年ずつ前後へ。押すとその年の12か月
+    const yc = S.yc == null ? thisY : S.yc, y0 = yc - Math.floor(CAL_YEARS / 2), y1 = y0 + CAL_YEARS - 1;
+    const cells = Array.from({ length: CAL_YEARS }, (_, i) => y0 + i).map(yy => {
       const set = new Set(keys.filter(k => +k.slice(0, 4) === yy).flatMap(k => byDay[k].map(x => x.sid)));
+      const td = yy === thisY ? ' today' : '';
       return set.size
-        ? `<button type="button" class="cal-m${yy === new Date().getFullYear() ? ' cur' : ''}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
-        : `<span class="cal-m none"><b>${yy}年</b><span>—</span></span>`;
+        ? `<button type="button" class="cal-m${td}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
+        : `<span class="cal-m none${td}"><b>${yy}年</b><span>—</span></span>`;
     }).join('');
-    return `<div class="cal">${modeSeg}<div class="cal-year">${cells}</div></div><div class="cal-hint">年を押すと、その年の12か月になります。</div>`;
+    const yrsNav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="${SK}.yc=${yc + dir * CAL_YEARS};${rr}">${dir < 0 ? '‹' : '›'}</button>`;
+    return `<div class="cal">${modeSeg}<div class="cal-head">${yrsNav(-1, years[0] < y0)}<b>${y0}年〜${y1}年</b>${yrsNav(1, years[years.length - 1] > y1)}</div>
+      <div class="cal-year">${cells}</div></div><div class="cal-hint">年を押すと、その年の12か月になります。</div>`;
   }
   if (S.mode === 'year') {
     // 年: 月ごとの「ゲーム数・打った日数」。押すとその月のカレンダー
     const perMonth = Array.from({ length: 12 }, () => ({ games: new Set(), days: 0 }));
     keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
+    const td = i => (y === thisY && i === thisM ? ' today' : '');
     const cells = perMonth.map((p, i) => p.games.size
-      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
-      : `<span class="cal-m none"><b>${i + 1}月</b><span>—</span></span>`).join('');
+      ? `<button type="button" class="cal-m${i === m ? ' cur' : ''}${td(i)}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
+      : `<span class="cal-m none${td(i)}"><b>${i + 1}月</b><span>—</span></span>`).join('');
     const yearSet = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid)));
     const total = yearSet.size, totalR = calRounds(games, yearSet);
     const ynav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="${SK}.month+=${dir * 12};${rr}">${dir < 0 ? '‹' : '›'}</button>`;

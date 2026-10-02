@@ -248,7 +248,7 @@ def main():
         pg.evaluate("closeFormModal()")
         results.append(("[5h] 仲間ページに入れたあとで試合に足したメンバーも、結びつけの画面に出る", True, "ろくろう" in added_rows))
         pg.evaluate("circleTab = 'games'; circleGamesView = 'cal'; renderCircle()")
-        cal0 = pg.evaluate("(() => { const on = document.querySelector('#circle-body .cal-mode .on'); const cur = document.querySelector('#circle-body .cal-year .cal-m.cur'); const seg = [...document.querySelectorAll('#circle-body .hist-viewseg button')].map(b => b.textContent).join('|'); return (on ? on.textContent : '') + '/' + (cur ? cur.textContent : '') + '/' + seg; })()")
+        cal0 = pg.evaluate("(() => { const on = document.querySelector('#circle-body .cal-mode .on'); const cur = document.querySelector('#circle-body .cal-year .cal-m.today'); const seg = [...document.querySelectorAll('#circle-body .hist-viewseg button')].map(b => b.textContent).join('|'); return (on ? on.textContent : '') + '/' + (cur ? cur.textContent : '') + '/' + seg; })()")
         pg.evaluate("calS.circle.mode = 'month'; renderCircle()")
         cal = pg.evaluate("document.getElementById('circle-body').innerText")
         pg.evaluate("circleGamesView = 'list'; circleTab = 'rank'; renderCircle()")
