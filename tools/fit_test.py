@@ -42,7 +42,7 @@ CHECK_JS = r"""(sel) => {
   // 見出しの左右が重なっていないか・期間のボタンが1行か・切り替えの文字が折れていないか
   document.querySelectorAll('.mc-head').forEach(h => { if (!h.offsetParent) return; const a = h.querySelector('b'), c = h.querySelector(':scope > span'); if (a && c && a.getBoundingClientRect().right > c.getBoundingClientRect().left + 0.5) bad.push(`mc-head が重なる「${h.textContent.trim().slice(0, 30)}」`); });
   document.querySelectorAll('.mp-period').forEach(p => { if (p.offsetParent && p.getBoundingClientRect().height > 34) bad.push(`期間のボタンが折れている（高さ ${Math.round(p.getBoundingClientRect().height)}）`); });
-  document.querySelectorAll('.seg.xs button, .ch-act, .pill').forEach(b => { if (b.offsetParent && b.scrollHeight > b.clientHeight + 2) bad.push(`ボタンの文字が折れている「${b.textContent.trim()}」`); });
+  document.querySelectorAll('.seg.xs button, .seg.sm button, .ch-act, .pill').forEach(b => { if (b.offsetParent && (b.scrollHeight > b.clientHeight + 2 || b.scrollWidth > b.clientWidth + 1)) bad.push(`ボタンの文字が折れている「${b.textContent.trim()}」`); });
   return page.concat(bad);
 }"""
 # 数字や短い文を出す所（欠けてはいけない所）
@@ -110,7 +110,7 @@ def main():
             pg.wait_for_function("() => circleData && circleData.games && Object.keys(circleData.games).length >= 1", timeout=15000)
             pg.wait_for_timeout(500)
             pg.evaluate("closeFormModal && closeFormModal()")
-            for t in ["rank", "people"]:
+            for t in ["rank", "h2h", "people"]:
                 pg.evaluate(f"circleTab = '{t}'; renderCircle()")
                 pg.wait_for_timeout(200)
                 allbad += [f"[{width}] 仲間ページ {t}: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]

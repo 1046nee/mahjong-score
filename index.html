@@ -1595,6 +1595,8 @@ button.ios-row:active { background: #F2F6F5; }
 .cc-k { width: 16px; height: 16px; margin: 0; }
 .ch-act { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 30px; padding: 0 10px 0 8px; border: 0; border-radius: 15px; background: #fff; box-shadow: var(--sh-1); font-size: 12px; font-weight: 800; color: var(--pc); cursor: pointer; white-space: nowrap; }
 .ch-act:active { background: #F2F6F5; }
+/* 仲間ページのタブ: 「過去の試合」が長いので、幅は文字の長さに合わせて分ける（同じ幅だと320pxで隣とぶつかった） */
+#circle-body > .seg.sm button { flex: 1 1 auto; padding: 0 6px; white-space: nowrap; }
 #view-circle .card { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
 #view-circle .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
 /* 「あなたはどれ？」の問いかけ（試合の画面と仲間ページ）。オレンジはCTA限定なので琥珀色 */
@@ -3664,7 +3666,7 @@ function fillMyIdentity() {
 }
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
-const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '試合'], ['people', 'メンバー']];
+const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
 const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）
 const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
@@ -3839,7 +3841,8 @@ function podiumSubHtml(p, m) {
 }
 // 順位の行の下の文（試合数・平均着順・スコアのうち、指標で出していないもの）
 function rankSubParts(p, m) {
-  return [`${p.n}試合`, m === 'avg' ? '' : `平均着順 ${(p.rankSum / p.n).toFixed(2)}`, m === 'score' ? '' : fmtScore(p.score)].filter(Boolean);
+  // 平均着順は、通算スコアで並べているときだけ（平均着順・トップ率・ラス回避では出さない）
+  return [`${p.n}試合`, m === 'score' ? `平均着順 ${(p.rankSum / p.n).toFixed(2)}` : '', m === 'score' ? '' : fmtScore(p.score)].filter(Boolean);
 }
 function rankSubText(p, m) { return rankSubParts(p, m).join(' ・ '); }
 function rankSubHtml(p, m) { return rankSubParts(p, m).map(t => `<span class="nw">${esc(t)}</span>`).join(' ・ '); }
@@ -3963,11 +3966,12 @@ function circleH2HTabHtml(st, modeChips, noBind) {
     return `<button type="button" class="who${k === circleFocus ? ' on' : ''}" aria-pressed="${k === circleFocus}" onclick="circleFocus=circleKeys[${i}];renderCircle()"><span class="who-av" style="background:${avColor(k)}">${esc(avInitial(nm))}</span><span class="who-nm">${esc(nm)}</span></button>`;
   }).join('');
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
-  return `<div class="card">${circleCardHead('対戦成績')}${modeChips}
+  // 総当たり表を上、だれから見た対戦成績を下（2026-10-02 ユーザー要望）
+  return `${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`)}${mxLegendHtml()}${circleMatrixHtml(st)}</div>` : ''}
+    <div class="card">${circleCardHead('対戦成績')}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
-    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>
-    ${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`)}${mxLegendHtml()}${circleMatrixHtml(st)}</div>` : ''}`;
+    <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>`;
 }
 // 「同卓者で絞る」の1行（選んだ人のチップ＋×）
 function circleWithRowHtml() {
