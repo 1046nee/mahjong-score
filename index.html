@@ -10996,8 +10996,10 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const end = endVal == null ? sum : Number(endVal);
   let cum = end - sum;
   const ys = [cum].concat(days.map(x => (cum += x.sc)));
-  const H = 98, T = 10, B = 26, SP = 28, PL = 6, PR = 16;
   const n = days.length;
+  // 年をまたぐグラフは、上の目盛りの線の上に「2026年」を置く帯を空ける（線と文字が重ならない。高さ H は同じ）
+  const yrCross = days.some((d, i) => i > 0 && d.d.getFullYear() !== days[i - 1].d.getFullYear());
+  const H = 98, T = yrCross ? 21 : 10, B = 26, SP = 28, PL = 6, PR = 16;
   const Wp = Math.max(270, PL + n * SP + PR);
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
@@ -11027,7 +11029,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const years = days.map((d, i) => {
     if (i === 0 || d.d.getFullYear() === days[i - 1].d.getFullYear()) return '';
     const xm = ((x(i) + x(i + 1)) / 2).toFixed(1);
-    return `<line x1="${xm}" x2="${xm}" y1="${T - 2}" y2="${H - B + 4}" class="yr-l"/><text x="${(+xm + 3).toFixed(1)}" y="${T + 5}" class="yr-t">${d.d.getFullYear()}年</text>`;
+    return `<line x1="${xm}" x2="${xm}" y1="2" y2="${H - B + 4}" class="yr-l"/><text x="${(+xm + 3).toFixed(1)}" y="10" class="yr-t">${d.d.getFullYear()}年</text>`;
   }).join('');
   setTimeout(scrollSparksEnd, 0);
   return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}">
