@@ -825,11 +825,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gm-sc.nil { color: #AEBBB8; }
 .gr-meta .st-pill { vertical-align: 1px; margin-left: 2px; }
 .gr .gr-go { flex: none; align-self: center; color: #AEBBB8; }
-.gr-opp { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 6px; font-size: 12.5px; color: #33413E; font-weight: 700; }
-.gr-vs { font-size: 11px; font-weight: 800; color: #8A9AA5; }
-.gr-op { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.gr-opp { display: flex; align-items: center; flex-wrap: nowrap; overflow: hidden; gap: 4px 8px; margin-top: 6px; font-size: 12.5px; color: #33413E; font-weight: 700; } /* 1行だけ（入らない人は「ほかn人」・fitOppLine） */
+.gr-vs { font-size: 11px; font-weight: 800; color: #8A9AA5; flex: none; white-space: nowrap; }
+.gr-op { display: inline-flex; align-items: center; gap: 4px; min-width: 0; flex: none; white-space: nowrap; }
+.gr-op b { font-weight: inherit; }
+.gr-op[hidden], .gr-more[hidden] { display: none; }
+.gr-op.shrink { flex: 0 1 auto; overflow: hidden; } .gr-op.shrink b { overflow: hidden; text-overflow: ellipsis; } /* 1人目も入らない長い名前は「…」 */
 .gr-op i { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; font-weight: 800; flex: none; }
-.gr-more { font-size: 11.5px; color: #5F6E6B; font-weight: 700; }
+.gr-more { font-size: 11.5px; color: #5F6E6B; font-weight: 700; flex: none; white-space: nowrap; }
 .hist-viewseg { margin-top: 8px; }
 /* 過去の試合の形式の絞り込み（すべて｜四麻｜三麻｜複数人｜チーム戦）。期間の月と同じ一段小さいピル＋件数 */
 .hist-kinds { margin: 8px -16px 0; gap: 4px; }
@@ -11285,9 +11288,27 @@ function oppLineHtml(g, me) {
   // その日の順位の順（通算スコアの高い順）に並べる
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
   if (!opp.length) return '';
-  const MAX = 5, shown = opp.slice(0, MAX);
-  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${shown.map(i => `<span class="gr-op"><i style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+  // 全員を並べ、1行に入る分だけ見せる（入らない人は「ほかn人」。2行にしない＝fitOppLine が描いたあとで幅を測って詰める）
+  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${opp.map(i => `<span class="gr-op"><i style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i><b>${esc(names[i])}</b></span>`).join('')}<span class="gr-more" hidden></span></div>`;
 }
+// 相手の行を1行に収める: 後ろの人から隠して「ほかn人」にする。1人目も入らなければ名前を「…」で切る。
+// 幅が決まってから測る（ResizeObserver＝描いた直後・表示されたとき・画面の幅が変わったとき）
+function fitOppLine(el) {
+  if (!el.clientWidth) return; // まだ見えていない（表示されたら ResizeObserver がもう一度呼ぶ）
+  const ops = [...el.querySelectorAll('.gr-op')], more = el.querySelector('.gr-more'), total = ops.length;
+  if (!more || !total) return;
+  ops.forEach(o => { o.hidden = false; o.classList.remove('shrink'); });
+  more.hidden = true;
+  const over = () => el.scrollWidth > el.clientWidth + 1;
+  let shown = total;
+  while (over() && shown > 1) { shown--; ops[shown].hidden = true; more.hidden = false; more.textContent = `ほか${total - shown}人`; }
+  if (over()) ops[0].classList.add('shrink');
+}
+const oppRO = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(es => es.forEach(e => fitOppLine(e.target))) : null;
+new MutationObserver(ms => ms.forEach(m => {
+  m.addedNodes.forEach(n => { if (n.nodeType === 1) (n.matches('.gr-opp') ? [n] : n.querySelectorAll('.gr-opp')).forEach(o => { if (oppRO) oppRO.observe(o); else requestAnimationFrame(() => fitOppLine(o)); }); });
+  if (oppRO) m.removedNodes.forEach(n => { if (n.nodeType === 1) (n.matches('.gr-opp') ? [n] : n.querySelectorAll('.gr-opp')).forEach(o => oppRO.unobserve(o)); });
+})).observe(document.body, { childList: true, subtree: true });
 // 形式の印（行の先頭・四麻｜三麻のタブにも同じ印）。文字や色帯でなく、点の並び（形）と色で見分ける
 function kindSvg(np, size = 30) {
   const dots = np === 3 ? [[15, 9.5], [9.5, 19], [20.5, 19]] : [[10, 10], [20, 10], [10, 20], [20, 20]];
