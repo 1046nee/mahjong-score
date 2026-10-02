@@ -4565,22 +4565,21 @@ async function openBindFromGame(cid, sid) {
   } catch (e) { showToast('開けませんでした。通信環境を確認してください'); } finally { showLoading(false); }
 }
 // ---- 名簿の人のアイコンの色（作成者だけ。メンバーには案内しない）----
-// 10色（赤・橙・黄・緑・青緑・水色・青・藍・紫・桃）× 5段階（薄い2段・基本・濃い2段）＝50色。横1列が同じ濃さで、真ん中の段が10色の基本色
+// 原色系の10色（赤・橙・黄・黄緑・緑・青緑・水色・青・紫・桃）× 3段階（1段薄い・原色・1段濃い）＝30色（2026-10-02 作り直し）。
+// どの色も白い頭文字が読める濃さ（白とのコントラスト比3以上）に計算で決めた。黄色は黄土寄りの見やすい黄色。横1列が同じ濃さで、真ん中の段が原色
 const AV_HUES = [
-  ['#E57373', '#EF5350', '#F44336', '#D32F2F', '#B71C1C'], ['#FFB74D', '#FFA726', '#FB8C00', '#EF6C00', '#E65100'],
-  ['#FFD54F', '#FFCA28', '#FFB300', '#FF8F00', '#FF6F00'], ['#81C784', '#66BB6A', '#43A047', '#2E7D32', '#1B5E20'],
-  ['#4DB6AC', '#26A69A', '#00897B', '#00695C', '#004D40'], ['#4FC3F7', '#29B6F6', '#039BE5', '#0277BD', '#01579B'],
-  ['#64B5F6', '#42A5F5', '#1E88E5', '#1565C0', '#0D47A1'], ['#7986CB', '#5C6BC0', '#3949AB', '#283593', '#1A237E'],
-  ['#BA68C8', '#AB47BC', '#8E24AA', '#6A1B9A', '#4A148C'], ['#F06292', '#EC407A', '#D81B60', '#AD1457', '#880E4F']];
-const AV_MONO = ['#BDBDBD', '#9E9E9E', '#757575', '#424242', '#212121']; // 黒・グレー系は別の1列（濃さの決まりの外）
-const AV_PALETTE = [0, 1, 2, 3, 4].flatMap(k => AV_HUES.map(h => h[k])).concat(AV_MONO);
+  ['#EE6767', '#E82F2F', '#BB1515'], ['#F16C06', '#DC6306', '#B25005'], ['#B39000', '#A48300', '#846A00'], ['#69A317', '#609515', '#4D7911'],
+  ['#24A93A', '#1E8D30', '#176D25'], ['#0DA590', '#0B8978', '#096A5D'], ['#069CD8', '#0582B4', '#04658B'], ['#6291EE', '#3A75E9', '#1755D0'],
+  ['#B678E2', '#A355DB', '#872BCA'], ['#ED609B', '#E72375', '#B61458']];
+const AV_MONO = ['#757575', '#424242', '#212121']; // グレー・黒（別の1列）
+const AV_PALETTE = [0, 1, 2].flatMap(k => AV_HUES.map(h => h[k])).concat(AV_MONO);
 function isCircleOwner() { return !!(circleData && currentUser && circleData.owner === myUid()); }
 function avColorPickerHtml(mid) {
   const cur = (rosterOf()[mid] || {}).color || '';
   // 白い頭文字が読みにくい色（白とのコントラスト比3未満）は出さない。色の列がずれないよう、その場所は空けておく。全部空く段は出さない
   const okc = c => whiteContrast(c) >= 3;
   const sw = c => okc(c) ? `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
-  const rows = [0, 1, 2, 3, 4].filter(k => AV_HUES.some(h => okc(h[k])));
+  const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
   return `<div class="field"><label>アイコンの色</label><div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div>
     <div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div>
     ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${mid}','')">おまかせの色に戻す</button>` : ''}</div>`;
@@ -10291,8 +10290,7 @@ function renderMyStats() {
 
 // ---- 成績の見せ方の部品（マイページの「個人」・仲間ページのメンバーで共用） ----
 // 数字の羅列だけにせず、スポーツアプリの選手ページのように「タイル＋着順の帯＋最近の着順＋推移」で見せる
-// 名前から自動で決めるアイコンの色: 仲間ページの色のパレット（AV_HUES・10色×5段階）のうち、白い頭文字が読める色だけ
-// （白とのコントラスト比3以上。黄色の全部・各色の薄い段の多く・グレーは使わない＝33色）。2026-10-02 に以前の8色から切り替え
+// 名前から自動で決めるアイコンの色: 仲間ページの色のパレット（AV_HUES・30色。どれも白い頭文字が読める）。グレーは使わない
 function whiteContrast(hex) {
   const l = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(x => x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
   return 1.05 / (0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2] + 0.05);
