@@ -131,6 +131,8 @@ def main():
             ov = server_get(old) or {}
             results.append(("[10] 古い試合に、過ぎた締め切り（最後の入力から24時間）が本番に書き込まれる（ルールの貼り替え後）", True,
                             isinstance(ov.get("lockAt"), (int, float)) and ov["lockAt"] < time.time() * 1000))
+            if not isinstance(ov.get("lockAt"), (int, float)):  # 後片付け: 締め切りの無いまま残さない（ルールの貼り替え前は書けない）
+                print(f"古い試合の確認用 {old} に締め切りを付けられませんでした（ルールの貼り替え前）")
         finally:
             if sid:
                 req = urllib.request.Request(f"{DB_URL}/sessions/{sid}.json", method="DELETE")

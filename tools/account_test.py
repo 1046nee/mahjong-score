@@ -211,6 +211,17 @@ def main():
         results.append(("[5c] LINEの文章から2試合を取り込み、名前を自動で結びつける（自分の席は✓本人）", True,
                         len(circ["roster"]) == 5 and seat_list[0]["mid"] == me_mid[0] and seat_list[0]["self"] is True
                         and all(s and s["by"] == U1 for s in seat_list)))
+        # 仲間ページに入れた試合は、追加から24時間だけ外せる（それを過ぎると確定して外せない）
+        lock_g1 = circ["games"][g1].get("lockAt")
+        pg.evaluate(f"openCircleGameMenu('{g1}')")
+        menu_open = pg.evaluate("document.getElementById('form-modal-body').innerText")
+        pg.evaluate(f"closeFormModal(); circleData.games['{g1}'].lockAt = serverNow() - 1000; openCircleGameMenu('{g1}')")
+        menu_fixed = pg.evaluate("document.getElementById('form-modal-body').innerText")
+        pg.evaluate(f"closeFormModal(); circleData.games['{g1}'].lockAt = {lock_g1 or 0}")
+        results.append(("[5c2] 仲間ページに入れた試合は追加から24時間だけ外せる（メニューに期限）、過ぎたら確定して外す入口が出ない", True,
+                        isinstance(lock_g1, (int, float)) and 23.5 * 3600000 < lock_g1 - pg.evaluate("serverNow()") < 24.5 * 3600000
+                        and "この仲間ページから外す" in menu_open and "外せるのは" in menu_open
+                        and "この仲間ページから外す" not in menu_fixed and "外せません" in menu_fixed))
         tr = [m for m, r in circ["roster"].items() if r["name"] == "たろう"][0]
         g2seats = circ["games"][g2]["seats"]
         g2list = g2seats if isinstance(g2seats, list) else [g2seats.get(str(i)) for i in range(4)]
