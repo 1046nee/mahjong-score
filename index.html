@@ -3428,10 +3428,11 @@ function circleStats(circle, sessions, mode, inP, perN) {
         const key = kOf(m);
         if (!key || (inWin && !inWin(key, r))) return; // 各自の直近n戦の外
         const p = people[key] || (people[key] = { key, n: 0, score: 0, rankSum: 0, top: 0, last: 0, games: new Set(),
-          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
+          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, scMax: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
         const gi = grp[k];
         const sc = Number(r.scores && r.scores[k]) || 0;
         p.n++; p.score += sc; p.rankSum += gi.avgRank;
+        if (p.scMax == null || sc > p.scMax) p.scMax = sc; // 1試合の最高スコア（通算順位の「最高スコア」）
         if (gi.isTop) p.top += 1 / gi.size;
         if (gi.isLast) p.last += 1 / gi.size;
         for (let rk = gi.start; rk <= gi.end; rk++) if (rk < 4) p.counts[rk] += 1 / gi.size; // 同点は着順を按分
@@ -3695,11 +3696,12 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）
-const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
+const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['best', '最高スコア']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高スコア＝1試合のスコア（pts）のいちばん高い値
+const SIGNED_METRICS = ['score', 'best', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
+  if (m === 'best') return p.scMax || 0;
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
