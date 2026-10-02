@@ -4766,7 +4766,7 @@ function openCircleMember(mid) {
     const d = new Date(b.ms), played = playedFlags(g), tot = gameTotals(g), names = g.settings.playerNames || [];
     const opp = memberDisplayOrder(g.settings).filter(i => i !== b.seat && played[i] && !isPlaceholderName(names[i])).sort((x, y) => (tot[y] || 0) - (tot[x] || 0));
     const MAXO = 6;
-    const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
+    const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
     return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})">
       ${gameKindHtml(g)}
       <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
@@ -6337,7 +6337,7 @@ function recentRowHtml(g) {
   const played = playedFlags(g), tot = gameTotals(g);
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
   const MAXO = 6;
-  const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
+  const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
   const sc = me != null && played[me] ? tot[me] : null;
   return `<button type="button" class="rg-row rg-row2 k${np}" onclick="joinSession('${esc(g.id)}')">${gameKindHtml(g)}
     <span class="rg-main"><span class="rg-l1"><span class="rg-name">${esc(g.name)}</span><span class="rg-date">${esc(fmtGameDays(g))}</span></span>
@@ -8442,12 +8442,12 @@ function h2hCardBodyHtml(g) {
   const played = playedFlags(g);
   // 仲間ページの対戦成績と同じ形: だれから見る？（顔アイコン）→ 合計 → 相手ごとのカード → 総当たり表
   const who = memberDisplayOrder(s).filter(i => played[i]).map(i =>
-    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${esc(g.id)}',${i})"><span class="who-av" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
+    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${esc(g.id)}',${i})"><span class="who-av" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   const row = acc[f] || {};
   const keys = h2hSortedKeys(row);
   return `<div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
-    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${esc(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => avColor(names[k]))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
+    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${esc(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div>
     <div class="mx-title">総当たり表</div>${mxLegendHtml()}${h2hMatrixHtml(g)}`;
 }
@@ -10297,7 +10297,20 @@ function whiteContrast(hex) {
 }
 const AV_COLORS = AV_HUES.flat().filter(c => whiteContrast(c) >= 3);
 // 仲間ページの作成者が名簿の人に色を決めていれば、その色（roster/$mid/color）
-function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; if (rc && rc.color) return rc.color; let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
+function autoAvColor(s) { let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
+function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; if (rc && rc.color) return rc.color; return autoAvColor(s); }
+// 試合の席の頭文字の色: 仲間ページで名簿の人に連携済みの席は、その人の名簿の色（仲間ページの頭文字と同じ）。未連携の席は名前から。
+// 開いている仲間ページを先に、次に開いた・先読みした仲間ページ（circleStore）を見る
+function seatAvColor(g, i) {
+  const names = (g && g.settings && g.settings.playerNames) || [];
+  const sid = g && g.id;
+  if (sid) for (const d of [circleData, ...Object.values(circleStore).map(c => c && c.data)]) {
+    const st = d && d.games && d.games[sid] && d.games[sid].seats && d.games[sid].seats[i];
+    const r = st && st.mid && d.roster && d.roster[st.mid];
+    if (r) return r.color || autoAvColor(st.mid);
+  }
+  return avColor(names[i]);
+}
 function avInitial(name) { const t = String(name || '').trim(); return t ? [...t][0].toUpperCase() : '?'; }
 function fmtScore(v) { const r = Math.round(v * 10) / 10; return (r > 0 ? '+' : '') + r.toFixed(1); }
 // ゲーム数と試合数を並べるときは、どこでも「Xゲーム / Y試合」（ゲームが先・スラッシュで区切る。2026-10-02 ユーザーの判断で統一）
@@ -11234,7 +11247,7 @@ function oppLineHtml(g, me) {
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
   if (!opp.length) return '';
   const MAX = 5, shown = opp.slice(0, MAX);
-  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${shown.map(i => `<span class="gr-op"><i style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
+  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${shown.map(i => `<span class="gr-op"><i style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>${esc(names[i])}</span>`).join('')}${opp.length > MAX ? `<span class="gr-more">ほか${opp.length - MAX}人</span>` : ''}</div>`;
 }
 // 形式の印（行の先頭・四麻｜三麻のタブにも同じ印）。文字や色帯でなく、点の並び（形）と色で見分ける
 function kindSvg(np, size = 30) {
@@ -11458,7 +11471,7 @@ function histTilesHtml(items) {
     const st = !n ? ' empty' : n <= HIST_FEW ? ' few' : '';
     const d = new Date(gameDayMs(g));
     const MAXAV = 4;
-    const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('')
+    const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('')
       + (who.length > MAXAV ? `<i class="more">+${who.length - MAXAV}</i>` : '');
     const mark = hideMark ? '' : me == null ? (me === null ? '<em class="ht-out">不参加</em>' : '') : '<em class="ht-me">参加</em>';
     return `<button type="button" class="ht k${np}${st}${me === null ? ' out' : ''}" onclick="${onclick}" aria-label="${esc(g.name || '')} ${n}試合">
