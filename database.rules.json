@@ -154,6 +154,9 @@
             "gat": {
               ".validate": "newData.isString() && newData.val().length <= 40 && newData.parent().child('uid').val() === auth.uid"
             },
+            "color": {
+              ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/) && (newData.val() === data.val() || root.child('circles').child($cid).child('owner').val() === auth.uid)"
+            },
             "$other": {
               ".validate": false
             }

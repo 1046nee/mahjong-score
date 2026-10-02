@@ -1026,6 +1026,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1px solid #D5DEDB; }
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
+.sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
 .sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: none; color: #5F6E6B; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .sw-chip .ico { --i1: #8A9AA5; --i2: #C9D3D1; }
 .sw-chip.on { color: var(--pc); }
@@ -1050,7 +1051,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-note { font-size: 11px; color: #5F6E6B; margin: 6px 2px 0; line-height: 1.6; }
 .ms-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
 /* 点数の細かい数字（1枚・3列×2段。列の間に細い線） */
-.ms-pts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 0; margin-bottom: 10px; padding: 10px 2px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
+.ms-pts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 10px; padding: 8px 2px; border-radius: 12px; background: #F4F7F6; }
 .mp-col { display: flex; flex-direction: column; gap: 8px; padding: 0 8px 0 10px; min-width: 0; }
 .mp-col + .mp-col { border-left: .5px solid #E3E9E8; }
 /* 見出し（小）の下に値。横に並べると、マイナスの5桁（-12,300）などが欄に入りきらず欠けた（2026-10-02） */
@@ -1131,8 +1132,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-hit { fill: transparent; cursor: pointer; }
 .mc-spark .sp-ring { fill: var(--pc-a15); stroke: var(--pc-ink); stroke-width: 3; pointer-events: none; }
 .mc-trend-h .mc-tap { color: #8A9AA5; font-weight: 700; font-size: 10.5px; }
-.sp-pop { display: block; margin-top: 8px; padding: 8px; border-radius: 12px; background: var(--pc-soft); box-shadow: inset 0 0 0 1px var(--pc); }
-.sp-pop .sp-h b { color: #0F2F33; }
+.sp-pop { position: relative; display: block; margin-top: 16px; padding: 4px 6px 6px; border-radius: 12px; border: 2.5px solid var(--pc); background: var(--pc-bg); }
+.sp-tag { position: absolute; top: -11px; left: 10px; padding: 1px 9px; border-radius: 10px; background: var(--pc); color: #fff; font-size: 11.5px; font-weight: 800; line-height: 1.6; }
+.sp-pop .sp-x { position: absolute; top: -13px; right: -9px; width: 26px; height: 26px; border: 2.5px solid var(--pc); background: #fff; color: var(--pc); font-size: 14px; line-height: 1; z-index: 1; }
+.sp-pop .sp-x + .sp-g { margin-top: 10px; }
 .sp-body { display: flex; align-items: center; gap: 8px; }
 .sp-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .sp-right { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
@@ -1183,6 +1186,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rs-empty { padding: 12px 4px; font-size: 13px; color: #5F6E6B; }
 .rs-open { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 42px; margin-top: 6px; border: 0; border-radius: 12px; background: #F4F7F6; color: var(--pc); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .rs-sec { background: #fff; border-radius: 12px; }
+.cg-as { font-size: 11px; color: #5F6E6B; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cg-as b { color: #1F2A28; font-weight: 800; }
+.av-pal { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
+.av-sw { aspect-ratio: 1; width: 100%; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.av-sw.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #1F2A28; }
 .chip-rows { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .chip-row { display: flex; align-items: center; gap: 6px; }
 .chip-row label { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3785,7 +3792,7 @@ function renderCircle() {
         raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over };
     });
     topHtml += mine[mpMode]
-      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>${msModeHtml(mpMode, mine[mpMode])}`
+      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
@@ -4543,6 +4550,30 @@ async function openBindFromGame(cid, sid) {
     await openBindEditor(sid);
   } catch (e) { showToast('開けませんでした。通信環境を確認してください'); } finally { showLoading(false); }
 }
+// ---- 名簿の人のアイコンの色（作成者だけ。メンバーには案内しない）----
+const AV_PALETTE = ['#C62828', '#D84315', '#EF6C00', '#F9A825', '#9E9D24', '#558B2F', '#2E7D32', '#00897B', '#00838F', '#0277BD',
+  '#1565C0', '#283593', '#4527A0', '#6A1B9A', '#AD1457', '#E53935', '#F4511E', '#FB8C00', '#C0A000', '#7CB342',
+  '#43A047', '#26A69A', '#00ACC1', '#039BE5', '#1E88E5', '#3949AB', '#5E35B1', '#8E24AA', '#D81B60', '#6D4C41',
+  '#8D6E63', '#546E7A', '#78909C', '#455A64', '#37474F', '#B71C1C', '#BF360C', '#E65100', '#827717', '#33691E',
+  '#1B5E20', '#004D40', '#006064', '#01579B', '#0D47A1', '#1A237E', '#311B92', '#4A148C', '#880E4F', '#3E2723'];
+function isCircleOwner() { return !!(circleData && currentUser && circleData.owner === myUid()); }
+function avColorPickerHtml(mid) {
+  const cur = (rosterOf()[mid] || {}).color || '';
+  return `<div class="field"><label>アイコンの色</label><div class="av-pal">${AV_PALETTE.map(c =>
+    `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>`).join('')}</div>
+    ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${mid}','')">おまかせの色に戻す</button>` : ''}</div>`;
+}
+async function setRosterColor(mid, c) {
+  if (!isCircleOwner()) return;
+  try {
+    const ref = db.ref(`circles/${circleId}/roster/${mid}/color`);
+    if (c) await ref.set(c); else await ref.remove();
+    const r = rosterOf()[mid]; if (r) { if (c) r.color = c; else delete r.color; }
+    renderCircle();
+    openCircleMember(mid);
+  } catch (e) { showToast('色を変えられませんでした（ルールの貼り替えが必要かもしれません）', 5000); }
+}
+
 // ---- 試合ごとのメニューと名前の連携 ----
 // 仲間ページに入れた試合は、追加から24時間で確定して外せなくなる（ge.lockAt。期限の無い古い試合は最初から確定）
 const CIRCLE_GAME_FIX_MS = 24 * 3600 * 1000;
@@ -4558,7 +4589,7 @@ function openCircleGameMenu(sid) {
     ${circleSess[sid] ? `<button class="auto-btn sub" onclick="openResultSheet('${sid}',{from:'circle'})">結果を見る</button>` : ''}
     ${circleSess[sid] && role && !isGameLocked(circleSess[sid]) ? `<button class="auto-btn sub" onclick="closeFormModal();joinSession('${sid}')">試合を開く（点数の入力・修正）</button>` : ''}
     ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の連携</button>` : ''}
-    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${sid}')">ゲーム名を変える</button>` : ''}
+    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${sid}')">ゲーム名の変更</button>` : ''}
     ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
     ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>
       <div class="h2h-note">外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。それを過ぎると、この仲間ページに確定します。</div>`
@@ -4684,10 +4715,9 @@ function openCircleMember(mid) {
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="mpMode=${m};circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
-    ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist }, false)}</div>`
-      + `<div class="pf-ms">${msModeHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, ptMax: p.ptMax, ptMin: p.ptMin, hist: p.hist, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over })}</div>` // 個人ページの「成績」と同じタイル＋推移
-    : `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, '', `${rosterName(mid)}さんの${np === 3 ? '三麻' : '四麻'}の成績はありません。`)}</div>`
-      + `<div class="pf-ms">${msPtsEmptyHtml()}</div>`; // 成績が無くても同じ形（切り替えで画面が動かない）
+    ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist,
+        ptMax: p.ptMax, ptMin: p.ptMin, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over }, false)}</div>`
+    : `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, '', `${rosterName(mid)}さんの${np === 3 ? '三麻' : '四麻'}の成績はありません。`)}</div>`;
   // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => {
@@ -4719,6 +4749,7 @@ function openCircleMember(mid) {
     return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid}})">
       ${gameKindHtml(g)}
       <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
+        <div class="cg-as">試合での名前：<b>${esc(names[b.seat] || '')}</b></div>
         <div class="cg-avs"><span>相手</span>${avs}</div></div>
       <b class="cg-sc ${b.score == null ? 'nil' : scoreCls(b.score)}">${b.score == null ? '—' : fmtScore(b.score)}</b>
     </div>`;
@@ -4736,11 +4767,11 @@ function openCircleMember(mid) {
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
   // 管理（名簿での名前・同じ人としてまとめる・本人の登録を外す）は別のまとまりに分ける。
   // 「変更」は入力が空か今の名前と同じあいだは押せない
+  // 「同じ人としてまとめる」（試合を別の人に付け替える）は2026-10-02にやめた（間違えて別の人にまとめてしまうおそれ）
   const admin = (canEdit || r.uid === myUid() || (r.uid && isCircleAdmin())) ? `<div class="pf-h">管理</div><div class="pf-admin">
       ${canEdit ? `<div class="field"><label>名簿での名前</label><div style="display:flex;gap:6px"><input type="text" id="cm-rename" value="${esc(r.name)}" maxlength="${MAX_NAME_LEN}" style="flex:1;min-width:0"
         oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="btn-tint" disabled onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
-      ${canEdit && others.length ? `<div class="field"><label>同じ人としてまとめる</label><div style="display:flex;gap:6px"><select id="cm-merge" style="flex:1;min-width:0">${others.map(([m, o]) => `<option value="${m}">${esc(o.name)}${o.uid ? '（本人）' : ''}</option>`).join('')}</select><button type="button" class="btn-tint" onclick="mergeCircleMember('${mid}')">まとめる</button></div>
-        <div class="org-meta">この人の試合をすべて選んだ人に付け替え、名簿からこの名前を消します。</div></div>` : ''}
+      ${isCircleOwner() ? avColorPickerHtml(mid) : ''}
       ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
       ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す</button>` : ''}
     </div>` : '';
@@ -4756,7 +4787,7 @@ function openCircleMember(mid) {
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
       ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が連携した${unconfirmed}件を、本人として確認する</button>` : ''}
       ${admin}
-      ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人確認済みの人の名前の変更・まとめは、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
+      ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人確認済みの人の名前の変更は、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
   updateScrollHints();
@@ -5088,6 +5119,7 @@ function mpSwitchHtml(active) {
   const chip = (on, label, js, extra = '') => `<button type="button" class="sw-chip${on ? ' on' : ''}${extra}" onclick="${js}">${label}</button>`;
   return `<div class="sw-row" role="tablist" aria-label="個人と仲間ページの切り替え">
     ${chip(active === 'me', `${ico('person', 16)}個人`, "showView('history')")}
+    ${list.length ? '<span class="sw-sep" aria-hidden="true"></span>' : ''}
     ${list.map(([cid, m]) => {
       const info = circleCardInfo[cid] || {};
       const name = m.name || info.name || '仲間ページ';
@@ -8606,7 +8638,7 @@ function renderGame() {
   stEl.innerHTML = stHtml; stEl.style.display = stHtml ? '' : 'none';
   document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
   // 「共有」も同じクラスなので id で取る（クラスで取ったら共有ボタンの名前が変わった）
-  { const eb = document.getElementById('game-edit-btn'); eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
+  { const eb = document.getElementById('game-edit-btn'); eb.textContent = gLocked ? 'ゲーム名の変更' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
   { const en = document.querySelector('#end-game-wrap .end-game-note');
     { const cb = document.getElementById('chip-entry-btn'); if (cb) cb.style.display = (s.bonusEnabled && hasRounds && !gLocked && !gEnded) ? '' : 'none'; }
@@ -10216,8 +10248,8 @@ function renderMyStats() {
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
   document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(seg)}${st.modes[mpMode]
-    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>${msModeHtml(mpMode, st.modes[mpMode])}`
-    : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`) + msPtsEmptyHtml()}</div>`;
+    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}" style="cursor:default">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
+    : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`)}</div>`;
   applyMpTheme();
   let inner;
   if (myStatsTab === 'h2h') inner = myH2HCardHtml();
@@ -10231,7 +10263,8 @@ function renderMyStats() {
 // ---- 成績の見せ方の部品（マイページの「個人」・仲間ページのメンバーで共用） ----
 // 数字の羅列だけにせず、スポーツアプリの選手ページのように「タイル＋着順の帯＋最近の着順＋推移」で見せる
 const AV_COLORS = ['#177083', '#4261AA', '#2a8f7f', '#7b62b3', '#c07a22', '#b8506a', '#3f8a55', '#56748a'];
-function avColor(s) { let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
+// 仲間ページの作成者が名簿の人に色を決めていれば、その色（roster/$mid/color）
+function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; if (rc && rc.color) return rc.color; let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
 function avInitial(name) { const t = String(name || '').trim(); return t ? [...t][0].toUpperCase() : '?'; }
 function fmtScore(v) { const r = Math.round(v * 10) / 10; return (r > 0 ? '+' : '') + r.toFixed(1); }
 // ゲーム数と試合数を並べるときは、どこでも「Xゲーム / Y試合」（ゲームが先・スラッシュで区切る。2026-10-02 ユーザーの判断で統一）
@@ -10396,7 +10429,7 @@ function openHistMenu(id) {
     // 点数の入力は記録が確定するまでだけ（確定後は開いても入力できないので出さない）
     (isGameLocked(g) ? '' : menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '続きを入力する', g.endedAt ? `${fmtDateTime(lockAtOf(g))} に記録が確定するまで直せます` : `${fmtDateTime(lockAtOf(g))} まで入力できます（入力すると延びます）`, `closeFormModal();rejoinGame('${j}')`)) +
     menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${j}')`) +
-    menuBtnHtml('pencil', 'ゲーム名を変える', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${j}')`) +
+    menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${j}')`) +
     menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`)}</div>
     <div class="mn-group">${menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -10536,7 +10569,7 @@ function renameTargetGame(id) {
 function openRenameGame(id) {
   const g = renameTargetGame(id);
   if (!g) return;
-  document.getElementById('form-modal-title').textContent = 'ゲーム名を変える';
+  document.getElementById('form-modal-title').textContent = 'ゲーム名の変更';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="field"><label>ゲーム名</label><input type="text" id="rn-name" value="${esc(g.name || '')}" maxlength="${MAX_GROUP_LEN}"></div>
     ${isGameLocked(g) ? '<div class="h2h-note" style="margin-top:0">記録は確定していますが、ゲーム名だけはいつでも変えられます（点数・メンバーは変えられません）。</div>' : ''}
@@ -10840,6 +10873,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
+    ${msPtsEmptyHtml()}
     <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
@@ -10862,6 +10896,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
+    ${msModeHtml(np, m)}
     <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${nDays}日${nDays > 9 ? '・横にスクロール' : ''}）</small>${hist.length ? '<small class="mc-tap">点を押すと、その日の結果</small>' : ''}</span>${miniSparkHtml(hist, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
@@ -10999,8 +11034,8 @@ function sparkPopHtml(day, np, self = true) {
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
-  return `<span class="sp-h"><b>${fmtDay(ymdToMs(day.k))}の結果</b>
-    <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button></span>${rows}`;
+  return `<span class="sp-tag">${fmtDay(ymdToMs(day.k))}</span>
+    <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
 function scrollSparksEnd() {
@@ -11046,10 +11081,10 @@ function mpStatsHtml(st) {
     const msg = !any ? 'まだ試合がありません。試合を作るか「試合を追加」で取り込むと、ここに成績が出ます'
       : st.untagged ? `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。<br>過去の試合で自分を選ぶと、ここに成績が出ます`
       : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`;
-    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}${msPtsEmptyHtml()}</div>`;
+    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}</div>`;
   }
   // 成績カードのすぐ下に点数の細かい数字（素点・順位点・最高/最低点数・5万点以上・箱下）。タブの中に隠さない（2026-10-02）
-  return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}${msModeHtml(mpMode, st.modes[mpMode])}
+  return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}
     <div class="mp-pane-tools"><button type="button" class="btn-tint" onclick="showMyStatsImage()">${ico('image', 16)}画像で見る</button></div></div>`;
 }
 
@@ -11660,7 +11695,7 @@ function renderDetailBody(g) {
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
   const gLocked = isGameLocked(g);
-  if (!detailRO) { const eb = document.getElementById('detail-edit-btn'); eb.style.display = ''; eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(g.id) : openDetailEdit; }
+  if (!detailRO) { const eb = document.getElementById('detail-edit-btn'); eb.style.display = ''; eb.textContent = gLocked ? 'ゲーム名の変更' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(g.id) : openDetailEdit; }
 
   let html = gameStateHtml(g, false) + '<div id="detail-circles"></div>';
   // チーム順位（チーム戦が有効なグループのみ）
