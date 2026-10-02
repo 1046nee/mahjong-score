@@ -69,7 +69,7 @@
     `python tools/circle_rules_test.py`（匿名ログインが必要。期限つきの追加と外す・期限の無い試合は外せない）
 - **2026-10-02（2回目）: sessions/$id/name に `.write`（試合があり、消さないこと）。記録の確定後もゲーム名だけは変えられる。コンソールへの再適用が必要**
   （未適用の間は、確定した試合のゲーム名の変更が「変えられませんでした」になるだけ）。確認: lock_rules_test の [17b]〜[17f]
-- **2026-10-02（3回目）: circles/$cid/roster/$mid/color（#RRGGBB・作成者だけ変えられる）。コンソールへの再適用が必要**（未適用の間は色を選ぶと「変えられませんでした」）。確認: circle_rules_test
+- **2026-10-02（3回目）: circles/$cid/roster/$mid/color（#RRGGBB・作成者だけ変えられる）。コンソールへの再適用が必要**（未適用の間は色を選ぶと「変えられませんでした」）。確認: circle_rules_test（**2026-10-02に適用済み**・circle_rules_test 48項目・lock_rules_test ALL PASS。ゲーム名の .write も同日適用済み）
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
 
 ## ログイン（Firebase Authentication・Google）
