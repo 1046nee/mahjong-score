@@ -1276,6 +1276,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ro-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .ro-p { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 11px; background: #F4F7F6; font-size: 12px; font-weight: 700; color: #1F2A28; }
 .ro-p i { width: 17px; height: 17px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 10.5px; font-style: normal; font-weight: 900; }
+.rk-line { white-space: nowrap; display: flex; justify-content: center; align-items: center; gap: 2px; } /* 札＋点数を1行で中央に（幅が足りないときも左右の余白へ均等にはみ出す） */
+@media (max-width: 360px) { .rk-line.lng { font-size: 8px !important; } } /* 狭い画面で4人のとき、123,400・-12,300 のような長い点数は1段小さく */
+/* 試合結果の表の着順の札（点数の左。行の高さ・列の幅を変えない大きさ） */
+.rk-tag { display: inline-block; min-width: 11px; height: 11px; padding: 0 2px; box-sizing: border-box; border-radius: 3px; font-size: 8px; font-weight: 800; line-height: 11px; text-align: center; flex: none; font-variant-numeric: tabular-nums; }
+.rk-tag.r1 { background: var(--rk1); color: var(--rk1-on); } .rk-tag.r2 { background: var(--rk2); color: #fff; } .rk-tag.r3 { background: var(--rk3); color: var(--rk3-on); } .rk-tag.r4 { background: var(--rk4); color: #fff; }
 .ro-p.r1 i { background: var(--rk1); color: var(--rk1-on); } .ro-p.r2 i { background: var(--rk2); color: #fff; } .ro-p.r3 i { background: var(--rk3); color: var(--rk3-on); } .ro-p.r4 i { background: var(--rk4); color: #fff; }
 .ro-p b { font-size: 11.5px; font-weight: 800; font-variant-numeric: tabular-nums; } .ro-p b.pos { color: #1A237E; } .ro-p b.neg { color: #C62828; }
 .ro-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 5px; font-size: 11px; color: #5F6E6B; }
@@ -3428,11 +3433,10 @@ function circleStats(circle, sessions, mode, inP, perN) {
         const key = kOf(m);
         if (!key || (inWin && !inWin(key, r))) return; // 各自の直近n戦の外
         const p = people[key] || (people[key] = { key, n: 0, score: 0, rankSum: 0, top: 0, last: 0, games: new Set(),
-          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, scMax: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
+          counts: [0, 0, 0, 0], ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 });
         const gi = grp[k];
         const sc = Number(r.scores && r.scores[k]) || 0;
         p.n++; p.score += sc; p.rankSum += gi.avgRank;
-        if (p.scMax == null || sc > p.scMax) p.scMax = sc; // 1試合の最高スコア（通算順位の「最高スコア」）
         if (gi.isTop) p.top += 1 / gi.size;
         if (gi.isLast) p.last += 1 / gi.size;
         for (let rk = gi.start; rk <= gi.end; rk++) if (rk < 4) p.counts[rk] += 1 / gi.size; // 同点は着順を按分
@@ -3696,12 +3700,12 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['best', '最高スコア']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高スコア＝1試合のスコア（pts）のいちばん高い値
-const SIGNED_METRICS = ['score', 'best', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
+const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['pmax', '最高点数']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高点数＝1試合の持ち点のいちばん高い値（ptMax。点数の記録が無い人は下）
+const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
-  if (m === 'best') return p.scMax || 0;
+  if (m === 'pmax') return p.ptMax == null ? -Infinity : p.ptMax;
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
@@ -3709,7 +3713,7 @@ function circleMetricVal(p, m) {
   if (m === 'rp') return rankPtsOf(p) || 0;
   return p.score;
 }
-function circleMetricText(v, m) { return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
+function circleMetricText(v, m) { if (m === 'pmax') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
 // 仲間ページのカードの見出し。期間を指定・同卓者で絞っているときは、見出しの下に「いま何で数えているか」を出す
 function circleCardHead(title, extra = '') {
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>${circleFilterNoteHtml()}`;
@@ -3859,8 +3863,8 @@ function circleRankOrder(st) {
   // 試合数の多い少ないに関係なく、全員をまとめて順位にする（2026-09-29・ユーザーの判断。以前は率・平均で試合数の少ない人を「参考」に分けていた）
   const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || b.n - a.n;
   const q = st.list.slice().sort(cmp);
-  const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m)))) || 1;
-  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : Math.abs(v) / maxAbs;
+  const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m))).filter(Number.isFinite)) || 1;
+  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'pmax' ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0) : Math.abs(v) / maxAbs;
   const clsOf = v => SIGNED_METRICS.includes(m) ? scoreCls(v) : '';
   return { m, np, q, maxAbs, barOf, clsOf };
 }
@@ -7393,6 +7397,7 @@ function imgTableBodyCanvas(g, kind, compact = false) {
   }
   return imgTableHtmlCanvas(tableHtml, s.numPlayers === 3);
 }
+const IMG_TAG_W = 12; // 画像の着順の札の幅
 // 任意の表HTML（.rounds-table系）をCanvasに描き直す共通部（自分の成績シートでも使う）
 function imgTableHtmlCanvas(tableHtml, sanma = false) {
   // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出。
@@ -7411,8 +7416,11 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
     const divs = [...cell.querySelectorAll('div')];
     const subs = divs.slice(1).map(d => {
       const ds = getComputedStyle(d);
-      return { t: d.textContent.trim(), color: ds.color };
-    }).filter(x => x.t);
+      const tg = d.querySelector('.rk-tag'); // 着順の札（文字に混ぜず、色付きの札として描く）
+      const tag = tg ? { t: tg.textContent.trim(), bg: getComputedStyle(tg).backgroundColor, fg: getComputedStyle(tg).color } : null;
+      const t = [...d.childNodes].filter(n => n !== tg).map(n => n.textContent).join('').trim();
+      return { t, color: ds.color, tag };
+    }).filter(x => x.t || x.tag);
     return {
       t: (divs.length ? divs[0].textContent : cell.textContent).trim(),
       subs,
@@ -7446,7 +7454,7 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
         let w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0);
         if (c.subs && c.subs.length) {
           m.font = imgFont(SUB_FS, false);
-          c.subs.forEach(sb => { w = Math.max(w, m.measureText(sb.t).width + 16); });
+          c.subs.forEach(sb => { w = Math.max(w, m.measureText(sb.t).width + (sb.tag ? IMG_TAG_W + 3 : 0) + 16); });
         }
         colW[ci] = Math.max(colW[ci], Math.min(COL_MAX, Math.ceil(w)));
       }
@@ -7500,9 +7508,16 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
       // 薄い点数・チップ差（画面と同じ体裁で小さく）
       let sy = cy0 + c.lines.length * 17 - 4;
       subs.forEach(sb => {
+        ctx.font = imgFont(SUB_FS, false);
+        const sw = ctx.measureText(sb.t).width, tw = sb.tag ? IMG_TAG_W + (sb.t ? 3 : 0) : 0;
+        const sx = c.left ? x + 9 : x + (c.w - sw - tw) / 2;
+        if (sb.tag) { // 着順の札（画面の .rk-tag と同じ色・角丸）
+          ctx.fillStyle = sb.tag.bg; imgRoundRect(ctx, sx, sy - 6, IMG_TAG_W, 11, 3); ctx.fill(); // 文字は上下中央（textBaseline=middle）で描くので、札も sy を中心に
+          ctx.fillStyle = sb.tag.fg; ctx.font = imgFont(8, true); ctx.textAlign = 'center';
+          ctx.fillText(sb.tag.t, sx + IMG_TAG_W / 2, sy); ctx.textAlign = 'left';
+        }
         ctx.fillStyle = sb.color; ctx.font = imgFont(SUB_FS, false);
-        const sw = ctx.measureText(sb.t).width;
-        ctx.fillText(sb.t, c.left ? x + 9 : x + (c.w - sw) / 2, sy);
+        ctx.fillText(sb.t, sx + tw, sy);
         sy += SUB_FS + 3;
       });
     });
@@ -8146,14 +8161,22 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false) {
   const slotOf = {}; // memberIndex → r.scores内の位置
   mem.forEach((m, k) => { slotOf[m] = k; });
   const bset = teamBoundarySet(s);
+  // 着順の札（点数の左の小さな数字。色は着順の色＝1着 金・2着 青灰・3着 灰・ラス 赤。同点は同じ数字）。
+  // 順位は持ち点で、点数の記録が無い試合はスコアで決める（calcScores と同じ rankGroups）
+  const pts = (r.points || []).slice(0, mem.length), hasPts = pts.length === mem.length && pts.every(v => v != null && v !== '');
+  const rkSrc = hasPts ? pts : (r.scores || []).slice(0, mem.length);
+  const rkGrp = !compact && rkSrc.length === mem.length && rkSrc.every(v => v != null && v !== '') ? rankGroups(rkSrc.map(Number)) : null;
   const cells = memberDisplayOrder(s).map((i, ci) => {
     const tb = bset.has(ci) ? ' class="tb"' : '';
     const k = slotOf[i];
     if (k == null) return `<td${tb} style="color:#ddd">—</td>`;
     const sc = r.scores[k];
     const st = sc > 0 ? 'color:#1a237e;font-weight:700' : sc < 0 ? 'color:#c62828;font-weight:700' : 'font-weight:700';
-    const raw = (!compact && r.points && r.points[k] != null)
-      ? `<div style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${r.points[k].toLocaleString()}</div>`
+    const rk = rkGrp && rkGrp[k] ? rkGrp[k].start + 1 : null;
+    const tag = rk ? `<span class="rk-tag ${rkCls(rk, mem.length)}">${rk}</span>` : '';
+    const hasRaw = !compact && r.points && r.points[k] != null;
+    const raw = (hasRaw || tag)
+      ? `<div class="rk-line${hasRaw && r.points[k].toLocaleString().length >= 7 ? ' lng' : ''}" style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px">${tag}${hasRaw ? `<span>${r.points[k].toLocaleString()}</span>` : ''}</div>`
       : '';
     // チップ差・焼き鳥・チョンボ（記録がある試合のみ小さく表示）
     const marks = [];
