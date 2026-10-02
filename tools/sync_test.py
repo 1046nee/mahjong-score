@@ -165,10 +165,11 @@ def main():
             # ---- [5] 設定の編集中に他の人が先に変えたら、上書きせずに知らせる ----
             a.evaluate("openGameEdit()")
             a.wait_for_selector("#e-start", state="visible", timeout=10000)
-            a.fill("#e-start", "30000")             # Aは持ち点を変えようとしている（まだ保存しない）
+            a.fill("#e-start", "300")               # Aは持ち点を30,000に変えようとしている（百点単位で入れる。まだ保存しない）
             b.evaluate("openGameEdit()")
-            b.wait_for_selector("#e-return", state="visible", timeout=10000)
-            b.fill("#e-return", "35000")            # そのあいだにBが返し点を変えて保存
+            b.wait_for_selector("#e-ret-seg", state="visible", timeout=10000)
+            b.evaluate("setRetMode('e', 'custom')")  # 返し点を「カスタム」にして
+            b.fill("#e-return", "350")              # そのあいだにBが返し点を35,000に変えて保存
             b.evaluate("saveGameEdit()")
             wait_until(lambda: (server_get(sid, "/settings") or {}).get("returnPoints") == 35000, 15000)
             a.wait_for_timeout(1500)                # Aの画面にBの変更が届くのを待つ

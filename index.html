@@ -320,6 +320,20 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .custom-uma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
 .rule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .rule-grid .field { margin-bottom: 0; }
+.rule-pts { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.pts-in { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 10px; background: #fff; padding: 0 12px; }
+.pts-in:focus-within { border-color: var(--pc); }
+.field .pts-in input { flex: 1; min-width: 0; width: auto; border: 0; outline: 0; background: transparent; padding: 12px 0; margin: 0; text-align: right; font-size: 16px; font-variant-numeric: tabular-nums; }
+.field .pts-in input { -moz-appearance: textfield; appearance: textfield; }
+.pts-in input::-webkit-outer-spin-button, .pts-in input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pts-00 { flex: none; font-size: 16px; line-height: 1; color: #8A9AA5; font-variant-numeric: tabular-nums; } /* 下2桁は固定（入力しない）ので薄く */
+.pts-u { flex: none; margin-left: 6px; font-size: 13px; color: #5F6E6B; }
+.ret-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.ret-seg button { flex: 1 1 0; min-width: 84px; min-height: 44px; padding: 4px 8px; border: 1.5px solid #CFDCD9; border-radius: 10px; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; }
+.ret-seg button small { font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.ret-seg button.on { border-color: var(--pc); background: var(--pc-bg); color: var(--pc); }
+.ret-seg button.on small { color: var(--pc); }
+.ret-custom { margin-top: 8px; }
 .custom-uma-grid .field { margin-bottom: 0; }
 .submit-btn { background: var(--pc); color: #fff; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin: 0 16px 24px; }
 .submit-btn:active { opacity: 0.85; }
@@ -1167,6 +1181,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rs-h { margin: 14px 2px 6px; font-size: 12.5px; font-weight: 800; color: #4F5C5A; }
 .rs-tbl tr { cursor: default !important; }
 .rs-empty { padding: 12px 4px; font-size: 13px; color: #5F6E6B; }
+.rs-open { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 42px; margin-top: 6px; border: 0; border-radius: 12px; background: #F4F7F6; color: var(--pc); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.rs-sec { background: #fff; border-radius: 12px; }
 .mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
 .mc-foot { justify-content: flex-end; margin-top: 4px; }
 .cc-mine-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; }
@@ -2171,14 +2187,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card">
       <div class="card-title">ルール設定</div>
       <div class="rule-grid">
-        <div class="field">
-          <label>持ち点</label>
-          <input type="number" id="s-start" value="25000">
-        </div>
-        <div class="field">
-          <label>返し点</label>
-          <input type="number" id="s-return" value="30000">
-        </div>
+        <div class="rule-pts" id="s-rule-pts"></div>
         <div class="field">
           <label>ウマ</label>
           <select id="s-uma" onchange="onUmaChange()">
@@ -6242,8 +6251,7 @@ function initSetupForm() {
   document.getElementById('mode-4').classList.add('active');
   document.getElementById('mode-3').classList.remove('active');
   refreshUmaSelect();
-  document.getElementById('s-start').value = 25000;
-  document.getElementById('s-return').value = 30000;
+  document.getElementById('s-rule-pts').innerHTML = ruleFieldsHtml('s', 25000, 30000);
   document.getElementById('s-bonus').checked = false;
   document.getElementById('s-yakitori').checked = false;
   document.getElementById('s-chombo').checked = false;
@@ -6390,8 +6398,7 @@ function applyMode(n) {
   refreshUmaSelect();
   document.getElementById('view-setup').classList.toggle('sanma', n === 3); // 三麻はサンマカラー（青）に
   syncSanmaBody();
-  document.getElementById('s-start').value = n === 3 ? 35000 : 25000;
-  document.getElementById('s-return').value = n === 3 ? 35000 : 30000;
+  document.getElementById('s-rule-pts').innerHTML = n === 3 ? ruleFieldsHtml('s', 35000, 35000) : ruleFieldsHtml('s', 25000, 30000);
   onUmaChange();
 }
 function setGameMode(n) {
@@ -6488,8 +6495,8 @@ async function startGame() {
   if (setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   const name = clampName(document.getElementById('s-name').value, MAX_GROUP_LEN) || todayStr();
   const playerNames = setupMembers.map(m => clampName(m, MAX_NAME_LEN));
-  const startPoints = Number(document.getElementById('s-start').value) || 25000;
-  const returnPoints = Number(document.getElementById('s-return').value) || 30000;
+  const startPoints = readPts('s-start', numPlayers === 3 ? 35000 : 25000);
+  const returnPoints = readReturn('s');
   const uma = getUmaArray();
   // rate / chipRate は旧データ互換のためキーだけ残す（画面では使わない。新しいグループは 0 / 1）
   const rate = 0, chipRate = 1;
@@ -9222,8 +9229,7 @@ function settingsFormHtml(name, s) {
       <div id="e-members"></div>
     </div>
     <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">${ico('warn', 14, 'ico-in')}持ち点・返し点・ウマを変更すると、<b>過去の試合もすべて新しいルールで再計算</b>されます。入力済みの点数はそのまま残ります。</div>
-    <div class="field"><label>持ち点</label><input type="number" id="e-start" value="${s.startPoints}"></div>
-    <div class="field"><label>返し点</label><input type="number" id="e-return" value="${s.returnPoints}"></div>
+    ${ruleFieldsHtml('e', s.startPoints, s.returnPoints)}
     <div class="field"><label>ウマ</label>
       <select id="e-uma" onchange="document.getElementById('e-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOpts}</select>
       <div id="e-uma-custom" style="display:${umaKey==='custom'?'block':'none'};margin-top:6px">
@@ -9330,8 +9336,8 @@ async function saveGameEdit() {
   const playerNames = editMembersState.map((m, pos) => clampName(m.name, MAX_NAME_LEN) || ('プレイヤー' + (pos + 1)));
   if (playerNames.length < n) { showToast(`メンバーは最低${n}人必要です`); return; }
   const name = clampName(document.getElementById('e-name').value, MAX_GROUP_LEN) || todayStr();
-  const startPoints = Number(document.getElementById('e-start').value) || 25000;
-  const returnPoints = Number(document.getElementById('e-return').value) || 30000;
+  const startPoints = readPts('e-start', 25000);
+  const returnPoints = readReturn('e');
   const umaKey = document.getElementById('e-uma').value;
   let uma;
   if (umaKey === 'custom') uma = Array.from({length: n}, (_, i) => Number(document.getElementById(`e-uma-c-${i}`).value) || 0);
@@ -10363,10 +10369,17 @@ function renderResultSheet() {
       <span class="rs-n">${nOf(i)}試合</span><b class="rs-sc ${scoreCls(tot[i])}">${fmtScore(tot[i])}</b></div>`;
   }).join('');
   const seg = multi ? `<div class="seg xs rs-days" role="tablist" aria-label="日">${[[null, '通算']].concat(days.map((d, k) => [k, `${k + 1}日目 ${fmtDay(ymdToMs(d)).replace(/（.）$/, '')}`])).map(([k, l]) =>
-    `<button type="button" role="tab" class="${st.day === k ? 'on' : ''}" aria-selected="${st.day === k}" onclick="rsState.day=${k};renderResultSheet()">${l}</button>`).join('')}</div>` : '';
-  const table = rs.length ? `<div class="tbl-scroll rs-tbl" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(names.length)}">${roundsTheadHtml(s)}
+    `<button type="button" role="tab" class="${st.day === k ? 'on' : ''}" aria-selected="${st.day === k}" onclick="rsState.day=${k};rsState.open=false;renderResultSheet()">${l}</button>`).join('')}</div>` : '';
+  // 10試合以上は畳んでおき、押すと開く（rsState.open）
+  const folded = rs.length >= 10 && !st.open;
+  const table = !rs.length ? '<div class="rs-empty">この日の試合はありません</div>'
+    : folded ? `<button type="button" class="rs-open" onclick="rsState.open=true;renderResultSheet()">試合ごとのスコアを開く（${rs.length}試合）${ico('chevron', 14)}</button>`
+    : `<div class="tbl-scroll rs-tbl" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(names.length)}">${roundsTheadHtml(s)}
       <tbody>${rs.map(x => roundRowHtml(x.r, x.i, '', s)).join('')}${roundsTotalRowHtml(gf)}</tbody></table></div>`
-    : '<div class="rs-empty">この日の試合はありません</div>';
+      + (rs.length >= 10 ? `<button type="button" class="rs-open" onclick="rsState.open=false;renderResultSheet()">試合ごとのスコアをたたむ</button>` : '');
+  // 個人成績とスコア推移（試合の画面と同じ部品。対戦成績は出さない）
+  const extra = rs.length ? `<div class="rs-h">個人成績</div><div class="rs-sec">${rankCountHtml(gf.rounds, s)}</div>
+    <div class="rs-h">スコア推移</div><div class="rs-sec chart-wrap">${chartHtml(gf.rounds, s)}</div>` : '';
   const id = esc(st.id), inHist = (appState.games || []).some(x => x.id === st.id);
   const locked = isGameLocked(g), canInput = !locked && (inHist || !!circleRole());
   const back = activeViewName();
@@ -10377,9 +10390,44 @@ function renderResultSheet() {
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet"><div class="mn-sub">${esc(gameMetaText(g))}${locked ? ' ・ 記録は確定しています' : ''}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
-    <div class="rs-h">試合ごとのスコア${st.day != null ? `（${st.day + 1}日目）` : ''}</div>${table}
+    <div class="rs-h">試合ごとのスコア${st.day != null ? `（${st.day + 1}日目）` : ''}</div>${table}${extra}
     <div class="mn-group" style="margin-top:14px">${acts}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+}
+
+// ---- 持ち点・返し点の入力（設定画面 's'・設定の編集 'e'） ----
+// 点数は百点単位で入れ、下2桁の「00」は入力欄の右に固定で出す（2026-10-02 ユーザー要望）。
+// 返し点は「あり（持ち点＋5,000。25,000なら30,000）」「なし（持ち点と同じ＝オカなし）」「カスタム」から選ぶ。持ち点を変えると、あり／なしの値も追従する
+const retMode = {}; // 's' | 'e' → 'on' | 'off' | 'custom'
+function ptsInputHtml(id, v, oninput) {
+  return `<span class="pts-in"><input type="number" inputmode="numeric" step="1" id="${id}" value="${Math.round((Number(v) || 0) / 100)}"${oninput ? ` oninput="${oninput}"` : ''}><span class="pts-00">00</span><span class="pts-u">点</span></span>`;
+}
+function readPts(id, def) {
+  const el = document.getElementById(id);
+  if (!el || el.value === '') return def;
+  const n = Math.round(Number(el.value));
+  return Number.isFinite(n) && n > 0 ? n * 100 : def;
+}
+function ruleFieldsHtml(p, start, ret) {
+  retMode[p] = ret === start ? 'off' : ret === start + 5000 ? 'on' : 'custom';
+  return `<div class="field"><label>持ち点</label>${ptsInputHtml(p + '-start', start, `syncRetSeg('${p}')`)}</div>
+    <div class="field"><label>返し点</label><div class="ret-seg" id="${p}-ret-seg" role="radiogroup" aria-label="返し点">${retSegInner(p, start)}</div>
+      <div id="${p}-ret-custom" class="ret-custom"${retMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-return', ret)}</div></div>`;
+}
+function retSegInner(p, start) {
+  return [['on', 'あり', start + 5000], ['off', 'なし', start], ['custom', 'カスタム', null]].map(([k, l, v]) =>
+    `<button type="button" role="radio" aria-checked="${retMode[p] === k}" class="${retMode[p] === k ? 'on' : ''}" onclick="setRetMode('${p}','${k}')">${l}${v != null ? `<small>${v.toLocaleString()}</small>` : ''}</button>`).join('');
+}
+function syncRetSeg(p) { const el = document.getElementById(p + '-ret-seg'); if (el) el.innerHTML = retSegInner(p, readPts(p + '-start', 25000)); }
+function setRetMode(p, k) {
+  retMode[p] = k;
+  syncRetSeg(p);
+  const c = document.getElementById(p + '-ret-custom');
+  if (c) c.style.display = k === 'custom' ? '' : 'none';
+}
+function readReturn(p) {
+  const st = readPts(p + '-start', 25000);
+  return retMode[p] === 'on' ? st + 5000 : retMode[p] === 'off' ? st : readPts(p + '-return', st);
 }
 
 // ---- ゲーム名の変更（記録が確定したあとも、ゲーム名だけは変えられる。2026-10-02 ユーザーの判断） ----
