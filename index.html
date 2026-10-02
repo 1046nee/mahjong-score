@@ -3695,12 +3695,11 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['per', '1試合平均'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。1試合平均（通算スコア÷試合数）は2026-10-02に通算スコアの右へ戻した
-const SIGNED_METRICS = ['score', 'per', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
+const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）
+const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
-  if (m === 'per') return p.score / p.n;
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
@@ -10313,11 +10312,11 @@ const AV_COLORS = AV_HUES.flat().filter(c => whiteContrast(c) >= 3);
 function autoAvColor(s) { let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
 function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; if (rc && rc.color) return rc.color; return autoAvColor(s); }
 // 試合の席の頭文字の色: 仲間ページで名簿の人に連携済みの席は、その人の名簿の色（仲間ページの頭文字と同じ）。未連携の席は名前から。
-// 開いている仲間ページを先に、次に開いた・先読みした仲間ページ（circleStore）を見る
+// 開いている仲間ページを先に、次に開いた・先読みした仲間ページ（circleStore）、最後に色だけ読んだ仲間ページ（circleLite）を見る
 function seatAvColor(g, i) {
   const names = (g && g.settings && g.settings.playerNames) || [];
   const sid = g && g.id;
-  if (sid) for (const d of [circleData, ...Object.values(circleStore).map(c => c && c.data)]) {
+  if (sid) for (const d of [circleData, ...Object.values(circleStore).map(c => c && c.data), ...Object.values(circleLite)]) {
     const st = d && d.games && d.games[sid] && d.games[sid].seats && d.games[sid].seats[i];
     const r = st && st.mid && d.roster && d.roster[st.mid];
     if (r) return r.color || autoAvColor(st.mid);
@@ -11379,6 +11378,22 @@ async function prefetchCircles() {
     }
   } finally { circlePrefetching = false; }
   if (document.getElementById('view-history').classList.contains('active')) renderHistoryList();
+  renderRecentGames(); // LPの最近の試合の頭文字も名簿の色に
+}
+// 頭文字の色だけのために、前に開いた・入っている仲間ページの名簿と連携を読んでおく（ログインしていなくても読める。試合の中身は読まない）。
+// circleStore には入れない（openCircle が手元の中身ですぐ描くので、試合の無い控えだと一瞬空になる）
+const circleLite = {}; // cid → circles/{cid} の中身（名簿・連携）
+let circleLiteDone = false;
+async function prefetchCircleColors() {
+  if (circleLiteDone) return;
+  circleLiteDone = true;
+  const cids = allCircleEntries().map(([cid]) => cid).filter(cid => !circleStore[cid] && !circleLite[cid]);
+  if (!cids.length) return;
+  let got = 0;
+  await Promise.all(cids.map(cid => db.ref('circles/' + cid).once('value').then(snap => { if (snap.exists()) { circleLite[cid] = snap.val(); got++; } }).catch(() => {})));
+  if (!got) return;
+  renderRecentGames();
+  if (document.getElementById('view-history').classList.contains('active')) renderHistoryList();
 }
 // 過去の試合（選んだ期間・打った日の新しい順・月ごとの見出し）
 function renderHistoryList() {
@@ -11981,6 +11996,7 @@ setInterval(updateSyncUi, 1000);
 flushOutbox();
 if (appState.games && appState.games.length) requestPersistentStorage(); // 履歴を持つ端末は保存データの保護を要求
 renderRecentGames();
+setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
 initFeaturesCarousel();
 const urlHash = location.hash.slice(1);
