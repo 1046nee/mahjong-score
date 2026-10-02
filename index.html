@@ -10284,7 +10284,13 @@ function renderMyStats() {
 
 // ---- 成績の見せ方の部品（マイページの「個人」・仲間ページのメンバーで共用） ----
 // 数字の羅列だけにせず、スポーツアプリの選手ページのように「タイル＋着順の帯＋最近の着順＋推移」で見せる
-const AV_COLORS = ['#177083', '#4261AA', '#2a8f7f', '#7b62b3', '#c07a22', '#b8506a', '#3f8a55', '#56748a'];
+// 名前から自動で決めるアイコンの色: 仲間ページの色のパレット（AV_HUES・10色×5段階）のうち、白い頭文字が読める色だけ
+// （白とのコントラスト比3以上。黄色の全部・各色の薄い段の多く・グレーは使わない＝33色）。2026-10-02 に以前の8色から切り替え
+function whiteContrast(hex) {
+  const l = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(x => x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
+  return 1.05 / (0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2] + 0.05);
+}
+const AV_COLORS = AV_HUES.flat().filter(c => whiteContrast(c) >= 3);
 // 仲間ページの作成者が名簿の人に色を決めていれば、その色（roster/$mid/color）
 function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; if (rc && rc.color) return rc.color; let h = 0; for (const ch of String(s || '')) h = (h * 31 + ch.codePointAt(0)) >>> 0; return AV_COLORS[h % AV_COLORS.length]; }
 function avInitial(name) { const t = String(name || '').trim(); return t ? [...t][0].toUpperCase() : '?'; }

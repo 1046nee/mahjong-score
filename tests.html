@@ -374,6 +374,12 @@ function opCases(w) {
       const r = apply(ro, { id: 'e9', sid: 'TESTGAME01', at: T(9), kind: 'edit', target, label: '第1試合の修正', round: { points: [36000, 28000, 21000, 15000], members: [0, 1, 2, 3] }, names: NAMES });
       return r.status === 'apply' && r.game.rounds[2].id === 'op0' && r.game.rounds[2].points[0] === 36000 && r.game.log[r.game.log.length - 1].no === 3;
     }],
+    ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
+      const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
+      return auto.length === 33 && auto.every(c => pal.includes(c) && w.whiteContrast(c) >= 3)
+        && !auto.includes('#FFD54F') && !auto.includes('#FFB300')
+        && w.avColor('たろう') === w.avColor('たろう') && auto.includes(w.avColor('たろう'));
+    }],
     ['記録の確定: lockAt の無い古い試合は「最後の編集から24時間」（作成・試合の入力・履歴のいちばん新しい時刻）', () => {
       const g = withRounds(P1, P2);   // 試合の入力 T(0)・T(1)
       g.createdAt = '2026-09-25T09:00:00.000Z';
