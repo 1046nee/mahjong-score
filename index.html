@@ -1087,6 +1087,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hg-grid .hg-pct b { font-size: 12.5px; }
 .hg-grid .hg-meta { font-size: 9.5px; gap: 2px; margin-top: 2px; }
 .hg-grid .hg-meta b { font-size: 10px; }
+.hg-grid .hg-rec, .hg-grid .hg-pct { white-space: nowrap; }
+.hg-grid .hg-pct { display: flex; justify-content: space-between; gap: 2px; }
+.hg-grid .hg-card.sz2 .hg-rec b { font-size: 15px; } .hg-grid .hg-card.sz2 .hg-meta { font-size: 8.5px; } .hg-grid .hg-card.sz2 .hg-meta b { font-size: 9px; }
+.hg-grid .hg-card.sz3 .hg-rec b { font-size: 11px; } .hg-grid .hg-card.sz3 .hg-rec span { font-size: 8px; } .hg-grid .hg-card.sz3 .hg-rec b.l { margin-left: 2px; } .hg-grid .hg-card.sz3 .hg-meta { font-size: 9px; } .hg-grid .hg-card.sz3 .hg-meta b { font-size: 9.5px; }
+.sp-meta .nw { white-space: nowrap; }
+.hg-grid .hg-card.sz3 .hg-pct { font-size: 8.5px; } .hg-grid .hg-card.sz3 .hg-pct b { font-size: 10px; }
 /* 狭い画面（〜360px）の仲間ページのカードの中では、3列が入るよう外側の余白を詰める */
 @media (max-width: 360px) { #view-circle .card:has(.hg-grid) { padding-left: 10px; padding-right: 10px; } .hg-grid { gap: 5px; } .hg-grid .hg-card { padding: 8px 6px; } }
 .hg-card { background: #fff; border-radius: 14px; padding: 10px; box-shadow: inset 0 0 0 1px #E3E9E7; min-width: 0; }
@@ -1138,18 +1144,20 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-pop .sp-x + .sp-g { margin-top: 10px; }
 .sp-body { display: flex; align-items: center; gap: 8px; }
 .sp-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.sp-right { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
-.sp-rank { display: inline-flex; align-items: center; gap: 4px; font-size: 18px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; }
-.sp-rank small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
+/* 右の列は幅を決めて左揃え（人数が1桁→2桁・スコアが4桁でも位置が動かない） */
+.sp-right { flex: none; width: 96px; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.sp-rank { display: inline-flex; align-items: center; gap: 3px; font-size: 15px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sp-rank small { font-size: 10.5px; font-weight: 700; color: #5F6E6B; }
 .sp-rank.nil { color: #8A9AA5; }
-.sp-big { font-size: 22px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
+.sp-big { font-size: 18px; white-space: nowrap; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
 .sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .sp-top .gk svg { width: 24px; height: 24px; }
 .sp-top .sp-gn { flex: 1; }
 .sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.sp-cnts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
-.sp-c { display: inline-flex; align-items: baseline; gap: 3px; padding: 1px 7px; border-radius: 8px; font-size: 11px; font-weight: 800; }
-.sp-c b { font-size: 12.5px; font-variant-numeric: tabular-nums; } .sp-c b small { font-size: 10.5px; margin-left: 1px; }
+/* 着順の回数はカードの全幅で1行（4つが改行しない） */
+.sp-cnts { display: flex; flex-wrap: nowrap; gap: 4px; margin-top: 6px; }
+.sp-c { flex: 1 1 0; min-width: 0; display: inline-flex; justify-content: center; align-items: baseline; gap: 2px; padding: 1px 2px; border-radius: 8px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
+.sp-c b { font-size: 12px; font-variant-numeric: tabular-nums; } .sp-c b small { font-size: 10.5px; margin-left: 1px; }
 .sp-c.r1 { background: var(--rk1); color: var(--rk1-on); } .sp-c.r2 { background: var(--rk2-tint); color: var(--rk2-ink); box-shadow: inset 0 0 0 1px var(--rk2); }
 .sp-c.r3 { background: var(--rk3-tint); color: var(--rk3-ink); box-shadow: inset 0 0 0 1px var(--rk3); } .sp-c.r4 { background: var(--rk4); color: var(--rk4-on); }
 .sp-g .gr-opp { margin-top: 5px; }
@@ -1186,6 +1194,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rs-empty { padding: 12px 4px; font-size: 13px; color: #5F6E6B; }
 .rs-open { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 42px; margin-top: 6px; border: 0; border-radius: 12px; background: #F4F7F6; color: var(--pc); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .rs-sec { background: #fff; border-radius: 12px; }
+.rs-back { display: inline-flex; align-items: center; gap: 4px; margin: -6px 0 10px; padding: 0; border: 0; background: none; color: var(--pc); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.rs-back .ico { transform: rotate(180deg); }
 .cg-as { font-size: 11px; color: #5F6E6B; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cg-as b { color: #1F2A28; font-weight: 800; }
 .av-pal { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
 .av-sw { aspect-ratio: 1; width: 100%; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
@@ -4753,7 +4763,7 @@ function openCircleMember(mid) {
     const opp = memberDisplayOrder(g.settings).filter(i => i !== b.seat && played[i] && !isPlaceholderName(names[i])).sort((x, y) => (tot[y] || 0) - (tot[x] || 0));
     const MAXO = 6;
     const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${avColor(names[i])}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
-    return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid}})">
+    return `<div class="hg-card cg-card ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})">
       ${gameKindHtml(g)}
       <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
         <div class="cg-as">試合での名前：<b>${esc(names[b.seat] || '')}</b></div>
@@ -4764,7 +4774,7 @@ function openCircleMember(mid) {
   const byYear = [];
   bound.forEach(b => { const y = new Date(b.ms).getFullYear(); let e = byYear[byYear.length - 1]; if (!e || e.y !== y) byYear.push(e = { y, list: [] }); e.list.push(b); });
   const boundHtml = cmBoundView === 'tile'
-    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid}})` })))
+    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})` })))
     : byYear.map(e => `<div class="ht-year">${e.y}年<span>${gamesRoundsText(e.list.length, e.list.reduce((a, b) => a + (b.g ? (b.g.rounds || []).filter(r => roundMembers(r, b.g.settings || {}).includes(b.seat)).length : 0), 0))}</span></div><div class="cg-list">${e.list.map(cgCard).join('')}</div>`).join('');
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
@@ -4784,7 +4794,7 @@ function openCircleMember(mid) {
     </div>` : '';
   document.getElementById('form-modal-title').textContent = `${r.name || 'メンバー'}の成績`; // 名簿に登録されている名前＋「の成績」
   // .sheet-body で包むとスマホでは下から出るボトムシートになる
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet">
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet" data-mid="${mid}">
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
@@ -5931,6 +5941,7 @@ function showView(name, skipHistory = false, restore = false) {
   if (name === 'detail' && restore && detailGame) { const fresh = (appState.games || []).find(x => x.id === detailGame.id); if (fresh) renderDetailBody(fresh); } // 試合の画面で直した点数を反映
   if (MP_VIEWS.includes(name)) applyMpTheme(); else syncSanmaBody(); // 画面ごとの三麻の青（ヘッダー・シートも）
   if (restore && viewScroll[name]) window.scrollTo(0, viewScroll[name]); // 戻ってきたら元の位置
+  if (restore) reopenViewReturn(name); // 結果の画面・グラフのカードを開いていたら、それも開き直す
 
   // ブラウザの履歴（戻る・進む）に追加（popstateからの呼び出し時はスキップ）
   if (!skipHistory) {
@@ -9996,12 +10007,16 @@ function h2hGridHtml(row, keys, nameOf, avOf) {
     const pct = h2hWinPct(e);
     const cls = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
     const diff = e.scoreA - e.scoreB;
-    return `<div class="hg-card ${cls}">
+    // 数字の桁で文字の大きさを変える（4桁勝4桁敗でも1行に収める）
+    const dg = String(e.w).length + String(e.l).length, big = Math.max(String(e.n).length, fmtScore(diff).length - 3);
+    const sz = dg >= 7 || big >= 5 ? ' sz3' : dg >= 5 || big >= 4 ? ' sz2' : '';
+    return `<div class="hg-card ${cls}${sz}">
       <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${esc(avInitial(nm))}</span><span class="hg-name">${esc(nm)}</span></div>
-      <div class="hg-rec"><b class="w">${e.w}</b><span>勝</span><b class="l">${e.l}</b><span>敗</span>${e.d ? `<small>${e.d}分</small>` : ''}</div>
+      <div class="hg-rec"><b class="w">${e.w}</b><span>勝</span><b class="l">${e.l}</b><span>敗</span></div>
       <div class="hg-bar"><i style="width:${pct == null ? 50 : pct}%"></i></div>
-      <div class="hg-pct">勝率 <b class="${cls}">${pct == null ? '—' : pct + '%'}</b></div>
-      <div class="hg-meta"><span>${e.n}試合</span><span>差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span></div>
+      <div class="hg-pct"><span>勝率 <b class="${cls}">${pct == null ? '—' : pct + '%'}</b></span>${e.d ? `<span>${e.d}分</span>` : ''}</div>
+      ${sz === ' sz3' ? `<div class="hg-meta"><span>試合</span><b>${e.n}</b></div><div class="hg-meta"><span>差</span><b class="${scoreCls(diff)}">${fmtScore(diff)}</b></div>`
+        : `<div class="hg-meta"><span>${e.n}試合</span><span>差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span></div>`}
       <div class="hg-meta"><span>着順</span><span><b>${(e.rankA / e.n).toFixed(2)}</b>/${(e.rankB / e.n).toFixed(2)}</span></div>
     </div>`;
   }).join('')}</div>`;
@@ -10469,10 +10484,30 @@ function openResultSheet(id, opts = {}) {
   }
   const days = gameDaysList(g);
   const dk = opts.day && days.length > 1 ? days.indexOf(opts.day) : -1;
-  rsState = { id, me, self: opts.self !== false, day: dk >= 0 ? dk : null, from: opts.from || (activeViewName() === 'circle' ? 'circle' : 'hist') };
+  rsState = { id, me, self: opts.self !== false, day: dk >= 0 ? dk : null, from: opts.from || (activeViewName() === 'circle' ? 'circle' : 'hist'),
+    ret: { view: activeViewName(), member: opts.member || null, spark: opts.spark || null } }; // 戻ってきたときに開き直すところ
   renderResultSheet();
   document.getElementById('form-modal').classList.add('open');
   track('result_sheet_open', { from: rsState.from, graph: !!opts.day });
+}
+// 結果の画面から別の画面（結果詳細・試合の画面）へ移るときに、戻ってきたら開き直すものを覚える
+const viewReturn = {};
+function keepSheetReturn() { if (rsState && rsState.ret && rsState.ret.view) viewReturn[rsState.ret.view] = JSON.parse(JSON.stringify(rsState)); }
+function reopenViewReturn(name) {
+  const st = viewReturn[name];
+  if (!st) return;
+  delete viewReturn[name];
+  setTimeout(() => {
+    const sp = st.ret && st.ret.spark;
+    if (sp && !st.ret.member) { // ページの中のグラフのカードを開き直す
+      const svg = document.querySelector(`${sp.sel} .mc-spark[data-rid]`);
+      const reg = svg && sparkReg[svg.dataset.rid];
+      const i = reg ? reg.days.findIndex(d => d.k === sp.k) : -1;
+      if (i >= 0) sparkTap({ target: svg.querySelector(`.sp-hit[data-i="${i}"]`), type: 'press' }, svg.dataset.rid);
+    }
+    const days = (() => { const g = resultGameById(st.id); return g ? gameDaysList(g) : []; })();
+    openResultSheet(st.id, { me: st.me, self: st.self, from: st.from, member: st.ret.member, spark: st.ret.spark, day: st.day != null ? days[st.day] : undefined });
+  }, 0);
 }
 function renderResultSheet() {
   const st = rsState, g = st && resultGameById(st.id);
@@ -10504,12 +10539,13 @@ function renderResultSheet() {
   const id = esc(st.id), inHist = (appState.games || []).some(x => x.id === st.id);
   const locked = isGameLocked(g), canInput = !locked && (inHist || !!circleRole());
   const back = activeViewName();
-  const acts = menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `closeFormModal();viewDetailById('${id}')` : `closeFormModal();openWatchGame(resultGameById('${id}'),'${back}')`)
-    + (canInput ? menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '点数を入れる・直す', `${fmtDateTime(lockAtOf(g))} に記録が確定するまで`, `closeFormModal();joinSession('${id}')`) : '')
+  const acts = menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `keepSheetReturn();closeFormModal();viewDetailById('${id}')` : `keepSheetReturn();closeFormModal();openWatchGame(resultGameById('${id}'),'${back}')`)
+    + (canInput ? menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '点数を入れる・直す', `${fmtDateTime(lockAtOf(g))} に記録が確定するまで`, `keepSheetReturn();closeFormModal();joinSession('${id}')`) : '')
     + (st.from === 'circle' && circleData && circleData.games && circleData.games[st.id] ? menuBtnHtml('more', 'その他の操作', '名前の連携・この仲間ページから外す', `openCircleGameMenu('${id}')`)
       : inHist ? menuBtnHtml('more', 'その他の操作', '共有・この試合での自分・削除', `openHistMenu('${id}')`) : '');
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet"><div class="mn-sub">${esc(gameMetaText(g))}${locked ? ' ・ 記録は確定しています' : ''}</div>
+  const backTo = st.ret && st.ret.member && rosterOf()[st.ret.member] ? `<button type="button" class="rs-back" onclick="openCircleMember('${st.ret.member}')">${ico('chevron', 12)}${esc(rosterName(st.ret.member))}の成績に戻る</button>` : '';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g))}${locked ? ' ・ 記録は確定しています' : ''}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     <div class="rs-h">試合ごとのスコア${st.day != null ? `（${st.day + 1}日目）` : ''}</div>${table}${extra}
     <div class="mn-group" style="margin-top:14px">${acts}</div>
@@ -10964,7 +11000,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}。点を押すとその日の結果">
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
     <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
-      onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
+      data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
     <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}${hits}</svg></span></span>
     <span class="sp-pop" id="pop-${rid}" hidden></span>`;
 }
@@ -10983,7 +11019,9 @@ function sparkTap(e, rid) {
   if (dot && ring) { ring.setAttribute('cx', dot.getAttribute('cx')); ring.setAttribute('cy', dot.getAttribute('cy')); }
   const pop = document.getElementById('pop-' + rid);
   if (!pop) return;
-  pop.innerHTML = sparkPopHtml(day, reg.np, !t.closest('.mc-static'));
+  const host = pop.closest('#mp-stats, #circle-top, #ms-top, .pf-sheet');
+  const ctx = { sel: host && host.id ? '#' + host.id : '', k: day.k, member: host && host.dataset ? host.dataset.mid || null : null };
+  pop.innerHTML = sparkPopHtml(day, reg.np, !t.closest('.mc-static'), ctx);
   pop.hidden = false;
   track('spark_day_open');
 }
@@ -11004,7 +11042,7 @@ function closeSparkPop(btn) {
 }
 // 1ゲーム＝過去の試合の一覧と同じ並び（順位のピル・スコア・自分の名前／相手）＋その日の試合数・平均着順・着順ごとの回数。
 // 数えるのはその日の試合だけ（そのゲームの、その日の分の合計で順位を出す）
-function sparkPopHtml(day, np, self = true) {
+function sparkPopHtml(day, np, self = true, ctx = {}) {
   const byG = new Map();
   day.items.forEach(x => {
     if (!x.g) return;
@@ -11031,14 +11069,14 @@ function sparkPopHtml(day, np, self = true) {
     const tot = gameTotals(gDay), played = playedFlags(gDay);
     const rank = me != null && played[me] ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0) : null;
     const nP = played.filter(Boolean).length;
-    return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self}})">
+    return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span></span>
-        <span class="sp-meta">${n}試合 ・ 平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span>
-        <span class="sp-cnts">${cnts}</span></span>
-      <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 22, false) : ''}${rank}位<small> / ${nP}人</small></span>
+        <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
+      <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}">${rank <= 3 ? medalSvg(rank, 18, false) : ''}${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
+      <span class="sp-cnts">${cnts}</span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
   return `<span class="sp-tag">${fmtDay(ymdToMs(day.k))}</span>

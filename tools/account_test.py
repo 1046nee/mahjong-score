@@ -512,6 +512,16 @@ def main():
         pg.wait_for_timeout(400)
         results.append(("[10a9] 試合の画面で端末の「戻る」を押しても、マイページの見ていた位置に戻る（試合の画面の後始末もする）", True,
                         pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame && !sessionRef") and abs(pg.evaluate("window.scrollY") - y0) < 4))
+        # 推移の点のカード → 試合 → 結果の画面 → 詳しく見る → 戻る で、カードと結果の画面まで開き直す
+        pg.evaluate("window.scrollTo(0, 0); document.querySelector('#mp-stats .sp-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))")
+        pg.evaluate("document.querySelector('#mp-stats .sp-g').click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('詳しく見る')).click()")
+        pg.wait_for_timeout(200)
+        pg.evaluate("document.getElementById('header-back').click()")
+        pg.wait_for_timeout(400)
+        back_ok = pg.evaluate("document.getElementById('view-history').classList.contains('active') && !document.querySelector('#mp-stats .sp-pop').hidden && document.getElementById('form-modal').classList.contains('open') && document.getElementById('form-modal-body').innerText.includes('試合ごとのスコア')")
+        pg.evaluate("closeFormModal()")
+        results.append(("[10a10] グラフのカードから開いた試合の詳しい画面から戻ると、グラフのカードと結果の画面まで開き直す", True, back_ok))
         pg.evaluate("setMpPane('hist')")
         # ほかの人があとから試合の名前・対局日を変えた → マイページを開き直すと、過去の試合の控えも最新になる（開き直さなくても）
         pg.evaluate(f"""async () => {{ await db.ref('sessions/{g2}/name').set('名前を変えた試合'); await db.ref('sessions/{g2}/settings/playDate').set('2026-08-15'); }}""")
