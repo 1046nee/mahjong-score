@@ -329,7 +329,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pts-00 { flex: none; font-size: 16px; line-height: 1; color: #8A9AA5; font-variant-numeric: tabular-nums; } /* 下2桁は固定（入力しない）ので薄く */
 .pts-u { flex: none; margin-left: 6px; font-size: 13px; color: #5F6E6B; }
 .ret-seg { display: flex; flex-wrap: wrap; gap: 6px; }
-.ret-seg button { flex: 1 1 0; min-width: 84px; min-height: 44px; padding: 4px 8px; border: 1.5px solid #CFDCD9; border-radius: 10px; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; }
+.ret-seg button { flex: 1 1 0; min-width: 0; white-space: nowrap; min-height: 44px; padding: 4px 8px; border: 1.5px solid #CFDCD9; border-radius: 10px; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.25; }
 .ret-seg button small { font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .ret-seg button.on { border-color: var(--pc); background: var(--pc-bg); color: var(--pc); }
 .ret-seg button.on small { color: var(--pc); }
@@ -1183,6 +1183,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rs-empty { padding: 12px 4px; font-size: 13px; color: #5F6E6B; }
 .rs-open { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 42px; margin-top: 6px; border: 0; border-radius: 12px; background: #F4F7F6; color: var(--pc); font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .rs-sec { background: #fff; border-radius: 12px; }
+.chip-rows { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.chip-row { display: flex; align-items: center; gap: 6px; }
+.chip-row label { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip-row input { width: 76px; padding: 10px 8px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; text-align: right; }
+.chip-sign { width: 36px; height: 40px; border: 1.5px solid #CFDCD9; border-radius: 10px; background: #fff; font-size: 16px; font-weight: 800; color: var(--pc); cursor: pointer; }
+.chip-diff { width: 40px; text-align: right; font-size: 12px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; } .chip-diff.pos { color: #1A237E; } .chip-diff.neg { color: #C62828; }
 .mc-spark .dot.r1 { fill: var(--rk1); } .mc-spark .dot.r2 { fill: var(--rk2); } .mc-spark .dot.r3 { fill: var(--rk3); } .mc-spark .dot.r4 { fill: var(--rk4); }
 .mc-foot { justify-content: flex-end; margin-top: 4px; }
 .cc-mine-h { display: flex; justify-content: space-between; align-items: baseline; margin: 2px 2px 8px; }
@@ -2216,7 +2222,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-chip"/></svg>
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">試合ごとにチップを入力でき、増減を記録します。</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">対局を終了するときに、一人ひとりのチップの枚数をまとめて入れます（マイナスも入れられます）。</div>
       <div id="s-bonus-fields" style="display:none;margin:10px 0 0 26px">
         <div class="field" style="margin-bottom:0">
           <label>持ちチップ（枚）</label>
@@ -2281,7 +2287,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div class="title-actions">
       <button class="edit-tab title-edit-btn" onclick="openShareSheet()">共有</button>
-      <button class="edit-tab title-edit-btn" onclick="openGameEdit()">設定の編集</button>
+      <button class="edit-tab title-edit-btn" id="game-edit-btn" onclick="openGameEdit()">設定の編集</button>
     </div>
   </div>
   <div class="game-body">
@@ -2355,6 +2361,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
     </div>
+    <button type="button" class="auto-btn sub" id="chip-entry-btn" style="display:none" onclick="openChipSheet()">チップを入力する（途中でも入れておけます）</button>
     <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
       <div class="end-game-note">終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。</div></div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
@@ -5516,12 +5523,78 @@ function gameStateHtml(g, withButton) {
   }
   if (isGameEnded(g)) {
     return `<div class="gs-box ended"><b>対局は終了しました。</b>${fmtDateTime(lockAtOf(g))} に記録が確定し、それ以降は誰も書き換えられなくなります。それまでは点数の修正ができます。
+      ${withButton && g.settings && g.settings.bonusEnabled ? '<button type="button" class="gs-btn" onclick="openChipSheet()">チップを入力・直す</button>' : ''}
       ${withButton ? '<button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button>' : ''}</div>`;
   }
   return '';
 }
+// ---- チップの入力（チップありの試合。対局を終えるときに、一人ひとりの終了時のチップを入れる）----
+// 保存は settings.finalChips（席ごとの増減＝終了時の枚数 − 持ちチップ − 試合ごとに入れていたチップ）。設定の送信キュー（op 'settings'）で送る
+let chipSheetThen = null;
+function chipRoundSums(g) {
+  const s = g.settings, N = s.playerNames.length, out = new Array(N).fill(0);
+  (g.rounds || []).forEach(r => roundMembers(r, s).forEach((m, k) => { if (m < N && r.chips && r.chips[k] != null) out[m] += Number(r.chips[k]) || 0; }));
+  return out;
+}
+function openChipSheet(then) {
+  const g = activeGame;
+  if (!g || isGameLocked(g)) return;
+  chipSheetThen = then || null;
+  const s = g.settings, start = Number(s.startChips) || 0, played = playedFlags(g), tot = chipTotals(g).chips;
+  const rows = s.playerNames.map((nm, i) => played[i] ? `<div class="chip-row"><label>${esc(nm)}</label>
+      <button type="button" class="chip-sign" aria-label="プラスとマイナスを入れ替える" onclick="flipChip(${i})">±</button>
+      <input type="number" id="fc-${i}" value="${start + (tot[i] || 0)}" step="1" oninput="updateChipSheet()"><span class="chip-suffix">枚</span>
+      <span class="chip-diff" id="fd-${i}"></span></div>` : '').join('');
+  document.getElementById('form-modal-title').textContent = 'チップの入力';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="h2h-note" style="margin-top:0">対局が終わったときの一人ひとりのチップの枚数を入れてください（持ちチップ ${start}枚。マイナスも入れられます。±で符号を入れ替え）。</div>
+    <div class="chip-rows">${rows}</div>
+    <div class="total-check" id="fc-check"></div>
+    <button class="confirm-btn" id="fc-save" style="margin-top:12px" onclick="saveChipSheet()">${then === 'end' ? '保存して対局を終了する' : '保存する'}</button>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+  updateChipSheet();
+}
+function flipChip(i) { const el = document.getElementById('fc-' + i); if (el) { el.value = String(-(Number(el.value) || 0)); updateChipSheet(); } }
+function chipSheetValues() {
+  const g = activeGame, s = g.settings, start = Number(s.startChips) || 0, played = playedFlags(g);
+  let sum = 0, n = 0;
+  const vals = s.playerNames.map((_, i) => { if (!played[i]) return null; const v = Math.round(Number((document.getElementById('fc-' + i) || {}).value) || 0); sum += v; n++; return v; });
+  return { vals, sum, expect: start * n, start };
+}
+function updateChipSheet() {
+  const { vals, sum, expect, start } = chipSheetValues();
+  vals.forEach((v, i) => { const d = document.getElementById('fd-' + i); if (d && v != null) { const x = v - start; d.textContent = `${x > 0 ? '+' : ''}${x}`; d.className = 'chip-diff ' + (x > 0 ? 'pos' : x < 0 ? 'neg' : ''); } });
+  const el = document.getElementById('fc-check'), ok = sum === expect;
+  el.className = 'total-check ' + (ok ? 'ok' : 'ng');
+  el.textContent = ok ? `チップ合計: ${sum}枚` : `チップ合計: ${sum}枚 — 参加者の合計が${expect}枚（持ちチップ×人数）になるよう入力してください`;
+  document.getElementById('fc-save').disabled = !ok;
+}
+async function saveChipSheet() {
+  const g = activeGame;
+  if (!g) return;
+  const { vals, sum, expect, start } = chipSheetValues();
+  if (sum !== expect) return;
+  const rs = chipRoundSums(g), s = g.settings;
+  const finalChips = vals.map((v, i) => v == null ? 0 : v - start - rs[i]);
+  const base = { name: g.name, settings: s };
+  const memberMap = {}; s.playerNames.forEach((_, i) => { memberMap[i] = i; });
+  const changes = vals.map((v, i) => v == null ? '' : `${s.playerNames[i]} ${v}枚`).filter(Boolean);
+  enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'settings', baseFp: fpOf(base), name: g.name,
+    settings: { ...s, finalChips }, memberMap, changes: ['チップ: ' + changes.join('・')].map(t => t.slice(0, 200)) });
+  closeFormModal();
+  track('chips_final', { n: changes.length });
+  if (chipSheetThen === 'end') {
+    // 送り終えてから終了する（送信中は終了できないため）
+    showLoading(true);
+    for (let i = 0; i < 40 && outbox.some(o => o.sid === g.id && !o.failed); i++) await new Promise(r => setTimeout(r, 250));
+    showLoading(false);
+    setGameEnded(true);
+  } else showToast('チップを保存しました');
+}
 function confirmEndGame() {
   if (!activeGame) return;
+  if (activeGame.settings.bonusEnabled) { openChipSheet('end'); return; } // チップありは、終了の前にチップを入れる
   document.getElementById('confirm-modal-title').textContent = '対局を終了';
   document.getElementById('confirm-modal-desc').textContent =
     `「${activeGame.name || ''}」の対局を終了します。12時間後に記録が確定し、それ以降は誰も点数を書き換えられなくなります（見る・共有するのはできます）。確定するまでは修正・再開できます。`;
@@ -6499,7 +6572,7 @@ async function startGame() {
   if (setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   const name = clampName(document.getElementById('s-name').value, MAX_GROUP_LEN) || todayStr();
   const playerNames = setupMembers.map(m => clampName(m, MAX_NAME_LEN));
-  const startPoints = readPts('s-start', numPlayers === 3 ? 35000 : 25000);
+  const startPoints = readStart('s');
   const returnPoints = readReturn('s');
   const uma = getUmaArray();
   // rate / chipRate は旧データ互換のためキーだけ残す（画面では使わない。新しいグループは 0 / 1）
@@ -6723,6 +6796,8 @@ function chipTotals(g) {
   const chips = new Array(N).fill(0);
   const yaki = new Array(N).fill(0);
   const chombo = new Array(N).fill(0);
+  // 対局の終わりにまとめて入れたチップ（settings.finalChips＝席ごとの増減。試合ごとのチップ（以前の入れ方）に足す）
+  if (Array.isArray(s.finalChips)) s.finalChips.forEach((v, i) => { if (i < N) chips[i] += Number(v) || 0; });
   (g.rounds || []).forEach(r => {
     roundMembers(r, s).forEach((m, k) => {
       if (m >= N) return;
@@ -8530,9 +8605,11 @@ function renderGame() {
   const stHtml = gameStateHtml(activeGame, true);
   stEl.innerHTML = stHtml; stEl.style.display = stHtml ? '' : 'none';
   document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
-  { const eb = document.querySelector('#view-game .title-actions .title-edit-btn'); eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
+  // 「共有」も同じクラスなので id で取る（クラスで取ったら共有ボタンの名前が変わった）
+  { const eb = document.getElementById('game-edit-btn'); eb.textContent = gLocked ? 'ゲーム名を変える' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
   { const en = document.querySelector('#end-game-wrap .end-game-note');
+    { const cb = document.getElementById('chip-entry-btn'); if (cb) cb.style.display = (s.bonusEnabled && hasRounds && !gLocked && !gEnded) ? '' : 'none'; }
     if (en && !gLocked && !gEnded) en.textContent = `終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。終了しなくても、最後の入力から24時間で確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
   renderGameCircles(activeGame, 'game-circles');
 
@@ -8784,7 +8861,7 @@ function openSheetCtx(ctx, idx) {
   // チップ入力ありの場合はタイトル表記を「点数 / チップ入力」に切り替える
   document.getElementById('sheet-title').textContent = isEdit
     ? `第${idx+1}試合を修正`
-    : `第${ctx.rounds.length + 1}試合の${s.bonusEnabled ? '点数 / チップ入力' : '点数入力'}`;
+    : `第${ctx.rounds.length + 1}試合の点数入力`;
   // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
   document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
   renderSheetMembers();
@@ -8889,7 +8966,7 @@ function renderSheetInputs() {
     return;
   }
   sheetOrder = sheetSelected.slice();
-  const withChips = !!s.bonusEnabled;
+  const withChips = false; // チップは対局の終わりにまとめて入れる（2026-10-02。openChipSheet）
   const withYaki = !!s.yakitori;
   const withChombo = !!s.chombo;
   // 列順は左から 焼き鳥｜チョンボ｜チップ｜点数（すべて固定幅・右詰。名前が残り幅を使う）
@@ -8997,7 +9074,7 @@ function updateTotal() {
   // 合計が合わない入力は完了をブロックする（空欄は変化なし=基準値のまま扱い）
   const chipEl = document.getElementById('chip-check');
   let chipsOk = true;
-  if (s.bonusEnabled) {
+  if (s.bonusEnabled && document.getElementById('ce-0')) {
     let entered = 0, expectedChips = 0;
     sheetOrder.forEach((m, k) => {
       const base = chipBaseline(m);
@@ -9051,7 +9128,7 @@ function submitRound() {
   const members = sheetOrder.slice(); // この試合の参加メンバー（playerNamesへのindex）
   const now = new Date().toISOString();
   const extras = {}; // チップ差・焼き鳥・チョンボ（有効なグループのみ保存）
-  if (ctx.settings.bonusEnabled) {
+  if (ctx.settings.bonusEnabled && document.getElementById('ce-0')) {
     // 入力された「現在のチップ数」と基準値（自動参照）の差をチップ差として保存。空欄は変化なし
     extras.chips = sheetOrder.map((m, k) => {
       const el = document.getElementById('ce-' + k);
@@ -9072,7 +9149,7 @@ function submitRound() {
   if (isEdit) {
     // チップ記録・焼き鳥をOFFにした後の修正でも、記録済みの値は消さずに引き継ぐ（メンバー対応で再配置）
     const origMem = roundMembers(orig, ctx.settings);
-    if (!ctx.settings.bonusEnabled && orig.chips) {
+    if (!extras.chips && orig.chips) { // 以前の試合ごとのチップは、修正しても消さずに引き継ぐ
       const chipOf = {};
       origMem.forEach((m, k) => { chipOf[m] = orig.chips[k]; });
       extras.chips = members.map(m => Number(chipOf[m]) || 0);
@@ -9251,7 +9328,7 @@ function settingsFormHtml(name, s) {
         <div class="field" style="margin:0"><label>持ちチップ（枚）</label>
           <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="20">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの増減もあわせて記録します。</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップは「対局を終了する」ときにまとめて入れます。</div>
       </div>
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり${ico('yakitori', 18, 'ico-in')}（マークのみ・スコアに影響なし）
@@ -9340,7 +9417,7 @@ async function saveGameEdit() {
   const playerNames = editMembersState.map((m, pos) => clampName(m.name, MAX_NAME_LEN) || ('プレイヤー' + (pos + 1)));
   if (playerNames.length < n) { showToast(`メンバーは最低${n}人必要です`); return; }
   const name = clampName(document.getElementById('e-name').value, MAX_GROUP_LEN) || todayStr();
-  const startPoints = readPts('e-start', 25000);
+  const startPoints = readStart('e');
   const returnPoints = readReturn('e');
   const umaKey = document.getElementById('e-uma').value;
   let uma;
@@ -10403,6 +10480,19 @@ function renderResultSheet() {
 // 点数は百点単位で入れ、下2桁の「00」は入力欄の右に固定で出す（2026-10-02 ユーザー要望）。
 // 返し点は「あり（持ち点＋5,000。25,000なら30,000）」「なし（持ち点と同じ＝オカなし）」「カスタム」から選ぶ。持ち点を変えると、あり／なしの値も追従する
 const retMode = {}; // 's' | 'e' → 'on' | 'off' | 'custom'
+const startMode = {}; // 's' | 'e' → '25000' | '30000' | '35000' | 'custom'
+const START_CHOICES = [25000, 30000, 35000];
+function readStart(p) { return startMode[p] && startMode[p] !== 'custom' ? Number(startMode[p]) : readPts(p + '-start', 25000); }
+function startSegInner(p) {
+  return START_CHOICES.map(v => [String(v), v.toLocaleString()]).concat([['custom', 'カスタム']]).map(([k, l]) =>
+    `<button type="button" role="radio" aria-checked="${startMode[p] === k}" class="${startMode[p] === k ? 'on' : ''}" onclick="setStartMode('${p}','${k}')">${l}</button>`).join('');
+}
+function setStartMode(p, k) {
+  startMode[p] = k;
+  const seg = document.getElementById(p + '-start-seg'); if (seg) seg.innerHTML = startSegInner(p);
+  const c = document.getElementById(p + '-start-custom'); if (c) c.style.display = k === 'custom' ? '' : 'none';
+  syncRetSeg(p);
+}
 function ptsInputHtml(id, v, oninput) {
   return `<span class="pts-in"><input type="number" inputmode="numeric" step="1" id="${id}" value="${Math.round((Number(v) || 0) / 100)}"${oninput ? ` oninput="${oninput}"` : ''}><span class="pts-00">00</span><span class="pts-u">点</span></span>`;
 }
@@ -10414,7 +10504,9 @@ function readPts(id, def) {
 }
 function ruleFieldsHtml(p, start, ret) {
   retMode[p] = ret === start ? 'off' : ret === start + 5000 ? 'on' : 'custom';
-  return `<div class="field"><label>持ち点</label>${ptsInputHtml(p + '-start', start, `syncRetSeg('${p}')`)}</div>
+  startMode[p] = START_CHOICES.includes(start) ? String(start) : 'custom';
+  return `<div class="field"><label>持ち点</label><div class="ret-seg" id="${p}-start-seg" role="radiogroup" aria-label="持ち点">${startSegInner(p)}</div>
+      <div id="${p}-start-custom" class="ret-custom"${startMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-start', start, `syncRetSeg('${p}')`)}</div></div>
     <div class="field"><label>返し点</label><div class="ret-seg" id="${p}-ret-seg" role="radiogroup" aria-label="返し点">${retSegInner(p, start)}</div>
       <div id="${p}-ret-custom" class="ret-custom"${retMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-return', ret)}</div></div>`;
 }
@@ -10422,7 +10514,7 @@ function retSegInner(p, start) {
   return [['on', 'あり', start + 5000], ['off', 'なし', start], ['custom', 'カスタム', null]].map(([k, l, v]) =>
     `<button type="button" role="radio" aria-checked="${retMode[p] === k}" class="${retMode[p] === k ? 'on' : ''}" onclick="setRetMode('${p}','${k}')">${l}${v != null ? `<small>${v.toLocaleString()}</small>` : ''}</button>`).join('');
 }
-function syncRetSeg(p) { const el = document.getElementById(p + '-ret-seg'); if (el) el.innerHTML = retSegInner(p, readPts(p + '-start', 25000)); }
+function syncRetSeg(p) { const el = document.getElementById(p + '-ret-seg'); if (el) el.innerHTML = retSegInner(p, readStart(p)); }
 function setRetMode(p, k) {
   retMode[p] = k;
   syncRetSeg(p);
@@ -10430,7 +10522,7 @@ function setRetMode(p, k) {
   if (c) c.style.display = k === 'custom' ? '' : 'none';
 }
 function readReturn(p) {
-  const st = readPts(p + '-start', 25000);
+  const st = readStart(p);
   return retMode[p] === 'on' ? st + 5000 : retMode[p] === 'off' ? st : readPts(p + '-return', st);
 }
 

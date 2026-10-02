@@ -164,7 +164,8 @@ def main():
 
             # ---- [5] 設定の編集中に他の人が先に変えたら、上書きせずに知らせる ----
             a.evaluate("openGameEdit()")
-            a.wait_for_selector("#e-start", state="visible", timeout=10000)
+            a.wait_for_selector("#e-start-seg", state="visible", timeout=10000)
+            a.evaluate("setStartMode('e', 'custom')")
             a.fill("#e-start", "300")               # Aは持ち点を30,000に変えようとしている（百点単位で入れる。まだ保存しない）
             b.evaluate("openGameEdit()")
             b.wait_for_selector("#e-ret-seg", state="visible", timeout=10000)
