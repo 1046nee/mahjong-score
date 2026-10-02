@@ -1682,6 +1682,23 @@ button.ios-row:active { background: #F2F6F5; }
 .pp-cell.me .pp-nm { color: var(--pc); }
 .pp-sub2 { font-size: 11px; font-weight: 700; line-height: 1.45; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .pp-sub2 .medal { vertical-align: -3px; margin-right: 2px; }
+.pp-sub2 b { font-weight: 800; } .pp-sub2 .pp-sc { margin-left: 4px; } .pp-sub2 b.pos { color: #1A237E; } .pp-sub2 b.neg { color: #C62828; }
+/* 順位の4位から下: 2列の小さなカード（棒なし） */
+.lb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lb-grid .lb-gap { grid-column: 1 / -1; border-top: 0; }
+.lb-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 9px; border: 0; border-radius: 12px; background: #F4F7F6; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.lb-cell:active { background: #EAF0EE; }
+.lb-cell.me { background: var(--pc-bg); box-shadow: inset 0 0 0 1.5px var(--pc-tint); }
+.lc-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.lc-rk { flex: none; min-width: 16px; font-size: 13px; font-weight: 800; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.lc-av { width: 24px; height: 24px; font-size: 11px; }
+.lc-av .pp-ok { width: 14px; height: 14px; right: -5px; bottom: -4px; }
+.lc-nm { min-width: 0; font-size: 13.5px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-cell.me .lc-nm { color: var(--pc); }
+.lc-val { font-size: 17px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; white-space: nowrap; } .lc-val.pos { color: #1A237E; } .lc-val.neg { color: #C62828; }
+.lc-sub { font-size: 11px; font-weight: 700; line-height: 1.45; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.lc-sub .nw { white-space: nowrap; }
+.lb-grid + .lb-more { margin-top: 8px; }
 .pp-sub .medal { vertical-align: -3px; margin-right: 3px; }
 .pp-sub .nw { white-space: nowrap; }
 .pp-sub b.pos { color: #1A237E; } .pp-sub b.neg { color: #C62828; }
@@ -3817,27 +3834,22 @@ function circleRankTabHtml(st, modeChips, noBind) {
       <div class="pd-name">${esc(nm)}</div><div class="pd-val ${clsOf(v)}" style="color:${clsOf(v) === 'neg' ? '#c62828' : clsOf(v) === 'pos' ? '#1a237e' : '#1f2a28'}">${circleMetricText(v, m)}</div>${podiumSubHtml(p, m)}<div class="pd-base">${i + 1}</div></div>`;
   }).join('')}</div>`;
   const row = (p, rank) => {
-    const v = circleMetricVal(p, m), nm = rosterName(p.key);
-    // 棒: 通算スコア・素点・順位点は0を中央に置いて左右に伸ばす。平均着順・率は左から（長いほど良い）
-    const bar = SIGNED_METRICS.includes(m)
-      ? `<span class="lb-bar div"><i class="${v >= 0 ? 'pos' : 'neg'}" style="width:${Math.max(1.5, Math.abs(v) / maxAbs * 50).toFixed(1)}%"></i></span>`
-      : `<span class="lb-bar"><i class="mag" style="width:${Math.max(3, Math.round(barOf(v) * 100))}%"></i></span>`;
-    return `<button type="button" class="lb-row${p.key === my ? ' me' : ''}" onclick="openCircleMember('${p.key}')"><span class="lb-rank">${rank}</span>
-      <span class="lb-av" style="background:${avColor(p.key)};width:28px;height:28px;font-size:13px">${esc(avInitial(nm))}</span>
-      <span class="lb-main"><span class="lb-name"><span class="lb-nm">${esc(nm)}</span>${circleBadge(rosterOf()[p.key], p.key)}</span>
-        <span class="lb-sub">${rankSubHtml(p, m)}</span>${bar}</span>
-      <span class="lb-val ${clsOf(v)}">${circleMetricText(v, m)}</span></button>`;
+    const v = circleMetricVal(p, m), nm = rosterName(p.key), r = rosterOf()[p.key];
+    return `<button type="button" class="lb-cell${p.key === my ? ' me' : ''}" onclick="openCircleMember('${p.key}')">
+      <span class="lc-top"><b class="lc-rk">${rank}</b><span class="pp-av lc-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}${r && r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 11)}</i>` : ''}</span><span class="lc-nm">${esc(nm)}</span></span>
+      <b class="lc-val ${clsOf(v)}">${circleMetricText(v, m)}</b>
+      <span class="lc-sub">${rankSubHtml(p, m)}</span></button>`;
   };
   let rows;
   const fold = !circleRankAll && q.length > RANK_PREVIEW + 2; // あと1〜2人なら畳まない
   if (!fold) {
-    rows = q.slice(3).map((p, i) => row(p, i + 4)).join('');
+    rows = `<div class="lb-grid">${q.slice(3).map((p, i) => row(p, i + 4)).join('')}</div>`;
     if (circleRankAll && q.length > RANK_PREVIEW + 2) rows += `<button type="button" class="lb-more" onclick="circleRankAll=false;renderCircle()">${RANK_PREVIEW}位までにする</button>`;
   } else {
-    rows = q.slice(3, RANK_PREVIEW).map((p, i) => row(p, i + 4)).join('');
+    rows = `<div class="lb-grid">${q.slice(3, RANK_PREVIEW).map((p, i) => row(p, i + 4)).join('')}`;
     const mi = my ? q.findIndex(p => p.key === my) : -1;
     if (mi >= RANK_PREVIEW) rows += `<div class="lb-gap" aria-hidden="true">⋮</div>` + row(q[mi], mi + 1);
-    rows += `<button type="button" class="lb-more" onclick="circleRankAll=true;renderCircle()">全員を見る（${q.length}人）</button>`;
+    rows += `</div><button type="button" class="lb-more" onclick="circleRankAll=true;renderCircle()">全員を見る（${q.length}人）</button>`;
   }
   return `<div class="card">${head}${modeChips}${chips}${podium}${rows}</div>`;
 }
@@ -4097,9 +4109,10 @@ function circlePeopleTabHtml(st) {
   const cells = ents.map(([mid, r]) => {
     const e = byKey[mid];
     const sub = e ? `<span class="nw">${e.rank <= 3 ? medalSvg(e.rank, 14, false) : ''}${e.rank}位</span> ・ <span class="nw">${e.p.n}試合</span>` : 'この形式の試合なし';
+    const sub2 = e ? `<span class="nw">平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)}</span> <b class="nw pp-sc ${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>` : '';
     return `<button type="button" class="pp-cell${mid === myMid ? ' me' : ''}" onclick="openCircleMember('${mid}')">
       <span class="pp-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}${r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 12)}</i>` : ''}</span>
-      <span class="pp-main"><span class="pp-nm">${esc(r.name)}</span><span class="pp-sub2">${sub}</span></span></button>`;
+      <span class="pp-main"><span class="pp-nm">${esc(r.name)}</span><span class="pp-sub2">${sub}</span>${sub2 ? `<span class="pp-sub2">${sub2}</span>` : ''}</span></button>`;
   }).join('');
   return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`)}
     ${cells ? `<div class="pp-grid">${cells}</div>` : '<div style="font-size:13px;color:#5F6E6B">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
@@ -4152,7 +4165,7 @@ function circleRankCanvas(st) {
   const { m, np, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const W = COMPOSE_W, P = IMG_PAD, PODIUM = 192, ROW = 56;
   const rest = q.slice(3);
-  const H = IMG_BAND + 14 + PODIUM + rest.length * ROW + 14 + IMG_FOOT;
+  const H = IMG_BAND + 14 + PODIUM + Math.ceil(rest.length / 2) * ROW + 14 + IMG_FOOT;
   const sc = imgFitScale(W, H);
   if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
   const { c, ctx } = imgCanvas(W, H, sc);
@@ -4211,30 +4224,21 @@ function circleRankCanvas(st) {
     ctx.fillStyle = fg; ctx.font = imgFont(11, true); ctx.textAlign = 'center'; ctx.fillText(String(i + 1), mx, my + 0.5); ctx.textAlign = 'left';
     x0 += w + GAP;
   });
-  // 4位から下の行（順位・顔・名前・試合数など・棒・値）
-  let y = bottom + 6;
+  // 4位から下は2列（順位・顔・名前・値／試合数など。画面と同じ並び・棒なし）
+  const GAP2 = 10, cw = (W - P * 2 - GAP2) / 2;
   rest.forEach((p, k) => {
     const v = circleMetricVal(p, m), nm = rosterName(p.key);
-    ctx.fillStyle = '#D5DEDB'; ctx.fillRect(P, y, W - P * 2, 0.8);
-    const cy = y + ROW / 2;
-    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(15, true); ctx.textAlign = 'center'; ctx.fillText(String(k + 4), P + 12, cy); ctx.textAlign = 'left';
-    avatar(P + 48, cy, 14, p.key, nm, 13);
-    const tx = P + 72, valW = 80, mainW = W - P - valW - tx - 8;
-    ctx.fillStyle = '#1F2A28'; ctx.font = imgFont(14, true); ctx.fillText(fit(nm, mainW), tx, cy - 13);
-    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(11.5, false);
-    ctx.fillText(fit(rankSubText(p, m), mainW), tx, cy + 3);
-    const by = cy + 14;
-    imgRoundRect(ctx, tx, by, mainW, 4, 2); ctx.fillStyle = '#EEF2F1'; ctx.fill();
-    if (SIGNED_METRICS.includes(m)) {
-      const half = mainW / 2, bw = Math.max(0.015, Math.abs(v) / maxAbs * 0.5) * mainW;
-      imgRoundRect(ctx, v >= 0 ? tx + half : tx + half - bw, by, bw, 4, 2); ctx.fillStyle = v >= 0 ? '#5C6BC0' : '#E57373'; ctx.fill();
-      ctx.fillStyle = '#C9D3D1'; ctx.fillRect(tx + half - 1, by - 3, 2, 10);
-    } else {
-      imgRoundRect(ctx, tx, by, Math.max(0.03, barOf(v)) * mainW, 4, 2); ctx.fillStyle = '#8FA6A2'; ctx.fill();
-    }
-    ctx.fillStyle = colOf(v); ctx.font = imgFont(16, true); ctx.textAlign = 'right';
-    ctx.fillText(circleMetricText(v, m), W - P, cy); ctx.textAlign = 'left';
-    y += ROW;
+    const x = P + (k % 2) * (cw + GAP2), y = bottom + 8 + Math.floor(k / 2) * ROW;
+    imgRoundRect(ctx, x, y, cw, ROW - 8, 12); ctx.fillStyle = '#F4F7F6'; ctx.fill();
+    const cy = y + 18;
+    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(13, true); ctx.textAlign = 'center'; ctx.fillText(String(k + 4), x + 14, cy); ctx.textAlign = 'left';
+    avatar(x + 38, cy, 11, p.key, nm, 11);
+    ctx.fillStyle = colOf(v); ctx.font = imgFont(15, true); ctx.textAlign = 'right';
+    ctx.fillText(circleMetricText(v, m), x + cw - 10, cy); ctx.textAlign = 'left';
+    const valW = ctx.measureText(circleMetricText(v, m)).width;
+    ctx.fillStyle = '#1F2A28'; ctx.font = imgFont(13, true); ctx.fillText(fit(nm, cw - 56 - valW - 18), x + 54, cy);
+    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(11, false);
+    ctx.fillText(fit(rankSubText(p, m), cw - 20), x + 10, cy + 20);
   });
   drawImgFooter(ctx, W, H);
   return c;
