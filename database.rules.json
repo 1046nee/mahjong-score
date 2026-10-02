@@ -17,7 +17,7 @@
           ".validate": "newData.isString() && newData.val().length <= 40"
         },
         "lockAt": {
-          ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now + 39600000 && newData.val() <= now + 90000000))"
+          ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() <= now + 90000000 && (!data.exists() || newData.val() >= now + 39600000)))"
         },
         "endedAt": {
           ".validate": "newData.isNumber() && (newData.val() === data.val() || (newData.val() >= now - 600000 && newData.val() <= now + 600000))"
@@ -160,7 +160,7 @@
         },
         "games": {
           "$sid": {
-            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.exists() || (!newData.exists() && (data.child('addedBy').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))))",
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists() && (!data.exists() || (!newData.exists() && data.child('lockAt').isNumber() && now < data.child('lockAt').val() && (data.child('addedBy').val() === auth.uid || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'owner' || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin'))))",
             ".validate": "($sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $sid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at', 'addedBy'])",
             "at": {
               ".validate": "newData.isString() && newData.val().length <= 40"
@@ -176,6 +176,9 @@
             },
             "addedBy": {
               ".validate": "newData.isString() && (newData.val() === data.val() || (!data.exists() && newData.val() === auth.uid))"
+            },
+            "lockAt": {
+              ".validate": "newData.isNumber() && (newData.val() === data.val() || (!data.exists() && newData.val() >= now + 79200000 && newData.val() <= now + 93600000))"
             },
             "seats": {
               "$seat": {

@@ -3311,17 +3311,12 @@ function circleModes() {
 
 const circleStore = {}; // cid → { data, sess, members, secret }（前に開いた・先読みした中身）
 // 仲間ページの試合は、試合のURLを知らない人にも試合IDが見える（DBの circles/{cid}/games）。
-// 結果を書き換えられないように、確定の期限（lockAt）が無い試合には「最後の入力から24時間」を付ける（入力のたびに延びるので、打っている最中には確定しない）。
-// ルールで lockAt は一度付いたら消せない・確定後は誰も書き換え／削除できない
+// 確定の時刻（lockAt）が無い古い試合には、ここで書き込む（最後の編集から24時間。stampLockAt）
 function lockCircleGames(sids) {
   sids.forEach(sid => {
     const g = circleSess[sid];
     if (!g || typeof g.lockAt === 'number') return;
-    db.ref('sessions/' + sid).transaction(cur => {
-      if (cur === null) return null;
-      if (typeof cur.lockAt === 'number') return; // もう付いている
-      return { ...cur, lockAt: serverNow() + LOCK_SLIDE_MS };
-    }, undefined, false).then(r => { if (r && r.committed && r.snapshot.exists() && circleSess[sid]) circleSess[sid].lockAt = r.snapshot.val().lockAt; }).catch(() => {});
+    stampLockAt(sid, t => { if (circleSess[sid]) circleSess[sid].lockAt = t; });
   });
 }
 // 仲間ページで自分（名簿で本人確認した人）に連携している試合を、自分の「過去の試合」に入れ、その席を「自分」にする。
@@ -4134,7 +4129,8 @@ function circleLogHtml() {
     const date = fmtDate(e.at);
     if (date !== prevDate) { rows += `<div class="log-date">${date || '日時不明'}</div>`; prevDate = date; }
     const [cls, label] = TAG[e.kind] || ['set', '変更'];
-    const canUndo = circleRole() && e.undo && e.kind !== 'undo' && !undone.has(e.id) && ['bind', 'add_game', 'rename'].includes(e.kind);
+    const canUndo = circleRole() && e.undo && e.kind !== 'undo' && !undone.has(e.id) && ['bind', 'add_game', 'rename'].includes(e.kind)
+      && (e.kind !== 'add_game' || circleGameRemovable(circleData.games && circleData.games[e.undo.sid])); // 追加の取り消し＝外す（24時間まで）
     rows += `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span><span class="log-tag ${cls}">${label}</span>
       <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}${undone.has(e.id) ? '<span style="color:#8A9AA5">（元に戻しました）</span>' : ''}</div>
       ${canUndo ? `<button type="button" class="btn-tint" style="margin-top:6px;height:28px" onclick="undoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`;
@@ -4159,6 +4155,7 @@ async function undoCircleLog(lid) {
     } else if (e.kind === 'add_game') {
       const ge = circleData.games && circleData.games[u.sid];
       if (ge && !(ge.addedBy === myUid() || isCircleAdmin())) throw new Error('locked');
+      if (ge && !circleGameRemovable(ge)) throw new Error('fixed');
       await db.ref(`circles/${circleId}/games/${u.sid}`).remove();
     } else if (e.kind === 'rename') {
       if (!canEditRosterMember(rosterOf()[u.mid])) throw new Error('locked');
@@ -4167,7 +4164,8 @@ async function undoCircleLog(lid) {
     await addCircleLog('undo', `「${e.text}」を元に戻しました`, { ref: lid });
     showToast('元に戻しました');
   } catch (err) {
-    showToast(err && err.message === 'locked' ? '本人が連携した内容が含まれるため、本人・作成者・管理者だけが戻せます' : '元に戻せませんでした。通信環境を確認してください', 5000);
+    showToast(err && err.message === 'locked' ? '本人が連携した内容が含まれるため、本人・作成者・管理者だけが戻せます'
+      : err && err.message === 'fixed' ? '追加から24時間たった試合は、この仲間ページに確定しているため外せません' : '元に戻せませんでした。通信環境を確認してください', 5000);
   }
 }
 
@@ -4206,7 +4204,8 @@ async function addGameToCircle(cid, g, createNew) {
     if (auto[i]) seats[i] = { mid: auto[i], by: uid, byName, at, self: auto[i] === myMid };
     else unbound++;
   });
-  const entry = { at: g.createdAt || at, name: String(g.name || '').slice(0, 120), addedBy: uid, addedByName: byName, addedAt: at };
+  // lockAt＝この時刻を過ぎると、この仲間ページから外せなくなる（追加から24時間。ルールでも同じ）
+  const entry = { at: g.createdAt || at, name: String(g.name || '').slice(0, 120), addedBy: uid, addedByName: byName, addedAt: at, lockAt: serverNow() + CIRCLE_GAME_FIX_MS };
   if (Object.keys(seats).length) entry.seats = seats;
   try {
     await db.ref(`circles/${cid}/games/${g.id}`).set(entry);
@@ -4215,7 +4214,9 @@ async function addGameToCircle(cid, g, createNew) {
     const now = (await db.ref(`circles/${cid}/games/${g.id}`).once('value').catch(() => null));
     const v = now && now.val();
     if (v) return { already: true, by: v.addedByName || 'メンバー', at: v.addedAt };
-    throw err;
+    // lockAt を知らない古いルールのとき: 期限なしで入れる（＝すぐに確定して外せない）
+    const { lockAt, ...old } = entry;
+    await db.ref(`circles/${cid}/games/${g.id}`).set(old);
   }
   if (Object.keys(newRoster).length) await db.ref(`circles/${cid}/roster`).update(newRoster);
   delete gameCircleCache[g.id];
@@ -4370,10 +4371,14 @@ async function openBindFromGame(cid, sid) {
   } catch (e) { showToast('開けませんでした。通信環境を確認してください'); } finally { showLoading(false); }
 }
 // ---- 試合ごとのメニューと名前の連携 ----
+// 仲間ページに入れた試合は、追加から24時間で確定して外せなくなる（ge.lockAt。期限の無い古い試合は最初から確定）
+const CIRCLE_GAME_FIX_MS = 24 * 3600 * 1000;
+function circleGameRemovable(ge) { return !!ge && typeof ge.lockAt === 'number' && serverNow() < ge.lockAt; }
 function openCircleGameMenu(sid) {
   const ge = circleData.games[sid];
   const role = circleRole();
-  const canRemove = role && (ge.addedBy === myUid() || isCircleAdmin());
+  const mayRemove = role && (ge.addedBy === myUid() || isCircleAdmin());
+  const canRemove = mayRemove && circleGameRemovable(ge);
   document.getElementById('form-modal-title').textContent = ge.name || '試合';
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#8a9aa5;margin-bottom:10px">${esc(ge.addedByName || 'メンバー')}さんが${fmtDate(ge.addedAt)}に追加</div>
@@ -4382,7 +4387,9 @@ function openCircleGameMenu(sid) {
       : `<button class="auto-btn sub" onclick="closeFormModal();openWatchGame(circleSess['${sid}'],'circle')">結果を見る</button>`) : ''}
     ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の連携</button>` : ''}
     ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
-    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>` : ''}
+    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>
+      <div class="h2h-note">外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。それを過ぎると、この仲間ページに確定します。</div>`
+      : mayRemove ? '<div class="h2h-note">追加から24時間たったので、この試合はこの仲間ページに確定しています（外せません）。</div>' : ''}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -4393,7 +4400,7 @@ async function removeCircleGame(sid) {
     await db.ref(`circles/${circleId}/games/${sid}`).remove();
     await addCircleLog('remove_game', `試合「${ge.name || ''}」を外しました`);
     showToast('仲間ページから外しました');
-  } catch (e) { showToast('外せませんでした（追加した人・作成者・管理者だけが外せます）', 5000); }
+  } catch (e) { showToast('外せませんでした（追加から24時間以内に、追加した人・作成者・管理者だけが外せます）', 5000); }
 }
 let bindState = null; // { sid, rows: [{ seat, name, cur, sel, locked }] }
 async function openBindEditor(sid) {
@@ -5057,6 +5064,7 @@ function startListening() {
     const data = snapshot.val();
     if (!data) return;
     serverGame = normGame(data);
+    if (typeof data.lockAt !== 'number') stampLockAt(sessionId); // 古い試合: 確定の時刻を書き込む（書けたら value がもう一度来る）
     refreshActiveGame();
     noteGameChanged(sessionId); // 見るだけのリンクがある試合なら写しを更新する
   });
@@ -5287,26 +5295,61 @@ function overlayPending(base, sid) {
 // サーバーへ書く形に戻す。sessions/{id} の既存キーはそのまま残し、変えるのは name/settings/rounds/log だけ
 // ---- 対局の終了と記録の確定（sessions/{id} の endedAt・lockAt。ルールは database.rules.json） ----
 // 過去の試合をいつまでも誰でも書き換えられると、誤操作や意図的な改ざんの余地になる。
-// 「対局を終了」から12時間で記録を確定し、それ以降はサーバーのルールで誰も書き換えられない（読むのはできる）。
-// ・終了: endedAt＝今・lockAt＝今＋12時間（それまでは修正できる・再開できる）
-// ・再開: endedAt を消し、lockAt＝最後の入力から24時間（入力のたびに延びる）。lockAt は一度付いたら消せない（ルール）
-// ・終了を押していない試合は確定しない（1つのゲームで毎週の定例会を続ける使い方があるため。自動の確定はしない）
+// 確定（lockAt）を過ぎた試合は、サーバーのルールで誰も書き換えられない（見る・共有する・画像にするのはできる）。
+// ・終了: endedAt＝今・lockAt＝今＋12時間（それまでは修正・再開できる。修正しても延びない）
+// ・終了していない試合: lockAt＝最後の内容の変更（点数の入力・修正・削除・設定・名前・並べ替え）から24時間。
+//   作ったときにも付け、変更のたびに「今から24時間」に延ばす（sendOp）。打っている最中には確定しない
+// ・再開: endedAt を消し、lockAt＝今から24時間（そのあとは変更のたびに延びる）
+// ・lockAt が無い古い試合（2026-10-02 より前に作った試合）も同じ基準: 最後の編集（作成・試合の入力・履歴の時刻）から24時間で
+//   確定したものとして扱い（lockAtOf）、開いたときに lockAt を書き込む（stampLockAt。過ぎていれば過去の時刻＝その場で確定）
+// ・lockAt は一度付いたら消せない・確定後は延ばせない（ルール）
 // ・時刻はサーバーの時刻（.info/serverTimeOffset）で見る。ルールの now と端末の時計がずれていても弾かれないように
 const LOCK_AFTER_END_MS = 12 * 3600 * 1000;
 const LOCK_SLIDE_MS = 24 * 3600 * 1000;
 let serverTimeOffset = 0;
 function serverNow() { return Date.now() + serverTimeOffset; }
-function isGameLocked(g) { return !!(g && typeof g.lockAt === 'number' && serverNow() >= g.lockAt); }
+// 最後に中身を変えた時刻（ms）: 作成・各試合の入力日時・履歴（修正・削除・設定の変更など）の時刻のいちばん新しいもの
+function lastEditMs(g) {
+  const vals = x => x ? (Array.isArray(x) ? x : Object.values(x)).filter(Boolean) : [];
+  let t = Date.parse(g && g.createdAt) || 0;
+  vals(g && g.rounds).forEach(r => { const x = Date.parse(r.at); if (x > t) t = x; });
+  vals(g && g.log).forEach(e => { const x = Date.parse(e.at); if (x > t) t = x; });
+  return t;
+}
+// 記録が確定する時刻（ms）。lockAt が無い古い試合は「最後の編集から24時間」
+function lockAtOf(g) {
+  if (!g) return null;
+  if (typeof g.lockAt === 'number') return g.lockAt;
+  const t = lastEditMs(g);
+  return t ? t + LOCK_SLIDE_MS : null;
+}
+function isGameLocked(g) { const t = lockAtOf(g); return t != null && serverNow() >= t; }
 function isGameEnded(g) { return !!(g && g.endedAt); }
+// lockAt が無い古い試合に、確定の時刻（最後の編集から24時間。過ぎていれば過去の時刻＝その場で確定）を書き込む。
+// 書き込めなかったとき（電波が無い・ルールを貼り替える前）も、画面は lockAtOf で同じ時刻に確定したものとして扱う
+const lockStamped = new Set();
+function stampLockAt(sid, onDone) {
+  if (!sid || lockStamped.has(sid)) return;
+  lockStamped.add(sid);
+  db.ref('sessions/' + sid).transaction(cur => {
+    if (cur === null) return null; // 手元に無いときはサーバーの値で呼び直される
+    if (typeof cur.lockAt === 'number') return; // もう付いている
+    const t = lockAtOf(cur);
+    if (t == null) return;
+    return { ...cur, lockAt: Math.min(t, serverNow() + LOCK_SLIDE_MS) };
+  }, undefined, false).then(r => {
+    if (r && r.committed && r.snapshot.exists() && typeof (r.snapshot.val() || {}).lockAt === 'number' && onDone) onDone(r.snapshot.val().lockAt);
+  }).catch(() => {});
+}
 function fmtDateTime(ms) { const d = new Date(ms); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; }
 function lockedToast() { showToast('この試合は記録が確定しているため、変更できません'); }
 function endedToast() { showToast('対局は終了しています。入力するときは「再開する」を押してください'); }
 function gameStateHtml(g, withButton) {
   if (isGameLocked(g)) {
-    return `<div class="gs-box locked"><b>記録は確定しています</b>（${fmtDateTime(g.lockAt)}）。点数の入力・修正はできません。結果を見る・共有する・画像にするのはこれまでどおりできます。</div>`;
+    return `<div class="gs-box locked"><b>記録は確定しています</b>（${fmtDateTime(lockAtOf(g))}）。点数の入力・修正はできません。結果を見る・共有する・画像にするのはこれまでどおりできます。</div>`;
   }
   if (isGameEnded(g)) {
-    return `<div class="gs-box ended"><b>対局は終了しました。</b>${fmtDateTime(g.lockAt)} に記録が確定し、それ以降は誰も書き換えられなくなります。それまでは点数の修正ができます。
+    return `<div class="gs-box ended"><b>対局は終了しました。</b>${fmtDateTime(lockAtOf(g))} に記録が確定し、それ以降は誰も書き換えられなくなります。それまでは点数の修正ができます。
       ${withButton ? '<button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button>' : ''}</div>`;
   }
   return '';
@@ -5398,8 +5441,8 @@ function sendOp(op) {
         decision = r.status; msg = r.msg || '';
         if (r.status !== 'apply') return undefined; // 中止（適用済み・衝突）
         const out = toServerGame(r.game, cur);
-        // 再開した試合（締め切りあり・終了なし）は、入力のたびに締め切りを「今から24時間後」に延ばす
-        if (typeof cur.lockAt === 'number' && !cur.endedAt) out.lockAt = serverNow() + LOCK_SLIDE_MS;
+        // 終了していない試合は、内容を変えるたびに確定を「今から24時間後」に延ばす（lockAt の無い古い試合にはここで付く）
+        if (!cur.endedAt) out.lockAt = serverNow() + LOCK_SLIDE_MS;
         return out;
       }, (err, committed, snap) => {
         if (err) {
@@ -6316,7 +6359,7 @@ async function createGame(name, settings, opts = {}) {
   showLoading(true);
   try {
     sessionId = await newSessionId();
-    const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings, rounds: [] };
+    const game = { id: sessionId, name, createdAt: new Date().toISOString(), settings, rounds: [], lockAt: serverNow() + LOCK_SLIDE_MS };
     await db.ref('sessions/' + sessionId).set(game);
     history.replaceState(null, '', '#' + sessionId);
     startListening();
@@ -8310,6 +8353,8 @@ function renderGame() {
   document.querySelector('#view-game .fab').style.display = (gLocked || gEnded) ? 'none' : '';
   document.querySelector('#view-game .title-actions button[onclick="openGameEdit()"]').style.display = gLocked ? 'none' : '';
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
+  { const en = document.querySelector('#end-game-wrap .end-game-note');
+    if (en && !gLocked && !gEnded) en.textContent = `終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。終了しなくても、最後の入力から24時間で確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
   renderGameCircles(activeGame, 'game-circles');
 
   // チーム順位（チーム戦が有効なグループのみ）
@@ -10062,7 +10107,7 @@ function openHistMenu(id) {
     <div class="mn-group">${
     menuBtnHtml('table', '結果を見る', '総合順位・試合結果・個人成績・対戦成績', `closeFormModal();viewDetailById('${j}')`) +
     // 点数の入力は記録が確定するまでだけ（確定後は開いても入力できないので出さない）
-    (isGameLocked(g) ? '' : menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '続きを入力する', g.endedAt ? `${fmtDateTime(g.lockAt)} に記録が確定するまで直せます` : '試合の画面を開いて点数を入れる', `closeFormModal();rejoinGame('${j}')`)) +
+    (isGameLocked(g) ? '' : menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '続きを入力する', g.endedAt ? `${fmtDateTime(lockAtOf(g))} に記録が確定するまで直せます` : `${fmtDateTime(lockAtOf(g))} まで入力できます（入力すると延びます）`, `closeFormModal();rejoinGame('${j}')`)) +
     menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${j}')`) +
     menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${j}')`)}</div>
     <div class="mn-group">${menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${j}')`, 'danger')}</div>
@@ -10592,7 +10637,7 @@ function applyFreshGame(src) {
   if (i < 0) return false;
   const cur = appState.games[i];
   const next = { ...normGame(src), lastAccess: cur.lastAccess };
-  if (typeof next.lockAt === 'number' && serverNow() >= next.lockAt) next._final = true;
+  if (isGameLocked(next)) next._final = true;
   const sig = g => JSON.stringify([g.name, g.settings, g.rounds, g.lockAt, g.endedAt, !!g._final]);
   if (sig(cur) === sig(next)) return false;
   appState.games[i] = next;
@@ -10606,7 +10651,12 @@ async function refreshHistoryGames(force) {
     const targets = appState.games.filter(g => !g._final).map(g => g.id);
     for (let i = 0; i < targets.length; i += 8) {
       await Promise.all(targets.slice(i, i + 8).map(id => db.ref('sessions/' + id).once('value')
-        .then(sn => { if (sn.exists() && applyFreshGame({ id, ...sn.val() })) changed++; }).catch(() => {})));
+        .then(sn => {
+          if (!sn.exists()) return;
+          const v = sn.val();
+          if (applyFreshGame({ id, ...v })) changed++;
+          if (typeof v.lockAt !== 'number') stampLockAt(id); // 古い試合: 確定の時刻を書き込む
+        }).catch(() => {})));
     }
   } finally { histRefreshing = false; }
   if (changed) {

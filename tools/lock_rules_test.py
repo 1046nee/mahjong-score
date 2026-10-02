@@ -6,12 +6,13 @@
 ログインは使わない（試合の入力もログインなしで動く）。検証用の試合を作り、REST API で読み書きを試して
 許可／拒否が期待どおりかを見る。最後に作ったデータを消す（締め切り前なので消せる）。
 
-「締め切りを過ぎたら書けない」は、締め切りを11時間より近くにできない（いたずらで即確定させないための決まり）ので
-その場では試せない。--canary で確認用の試合を1つ置き、12時間以上たってから --check-canary で確かめる
-（確定した試合は消せないので、確認用の試合は「ロック確認用」という名前のままDBに残る。中身はダミー）。
+締め切りの付いた試合では、締め切りを11時間より近くにできない（いたずらで即確定させないための決まり）。
+2026-10-02〜 締め切りの無い古い試合には「最後の編集から24時間」（過ぎていれば過去の時刻）を付けられるので、
+「確定したら書けない」はその場で試せる（[15]〜[19]）。--canary で確認用の試合を1つ置き、12時間以上たってから
+--check-canary で確かめる方法も残す（確定した試合は消せないので、確認用の試合は「ロック確認用」という名前のままDBに残る。中身はダミー）。
 
 前提: database.rules.json をFirebaseコンソール（Realtime Database → ルール）に貼って「公開」してから実行する。
-実行: python tools/lock_rules_test.py            （その場で試せる14項目）
+実行: python tools/lock_rules_test.py            （その場で試せる19項目）
       python tools/lock_rules_test.py --canary   （確認用の試合を置く。IDは %LOCALAPPDATA%\\majasco\\lock_canary.json に控える）
       python tools/lock_rules_test.py --check-canary
 """
@@ -113,6 +114,24 @@ def main():
         st, body = http("GET", f"sessions/{sid}")
         results.append(("[13] 読むのは誰でもでき、再開した状態が見える", st == 200 and (body or {}).get("endedAt") is None
                         and (body or {}).get("lockAt") == R + 24 * H, (st, (body or {}).get("lockAt"))))
+        # 締め切りの無い古い試合（2026-10-02 より前に作った試合）: 開いた人が「最後の編集から24時間」を書き込む
+        old1, old2 = rnd(10), rnd(10)
+        http("PUT", f"sessions/{old1}", game(old1, name="ルール確認用（古い試合・確定済み）"))
+        http("PUT", f"sessions/{old2}", game(old2, name="ルール確認用（古い試合・打っている途中）"))
+        P = server_now()
+        check("[15] 古い試合に、過ぎた締め切り（2日前の入力＋24時間＝昨日）を付けられる（その場で確定）", True,
+              http("PUT", f"sessions/{old1}", game(old1, name="ルール確認用（古い試合・確定済み）", lockAt=P - 24 * H))[0])
+        check("[16] 確定した古い試合は書き換えられない", False,
+              http("PUT", f"sessions/{old1}", game(old1, name="改ざん", lockAt=P - 24 * H))[0])
+        check("[17] 確定した古い試合の締め切りを延ばして開け直すのも拒否", False,
+              http("PUT", f"sessions/{old1}", game(old1, lockAt=server_now() + 24 * H))[0])
+        check("[18] 古い試合に、近い締め切り（最後の入力が21時間前＝3時間後）を付けられる", True,
+              http("PUT", f"sessions/{old2}", game(old2, name="ルール確認用（古い試合・打っている途中）", lockAt=P + 3 * H))[0])
+        old3 = rnd(10)
+        http("PUT", f"sessions/{old3}", game(old3, name="ルール確認用（古い試合）"))
+        check("[19] 古い試合に、遠い締め切り（30時間後）を付けるのは拒否（いつまでも確定しない抜け道）", False,
+              http("PUT", f"sessions/{old3}", game(old3, lockAt=server_now() + 30 * H))[0])
+        http("PUT", f"sessions/{old3}", game(old3, lockAt=server_now() - H))  # 後片付け: 締め切りの無いまま残さない（その場で確定）
     finally:
         # 2026-09-29〜 試合は締め切り前でも誰も消せない（検証用の試合は本番に残り、締め切りを過ぎると確定する）
         a = http("DELETE", f"sessions/{sid}")[0]

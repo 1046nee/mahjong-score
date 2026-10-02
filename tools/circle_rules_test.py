@@ -11,8 +11,10 @@ REST API で書き込みを試して、許可／拒否が期待どおりかを�
       ルールをコンソールに貼って「公開」してから実行すること。
 実行: python tools/circle_rules_test.py
 """
+import email.utils
 import json
 import random
+import time
 import re
 import sys
 import urllib.error
@@ -55,6 +57,17 @@ def anon_user():
 
 def delete_user(u):
     http("POST", f"https://identitytoolkit.googleapis.com/v1/accounts:delete?key={API_KEY}", {"idToken": u["token"]})
+
+
+def server_now():
+    """サーバーの時刻（ミリ秒）。HTTPの Date ヘッダーから取る（ルールの幅は時間単位なので秒単位で十分）"""
+    req = urllib.request.Request(f"{DB}/.json?shallow=true&print=silent", method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            d = r.headers.get("Date")
+    except urllib.error.HTTPError as e:
+        d = e.headers.get("Date")
+    return int(email.utils.parsedate_to_datetime(d).timestamp() * 1000) if d else int(time.time() * 1000)
 
 
 def op(user, method, path, body=None):
@@ -100,6 +113,15 @@ def main():
         check("B: 自分が本人登録していない人の席を「本人」にはできない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": B["uid"], "at": now, "self": True}))
         check("B: 結びつけた人を他人の名前で記録できない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": A["uid"], "at": now, "self": False}))
         check("B: 他人が追加した試合を外せない（管理者でない）", False, op(B, "DELETE", f"circles/{cid}/games/{sid}"))
+        check("A: 確定の期限（追加から24時間）の無い試合は、追加した本人でも外せない（古い試合＝確定済み）", False, op(A, "DELETE", f"circles/{cid}/games/{sid}"))
+        T = server_now()
+        sid2, sid3 = rnd(10, ID_CHARS), rnd(10, ID_CHARS)
+        check("A: 期限（24時間後）を付けて試合を追加できる", True, op(A, "PUT", f"circles/{cid}/games/{sid2}", {
+            "at": now, "name": "期限つき", "addedBy": A["uid"], "addedByName": "えー", "addedAt": now, "lockAt": T + 24 * 3600 * 1000}))
+        check("A: 期限を遠い先（48時間後）にして追加するのは拒否", False, op(A, "PUT", f"circles/{cid}/games/{sid3}", {
+            "at": now, "name": "抜け道", "addedBy": A["uid"], "addedByName": "えー", "addedAt": now, "lockAt": T + 48 * 3600 * 1000}))
+        check("B: 他人が追加した試合は、期限内でも外せない（管理者でない）", False, op(B, "DELETE", f"circles/{cid}/games/{sid2}"))
+        check("A: 自分が追加した試合は、期限（24時間）までは外せる", True, op(A, "DELETE", f"circles/{cid}/games/{sid2}"))
         check("B: Aが追加した試合を追加し直して上書きできない（同じ試合は二重に入らない）", False, op(B, "PUT", f"circles/{cid}/games/{sid}", {
             "at": now, "name": "二重", "addedBy": B["uid"], "addedByName": "びー", "addedAt": now}))
         check("B: 自分の役割を管理者に上げられない", False, op(B, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))

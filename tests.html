@@ -356,6 +356,24 @@ function opCases(w) {
       const r = apply(ro, { id: 'e9', sid: 'TESTGAME01', at: T(9), kind: 'edit', target, label: '第1試合の修正', round: { points: [36000, 28000, 21000, 15000], members: [0, 1, 2, 3] }, names: NAMES });
       return r.status === 'apply' && r.game.rounds[2].id === 'op0' && r.game.rounds[2].points[0] === 36000 && r.game.log[r.game.log.length - 1].no === 3;
     }],
+    ['記録の確定: lockAt の無い古い試合は「最後の編集から24時間」（作成・試合の入力・履歴のいちばん新しい時刻）', () => {
+      const g = withRounds(P1, P2);   // 試合の入力 T(0)・T(1)
+      g.createdAt = '2026-09-25T09:00:00.000Z';
+      g.log.push({ type: 'settings', at: T(7), label: 'ゲーム設定を変更', op: 'sx' });   // 設定の変更がいちばん新しい
+      const last = Date.parse(T(7)), H24 = 24 * 3600 * 1000;
+      return w.lastEditMs(g) === last && w.lockAtOf(g) === last + H24
+        && w.lockAtOf({ ...g, lockAt: 12345 }) === 12345                    // lockAt があればそれ
+        && w.lockAtOf({ createdAt: T(3), rounds: {}, log: null }) === Date.parse(T(3)) + H24;  // サーバーの生の形（rounds がオブジェクト）でも
+    }],
+    ['記録の確定: 古い試合は最後の編集から24時間を過ぎていれば確定、終了した試合は lockAt（終了から12時間）で確定', () => {
+      const now = w.serverNow(), H = 3600 * 1000;
+      const iso = ms => new Date(ms).toISOString();
+      const old = { createdAt: iso(now - 50 * H), rounds: [{ at: iso(now - 30 * H) }], log: [] };   // 最後の入力が30時間前
+      const live = { createdAt: iso(now - 50 * H), rounds: [{ at: iso(now - 2 * H) }], log: [] };  // 最後の入力が2時間前
+      return w.isGameLocked(old) === true && w.isGameLocked(live) === false
+        && w.isGameLocked({ ...live, endedAt: now - 13 * H, lockAt: now - H }) === true
+        && w.isGameLocked({ ...old, lockAt: now + H }) === false;           // 付いた lockAt が正
+    }],
     ['applyOp 削除: すでに消えている試合なら何もしない（already）', () => {
       const g = withRounds(P1, P2);
       const del = { id: 'd2', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[0]), label: '第1試合の削除' };
