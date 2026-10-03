@@ -1381,6 +1381,7 @@ button.ios-row:active { background: #F2F6F5; }
 .gs-box.ended { background: #EAF0FB; border: 1px solid #C9D6EE; color: #2F4A7A; }
 .gs-box.locked { background: #F1F3F2; border: 1px solid #D5DEDB; color: #3F4D4A; }
 .gs-box b { color: inherit; }
+.gs-acts { display: flex; flex-direction: column; gap: 8px; } .gs-acts .gs-btn { display: block; width: 100%; height: 40px; border: 1.5px solid var(--pc); border-radius: 10px; background: #fff; color: var(--pc); font-size: 14px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .gs-box .gs-btn { display: block; width: 100%; margin-top: 10px; height: 40px; border: 1.5px solid currentColor; border-radius: 10px; background: #fff; color: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .end-game-btn { display: block; width: 100%; margin-top: 4px; height: 46px; border: 1.5px solid var(--pc); border-radius: 12px; background: #fff; color: var(--pc); font-size: 15px; font-weight: 800; cursor: pointer; }
 .sanma .end-game-btn { border-color: #4261AA; color: #4261AA; }
@@ -5596,10 +5597,11 @@ function gameStateHtml(g, withButton) {
   if (isGameLocked(g)) {
     return `<div class="gs-box locked"><b>記録は確定しています</b>（${fmtDateTime(lockAtOf(g))}）。点数の入力・修正はできません。結果を見る・共有する・画像にするのはこれまでどおりできます。</div>`;
   }
+  // 対局を終えたあとは「終了しました」の案内を出さない（2026-10-03 ユーザー指定）。試合の画面にはボタン（チップ・再開）だけ置く
   if (isGameEnded(g)) {
-    return `<div class="gs-box ended"><b>対局は終了しました。</b>${fmtDateTime(lockAtOf(g))} に記録が確定し、それ以降は誰も書き換えられなくなります。それまでは点数の修正ができます。
-      ${withButton && g.settings && g.settings.bonusEnabled ? '<button type="button" class="gs-btn" onclick="openChipSheet()">チップを入力・直す</button>' : ''}
-      ${withButton ? '<button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button>' : ''}</div>`;
+    if (!withButton) return '';
+    return `<div class="gs-acts">${g.settings && g.settings.bonusEnabled ? '<button type="button" class="gs-btn" onclick="openChipSheet()">チップを入力・直す</button>' : ''}
+      <button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button></div>`;
   }
   return '';
 }
@@ -5712,7 +5714,7 @@ async function setGameEnded(ended) {
       return next;
     }, undefined, false);
     if (res.committed) {
-      showToast(ended ? '対局を終了しました。12時間後に記録が確定します' : '対局を再開しました');
+      if (!ended) showToast('対局を再開しました'); // 終えたときは案内を出さない
       track(ended ? 'game_end' : 'game_reopen');
     } else if (why === 'locked') lockedToast();
     else if (why === 'same') showToast(ended ? 'すでに終了しています' : 'すでに再開しています');
