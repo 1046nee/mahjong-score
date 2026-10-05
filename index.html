@@ -1175,11 +1175,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-lab rect { fill: #fff; stroke: var(--pc-ink); stroke-width: 1.2; }
 .mc-spark .sp-lab text { font-size: 9.5px; font-weight: 900; fill: #1F2A28; font-variant-numeric: tabular-nums; }
 .mc-spark .sp-lab text.pos { fill: #1A237E; } .mc-spark .sp-lab text.neg { fill: #C62828; }
-.sp-nav { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-.sp-nb { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 34px; border: 0; border-radius: 10px; background: #fff; color: var(--pc); font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; cursor: pointer; font-family: inherit; }
+.sp-nav { display: flex; justify-content: space-between; margin-top: 6px; }
+.sp-nb { flex: none; display: inline-grid; place-items: center; width: 44px; height: 32px; padding: 0; border: 0; border-radius: 16px; background: #fff; color: var(--pc); cursor: pointer; }
 .sp-nb.pv svg { transform: rotate(180deg); }
-.sp-nb:disabled { color: #B4C0BD; cursor: default; }
-.sp-pg { flex: none; font-size: 11.5px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.sp-nb:disabled { visibility: hidden; }
 .sp-h { display: flex; align-items: center; gap: 8px; padding: 0 2px 2px; font-size: 13px; color: #1F2A28; }
 .sp-h > span { font-size: 12px; color: #5F6E6B; font-weight: 700; } .sp-h b.pos { color: #1A237E; } .sp-h b.neg { color: #C62828; }
 .sp-x { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #fff; color: #5F6E6B; font-size: 16px; font-weight: 800; cursor: pointer; }
@@ -11162,11 +11161,11 @@ function sparkSelect(rid, i, dir = 0) {
   if (!pop.dataset.sw) { pop.dataset.sw = '1'; sparkSwipeInit(pop); }
   return true;
 }
-// カードの下の「‹ 前の日 ｜ n / N日 ｜ 次の日 ›」（端では押せない）
+// カードの下の「‹ 　 ›」（矢印だけ。端では押せない。2026-10-05 ユーザー要望「日付など出さずシンプルに」）
 function sparkNavHtml(rid, i) {
-  const days = sparkReg[rid].days, n = days.length, md = d => `${d.d.getMonth() + 1}/${d.d.getDate()}`;
-  const b = (j, lbl, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前の日' : '次の日'}">${lbl}</button>`;
-  return `<span class="sp-nav">${b(i - 1, `${ico('chevron', 13)}${i > 0 ? md(days[i - 1]) : ''}`, 'pv')}<span class="sp-pg">${i + 1} / ${n}日</span>${b(i + 1, `${i < n - 1 ? md(days[i + 1]) : ''}${ico('chevron', 13)}`, 'nx')}</span>`;
+  const n = sparkReg[rid].days.length;
+  const b = (j, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前の日' : '次の日'}">${ico('chevron', 16)}</button>`;
+  return `<span class="sp-nav">${b(i - 1, 'pv')}${b(i + 1, 'nx')}</span>`;
 }
 function sparkStep(rid, d) {
   const pop = document.getElementById('pop-' + rid);
