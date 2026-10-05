@@ -9,7 +9,7 @@
 - `contact.html` — お問い合わせ（Googleフォームをiframeでサイト内に埋め込み＋受付内容・返信目安・運営者情報。広告枠は置かない）
 - `terms.html` / `privacy.html` — 規約・PP（AdSense必須文言含む。広告枠は置かない）
 - `404.html` — カスタム404（noindex。blog-site.jsは読み込む）
-- `tests.html` — 計算ロジックの単体テスト（noindex → docs/app-spec.md）
+- `tests.html` — 計算ロジックの単体テスト（noindex・**本番には配信しない**＝firebase.json の ignore。手元のサーバーで開く → docs/app-spec.md）
 - `sitemap.xml` / `robots.txt` — **新ページを追加したらsitemap.xmlに`<url>`を1件追加**（`<lastmod>`付き。既存ページも大きく更新したらlastmodを更新）
 - `assets/` — favicon.png(512) / logo.png(800×250透過) / ogp2.png(現行OGP) / ogp.png(旧・残置) / blog.css / blog-site.js / ads.js
 - `favicon.ico` — ルート直下16/32/48px（→ docs/image-tools.md）
@@ -137,6 +137,10 @@
   (d) LP特徴カード・FAQ（21問）・運営者情報（実際の運営の記録＝2026年8月の13人・2日間チーム戦）
   **再申請は、ログイン・まとめをユーザーのスマホで確認して公開し、Search Consoleで新記事のインデックスを確認してから**。
   審査の結果が6〜15日で機械的に返ってきていたので、急いで出し直さない（リクエスト回数の上限表示も出ていた）
+  **Phase 5（2026-10-05・再申請前の点検）**: 内部リンク切れ0・サイトマップ30件すべて実在・全ページに審査タグ（noindex以外）を確認。
+  生HTMLから「倍率」「換算」を消した（JSのコメント・記事の「1,000点を1ポイントに換算」も「数えた」に）。古くなった説明（同じ人としてまとめる・
+  試合ごとのチップ・持ち点の入れ直し方）を今の機能に合わせた。検証用の tests.html を本番から外した（firebase.json の ignore）。
+  前回からの大きな変化はアプリ側（仲間ページ・記録の確定・結果のシート・マイページの成績）
 - 枠は `/assets/ads.js` の AD_SLOTS で管理: article_top / article_bottom / list_bottom / lp_bottom
 - **審査に通るまでは `ADS_APPROVED = false` で枠を一切描かない**（2026-09-25〜）。承認前は広告が配信されず、
   「高さ280pxの空白＋スポンサーリンク」が記事ごとに2つ並んで未完成のページに見えていた。

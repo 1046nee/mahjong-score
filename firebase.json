@@ -10,7 +10,8 @@
       "まじゃすこ素材/**",
       "**/.*",
       "**/node_modules/**",
-      "README.md"
+      "README.md",
+      "tests.html"
     ],
     "headers": [
       {

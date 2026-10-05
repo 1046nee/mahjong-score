@@ -652,7 +652,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* チームの識別記号（履歴・成績表・チーム順位で所属を示す。色ではなく記号で区別） */
 .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; }
 /* 先頭列（試合結果=試合番号・個人成績=項目）: 両表で同じ体裁にそろえ、横スクロール時も固定表示。
-   ラベルはどのズーム倍率でも省略しない（ellipsis禁止） */
+   ラベルはどのズームの度合いでも省略しない（ellipsis禁止） */
 .rounds-table th.sticky-col, .rounds-table td.sticky-col { position: sticky; left: 0; z-index: 1; text-align: left; padding-left: 8px; }
 .rounds-table td.sticky-col { background: #fff; font-weight: 600; font-size: 12px; white-space: nowrap; }
 /* チーム戦: プレイヤー名の上のチーム名行（colspanでまとめる）とチーム境目の縦区切り線
@@ -4459,7 +4459,7 @@ function openCircleAddGames() {
     ${rows || '<div style="font-size:12px;color:#999;padding:6px 0">追加できる試合はありません</div>'}
     <div style="font-size:12px;color:#555;line-height:1.7;margin:14px 0 6px"><b>LINEのトークから取り込む</b>：トーク画面の「≡」→「設定」→「トーク履歴を送信」で書き出した文章や、試合のURLを何行でも貼り付けてください。中のまじゃすこの試合を全部拾います。</div>
     <textarea id="cadd-text" rows="4" style="width:100%;font-size:12px;padding:8px;border:1px solid var(--pc-line);border-radius:8px" placeholder="ここに貼り付け"></textarea>
-    <div style="font-size:11px;color:#8a9aa5;margin-top:6px;line-height:1.6">名簿と同じ名前は自動で連携し、名簿にいない名前は新しい人として名簿に足します（あとから「同じ人としてまとめる」で直せます）。仮の名前（A・B…）の席は、あとで連携してください。</div>
+    <div style="font-size:11px;color:#8a9aa5;margin-top:6px;line-height:1.6">名簿と同じ名前は自動で連携し、名簿にいない名前は新しい人として名簿に足します（違っていたら、メンバーの成績の「連携済みの試合」で試合での名前を確かめて、名前の連携で直せます）。仮の名前（A・B…）の席は、あとで連携してください。</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="runCircleAddGames()">追加する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
@@ -7315,11 +7315,11 @@ function imgFitScale(w, h) {
   let sc = IMG_SCALE;
   const longer = Math.max(w, h);
   if (longer * sc > IMG_MAX_SIDE) sc = IMG_MAX_SIDE / longer;
-  // ぴったり上限になる倍率を出すと、丸め誤差で1pxだけ超えて「収まらない」判定になる → 0.1%だけ余裕を持たせる
+  // ぴったり上限になる縮尺を出すと、丸め誤差で1pxだけ超えて「収まらない」判定になる → 0.1%だけ余裕を持たせる
   if (w * sc * h * sc > IMG_MAX_AREA) sc = Math.sqrt(IMG_MAX_AREA / (w * h)) * 0.999;
   return Math.max(IMG_MIN_SCALE, Math.min(IMG_SCALE, sc));
 }
-// その倍率で端末の上限に収まるか（収まらない＝読める大きさでは1枚にできない）。
+// その縮尺で端末の上限に収まるか（収まらない＝読める大きさでは1枚にできない）。
 // 判定は実際に作られるピクセル数（四捨五入後）で行う
 function imgFitsCanvas(w, h, sc) {
   const pw = Math.round(w * sc), ph = Math.round(h * sc);
@@ -7327,7 +7327,7 @@ function imgFitsCanvas(w, h, sc) {
 }
 const IMG_TOO_LARGE = 'too-large';
 // CSS px で指定して、実ピクセルは×2（既定）で持つCanvasを作る。
-// scを省略すると上限に収まる倍率を自動で選ぶ（長大な表・まとめ画像はここで自動的に縮む）
+// scを省略すると上限に収まる縮尺を自動で選ぶ（長大な表・まとめ画像はここで自動的に縮む）
 function imgCanvas(w, h, sc = null) {
   const s = sc == null ? imgFitScale(w, h) : sc;
   const c = document.createElement('canvas');
@@ -8304,7 +8304,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
   const statLabels = ['試合数', '平均着順', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
-    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数', '5万点以上', '箱下'];
+    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数']; // 5万点以上・箱下は自分の成績（マイページなど）だけ（2026-10-05）
   // チップ・焼き鳥・チョンボは記録しているグループだけ（旧データは記録があれば出す）。回数は単位なし
   const useChips = !!s.bonusEnabled || rounds.some(r => r.chips);
   const useYaki = !!s.yakitori || rounds.some(r => r.yakitori);
@@ -8338,10 +8338,9 @@ function rankCountHtml(rounds, s, forImage = false) {
         `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
         `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
       if (ptsCnt[i]) {
-        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`,
-          `<td style="${overCnt[i] ? 'font-weight:700;color:#1a237e' : 'color:#ccc'}">${overCnt[i]}</td>`, `<td style="${boxCnt[i] ? 'font-weight:700;color:#c62828' : 'color:#ccc'}">${boxCnt[i]}</td>`);
+        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
       } else {
-        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`);
+        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
       }
       if (useChips) {
         const c = extra.chips[i] || 0;
