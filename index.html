@@ -1166,6 +1166,20 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-c.r3 { background: var(--rk3-tint); color: var(--rk3-ink); box-shadow: inset 0 0 0 1px var(--rk3); } .sp-c.r4 { background: var(--rk4); color: var(--rk4-on); }
 .sp-g .gr-opp { margin-top: 5px; }
 .sp-pop[hidden] { display: none; }
+.sp-pop { touch-action: pan-y; }
+.sp-pop.sl-l { animation: spSlL .22s ease-out; } .sp-pop.sl-r { animation: spSlR .22s ease-out; }
+@keyframes spSlL { from { transform: translateX(28px); opacity: .4; } to { transform: none; opacity: 1; } }
+@keyframes spSlR { from { transform: translateX(-28px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sp-pop.sl-l, .sp-pop.sl-r { animation: none; } }
+.mc-spark .sp-lab { pointer-events: none; }
+.mc-spark .sp-lab rect { fill: #fff; stroke: var(--pc-ink); stroke-width: 1.2; }
+.mc-spark .sp-lab text { font-size: 9.5px; font-weight: 900; fill: #1F2A28; font-variant-numeric: tabular-nums; }
+.mc-spark .sp-lab text.pos { fill: #1A237E; } .mc-spark .sp-lab text.neg { fill: #C62828; }
+.sp-nav { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.sp-nb { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-height: 34px; border: 0; border-radius: 10px; background: #fff; color: var(--pc); font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; cursor: pointer; font-family: inherit; }
+.sp-nb.pv svg { transform: rotate(180deg); }
+.sp-nb:disabled { color: #B4C0BD; cursor: default; }
+.sp-pg { flex: none; font-size: 11.5px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .sp-h { display: flex; align-items: center; gap: 8px; padding: 0 2px 2px; font-size: 13px; color: #1F2A28; }
 .sp-h > span { font-size: 12px; color: #5F6E6B; font-weight: 700; } .sp-h b.pos { color: #1A237E; } .sp-h b.neg { color: #C62828; }
 .sp-x { margin-left: auto; width: 28px; height: 28px; border: 0; border-radius: 50%; background: #fff; color: #5F6E6B; font-size: 16px; font-weight: 800; cursor: pointer; }
@@ -11072,7 +11086,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const dots = days.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" data-d="${i}" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
   // 押せる範囲は点のまわりの縦の帯（指でも当たるように）。押した点には輪
   const rid = 'sp' + (++sparkRegSeq);
-  sparkReg[rid] = { np, days };
+  sparkReg[rid] = { np, days, vals: ys.slice(1), Wp };
   const keys = Object.keys(sparkReg); if (keys.length > 40) keys.slice(0, keys.length - 40).forEach(k => delete sparkReg[k]);
   const hits = days.map((d, i) => `<rect class="sp-hit" data-i="${i}" x="${(x(i + 1) - SP / 2).toFixed(1)}" y="0" width="${SP}" height="${H}"/>`).join('');
   const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.d.getMonth() + 1}/${d.d.getDate()}</text>`).join('');
@@ -11100,7 +11114,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
     <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
       data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
-    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}${hits}</svg></span></span>
+    <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}<g class="sp-lab" transform="translate(-200,-200)"><rect rx="4" ry="4" height="13"/><text text-anchor="middle" y="9.6"></text></g>${hits}</svg></span></span>
     <span class="sp-pop" id="pop-${rid}" hidden></span>`;
 }
 // 推移のグラフの点（1日）を押したとき: その日のゲームごとに、着順・試合数・スコア・相手（雀魂の長押しの簡易結果のように）。
@@ -11112,17 +11126,74 @@ function sparkTap(e, rid) {
   const t = e.target && e.target.closest ? e.target.closest('[data-i]') : null;
   const reg = sparkReg[rid];
   if (!t || !reg) return;
-  const i = +t.getAttribute('data-i'), day = reg.days[i];
-  if (!day) return;
-  const svg = t.closest('svg'), dot = svg && svg.querySelector(`circle.dot[data-d="${i}"]`), ring = svg && svg.querySelector('.sp-ring');
+  if (sparkSelect(rid, +t.getAttribute('data-i'))) track('spark_day_open');
+}
+// i 番目の日を選ぶ: 点に輪・点の上にその時点の通算スコア・下のカードにその日の結果。dir＝前後へ移ったときの向き（-1 前の日・+1 次の日）
+function sparkSelect(rid, i, dir = 0) {
+  const reg = sparkReg[rid], day = reg && reg.days[i];
+  const svg = document.querySelector(`.mc-spark[data-rid="${rid}"]`), pop = document.getElementById('pop-' + rid);
+  if (!day || !svg || !pop) return false;
+  const dot = svg.querySelector(`circle.dot[data-d="${i}"]`), ring = svg.querySelector('.sp-ring');
   if (dot && ring) { ring.setAttribute('cx', dot.getAttribute('cx')); ring.setAttribute('cy', dot.getAttribute('cy')); }
-  const pop = document.getElementById('pop-' + rid);
-  if (!pop) return;
+  const lab = svg.querySelector('.sp-lab');
+  if (dot && lab) {
+    const txt = fmtScore(reg.vals[i]), w = txt.length * 5.6 + 8;
+    const cx = Number(dot.getAttribute('cx')), cy = Number(dot.getAttribute('cy'));
+    const lx = Math.min(Math.max(cx, w / 2 + 1), reg.Wp - w / 2 - 1);
+    const ly = cy - 11 >= 7 ? cy - 23 : cy + 9; // 上に入らないとき（いちばん上の点）は下に出す
+    lab.querySelector('text').textContent = txt;
+    lab.querySelector('text').setAttribute('class', reg.vals[i] > 0 ? 'pos' : reg.vals[i] < 0 ? 'neg' : '');
+    const rc = lab.querySelector('rect'); rc.setAttribute('x', -w / 2); rc.setAttribute('width', w);
+    lab.setAttribute('transform', `translate(${lx.toFixed(1)},${ly.toFixed(1)})`);
+    // 選んだ点がスクロールの外なら見える所まで動かす
+    const sc = svg.closest('.mc-scroll');
+    if (sc && dir) {
+      const r = dot.getBoundingClientRect(), b = sc.getBoundingClientRect();
+      if (r.left < b.left + 24) sc.scrollBy({ left: r.left - b.left - 40, behavior: 'smooth' });
+      else if (r.right > b.right - 24) sc.scrollBy({ left: r.right - b.right + 40, behavior: 'smooth' });
+    }
+  }
   const host = pop.closest('#mp-stats, #circle-top, #ms-top, .pf-sheet');
   const ctx = { sel: host && host.id ? '#' + host.id : '', k: day.k, member: host && host.dataset ? host.dataset.mid || null : null };
-  pop.innerHTML = sparkPopHtml(day, reg.np, !t.closest('.mc-static'), ctx);
+  pop.innerHTML = sparkPopHtml(day, reg.np, !svg.closest('.mc-static'), ctx) + sparkNavHtml(rid, i);
+  pop.dataset.rid = rid; pop.dataset.i = i;
   pop.hidden = false;
-  track('spark_day_open');
+  if (dir) { pop.classList.remove('sl-l', 'sl-r'); void pop.offsetWidth; pop.classList.add(dir > 0 ? 'sl-l' : 'sl-r'); }
+  if (!pop.dataset.sw) { pop.dataset.sw = '1'; sparkSwipeInit(pop); }
+  return true;
+}
+// カードの下の「‹ 前の日 ｜ n / N日 ｜ 次の日 ›」（端では押せない）
+function sparkNavHtml(rid, i) {
+  const days = sparkReg[rid].days, n = days.length, md = d => `${d.d.getMonth() + 1}/${d.d.getDate()}`;
+  const b = (j, lbl, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前の日' : '次の日'}">${lbl}</button>`;
+  return `<span class="sp-nav">${b(i - 1, `${ico('chevron', 13)}${i > 0 ? md(days[i - 1]) : ''}`, 'pv')}<span class="sp-pg">${i + 1} / ${n}日</span>${b(i + 1, `${i < n - 1 ? md(days[i + 1]) : ''}${ico('chevron', 13)}`, 'nx')}</span>`;
+}
+function sparkStep(rid, d) {
+  const pop = document.getElementById('pop-' + rid);
+  if (!pop || pop.hidden) return;
+  const j = Number(pop.dataset.i) + d;
+  if (sparkReg[rid] && j >= 0 && j < sparkReg[rid].days.length && sparkSelect(rid, j, d)) track('spark_day_swipe');
+}
+// 結果のカードを左右にスワイプ: 左へ＝次の日、右へ＝前の日（写真をめくるのと同じ向き）。縦のスクロールはそのまま
+function sparkSwipeInit(pop) {
+  let x0 = null, y0 = 0, swiped = 0;
+  // 離したのがカードの外でも数える（指が端まで流れても）
+  pop.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button) return;
+    x0 = e.clientX; y0 = e.clientY;
+    window.addEventListener('pointerup', end, { once: true });
+    window.addEventListener('pointercancel', () => { x0 = null; }, { once: true });
+  });
+  const end = e => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    swiped = Date.now();
+    sparkStep(pop.dataset.rid, dx < 0 ? 1 : -1);
+  };
+  // スワイプのあとの click（ゲームを開く・カードを開く）は無視
+  pop.addEventListener('click', e => { if (Date.now() - swiped < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
 }
 function sparkPress(e, rid) {
   clearTimeout(sparkPressTimer);
@@ -11138,6 +11209,8 @@ function closeSparkPop(btn) {
   pop.hidden = true;
   const ring = pop.previousElementSibling && pop.previousElementSibling.querySelector('.sp-ring');
   if (ring) { ring.setAttribute('cx', -20); ring.setAttribute('cy', -20); }
+  const lab = pop.previousElementSibling && pop.previousElementSibling.querySelector('.sp-lab');
+  if (lab) lab.setAttribute('transform', 'translate(-200,-200)');
 }
 // 1ゲーム＝過去の試合の一覧と同じ並び（順位のピル・スコア・自分の名前／相手）＋その日の試合数・平均着順・着順ごとの回数。
 // 数えるのはその日の試合だけ（そのゲームの、その日の分の合計で順位を出す）
