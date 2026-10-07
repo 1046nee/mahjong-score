@@ -840,7 +840,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gm-month { font-size: 12px; font-weight: 800; color: #5F6E6B; margin: 12px 4px 6px; }
 .gm-month:first-child { margin-top: 0; }
 /* 年の切れ目の線（一覧の月の見出し・タイルの年の見出し。2026-10-07） */
-.gm-month.yr, .ht-grid + .ht-year { margin-top: 18px; padding-top: 14px; border-top: 1.5px solid #C9D9D4; }
+.gm-month.yr, .ht-grid + .ht-year { margin-top: 20px; padding-top: 14px; border-top: 2px solid #4F5C5A; } /* 黒っぽい線（2026-10-07 目立たせた） */
 .gr { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; cursor: pointer; border-top: .5px solid #D5DEDB; }
 .gm-list .gr:first-child { border-top: 0; }
 .gr-main { flex: 1; min-width: 0; }
@@ -1154,7 +1154,31 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hg-card { background: #fff; border-radius: 14px; padding: 10px; box-shadow: inset 0 0 0 1px #E3E9E7; min-width: 0; }
 .hg-card.tap { cursor: pointer; }
 /* 対戦を見る（mup） */
-.mu-people { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.mu-people { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mu-sel, .mu-cand { padding: 10px 12px 12px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); margin-bottom: 10px; }
+.mu-cand { background: #F4F7F6; box-shadow: inset 0 0 0 1px #DCE4E2; } .mu-cand .cw-pick { margin: 0; }
+.mu-sel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #5F6E6B; }
+.mu-sel .mu-p { box-shadow: inset 0 0 0 1.5px var(--pc-soft); }
+.mu-chg { height: 28px; padding: 0 12px; border: 0; border-radius: 14px; background: var(--pc); color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.mu-chg.on { background: #EEF2F1; color: #33413E; }
+.mu-none { font-size: 12.5px; color: #8A9AA5; }
+.mu-flow { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
+.mu-dot { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; }
+.mu-dot.draw { background: #DCE4E2; color: #5F6E6B; }
+.mu-dot:last-child { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--pc); }
+.mu-tape { display: flex; flex-direction: column; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); overflow: hidden; }
+.mu-tr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 8px 12px; border-top: .5px solid #E3E9E7; font-variant-numeric: tabular-nums; }
+.mu-tr:first-child { border-top: 0; }
+.mu-tr span { font-size: 11.5px; font-weight: 700; color: #5F6E6B; text-align: center; white-space: nowrap; }
+.mu-tr b { font-size: 15px; font-weight: 800; color: #8A9AA5; } .mu-tr b:last-child { text-align: right; }
+.mu-tr b.win { color: #1F2A28; } .mu-tr b.win::after { content: ''; }
+.mu-g-in { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; }
+.mu-g-in em { font-style: normal; font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 9px; background: #EEF2F1; color: #5F6E6B; white-space: nowrap; }
+.mu-g-in em.pos { background: #E8EAF6; color: #1A237E; } .mu-g-in em.neg { background: #FDECEC; color: #C62828; }
+.mu-g-vs { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-variant-numeric: tabular-nums; } .mu-g-vs > span { color: #AEBBB8; } .mu-g-vs b { font-weight: 800; }
+.mu-pos { font-size: 12px; color: #5F6E6B; font-weight: 700; white-space: nowrap; } .mu-pos b { font-size: 16px; color: #1F2A28; font-weight: 900; }
+.mu-bar { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: #E3E9E7; overflow: hidden; } .mu-bar i { display: block; height: 100%; background: #D4A017; }
+.mu-sheet .mx-scroll { margin-top: 6px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-p { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 4px 0 4px; border-radius: 16px; background: #fff; box-shadow: var(--sh-1); font-size: 13px; }
 .mu-p b { font-weight: 800; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-p button { width: 22px; height: 22px; border: 0; border-radius: 50%; background: #EEF2F1; color: #5F6E6B; font-size: 13px; font-weight: 800; cursor: pointer; padding: 0; }
@@ -1180,7 +1204,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-rk { font-size: 13px; font-weight: 900; color: #5F6E6B; text-align: center; }
 .mu-nm { font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-wl { font-size: 12px; font-weight: 700; color: #5F6E6B; white-space: nowrap; } .mu-wl b { font-size: 16px; font-weight: 900; margin: 0 1px 0 4px; }
-.mu-sub { grid-column: 3 / 5; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #5F6E6B; font-weight: 700; flex-wrap: wrap; }
+.mu-sub { grid-column: 2 / 5; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #5F6E6B; font-weight: 700; white-space: nowrap; min-width: 0; }
+.mu-sub b:last-child { margin-left: auto; }
 .mu-list { display: flex; flex-direction: column; gap: 8px; }
 .mu-g { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 10px 12px; border: 0; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: inherit; cursor: pointer; }
 .mu-g:active { opacity: .75; }
@@ -1188,7 +1213,6 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-g-top b { font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .mu-g-top small { flex: none; font-size: 11.5px; color: #5F6E6B; font-weight: 700; }
 .mu-g-sc { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
-.mu-g-sc small { margin-left: auto; font-size: 11.5px; color: #8A9AA5; font-weight: 700; }
 .mu-g-p { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-variant-numeric: tabular-nums; } .mu-g-p b { font-weight: 800; }
 .mu-g-p.top .mu-av { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #D4A017; } .hg-card.tap:active { opacity: .7; } /* 押すとその2人が同じ卓だった試合の成績（pairSheet） */
 .pair-avs { display: flex; justify-content: center; } .pair-avs .pf-av { margin: 0; box-shadow: 0 0 0 3px var(--pc-page, #fff); } .pair-avs .pf-av + .pf-av { margin-left: -16px; }
@@ -1886,6 +1910,9 @@ button.ios-row:active { background: #F2F6F5; }
 .pp-sub2 b { font-weight: 800; } .pp-sub2 .pp-sc { margin-left: 4px; } .pp-sub2 b.pos { color: #1A237E; } .pp-sub2 b.neg { color: #C62828; }
 /* 順位の4位から下: 2列の小さなカード（棒なし） */
 .lb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lb-avg { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 2px 0; font-size: 10.5px; font-weight: 700; color: #8A9AA5; } /* 平均の点線（目立たせない） */
+.lb-avg::before, .lb-avg::after { content: ''; flex: 1; border-top: 1.5px dashed #C3CECB; }
+.lb-avg span { flex: none; }
 .lb-under-h { margin: 16px 2px 8px; padding-top: 12px; border-top: 1px solid #D5DEDB; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 6試合未満（順位なし） */
 .lb-cell.under .lc-rk { color: #AEBBB8; }
 .lb-none { margin: 4px 0 8px; padding: 14px; border-radius: 12px; background: #F4F7F6; font-size: 13px; color: #5F6E6B; line-height: 1.6; }
@@ -4081,7 +4108,14 @@ function circleRankTabHtml(st, modeChips, noBind) {
       <span class="lc-sub">${rankSubHtml(p, m)}</span></button>`;
   };
   // 全員を出す（10位で畳むのは2026-10-02にやめた）
-  const rows = q.length > 3 ? `<div class="lb-grid">${q.slice(3).map((p, i) => row(p, i + 4)).join('')}</div>` : '';
+  // 平均（期待値）の線: 通算スコア±0・平均着順 2.50（三麻 2.00）・トップ率 25%（33%）・ラス回避 75%（67%）。それ以上の人と下回る人の間に点線（2026-10-07）
+  const np = circleMode === '3' ? 3 : 4;
+  const base = { score: 0, avg: (np + 1) / 2, top: 1 / np, las: 1 - 1 / np }[m];
+  const nAbove = base == null ? -1 : q.filter(p => { const v = circleMetricVal(p, m); return m === 'avg' ? v <= base + 1e-9 : v >= base - 1e-9; }).length;
+  const avgLine = nAbove > 0 && nAbove < q.length && q.length > 3
+    ? `<div class="lb-avg"><span>平均 ${m === 'score' ? '±0' : m === 'avg' ? base.toFixed(2) : pctText(base)}${nAbove < 3 ? `（平均以上は上の${nAbove}人）` : ''}</span></div>` : '';
+  const at = avgLine ? Math.max(0, nAbove - 3) : -1;
+  const rows = q.length > 3 ? `<div class="lb-grid">${q.slice(3).map((p, i) => (i === at ? avgLine : '') + row(p, i + 4)).join('')}</div>` : '';
   const none = q.length ? '' : `<div class="lb-none">${RANK_MIN}試合以上の人がまだいません。順位は${RANK_MIN}試合以上の人だけで決めます。</div>`;
   const low = under.length ? `<div class="lb-under-h">順位なし（${RANK_MIN}試合未満）</div><div class="lb-grid">${under.map(p => row(p, '—')).join('')}</div>` : '';
   return `<div class="card">${head}${modeChips}${circleKindSegHtml()}${chips}${q.length ? podium : ''}${rows}${none}${low}${q.length ? `<div class="h2h-note">順位は${RANK_MIN}試合以上の人だけで決めます。</div>` : ''}</div>`;
@@ -5044,32 +5078,48 @@ function mupEntries() {
 function mupCompute(P) {
   const np = mpMode === 3 ? 3 : 4;
   const inP = curPeriod()[0] === 'n' ? null : periodFilter();
-  const people = {}; P.forEach(p => { people[p] = { n: 0, w: 0, l: 0, d: 0, rankSum: 0, score: 0, vs: {} }; });
-  const games = [];
+  const people = {};
+  P.forEach(p => { people[p] = { n: 0, w: 0, l: 0, d: 0, rankSum: 0, score: 0, top: 0, las: 0, gTop: 0, gPosSum: 0, best: null, vs: {} }; });
+  const games = [], rounds = [];
   mupEntries().forEach(e => {
     const g = e.g, s = g.settings;
     if ((s.numPlayers === 3 ? 3 : 4) !== np || !statKindOk(g)) return;
     let gm = null;
-    (g.rounds || []).forEach(r => {
+    (g.rounds || []).forEach((r, ri) => {
       if (!r.scores) return;
       const mem = roundMembers(r, s), at = {};
       mem.forEach((m, k) => { const pid = e.pidOf(m); if (pid && people[pid] && r.scores[k] != null && at[pid] == null) at[pid] = k; });
       if (P.some(p => at[p] == null)) return;
-      if (inP && !inP(roundMs(g, r))) return;
+      const ms = roundMs(g, r);
+      if (inP && !inP(ms)) return;
       const grp = rankGroups((r.points || r.scores).slice(0, mem.length));
-      if (!gm) gm = { sid: e.sid, g, n: 0, ms: gameDayMs(g), sc: {}, seat: {}, w: {} };
+      if (!gm) gm = { sid: e.sid, g, n: 0, ms: gameDayMs(g), sc: {}, seat: {}, w: {}, l: {}, gt: {} };
       gm.n++;
-      P.forEach(p => { const k = at[p], x = people[p], v = Number(r.scores[k]) || 0; x.n++; x.rankSum += grp[k].avgRank; x.score += v; gm.sc[p] = (gm.sc[p] || 0) + v; gm.seat[p] = mem[k]; });
+      const rk = {}, sc = {};
+      P.forEach(p => { const k = at[p], gk = grp[k], x = people[p], v = Number(r.scores[k]) || 0;
+        rk[p] = gk.avgRank; sc[p] = v;
+        x.n++; x.rankSum += gk.avgRank; x.score += v; if (gk.start === 0) x.top += 1 / gk.size; if (gk.isLast) x.las += 1 / gk.size;
+        if (x.best == null || v > x.best) x.best = v;
+        gm.sc[p] = (gm.sc[p] || 0) + v; gm.seat[p] = mem[k]; });
+      // メンバーの中で何番目か（同じ着順は分け合う）。いちばん上＝メンバー内トップ
+      P.forEach(p => {
+        const better = P.filter(o => o !== p && rk[o] < rk[p]).length, same = P.filter(o => o !== p && rk[o] === rk[p]).length;
+        people[p].gPosSum += 1 + better + same / 2;
+        if (!better) { people[p].gTop += 1 / (same + 1); gm.gt[p] = (gm.gt[p] || 0) + 1 / (same + 1); }
+      });
       P.forEach(a => P.forEach(b => {
         if (a === b) return;
-        const ra = grp[at[a]].avgRank, rb = grp[at[b]].avgRank, v = people[a].vs[b] = people[a].vs[b] || { w: 0, l: 0, d: 0 };
-        if (ra < rb) { v.w++; people[a].w++; } else if (ra > rb) { v.l++; people[a].l++; } else { v.d++; people[a].d++; }
+        const v = people[a].vs[b] = people[a].vs[b] || { n: 0, w: 0, l: 0, d: 0, scoreA: 0, scoreB: 0, rankA: 0, rankB: 0 };
+        v.n++; v.scoreA += sc[a]; v.scoreB += sc[b]; v.rankA += rk[a]; v.rankB += rk[b];
+        if (rk[a] < rk[b]) { v.w++; people[a].w++; gm.w[a] = (gm.w[a] || 0) + 1; } else if (rk[a] > rk[b]) { v.l++; people[a].l++; gm.l[a] = (gm.l[a] || 0) + 1; } else { v.d++; people[a].d++; }
       }));
+      rounds.push({ ms, o: ri, sid: e.sid, rk, sc });
     });
     if (gm) games.push(gm);
   });
   games.sort((a, b) => b.ms - a.ms);
-  return { people, games, np };
+  rounds.sort((a, b) => a.ms - b.ms || a.o - b.o);
+  return { people, games, rounds, np };
 }
 function mupName(p) { return mup.kind === 'circle' ? rosterName(p) : p === '@me' ? 'あなた' : ((myPairCtx && myPairCtx.disp[p]) || ''); }
 function mupAv(p) { return mup.kind === 'circle' ? avColor(p) : p === '@me' ? 'var(--pc)' : avColor(mupName(p)); }
@@ -5084,51 +5134,95 @@ function openCircleMatchup(P) {
 function openMyMatchup(i) { const c = myPairCtx; if (!c || !c.keys[i]) return; mup = { kind: 'my', P: ['@me', c.keys[i]], pick: false }; renderMatchup(); }
 function mupToggle(p) { mup.P = mup.P.includes(p) ? mup.P.filter(x => x !== p) : mup.P.concat([p]); renderMatchup(); }
 function mupReopen() { if (mup) renderMatchup(); }
+// 2人: 対戦の数字（勝ち-負け）→ 最近の流れ（勝った人の顔を古い順に）→ 2人をくらべる（いっしょに打った試合での成績を左右に）→ ゲームごとの勝ち負け
+// 3人以上: このメンバーがそろった試合で「メンバーの中で何番目だったか」→ 最近の流れ（メンバー内トップの顔）→ メンバーどうしの勝ち負けの表 → ゲームごとの順番
+function mupFlowHtml(res, P) {
+  const last = res.rounds.slice(-12);
+  if (!last.length) return '';
+  const two = P.length === 2;
+  const dots = last.map(r => {
+    const best = Math.min(...P.map(p => r.rk[p])), tops = P.filter(p => r.rk[p] === best);
+    if (tops.length > 1) return `<i class="mu-dot draw" title="分け">=</i>`;
+    return `<i class="mu-dot" style="background:${mupAv(tops[0])}" title="${esc(mupName(tops[0]))}">${esc(avInitial(mupName(tops[0])))}</i>`;
+  }).join('');
+  // いまの連続（同じ人が続けて上）
+  let streak = 0, who = null;
+  for (let i = res.rounds.length - 1; i >= 0; i--) {
+    const r = res.rounds[i], best = Math.min(...P.map(p => r.rk[p])), tops = P.filter(p => r.rk[p] === best);
+    if (tops.length !== 1 || (who && tops[0] !== who)) break;
+    who = tops[0]; streak++;
+  }
+  const note = streak >= 2 ? `<b>${esc(mupName(who))}</b>が${streak}試合続けて${two ? '勝ち' : 'メンバーの中でいちばん上'}` : '';
+  return `<div class="pf-h">最近の${last.length}試合（左が古い）</div><div class="mu-flow">${dots}</div>${note ? `<div class="mu-meta">${note}</div>` : ''}`;
+}
+function mupTapeHtml(res, a, b) {
+  const A = res.people[a], B = res.people[b];
+  const rows = [
+    ['平均着順', A.rankSum / A.n, B.rankSum / B.n, v => v.toFixed(2), true],
+    ['トップ率', A.top / A.n, B.top / B.n, pctText, false],
+    ['ラス率', A.las / A.n, B.las / B.n, pctText, true],
+    ['1試合の平均スコア', A.score / A.n, B.score / B.n, v => fmtScore(Math.round(v * 10) / 10), false],
+    ['最高スコア', A.best, B.best, v => fmtScore(v), false],
+  ];
+  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="mu-tape">${rows.map(([l, x, y, f, low]) => {
+    const ax = low ? x < y : x > y, bx = low ? y < x : y > x;
+    return `<div class="mu-tr"><b class="${ax ? 'win' : ''}">${f(x)}</b><span>${l}</span><b class="${bx ? 'win' : ''}">${f(y)}</b></div>`;
+  }).join('')}</div>`;
+}
 function renderMatchup() {
   const P = mup.P, edit = mup.kind === 'circle';
   const res = P.length >= 2 ? mupCompute(P) : null;
+  // 選んでいる人（上の枠）と、足せる人（下の候補）を分ける
   const chips = P.map(p => `<span class="mu-p">${mupAvHtml(p)}<b>${esc(mupName(p))}</b>${edit ? `<button type="button" aria-label="${esc(mupName(p))}を外す" onclick="mupToggle('${p}')">×</button>` : ''}</span>`).join('');
-  const pickBtn = edit ? `<button type="button" class="mu-add${mup.pick ? ' on' : ''}" onclick="mup.pick=!mup.pick;renderMatchup()">${mup.pick ? '選び終わる' : '＋ 人を選ぶ'}</button>` : '';
-  const ents = edit ? Object.entries(rosterOf()).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')) : [];
-  const picker = edit && mup.pick ? `<div class="cw-pick mu-pick">${ents.map(([m, r]) => `<button type="button" class="cw-opt${P.includes(m) ? ' on' : ''}" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '';
+  const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}人）</span>${edit ? `<button type="button" class="mu-chg${mup.pick ? ' on' : ''}" onclick="mup.pick=!mup.pick;renderMatchup()">${mup.pick ? '選び終わる' : '人を足す'}</button>` : ''}</div>
+    <div class="mu-people">${chips || '<span class="mu-none">まだだれも選んでいません</span>'}</div></div>`;
+  const cand = edit ? Object.entries(rosterOf()).filter(([m]) => !P.includes(m)).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')) : [];
+  const picker = edit && mup.pick ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
   let body = '';
-  if (!res) body = `<div class="mu-empty">${edit ? '2人以上を選ぶと、その人たちが全員同じ卓にいた試合だけで、だれが勝ち越しているかと、いっしょに打った試合が出ます。自分以外の人どうしも選べます。' : ''}</div>`;
+  if (!res) body = `<div class="mu-empty">2人以上を選ぶと、その人たちが全員同じ卓にいた試合だけで、だれが勝ち越しているか・最近の流れ・いっしょに打った試合が見られます。自分以外の人どうしも選べます。</div>`;
   else if (!res.games.length) body = `<div class="mu-empty">${curPeriod() === 'all' ? '' : esc(periodLabel()) + 'に'}全員が同じ卓にいた${res.np === 3 ? '三麻' : '四麻'}の試合はありません。</div>`;
-  else {
-    const nR = res.people[P[0]].n;
-    let sum;
-    if (P.length === 2) {
-      const [a, b] = P, x = res.people[a], v = x.vs[b], pct = v.w + v.l ? Math.round(v.w / (v.w + v.l) * 100) : null, diff = x.score - res.people[b].score;
-      const lead = v.w > v.l ? `${esc(mupName(a))}の勝ち越し` : v.w < v.l ? `${esc(mupName(b))}の勝ち越し` : '五分';
-      sum = `<div class="mu-vs"><div class="mu-side">${mupAvHtml(a, ' lg')}<b>${esc(mupName(a))}</b><small>平均着順 ${(x.rankSum / x.n).toFixed(2)}</small></div>
-        <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
-        <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b><small>平均着順 ${(res.people[b].rankSum / res.people[b].n).toFixed(2)}</small></div></div>
-        <div class="mu-meta">${gamesRoundsText(res.games.length, nR)} ・ ${esc(mupName(a))}の勝率 ${pct == null ? '—' : pct + '%'} ・ スコアの差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></div>`;
-    } else {
-      const rows = P.slice().sort((a, b) => (res.people[b].w - res.people[b].l) - (res.people[a].w - res.people[a].l) || res.people[b].score - res.people[a].score);
-      sum = `<div class="mu-meta" style="margin-top:0">${gamesRoundsText(res.games.length, nR)} ・ この人たちの間での勝ち負け（同じ試合で上の着順なら勝ち）</div>
-        <div class="mu-tbl">${rows.map((p, i) => { const x = res.people[p], d = x.w - x.l;
-          return `<div class="mu-row"><span class="mu-rk">${i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-wl"><b class="w">${x.w}</b>勝<b class="l">${x.l}</b>敗${x.d ? `${x.d}分` : ''}</span>
-            <span class="mu-sub"><em class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${d > 0 ? '+' + d : d}</em>平均着順 ${(x.rankSum / x.n).toFixed(2)} ・ <b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
-    }
+  else if (P.length === 2) {
+    const [a, b] = P, x = res.people[a], v = x.vs[b];
+    const lead = v.w > v.l ? `${esc(mupName(a))}の勝ち越し` : v.w < v.l ? `${esc(mupName(b))}の勝ち越し` : '五分';
+    const vs = `<div class="mu-vs"><div class="mu-side">${mupAvHtml(a, ' lg')}<b>${esc(mupName(a))}</b></div>
+      <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
+      <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
+      <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
     const list = res.games.map(gm => {
-      const order = P.slice().sort((a, b) => gm.sc[b] - gm.sc[a]);
-      const me = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
-      const rel = relDay(gm.ms);
-      return `<button type="button" class="mu-g" onclick="openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${me == null ? 'null' : me},back:'mup'})">
-        <span class="mu-g-top"><b>${esc(gm.g.name || '')}</b><small>${fmtGameDays(gm.g)}${rel && gameDaysList(gm.g).length === 1 ? ` ${rel}` : ''}</small></span>
-        <span class="mu-g-sc">${order.map((p, i) => `<span class="mu-g-p${i === 0 ? ' top' : ''}">${mupAvHtml(p, ' sm')}<b class="${scoreCls(gm.sc[p])}">${fmtScore(gm.sc[p])}</b></span>`).join('')}<small>${gm.n}試合</small></span></button>`;
+      const w = gm.w[a] || 0, l = gm.l[a] || 0, d = gm.n - w - l;
+      const tag = w > l ? `<em class="pos">${esc(mupName(a))} ${w}-${l}</em>` : w < l ? `<em class="neg">${esc(mupName(b))} ${l}-${w}</em>` : `<em>五分 ${w}-${l}</em>`;
+      return mupGameRow(gm, `${tag}<span class="mu-g-vs">${mupAvHtml(a, ' sm')}<b class="${scoreCls(gm.sc[a])}">${fmtScore(gm.sc[a])}</b><span>／</span>${mupAvHtml(b, ' sm')}<b class="${scoreCls(gm.sc[b])}">${fmtScore(gm.sc[b])}</b></span>`);
     }).join('');
-    body = `${sum}<div class="pf-h">いっしょに打った試合（新しい順）</div><div class="mu-list">${list}</div>
-      <div class="h2h-note">スコアはその試合の中で全員がいた試合の合計。押すとその試合の結果が見られます。</div>`;
+    body = `${vs}${mupFlowHtml(res, P)}${mupTapeHtml(res, a, b)}<div class="pf-h">ゲームごとの勝ち負け（新しい順）</div><div class="mu-list">${list}</div>`;
+  } else {
+    const n = res.people[P[0]].n;
+    const order = P.slice().sort((a, b) => res.people[a].gPosSum - res.people[b].gPosSum || res.people[b].score - res.people[a].score);
+    const maxTop = Math.max(...P.map(p => res.people[p].gTop)) || 1;
+    const tbl = `<div class="mu-meta" style="margin-top:0">${P.length}人が全員そろった ${gamesRoundsText(res.games.length, n)}で、<b>メンバーの中で何番目だったか</b>（卓のほかの人は数えない）</div>
+      <div class="mu-tbl">${order.map((p, i) => { const x = res.people[p];
+        return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.gPosSum / x.n).toFixed(2)}</b>番目</span>
+          <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${pctText(x.gTop / x.n)}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
+    const mx = `<div class="pf-h">メンバーどうしの勝ち負け</div>${mxLegendHtml(edit ? 'マスを押すと2人の対戦' : '')}${mxTableHtml(order, mupName, (x, y) => res.people[x].vs[y], null, null, false, edit ? (x, y) => `openCircleMatchup(['${x}','${y}'])` : null)}`;
+    const list = res.games.map(gm => {
+      const ord = P.slice().sort((a, b) => (gm.sc[b] || 0) - (gm.sc[a] || 0));
+      return mupGameRow(gm, `<span class="mu-g-sc">${ord.map((p, i) => `<span class="mu-g-p">${i < 3 ? medalSvg(i + 1, 14, false) : ''}${mupAvHtml(p, ' sm')}<b class="${scoreCls(gm.sc[p])}">${fmtScore(gm.sc[p])}</b></span>`).join('')}</span>`);
+    }).join('');
+    body = `${tbl}${mupFlowHtml(res, P)}${mx}<div class="pf-h">ゲームごと（新しい順・スコアの多い順）</div><div class="mu-list">${list}</div>`;
   }
+  if (res && res.games.length) body += `<div class="h2h-note">ゲームを押すと、その試合の結果が見られます。スコアはそのゲームの中で全員がいた試合の合計です。</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet mu-sheet">
-    <div class="mu-people">${chips}${pickBtn}</div>${picker}
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet mu-sheet">${sel}${picker}
     ${statCondHtml('mine').split('条件：').join(`条件：${mpMode === 3 ? '三麻' : '四麻'} ・ `)}
     ${body}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
+}
+function mupGameRow(gm, inner) {
+  const me = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
+  const rel = relDay(gm.ms);
+  return `<button type="button" class="mu-g" onclick="openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${me == null ? 'null' : me},back:'mup'})">
+    <span class="mu-g-top"><b>${esc(gm.g.name || '')}</b><small>${fmtGameDays(gm.g)}${rel && gameDaysList(gm.g).length === 1 ? ` ${rel}` : ''} ・ ${gm.n}試合</small></span>
+    <span class="mu-g-in">${inner}</span></button>`;
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
 async function claimCircleMember(mid) {
