@@ -556,8 +556,8 @@ def main():
                         "金曜会" in hl and ("未連携" in hl or "全員連携済み" in hl)))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
-        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「試合を追加」「まとめて送る」・形式のピル・並び順、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["試合を追加", "まとめて送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「＋ 追加」「まとめて送る」（期間と同じ1行）・形式のピル・並び順、自分が出た試合（月の見出し）", True,
+                        all(w in me_txt for w in ["＋ 追加", "まとめて送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,
