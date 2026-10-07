@@ -1124,6 +1124,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-trend { display: block; }
 .mc-trend-h { display: flex; justify-content: space-between; align-items: baseline; }
 .mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.mc-trend-h { align-items: center; }
+.sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
+.sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 11.5px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
+.sp-unit button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 .mc-trend-h b { font-size: 14px; font-weight: 900; } .mc-trend-h b.pos { color: #1A237E; } .mc-trend-h b.neg { color: #C62828; }
 .mc-spark { display: block; width: 100%; height: auto; margin-top: 4px; overflow: visible; }
 .mc-spark .tk { font-size: 8.5px; font-weight: 700; fill: #8A9AA5; font-variant-numeric: tabular-nums; }
@@ -11040,7 +11044,7 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
     ${msPtsEmptyHtml()}
-    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移</small></span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
+    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移</small>${sparkUnitSegHtml()}</span><span class="mc-spark-empty"><span>${msg}</span></span></span>`;
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
@@ -11108,7 +11112,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
     ${msModeHtml(np, m)}
-    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${nDays}日）</small></span>${miniSparkHtml(hist, np, m.score)}</span>
+    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${sparkUnitCount(hist)}）</small>${sparkUnitSegHtml()}</span>${miniSparkHtml(hist, np, m.score)}</span>
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
@@ -11116,13 +11120,39 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
 // 通算スコアの推移（打った日ごと・全部の日）。h＝1試合ごとの記録（古い順）。1日の合計を1点にし、点の下に日付。
 // 日数が多いときは横にスクロールして見る（左の目盛りは固定の別の svg。最初は右端＝最新の日を見せる＝scrollSparksEnd）。
 // 高さはどの日数でも同じ（目盛り 30:98 を幅10%・グラフ Wp:98 を幅 Wp/270×90% にして、両方の高さがそろう）
+// 推移のグラフの単位（日｜月｜年）。1点＝その日／月／年の合計。年にすると1年ごとのプラス・マイナスがひと目でわかる（2026-10-07）
+const SPARK_UNIT_KEY = 'mahjong-spark-unit';
+let sparkUnit = (() => { try { const v = localStorage.getItem(SPARK_UNIT_KEY); return ['d', 'm', 'y'].includes(v) ? v : 'd'; } catch (e) { return 'd'; } })();
+const SPARK_UNITS = [['d', '日'], ['m', '月'], ['y', '年']];
+// 1試合の記録 → 単位ごとのまとまりの鍵・見出し（下の目盛り）・カードの札
+function sparkBucket(d) {
+  const y = d.getFullYear(), m = d.getMonth() + 1;
+  if (sparkUnit === 'y') return { k: String(y), tick: `${y}年`, label: `${y}年` };
+  if (sparkUnit === 'm') return { k: `${y}-${String(m).padStart(2, '0')}`, tick: `${m}月`, label: `${y}年${m}月` };
+  return { k: ymdLocal(d), tick: `${m}/${d.getDate()}`, label: null };
+}
+function sparkUnitCount(h) { const n = new Set(h.map(x => sparkBucket(new Date(x.t)).k)).size; return sparkUnit === 'y' ? `${n}年` : sparkUnit === 'm' ? `${n}か月` : `${n}日`; }
+function sparkUnitSegHtml() {
+  return `<span class="sp-unit" role="tablist" aria-label="グラフの単位">${SPARK_UNITS.map(([k, l]) =>
+    `<button type="button" role="tab" class="${sparkUnit === k ? 'on' : ''}" aria-selected="${sparkUnit === k}" onclick="event.stopPropagation();setSparkUnit('${k}',this)">${l}</button>`).join('')}</span>`;
+}
+// 単位を変えたら、いま見ている画面を描き直す（メンバーの成績のシートなら、そのシートを開き直す）
+function setSparkUnit(u, el) {
+  sparkUnit = u;
+  try { localStorage.setItem(SPARK_UNIT_KEY, u); } catch (e) {}
+  const sheet = el && el.closest('.pf-sheet');
+  if (sheet && sheet.dataset.mid) { openCircleMember(sheet.dataset.mid); return; }
+  if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
+  else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
+  else renderHistory();
+}
 function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
   const byDay = [];
   h.forEach(x => {
-    const d = new Date(x.t), k = ymdLocal(d);
+    const d = new Date(x.t), bk = sparkBucket(d);
     let b = byDay[byDay.length - 1];
-    if (!b || b.k !== k) byDay.push(b = { k, d, sc: 0, items: [] });
+    if (!b || b.k !== bk.k) byDay.push(b = { k: bk.k, d, tick: bk.tick, label: bk.label, sc: 0, items: [] });
     b.sc += Number(x.sc) || 0;
     b.items.push(x);
   });
@@ -11134,7 +11164,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const n = days.length;
   // 年の見出し: 今年以外の日が1つでもあれば、上の目盛りの線の上に帯を空けて年を出す（線と文字が重ならない。高さ H は同じ）。全部今年なら出さない
   const thisYear = new Date().getFullYear();
-  const showYears = days.some(d => d.d.getFullYear() !== thisYear);
+  const showYears = sparkUnit !== 'y' && days.some(d => d.d.getFullYear() !== thisYear); // 年の単位では目盛りが年なので出さない
   const H = 98, T = showYears ? 21 : 10, B = 26, SP = 28, PL = 6, PR = 16;
   const Wp = Math.max(270, PL + n * SP + PR);
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
@@ -11160,7 +11190,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   sparkReg[rid] = { np, days, vals: ys.slice(1), Wp };
   const keys = Object.keys(sparkReg); if (keys.length > 40) keys.slice(0, keys.length - 40).forEach(k => delete sparkReg[k]);
   const hits = days.map((d, i) => `<rect class="sp-hit" data-i="${i}" x="${(x(i + 1) - SP / 2).toFixed(1)}" y="0" width="${SP}" height="${H}"/>`).join('');
-  const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.d.getMonth() + 1}/${d.d.getDate()}</text>`).join('');
+  const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.tick}</text>`).join('');
   // 年の見出し（スコアの推移のグラフは全部この見せ方）: 年ごとの区間（左端の年も含む）の最初に、上の帯へ年。年の切り替わりには縦の点線。
   // 見出しは必ず自分の区間に収める（入らなければ「2025年」→「2025」→「'25」）＝隣の年と重ならない。
   let years = '';
@@ -11181,7 +11211,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     }).join('');
   }
   setTimeout(scrollSparksEnd, 0);
-  return `<span class="mc-spark-row" role="img" aria-label="打った日ごとの通算スコアの推移（${n}日）。最後は${fmtScore(end)}">
+  return `<span class="mc-spark-row" role="img" aria-label="${sparkUnit === 'y' ? '年' : sparkUnit === 'm' ? '月' : '打った日'}ごとの通算スコアの推移（${n}）。最後は${fmtScore(end)}">
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
     <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
       data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
@@ -11322,7 +11352,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
       <span class="sp-cnts">${cnts}</span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
-  return `<span class="sp-tag">${fmtDay(ymdToMs(day.k))}</span>
+  return `<span class="sp-tag">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
