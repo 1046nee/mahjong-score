@@ -839,6 +839,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-act { display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border: 1.5px solid var(--pc); border-radius: 12px; background: #fff; color: var(--pc); font-size: 14px; font-weight: 800; cursor: pointer; }
 .gm-month { font-size: 12px; font-weight: 800; color: #5F6E6B; margin: 12px 4px 6px; }
 .gm-month:first-child { margin-top: 0; }
+/* 年の切れ目の線（一覧の月の見出し・タイルの年の見出し。2026-10-07） */
+.gm-month.yr, .ht-grid + .ht-year { margin-top: 18px; padding-top: 14px; border-top: 1.5px solid #C9D9D4; }
 .gr { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; cursor: pointer; border-top: .5px solid #D5DEDB; }
 .gm-list .gr:first-child { border-top: 0; }
 .gr-main { flex: 1; min-width: 0; }
@@ -1839,6 +1841,9 @@ button.ios-row:active { background: #F2F6F5; }
 .pp-sub2 b { font-weight: 800; } .pp-sub2 .pp-sc { margin-left: 4px; } .pp-sub2 b.pos { color: #1A237E; } .pp-sub2 b.neg { color: #C62828; }
 /* 順位の4位から下: 2列の小さなカード（棒なし） */
 .lb-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lb-under-h { margin: 16px 2px 8px; padding-top: 12px; border-top: 1px solid #D5DEDB; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 6試合未満（順位なし） */
+.lb-cell.under .lc-rk { color: #AEBBB8; }
+.lb-none { margin: 4px 0 8px; padding: 14px; border-radius: 12px; background: #F4F7F6; font-size: 13px; color: #5F6E6B; line-height: 1.6; }
 .lb-grid .lb-gap { grid-column: 1 / -1; border-top: 0; }
 .lb-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 9px; border: 0; border-radius: 12px; background: #F4F7F6; text-align: left; cursor: pointer; font: inherit; color: inherit; }
 .lb-cell:active { background: #EAF0EE; }
@@ -3962,8 +3967,9 @@ function renderCircle() {
 function saveCircleSummary(st, nGames) {
   if (!circleId) return;
   const my = myCircleMid();
-  const idx = my ? st.list.findIndex(p => p.key === my) : -1;
-  const sum = { people: Object.keys(rosterOf()).length, games: nGames, rank: idx >= 0 ? idx + 1 : null, of: st.list.length, mode: circleMode, role: circleRole() };
+  const ql = st.list.filter(rankOk); // 順位は6試合以上の人だけ
+  const idx = my ? ql.findIndex(p => p.key === my) : -1;
+  const sum = { people: Object.keys(rosterOf()).length, games: nGames, rank: idx >= 0 ? idx + 1 : null, of: ql.length, mode: circleMode, role: circleRole() };
   const cur = circleSeen[circleId] || {};
   circleCardInfo[circleId] = { people: sum.people, games: sum.games, name: circleData.name || '', sids: Object.keys(circleData.games || {}) };
   if (fpOf(cur.sum || null) === fpOf(sum) && cur.name === (circleData.name || '')) return;
@@ -3976,15 +3982,18 @@ function circleRankOrder(st) {
   if (!circleMetricsFor(st).some(([k]) => k === circleMetric)) circleMetric = 'score';
   const m = circleMetric;
   const np = circleMode === '3' ? 3 : 4;
-  // 試合数の多い少ないに関係なく、全員をまとめて順位にする（2026-09-29・ユーザーの判断。以前は率・平均で試合数の少ない人を「参考」に分けていた）
+  // 順位は RANK_MIN（6）試合以上の人だけで決める（2026-10-07 ユーザーの判断）。少ない人は順位の下に「順位なし」で並べる（under）
   const tie = (a, b) => b.n - a.n; // 同じ値なら試合数の多い人を上
   const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || tie(a, b);
-  const q = st.list.slice().sort(cmp);
+  const q = st.list.filter(rankOk).sort(cmp);
+  const under = st.list.filter(p => !rankOk(p)).sort(cmp);
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m))).filter(Number.isFinite)) || 1;
   const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'pmax' ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0) : Math.abs(v) / maxAbs;
   const clsOf = v => SIGNED_METRICS.includes(m) ? scoreCls(v) : '';
-  return { m, np, q, maxAbs, barOf, clsOf };
+  return { m, np, q, under, maxAbs, barOf, clsOf };
 }
+const RANK_MIN = 6;
+function rankOk(p) { return p.n >= RANK_MIN; }
 // 表彰台の下の小さな2行: 試合数と、指標で出していないほう（通算スコアを出していれば平均着順、ほかはスコア）
 function podiumSubHtml(p, m) {
   const second = m === 'score' ? `平均着順 ${(p.rankSum / p.n).toFixed(2)}` : `<b class="${scoreCls(p.score)}">${fmtScore(p.score)}</b>`;
@@ -4002,7 +4011,7 @@ function circleKindSegHtml() { const h = statKindSegHtml(); return h ? `<div cla
 function circleRankTabHtml(st, modeChips, noBind) {
   const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleRankImage()">${ico('image', 16)}画像</button>`);
   if (!st.list.length) return `<div class="card">${head}${modeChips}${circleKindSegHtml()}${noBind}</div>`;
-  const { m, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
+  const { m, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const my = myCircleMid();
   const chips = `<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
     `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -4015,14 +4024,16 @@ function circleRankTabHtml(st, modeChips, noBind) {
   }).join('')}</div>`;
   const row = (p, rank) => {
     const v = circleMetricVal(p, m), nm = rosterName(p.key), r = rosterOf()[p.key];
-    return `<button type="button" class="lb-cell${p.key === my ? ' me' : ''}" onclick="openCircleMember('${p.key}')">
+    return `<button type="button" class="lb-cell${p.key === my ? ' me' : ''}${rank === '—' ? ' under' : ''}" onclick="openCircleMember('${p.key}')">
       <span class="lc-top"><b class="lc-rk">${rank}</b><span class="pp-av lc-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}${r && r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 11)}</i>` : ''}</span><span class="lc-nm">${esc(nm)}</span></span>
       <b class="lc-val ${clsOf(v)}">${circleMetricText(v, m)}</b>
       <span class="lc-sub">${rankSubHtml(p, m)}</span></button>`;
   };
   // 全員を出す（10位で畳むのは2026-10-02にやめた）
   const rows = q.length > 3 ? `<div class="lb-grid">${q.slice(3).map((p, i) => row(p, i + 4)).join('')}</div>` : '';
-  return `<div class="card">${head}${modeChips}${circleKindSegHtml()}${chips}${podium}${rows}</div>`;
+  const none = q.length ? '' : `<div class="lb-none">${RANK_MIN}試合以上の人がまだいません。順位は${RANK_MIN}試合以上の人だけで決めます。</div>`;
+  const low = under.length ? `<div class="lb-under-h">順位なし（${RANK_MIN}試合未満）</div><div class="lb-grid">${under.map(p => row(p, '—')).join('')}</div>` : '';
+  return `<div class="card">${head}${modeChips}${circleKindSegHtml()}${chips}${q.length ? podium : ''}${rows}${none}${low}${q.length ? `<div class="h2h-note">順位は${RANK_MIN}試合以上の人だけで決めます。</div>` : ''}</div>`;
 }
 // 成績表（列＝メンバー・行＝成績項目。ゲームの「個人成績」と同じ向き）
 function circleGridHtml(st, forImage = false) {
@@ -4255,7 +4266,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     let prev = null;
     games.forEach(x => {
       const d = new Date(dayOf(x)), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-      if (key !== prev) { glist += `${prev ? '</div>' : ''}<div class="gm-month">${key}</div><div class="gm-list">`; prev = key; }
+      if (key !== prev) { glist += `${prev ? '</div>' : ''}<div class="gm-month${gmYrCls(key, prev)}">${key}</div><div class="gm-list">`; prev = key; }
       glist += rowOf(x);
     });
     if (prev) glist += '</div>';
@@ -4352,13 +4363,15 @@ function circlePeopleTabHtml(st) {
   const roster = rosterOf();
   const myMid = myCircleMid();
   const byKey = {};
-  st.list.forEach((p, i) => { byKey[p.key] = { p, rank: i + 1 }; });
-  const ents = Object.entries(roster).sort((a, b) => ((byKey[a[0]] ? byKey[a[0]].rank : 999) - (byKey[b[0]] ? byKey[b[0]].rank : 999))
+  const ql = st.list.filter(rankOk); // 順位は6試合以上の人だけ（少ない人は順位なし）
+  st.list.forEach(p => { const i = ql.indexOf(p); byKey[p.key] = { p, rank: i >= 0 ? i + 1 : null }; });
+  const rk = k => byKey[k] ? (byKey[k].rank || 500 + st.list.indexOf(byKey[k].p)) : 999;
+  const ents = Object.entries(roster).sort((a, b) => (rk(a[0]) - rk(b[0]))
     || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   // 1人＝小さなカード（顔・名前・順位と試合数）を2列に並べる（成績の細かい数字は「順位」「成績表」で見る）
   const cells = ents.map(([mid, r]) => {
     const e = byKey[mid];
-    const sub = e ? `<span class="nw">${e.rank <= 3 ? medalSvg(e.rank, 14, false) : ''}${e.rank}位</span> ・ <span class="nw">${e.p.n}試合</span>` : 'この形式の試合なし';
+    const sub = e ? `${e.rank ? `<span class="nw">${e.rank <= 3 ? medalSvg(e.rank, 14, false) : ''}${e.rank}位</span> ・ ` : '<span class="nw">順位なし</span> ・ '}<span class="nw">${e.p.n}試合</span>` : 'この形式の試合なし';
     const sub2 = e ? `<span class="nw">平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)}</span> <b class="nw pp-sc ${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>` : '';
     return `<button type="button" class="pp-cell${mid === myMid ? ' me' : ''}" onclick="openCircleMember('${mid}')">
       <span class="pp-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}${r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 12)}</i>` : ''}</span>
@@ -4412,9 +4425,9 @@ async function showCircleMatrixImage() {
 
 // 通算順位を、画面の見た目のまま（表彰台＋順位の行・選んでいる指標）で1枚の画像にする
 function circleRankCanvas(st) {
-  const { m, np, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
-  const W = COMPOSE_W, P = IMG_PAD, PODIUM = 192, ROW = 56;
-  const rest = q.slice(3);
+  const { m, np, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
+  const W = COMPOSE_W, P = IMG_PAD, PODIUM = q.length ? 192 : 0, ROW = 56;
+  const rest = q.slice(3).concat(under); // 6試合未満の人は順位の数字の代わりに「—」
   const H = IMG_BAND + 14 + PODIUM + Math.ceil(rest.length / 2) * ROW + 14 + IMG_FOOT;
   const sc = imgFitScale(W, H);
   if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
@@ -4427,7 +4440,7 @@ function circleRankCanvas(st) {
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
   ctx.fillText(circleData.name || '仲間ページ', P, IMG_BAND / 2 - 8, W - P * 2 - 150);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${circleFilterText()} ・ ${q.length}人 ・ ${fmtDate(new Date().toISOString())} 時点`, P, IMG_BAND / 2 + 11, W - P * 2 - 150);
+  ctx.fillText(`${circleFilterText()} ・ 順位は${RANK_MIN}試合以上の${q.length}人 ・ ${fmtDate(new Date().toISOString())} 時点`, P, IMG_BAND / 2 + 11, W - P * 2 - 150);
   ctx.globalAlpha = 1;
   ctx.font = imgFont(13, true); ctx.textAlign = 'right';
   ctx.fillText(`通算順位（${metricLabel}）`, W - P, IMG_BAND / 2);
@@ -4481,7 +4494,7 @@ function circleRankCanvas(st) {
     const x = P + (k % 2) * (cw + GAP2), y = bottom + 8 + Math.floor(k / 2) * ROW;
     imgRoundRect(ctx, x, y, cw, ROW - 8, 12); ctx.fillStyle = '#F4F7F6'; ctx.fill();
     const cy = y + 18;
-    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(13, true); ctx.textAlign = 'center'; ctx.fillText(String(k + 4), x + 14, cy); ctx.textAlign = 'left';
+    ctx.fillStyle = k + 3 < q.length ? '#5F6E6B' : '#AEBBB8'; ctx.font = imgFont(13, true); ctx.textAlign = 'center'; ctx.fillText(k + 3 < q.length ? String(k + 4) : '—', x + 14, cy); ctx.textAlign = 'left';
     avatar(x + 38, cy, 11, p.key, nm, 11);
     ctx.fillStyle = colOf(v); ctx.font = imgFont(15, true); ctx.textAlign = 'right';
     ctx.fillText(circleMetricText(v, m), x + cw - 10, cy); ctx.textAlign = 'left';
@@ -10520,7 +10533,7 @@ function msGamesInner(gs, seg) {
   let prev = null, html = '';
   gs.forEach(({ gr, g }) => {
     const d = new Date(gr.ms), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month">${key}</div><div class="gm-list">`; prev = key; }
+    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month${gmYrCls(key, prev)}">${key}</div><div class="gm-list">`; prev = key; }
     html += historyItemHtml(g);
   });
   html += '</div>';
@@ -11894,7 +11907,7 @@ function renderHistoryList() {
     ? circleCalendarHtml(mine.map(x => ({ sid: x.g.id, g: x.g })), x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'hist', 'renderHistoryList()')
     : null;
   body.innerHTML = main != null ? main + (others.length ? `<details class="mp-others"${histOthersOpen ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}ゲーム` : '', nOut ? `出ていない ${nOut}ゲーム` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
-        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '') : (months.length ? months.map(m => `<div class="gm-month">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
+        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '') : (months.length ? months.map((m, i) => `<div class="gm-month${gmYrCls(m.label, i ? months[i - 1].label : null)}">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
       : `<div class="empty-msg" style="margin-top:10px">${periodLabel()}に自分が出た試合はまだありません${nAsk ? '（下の「その他の試合」で自分を選べます）' : ''}</div>`)
     + (shown.length < mine.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${mine.length - shown.length}ゲーム）</button>` : '')
     + (others.length ? `<details class="mp-others"${histOthersOpen || mpSelecting ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}ゲーム` : '', nOut ? `出ていない ${nOut}ゲーム` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
@@ -11932,6 +11945,8 @@ function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
 // 間違えて作った・試しに作っただけの試合をすぐ見つけられるようにする。押すと「…」と同じメニュー（結果を見る・削除）
 const HIST_FEW = 3;
 // items: [{ g, me, onclick }]。me＝自分の席（参加）／null＝出ていない／undefined＝まだ選んでいない（印を出さない）
+// 一覧の月の見出しで、年が変わるところ（「2026年1月」の前が「2025年12月」）に区切りの線（2026-10-07）
+function gmYrCls(key, prev) { return prev && String(prev).slice(0, 4) !== String(key).slice(0, 4) ? ' yr' : ''; }
 function histTilesHtml(items) {
   if (!items.length) return '';
   const nEmpty = items.filter(x => !(x.g.rounds || []).length).length;
