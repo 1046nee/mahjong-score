@@ -783,6 +783,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-grid b { display: block; font-size: clamp(19px, 6.2vw, 24px); font-weight: 900; color: #1F2A28; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.3px; }
 .mc-grid b.sm { font-size: clamp(16px, 4.8vw, 18px); }
 .mc-grid b.pos { color: #1A237E; } .mc-grid b.neg { color: #C62828; }
+.tm-note { display: block; font-size: 11px; color: #8A9AA5; font-weight: 600; line-height: 1.5; }
+.mp-pane-period { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 10px 16px 0; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 下の「過去の試合・相手」のそばにも期間のボタン */
+#view-mystats .mp-pane-period { margin: 10px 0 0; }
 .mc-bar { display: flex; height: 24px; border-radius: 7px; overflow: hidden; background: #EEF2F1; margin-bottom: 10px; }
 .mc-bar i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; }
 .mc-bar i.r1 { background: var(--rk1); color: var(--rk1-on); } .mc-bar i.r2 { background: var(--rk2); color: #fff; }
@@ -3418,7 +3421,7 @@ function circleWithOk(g, ge, r, W) {
 // 対戦（acc[a][b]）は、行の人 a の直近n戦に入っている試合で数える
 function circleStats(circle, sessions, mode, inP, perN) {
   const W = circle === circleData ? circleWith : [];
-  const people = {}, acc = {};
+  const people = {}, acc = {}, tacc = {};
   const roster = (circle && circle.roster) || {};
   const ents = Object.entries((circle && circle.games) || {}).filter(([sid]) => {
     const g = sessions[sid];
@@ -3446,6 +3449,7 @@ function circleStats(circle, sessions, mode, inP, perN) {
     const inWin = win ? (key, r) => !!(win[key] && win[key].has(sid + '|' + idx.get(r))) : null;
     const gF = (inP || W.length) ? { ...g, rounds: (g.rounds || []).filter(r => (!inP || inP(roundMs(g, r))) && circleWithOk(g, ge, r, W)) } : g; // 期間の外・同卓者のいない試合は数えない
     h2hAdd(acc, gF, kOf, inWin);
+    teamAdd(tacc, gF, gF.rounds, kOf); // チーム戦の成績（各自の直近n戦の窓は使わず、ゲームごとに数える）
     (gF.rounds || []).forEach(r => {
       const ridx = idx.get(r);
       const mem = roundMembers(r, g.settings);
@@ -3475,6 +3479,7 @@ function circleStats(circle, sessions, mode, inP, perN) {
       });
     });
   });
+  Object.values(people).forEach(p => { p.team = tacc[p.key] || null; });
   return { list: Object.values(people).sort((a, b) => b.score - a.score), acc };
 }
 
@@ -3724,11 +3729,16 @@ function fillMyIdentity() {
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
 const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['pmax', '最高点数']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高点数＝1試合の持ち点のいちばん高い値（ptMax。点数の記録が無い人は下）
+// チーム戦の試合がある仲間ページだけ「チーム優勝率」「エース回数」を足す（2026-10-07）
+const TEAM_METRICS = [['twin', 'チーム優勝率'], ['ace', 'エース回数']];
+function circleMetricsFor(st) { return CIRCLE_METRICS.concat(st && st.list.some(p => p.team && p.team.n) ? TEAM_METRICS : []); }
 const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
   if (m === 'pmax') return p.ptMax == null ? -Infinity : p.ptMax;
+  if (m === 'twin') return p.team && p.team.n ? p.team.win / p.team.n : -Infinity; // チーム優勝率（チーム戦に出ていない人は下）
+  if (m === 'ace') return p.team && p.team.n ? p.team.ace : -Infinity; // エース回数
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
@@ -3736,7 +3746,7 @@ function circleMetricVal(p, m) {
   if (m === 'rp') return rankPtsOf(p) || 0;
   return p.score;
 }
-function circleMetricText(v, m) { if (m === 'pmax') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
+function circleMetricText(v, m) { if (m === 'twin') return Number.isFinite(v) ? pctText(v) : '—'; if (m === 'ace') return Number.isFinite(v) ? fmtCnt(v) + '回' : '—'; if (m === 'pmax') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
 // 仲間ページのカードの見出し。期間を指定・同卓者で絞っているときは、見出しの下に「いま何で数えているか」を出す
 function circleCardHead(title, extra = '') {
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>${circleFilterNoteHtml()}`;
@@ -3832,10 +3842,10 @@ function renderCircle() {
       const sx = circleStatsP(md);
       const p = sx.list.find(x => x.key === myM);
       if (p) mine[md === '3' ? 3 : 4] = { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist, ptMax: p.ptMax, ptMin: p.ptMin,
-        raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over };
+        raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over, team: p.team };
     });
     topHtml += mine[mpMode]
-      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
+      ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>${teamCardHtml(mine[mpMode].team, mpMode)}`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
@@ -3880,24 +3890,35 @@ function saveCircleSummary(st, nGames) {
 // 順位タブ: 表彰台＋リスト。率・平均の項目は試合数が少ない人を分けて「参考」にする（規定打席と同じ考え方）
 // 通算順位の並びと棒の長さ（画面と画像で共用）
 function circleRankOrder(st) {
-  if (!CIRCLE_METRICS.some(([k]) => k === circleMetric)) circleMetric = 'score';
+  if (!circleMetricsFor(st).some(([k]) => k === circleMetric)) circleMetric = 'score';
   const m = circleMetric;
   const np = circleMode === '3' ? 3 : 4;
   // 試合数の多い少ないに関係なく、全員をまとめて順位にする（2026-09-29・ユーザーの判断。以前は率・平均で試合数の少ない人を「参考」に分けていた）
-  const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || b.n - a.n;
+  // 同じ値なら: チーム優勝率＝チーム戦のゲーム数が多い人を上（1回だけで100%の人が上に来にくい）、エース回数＝ゲーム数が少ない人を上、ほか＝試合数の多い人を上
+  const tn = p => (p.team ? p.team.n : 0);
+  const tie = (a, b) => m === 'twin' ? tn(b) - tn(a) : m === 'ace' ? tn(a) - tn(b) : b.n - a.n;
+  const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || tie(a, b);
   const q = st.list.slice().sort(cmp);
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m))).filter(Number.isFinite)) || 1;
-  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'pmax' ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0) : Math.abs(v) / maxAbs;
+  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'twin' ? (Number.isFinite(v) ? v : 0) : (m === 'pmax' || m === 'ace') ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0) : Math.abs(v) / maxAbs;
   const clsOf = v => SIGNED_METRICS.includes(m) ? scoreCls(v) : '';
   return { m, np, q, maxAbs, barOf, clsOf };
 }
 // 表彰台の下の小さな2行: 試合数と、指標で出していないほう（通算スコアを出していれば平均着順、ほかはスコア）
 function podiumSubHtml(p, m) {
+  if (m === 'twin' || m === 'ace') return teamSubParts(p, m).map(t => `<div class="pd-sub">${esc(t)}</div>`).join('');
   const second = m === 'score' ? `平均着順 ${(p.rankSum / p.n).toFixed(2)}` : `<b class="${scoreCls(p.score)}">${fmtScore(p.score)}</b>`;
   return `<div class="pd-sub">${p.n}試合</div><div class="pd-sub">${second}</div>`;
 }
 // 順位の行の下の文（試合数・平均着順・スコアのうち、指標で出していないもの）
+// チーム戦の指標の下の文: チーム戦のゲーム数と、もう一方の指標
+function teamSubParts(p, m) {
+  const t = p.team;
+  if (!t || !t.n) return ['チーム戦なし'];
+  return [`チーム戦 ${t.n}ゲーム`, m === 'twin' ? `エース ${fmtCnt(t.ace)}回` : `優勝率 ${pctText(t.win / t.n)}`];
+}
 function rankSubParts(p, m) {
+  if (m === 'twin' || m === 'ace') return teamSubParts(p, m);
   // 平均着順は、通算スコアで並べているときだけ（平均着順・トップ率・ラス回避では出さない）
   return [`${p.n}試合`, m === 'score' ? `平均着順 ${(p.rankSum / p.n).toFixed(2)}` : '', m === 'score' ? '' : fmtScore(p.score)].filter(Boolean);
 }
@@ -3908,7 +3929,7 @@ function circleRankTabHtml(st, modeChips, noBind) {
   if (!st.list.length) return `<div class="card">${head}${modeChips}${noBind}</div>`;
   const { m, q, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const my = myCircleMid();
-  const chips = `<div class="pill-row" role="tablist" aria-label="指標">${CIRCLE_METRICS.map(([k, l]) =>
+  const chips = `<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
     `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
   const top3 = q.slice(0, 3);
   const order = [1, 0, 2].filter(i => top3[i]);
@@ -4256,7 +4277,7 @@ function circleRankCanvas(st) {
   const { c, ctx } = imgCanvas(W, H, sc);
   const theme = np === 3 ? '#4261AA' : '#177083';
   const colOf = v => { const k = clsOf(v); return k === 'neg' ? '#C62828' : k === 'pos' ? '#1A237E' : '#1F2A28'; };
-  const metricLabel = (CIRCLE_METRICS.find(([k]) => k === m) || [0, ''])[1];
+  const metricLabel = (circleMetricsFor(st).find(([k]) => k === m) || [0, ''])[1];
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = theme; ctx.fillRect(0, 0, W, IMG_BAND);
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
@@ -4775,7 +4796,7 @@ function openCircleMember(mid) {
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist,
-        ptMax: p.ptMax, ptMin: p.ptMin, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over }, false)}</div>`
+        ptMax: p.ptMax, ptMin: p.ptMin, raw: p.raw, rawSc: p.rawSc, rawN: p.rawN, box: p.box, over: p.over }, false)}</div>${teamCardHtml(p.team, np, ' mc-static')}`
     : `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, '', `${rosterName(mid)}さんの${np === 3 ? '三麻' : '四麻'}の成績はありません。`)}</div>`;
   // この人に連携済み（名簿の人に連携した）の席
   const bound = [];
@@ -10011,7 +10032,7 @@ function saveOrganize() {
 // ---- 自分の成績: 対戦相手別（グループをまたいで、同じ名前の人をまとめる） ----
 let myH2HMode = 'all';
 let myStatsTab = 'groups'; // 自分の成績のタブ（groups 過去の試合｜h2h 相手｜sum くらべる）
-function collectMyH2H(mode) {
+function collectMyH2H(mode, inP = periodFilter()) { // 期間を絞っていれば、その期間の試合だけで数える（2026-10-07）
   const acc = {};
   // appState.gamesは新しい順＝最初に見た名前が最新の表記
   const mine = (appState.games || []).filter(g => {
@@ -10024,7 +10045,8 @@ function collectMyH2H(mode) {
     const np = g.settings.numPlayers === 3 ? '3' : '4';
     if (mode !== 'all' && mode !== np) return;
     const me = tagOf(g.id).me;
-    h2hAdd(acc, g, m => (m === me ? '@me' : keyOf(g, {}, m)));
+    const gF = inP ? { ...g, rounds: (g.rounds || []).filter(r => inP(roundMs(g, r))) } : g;
+    h2hAdd(acc, gF, m => (m === me ? '@me' : keyOf(g, {}, m)));
   });
   return { row: acc['@me'] || {}, disp };
 }
@@ -10036,10 +10058,10 @@ function myH2HCardHtml(rerender = 'renderMyStats()') {
   const keys = h2hSortedKeys(row);
   const seg = false ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
     `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
-  if (!keys.length) return `${seg}<div class="ios-group" style="margin-top:16px;padding:20px 16px;font-size:14px;color:#4F5C5A">まだ同じ試合に出た相手がいません</div>`;
+  if (!keys.length) return `${seg}<div class="ios-group" style="margin-top:16px;padding:20px 16px;font-size:14px;color:#4F5C5A">${curPeriod() === 'all' ? 'まだ同じ試合に出た相手がいません' : `${esc(periodLabel())}に同じ試合に出た相手はいません`}</div>`;
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
   return `${seg}
-    <div class="ios-head">相手（${keys.length}人）・同じ試合の多い順</div>
+    <div class="ios-head">相手（${keys.length}人）・同じ試合の多い順${curPeriod() === 'all' ? '' : `・${esc(periodLabel())}`}</div>
     ${h2hSortSegHtml(rerender)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}
     <div class="ios-foot">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>`;
 }
@@ -10137,7 +10159,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
     if (t.me == null || t.me >= N) { if (rounds.length && (!inP || inP(gameDayMs(g)))) untagged++; return; }
     const me = t.me;
     const np = s.numPlayers === 3 ? 3 : 4;
-    const b = modes[np] = modes[np] || { games: 0, groups: 0, counts: new Array(np).fill(0), avgRankSum: 0, lastCount: 0, score: 0, ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0 };
+    const b = modes[np] = modes[np] || { games: 0, groups: 0, counts: new Array(np).fill(0), avgRankSum: 0, lastCount: 0, score: 0, ptMax: null, ptMin: null, hist: [], raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0, tacc: {} };
     let played = 0, scoreSum = 0, rankSum = 0;
     rounds.forEach((r, ridx) => {
       const mem = roundMembers(r, s);
@@ -10160,6 +10182,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
       }
     });
     if (!played) return;
+    teamAdd(b.tacc, g, rounds.filter(r => !inP || inP(roundMs(g, r))), m => (m === me ? 'me' : null)); // チーム戦の成績
     b.games += played; b.groups++; b.score += scoreSum;
     const nm = s.playerNames[me];
     if (nm && !myNames.includes(nm)) myNames.push(nm);
@@ -10167,7 +10190,7 @@ function collectMyStats(inP = periodFilter(), only = null) {
       games: played, score: scoreSum, avgRank: rankSum / played });
   });
   // 自分を選んだだけで試合が0件の形式は出さない（成績の部品が0で割って NaN になるため）
-  Object.keys(modes).forEach(np => { if (!modes[np].games) delete modes[np]; });
+  Object.keys(modes).forEach(np => { if (!modes[np].games) delete modes[np]; else modes[np].team = modes[np].tacc.me || null; });
   return { modes, groups: groupsOut, myNames, untagged };
 }
 // 成績まとめの表（列=四麻/三麻・行=項目。rounds-table系にして画像出力と共用）
@@ -10332,12 +10355,12 @@ function renderMyStats() {
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   if (myStatsTab === 'sum' && !cmp) myStatsTab = 'groups';
   const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '相手']].concat(cmp ? [['sum', 'くらべる']] : []).map(([k, l]) =>
-    `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>${mpPanePeriodHtml()}`;
   // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
   document.getElementById('ms-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(seg)}${st.modes[mpMode]
-    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>`
+    ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, st.modes[mpMode], false, scopeLabel)}</div>${teamCardHtml(st.modes[mpMode].team, mpMode)}`
     : mpEmptyCardHtml(mpMode, scopeLabel, st.untagged ? '試合で「自分」を選ぶと、ここに成績が出ます' : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`)}</div>`;
   applyMpTheme();
   let inner;
@@ -10975,6 +10998,8 @@ function applyCustomPeriod() {
 function optValueOf(p) { return p[0] === 'c' ? 'cur-custom' : p; }
 // 期間（左）と四麻｜三麻（右詰め）の1行。期間のボタンの幅が変わっても四麻｜三麻の位置は動かない
 function mpFiltersHtml(seg) { return `<div class="mp-filters">${mpPeriodHtml()}${seg || ''}</div>`; }
+// 下の「過去の試合・相手」のそばの期間のボタン（上の期間と同じもの。画面の下にいても指の届くところで変えられる）
+function mpPanePeriodHtml() { const h = mpPeriodHtml(); return h ? `<div class="mp-pane-period"><span>期間</span>${h}</div>` : ''; }
 function mpPeriodHtml() {
   const ys = gameYears();
   if (!ys.length) return '';
@@ -10995,7 +11020,7 @@ function mpPeriodHtml() {
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
 function mpModeCardHtml(np, m) {
-  return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, m, false, '個人')}</div>`;
+  return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, m, false, '個人')}</div>${teamCardHtml(m.team, np)}`;
 }
 // 成績が無いときも同じ組み方・同じ高さのカード（四麻／三麻・個人／仲間ページのどれでもカードの高さが変わらない）
 // 成績カードの見出しの右: どの範囲の成績か（個人＝人のマーク／仲間ページ＝オレンジの頭文字＋名前）
@@ -11019,6 +11044,51 @@ function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
 }
 function mpEmptyCardHtml(np, scopeLabel, msg) {
   return `<div class="mc-card${np === 3 ? ' s3' : ''}">${mpStatsEmptyInnerHtml(np, scopeLabel, msg)}</div>`;
+}
+// ---- チーム戦の成績（人ごと。チームはゲームごとに顔ぶれ・名前が変わるので、チーム名ではまとめない） ----
+// 1ゲーム（数える試合だけ＝rounds）のチームの合計で順位を出し、その人のチームの順位・優勝・エース（チームの中で個人スコアがいちばん高い）を数える。
+// 同点は人数で按分。acc[key] = { n: ゲーム数, win, rankSum, counts[順位], ace, score: その人のチーム戦のスコア }
+function teamAdd(acc, g, rounds, keyOf) {
+  const s = (g && g.settings) || {};
+  if (!s.teamMode || !s.teams || !rounds || !rounds.length) return;
+  const tot = {}, played = new Set();
+  rounds.forEach(r => roundMembers(r, s).forEach((m, k) => { if (r.scores && r.scores[k] != null) { tot[m] = (tot[m] || 0) + (Number(r.scores[k]) || 0); played.add(m); } }));
+  const teams = normalizedTeams(s).map(t => ({ ...t, members: t.members.filter(m => played.has(m)) })).filter(t => t.members.length);
+  if (teams.length < 2) return;
+  const r1 = v => Math.round(v * 10) / 10;
+  const pts = teams.map(t => r1(t.members.reduce((a, m) => a + tot[m], 0)));
+  const grp = rankGroups(pts);
+  teams.forEach((t, ti) => {
+    const gi = grp[ti], best = Math.max(...t.members.map(m => r1(tot[m]))), nBest = t.members.filter(m => r1(tot[m]) === best).length;
+    t.members.forEach(m => {
+      const key = keyOf(m);
+      if (!key) return;
+      const e = acc[key] || (acc[key] = { n: 0, win: 0, rankSum: 0, counts: [], ace: 0, score: 0 });
+      e.n++; e.rankSum += gi.avgRank; e.score += tot[m];
+      for (let rk = gi.start; rk <= gi.end; rk++) e.counts[rk] = (e.counts[rk] || 0) + 1 / gi.size;
+      if (gi.start === 0) e.win += 1 / gi.size;
+      if (r1(tot[m]) === best) e.ace += 1 / nBest;
+    });
+  });
+}
+// チーム戦のカード（成績カードと同じ見た目。チーム戦のゲームが無ければ出さない）
+function teamCardHtml(t, np, cls = '') {
+  if (!t || !t.n) return '';
+  const bar = t.counts.map((v, i) => {
+    const w = (v || 0) / t.n * 100;
+    if (w <= 0) return '';
+    return `<i class="${i === 0 ? 'r1' : i === 1 ? 'r2' : 'r3'}" style="width:${w.toFixed(2)}%">${w >= 22 ? `${i + 1}位 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
+  }).join('');
+  return `<div class="mc-card tm-card${cls}${np === 3 ? ' s3' : ''}"><span class="mc-head"><b>チーム戦</b><span>${t.n}ゲーム</span></span>
+    <span class="mc-grid">
+      <span><small>チーム優勝率</small><b>${pctText(t.win / t.n)}</b></span>
+      <span><small>平均チーム順位</small><b>${(t.rankSum / t.n).toFixed(2)}</b></span>
+      <span><small>エース回数</small><b class="sm">${fmtCnt(t.ace)}回</b></span>
+      <span><small>チーム戦のスコア</small><b class="sm ${scoreCls(t.score)}">${fmtScore(t.score)}</b></span>
+      <span><small>1ゲームあたり</small><b class="sm ${scoreCls(t.score / t.n)}">${fmtScore(t.score / t.n)}</b></span>
+    </span>
+    <span class="mc-bar" role="img" aria-label="チーム順位の内訳">${bar}</span>
+    <span class="tm-note">チームの順位はゲームごとのチームの合計スコアで決めます。エース＝チームの中で自分のスコアがいちばん高かったゲーム。</span></div>`;
 }
 function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   const n = m.games, c = m.counts, hist = sortHist(m.hist);
@@ -11509,7 +11579,7 @@ function renderMpPanes(st) {
   const pane = curMpPane(st, cmp);
   const tabs = [['hist', '過去の試合'], ['h2h', '相手']].concat(cmp ? [['sum', 'くらべる']] : []);
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
-    `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>${mpPanePeriodHtml()}`;
   document.getElementById('mp-pane-sum').innerHTML = pane === 'sum' ? cmp : '';
   document.getElementById('mp-pane-h2h').innerHTML = pane === 'h2h' ? myH2HCardHtml('renderMpPanes(collectMyStats())') : '';
   document.getElementById('mp-pane-hist').style.display = pane === 'hist' ? '' : 'none';
