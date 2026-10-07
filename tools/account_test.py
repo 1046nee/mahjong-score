@@ -476,8 +476,8 @@ def main():
         tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
         stats_txt = pg.evaluate("document.getElementById('mp-stats').innerText")
         shown = pg.evaluate("document.getElementById('mp-pane-hist').style.display !== 'none'")
-        results.append(("[10a2] 成績カードのすぐ下に素点・順位点・最高/最低点数などの欄、その下に［過去の試合｜相手］（最初は過去の試合）。ホーム画面に追加の案内は無い", True,
-                        all(w in stats_txt for w in ["素点", "順位点", "最高点数", "最低点数", "箱下"]) and all(w in tabs for w in ["過去の試合", "相手"]) and shown
+        results.append(("[10a2] 成績カードのすぐ下に素点・順位点・最高/最低点数などの欄、その下に［過去の試合｜対戦成績］（最初は過去の試合）。ホーム画面に追加の案内は無い", True,
+                        all(w in stats_txt for w in ["素点", "順位点", "最高点数", "最低点数", "箱下"]) and all(w in tabs for w in ["過去の試合", "対戦成績"]) and shown
                         and "ホーム画面に追加" not in pg.evaluate("document.getElementById('mp-me').innerText")))
         # 過去の試合の行を押すと、画面を移らずに結果のシート（総合順位・試合ごとのスコア）。閉じればマイページのまま
         pg.evaluate("window.scrollTo(0, 300)")

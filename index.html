@@ -827,7 +827,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pane-tabs .seg { margin: 0; }
 .mp-pane-in { margin: 0 16px; }
 .mp-pane-in:empty { display: none; }
-#mp-pane-hist #hist-head { margin-top: 12px; }
+#mp-pane-hist .hist-card { margin: 12px 16px 0; } /* 過去の試合は1枚のカード（2026-10-07） */
+#mp-pane-hist #hist-head { margin: 0; }
+#view-history #mp-pane-hist .history-body { padding: 0; overflow: visible; }
+#mp-pane-hist .hist-viewseg { margin-bottom: 0; } #mp-pane-hist .hist-viewseg:empty { display: none; }
 .mp-pane-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -2px 0 12px; } /* 左＝期間（小）・右＝画像で見る */
 .mp-pane-tools .btn-tint { margin-left: auto; }
 .mp-act { display: flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border: 1.5px solid var(--pc); border-radius: 12px; background: #fff; color: var(--pc); font-size: 14px; font-weight: 800; cursor: pointer; }
@@ -1002,6 +1005,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ds-row select { flex: none; max-width: 56%; font-size: 16px; }
 .cg-head { align-items: center; margin-bottom: 0; }
 .cg-tab .hist-kinds { margin-top: 6px; }
+/* 過去の試合・対戦成績のカード（個人と仲間ページで同じ形。2026-10-07） */
+.card-head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.card-head-row .card-title { margin-bottom: 0; flex: none; }
+.hist-card, .my-h2h { margin-top: 12px; }
+.hist-card #hist-head { margin: 0; }
+.hist-card .gm-month:first-child { margin-top: 4px; }
 .cg-games { margin-top: 8px; }
 .rounds-table th.th-link { cursor: pointer; }
 .rounds-table th.th-link:active { opacity: .6; }
@@ -1286,7 +1295,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ch-title-row { padding-top: 6px; }
 #circle-top:empty { display: none; }
 .mode-seg button small { font-size: 10px; font-weight: 700; }
-@media (max-width: 379px) { .mode-seg button small { display: none; } .mode-seg button { padding: 0 9px; } } /* 「すべての期間」と1行に収めるため360pxでも省く（2026-10-07） */
+@media (max-width: 379px) { .mode-seg button { padding: 0 9px; } } /* 「すべての期間」と1行に収める。試合の無い形式にも（なし）は出さない（2026-10-07） */
 .mode-seg button:disabled { color: #AEBBB8; cursor: default; }
 .cg-games { margin: -4px 0 14px; }
 .ch-who { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
@@ -1695,6 +1704,10 @@ button.ios-row:active { background: #F2F6F5; }
 #circle-body > .seg.sm button { flex: 1 1 auto; padding: 0 6px; white-space: nowrap; }
 #view-circle .card { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
 #view-circle .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
+/* 個人の過去の試合・対戦成績も仲間ページのカードと同じ形（2026-10-07） */
+.card.hist-card, .card.my-h2h { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
+.hist-card .card-title, .my-h2h .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
+@media (max-width: 360px) { .card.my-h2h { padding-left: 10px; padding-right: 10px; } }
 /* 「あなたはどれ？」の問いかけ（試合の画面と仲間ページ）。オレンジはCTA限定なので琥珀色 */
 .askme { border: 1px solid #F2E3B3; background: #FFF8E6; }
 .askme-sub { font-size: 12px; color: #5F6E6B; }
@@ -2489,12 +2502,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="mp-pane-h2h" class="mp-pane-in"></div>
     <div id="mp-pane-hist">
       <div id="hist-organize"></div>
+      <div class="card hist-card">
       <div class="mp-sec" id="hist-head">
-        <div class="mp-sec-head"><span class="mp-sec-note" id="hist-count"></span></div>
+        <div class="card-head-row"><div class="card-title">過去の試合</div><span id="hist-acts"></span></div>
+        <div class="mp-sec-note" id="hist-count"></div>
         <div id="hist-kind"></div>
         <div id="hist-viewseg" class="hist-viewseg"></div>
       </div>
       <div class="history-body" id="history-body" style="margin-top:8px"></div>
+      </div>
       <div id="mp-sendbar" class="mp-sendbar" style="display:none"></div>
     </div>
     <div id="mp-circle"></div>
@@ -3896,7 +3912,7 @@ function renderCircle() {
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'); // 素点・順位点の欄は空のカードの中にもう入っている（外にもう1つ足していた）
   }
   const lowP = topHtml ? mpPeriodHtml(true) : ''; // 個人の画面と同じ場所（成績カードのすぐ下）に小さい期間
-  setCircleTopHtml(`<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}${lowP ? `<div class="mp-pane-tools" style="margin-top:10px">${lowP}</div>` : ''}<div class="mp-split" role="separator"></div></div>`);
+  setCircleTopHtml(`<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}<div class="mp-split" role="separator"></div>${lowP ? `<div class="mp-pane-tools">${lowP}</div>` : ''}</div>`);
   applyMpTheme();
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -4222,10 +4238,11 @@ function circleGamesTabHtml(role, gids, modeChips) {
   }
   // 上: 件数（左）と「＋ 試合を追加」（右）→ 形式のピル → 見せ方（個人の過去の試合と同じ並び）
   const nR = games.reduce((a, x) => a + ((x.g && x.g.rounds) || []).length, 0);
-  const head = `<div class="mp-sec-head cg-head"><span class="mp-sec-note">${curPeriod() === 'all' ? '' : esc(periodLabel()) + ' '}${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${gamesRoundsText(games.length, nR)}${games.length < gids.length ? `（全${gids.length}ゲーム中）` : ''}</span>${role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : ''}</div>`;
-  if (!all.length) return `<div class="cg-tab">${head}<div class="mp-panel mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
+  const addB = role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : '';
+  const head = `${circleCardHead('過去の試合', addB)}<div class="mp-sec-head cg-head"><span class="mp-sec-note">${curPeriod() === 'all' ? '' : esc(periodLabel()) + ' '}${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${gamesRoundsText(games.length, nR)}${games.length < gids.length ? `（全${gids.length}ゲーム中）` : ''}</span></div>`;
+  if (!all.length) return `<div class="card cg-tab">${head}<div class="mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
   // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
-  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
+  return `<div class="card cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
     ${glist ? `<div class="cg-games">${glist}</div>` : (curPeriod() !== 'all' ? `<div class="empty-msg" style="margin-top:14px">${esc(periodLabel())}の試合はありません</div><button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '<div class="empty-msg" style="margin-top:14px">この形式の試合はありません</div>')}</div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
@@ -10164,12 +10181,14 @@ function myH2HCardHtml(rerender = 'renderMyStats()') {
   const keys = h2hSortedKeys(row);
   const seg = false ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
     `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
-  if (!keys.length) return `${seg}<div class="ios-head-row"><div class="ios-head">相手</div>${rerender.startsWith('renderMyStats') ? mpPeriodHtml(true) : ''}</div><div class="ios-group" style="margin-top:8px;padding:20px 16px;font-size:14px;color:#4F5C5A">${curPeriod() === 'all' ? 'まだ同じ試合に出た相手がいません' : `${esc(periodLabel())}に同じ試合に出た相手はいません`}</div>`;
+  // 仲間ページの「対戦成績」と同じカード（見出し・合計・並び順・相手ごとのカード・説明）2026-10-07
+  const pp = rerender.startsWith('renderMyStats') ? mpPeriodHtml(true) : '';
+  const head = `<div class="card-head-row"><div class="card-title">対戦成績</div>${pp}</div>`;
+  if (!keys.length) return `${seg}<div class="card my-h2h">${head}<div style="font-size:13px;color:#5F6E6B">${curPeriod() === 'all' ? 'まだ同じ試合に出た相手がいません' : `${esc(periodLabel())}に同じ試合に出た相手はいません`}</div></div>`;
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
-  return `${seg}
-    <div class="ios-head-row"><div class="ios-head">相手（${keys.length}人）・同じ試合の多い順</div>${rerender.startsWith('renderMyStats') ? mpPeriodHtml(true) : ''}</div>
-    ${h2hSortSegHtml(rerender)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}
-    <div class="ios-foot">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div>`;
+  return `${seg}<div class="card my-h2h">${head}
+    ${h2hTotalHtml(row, 'あなた')}${h2hSortSegHtml(rerender)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}
+    <div class="h2h-note">${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div></div>`;
 }
 // 「相性がいい相手／手ごわい相手」のカード（選び方は h2hSummaryHtml と同じ＝3試合以上・勝率60%以上／40%以下）。
 // h2hSummaryHtml（1行の文）は結果詳細・試合の画面で使うので残す
@@ -10465,7 +10484,11 @@ function msGamesHtml(st) {
   const all = st.groups.map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
   const kinds = histKindPillsHtml(all.map(x => x.g), 'renderMyStats()');
   const gs = all.filter(x => histKindMatch(x.g, histKind)).sort((a, b) => b.gr.ms - a.gr.ms);
-  const seg = `<div class="ios-head-row" style="margin-top:14px"><div class="ios-head">${gamesRoundsText(gs.length, gs.reduce((a, x) => a + x.gr.games, 0))}</div>${mpPeriodHtml(true)}</div>${kinds}<div class="hist-viewseg" style="margin-bottom:4px">${histOrderSegHtml('renderMyStats()')}</div>`;
+  // 1枚のカードに入れる（対戦成績・仲間ページの過去の試合と同じ見た目。2026-10-07）
+  const seg = `<div class="card-head-row"><div class="card-title">過去の試合</div>${mpPeriodHtml(true)}</div><div class="mp-sec-note">${gamesRoundsText(gs.length, gs.reduce((a, x) => a + x.gr.games, 0))}</div>${kinds}<div class="hist-viewseg" style="margin-bottom:8px">${histOrderSegHtml('renderMyStats()')}</div>`;
+  return `<div class="card hist-card">${msGamesInner(gs, seg)}</div>`;
+}
+function msGamesInner(gs, seg) {
   if (!gs.length) return seg + `<div class="ms-empty">この範囲の試合はありません</div>`;
   if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openResultSheet('${esc(x.g.id)}')` })));
   if (histView === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
@@ -10499,7 +10522,7 @@ function renderMyStats() {
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   if (myStatsTab === 'sum' && !cmp) myStatsTab = 'groups';
-  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '相手']].concat(cmp ? [['sum', 'くらべる']] : []).map(([k, l]) =>
+  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', 'くらべる']] : []).map(([k, l]) =>
     `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
   // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
@@ -11513,7 +11536,7 @@ function modeSegHtml(counts, rerender) {
   const avail = [4, 3].filter(np => counts[np]);
   if (!avail.includes(mpMode)) mpMode = avail.length ? avail.slice().sort((a, b) => counts[b] - counts[a])[0] : 4;
   return `<div class="seg xs mode-seg" role="tablist" aria-label="形式">${[4, 3].map(np =>
-    `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}"><span class="gk k${np} gk-tab">${kindSvg(np, 18)}</span>${np === 3 ? '三麻' : '四麻'}${counts[np] ? '' : '<small>（なし）</small>'}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" data-np="${np}" class="${np === mpMode ? 'on' : ''}" aria-selected="${np === mpMode}"${counts[np] ? '' : ' disabled'} onclick="mpMode=${np};${rerender}"><span class="gk k${np} gk-tab">${kindSvg(np, 18)}</span>${np === 3 ? '三麻' : '四麻'}</button>`).join('')}</div>`;
 }
 // 期間内の過去の試合の、形式ごとの件数
 function histModeCounts() {
@@ -11531,11 +11554,11 @@ function mpStatsHtml(st) {
       : st.untagged ? `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。<br>過去の試合で自分を選ぶと、ここに成績が出ます`
       : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`;
     const pp = mpPeriodHtml(true);
-    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}${pp ? `<div class="mp-pane-tools" style="margin-top:10px">${pp}</div>` : ''}<div class="mp-split" role="separator"></div></div>`;
+    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}<div class="mp-split" role="separator"></div>${pp ? `<div class="mp-pane-tools">${pp}</div>` : ''}</div>`;
   }
   // 成績カードのすぐ下に点数の細かい数字（素点・順位点・最高/最低点数・5万点以上・箱下）。タブの中に隠さない（2026-10-02）
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}
-    <div class="mp-pane-tools">${mpPeriodHtml(true)}</div><div class="mp-split" role="separator"></div></div>`;
+    <div class="mp-split" role="separator"></div><div class="mp-pane-tools">${mpPeriodHtml(true)}</div></div>`;
 }
 
 // ---- 過去の試合の1行（自分が出た／出ていない／まだ選んでいない、がひと目でわかる形） ----
@@ -11740,7 +11763,7 @@ function renderMpPanes(st) {
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   const pane = curMpPane(st, cmp);
-  const tabs = [['hist', '過去の試合'], ['h2h', '相手']].concat(cmp ? [['sum', 'くらべる']] : []);
+  const tabs = [['hist', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', 'くらべる']] : []);
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
     `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
   // 過去の試合のすぐ上の1行: 小さい期間のピル（上の期間と同じもの）＋「＋ 追加」「まとめて送る」（2026-10-07 縦に長くしないよう1行に）
@@ -11791,8 +11814,9 @@ function renderHistoryList() {
   if (!games.length) {
     if (cnt) cnt.textContent = '';
     document.getElementById('hist-kind').innerHTML = '';
-    const vs0 = document.getElementById('hist-viewseg'); if (vs0) vs0.innerHTML = histActsHtml(); // 試合が無くても「追加」は押せるように
-    body.innerHTML = `<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('tile', 34, 'ico-l')}</div><b>まだ試合がありません</b>
+    const vs0 = document.getElementById('hist-viewseg'); if (vs0) vs0.innerHTML = '';
+    const ac0 = document.getElementById('hist-acts'); if (ac0) ac0.innerHTML = histActsHtml(); // 試合が無くても「追加」は押せるように
+    body.innerHTML = `<div class="mp-empty"><div class="mp-empty-ico">${ico('tile', 34, 'ico-l')}</div><b>まだ試合がありません</b>
       <span>試合を作るか、共有された試合のURLを開く・「＋ 試合を追加」に貼ると、ここに残ります。</span></div>`;
     renderSendBar();
     return;
@@ -11809,7 +11833,8 @@ function renderHistoryList() {
   if (kindEl) kindEl.innerHTML = kindHtml;
   list = list.filter(x => histKindMatch(x.g, histKind));
   const vs = document.getElementById('hist-viewseg');
-  if (vs) vs.innerHTML = `${histOrderSegHtml('renderHistoryList()')}${histActsHtml()}`;
+  if (vs) vs.innerHTML = histOrderSegHtml('renderHistoryList()');
+  const ac = document.getElementById('hist-acts'); if (ac) ac.innerHTML = histActsHtml(); // 「追加」「送る」は見出しの右（仲間ページの「＋ 試合を追加」と同じ場所）
   const modeName = histKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === histKind)[1] + 'の';
 
   if (!list.length) {
@@ -11868,7 +11893,7 @@ function histKindPillsHtml(games, rerender, key = 'histKind') {
     `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="${key}='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
 // 見せ方「一覧｜タイル｜カレンダー」（左から）。key＝状態の変数名、listVal＝一覧の値（過去の試合 'new'・仲間ページ 'list'）
-// 過去の試合の「追加」「まとめて送る」。見せ方（タイル｜一覧｜カレンダー）と同じ行の右（縦に場所を取らない・2026-10-07）。
+// 過去の試合の「追加」「まとめて送る」。カードの見出しの右（仲間ページの「＋ 試合を追加」と同じ場所・2026-10-07）。
 // 狭い画面（375px未満）はアイコンだけ
 function histActsHtml() {
   return `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button><button type="button" class="mp-act sm" onclick="startSelectSend()" title="まとめて送る" aria-label="まとめて送る">${ico('share', 14)}<span class="ma-t">送る</span></button></span>`;
