@@ -756,13 +756,20 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-filters .mp-pwrap { flex: 0 1 auto; min-width: 0; white-space: nowrap; margin-bottom: 14px; } /* 長い期間名は「…」にして「四麻｜三麻」を落とさない */
 .mp-filters .mp-period { min-width: 0; } /* 間隔は column-gap だけ */
 /* 期間のピル（どこでも同じ大きさ・13px）＋期間を選んでいるときだけ右に「×」（すべての期間に戻す）2026-10-07 */
-.mp-pwrap { display: inline-flex; align-items: center; gap: 4px; min-width: 0; vertical-align: top; }
+.mp-pwrap { min-width: 0; vertical-align: top; }
+/* 期間・目線・同卓の共通のピル */
+.flt { display: inline-flex; align-items: center; gap: 2px; height: 30px; max-width: 100%; min-width: 0; box-sizing: border-box; padding: 0 12px; border-radius: 15px; border: 1px solid #CFDCD9; background: #fff; color: #33413E; font-size: 13px; font-weight: 800; }
+.flt .ico { --i1: #8A9AA5; --i2: #CFD8D6; flex: none; }
+.flt-main { display: inline-flex; align-items: center; gap: 5px; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.flt-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .flt-t b { font-weight: 900; }
+.flt.on { padding-right: 3px; border-color: var(--pc); background: var(--pc-tint); color: var(--pc-ink); }
+.flt.on .ico { --i1: var(--pc); --i2: var(--pc); }
+.flt-x { flex: none; width: 24px; height: 24px; margin-left: 4px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--pc-ink); font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; }
 .mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 374px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
-.mp-px { flex: none; width: 24px; height: 24px; border: 0; border-radius: 50%; background: #E3E9E8; color: #33413E; font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0; }
+@media (max-width: 359px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
 .mp-filters .seg.xs { margin-left: auto; }
-.mp-period { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px 0 12px; margin: 0; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
-.mp-period .ico { transform: rotate(90deg); --i1: #fff; --i2: #fff; }
+.mp-period { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 100%; padding: 0 2px 0 0; margin: 0; background: none !important; color: inherit !important; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
+.mp-period .ico { transform: rotate(90deg); }
 .mp-period select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
 /* 年の中の月: 年より一段小さく・選んだ月は緑の地（年の黒と区別） */
 .mp-pills.mp-months { margin-top: -4px; gap: 4px; }
@@ -789,10 +796,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-grid b { display: block; font-size: clamp(19px, 6.2vw, 24px); font-weight: 900; color: #1F2A28; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.3px; }
 .mc-grid b.sm { font-size: clamp(16px, 4.8vw, 18px); }
 .mc-grid b.pos { color: #1A237E; } .mc-grid b.neg { color: #C62828; }
-.cv-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .cv-row .cv-btn { flex: none; margin: 0; }
-.cv-band { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; margin: 0; height: 30px; box-sizing: border-box; padding: 0 4px 0 10px; line-height: 1; /* 左の「目線」のボタンと同じ高さ（2026-10-07） */ border-radius: 12px; background: #FFF4D6; color: #6B4E00; font-size: 12.5px; font-weight: 700; }
-.cv-band span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cv-band button { white-space: nowrap; } .cv-band b { font-weight: 900; }
-.cv-band button { flex: none; height: 22px; border: 0; border-radius: 999px; padding: 0 9px; background: #fff; color: #6B4E00; font: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; }
+.cv-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; min-width: 0; }
 .cw-opt small { margin-left: 4px; font-size: 10.5px; font-weight: 700; color: #8A9AA5; }
 .mc-bar { display: flex; height: 24px; border-radius: 7px; overflow: hidden; background: #EEF2F1; margin-bottom: 10px; }
 .mc-bar i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; }
@@ -1292,9 +1296,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cw-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -4px 0 12px; }
 .cw-btn { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #CFDCD9; background: #fff; color: #33544A; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .cw-btn.on { border-color: #177083; color: #0F4F5C; background: #E4F3EC; }
-.cw-chip { display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 4px 0 6px; border-radius: 15px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 700; }
-.cw-chip i, .cw-opt i { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; }
-.cw-chip button { width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
+.cw-opt i { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; }
 .cw-clear { border: 0; background: none; color: #177083; font-size: 12.5px; font-weight: 800; text-decoration: underline; cursor: pointer; }
 .cw-pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
 .cw-opt { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 4px 12px 4px 6px; border-radius: 19px; border: 1px solid #CFDCD9; background: #fff; color: #1F2A28; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
@@ -4086,24 +4088,38 @@ function openCircleView() {
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
+// 期間・目線・同卓は同じ形のピル（.flt）にそろえる（2026-10-07）: 選んでいないとき＝白地・灰の枠、選んだら＝主色の淡い地・主色の枠＋中に「×」（解除）
+function fltHtml(on, main, onclick, xLabel, xClick, title = '') {
+  return `<span class="flt${on ? ' on' : ''}"${title ? ` title="${esc(title)}"` : ''}><button type="button" class="flt-main" onclick="${onclick}">${main}</button>${on ? `<button type="button" class="flt-x" aria-label="${esc(xLabel)}" onclick="${xClick}">×</button>` : ''}</span>`;
+}
 function circleViewBtnHtml() {
   if (!Object.keys(rosterOf()).length) return '';
-  const v = circleViewMid();
-  return `<button type="button" class="cw-btn cv-btn${circleViewingOther() ? ' on' : ''}" onclick="openCircleView()">${circleViewingOther() ? '目線' : `${ico('people', 14)}目線：${v ? esc(rosterName(v)) + '（あなた）' : '選ぶ'}`}${ico('chevron', 11)}</button>`; // 他の人の目線のときは名前を右の帯に出す（ボタンは短く）
+  const v = circleViewMid(), other = circleViewingOther();
+  const name = v ? esc(rosterName(v)) + (other ? '' : '（あなた）') : '選ぶ';
+  return fltHtml(other, `${ico('people', 14)}<span class="flt-t">目線：<b>${name}</b></span>${ico('chevron', 11)}`, 'openCircleView()', '自分の目線に戻す', 'setCircleView(null)',
+    other ? `${rosterName(v)}さんの目線で表示中` : '');
 }
-// 目線と同卓の2段（「目線：○○」「同卓：指定なし／同卓 ＋選んだ人のチップ＋×」）
+// 目線と同卓の2段（どちらも同じ形のピル）
 function circleWithRowHtml() {
   const v = circleViewMid();
   circleWith = circleWith.filter(m => rosterOf()[m] && m !== v); // 目線の人は選べない（その人の成績はその人が出た試合だけなので、絞る意味がない）
   if (!Object.keys(rosterOf()).length) return '';
-  const band = circleViewingOther() ? `<div class="cv-band" title="${esc(rosterName(v))}さんの目線で表示中"><span><b>${esc(rosterName(v))}</b>さんの目線</span><button type="button" onclick="setCircleView(null)">自分に戻す</button></div>` : '';
-  // 1段目＝目線（他の人の目線なら右に黄色の帯）、2段目＝同卓者で絞る（2026-10-07 縦積みに）
-  return `<div class="cv-row">${circleViewBtnHtml()}${band}</div><div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${circleWith.length ? '同卓' : `${ico('people', 14)}同卓：指定なし`}${ico('chevron', 11)}</button>${circleWith.map(m =>
-    `<span class="cw-chip"><i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>${esc(rosterName(m))}<button type="button" aria-label="${esc(rosterName(m))}を外す" onclick="toggleCircleWith('${m}')">×</button></span>`).join('')}${circleWith.length ? `<button type="button" class="cw-clear" onclick="circleWith=[];periodCutMemo=null;renderCircle()">解除</button>` : ''}</div>`;
+  const on = circleWith.length > 0;
+  const names = on ? circleWith.map(m => esc(rosterName(m))).join('・') : '指定なし';
+  const withPill = fltHtml(on, `${ico('people', 14)}<span class="flt-t">同卓：<b>${names}</b></span>${ico('chevron', 11)}`, 'openCircleWith()', '同卓の指定を解除', 'circleWith=[];periodCutMemo=null;renderCircle()');
+  return `<div class="cv-row">${circleViewBtnHtml()}</div><div class="cw-row">${withPill}</div>`;
+}
+// 同卓者を選ぶ一覧は、アイコンの色でまとめて並べる（色の選択肢と同じ順＝色相→濃さ。同じ色の中は名前順）
+function avColorOrder(c) {
+  const k = String(c || '').toUpperCase();
+  for (let h = 0; h < AV_HUES.length; h++) { const i = AV_HUES[h].findIndex(x => x.toUpperCase() === k); if (i >= 0) return h * 3 + i; }
+  const mi = AV_MONO.findIndex(x => x.toUpperCase() === k);
+  return mi >= 0 ? 100 + mi : 200;
 }
 function openCircleWith() {
   const me = circleViewMid();
-  const ents = Object.entries(rosterOf()).filter(([m]) => m !== me).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
+  const ents = Object.entries(rosterOf()).filter(([m]) => m !== me)
+    .sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   document.getElementById('form-modal-title').textContent = 'だれと同卓した試合を見る？';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・${circleViewingOther() ? `${esc(rosterName(circleViewMid()))}さん` : 'あなた'}の成績を数えます。</div>
@@ -11077,8 +11093,8 @@ function mpPeriodHtml(small = false) {
     `<optgroup label="${circleActive() ? '各自の直近の試合数' : '直近の試合数'}">${PERIOD_COUNTS.map(n => opt('n' + n, `${circleActive() ? '各自の' : ''}直近${n}戦`)).join('')}</optgroup>`,
     `<optgroup label="期間を指定">${cur[0] === 'c' ? opt('cur-custom', periodLabel(cur)) : ''}<option value="custom">開始・終了を指定…</option></optgroup>`];
   const label = cur === 'all' ? 'すべての期間' : periodLabel(cur);
-  const x = cur !== 'all' ? `<button type="button" class="mp-px" aria-label="期間を解除（すべての期間に戻す）" title="期間を解除" onclick="setMpPeriod('all')">×</button>` : '';
-  return `<span class="mp-pwrap${small ? ' sm' : ''}${x ? ' has-x' : ''}"><label class="mp-period${small ? ' sm' : ''}"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>${x}</span>`;
+  const x = cur !== 'all' ? `<button type="button" class="flt-x" aria-label="期間を解除（すべての期間に戻す）" title="期間を解除" onclick="setMpPeriod('all')">×</button>` : '';
+  return `<span class="flt mp-pwrap${small ? ' sm' : ''}${x ? ' on has-x' : ''}"><label class="mp-period${small ? ' sm' : ''}"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>${x}</span>`;
 }
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
