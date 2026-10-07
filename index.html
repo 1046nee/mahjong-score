@@ -3820,23 +3820,27 @@ function circlePerN() { const p = curPeriod(); return p[0] === 'n' ? +p.slice(1)
 function circleStatsP(mode) { const n = circlePerN(); return circleStats(circleData, circleSess, mode, n ? null : periodFilter(), n); }
 function circleWithNames() { return circleWith.filter(m => rosterOf()[m]).map(rosterName); }
 // 画像の帯に書く条件（期間・形式・同卓者）
+// 同卓者の名前を「AとB」（3人からは「A・B・C」）に。〇〇が参加した試合、と読めるように（2026-10-07）
+function joinNames(ns) { return ns.length === 2 ? ns.join('と') : ns.join('・'); }
 function circleFilterText() {
   const w = circleWithNames();
-  return [periodLabel(), circleMode === '3' ? '三麻' : '四麻', w.length ? `同卓：${w.join('・')}` : ''].filter(Boolean).join(' ・ ');
+  return [periodLabel(), circleMode === '3' ? '三麻' : '四麻', w.length ? `${joinNames(w)}が参加した試合` : ''].filter(Boolean).join(' ・ ');
 }
+// 見出しの下の1行。同卓者を選んでいれば「じろうとさぶろうが参加した試合のみ」（順位・成績表・対戦・過去の試合は、目線の人ではなく
+// 選んだ同卓者が全員出た試合で数える＝circleWithOk）。目線は結果の見え方が変わるタブ（過去の試合・対戦）でだけ書く
 function circleFilterNoteHtml(withPeriod = true) {
   const parts = [];
-  if (circleViewingOther()) parts.push(`目線 <b>${esc(rosterName(circleViewMid()))}</b>`);
-  const w = circleWithNames();
-  if (w.length) parts.push(`同卓 <b>${w.map(esc).join('・')}</b>`);
+  if (circleViewingOther() && (circleTab === 'games' || circleTab === 'h2h')) parts.push(`目線 <b>${esc(rosterName(circleViewMid()))}</b>`);
   const n = circlePerN();
   // 各自の直近n戦は、ピルがあっても意味を書く（人ごとに範囲が違うため）
   if (n) parts.push(`期間 <b>${esc(periodLabel())}</b>（一人ひとりが出た、新しい方から${n}試合）`);
   else if (withPeriod && curPeriod() !== 'all') parts.push(`期間 <b>${esc(periodLabel())}</b>`);
+  const w = circleWithNames();
+  if (w.length) parts.push(`<b>${esc(joinNames(w))}</b>`);
   if (!parts.length) return '';
-  // 1行に収める（長い名前は「…」・「で数えています」は切らない）2026-10-07
-  const full = parts.join(' ・ ');
-  return `<div class="cf-note" title="${full.replace(/<[^>]+>/g, '')}"><span class="cf-t">${full}</span><span class="cf-d">で数えています</span></div>`;
+  // 1行に収める（長い名前は「…」・後ろの「が参加した試合のみ」「で数えています」は切らない）2026-10-07
+  const full = parts.join(' ・ '), tail = w.length ? 'が参加した試合のみ' : 'で数えています';
+  return `<div class="cf-note" title="${full.replace(/<[^>]+>/g, '')}${tail}"><span class="cf-t">${full}</span><span class="cf-d">${tail}</span></div>`;
 }
 // 横スクロールの列（指標のピル・だれから見る？）で、選んでいるものが見える位置までずらす（ページは縦に動かさない）
 function revealOnInRows(root) {
@@ -11283,11 +11287,14 @@ function statCondHtml(ctx = statCondCtx) {
   const parts = [curPeriod() === 'all' ? 'すべての期間' : periodLabel()];
   if (statKindAvail) parts.push({ all: '個人戦＋チーム戦', ind: '個人戦のみ', team: 'チーム戦のみ' }[statKind]);
   if (ctx !== 'mine' && circleData) {
-    if (ctx === 'circle' && circleViewingOther()) parts.push(`${rosterName(circleViewMid())}さんの目線`);
     const w = circleWith.filter(m => rosterOf()[m]).map(rosterName);
-    if (w.length) parts.push(`同卓：${w.join('・')}`);
+    const v = ctx === 'circle' ? circleViewMid() : null;
+    // 同卓者を選んでいれば、いちばん前に「たろうとじろうが参加した試合」（成績カードは目線の人の成績なので、目線の人も入れる。2026-10-07）
+    if (w.length) parts.unshift(`${joinNames((v ? [rosterName(v)] : []).concat(w))}が参加した試合`);
+    else if (ctx === 'circle' && circleViewingOther()) parts.push(`${rosterName(circleViewMid())}さんの目線`);
   }
-  return `<span class="mc-cond">条件：${parts.map(esc).join(' ・ ')}</span>`;
+  const t = `条件：${parts.map(esc).join(' ・ ')}`;
+  return `<span class="mc-cond" title="${t}">${t}</span>`; // 1行で切れたときも全文は title で
 }
 function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   const n = m.games, c = m.counts, hist = sortHist(m.hist);
