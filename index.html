@@ -1019,8 +1019,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* カードの上の「期間＋四麻｜三麻」（上の段と同じもの・2026-10-07） */
 .low-filt { margin-top: 12px; }
 .low-filt .mp-filters .mp-pwrap { margin-bottom: 0; }
-#circle-body > .low-filt { margin-top: -4px; }
-#mp-pane-filt + .mp-pane-in, #mp-pane-filt ~ #mp-pane-hist .hist-card { margin-top: 12px; }
+#circle-body > .low-filt { margin-bottom: -6px; } /* すぐ下のタブとの間を詰める */
+#mp-pane-filt + .mp-pane-tabs { margin-top: 10px; }
 .hist-card .gm-month:first-child { margin-top: 4px; }
 .cg-games { margin-top: 8px; }
 .rounds-table th.th-link { cursor: pointer; }
@@ -2518,8 +2518,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div id="hist-circles" class="sw-wrap"></div>
   <div id="mp-me">
     <div id="mp-stats"></div>
-    <div id="mp-pane-tabs" class="mp-pane-tabs"></div>
     <div id="mp-pane-filt" class="mp-pane-in low-filt"></div>
+    <div id="mp-pane-tabs" class="mp-pane-tabs"></div>
     <div id="mp-pane-sum" class="mp-pane-in"></div>
     <div id="mp-pane-h2h" class="mp-pane-in"></div>
     <div id="mp-pane-hist">
@@ -3949,10 +3949,10 @@ function renderCircle() {
   setCircleTopHtml(`<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}<div class="mp-split" role="separator"></div></div>`);
   circlePeriodPillDone = true; // 見出しの右の期間のピルはやめた（タブのすぐ下＝カードの上に、上と同じ「期間＋四麻｜三麻」を出す。2026-10-07）
   applyMpTheme();
+  // タブ（順位・成績表・対戦…）の上にも、上と同じ「期間＋四麻｜三麻」（下まで読んでいても指の届くところで変えられる。2026-10-07）
+  if (segHtml) html += `<div class="low-filt">${mpFiltersHtml(segHtml)}</div>`;
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
-  // カードの上にも上と同じ「期間＋四麻｜三麻」（下まで読んでいても指の届くところで変えられる。名簿のタブは期間・形式に関係ないので出さない）
-  if (circleTab !== 'people' && segHtml) html += `<div class="low-filt">${mpFiltersHtml(segHtml)}</div>`;
   const modes = circleModes();
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
   const st = gids.length ? circleStatsP(circleMode) : { list: [], acc: {} };
