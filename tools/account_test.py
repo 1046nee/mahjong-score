@@ -350,21 +350,28 @@ def main():
                             bool(sk) and db_of(pgb)["circles"][cid]["roster"][sk["mid"]]["name"] == add_nm))
         else:
             results.append(("[6n] 仲間ページに入れたあとで足した人（名簿にいる名前）は、仲間ページを開くと自動で連携される", True, False))
-        # 同卓者で絞る（仲間ページ）: 選んだ人が同じ卓にいた試合だけで数える
-        cw = pgb.evaluate(f"""(() => {{
-          const tr = Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'じろう'); // 2人目＝たろう本人なので、じろうで絞る
-          const all = circleStats(circleData, circleSess, circleMode, null);
-          circleWith = [tr]; renderCircle();
-          const w = circleStats(circleData, circleSess, circleMode, null);
-          const row = document.getElementById('circle-top').innerText;
-          openCircleWith(); const noMe = !document.getElementById('form-modal-body').innerText.includes(rosterName(myCircleMid())); closeFormModal();
-          const note = document.getElementById('circle-body').textContent.includes('じろうが参加した試合のみ');
-          circleTab = 'games'; renderCircle(); const gtxt = document.getElementById('circle-body').innerText;
-          circleWith = []; circleTab = 'rank'; renderCircle();
-          const nOf = (st, k) => (st.list.find(p => p.key === k) || {{ n: 0 }}).n;
-          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓') && row.includes('じろう'), g: gtxt.length > 0, note, noMe }};
-        }})()""")
-        results.append(("[6o] 仲間ページで同卓者（じろう）を選ぶと、じろうが同じ卓にいた試合だけで数え、カードに「じろうが参加した試合のみ」と出る（自分は選択肢に出ない）", True, all(cw.values())))
+        # 対戦を見る（仲間ページ・2026-10-07 目線・同卓の代わり）: 選んだ人が全員同じ卓にいた試合で、勝ち越しといっしょに打った試合
+        cw = pgb.evaluate("""(async () => {
+          const top = document.getElementById('circle-top').innerText;
+          const ji = Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'じろう');
+          const sa = Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'さぶろう');
+          openCircleMatchup([myCircleMid(), ji]);
+          const two = document.getElementById('form-modal-body');
+          const vs = !!two.querySelector('.mu-vs'), games = two.querySelectorAll('.mu-g').length;
+          mupToggle(sa);
+          const rows = document.querySelectorAll('#form-modal-body .mu-row').length;
+          // 自分以外の2人だけでも見られる
+          mupToggle(myCircleMid());
+          const others = document.querySelectorAll('#form-modal-body .mu-vs').length;
+          document.querySelector('#form-modal-body .mu-g').click();
+          const back = document.querySelector('#form-modal-body .rs-back');
+          const backTxt = back ? back.textContent : '';
+          if (back) back.click();
+          const again = !!document.querySelector('#form-modal-body .mu-sheet');
+          closeFormModal();
+          return { pill: top.includes('対戦を見る') && !top.includes('目線') && !top.includes('同卓'), vs, games: games > 0, rows: rows === 3, others: others === 1, back: backTxt.includes('対戦に戻る'), again };
+        })()""")
+        results.append(("[6o] 仲間ページの「対戦を見る」: 2人なら勝ち越し・いっしょに打った試合、3人なら一人ずつの勝ち負け、自分以外どうしも可。試合から「対戦に戻る」（目線・同卓のピルは無い）", True, all(cw.values())))
         # 仲間ページの「直近n戦」は各自の直近n戦（一人ひとりが出た新しい方からn試合。誰が見ても同じ順位）
         pn = pgb.evaluate("""(() => {
           const prev = curPeriod();
