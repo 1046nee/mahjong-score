@@ -778,6 +778,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px 12px; margin-bottom: 10px; }
 .mc-grid > span { display: block; grid-column: span 3; min-width: 0; } /* 上の段: 平均着順・通算スコア（大） */
 .mc-grid > span:nth-child(n+3) { grid-column: span 2; } /* 下の段: トップ率・連対率・ラス回避 */
+.mc-grid.s3g > span:nth-child(n+3) { grid-column: span 3; } /* 三麻は連対率を出さない（＝ラス回避と同じ数字）ので トップ率・ラス回避 の2つ */
 .mc-grid small { display: block; font-size: 11px; color: #5F6E6B; font-weight: 700; }
 .mc-grid b { display: block; font-size: clamp(19px, 6.2vw, 24px); font-weight: 900; color: #1F2A28; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.3px; }
 .mc-grid b.sm { font-size: clamp(16px, 4.8vw, 18px); }
@@ -1453,6 +1454,7 @@ button.ios-row:active { background: #F2F6F5; }
 .st-s { margin-top: 2px; font-size: 12px; color: #5F6E6B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .st-s b.pos { color: #1A237E; } .st-s b.neg { color: #C62828; }
 .st-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 14px; }
+.st-trio.duo { grid-template-columns: repeat(2, minmax(0, 1fr)); } /* 三麻は連対率を出さない（＝ラス回避と同じ数字） */
 .st-rate { min-width: 0; padding: 0 10px; }
 .st-rate:first-child { padding-left: 0; } .st-rate:last-child { padding-right: 0; }
 .st-rate + .st-rate { border-left: .5px solid #D5DEDB; }
@@ -3952,7 +3954,7 @@ function circleGridHtml(st, forImage = false) {
   // 1着〜n着の行ラベルに着順の色の見本（画面だけ。画像の表のセルには要素を入れない）
   for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), fmtCnt);
   add('トップ率', L.map(p => p.top / p.n), pctText, 'max', 'cat-break');
-  add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max');
+  if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
   add('通算スコア', L.map(p => p.score), fmtScore, null, 'cat-break', h2hColor);
   add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor);
@@ -8317,7 +8319,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
   const statLabels = ['試合数', '平均着順', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
-    'トップ率', '連対率', 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数']; // 5万点以上・箱下は自分の成績（マイページなど）だけ（2026-10-05）
+    'トップ率', ...(slots === 3 ? [] : ['連対率']), 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数']; // 5万点以上・箱下は自分の成績（マイページなど）だけ（2026-10-05）
   // チップ・焼き鳥・チョンボは記録しているグループだけ（旧データは記録があれば出す）。回数は単位なし
   const useChips = !!s.bonusEnabled || rounds.some(r => r.chips);
   const useYaki = !!s.yakitori || rounds.some(r => r.yakitori);
@@ -8344,9 +8346,9 @@ function rankCountHtml(rounds, s, forImage = false) {
         const c = counts[i][rank];
         cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
       }
-      cells.push(`<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`,
-        `<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`,
-        `<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
+      cells.push(`<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`);
+      if (slots !== 3) cells.push(`<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`); // 三麻は連対率＝ラス回避なので出さない
+      cells.push(`<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
         `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
         `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
         `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
@@ -10188,7 +10190,7 @@ function myStatsTableHtml(st) {
   }
   const pct = (np, f) => Math.round(f(st.modes[np]) / st.modes[np].games * 100) + '%';
   row('トップ率', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.counts[0])}</td>`), 'cat-break');
-  row('連対率', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.counts[0] + (b.counts[1] || 0))}</td>`));
+  if (cols.some(np => np !== 3)) row('連対率', cols.map(np => np === 3 ? '<td style="color:#ccc">—</td>' : `<td style="font-weight:700">${pct(np, b => b.counts[0] + (b.counts[1] || 0))}</td>`));
   row('ラス回避', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.games - b.lastCount)}</td>`));
   row('通算スコア', cols.map(np => scoreCell(st.modes[np].score)), 'cat-break');
   row('最高点数', cols.map(np => `<td>${st.modes[np].ptMax != null ? st.modes[np].ptMax.toLocaleString() : '—'}</td>`));
@@ -10271,7 +10273,7 @@ function msCompareHtml(np) {
   return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
     <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
       <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}"><span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span></th>`).join('')}</tr></thead>
-      <tbody>${rows.map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+      <tbody>${rows.filter(([label]) => !(np === 3 && label === '連対率')).map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
 // 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜5万点以上・箱下）。スコアの推移は2026-09-30にやめた
@@ -10405,11 +10407,11 @@ function statTilesHtml(b) {
       <div class="st-big"><div class="st-l">通算スコア</div><div class="st-num ${scoreCls(b.score)}">${fmtScore(b.score)}<small>pts</small></div>
         <div class="st-s">${b.rawN ? `素点 <b class="${scoreCls(b.raw)}">${fmtScore(b.raw)}</b> ・ 順位点 <b class="${scoreCls(b.rawSc - b.raw)}">${fmtScore(b.rawSc - b.raw)}</b>` : `${n}試合`}</div></div>
       <div class="st-big"><div class="st-l">平均着順</div><div class="st-num">${(b.rankSum / n).toFixed(2)}</div><div class="st-s">${n}試合</div></div></div>
-    <div class="st-trio">
+    <div class="st-trio${np === 3 ? ' duo' : ''}">
       <div class="st-rate"><div class="st-l">トップ率</div><div class="st-rv">${pctText(c1 / n)}</div>${gauge([['r1', c1], ['gap', n - c1]], exp[0])}<div class="st-s">1着 ${fmtCnt(c1)}/${n}</div></div>
-      <div class="st-rate"><div class="st-l">連対率</div><div class="st-rv">${pctText((c1 + c2) / n)}</div>${gauge([['r1', c1], ['r2', c2], ['gap', n - c1 - c2]], exp[1])}<div class="st-s">2着以内 ${fmtCnt(c1 + c2)}/${n}</div></div>
+      ${np === 3 ? '' : `<div class="st-rate"><div class="st-l">連対率</div><div class="st-rv">${pctText((c1 + c2) / n)}</div>${gauge([['r1', c1], ['r2', c2], ['gap', n - c1 - c2]], exp[1])}<div class="st-s">2着以内 ${fmtCnt(c1 + c2)}/${n}</div></div>`}
       <div class="st-rate"><div class="st-l">ラス回避</div><div class="st-rv">${pctText((n - last) / n)}</div>${gauge([['av', n - last], ['r4', last]], exp[2])}<div class="st-s">${np}着 ${fmtCnt(last)}/${n}</div></div></div>
-    <div class="st-foot">縦の線＝目安（全員が同じ強さなら ${np === 3 ? '33%・67%・67%' : '25%・50%・75%'}）</div>`;
+    <div class="st-foot">縦の線＝目安（全員が同じ強さなら ${np === 3 ? '33%・67%' : '25%・50%・75%'}）</div>`;
 }
 // 着順の分布: 「n着」のタイル・横棒・％・回数を1行ずつ。棒の長さは いちばん多い着順を100% にした比
 function rankBarHtml(counts, n, np) {
@@ -11004,11 +11006,11 @@ function mcScopeHtml(label) {
 }
 function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(0, 0)}</span></span>
-    <span class="mc-grid mc-nil">
+    <span class="mc-grid mc-nil${np === 3 ? ' s3g' : ''}">
       <span><small>平均着順</small><b>—</b></span>
       <span><small>通算スコア</small><b>—</b></span>
       <span><small>トップ率</small><b class="sm">—</b></span>
-      <span><small>連対率</small><b class="sm">—</b></span>
+      ${np === 3 ? '' : '<span><small>連対率</small><b class="sm">—</b></span>'}
       <span><small>ラス回避</small><b class="sm">—</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布（まだありません）"></span>
@@ -11027,11 +11029,11 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   }).join('');
   const nDays = new Set(hist.map(x => ymdLocal(new Date(x.t)))).size;
   return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(m.groups, n)}</span></span>
-    <span class="mc-grid">
+    <span class="mc-grid${np === 3 ? ' s3g' : ''}">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
       <span><small>通算スコア</small><b class="${scoreCls(m.score)}">${fmtScore(m.score)}</b></span>
       <span><small>トップ率</small><b class="sm">${pctText((c[0] || 0) / n)}</b></span>
-      <span><small>連対率</small><b class="sm">${pctText(((c[0] || 0) + (c[1] || 0)) / n)}</b></span>
+      ${np === 3 ? '' : `<span><small>連対率</small><b class="sm">${pctText(((c[0] || 0) + (c[1] || 0)) / n)}</b></span>`}
       <span><small>ラス回避</small><b class="sm">${pctText((n - m.lastCount) / n)}</b></span>
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
