@@ -752,11 +752,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pills button { flex: none; height: 32px; padding: 0 14px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mp-pills button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; }
 /* 期間は1つのボタン（黒いピル）。中の select を透明に重ねて、押すと端末の選択肢が開く */
-.mp-filters { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; column-gap: 8px; }
-.mp-filters .mp-period { flex: none; white-space: nowrap; margin-right: 0; } /* 間隔は column-gap だけ */
+.mp-filters { display: flex; flex-wrap: nowrap; align-items: flex-start; justify-content: space-between; column-gap: 8px; }
+.mp-filters .mp-pwrap { flex: 0 1 auto; min-width: 0; white-space: nowrap; margin-bottom: 14px; } /* 長い期間名は「…」にして「四麻｜三麻」を落とさない */
+.mp-filters .mp-period { min-width: 0; } /* 間隔は column-gap だけ */
+/* 期間のピル（どこでも同じ大きさ・13px）＋期間を選んでいるときだけ右に「×」（すべての期間に戻す）2026-10-07 */
+.mp-pwrap { display: inline-flex; align-items: center; gap: 4px; min-width: 0; vertical-align: top; }
+.mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 374px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
+.mp-px { flex: none; width: 24px; height: 24px; border: 0; border-radius: 50%; background: #E3E9E8; color: #33413E; font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; padding: 0; }
 .mp-filters .seg.xs { margin-left: auto; }
-@media (max-width: 400px) { .mp-filters .mp-period { font-size: 12.5px; padding: 0 9px 0 12px; gap: 4px; } } /* 「すべての期間」と「四麻｜三麻」を狭い画面でも1行に（2026-10-07） */
-.mp-period { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px 0 14px; margin: 0 8px 14px 0; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 14px; font-weight: 800; cursor: pointer; }
+.mp-period { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px 0 12px; margin: 0; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
 .mp-period .ico { transform: rotate(90deg); --i1: #fff; --i2: #fff; }
 .mp-period select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
 /* 年の中の月: 年より一段小さく・選んだ月は緑の地（年の黒と区別） */
@@ -798,10 +803,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-form { display: flex; gap: 3px; flex: 1; min-width: 0; overflow: hidden; }
 .mc-form .form-chip { width: 22px; height: 22px; max-width: none; font-size: 12px; border-radius: 6px; flex: none; }
 .mc-more { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 800; color: var(--pc); white-space: nowrap; }
-.mp-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 12px 16px 0; } /* 期間（小）＋「＋ 追加」「まとめて送る」を1行に */
 .mp-acts-r { display: flex; gap: 6px; flex: none; }
-.mp-act.sm { height: 30px; padding: 0 12px; border-radius: 15px; font-size: 12.5px; border-width: 1.5px; white-space: nowrap; }
-.mp-period.sm { height: 30px; margin: 0; padding: 0 10px 0 12px; font-size: 12.5px; flex: 0 1 auto; min-width: 0; }
+.mp-act.sm { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 15px; font-size: 13px; border-width: 1.5px; white-space: nowrap; gap: 3px; }
+@media (max-width: 374px) { .mp-act.sm .ma-t { display: none; } .mp-act.sm { padding: 0; width: 30px; } } /* 狭い画面はアイコンだけ */
+.hist-viewseg { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mp-period.sm { flex: 0 1 auto; min-width: 0; }
 .mp-period.sm > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ios-head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 4px 8px; } .ios-head-row .ios-head { margin: 0; }
 /* マイページの［成績｜相手｜過去の試合］（成績カードのすぐ下。自分の成績の画面を別に開かなくていいように） */
@@ -849,7 +855,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hist-viewseg { margin-top: 8px; }
 /* 過去の試合の形式の絞り込み（すべて｜四麻｜三麻｜複数人｜チーム戦）。期間の月と同じ一段小さいピル＋件数 */
 .hist-kinds { margin: 8px -16px 0; gap: 4px; }
-.hist-kinds button { height: 30px; padding: 0 11px; font-size: 12.5px; }
+.hist-kinds button { height: 30px; padding: 0 11px; font-size: 13px; } /* ピルの形のボタンは13pxにそろえる（2026-10-07） */
 .hist-kinds button small { margin-left: 4px; font-size: 11px; font-weight: 800; color: #8A9AA5; font-variant-numeric: tabular-nums; }
 .hist-kinds button.on { background: #1F2A28; border-color: #1F2A28; color: #fff; } /* 期間（すべて｜2026年）の選択中と同じ黒 */
 .hist-kinds button.on small { color: rgba(255,255,255,.75); }
@@ -857,8 +863,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 過去の試合のタイル（小さな正方形。大きさは固定＝中身が増えても変わらない。空＝点線・灰色、少ない＝琥珀色の縁、不参加＝斜線の地） */
 .ht-legend { margin: 12px 2px 8px; font-size: 12px; font-weight: 700; color: #5F6E6B; }
 .ht-lg.empty { color: #6B7A77; } .ht-lg.few { color: #9A5B12; }
-.ht-year { display: flex; align-items: baseline; gap: 8px; margin: 14px 2px 8px; font-size: 15px; font-weight: 900; color: #1F2A28; }
-.ht-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; }
+.ht-year { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 8px; row-gap: 0; margin: 14px 2px 8px; font-size: 15px; font-weight: 900; color: #1F2A28; white-space: nowrap; }
+.ht-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; white-space: nowrap; } /* 狭い画面でも「2026年」や件数の途中で折らない（入らなければ件数ごと次の行へ） */
 .ht-year .ht-mine { margin-left: -4px; color: #177083; }
 .ht-legend + .ht-year { margin-top: 4px; }
 .ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
@@ -926,7 +932,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ht.few:not(.out) { background: #FFF9EE; }
 .ht.few .ht-n b { color: #9A5B12; }
 .ht.few .ht-tag { background: #F8E3C2; color: #7A4A0E; }
-.hist-viewseg .seg { margin: 0; }
+.hist-viewseg .seg, .hist-viewseg .seg.xs { margin: 0; } /* .seg.xs の下の余白を消して、右の「追加・送る」「期間」と上下の中心をそろえる */
+.hist-viewseg { margin-bottom: 14px; }
 .gr.out .gr-name, .gr.out .gr-date { color: #8A9AA5; font-weight: 700; }
 .gr-out { display: inline-flex; align-items: center; height: 20px; font-size: 11px; font-weight: 800; color: #fff; background: #6B7A77; border-radius: 10px; padding: 0 9px; }
 .gr-ask { font-size: 12px; font-weight: 800; color: #8A6D1A; margin-top: 8px; }
@@ -1138,7 +1145,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sk-seg button { flex: 1; border: 0; background: none; padding: 4px 0; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
 .sk-seg button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 .sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
-.sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 11.5px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
+.sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
 .sp-unit button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 .mc-trend-h b { font-size: 14px; font-weight: 900; } .mc-trend-h b.pos { color: #1A237E; } .mc-trend-h b.neg { color: #C62828; }
 .mc-spark { display: block; width: 100%; height: auto; margin-top: 4px; overflow: visible; }
@@ -2467,7 +2474,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id="mp-pane-h2h" class="mp-pane-in"></div>
     <div id="mp-pane-hist">
       <div id="hist-organize"></div>
-      <div class="mp-actions" id="mp-actions"></div>
       <div class="mp-sec" id="hist-head">
         <div class="mp-sec-head"><span class="mp-sec-note" id="hist-count"></span></div>
         <div id="hist-kind"></div>
@@ -3755,8 +3761,12 @@ function circleMetricVal(p, m) {
 }
 function circleMetricText(v, m) { if (m === 'pmax') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
 // 仲間ページのカードの見出し。期間を指定・同卓者で絞っているときは、見出しの下に「いま何で数えているか」を出す
+// 仲間ページのカードの見出し。各タブの最初のカードだけ、右に小さい期間のピル（上の期間と同じもの・下からでも変えられる。2026-10-07）
+let circlePeriodPillDone = false;
 function circleCardHead(title, extra = '') {
-  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0">${title}</div><div style="display:flex;gap:6px">${extra}</div></div>${circleFilterNoteHtml()}`;
+  const pp = circlePeriodPillDone ? '' : mpPeriodHtml(true);
+  circlePeriodPillDone = true;
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0;flex:none">${title}</div><div style="display:flex;gap:6px;min-width:0;align-items:center">${pp}${extra}</div></div>${circleFilterNoteHtml()}`;
 }
 function circleFiltered() { return curPeriod() !== 'all' || circleWith.length > 0; }
 // 仲間ページの期間: 「直近n戦」は各自の直近n戦（circleStats の perN）、ほかは日付で絞る
@@ -3802,6 +3812,7 @@ function circleCountsHtml(gids) {
 }
 function renderCircle() {
   if (!circleData) return;
+  circlePeriodPillDone = false; // 各タブの最初のカードに期間のピル
   setStatKindAvail(Object.keys(circleData.games || {}).map(sid => circleSess[sid]));
   const role = circleRole();
   const roster = rosterOf();
@@ -4171,11 +4182,11 @@ function circleGamesTabHtml(role, gids, modeChips) {
   const head = `<div class="mp-sec-head cg-head"><span class="mp-sec-note">${curPeriod() === 'all' ? '' : esc(periodLabel()) + ' '}${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${gamesRoundsText(games.length, nR)}${games.length < gids.length ? `（全${gids.length}ゲーム中）` : ''}</span>${role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : ''}</div>`;
   if (!all.length) return `<div class="cg-tab">${head}<div class="mp-panel mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
   // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
-  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
+  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}${mpPeriodHtml(true)}</div>
     ${glist ? `<div class="cg-games">${glist}</div>` : (curPeriod() !== 'all' ? `<div class="empty-msg" style="margin-top:14px">${esc(periodLabel())}の試合はありません</div><button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '<div class="empty-msg" style="margin-top:14px">この形式の試合はありません</div>')}</div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
-let circleGamesView = 'list';
+let circleGamesView = 'tile'; // 既定はタイル（2026-10-07・個人の過去の試合と同じ）
 // 画面ごとのカレンダーの状態（circle＝仲間ページ・hist＝過去の試合・ms＝自分の成績のゲーム）
 // yc＝年一覧の真ん中の年（null＝今年）
 const calS = { circle: { month: null, day: null, mode: 'years', yc: null }, hist: { month: null, day: null, mode: 'years', yc: null }, ms: { month: null, day: null, mode: 'years', yc: null } }; // 最初は年一覧
@@ -11066,7 +11077,8 @@ function mpPeriodHtml(small = false) {
     `<optgroup label="${circleActive() ? '各自の直近の試合数' : '直近の試合数'}">${PERIOD_COUNTS.map(n => opt('n' + n, `${circleActive() ? '各自の' : ''}直近${n}戦`)).join('')}</optgroup>`,
     `<optgroup label="期間を指定">${cur[0] === 'c' ? opt('cur-custom', periodLabel(cur)) : ''}<option value="custom">開始・終了を指定…</option></optgroup>`];
   const label = cur === 'all' ? 'すべての期間' : periodLabel(cur);
-  return `<label class="mp-period${small ? ' sm' : ''}"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>`;
+  const x = cur !== 'all' ? `<button type="button" class="mp-px" aria-label="期間を解除（すべての期間に戻す）" title="期間を解除" onclick="setMpPeriod('all')">×</button>` : '';
+  return `<span class="mp-pwrap${small ? ' sm' : ''}${x ? ' has-x' : ''}"><label class="mp-period${small ? ' sm' : ''}"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>${x}</span>`;
 }
 
 // ---- マイページ: いちばん上＝自分の成績（四麻と三麻を別のカードで） ----
@@ -11638,8 +11650,6 @@ function renderMpPanes(st) {
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
     `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
   // 過去の試合のすぐ上の1行: 小さい期間のピル（上の期間と同じもの）＋「＋ 追加」「まとめて送る」（2026-10-07 縦に長くしないよう1行に）
-  const actEl = document.getElementById('mp-actions');
-  if (actEl) actEl.innerHTML = `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openAddGames()" title="試合を追加">＋ 追加</button><button type="button" class="mp-act sm" onclick="startSelectSend()">まとめて送る</button></span>`;
   document.getElementById('mp-pane-sum').innerHTML = pane === 'sum' ? cmp : '';
   document.getElementById('mp-pane-h2h').innerHTML = pane === 'h2h' ? myH2HCardHtml('renderMpPanes(collectMyStats())') : '';
   document.getElementById('mp-pane-hist').style.display = pane === 'hist' ? '' : 'none';
@@ -11687,6 +11697,7 @@ function renderHistoryList() {
   if (!games.length) {
     if (cnt) cnt.textContent = '';
     document.getElementById('hist-kind').innerHTML = '';
+    const vs0 = document.getElementById('hist-viewseg'); if (vs0) vs0.innerHTML = histActsHtml(); // 試合が無くても「追加」は押せるように
     body.innerHTML = `<div class="mp-panel mp-empty"><div class="mp-empty-ico">${ico('tile', 34, 'ico-l')}</div><b>まだ試合がありません</b>
       <span>試合を作るか、共有された試合のURLを開く・「＋ 試合を追加」に貼ると、ここに残ります。</span></div>`;
     renderSendBar();
@@ -11704,7 +11715,7 @@ function renderHistoryList() {
   if (kindEl) kindEl.innerHTML = kindHtml;
   list = list.filter(x => histKindMatch(x.g, histKind));
   const vs = document.getElementById('hist-viewseg');
-  if (vs) vs.innerHTML = histOrderSegHtml('renderHistoryList()');
+  if (vs) vs.innerHTML = `${histOrderSegHtml('renderHistoryList()')}${histActsHtml()}`;
   const modeName = histKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === histKind)[1] + 'の';
 
   if (!list.length) {
@@ -11748,7 +11759,7 @@ function renderHistoryList() {
 }
 
 // ---- まとめて送る（選んだ試合の名前とURLを1つの文にしてLINEへ。受け取った人は「試合を追加」に貼るだけ） ----
-let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = 'new'; // histView: 見せ方 new（一覧＝新しい順）｜cal｜tile
+let mpSelecting = false, mpSel = new Set(), histOthersOpen = false, histView = 'tile'; // histView: 見せ方 new（一覧＝新しい順）｜cal｜tile。既定はタイル（2026-10-07）
 // 過去の試合の形式の絞り込み。複数人＝席より多い人数で回した試合（行の印の人数の丸と同じ）
 let histKind = 'all';
 const HIST_KINDS = [['all', '全試合'], ['4', '四麻'], ['3', '三麻'], ['multi', '複数人'], ['team', 'チーム戦']];
@@ -11763,6 +11774,11 @@ function histKindPillsHtml(games, rerender, key = 'histKind') {
     `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="${key}='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
 // 見せ方「一覧｜タイル｜カレンダー」（左から）。key＝状態の変数名、listVal＝一覧の値（過去の試合 'new'・仲間ページ 'list'）
+// 過去の試合の「追加」「まとめて送る」。見せ方（タイル｜一覧｜カレンダー）と同じ行の右（縦に場所を取らない・2026-10-07）。
+// 狭い画面（375px未満）はアイコンだけ
+function histActsHtml() {
+  return `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button><button type="button" class="mp-act sm" onclick="startSelectSend()" title="まとめて送る" aria-label="まとめて送る">${ico('share', 14)}<span class="ma-t">送る</span></button></span>`;
+}
 function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
   const cur = key === 'circleGamesView' ? circleGamesView : histView;
   return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[['tile', 'タイル'], [listVal, '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>

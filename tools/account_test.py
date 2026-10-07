@@ -248,7 +248,7 @@ def main():
         pg.evaluate("closeFormModal()")
         results.append(("[5h] 仲間ページに入れたあとで試合に足したメンバーも、結びつけの画面に出る", True, "ろくろう" in added_rows))
         pg.evaluate("circleTab = 'games'; circleGamesView = 'cal'; renderCircle()")
-        cal0 = pg.evaluate("(() => { const on = document.querySelector('#circle-body .cal-mode .on'); const cur = document.querySelector('#circle-body .cal-year .cal-m.today'); const seg = [...document.querySelectorAll('#circle-body .hist-viewseg button')].map(b => b.textContent).join('|'); return (on ? on.textContent : '') + '/' + (cur ? cur.textContent : '') + '/' + seg; })()")
+        cal0 = pg.evaluate("(() => { const on = document.querySelector('#circle-body .cal-mode .on'); const cur = document.querySelector('#circle-body .cal-year .cal-m.today'); const seg = [...document.querySelectorAll('#circle-body .hist-viewseg .seg button')].map(b => b.textContent).join('|'); return (on ? on.textContent : '') + '/' + (cur ? cur.textContent : '') + '/' + seg; })()")
         pg.evaluate("calS.circle.mode = 'month'; renderCircle()")
         cal = pg.evaluate("document.getElementById('circle-body').innerText")
         pg.evaluate("circleGamesView = 'list'; circleTab = 'rank'; renderCircle()")
@@ -482,6 +482,7 @@ def main():
         # 過去の試合の行を押すと、画面を移らずに結果のシート（総合順位・試合ごとのスコア）。閉じればマイページのまま
         pg.evaluate("window.scrollTo(0, 300)")
         y0 = pg.evaluate("window.scrollY")
+        pg.evaluate("histView = 'new'; renderHistoryList()")  # 既定はタイル（2026-10-07）。ここからは一覧の行を押して確かめる
         pg.evaluate("document.querySelector('#history-body .gr').click()")
         sheet = pg.evaluate("document.getElementById('form-modal').classList.contains('open') ? document.getElementById('form-modal-body').innerText : ''")
         pg.evaluate("closeFormModal()")
@@ -556,8 +557,8 @@ def main():
                         "金曜会" in hl and ("未連携" in hl or "全員連携済み" in hl)))
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
-        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「＋ 追加」「まとめて送る」（期間と同じ1行）・形式のピル・並び順、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["＋ 追加", "まとめて送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+        results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「追加」「送る」（見せ方と同じ1行）・形式のピル・並び順、自分が出た試合（月の見出し）", True,
+                        all(w in me_txt for w in ["追加", "送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,
