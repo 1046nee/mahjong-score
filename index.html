@@ -3867,7 +3867,7 @@ function renderCircle() {
     });
     topHtml += mine[mpMode]
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
-      : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
+      : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'); // 素点・順位点の欄は空のカードの中にもう入っている（外にもう1つ足していた）
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
   applyMpTheme();
