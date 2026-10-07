@@ -763,8 +763,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .flt-main { display: inline-flex; align-items: center; gap: 5px; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .flt-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .flt-t b { font-weight: 900; }
 .flt.on { padding-right: 3px; }
-/* 目線・同卓: いつもは淡い主色、選んだら（他の人の目線・同卓者を指定）主色で塗って目立たせる */
-.flt:not(.mp-pwrap) { border-color: transparent; background: var(--pc-tint); color: var(--pc-ink); }
+/* 目線・同卓: いつもは白地＋主色の淡い枠・先頭に選んだ人の頭文字（2026-10-07 少し目立たせた）、選んだら（他の人の目線・同卓者を指定）主色で塗って目立たせる */
+.flt:not(.mp-pwrap) { border: 1.5px solid var(--pc-soft); background: #fff; color: var(--pc-ink); } /* 地の色（淡い主色）と同じだと埋もれるので白地 */
+.flt-av { flex: none; display: inline-flex; align-items: center; }
+.flt-av i { width: 18px; height: 18px; margin-left: -4px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; }
+.flt-av i:first-child { margin-left: -5px; }
 .flt:not(.mp-pwrap) .ico { --i1: var(--pc); --i2: var(--pc); }
 .flt.on:not(.mp-pwrap) { background: var(--pc); border-color: var(--pc); color: #fff; }
 .flt.on:not(.mp-pwrap) .ico { --i1: #fff; --i2: #fff; }
@@ -4123,7 +4126,8 @@ function openCircleView() {
   const me = myCircleMid(), v = circleViewMid();
   const nOf = {};
   if (circleData) circleStatsP(circleMode || '4').list.forEach(p => { nOf[p.key] = p.n; });
-  const ents = Object.entries(rosterOf()).sort((a, b) => (b[0] === me) - (a[0] === me) || (nOf[b[0]] || 0) - (nOf[a[0]] || 0) || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
+  // 同卓者の一覧と同じく、アイコンの色でまとめて並べる（2026-10-07）
+  const ents = Object.entries(rosterOf()).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   document.getElementById('form-modal-title').textContent = 'だれの目線で見る？';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="h2h-note" style="margin-top:0">選んだ人の成績として、上の成績カード・過去の試合の結果・対戦を表示します。<b>同卓者で絞る</b>と組み合わせると、たとえば「AさんとBさんが同じ卓にいた試合だけのAさんの成績」が見られます（あなたがいなかった試合も入ります）。</div>
@@ -4139,7 +4143,8 @@ function circleViewBtnHtml() {
   if (!Object.keys(rosterOf()).length) return '';
   const v = circleViewMid(), other = circleViewingOther();
   const name = v ? esc(rosterName(v)) + (other ? '' : '（あなた）') : '選ぶ';
-  return fltHtml(other, `${ico('people', 14)}<span class="flt-t">目線：<b>${name}</b></span>${ico('chevron', 11)}`, 'openCircleView()', '自分の目線に戻す', 'setCircleView(null)',
+  const av = v ? `<span class="flt-av"><i style="background:${avColor(v)}">${esc(avInitial(rosterName(v)))}</i></span>` : ico('people', 14);
+  return fltHtml(other, `${av}<span class="flt-t">目線：<b>${name}</b></span>${ico('chevron', 11)}`, 'openCircleView()', '自分の目線に戻す', 'setCircleView(null)',
     other ? `${rosterName(v)}さんの目線で表示中` : '');
 }
 // 目線と同卓の2段（どちらも同じ形のピル）
@@ -4149,7 +4154,8 @@ function circleWithRowHtml() {
   if (!Object.keys(rosterOf()).length) return '';
   const on = circleWith.length > 0;
   const names = on ? circleWith.map(m => esc(rosterName(m))).join('・') : '指定なし';
-  const withPill = fltHtml(on, `${ico('people', 14)}<span class="flt-t">同卓：<b>${names}</b></span>${ico('chevron', 11)}`, 'openCircleWith()', '同卓の指定を解除', 'circleWith=[];periodCutMemo=null;renderCircle()');
+  const wAv = on ? `<span class="flt-av">${circleWith.slice(0, 3).map(m => `<i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>`).join('')}</span>` : ico('people', 14);
+  const withPill = fltHtml(on, `${wAv}<span class="flt-t">同卓：<b>${names}</b></span>${ico('chevron', 11)}`, 'openCircleWith()', '同卓の指定を解除', 'circleWith=[];periodCutMemo=null;renderCircle()');
   return `<div class="cv-row">${circleViewBtnHtml()}</div><div class="cw-row">${withPill}</div>`;
 }
 // 同卓者を選ぶ一覧は、アイコンの色でまとめて並べる（色の選択肢と同じ順＝色相→濃さ。同じ色の中は名前順）
