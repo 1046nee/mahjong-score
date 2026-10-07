@@ -3824,6 +3824,21 @@ function circleCountsHtml(gids) {
   };
   return `<span class="cc-rows">${row(4)}${row(3)}</span>`;
 }
+// 上の成績カード（グラフ）は、中身が変わらないなら描き直さない（タブを切り替えるたびにグラフが描き直されて一瞬揺れていた・2026-10-07）。
+// くらべるのは推移のグラフの番号（sp123）を除いた文字。描き直さないときは、新しく作ったグラフの控え（sparkReg）を画面にあるグラフの番号へ付け替える
+let circleTopKey = null;
+function setCircleTopHtml(html) {
+  const el = document.getElementById('circle-top');
+  const key = html.replace(/\bsp\d+\b/g, 'sp');
+  if (key === circleTopKey && el.firstElementChild) {
+    const newRids = [...html.matchAll(/data-rid="(sp\d+)"/g)].map(m => m[1]);
+    const oldRids = [...el.querySelectorAll('.mc-spark[data-rid]')].map(e => e.dataset.rid);
+    newRids.forEach((r, i) => { if (oldRids[i] && sparkReg[r]) { sparkReg[oldRids[i]] = sparkReg[r]; delete sparkReg[r]; } });
+    return;
+  }
+  circleTopKey = key;
+  el.innerHTML = html;
+}
 function renderCircle() {
   if (!circleData) return;
   setStatKindAvail(Object.keys(circleData.games || {}).map(sid => circleSess[sid])); statCondCtx = 'circle';
@@ -3881,7 +3896,7 @@ function renderCircle() {
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'); // 素点・順位点の欄は空のカードの中にもう入っている（外にもう1つ足していた）
   }
   const lowP = topHtml ? mpPeriodHtml(true) : ''; // 個人の画面と同じ場所（成績カードのすぐ下）に小さい期間
-  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}${lowP ? `<div class="mp-pane-tools" style="margin-top:10px">${lowP}</div>` : ''}<div class="mp-split" role="separator"></div></div>`;
+  setCircleTopHtml(`<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}${lowP ? `<div class="mp-pane-tools" style="margin-top:10px">${lowP}</div>` : ''}<div class="mp-split" role="separator"></div></div>`);
   applyMpTheme();
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
