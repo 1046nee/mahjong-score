@@ -785,9 +785,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-grid b.sm { font-size: clamp(16px, 4.8vw, 18px); }
 .mc-grid b.pos { color: #1A237E; } .mc-grid b.neg { color: #C62828; }
 .cv-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .cv-row .cv-btn { flex: none; margin: 0; }
-.cv-band { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; margin: 0; padding: 5px 6px 5px 10px; line-height: 1.35; border-radius: 12px; background: #FFF4D6; color: #6B4E00; font-size: 12.5px; font-weight: 700; }
+.cv-band { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; margin: 0; height: 30px; box-sizing: border-box; padding: 0 4px 0 10px; line-height: 1; /* 左の「目線」のボタンと同じ高さ（2026-10-07） */ border-radius: 12px; background: #FFF4D6; color: #6B4E00; font-size: 12.5px; font-weight: 700; }
 .cv-band span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cv-band button { white-space: nowrap; } .cv-band b { font-weight: 900; }
-.cv-band button { flex: none; border: 0; border-radius: 999px; padding: 5px 9px; background: #fff; color: #6B4E00; font: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; }
+.cv-band button { flex: none; height: 22px; border: 0; border-radius: 999px; padding: 0 9px; background: #fff; color: #6B4E00; font: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; }
 .cw-opt small { margin-left: 4px; font-size: 10.5px; font-weight: 700; color: #8A9AA5; }
 .mc-bar { display: flex; height: 24px; border-radius: 7px; overflow: hidden; background: #EEF2F1; margin-bottom: 10px; }
 .mc-bar i { display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; }
@@ -4080,20 +4080,20 @@ function circleViewBtnHtml() {
   const v = circleViewMid();
   return `<button type="button" class="cw-btn cv-btn${circleViewingOther() ? ' on' : ''}" onclick="openCircleView()">${circleViewingOther() ? '目線' : `${ico('people', 14)}目線：${v ? esc(rosterName(v)) + '（あなた）' : '選ぶ'}`}${ico('chevron', 11)}</button>`; // 他の人の目線のときは名前を右の帯に出す（ボタンは短く）
 }
-// 「同卓者で絞る」の1行（目線のボタン＋選んだ人のチップ＋×）
+// 目線と同卓の2段（「目線：○○」「同卓：指定なし／同卓 ＋選んだ人のチップ＋×」）
 function circleWithRowHtml() {
   const v = circleViewMid();
   circleWith = circleWith.filter(m => rosterOf()[m] && m !== v); // 目線の人は選べない（その人の成績はその人が出た試合だけなので、絞る意味がない）
   if (!Object.keys(rosterOf()).length) return '';
   const band = circleViewingOther() ? `<div class="cv-band" title="${esc(rosterName(v))}さんの目線で表示中"><span><b>${esc(rosterName(v))}</b>さんの目線</span><button type="button" onclick="setCircleView(null)">自分に戻す</button></div>` : '';
   // 1段目＝目線（他の人の目線なら右に黄色の帯）、2段目＝同卓者で絞る（2026-10-07 縦積みに）
-  return `<div class="cv-row">${circleViewBtnHtml()}${band}</div><div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${ico('people', 14)}同卓者で絞る</button>${circleWith.map(m =>
+  return `<div class="cv-row">${circleViewBtnHtml()}${band}</div><div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${circleWith.length ? '同卓' : `${ico('people', 14)}同卓：指定なし`}${ico('chevron', 11)}</button>${circleWith.map(m =>
     `<span class="cw-chip"><i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>${esc(rosterName(m))}<button type="button" aria-label="${esc(rosterName(m))}を外す" onclick="toggleCircleWith('${m}')">×</button></span>`).join('')}${circleWith.length ? `<button type="button" class="cw-clear" onclick="circleWith=[];periodCutMemo=null;renderCircle()">解除</button>` : ''}</div>`;
 }
 function openCircleWith() {
   const me = circleViewMid();
   const ents = Object.entries(rosterOf()).filter(([m]) => m !== me).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
-  document.getElementById('form-modal-title').textContent = '同卓者で絞る';
+  document.getElementById('form-modal-title').textContent = 'だれと同卓した試合を見る？';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・${circleViewingOther() ? `${esc(rosterName(circleViewMid()))}さん` : 'あなた'}の成績を数えます。</div>
     <div class="cw-pick">${ents.map(([m, r]) => `<button type="button" class="cw-opt${circleWith.includes(m) ? ' on' : ''}" onclick="toggleCircleWith('${m}',true)"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}</button>`).join('')}</div>

@@ -362,7 +362,7 @@ def main():
           circleTab = 'games'; renderCircle(); const gtxt = document.getElementById('circle-body').innerText;
           circleWith = []; circleTab = 'rank'; renderCircle();
           const nOf = (st, k) => (st.list.find(p => p.key === k) || {{ n: 0 }}).n;
-          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓者で絞る') && row.includes('じろう'), g: gtxt.length > 0, note, noMe }};
+          return {{ same: nOf(all, tr) === nOf(w, tr), le: w.list.every(p => p.n <= nOf(all, p.key)), row: row.includes('同卓') && row.includes('じろう'), g: gtxt.length > 0, note, noMe }};
         }})()""")
         results.append(("[6o] 仲間ページで同卓者（じろう）を選ぶと、じろうが同じ卓にいた試合だけで数え、カードに「同卓 じろう で数えています」と出る（自分は選択肢に出ない）", True, all(cw.values())))
         # 仲間ページの「直近n戦」は各自の直近n戦（一人ひとりが出た新しい方からn試合。誰が見ても同じ順位）
