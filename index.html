@@ -783,6 +783,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-grid b { display: block; font-size: clamp(19px, 6.2vw, 24px); font-weight: 900; color: #1F2A28; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.3px; }
 .mc-grid b.sm { font-size: clamp(16px, 4.8vw, 18px); }
 .mc-grid b.pos { color: #1A237E; } .mc-grid b.neg { color: #C62828; }
+.cv-band { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; padding: 8px 10px; border-radius: 12px; background: #FFF4D6; color: #6B4E00; font-size: 12.5px; font-weight: 700; }
+.cv-band span { flex: 1; min-width: 0; } .cv-band b { font-weight: 900; }
+.cv-band button { flex: none; border: 0; border-radius: 999px; padding: 5px 12px; background: #fff; color: #6B4E00; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.cw-opt small { margin-left: 4px; font-size: 10.5px; font-weight: 700; color: #8A9AA5; }
 .tm-note { display: block; font-size: 11px; color: #8A9AA5; font-weight: 600; line-height: 1.5; }
 .mp-pane-period { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 10px 16px 0; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 下の「過去の試合・相手」のそばにも期間のボタン */
 #view-mystats .mp-pane-period { margin: 10px 0 0; }
@@ -3603,7 +3607,7 @@ async function bindLaterSeats() {
   } catch (e) { return 0; }
 }
 async function openCircle(cid) {
-  if (circleId !== cid) circleWith = [];
+  if (circleId !== cid) { circleWith = []; circleView = null; } // 別の仲間ページへ移ったら、同卓者も目線も戻す
   if (circleJoinCode && joinCid && joinCid !== cid) circleJoinCode = null;
   const cached = circleStore[cid];
   if (cached) {
@@ -3832,7 +3836,7 @@ function renderCircle() {
   // 期間（マイページと同じ）＋この仲間ページの中だけでの自分の成績（マイページの成績カードと同じ形・同じ位置）
   renderAccountBar('circle-acct');
   let topHtml = '', segHtml = '';
-  const myM = myCircleMid();
+  const myM = circleViewMid(), viewOther = circleViewingOther(); // 目線の人（既定は名簿のあなた）
   if (gids.length || currentUser) {
     // 押せる形式＝この仲間ページに試合がある形式（自分が出ていなくても、仲間の三麻の順位は見られる）
     const gc = { 4: 0, 3: 0 };
@@ -3840,7 +3844,7 @@ function renderCircle() {
     segHtml = modeSegHtml(gc, 'circleFocus=null;renderCircle()');
     circleMode = String(mpMode);
   }
-  if (currentUser) {
+  if (currentUser || viewOther) {
     const mine = {};
     ['4', '3'].forEach(md => {
       const sx = circleStatsP(md);
@@ -3850,7 +3854,7 @@ function renderCircle() {
     });
     topHtml += mine[mpMode]
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>${teamCardHtml(mine[mpMode].team, mpMode)}`
-      : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでのあなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
+      : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます') + msPtsEmptyHtml();
   }
   document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
   applyMpTheme();
@@ -4037,7 +4041,7 @@ function circleMatrixHtml(st) {
 }
 function circleH2HTabHtml(st, modeChips, noBind) {
   if (!st.list.length) return `<div class="card">${circleCardHead('対戦成績')}${modeChips}${noBind}</div>`;
-  const my = myCircleMid();
+  const my = circleViewMid(); // 目線の人を最初に選び、先頭に
   if (!circleFocus || !st.acc[circleFocus]) circleFocus = my && st.acc[my] ? my : st.list[0].key;
   // だれから見る？は自分を先頭に（あとは通算の順）
   circleKeys = st.list.map(p => p.key).sort((a, b) => (b === my) - (a === my));
@@ -4055,19 +4059,52 @@ function circleH2HTabHtml(st, modeChips, noBind) {
     ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : '<div style="font-size:13px;color:#5F6E6B;margin-top:10px">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>`;
 }
-// 「同卓者で絞る」の1行（選んだ人のチップ＋×）
-function circleWithRowHtml() {
-  circleWith = circleWith.filter(m => rosterOf()[m] && m !== myCircleMid()); // 自分は選べない（自分の成績は自分が出た試合だけなので、絞る意味がない）
+// ---- 目線（だれの成績として見るか。既定は名簿のあなた）2026-10-07 ----
+// 上の成績カード・同卓者の選択肢・過去の試合の結果・対戦の「だれから見る？」の最初が、選んだ人のものになる。
+// 権限・本人確認・順位の「あなた」の印は変えない。別の仲間ページへ移ると戻る（自分の成績と取り違え続けないように）
+let circleView = null;
+function circleViewMid() { return circleView && rosterOf()[circleView] ? circleView : myCircleMid(); }
+function circleViewingOther() { return !!(circleView && rosterOf()[circleView] && circleView !== myCircleMid()); }
+function setCircleView(mid) {
+  circleView = mid && mid !== myCircleMid() ? mid : null;
+  const v = circleViewMid();
+  circleWith = circleWith.filter(m => m !== v); // 目線の人は同卓者に選べない
+  circleFocus = null; periodCutMemo = null;
+  closeFormModal();
+  renderCircle();
+}
+function openCircleView() {
+  const me = myCircleMid(), v = circleViewMid();
+  const nOf = {};
+  if (circleData) circleStatsP(circleMode || '4').list.forEach(p => { nOf[p.key] = p.n; });
+  const ents = Object.entries(rosterOf()).sort((a, b) => (b[0] === me) - (a[0] === me) || (nOf[b[0]] || 0) - (nOf[a[0]] || 0) || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
+  document.getElementById('form-modal-title').textContent = 'だれの目線で見る？';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="h2h-note" style="margin-top:0">選んだ人の成績として、上の成績カード・過去の試合の結果・対戦を表示します。<b>同卓者で絞る</b>と組み合わせると、たとえば「AさんとBさんが同じ卓にいた試合だけのAさんの成績」が見られます（あなたがいなかった試合も入ります）。</div>
+    <div class="cw-pick">${ents.map(([m, r]) => `<button type="button" class="cw-opt${m === v ? ' on' : ''}" onclick="setCircleView('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === me ? '<small>あなた</small>' : ''}${nOf[m] ? `<small>${nOf[m]}試合</small>` : ''}</button>`).join('')}</div>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function circleViewBtnHtml() {
   if (!Object.keys(rosterOf()).length) return '';
-  return `<div class="cw-row"><button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${ico('people', 14)}同卓者で絞る</button>${circleWith.map(m =>
+  const v = circleViewMid();
+  return `<button type="button" class="cw-btn cv-btn${circleViewingOther() ? ' on' : ''}" onclick="openCircleView()">${ico('people', 14)}目線：${v ? esc(rosterName(v)) + (v === myCircleMid() ? '（あなた）' : '') : '選ぶ'}${ico('chevron', 11)}</button>`;
+}
+// 「同卓者で絞る」の1行（目線のボタン＋選んだ人のチップ＋×）
+function circleWithRowHtml() {
+  const v = circleViewMid();
+  circleWith = circleWith.filter(m => rosterOf()[m] && m !== v); // 目線の人は選べない（その人の成績はその人が出た試合だけなので、絞る意味がない）
+  if (!Object.keys(rosterOf()).length) return '';
+  const band = circleViewingOther() ? `<div class="cv-band">${ico('people', 13)}<span><b>${esc(rosterName(v))}</b>さんの目線で表示中</span><button type="button" onclick="setCircleView(null)">自分に戻す</button></div>` : '';
+  return `${band}<div class="cw-row">${circleViewBtnHtml()}<button type="button" class="cw-btn${circleWith.length ? ' on' : ''}" onclick="openCircleWith()">${ico('people', 14)}同卓者で絞る</button>${circleWith.map(m =>
     `<span class="cw-chip"><i style="background:${avColor(m)}">${esc(avInitial(rosterName(m)))}</i>${esc(rosterName(m))}<button type="button" aria-label="${esc(rosterName(m))}を外す" onclick="toggleCircleWith('${m}')">×</button></span>`).join('')}${circleWith.length ? `<button type="button" class="cw-clear" onclick="circleWith=[];periodCutMemo=null;renderCircle()">解除</button>` : ''}</div>`;
 }
 function openCircleWith() {
-  const me = myCircleMid();
+  const me = circleViewMid();
   const ents = Object.entries(rosterOf()).filter(([m]) => m !== me).sort((a, b) => (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
   document.getElementById('form-modal-title').textContent = '同卓者で絞る';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・あなたの成績を数えます。</div>
+    <div class="h2h-note" style="margin-top:0">選んだ人が<b>全員同じ卓にいた試合だけ</b>で、順位・成績表・対戦・試合・${circleViewingOther() ? `${esc(rosterName(circleViewMid()))}さん` : 'あなた'}の成績を数えます。</div>
     <div class="cw-pick">${ents.map(([m, r]) => `<button type="button" class="cw-opt${circleWith.includes(m) ? ' on' : ''}" onclick="toggleCircleWith('${m}',true)"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}</button>`).join('')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -4085,7 +4122,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   const kinds = histKindPillsHtml(all.filter(x => x.g).map(x => x.g), 'renderCircle()', 'circleKind');
   const games = all.filter(x => circleKind === 'all' || (x.g && histKindMatch(x.g, circleKind)))
     .filter(x => !circleWith.length || (x.g && (x.g.rounds || []).some(r => circleWithOk(x.g, x.ge, r)))); // 同卓者で絞っていれば、その人たちが同じ卓にいた試合だけ
-  const myMid = myCircleMid(); // 名簿で自分が本人確認していれば、自分の結果を出す（出ていない試合は「—」）
+  const myMid = circleViewMid(); // 目線の人（既定は名簿のあなた）の結果を出す（出ていない試合は「出ていない」）
   // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
     const dots = `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openCircleGameMenu('${sid}')">${ico('more', 18)}</button>`;
@@ -4865,6 +4902,7 @@ function openCircleMember(mid) {
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
+    ${mid !== circleViewMid() ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="setCircleView('${mid}')">${mid === myMid ? '自分の目線に戻す' : 'この人の目線で見る'}${ico('chevron', 12)}</button>` : ''}
     ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績とくらべる${ico('chevron', 12)}</button>` : ''}
     ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf)}` : ''}
     <div class="pf-h">連携済みの試合（${bound.length}）</div>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B">まだありません</div>'}
