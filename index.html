@@ -762,8 +762,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .flt .ico { --i1: #8A9AA5; --i2: #CFD8D6; flex: none; }
 .flt-main { display: inline-flex; align-items: center; gap: 5px; min-width: 0; height: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .flt-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .flt-t b { font-weight: 900; }
-.flt.on { padding-right: 3px; border-color: var(--pc); background: var(--pc-tint); color: var(--pc-ink); }
-.flt.on .ico { --i1: var(--pc); --i2: var(--pc); }
+.flt.on { padding-right: 3px; }
+/* 目線・同卓: いつもは淡い主色、選んだら（他の人の目線・同卓者を指定）主色で塗って目立たせる */
+.flt:not(.mp-pwrap) { border-color: transparent; background: var(--pc-tint); color: var(--pc-ink); }
+.flt:not(.mp-pwrap) .ico { --i1: var(--pc); --i2: var(--pc); }
+.flt.on:not(.mp-pwrap) { background: var(--pc); border-color: var(--pc); color: #fff; }
+.flt.on:not(.mp-pwrap) .ico { --i1: #fff; --i2: #fff; }
+/* 期間: 選んでいないときも選んだあとも黒 */
+.flt.mp-pwrap { border-color: #1F2A28; background: #1F2A28; color: #fff; }
+.flt.mp-pwrap .ico { --i1: #fff; --i2: #fff; }
+.flt.mp-pwrap .flt-x { background: rgba(255,255,255,.22); color: #fff; }
 .flt-x { flex: none; width: 24px; height: 24px; margin-left: 4px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--pc-ink); font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; }
 .mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 359px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
@@ -1145,6 +1153,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-trend-h { display: flex; justify-content: space-between; align-items: baseline; }
 .mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .mc-trend-h { align-items: center; }
+.ms-h-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ms-card .mc-cond { margin: 0 0 8px; }
+.mc-cond { display: block; margin: -4px 0 8px; font-size: 11.5px; font-weight: 700; color: #5F6E6B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 条件：すべての期間・… */
+/* 成績カードのまとまりと、その下（過去の試合・相手・仲間ページの中身）を分ける線 */
+.mp-split { height: 0; border-top: 1px solid #C9D9D4; margin: 2px 0 16px; }
 .sk-seg { display: flex; gap: 2px; padding: 2px; margin: -2px 0 10px; border-radius: 9px; background: #EEF2F1; }
 .sk-seg button { flex: 1; border: 0; background: none; padding: 4px 0; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
 .sk-seg button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
@@ -3766,8 +3779,7 @@ function circleMetricText(v, m) { if (m === 'pmax') return Number.isFinite(v) ? 
 // 仲間ページのカードの見出し。各タブの最初のカードだけ、右に小さい期間のピル（上の期間と同じもの・下からでも変えられる。2026-10-07）
 let circlePeriodPillDone = false;
 function circleCardHead(title, extra = '') {
-  const pp = circlePeriodPillDone ? '' : mpPeriodHtml(true);
-  circlePeriodPillDone = true;
+  const pp = ''; // 期間のピルは成績カードのすぐ下（個人の画面と同じ場所）に移した
   return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${circleFiltered() ? 6 : 12}px"><div class="card-title" style="margin-bottom:0;flex:none">${title}</div><div style="display:flex;gap:6px;min-width:0;align-items:center">${pp}${extra}</div></div>${circleFilterNoteHtml()}`;
 }
 function circleFiltered() { return curPeriod() !== 'all' || circleWith.length > 0; }
@@ -3814,8 +3826,7 @@ function circleCountsHtml(gids) {
 }
 function renderCircle() {
   if (!circleData) return;
-  circlePeriodPillDone = false; // 各タブの最初のカードに期間のピル
-  setStatKindAvail(Object.keys(circleData.games || {}).map(sid => circleSess[sid]));
+  setStatKindAvail(Object.keys(circleData.games || {}).map(sid => circleSess[sid])); statCondCtx = 'circle';
   const role = circleRole();
   const roster = rosterOf();
   const gids = Object.keys(circleData.games || {});
@@ -3869,7 +3880,8 @@ function renderCircle() {
       ? `<div class="mc-card${mpMode === 3 ? ' s3' : ''}">${mpStatsInnerHtml(mpMode, mine[mpMode], false, circleData.name || '仲間ページ')}</div>`
       : mpEmptyCardHtml(mpMode, circleData.name || '仲間ページ', !gids.length ? 'まだ試合がありません' : myM ? `この仲間ページでの${viewOther ? esc(rosterName(myM)) + 'さん' : 'あなた'}の${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。` : '名簿で自分を選ぶと、ここに成績が出ます'); // 素点・順位点の欄は空のカードの中にもう入っている（外にもう1つ足していた）
   }
-  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}</div>`;
+  const lowP = topHtml ? mpPeriodHtml(true) : ''; // 個人の画面と同じ場所（成績カードのすぐ下）に小さい期間
+  document.getElementById('circle-top').innerHTML = `<div class="mp-sec">${mpFiltersHtml(segHtml)}${circleWithRowHtml()}${topHtml}${lowP ? `<div class="mp-pane-tools" style="margin-top:10px">${lowP}</div>` : ''}<div class="mp-split" role="separator"></div></div>`;
   applyMpTheme();
   html += `<div class="seg sm" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
     `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
@@ -4198,7 +4210,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   const head = `<div class="mp-sec-head cg-head"><span class="mp-sec-note">${curPeriod() === 'all' ? '' : esc(periodLabel()) + ' '}${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${gamesRoundsText(games.length, nR)}${games.length < gids.length ? `（全${gids.length}ゲーム中）` : ''}</span>${role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : ''}</div>`;
   if (!all.length) return `<div class="cg-tab">${head}<div class="mp-panel mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
   // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
-  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}${mpPeriodHtml(true)}</div>
+  return `<div class="cg-tab">${head}${kinds}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
     ${glist ? `<div class="cg-games">${glist}</div>` : (curPeriod() !== 'all' ? `<div class="empty-msg" style="margin-top:14px">${esc(periodLabel())}の試合はありません</div><button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '<div class="empty-msg" style="margin-top:14px">この形式の試合はありません</div>')}</div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
@@ -4856,6 +4868,7 @@ async function saveBindEditor() {
 let cmBoundView = 'list'; // メンバーの成績の「連携済みの試合」: 一覧｜タイル
 function openCircleMember(mid) {
   if (circleData) setStatKindAvail(Object.keys(circleData.games || {}).map(sid => circleSess[sid]));
+  statCondCtx = 'member';
   const r = rosterOf()[mid];
   if (!r) return;
   const role = circleRole();
@@ -10360,7 +10373,8 @@ function msRow(np, m) {
   const n = m.games, c = m.counts;
   return { n, g: m.groups, avg: m.avgRankSum / n, top: (c[0] || 0) / n, ren: ((c[0] || 0) + (c[1] || 0)) / n, las: (n - m.lastCount) / n, score: m.score, raw: rawPtsOf(m), rp: rankPtsOf(m), box: boxOf(m), over: overOf(m), ptMax: m.ptMax, ptMin: m.ptMin };
 }
-function msCompareHtml(np) {
+// くらべる表（画面と画像で同じ表。forImage＝画像用：横スクロールの枠・見出しのアイコンを外す）
+function msCompareTableHtml(np, forImage = false) {
   const cols = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { k, label: k === 'all' ? '個人' : label, r: msRow(np, m) } : null; }).filter(Boolean);
   if (cols.length < 2) return '';
   // [見出し, 値, 色のクラス, 区切り線]。区切りは 試合数・平均着順｜率｜スコア｜点数 の切れ目（仲間ページの成績表と同じ線）
@@ -10371,11 +10385,48 @@ function msCompareHtml(np) {
     ['最高点数', r => pt(r.ptMax), null, 1], ['最低点数', r => pt(r.ptMin)],
     ['5万点以上', r => r.over == null ? '—' : r.over + '回'], ['箱下', r => r.box == null ? '—' : r.box + '回']];
   const w = 84, cw = 96; // 列（範囲）が増えると表が画面より広くなり、横にスクロールして見る
-  return `<div class="ms-card"><div class="ms-h">くらべる（${np === 3 ? '三麻' : '四麻'}）</div>
-    <div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table tbl-soft ms-cmp" style="table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px">
-      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}"><span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span></th>`).join('')}</tr></thead>
-      <tbody>${rows.filter(([label]) => !(np === 3 && label === '連対率')).map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  const table = `<table class="rounds-table tbl-soft ms-cmp" style="${forImage ? '' : `table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px`}">
+      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}">${forImage ? esc(c2.label) : `<span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span>`}</th>`).join('')}</tr></thead>
+      <tbody>${rows.filter(([label]) => !(np === 3 && label === '連対率')).map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  return forImage ? table : `<div class="tbl-scroll" style="overflow-x:auto">${table}</div>`;
+}
+function msCompareHtml(np) {
+  const t = msCompareTableHtml(np);
+  if (!t) return '';
+  // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
+  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>くらべる（${np === 3 ? '三麻' : '四麻'}）</span><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></div>
+    ${statCondHtml('mine')}${t}
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
+}
+// くらべる表だけの画像（上の帯に「くらべる（四麻）」と条件・日付、下に majasco.jp）
+function buildCompareCanvas(np) {
+  const html = msCompareTableHtml(np, true);
+  if (!html) return null;
+  const body = imgTableHtmlCanvas(html, np === 3);
+  if (!body) return null;
+  const bs = imgCssSize(body);
+  const W = IMG_PAD * 2 + Math.max(bs.w, 320), H = IMG_BAND + 12 + bs.h + 14 + IMG_FOOT;
+  const sc = imgFitScale(W, H);
+  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
+  const { c, ctx } = imgCanvas(W, H, sc);
+  const cond = statCondHtml('mine').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = np === 3 ? '#4261AA' : '#177083'; ctx.fillRect(0, 0, W, IMG_BAND);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
+  ctx.fillText(`くらべる（${np === 3 ? '三麻' : '四麻'}）`, IMG_PAD, IMG_BAND / 2 - 8);
+  ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
+  ctx.fillText(`${cond} ・ ${fmtDate(new Date().toISOString())} 時点`, IMG_PAD, IMG_BAND / 2 + 11, W - IMG_PAD * 2);
+  ctx.globalAlpha = 1;
+  ctx.drawImage(body, IMG_PAD, IMG_BAND + 12, bs.w, bs.h);
+  drawImgFooter(ctx, W, H);
+  return c;
+}
+async function showCompareImage(np) {
+  const canvas = buildCompareCanvas(np);
+  if (canvas === IMG_TOO_LARGE) { showToast('列が多すぎて1枚の画像に収まりません'); return; }
+  if (!canvas) { showToast('くらべる成績がありません'); return; }
+  track('image_preview', { kind: 'compare' });
+  await openImagePreview(canvas, { name: '' }, 'くらべる');
 }
 // 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜5万点以上・箱下）。スコアの推移は2026-09-30にやめた
 function msPtsHtml(...cols) {
@@ -10414,7 +10465,7 @@ function msGamesHtml(st) {
   return seg + html;
 }
 function renderMyStats() {
-  setStatKindAvail(appState.games);
+  setStatKindAvail(appState.games); statCondCtx = 'mine';
   refreshHistoryGames();
   const body = document.getElementById('mystats-body');
   // 仲間ページごとの試合の一覧がまだ無ければ読んでから描き直す
@@ -10424,7 +10475,7 @@ function renderMyStats() {
   if (!scopes.some(([k]) => k === msScope)) msScope = 'all';
   const st = msStatsFor(msScope);
   const imgBtn = document.getElementById('mystats-img-btn');
-  imgBtn.style.display = collectMyStats().groups.length ? 'inline-flex' : 'none';
+  imgBtn.style.display = 'none'; // 画像は「くらべる」の中の「画像」に移した（2026-10-07）
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'groups';
   // 範囲の切り替えは、マイページの「個人｜仲間ページ」と同じ位置・同じ形（押すと範囲が変わるだけで画面は移らない）
   const scopeRow = `<div class="sw-row" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
@@ -11109,7 +11160,7 @@ function mcScopeHtml(label) {
   return `<em class="mc-scope">${mark}<span>${esc(label)}</span></em>`;
 }
 function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
-  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(0, 0)}</span></span>${statKindSegHtml()}
+  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(0, 0)}</span></span>${statCondHtml()}${statKindSegHtml()}
     <span class="mc-grid mc-nil${np === 3 ? ' s3g' : ''}">
       <span><small>平均着順</small><b>—</b></span>
       <span><small>通算スコア</small><b>—</b></span>
@@ -11151,6 +11202,18 @@ function rerenderStatsFrom(el) {
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
   else renderHistory();
 }
+// 成績カード・くらべるで「いま何の条件で数えているか」をいつも出す（2026-10-07）。statCondCtx＝描いている画面（mine＝個人・circle＝仲間ページ・member＝メンバーの成績）
+let statCondCtx = 'mine';
+function statCondHtml(ctx = statCondCtx) {
+  const parts = [curPeriod() === 'all' ? 'すべての期間' : periodLabel()];
+  if (statKindAvail) parts.push({ all: '個人戦＋チーム戦', ind: '個人戦のみ', team: 'チーム戦のみ' }[statKind]);
+  if (ctx !== 'mine' && circleData) {
+    if (ctx === 'circle' && circleViewingOther()) parts.push(`${rosterName(circleViewMid())}さんの目線`);
+    const w = circleWith.filter(m => rosterOf()[m]).map(rosterName);
+    if (w.length) parts.push(`同卓：${w.join('・')}`);
+  }
+  return `<span class="mc-cond">条件：${parts.map(esc).join(' ・ ')}</span>`;
+}
 function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
   const n = m.games, c = m.counts, hist = sortHist(m.hist);
   const bar = c.slice(0, np).map((v, i) => {
@@ -11159,7 +11222,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     return `<i class="${rkCls(i + 1, np)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>`;
   }).join('');
   const nDays = new Set(hist.map(x => ymdLocal(new Date(x.t)))).size;
-  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(m.groups, n)}</span></span>${statKindSegHtml()}
+  return `<span class="mc-head"><b>${np === 3 ? '三麻' : '四麻'}${mcScopeHtml(scopeLabel)}</b><span>${gamesRoundsText(m.groups, n)}</span></span>${statCondHtml()}${statKindSegHtml()}
     <span class="mc-grid${np === 3 ? ' s3g' : ''}">
       <span><small>平均着順</small><b>${(m.avgRankSum / n).toFixed(2)}</b></span>
       <span><small>通算スコア</small><b class="${scoreCls(m.score)}">${fmtScore(m.score)}</b></span>
@@ -11453,11 +11516,11 @@ function mpStatsHtml(st) {
       : st.untagged ? `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。<br>過去の試合で自分を選ぶと、ここに成績が出ます`
       : `あなたの${mpMode === 3 ? '三麻' : '四麻'}の対戦成績はありません。`;
     const pp = mpPeriodHtml(true);
-    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}${pp ? `<div class="mp-pane-tools" style="margin-top:10px">${pp}</div>` : ''}</div>`;
+    return `<div class="mp-sec">${period}${mpEmptyCardHtml(mpMode, '個人', msg)}${pp ? `<div class="mp-pane-tools" style="margin-top:10px">${pp}</div>` : ''}<div class="mp-split" role="separator"></div></div>`;
   }
   // 成績カードのすぐ下に点数の細かい数字（素点・順位点・最高/最低点数・5万点以上・箱下）。タブの中に隠さない（2026-10-02）
   return `<div class="mp-sec">${period}${mpModeCardHtml(mpMode, st.modes[mpMode])}
-    <div class="mp-pane-tools">${mpPeriodHtml(true)}<button type="button" class="btn-tint" onclick="showMyStatsImage()">${ico('image', 16)}画像で見る</button></div></div>`;
+    <div class="mp-pane-tools">${mpPeriodHtml(true)}</div><div class="mp-split" role="separator"></div></div>`;
 }
 
 // ---- 過去の試合の1行（自分が出た／出ていない／まだ選んでいない、がひと目でわかる形） ----
@@ -11636,7 +11699,7 @@ async function refreshHistoryGames(force) {
 }
 // ---- マイページの描画 ----
 function renderHistory() {
-  setStatKindAvail(appState.games);
+  setStatKindAvail(appState.games); statCondCtx = 'mine';
   const st = collectMyStats();
   renderAccountCard();
   document.getElementById('mp-stats').innerHTML = mpStatsHtml(st);
