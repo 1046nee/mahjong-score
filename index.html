@@ -4216,8 +4216,8 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor);
   add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
   add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
-  add('5万点以上', L.map(p => overOf(p)), v => v + '回');
-  add('箱下', L.map(p => boxOf(p)), v => v + '回');
+  add('5万点以上', L.map(p => overOf(p)), v => v + '回', null, null, v => (v > 0 ? '#1A237E' : '')); // 1回以上は青・箱下は赤（0回は今のまま）
+  add('箱下', L.map(p => boxOf(p)), v => v + '回', null, null, v => (v > 0 ? '#C62828' : ''));
   const w = forImage ? 90 : 76;
   // 数字は1行で収まる大きさ（12.5px）にし、列の幅を最も長い値（「-1,234.0」「45,000」）が入る72pxにする（はみ出す代わりに横スクロール）
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft grid-cmp" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 72}px">
@@ -10820,7 +10820,7 @@ function msModeHtml(np, m) {
   const cv = v => v == null ? '—' : v + '回';
   return msPtsHtml([['素点', pv(r.raw), pc(r.raw)], ['順位点', pv(r.rp), pc(r.rp)]],
     [['最高点数', m.ptMax != null ? m.ptMax.toLocaleString() : '—'], ['最低点数', m.ptMin != null ? m.ptMin.toLocaleString() : '—']],
-    [['5万点以上', cv(r.over)], ['箱下', cv(r.box)]]);
+    [['5万点以上', cv(r.over), r.over > 0 ? 'pos' : ''], ['箱下', cv(r.box), r.box > 0 ? 'neg' : '']]); // 1回以上なら5万点以上は青・箱下は赤（0回は今のまま。2026-10-08）
 }
 function msGamesHtml(st) {
   const all = st.groups.map(gr => ({ gr, g: (appState.games || []).find(x => x.id === gr.id) })).filter(x => x.g);
