@@ -1180,6 +1180,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-tape { display: flex; flex-direction: column; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); overflow: hidden; }
 .mu-tr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 8px 12px; border-top: .5px solid #E3E9E7; font-variant-numeric: tabular-nums; }
 .mu-tr:first-child { border-top: 0; }
+.mu-tr-h { background: #F4F7F6; } .mu-tr-h b.mu-tw { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 13px; color: #1F2A28; }
+.mu-tr-h b.mu-tw:last-child { justify-content: flex-end; } .mu-tw span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-tr span { font-size: 11.5px; font-weight: 700; color: #5F6E6B; text-align: center; white-space: nowrap; }
 .mu-tr b { font-size: 15px; font-weight: 800; color: #8A9AA5; } .mu-tr b:last-child { text-align: right; }
 .mu-tr b.win { color: #1F2A28; } .mu-tr b.win::after { content: ''; }
@@ -1272,7 +1274,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sk-seg { display: flex; gap: 2px; padding: 3px; margin: -2px 0 10px; border-radius: 10px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); } /* 主色の淡い地＋選んだものは主色で塗る（2026-10-07 目立たせた） */
 .sk-seg button { flex: 1; border: 0; background: none; padding: 5px 0; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; color: var(--pc-ink); cursor: pointer; }
 .sk-seg button.on { background: var(--pc); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-.sk-seg.filt button.on { background: #E75620; color: #fff; } /* 個人戦・チーム戦で絞っているとき（合計以外）: 地はそのまま、選んだボタンだけオレンジ（2026-10-08 ユーザー指定。絞り込み中に気づけるように） */
+.sk-seg.filt button.on { background: #FBE2D6; color: #C2461A; box-shadow: inset 0 0 0 1px #F2B79C; } /* 個人戦・チーム戦で絞っているとき（合計以外）: 地はそのまま、選んだボタンだけオレンジ（2026-10-08 ユーザー指定。絞り込み中に気づけるように） */
 .sk-wrap .sk-seg { margin: 0 0 10px; }
 .sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
 .sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
@@ -1570,6 +1572,9 @@ button.ios-row:active { background: #F2F6F5; }
 @keyframes sheet-up { from { transform: translateY(32px); opacity: .6; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { #form-modal .form-modal-box { animation: none !important; } }
 /* シートの見出しは上に貼り付けて、右に「×」（スクロールしても閉じられる）。下へスワイプしても閉じる（initSheetSwipe） */
+.fm-back { display: none; flex: none; align-items: center; gap: 2px; height: 36px; padding: 0 14px 0 10px; border: 0; border-radius: 18px; background: #EEF2F1; color: #33413E; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.fm-back .ico { transform: rotate(180deg); }
+#form-modal:has(.sheet-body) .fm-back { display: inline-flex; }
 .fm-x { display: none; flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #EEF2F1; color: #4F5C5A; font-size: 22px; line-height: 1; cursor: pointer; }
 #form-modal:has(.sheet-body) .fm-x { display: grid; place-items: center; }
 #form-modal:has(.sheet-body) .form-modal-box > div:first-child { position: sticky; top: 0; z-index: 3; background: #fff; padding: 12px 0 10px; margin-bottom: 4px !important; }
@@ -2758,6 +2763,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px">
       <div class="form-modal-title" id="form-modal-title" style="margin-bottom:0;text-align:left">編集</div>
       <div id="form-modal-actions" style="display:flex;gap:6px;flex-shrink:0"></div>
+      <span id="form-modal-back" style="display:contents"></span>
       <button type="button" class="fm-x" onclick="closeFormModal()" aria-label="閉じる">×</button>
     </div>
     <div id="form-modal-body"></div>
@@ -4164,12 +4170,13 @@ function circleGridHtml(st, forImage = false) {
 }
 // 成績表（列＝人や範囲・行＝成績項目）。仲間ページの成績表と、個人の「成績表」（個人と仲間ページごと）で共用（2026-10-08）
 // L の要素は circleStats の人と同じ形（n・games.size・rankSum・counts・top・last・score・raw…・ptMax・ptMin）
-function gridTableHtml(L, np, forImage, corner, headOf) {
+function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
+  const markBest = opts.best !== false; // 個人の成績表は いちばん良い値の地の色を付けない（2026-10-08）
   // いちばん良い値は td の地を淡いゴールドに（画像も td の地の色を読むので画面と同じになる）
   const hl = 'background:#FBF1D3;color:#7A5800;font-weight:800';
   const bestOf = (vals, dir) => {
     const f = vals.filter(v => v != null && !isNaN(v));
-    if (!dir || f.length < 2) return null;
+    if (!markBest || !dir || f.length < 2) return null;
     return dir === 'min' ? Math.min(...f) : Math.max(...f);
   };
   const rows = [];
@@ -5086,9 +5093,9 @@ function openCircleMember(mid) {
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
-    ${mid !== myMid && myMid ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="openCircleMatchup(['${myMid}','${mid}'])">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
+    ${mid !== myMid && myMid ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="openCircleMatchup(['${myMid}','${mid}'],'${mid}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
     ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
-    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'])`)}` : ''}
+    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${mid}')`)}` : ''}
     <div class="pf-h">連携済みの試合（${bound.length}）</div>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B">まだありません</div>'}
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
       ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が連携した${unconfirmed}件を、本人として確認する</button>` : ''}
@@ -5159,11 +5166,11 @@ function mupCompute(P) {
 function mupName(p) { return mup.kind === 'circle' ? rosterName(p) : p === '@me' ? 'あなた' : ((myPairCtx && myPairCtx.disp[p]) || ''); }
 function mupAv(p) { return mup.kind === 'circle' ? avColor(p) : p === '@me' ? 'var(--pc)' : avColor(mupName(p)); }
 function mupAvHtml(p, cls = '') { return `<i class="mu-av${cls}" style="background:${mupAv(p)}">${esc(avInitial(mupName(p)))}</i>`; }
-function openCircleMatchup(P) {
+function openCircleMatchup(P, fromMember = null) {
   if (!circleData) return;
   const my = myCircleMid();
   P = (P || (my ? [my] : [])).filter((p, i, a) => rosterOf()[p] && a.indexOf(p) === i);
-  mup = { kind: 'circle', P, pick: P.length < 2 };
+  mup = { kind: 'circle', P, pick: P.length < 2, back: fromMember && rosterOf()[fromMember] ? fromMember : null };
   renderMatchup();
 }
 function openMyMatchup(i) { const c = myPairCtx; if (!c || !c.keys[i]) return; mup = { kind: 'my', P: ['@me', c.keys[i]], pick: false }; renderMatchup(); }
@@ -5171,25 +5178,6 @@ function mupToggle(p) { mup.P = mup.P.includes(p) ? mup.P.filter(x => x !== p) :
 function mupReopen() { if (mup) renderMatchup(); }
 // 2人: 対戦の数字（勝ち-負け）→ 最近の流れ（勝った人の顔を古い順に）→ 2人をくらべる（いっしょに打った試合での成績を左右に）→ ゲームごとの勝ち負け
 // 3人以上: このメンバーがそろった試合で「メンバーの中で何番目だったか」→ 最近の流れ（メンバー内トップの顔）→ メンバーどうしの勝ち負けの表 → ゲームごとの順番
-function mupFlowHtml(res, P) {
-  const last = res.rounds.slice(-12);
-  if (!last.length) return '';
-  const two = P.length === 2;
-  const dots = last.map(r => {
-    const best = Math.min(...P.map(p => r.rk[p])), tops = P.filter(p => r.rk[p] === best);
-    if (tops.length > 1) return `<i class="mu-dot draw" title="分け">=</i>`;
-    return `<i class="mu-dot" style="background:${mupAv(tops[0])}" title="${esc(mupName(tops[0]))}">${esc(avInitial(mupName(tops[0])))}</i>`;
-  }).join('');
-  // いまの連続（同じ人が続けて上）
-  let streak = 0, who = null;
-  for (let i = res.rounds.length - 1; i >= 0; i--) {
-    const r = res.rounds[i], best = Math.min(...P.map(p => r.rk[p])), tops = P.filter(p => r.rk[p] === best);
-    if (tops.length !== 1 || (who && tops[0] !== who)) break;
-    who = tops[0]; streak++;
-  }
-  const note = streak >= 2 ? `<b>${esc(mupName(who))}</b>が${streak}試合続けて${two ? '勝ち' : 'メンバーの中でいちばん上'}` : '';
-  return `<div class="pf-h">最近の${last.length}試合（左が古い）</div><div class="mu-flow">${dots}</div>${note ? `<div class="mu-meta">${note}</div>` : ''}`;
-}
 function mupTapeHtml(res, a, b) {
   const A = res.people[a], B = res.people[b];
   const rows = [
@@ -5199,7 +5187,8 @@ function mupTapeHtml(res, a, b) {
     ['1試合の平均スコア', A.score / A.n, B.score / B.n, v => fmtScore(Math.round(v * 10) / 10), false],
     ['最高スコア', A.best, B.best, v => fmtScore(v), false],
   ];
-  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="mu-tape">${rows.map(([l, x, y, f, low]) => {
+  const who = p => `<b class="mu-tw">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></b>`;
+  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="mu-tape"><div class="mu-tr mu-tr-h">${who(a)}<span></span>${who(b)}</div>${rows.map(([l, x, y, f, low]) => {
     const ax = low ? x < y : x > y, bx = low ? y < x : y > x;
     return `<div class="mu-tr"><b class="${ax ? 'win' : ''}">${f(x)}</b><span>${l}</span><b class="${bx ? 'win' : ''}">${f(y)}</b></div>`;
   }).join('')}</div>`;
@@ -5223,7 +5212,7 @@ function renderMatchup() {
       <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
-    body = `${vs}${mupFlowHtml(res, P)}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
+    body = `${vs}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   } else {
     const n = res.people[P[0]].n;
     const order = P.slice().sort((a, b) => res.people[a].gPosSum - res.people[b].gPosSum || res.people[b].score - res.people[a].score);
@@ -5233,11 +5222,12 @@ function renderMatchup() {
         return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.gPosSum / x.n).toFixed(2)}</b>番目</span>
           <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${pctText(x.gTop / x.n)}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
     const mx = `<div class="pf-h">メンバーどうしの勝ち負け</div>${mxLegendHtml(edit ? 'マスを押すと2人の対戦' : '')}${mxTableHtml(order, mupName, (x, y) => res.people[x].vs[y], null, null, false, edit ? (x, y) => `openCircleMatchup(['${x}','${y}'])` : null)}`;
-    body = `${tbl}${mupFlowHtml(res, P)}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
+    body = `${tbl}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   }
   if (res && res.games.length) body += `<div class="h2h-note">行を押すと、そのゲームの結果が見られます。スコアはそのゲームの中で全員がいた試合の合計（いちばん多い人に色）。${P.length === 2 ? `勝敗は${esc(mupName(P[0]))}から見た勝ち-負け。` : ''}</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet mu-sheet">${sel}${picker}
+  const back = mup.back ? sheetBackMark(`openCircleMember('${mup.back}')`, `${rosterName(mup.back)}の成績に戻る`) : '';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet mu-sheet">${back}${sel}${picker}
     ${statCondHtml('mine').split('条件：').join(`条件：${mpMode === 3 ? '三麻' : '四麻'} ・ `)}
     ${body}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -9725,6 +9715,20 @@ function submitRound() {
     y0 = null;
   });
 })();
+// 一つ前のシートへ戻る（2026-10-08）: シートの中身に <i hidden data-back="開き直す処理" data-back-label="…"> があれば、×の左に「‹ 戻る」。
+// 中身が入れ替わるたびに付け直す（印の無いシートでは消える）
+function sheetBackMark(js, label) { return `<i hidden data-back="${esc(js)}" data-back-label="${esc(label || '')}"></i>`; }
+function syncSheetBack() {
+  const slot = document.getElementById('form-modal-back');
+  if (!slot) return;
+  const m = document.querySelector('#form-modal-body [data-back]');
+  slot.innerHTML = m ? `<button type="button" class="fm-back" onclick="${esc(m.dataset.back)}" aria-label="${esc(m.dataset.backLabel || '戻る')}" title="${esc(m.dataset.backLabel || '戻る')}">${ico('chevron', 13)}戻る</button>` : '';
+}
+function watchSheetBack() {
+  const b = document.getElementById('form-modal-body');
+  if (b && window.MutationObserver) new MutationObserver(syncSheetBack).observe(b, { childList: true });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchSheetBack); else watchSheetBack();
 function closeFormModal() {
   document.getElementById('form-modal').classList.remove('open');
   document.getElementById('form-modal-actions').innerHTML = ''; // ヘッダーのボタンは開くモーダルごとにセットし直す
@@ -10682,7 +10686,7 @@ function msCompareTableHtml(np, forImage = false) {
   const L = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { ...m, key: k, label: k === 'all' ? '個人' : label,
     n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount } : null; }).filter(Boolean);
   if (!L.length) return ''; // 仲間ページが無くても「個人」1列で出す（個人ページの最初のタブ。2026-10-08）
-  return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`);
+  return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`, { best: false });
 }
 function msCompareHtml(np) {
   const t = msCompareTableHtml(np);
@@ -11086,8 +11090,8 @@ function renderResultSheet() {
     + (st.from === 'circle' && circleData && circleData.games && circleData.games[st.id] ? menuBtnHtml('more', 'その他の操作', '名前の連携・この仲間ページから外す', `openCircleGameMenu('${id}')`)
       : inHist ? menuBtnHtml('more', 'その他の操作', '共有・この試合での自分・削除', `openHistMenu('${id}')`) : '');
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
-  const backTo = st.ret && st.ret.back === 'mup' && mup ? `<button type="button" class="rs-back" onclick="mupReopen()">${ico('chevron', 12)}対戦に戻る</button>`
-    : st.ret && st.ret.member && rosterOf()[st.ret.member] ? `<button type="button" class="rs-back" onclick="openCircleMember('${st.ret.member}')">${ico('chevron', 12)}${esc(rosterName(st.ret.member))}の成績に戻る</button>` : '';
+  const backTo = st.ret && st.ret.back === 'mup' && mup ? sheetBackMark('mupReopen()', '対戦に戻る')
+    : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${st.ret.member}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}${locked ? ' ・ 記録は確定しています' : ''}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     ${rsFoldHtml('tbl', tblTitle, table, rs.length < 10, rs.length ? `${rs.length}試合` : '')}${extra}
