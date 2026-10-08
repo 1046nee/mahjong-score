@@ -237,8 +237,8 @@ def main():
         pg.evaluate("openCircleMember(Object.keys(circleData.roster).find(m => circleData.roster[m].name === 'たろう'))")
         mt = pg.evaluate("document.getElementById('form-modal-body').innerText")
         pg.evaluate("closeFormModal()")
-        results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）と相手ごとの成績が出る", True,
-                        all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "スコアの推移", "相手ごとの成績"])))
+        results.append(("[5g] メンバーを押すと、その人の成績（平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）と対戦成績のカードが出る", True,
+                        all(w in mt for w in ["たろう", "平均着順", "通算スコア", "ラス回避", "スコアの推移", "対戦成績", "直接対決の合計"])))
         # 仲間ページに入れたあとで、試合にメンバーを足して入力した → そのメンバーも結びつけられる
         pg.evaluate(f"""async () => {{ const r = (await db.ref('sessions/{g1}').once('value')).val();
           r.settings.playerNames.push('ろくろう'); r.rounds.push({{ members: [0, 1, 2, 5], points: [40000, 30000, 20000, 10000], scores: [50, 10, -20, -40], at: new Date().toISOString() }});

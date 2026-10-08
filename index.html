@@ -1998,6 +1998,11 @@ button.ios-row:active { background: #F2F6F5; }
 .pf-rank.r1 { background: var(--md1-tint); color: var(--md1-ink); } .pf-rank.r2 { background: var(--md2-tint); color: var(--md2-ink); } .pf-rank.r3 { background: var(--md3-tint); color: var(--md3-ink); }
 .pf-stats { margin-top: 4px; padding: 14px; border-radius: 14px; background: #F4F7F6; --track: #E3E9E7; }
 .pf-h { margin: 20px 0 8px; font-size: 13px; font-weight: 700; color: #5F6E6B; }
+/* メンバーの成績のシートの対戦成績・連携済みの試合のカード（成績カードと同じ白いカード。2026-10-08） */
+.pf-card { margin-top: 12px; padding: 16px; border-radius: 16px; background: #fff; box-shadow: var(--sh-1); }
+.pf-card .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
+.pf-card .card-head-row { margin-bottom: 6px; }
+.pf-card .gm-list .gr, .pf-card .cg-card { box-shadow: inset 0 0 0 1px #E3E9E7; }
 .pf-more { margin-top: 16px; border-top: .5px solid #D5DEDB; }
 .pf-more summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 48px; font-size: 15px; font-weight: 600; color: #1F2A28; cursor: pointer; }
 .pf-more summary::-webkit-details-marker { display: none; }
@@ -5194,8 +5199,9 @@ function openCircleMember(mid) {
     ${modeChips}${statHtml}
     ${mid !== myMid && myMid ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="openCircleMatchup(['${myMid}','${mid}'],'${mid}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
     ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
-    ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${mid}')`, withKindAll(() => h2hLvOf(circleStatsP(circleMode).acc[mid] || {})))}` : ''}
-    <div class="pf-h">連携済みの試合（${bound.length}）</div>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B">まだありません</div>'}
+    <div class="pf-card"><div class="card-head-row"><div class="card-title">対戦成績</div></div>${condLineHtml()}
+    ${keys.length ? `${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${mid}')`, withKindAll(() => h2hLvOf(circleStatsP(circleMode).acc[mid] || {})))}<div class="h2h-note">相手のカードを押すと、2人のどちらが勝ち越しているかと、いっしょに打った試合が見られます。</div>` : `<div class="empty-note" style="margin-bottom:0">${esc(condShortText())}で同じ試合に出た相手はいません。</div>`}</div>
+    <div class="pf-card"><div class="card-head-row"><div class="card-title">連携済みの試合</div><span class="mp-sec-note">${bound.length}ゲーム</span></div>${boundSeg}${boundHtml || '<div class="empty-note" style="margin-bottom:0">まだありません</div>'}</div>
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
       ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が連携した${unconfirmed}件を、本人として確認する</button>` : ''}
       ${admin}
