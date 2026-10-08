@@ -1109,9 +1109,11 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .dr-multi { display: flex !important; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px !important; font-weight: 600 !important; color: #33544A; cursor: pointer; }
 .dr-multi input { width: 18px; height: 18px; }
 .cg-mem { display: block; font-size: 12px; color: #4F5C5A; margin-top: 2px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.cal-mode { position: relative; display: flex; justify-content: center; margin-bottom: 8px; }
+.cal-mode { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; margin-bottom: 8px; }
+.cal-mode > .seg { grid-column: 2; }
 /* 今日へ戻る（カレンダーの右上） */
-.cal-today { position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 28px; padding: 0 10px; border: 0; border-radius: 14px; background: #fff; color: var(--pc); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
+/* 狭い箱（シートの中・320px）でも単位の切り替えと重ならないよう、絶対配置をやめて右の列に置く（2026-10-08） */
+.cal-today { grid-column: 3; justify-self: end; white-space: nowrap; height: 28px; padding: 0 10px; border: 0; border-radius: 14px; background: #fff; color: var(--pc); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
 .cal-year { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .cal-m { border: 0; border-radius: 12px; background: #fff; padding: 8px 4px; text-align: center; font: inherit; cursor: pointer; box-shadow: inset 0 0 0 1px #E3E9E7; }
 .cal-m b { display: block; font-size: 14px; font-weight: 900; color: #1F2A28; }
@@ -4572,7 +4574,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
 let circleGamesView = 'tile'; // 既定はタイル（2026-10-07・個人の過去の試合と同じ）
 // 画面ごとのカレンダーの状態（circle＝仲間ページ・hist＝過去の試合・ms＝自分の成績のゲーム）
 // yc＝年一覧の真ん中の年（null＝今年）
-const calS = { cm: { month: null, day: null, mode: 'years', yc: null }, circle: { month: null, day: null, mode: 'years', yc: null }, hist: { month: null, day: null, mode: 'years', yc: null }, ms: { month: null, day: null, mode: 'years', yc: null } }; // 最初は年一覧
+const calS = { mup: { month: null, day: null, mode: 'years', yc: null }, cm: { month: null, day: null, mode: 'years', yc: null }, circle: { month: null, day: null, mode: 'years', yc: null }, hist: { month: null, day: null, mode: 'years', yc: null }, ms: { month: null, day: null, mode: 'years', yc: null } }; // 最初は年一覧
 const CAL_YEARS = 9; // 年一覧に並べる年の数（3×3。真ん中が今年）
 // 「今日」: どの単位でも今日のところへ戻る（年一覧＝今年が真ん中・年＝今年・月＝今月）
 function calToday(key) { const S = calS[key], t = new Date(); S.yc = null; S.month = t.getFullYear() * 12 + t.getMonth(); S.day = ymdLocal(t); }
@@ -5488,7 +5490,7 @@ function renderMatchup() {
       <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
-    body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="ms-card mu-card"><div class="ms-h">いっしょに打ったゲーム<small>新しい順</small></div>${mupGamesListHtml(res, P)}${res.games.length ? `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>` : ''}</div>`;
+    body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="ms-card mu-card"><div class="ms-h">いっしょに打ったゲーム</div>${mupGamesListHtml(res, P)}${res.games.length ? `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>` : ''}</div>`;
   } // 3人以上の見せ方（メンバーの中で何番目か・勝ち負けの表）は2026-10-08にやめた（2人まで）
   document.getElementById('form-modal-title').textContent = '対戦を見る';
   const back = mup.back ? sheetBackMark(`openCircleMember('${mup.back}')`, `${rosterName(mup.back)}の成績に戻る`) : '';
@@ -5505,18 +5507,30 @@ function renderMatchup() {
 }
 // いっしょに打ったゲーム: 過去の試合と同じ一覧の行（種類のアイコン・名前と日付／順位とスコア・試合数／相手）。
 // 結果は選んだ最初の人（ふつうは あなた）の席で出し、補足に「いっしょに n試合」と2人なら勝ち-負け（2026-10-08 表をやめた）
+// タイル｜一覧｜カレンダーを切り替える（過去の試合と同じ形・年と月の区画。既定はタイル。2026-10-08）
+let mupGamesView = 'tile';
 function mupGamesListHtml(res, P) {
-  if (!res.games.length) return '<div class="mu-none-g">いっしょに打ったゲームはありません</div>';
+  const seg = `<div class="hist-viewseg" style="margin:0 0 8px">${histOrderSegHtml('renderMatchup()', 'mupGamesView', 'list')}</div>`; // 0件でも出す（形をそろえる）
+  if (!res.games.length) return seg + '<div class="mu-none-g">いっしょに打ったゲームはありません</div>';
   const a = P[0];
-  return `<div class="gm-list">${res.games.map(gm => {
-    const g = gm.g, s = g.settings || {}, me = gm.seat[a] != null ? Number(gm.seat[a]) : null;
-    const meMine = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
-    const open = `openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${meMine == null ? 'null' : meMine},back:'mup'})`;
-    const wl = P.length === 2 ? (() => { const w = gm.w[a] || 0, l = gm.l[a] || 0; return `<span class="mu-wl ${w > l ? 'pos' : w < l ? 'neg' : ''}">${w}勝${l}敗</span>`; })() : '';
-    return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="${open}">${gameKindHtml(g)}
-      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>
-        <div class="gr-sub">${seatResultHtml(g, me)}<span class="gr-meta">いっしょに${gm.n}試合</span>${wl}</div>${oppLineHtml(g, me)}</div></div>`;
-  }).join('')}</div>`;
+  const seatA = gm => (gm.seat[a] != null ? Number(gm.seat[a]) : null);
+  // タイル: 試合数の代わりに選んだ最初の人のそのゲーム全体のスコア（連携済みの試合のタイルと同じ）
+  if (mupGamesView === 'tile') return seg + histTilesHtml(res.games.map(gm => { const me = seatA(gm); return { g: gm.g, me, hideMark: true, score: me == null ? null : gameTotals(gm.g)[me], rounds: gm.n, onclick: mupGameOpen(gm) }; }));
+  const rowOf = gm => mupGameRowHtml(gm, P);
+  if (mupGamesView === 'cal') return seg + circleCalendarHtml(res.games, gm => gm.ms, gm => `<div class="gm-list" style="margin-bottom:8px">${rowOf(gm)}</div>`, 'mup', 'renderMatchup()');
+  return seg + listByYearHtml(res.games, gm => gm.ms, rowOf, gm => gm.n);
+}
+// 押すと結果（自分の席で開く。戻るで対戦を見るへ）
+function mupGameOpen(gm) {
+  const meMine = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
+  return `openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${meMine == null ? 'null' : meMine},back:'mup'})`;
+}
+function mupGameRowHtml(gm, P) {
+  const a = P[0], g = gm.g, s = g.settings || {}, me = gm.seat[a] != null ? Number(gm.seat[a]) : null;
+  const wl = P.length === 2 ? (() => { const w = gm.w[a] || 0, l = gm.l[a] || 0; return `<span class="mu-wl ${w > l ? 'pos' : w < l ? 'neg' : ''}">${w}勝${l}敗</span>`; })() : '';
+  return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="${mupGameOpen(gm)}">${gameKindHtml(g)}
+    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>
+      <div class="gr-sub">${seatResultHtml(g, me)}<span class="gr-meta">いっしょに${gm.n}試合</span>${wl}</div>${oppLineHtml(g, me)}</div></div>`;
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
 async function claimCircleMember(mid) {
@@ -12613,7 +12627,7 @@ function histActsHtml() {
   return `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button><button type="button" class="mp-act sm" onclick="startSelectSend()" title="まとめて送る" aria-label="まとめて送る">${ico('share', 14)}<span class="ma-t">送る</span></button></span>`;
 }
 function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
-  const cur = key === 'circleGamesView' ? circleGamesView : key === 'cmBoundView' ? cmBoundView : histView;
+  const cur = key === 'circleGamesView' ? circleGamesView : key === 'cmBoundView' ? cmBoundView : key === 'mupGamesView' ? mupGamesView : histView;
   return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[['tile', 'タイル'], [listVal, '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
     `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}" onclick="${key}='${k}';${rerender}">${l}</button>`).join('')}</div>`;
 }
@@ -12680,10 +12694,12 @@ function histTilesHtml(items) {
     if (!b || b.y !== y) years.push(b = { y, list: [] });
     b.list.push(x);
   });
-  // 年の見出し: その年のゲーム数／試合数、カッコに自分が出た分（自分の席がわかる試合だけ・自分が出た1戦を数える）
+  // 見出しの試合数: 項目に rounds があればそれ（対戦を見る＝いっしょに打った試合だけ）。無ければゲームの全試合
+  const nRof = x => (x.rounds != null ? x.rounds : (x.g.rounds || []).length);
+  // 年の見出し: その年のゲーム数／試合数、カッコに自分が出た分（rounds を渡した対戦を見るでは出さない＝全部いっしょに打った試合）（自分の席がわかる試合だけ・自分が出た1戦を数える）
   const yearHead = b => {
-    const nR = b.list.reduce((a, x) => a + (x.g.rounds || []).length, 0);
-    const mine = b.list.filter(x => typeof x.me === 'number');
+    const nR = b.list.reduce((a, x) => a + nRof(x), 0);
+    const mine = b.list.filter(x => typeof x.me === 'number' && x.rounds == null);
     const myR = mine.reduce((a, x) => a + (x.g.rounds || []).filter(r => roundMembers(r, x.g.settings || {}).includes(x.me)).length, 0);
     return `${b.y}年<span>${gamesRoundsText(b.list.length, nR)}</span>${mine.length ? `<span class="ht-mine">（参加 ${gamesRoundsText(mine.length, myR)}）</span>` : ''}`;
   };
@@ -12692,7 +12708,7 @@ function histTilesHtml(items) {
   // スコアを出すタイル（メンバーの成績の連携済みの試合）は、いちばん長いスコアに合わせて全部のタイルで同じ大きさ（2026-10-08）
   const scLen = Math.max(0, ...items.filter(x => x.score != null).map(x => fmtScore(x.score).length));
   const scCls = scLen >= 8 ? ' sc3' : scLen >= 6 ? ' sc2' : '';
-  const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), byMonth(b.list).map(mo => moSecHtml(mo.m, mo.list.length, mo.list.reduce((a, x) => a + (x.g.rounds || []).length, 0), `<div class="ht-grid${scCls}">${mo.list.map(tileOf).join('')}</div>`)).join(''))).join('');
+  const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), byMonth(b.list).map(mo => moSecHtml(mo.m, mo.list.length, mo.list.reduce((a, x) => a + nRof(x), 0), `<div class="ht-grid${scCls}">${mo.list.map(tileOf).join('')}</div>`)).join(''))).join('');
   return tiles; // 「nゲーム・空・少ない」の凡例は出さない（2026-10-07 ユーザー指定。タイルの点線・琥珀色の縁はそのまま）
 }
 function histKindMatch(g, k) {
