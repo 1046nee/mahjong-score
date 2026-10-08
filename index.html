@@ -1315,6 +1315,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-hit { fill: transparent; cursor: pointer; }
 .mc-spark .sp-ring { fill: var(--pc-a15); stroke: var(--pc-ink); stroke-width: 3; pointer-events: none; }
 .sp-pop { position: relative; display: block; margin-top: 16px; padding: 4px 6px 6px; border-radius: 12px; border: 2.5px solid var(--pc); background: var(--pc-bg); }
+.dot-team { fill: none; stroke: #E75620; stroke-width: 1.8; } /* チーム戦の試合がある点 */
+.sp-tag.team { background: #E75620; } /* チーム戦の試合がある日の札 */
+.sp-mo { margin: 12px 2px 6px; padding-top: 8px; border-top: 1px solid #DCE4E2; font-size: 12.5px; font-weight: 900; color: #33413E; } .sp-x + .sp-mo { margin-top: 8px; padding-top: 0; border-top: 0; } /* 年の単位のとき、月ごとの見出し */
 .sp-tag { position: absolute; top: -11px; left: 10px; padding: 1px 9px; border-radius: 10px; background: var(--pc); color: #fff; font-size: 11.5px; font-weight: 800; line-height: 1.6; }
 .sp-pop .sp-x { position: absolute; top: -13px; right: -9px; width: 26px; height: 26px; border: 2.5px solid var(--pc); background: #fff; color: var(--pc); font-size: 14px; line-height: 1; z-index: 1; }
 .sp-pop .sp-x + .sp-g { margin-top: 10px; }
@@ -11736,7 +11739,9 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
   const col = end >= 0 ? '#1A237E' : '#C62828';
   // 点の色＝その日のスコアの正負（プラス＝紺・マイナス＝赤・0＝灰）
-  const dots = days.map((d, i) => `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" data-d="${i}" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
+  // チーム戦（リーグ戦）の試合がある点は、オレンジの輪で囲む（2026-10-08）
+  days.forEach(d => { d.team = d.items.some(it => { const g = it.g && resultGameById(it.g); return !!(g && isTeamGame(g)); }); });
+  const dots = days.map((d, i) => `${d.team ? `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="6.2" class="dot-team"/>` : ''}<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" data-d="${i}" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
   // 押せる範囲は点のまわりの縦の帯（指でも当たるように）。押した点には輪
   const rid = 'sp' + (++sparkRegSeq);
   sparkReg[rid] = { np, days, vals: ys.slice(1), Wp };
@@ -11875,8 +11880,15 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
     e.os.push(x.o);
     byG.set(x.g, e);
   });
-  const rows = [...byG.values()].map(e => {
+  // 年の単位では、ゲームを月ごとに分けて見出しを付ける（2026-10-08）
+  const firstMs = new Map();
+  day.items.forEach(x => { if (x.g && !firstMs.has(x.g)) firstMs.set(x.g, Date.parse(x.t) || 0); });
+  let prevMo = null, anyTeam = false;
+  const rows = [...byG.values()].sort((a, b) => sparkUnit === 'y' ? (firstMs.get(a.gid) - firstMs.get(b.gid)) : 0).map(e => {
     const g = resultGameById(e.gid);
+    if (g && isTeamGame(g)) anyTeam = true;
+    let moHead = '';
+    if (sparkUnit === 'y') { const mo = new Date(firstMs.get(e.gid)).getMonth() + 1; if (mo !== prevMo) { moHead = `<div class="sp-mo">${mo}月</div>`; prevMo = mo; } }
     if (!g || !g.settings) return '';
     const s = g.settings, me = e.m == null ? null : Number(e.m);
     const gDay = { ...g, rounds: e.os.map(o => (g.rounds || [])[o]).filter(Boolean) };
@@ -11898,7 +11910,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
     const days = gameDaysList(g), dI = days.indexOf(day.k);
     // ゲームが1つなら日付の横に出すので、ここには出さない（狭い画面でゲーム名が隠れないように）
     const dayTag = byG.size > 1 && days.length > 1 && dI >= 0 ? `<em class="sp-dn">${dI + 1}日目</em>` : '';
-    return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
+    return `${moHead}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
         <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
@@ -11911,7 +11923,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
   // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
   const one = byG.size === 1 ? resultGameById([...byG.keys()][0]) : null;
   const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
-  return `<span class="sp-tag">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
+  return `<span class="sp-tag${anyTeam ? ' team' : ''}">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${anyTeam ? '・チーム戦' : ''}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
