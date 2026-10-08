@@ -5394,15 +5394,21 @@ function mupAvHtml(p, cls = '') { return `<i class="mu-av${cls}" style="backgrou
 function openCircleMatchup(P, fromMember = null) {
   if (!circleData) return;
   const my = myCircleMid();
-  P = (P || (my ? [my] : [])).filter((p, i, a) => rosterOf()[p] && a.indexOf(p) === i);
-  mup = { kind: 'circle', P, pick: P.length < 2, back: fromMember && rosterOf()[fromMember] ? fromMember : null };
+  P = (P || (my ? [my] : [])).filter((p, i, a) => rosterOf()[p] && a.indexOf(p) === i).slice(0, MUP_MAX);
+  mup = { kind: 'circle', P, pick: P.length < MUP_MAX, back: fromMember && rosterOf()[fromMember] ? fromMember : null };
   renderMatchup();
 }
 function openMyMatchup(i) { const c = myPairCtx; if (!c || !c.keys[i]) return; mup = { kind: 'my', P: ['@me', c.keys[i]], pick: false }; renderMatchup(); }
-function mupToggle(p) { mup.P = mup.P.includes(p) ? mup.P.filter(x => x !== p) : mup.P.concat([p]); renderMatchup(); }
+// 選べるのは2人まで（3人以上は見せ方が変わって煩雑になるので、2026-10-08 ユーザー判断でやめた）
+const MUP_MAX = 2;
+function mupToggle(p) {
+  if (mup.P.includes(p)) { mup.P = mup.P.filter(x => x !== p); mup.pick = true; }
+  else if (mup.P.length < MUP_MAX) { mup.P = mup.P.concat([p]); if (mup.P.length >= MUP_MAX) mup.pick = false; }
+  renderMatchup();
+}
 function mupReopen() { if (mup) renderMatchup(); }
 // 2人: 対戦の数字（勝ち-負け）→ 最近の流れ（勝った人の顔を古い順に）→ 2人をくらべる（いっしょに打った試合での成績を左右に）→ ゲームごとの勝ち負け
-// 3人以上: このメンバーがそろった試合で「メンバーの中で何番目だったか」→ 最近の流れ（メンバー内トップの顔）→ メンバーどうしの勝ち負けの表 → ゲームごとの順番
+// （3人以上は2026-10-08にやめた・選べるのは2人まで）// 旧: 3人以上: このメンバーがそろった試合で「メンバーの中で何番目だったか」→ 最近の流れ（メンバー内トップの顔）→ メンバーどうしの勝ち負けの表 → ゲームごとの順番
 // 条件で全員がそろった試合が無いときの説明（下の表やカードは同じ形のまま「—」で残す。2026-10-08）
 function mupEmptyHtml() { return ''; } // 条件で0件のときも文は出さない（0-0・「—」の形が残る。2026-10-08）
 function mupTapeHtml(res, a, b) {
@@ -5415,13 +5421,13 @@ function renderMatchup() {
   const res = P.length >= 2 ? mupCompute(P) : null;
   // 選んでいる人（上の枠）と、足せる人（下の候補）を分ける
   const chips = P.map(p => `<span class="mu-p">${mupAvHtml(p)}<b>${esc(mupName(p))}</b>${edit ? `<button type="button" aria-label="${esc(mupName(p))}を外す" onclick="mupToggle('${p}')">×</button>` : ''}</span>`).join('');
-  const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}人）</span>${edit ? `<button type="button" class="mu-chg${mup.pick ? ' on' : ''}" onclick="mup.pick=!mup.pick;renderMatchup()">${mup.pick ? '選び終わる' : '人を足す'}</button>` : ''}</div>
+  const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}/${MUP_MAX}人）</span>${edit && P.length < MUP_MAX ? `<button type="button" class="mu-chg${mup.pick ? ' on' : ''}" onclick="mup.pick=!mup.pick;renderMatchup()">${mup.pick ? '選び終わる' : '人を足す'}</button>` : ''}</div>
     <div class="mu-people">${chips || '<span class="mu-none">まだだれも選んでいません</span>'}</div></div>`;
   const cand = edit ? Object.entries(rosterOf()).filter(([m]) => !P.includes(m)).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')) : [];
-  const picker = edit && mup.pick ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
+  const picker = edit && mup.pick && P.length < MUP_MAX ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます（2人まで。入れ替えるときは上の × で外す）</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
   let body = '';
-  if (!res) body = `<div class="mu-empty">2人以上を選ぶと、その人たちが全員同じ卓にいた試合だけで、だれが勝ち越しているか・最近の流れ・いっしょに打った試合が見られます。自分以外の人どうしも選べます。</div>`;
-  else if (P.length === 2) {
+  if (!res) body = `<div class="mu-empty">2人を選ぶと、2人が同じ卓にいた試合だけで、どちらが勝ち越しているか・2人の成績・いっしょに打ったゲームが見られます。自分以外の人どうしも選べます。</div>`;
+  else {
     const [a, b] = P, x = res.people[a], v = x.vs[b] || { w: 0, l: 0, d: 0 };
     const lead = !res.games.length ? '試合なし' : v.w > v.l ? `${esc(mupName(a))}の勝ち越し` : v.w < v.l ? `${esc(mupName(b))}の勝ち越し` : '五分';
     const vs = `<div class="mu-vs"><div class="mu-side">${mupAvHtml(a, ' lg')}<b>${esc(mupName(a))}</b></div>
@@ -5429,17 +5435,7 @@ function renderMatchup() {
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
     body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesListHtml(res, P)}`;
-  } else {
-    const n = res.people[P[0]].n;
-    const order = P.slice().sort((a, b) => res.people[a].gPosSum - res.people[b].gPosSum || res.people[b].score - res.people[a].score);
-    const maxTop = Math.max(...P.map(p => res.people[p].gTop)) || 1;
-    const tbl = `<div class="mu-meta" style="margin-top:0">${P.length}人が全員そろった ${gamesRoundsText(res.games.length, n)}で、<b>メンバーの中で何番目だったか</b>（卓のほかの人は数えない）</div>
-      <div class="mu-tbl">${order.map((p, i) => { const x = res.people[p];
-        return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.n ? (x.gPosSum / x.n).toFixed(2) : '—')}</b>番目</span>
-          <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${x.n ? pctText(x.gTop / x.n) : '—'}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
-    const mx = `<div class="pf-h">メンバーどうしの勝ち負け</div>${mxLegendHtml(edit ? 'マスを押すと2人の対戦' : '')}${mxTableHtml(order, mupName, (x, y) => res.people[x].vs[y], null, null, false, edit ? (x, y) => `openCircleMatchup(['${x}','${y}'])` : null)}`;
-    body = `${mupEmptyHtml(res)}${tbl}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesListHtml(res, P)}`;
-  }
+  } // 3人以上の見せ方（メンバーの中で何番目か・勝ち負けの表）は2026-10-08にやめた（2人まで）
   if (res && res.games.length) body += `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
   const back = mup.back ? sheetBackMark(`openCircleMember('${mup.back}')`, `${rosterName(mup.back)}の成績に戻る`) : '';

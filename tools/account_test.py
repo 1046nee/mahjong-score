@@ -358,10 +358,10 @@ def main():
           openCircleMatchup([myCircleMid(), ji]);
           const two = document.getElementById('form-modal-body');
           const vs = !!two.querySelector('.mu-vs'), games = two.querySelectorAll('.gm-list .gr').length, tbl = !!two.querySelector('.grid-cmp');
-          mupToggle(sa);
-          const rows = document.querySelectorAll('#form-modal-body .mu-row').length;
-          // 自分以外の2人だけでも見られる
-          mupToggle(myCircleMid());
+          mupToggle(sa); // 3人目は足せない（2人まで・2026-10-08）
+          const rows = mup.P.length === 2 && !document.querySelector('#form-modal-body .mu-row') && !document.querySelector('#form-modal-body .mu-cand');
+          // 自分以外の2人だけでも見られる（自分を外してから足す）
+          mupToggle(myCircleMid()); mupToggle(sa);
           const others = document.querySelectorAll('#form-modal-body .mu-vs').length;
           document.querySelector('#form-modal-body .gm-list .gr').click();
           await new Promise(r => setTimeout(r, 50)); // ヘッダーの「‹ 戻る」は中身が入れ替わったあとに付く
@@ -370,9 +370,9 @@ def main():
           if (back) back.click();
           const again = !!document.querySelector('#form-modal-body .mu-sheet');
           closeFormModal();
-          return { pill: !top.includes('対戦を見る') && !top.includes('目線') && !top.includes('同卓'), vs, games: games > 0, tbl, rows: rows === 3, others: others === 1, back: backTxt.includes('対戦に戻る'), again };
+          return { pill: !top.includes('対戦を見る') && !top.includes('目線') && !top.includes('同卓'), vs, games: games > 0, tbl, rows, others: others === 1, back: backTxt.includes('対戦に戻る'), again };
         })()""")
-        results.append(("[6o] 仲間ページの「対戦を見る」: 2人なら勝ち越し・いっしょに打った試合、3人なら一人ずつの勝ち負け、自分以外どうしも可。2人は成績表と同じ表でくらべる。いっしょに打ったゲームは過去の試合と同じ一覧で、行から×の左の「‹ 戻る」で対戦に戻る（成績カードの上に目線・同卓・対戦を見るのピルは無い）", True, all(cw.values())))
+        results.append(("[6o] 仲間ページの「対戦を見る」: 2人なら勝ち越し・いっしょに打った試合、選べるのは2人まで（3人目は足せない）、自分以外どうしも可。2人は成績表と同じ表でくらべる。いっしょに打ったゲームは過去の試合と同じ一覧で、行から×の左の「‹ 戻る」で対戦に戻る（成績カードの上に目線・同卓・対戦を見るのピルは無い）", True, all(cw.values())))
         # 仲間ページの「直近n戦」は各自の直近n戦（一人ひとりが出た新しい方からn試合。誰が見ても同じ順位）
         pn = pgb.evaluate("""(() => {
           const prev = curPeriod();
