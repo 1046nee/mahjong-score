@@ -1135,8 +1135,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .ms-tile b.pos { color: #1A237E; } .ms-tile b.neg { color: #C62828; }
 .ms-panel { background: #fff; border-radius: 14px; padding: 4px 12px 10px; margin-top: 8px; box-shadow: var(--sh-1); }
 /* くらべる表: ほかの表と同じ白いカードに載せる（地の色と紛れないように） */
-.ms-card { background: #fff; border-radius: 16px; padding: 14px 14px 12px; margin-top: 12px; box-shadow: var(--sh-1); }
-.ms-card .ms-h { margin: 0 2px 8px; font-size: 15px; font-weight: 800; }
+.ms-card { background: #fff; border-radius: 16px; padding: 16px; margin-top: 12px; box-shadow: var(--sh-1); } /* 対戦成績・過去の試合のカードと同じ余白（タブを切り替えても見出しの位置が動かないように。2026-10-08） */
+.ms-card .ms-h { margin: 0 0 8px; font-size: 15px; font-weight: 800; }
 .ms-cmp td { font-weight: 700; font-variant-numeric: tabular-nums; }
 .ms-cmp td.pos { color: #1A237E; } .ms-cmp td.neg { color: #C62828; }
 .ms-empty { font-size: 14px; color: #4F5C5A; background: #fff; border-radius: 14px; padding: 20px 16px; margin-top: 10px; line-height: 1.8; }
@@ -1826,7 +1826,7 @@ button.ios-row:active { background: #F2F6F5; }
 /* 個人の過去の試合・対戦成績も仲間ページのカードと同じ形（2026-10-07） */
 .card.hist-card, .card.my-h2h { border: none; border-radius: 16px; padding: 16px; box-shadow: var(--sh-1); }
 .hist-card .card-title, .my-h2h .card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; }
-@media (max-width: 360px) { .card.my-h2h { padding-left: 10px; padding-right: 10px; } }
+
 /* 「あなたはどれ？」の問いかけ（試合の画面と仲間ページ）。オレンジはCTA限定なので琥珀色 */
 .askme { border: 1px solid #F2E3B3; background: #FFF8E6; }
 .askme-sub { font-size: 12px; color: #5F6E6B; }
