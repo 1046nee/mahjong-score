@@ -1101,16 +1101,17 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sw-wrap { margin: 10px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
-.sw-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px 16px 6px; } /* 個人｜仲間ページは丸いピル（中身を切り替える下線のタブと見分ける。2026-10-08） */
+.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1px solid #D5DEDB; }
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
-.sw-sep { flex: none; align-self: center; width: 1.5px; height: 22px; margin: 0 2px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
-.sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px; border: 1.5px solid #D5DEDB; border-radius: 19px; background: #fff; color: #4F5C5A; font-size: 14px; font-weight: 800; box-shadow: 0 1px 2px rgba(16,40,36,.05); cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
+.sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: none; color: #5F6E6B; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .sw-chip .ico { --i1: #8A9AA5; --i2: #C9D3D1; }
-.sw-chip.on { border-color: var(--pc); background: var(--pc); color: #fff; } /* 主色で塗る（期間の黒いピル・四麻｜三麻・下線のタブと別の見た目） */
-.sw-chip.on .ico { --i1: #fff; --i2: rgba(255,255,255,.6); }
+.sw-chip.on { color: var(--pc); }
+.sw-chip.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
+.sw-chip.on .ico { --i1: var(--pc); --i2: var(--pc-soft); }
 .sw-chip:not(.on) .sw-av { opacity: .75; }
-.sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; border-style: dashed; box-shadow: none; }
+.sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
 .sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; }
 .mp-others { margin-top: 12px; }
@@ -1547,10 +1548,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .seg.sm { margin: 0; }
 .seg.sm button { height: 34px; font-size: 13px; letter-spacing: -.2px; }
 /* 中身を切り替えるタブ（順位・成績表…／成績表・対戦成績・過去の試合）は下線のタブ。上の四麻｜三麻（地のある切り替え）と見分けがつくように（2026-10-08） */
-.seg.tabbar { padding: 0; background: none; border-radius: 0; box-shadow: inset 0 -1.5px 0 #D5DEDB; }
-.seg.tabbar button { height: 42px; border-radius: 0; background: none; box-shadow: none; color: #6B7A77; font-size: 14px; font-weight: 700; position: relative; }
-.seg.tabbar button.on { background: none; box-shadow: none; color: var(--pc); font-weight: 900; }
-.seg.tabbar button.on::after { content: ''; position: absolute; left: 12%; right: 12%; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
+.seg.tabbar { padding: 4px; gap: 4px; background: #fff; border-radius: 14px; box-shadow: var(--sh-1); } /* 白い帯の上の、選ぶと主色で塗られるタブ（上の個人｜仲間ページの主色の下線・四麻｜三麻の灰色の切り替えと別の印象。2026-10-08） */
+.seg.tabbar button { height: 36px; border-radius: 10px; background: none; box-shadow: none; color: #5F6E6B; font-size: 14px; font-weight: 700; }
+.seg.tabbar button.on { background: var(--pc); box-shadow: none; color: #fff; font-weight: 800; } /* 主色で塗る（すぐ下の指標の黒いピルと被らないように） */
 .seg.xs { display: inline-flex; align-self: flex-start; margin: 0 0 14px; padding: 2px; border-radius: 9px; } /* 縦並びの flex の中でも横に伸ばさない */
 .seg.xs button { flex: none; min-width: 56px; height: 26px; padding: 0 12px; border-radius: 7px; font-size: 13px; }
 .seg.xs button.on[data-np="3"], .sanma .seg button.on { color: #4261AA; }
@@ -11674,7 +11674,7 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
     </span>
     <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span>
     ${msModeHtml(np, m)}
-    <span class="mc-trend"><span class="mc-trend-h"><small>通算スコアの推移（${sparkUnitCount(hist)}）</small>${sparkUnitSegHtml()}</span>${miniSparkHtml(hist, np, m.score)}</span>
+    ${trendHtml(hist, np, m.score)}
     ${withMore ? `<span class="mc-foot"><span class="mc-more">詳しく${ico('chevron', 12)}</span></span>` : ''}`;
 }
 // 直近の試合の通算スコアの推移（折れ線。点は1試合ごと・色は着順。左に目盛りの数値、最後の点に最終の通算スコア）
@@ -11693,6 +11693,15 @@ function sparkBucket(d) {
   if (sparkUnit === 'm') return { k: `${y}-${String(m).padStart(2, '0')}`, tick: `${m}月`, label: `${y}年${m}月` };
   return { k: ymdLocal(d), tick: `${m}/${d.getDate()}`, label: null };
 }
+// 推移のカード（見出し＋単位の切り替え＋グラフ）。単位を変えたときはこのカードだけ描き直す（画面全体を描き直すと一瞬崩れて見えるため。2026-10-08）
+const trendReg = {};
+let trendSeq = 0;
+function trendHtml(hist, np, score) {
+  const id = 'tr' + (++trendSeq);
+  trendReg[id] = { hist, np, score };
+  const ks = Object.keys(trendReg); if (ks.length > 40) ks.slice(0, ks.length - 40).forEach(k => delete trendReg[k]);
+  return `<span class="mc-trend" data-tr="${id}"><span class="mc-trend-h"><small>通算スコアの推移（${sparkUnitCount(hist)}）</small>${sparkUnitSegHtml()}</span>${miniSparkHtml(hist, np, score)}</span>`;
+}
 function sparkUnitCount(h) { const n = new Set(h.map(x => sparkBucket(new Date(x.t)).k)).size; return sparkUnit === 'y' ? `${n}年` : sparkUnit === 'm' ? `${n}か月` : `${n}日`; }
 function sparkUnitSegHtml() {
   return `<span class="sp-unit" role="tablist" aria-label="グラフの単位">${SPARK_UNITS.map(([k, l]) =>
@@ -11710,11 +11719,20 @@ function setSparkUnit(u, el) {
   if (pop && pop.dataset.rid) { const reg = sparkReg[pop.dataset.rid], d = reg && reg.days[+pop.dataset.i]; if (d) keep = d.k; }
   sparkUnit = u;
   try { localStorage.setItem(SPARK_UNIT_KEY, u); } catch (e) {}
+  const tr = el && el.closest('.mc-trend[data-tr]'), t = tr && trendReg[tr.dataset.tr];
+  if (t) { // グラフのカードだけ差し替える
+    const box = document.createElement('div'); box.innerHTML = trendHtml(t.hist, t.np, t.score);
+    const nt = box.firstElementChild; tr.replaceWith(nt);
+    const sc = nt.querySelector('.mc-scroll'); if (sc) sc.scrollLeft = sc.scrollWidth;
+    if (keep) sparkSelectKeyIn(nt, keep);
+    return;
+  }
   rerenderStatsFrom(el);
   if (keep && hostSel) setTimeout(() => sparkSelectKey(hostSel, keep), 30);
 }
-function sparkSelectKey(hostSel, k) {
-  const svg = document.querySelector(`${hostSel} .mc-spark[data-rid]`);
+function sparkSelectKey(hostSel, k) { const h = document.querySelector(hostSel); if (h) sparkSelectKeyIn(h, k); }
+function sparkSelectKeyIn(root, k) {
+  const svg = root.querySelector('.mc-spark[data-rid]');
   const reg = svg && sparkReg[svg.dataset.rid];
   if (!reg) return;
   let i = reg.days.findIndex(d => k.startsWith(d.k));
