@@ -785,6 +785,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 359px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
 .mp-filters .seg.xs { margin-left: auto; }
+/* 期間のとなりの四麻｜三麻は少しだけ細く（余白とアイコンを小さく）。「2025/12/31〜2026/12/31」のような長い期間名も欠けずに出す（2026-10-08） */
+.mp-filters .seg.xs.mode-seg button { min-width: 0; padding: 0 8px; }
+.mp-filters .seg.xs.mode-seg .gk-tab { width: 15px; height: 15px; margin: 0 3px -3px 0; }
+.mp-filters .seg.xs.mode-seg .gk-tab svg { width: 15px; height: 15px; }
+@media (max-width: 389px) { .mp-filters .seg.xs.mode-seg .gk-tab { display: none; } } /* 390px 未満では形式のアイコンを省いて期間名を出す */
 .mp-period { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 100%; padding: 0 2px 0 0; margin: 0; background: none !important; color: inherit !important; vertical-align: top; border-radius: 17px; background: #1F2A28; color: #fff; font-size: 13px; font-weight: 800; cursor: pointer; }
 .mp-period .ico { transform: rotate(90deg); }
 .mp-period select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
@@ -878,7 +883,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gk { position: relative; flex: none; width: 30px; height: 30px; margin-top: 1px; line-height: 0; }
 .gk.k4 .gk-bg { fill: #E4F3EC; } .gk.k4 .gk-dot { fill: #177083; }
 .gk.k3 .gk-bg { fill: #E6ECF7; } .gk.k3 .gk-dot { fill: #4261AA; }
-.gk-n { position: absolute; right: -6px; bottom: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #C07A22; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff; font-variant-numeric: tabular-nums; }
+.gk-n { position: absolute; right: -6px; top: -5px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #C07A22; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px #fff; font-variant-numeric: tabular-nums; }
 .gk.multi .gk-bg { stroke: #C07A22; stroke-width: 1.6; }
 .gk-tab { display: inline-block; width: 18px; height: 18px; margin: 0 5px -4px 0; }
 .gr.out .gk { opacity: .55; }
@@ -1167,7 +1172,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hg-grid .hg-meta { font-size: 9.5px; gap: 2px; margin-top: 2px; }
 .hg-grid .hg-meta b { font-size: 10px; }
 .hg-grid .hg-rec, .hg-grid .hg-pct { white-space: nowrap; }
-.hg-grid .hg-pct { display: flex; justify-content: space-between; gap: 2px; }
+.hg-grid .hg-pct { display: flex; justify-content: space-between; align-items: baseline; gap: 2px; line-height: 18px; } /* 「n分」も「勝率」と同じ下の線にそろえる（上に浮いていた。2026-10-08） */
+.hg-grid .hg-pct > span + span { font-size: 9.5px; } /* 「n分」は下の行（試合・差・着順）と同じ大きさ */
 .hg-grid .hg-card.sz2 .hg-rec b { font-size: 15px; } .hg-grid .hg-card.sz2 .hg-meta { font-size: 8.5px; } .hg-grid .hg-card.sz2 .hg-meta b { font-size: 9px; }
 .hg-grid .hg-card.sz3 .hg-rec b { font-size: 11px; } .hg-grid .hg-card.sz3 .hg-rec span { font-size: 8px; } .hg-grid .hg-card.sz3 .hg-rec b.l { margin-left: 2px; } .hg-grid .hg-card.sz3 .hg-meta { font-size: 9px; } .hg-grid .hg-card.sz3 .hg-meta b { font-size: 9.5px; }
 .sp-meta .nw { white-space: nowrap; }
@@ -1591,10 +1597,10 @@ button.ios-row:active { background: #F2F6F5; }
 @keyframes sheet-up { from { transform: translateY(32px); opacity: .6; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { #form-modal .form-modal-box { animation: none !important; } }
 /* シートの見出しは上に貼り付けて、右に「×」（スクロールしても閉じられる）。下へスワイプしても閉じる（initSheetSwipe） */
-.fm-back { display: none; flex: none; align-items: center; gap: 2px; height: 36px; padding: 0 14px 0 10px; border: 2px solid var(--pc); border-radius: 18px; background: #fff; color: var(--pc); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.fm-back { display: none; flex: none; align-items: center; gap: 2px; height: 36px; padding: 0 14px 0 10px; border: 1.5px solid #C3CECB; border-radius: 18px; background: #F4F7F6; color: #1F2A28; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .fm-back .ico { transform: rotate(180deg); }
 #form-modal:has(.sheet-body) .fm-back { display: inline-flex; }
-.fm-x { display: none; flex: none; width: 36px; height: 36px; border: 2px solid var(--pc); border-radius: 50%; background: #fff; color: var(--pc); font-size: 22px; font-weight: 800; line-height: 1; cursor: pointer; } /* 戻ると同じく主色の枠と字（淡い灰色では見えにくい。2026-10-08） */
+.fm-x { display: none; flex: none; width: 36px; height: 36px; border: 1.5px solid #C3CECB; border-radius: 50%; background: #F4F7F6; color: #1F2A28; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; } /* 戻ると同じ。ほかの灰色のボタンと同じ色味のまま、細い灰色の枠と濃い字で見やすく（2026-10-08） */
 #form-modal:has(.sheet-body) .fm-x { display: grid; place-items: center; }
 #form-modal:has(.sheet-body) .form-modal-box > div:first-child { position: sticky; top: 0; z-index: 3; background: #fff; padding: 12px 0 10px; margin-bottom: 4px !important; }
 .sheet-close { display: block; width: 100%; height: 48px; margin-top: 12px; border: 0; border-radius: 14px; background: #EEF2F1; color: var(--pc); font-size: 16px; font-weight: 700; cursor: pointer; }
@@ -11659,7 +11665,8 @@ function mpPeriodHtml(small = false) {
     `<optgroup label="直近の期間">${PERIOD_RECENT.map(([k, l]) => opt(k, l)).join('')}</optgroup>`,
     `<optgroup label="${circleActive() ? '各自の直近の試合数' : '直近の試合数'}">${PERIOD_COUNTS.map(n => opt('n' + n, `${circleActive() ? '各自の' : ''}直近${n}戦`)).join('')}</optgroup>`,
     `<optgroup label="期間を指定">${cur[0] === 'c' ? opt('cur-custom', periodLabel(cur)) : ''}<option value="custom">開始・終了を指定…</option></optgroup>`];
-  const label = cur === 'all' ? 'すべての期間' : periodLabel(cur);
+  // 開始・終了を指定した期間は、ピルの中だけ年を下2桁に（「25/12/31〜26/12/31」。選択肢の一覧は4桁のまま）＝狭い画面でも欠けない（2026-10-08）
+  const label = cur === 'all' ? 'すべての期間' : cur[0] === 'c' ? periodLabel(cur).replace(/(^|〜)\d\d(\d\d\/)/g, '$1$2') : periodLabel(cur);
   const x = cur !== 'all' ? `<button type="button" class="flt-x" aria-label="期間を解除（すべての期間に戻す）" title="期間を解除" onclick="setMpPeriod('all')">×</button>` : '';
   return `<span class="flt mp-pwrap${small ? ' sm' : ''}${x ? ' on has-x' : ''}"><label class="mp-period${small ? ' sm' : ''}"><span>${esc(label)}</span>${ico('chevron', 12)}<select aria-label="成績の期間" onchange="if(this.value!=='cur-custom')setMpPeriod(this.value)">${groups.join('')}</select></label>${x}</span>`;
 }
