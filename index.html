@@ -1152,6 +1152,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* くらべる表: ほかの表と同じ白いカードに載せる（地の色と紛れないように） */
 .ms-card { background: #fff; border-radius: 16px; padding: 16px; margin-top: 12px; box-shadow: var(--sh-1); } /* 対戦成績・過去の試合のカードと同じ余白（タブを切り替えても見出しの位置が動かないように。2026-10-08） */
 .ms-card .ms-h { margin: 0 0 8px; font-size: 15px; font-weight: 800; }
+.mu-card .ms-h small { margin-left: 6px; font-size: 11.5px; font-weight: 700; color: #6B7A77; } /* 対戦を見るのカード（2人をくらべる・いっしょに打ったゲーム） */
+.mu-card .h2h-note { margin-bottom: 0; }
 .ms-cmp td { font-weight: 700; font-variant-numeric: tabular-nums; }
 .ms-cmp td.pos { color: #1A237E; } .ms-cmp td.neg { color: #C62828; }
 .ms-empty { font-size: 14px; color: #4F5C5A; background: #fff; border-radius: 14px; padding: 20px 16px; margin-top: 10px; line-height: 1.8; }
@@ -5414,7 +5416,8 @@ function mupEmptyHtml() { return ''; } // 条件で0件のときも文は出さ�
 function mupTapeHtml(res, a, b) {
   // 個人の成績表（個人｜仲間ページ）と同じ表・同じ項目。勝っている方のマスは塗らない（2026-10-08 ユーザー要望）
   const L = [a, b].map(p => res.stat[p]);
-  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div>${gridTableHtml(L, res.np, false, '', (x, i) => `<th title="${esc(mupName([a, b][i]))}">${esc(mupName([a, b][i]))}</th>`, { best: false })}`;
+  // 白いカードの中に入れる（シートの地が透けて見にくかった。2026-10-08）
+  return `<div class="ms-card mu-card"><div class="ms-h">2人をくらべる<small>いっしょに打った試合だけ</small></div>${gridTableHtml(L, res.np, false, '', (x, i) => `<th title="${esc(mupName([a, b][i]))}">${esc(mupName([a, b][i]))}</th>`, { best: false })}</div>`;
 }
 function renderMatchup() {
   const P = mup.P, edit = mup.kind === 'circle';
@@ -5434,9 +5437,8 @@ function renderMatchup() {
       <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
-    body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesListHtml(res, P)}`;
+    body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="ms-card mu-card"><div class="ms-h">いっしょに打ったゲーム<small>新しい順</small></div>${mupGamesListHtml(res, P)}${res.games.length ? `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>` : ''}</div>`;
   } // 3人以上の見せ方（メンバーの中で何番目か・勝ち負けの表）は2026-10-08にやめた（2人まで）
-  if (res && res.games.length) body += `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
   const back = mup.back ? sheetBackMark(`openCircleMember('${mup.back}')`, `${rosterName(mup.back)}の成績に戻る`) : '';
   // 期間＋四麻｜三麻・合計｜個人戦｜チーム戦をシートの中でも変えられる（2026-10-08）
