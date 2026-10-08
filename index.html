@@ -12088,12 +12088,17 @@ function sparkSelect(rid, i, dir = 0) {
   if (dot && ring) { ring.setAttribute('cx', dot.getAttribute('cx')); ring.setAttribute('cy', dot.getAttribute('cy')); ring.classList.toggle('team', !!day.team); } // チーム戦の日は選んだときの輪をオレンジに（2026-10-08）
   const lab = svg.querySelector('.sp-lab');
   if (dot && lab) {
-    const txt = fmtScore(reg.vals[i]), w = txt.length * 5.6 + 8;
-    const cx = Number(dot.getAttribute('cx')), cy = Number(dot.getAttribute('cy'));
+    const txt = fmtScore(reg.vals[i]), tEl = lab.querySelector('text');
+    tEl.textContent = txt;
+    tEl.setAttribute('class', reg.vals[i] > 0 ? 'pos' : reg.vals[i] < 0 ? 'neg' : '');
+    // 枠の幅は実際の文字の幅から（見積もりだと「-1,234.0」などで文字が枠からはみ出した。2026-10-08）
+    let tw = 0; try { tw = tEl.getBBox().width; } catch (e) {}
+    const w = Math.max(tw || txt.length * 6.2, 10) + 10, LH = 13;
+    const cx = Number(dot.getAttribute('cx')), cy = Number(dot.getAttribute('cy')), H = Number((svg.getAttribute('viewBox') || '').split(' ')[3]) || 98;
+    // 左右・上下ともグラフの中に収める（上に入らないときは点の下。下にも入らなければ入るところまで寄せる）
     const lx = Math.min(Math.max(cx, w / 2 + 1), reg.Wp - w / 2 - 1);
-    const ly = cy - 11 >= 7 ? cy - 23 : cy + 9; // 上に入らないとき（いちばん上の点）は下に出す
-    lab.querySelector('text').textContent = txt;
-    lab.querySelector('text').setAttribute('class', reg.vals[i] > 0 ? 'pos' : reg.vals[i] < 0 ? 'neg' : '');
+    let ly = cy - 10 - LH >= 1 ? cy - 10 - LH : cy + 9;
+    ly = Math.min(Math.max(ly, 1), H - LH - 1);
     const rc = lab.querySelector('rect'); rc.setAttribute('x', -w / 2); rc.setAttribute('width', w);
     lab.setAttribute('transform', `translate(${lx.toFixed(1)},${ly.toFixed(1)})`);
     // 選んだ点がスクロールの外なら見える所まで動かす
