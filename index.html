@@ -1317,7 +1317,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-mo { margin: 12px 2px 6px; padding-top: 8px; border-top: 1px solid #DCE4E2; font-size: 12.5px; font-weight: 900; color: #33413E; } .sp-x + .sp-mo { margin-top: 8px; padding-top: 0; border-top: 0; } /* 年の単位のとき、月ごとの見出し */
 .sp-tag { position: absolute; top: -11px; left: 10px; padding: 1px 9px; border-radius: 10px; background: var(--pc); color: #fff; font-size: 11.5px; font-weight: 800; line-height: 1.6; }
 .sp-pop .sp-x { position: absolute; top: -13px; right: -9px; width: 26px; height: 26px; border: 2.5px solid var(--pc); background: #fff; color: var(--pc); font-size: 14px; line-height: 1; z-index: 1; }
-.sp-pop .sp-x + .sp-g { margin-top: 10px; }
+.sp-pop .sp-x + .sp-g, .sp-pop .sp-x + .sp-nav { margin-top: 10px; }
 .sp-body { display: flex; align-items: center; gap: 8px; }
 .sp-left { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 /* 右の列は幅を決めて左揃え（人数が1桁→2桁・スコアが4桁でも位置が動かない） */
@@ -1335,7 +1335,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-whole .sp-rank { font-size: 13px; } .sp-wsc { flex: none; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; } .sp-wsc.pos { color: #1A237E; } .sp-wsc.neg { color: #C62828; }
 .sp-meta .sp-dn { margin: 0 4px 0 0; }
 .sp-dn { flex: none; margin-left: 2px; padding: 0 7px; height: 18px; border-radius: 9px; background: var(--pc-tint); color: var(--pc-ink); font-size: 11px; font-style: normal; font-weight: 800; line-height: 18px; } /* 2日以上のゲームの「n日目」 */
-.sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 18px; }
+.sp-meta .sp-dn { display: inline-block; height: 16px; line-height: 16px; vertical-align: top; margin-top: 1px; } /* 札があっても行の高さは同じ（2026-10-08） */
 /* 着順の回数はカードの全幅で1行（4つが改行しない） */
 .sp-cnts { display: flex; flex-wrap: nowrap; gap: 4px; margin-top: 6px; }
 .sp-c { flex: 1 1 0; min-width: 0; display: inline-flex; justify-content: center; align-items: baseline; gap: 2px; padding: 1px 2px; border-radius: 8px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
@@ -1353,7 +1354,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-lab rect { fill: #fff; stroke: var(--pc-ink); stroke-width: 1.2; }
 .mc-spark .sp-lab text { font-size: 9.5px; font-weight: 900; fill: #1F2A28; font-variant-numeric: tabular-nums; }
 .mc-spark .sp-lab text.pos { fill: #1A237E; } .mc-spark .sp-lab text.neg { fill: #C62828; }
-.sp-nav { display: flex; justify-content: space-between; margin-top: 6px; }
+.sp-nav { display: flex; align-items: center; gap: 6px; margin-top: 12px; min-height: 32px; } /* カードの上: ‹ まとめ › */
+.sp-sum { flex: 1; min-width: 0; }
+.sp-sum .sp-whole { margin-top: 0; background: #fff; }
+.sp-sum .sp-whole { flex-wrap: wrap; row-gap: 2px; column-gap: 6px; padding: 6px 10px; } .sp-sum .sp-wl { flex: 1 0 100%; flex-direction: row; align-items: baseline; gap: 6px; } .sp-sum .sp-wsc { margin-left: auto; } /* 上の段に見出しと日数・試合数、下の段に順位とスコア */ .sp-whole .sp-wl small, .sp-whole .sp-wl b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 「全2日 ・ 4試合」が折れない */
+.sp-g + .sp-whole, .sp-mo + .sp-whole { margin-top: 10px; } /* 複数ゲームのとき: 2日以上のゲームの全体の成績は、そのカードのすぐ上 */
+.sp-whole + .sp-g { margin-top: 4px; }
 .sp-nb { flex: none; display: inline-grid; place-items: center; width: 44px; height: 32px; padding: 0; border: 0; border-radius: 16px; background: #fff; color: var(--pc); cursor: pointer; }
 .sp-nb.pv svg { transform: rotate(180deg); }
 .sp-nb:disabled { visibility: hidden; }
@@ -11967,18 +11973,19 @@ function sparkSelect(rid, i, dir = 0) {
   }
   const host = pop.closest('#mp-stats, #circle-top, #ms-top, .pf-sheet');
   const ctx = { sel: host && host.id ? '#' + host.id : '', k: day.k, member: host && host.dataset ? host.dataset.mid || null : null };
-  pop.innerHTML = sparkPopHtml(day, reg.np, !svg.closest('.mc-static'), ctx) + sparkNavHtml(rid, i);
+  pop.innerHTML = sparkPopHtml(day, reg.np, !svg.closest('.mc-static'), ctx, mid => sparkNavHtml(rid, i, mid));
   pop.dataset.rid = rid; pop.dataset.i = i;
   pop.hidden = false;
   if (dir) { pop.classList.remove('sl-l', 'sl-r'); void pop.offsetWidth; pop.classList.add(dir > 0 ? 'sl-l' : 'sl-r'); }
   if (!pop.dataset.sw) { pop.dataset.sw = '1'; sparkSwipeInit(pop); }
   return true;
 }
-// カードの下の「‹ 　 ›」（矢印だけ。端では押せない。2026-10-05 ユーザー要望「日付など出さずシンプルに」）
-function sparkNavHtml(rid, i) {
+// カードの上の「‹ まとめ ›」（矢印だけ。端では押せない。2026-10-05 ユーザー要望「日付など出さずシンプルに」）。
+// 2026-10-08 ユーザー要望: 矢印はカードの上に移し、あいだに まとめ（mid）＝2日以上のゲーム全体の成績／複数のゲームの合計スコア
+function sparkNavHtml(rid, i, mid = '') {
   const n = sparkReg[rid].days.length;
-  const b = (j, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前の日' : '次の日'}">${ico('chevron', 16)}</button>`;
-  return `<span class="sp-nav">${b(i - 1, 'pv')}${b(i + 1, 'nx')}</span>`;
+  const b = (j, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前' : '次'}">${ico('chevron', 16)}</button>`;
+  return `<span class="sp-nav">${b(i - 1, 'pv')}<span class="sp-sum">${mid}</span>${b(i + 1, 'nx')}</span>`;
 }
 function sparkStep(rid, d) {
   const pop = document.getElementById('pop-' + rid);
@@ -12026,7 +12033,7 @@ function closeSparkPop(btn) {
 }
 // 1ゲーム＝過去の試合の一覧と同じ並び（順位のピル・スコア・自分の名前／相手）＋その日の試合数・平均着順・着順ごとの回数。
 // 数えるのはその日の試合だけ（そのゲームの、その日の分の合計で順位を出す）
-function sparkPopHtml(day, np, self = true, ctx = {}) {
+function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
   const byG = new Map();
   day.items.forEach(x => {
     if (!x.g) return;
@@ -12037,7 +12044,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
   // 年の単位では、ゲームを月ごとに分けて見出しを付ける（2026-10-08）
   const firstMs = new Map();
   day.items.forEach(x => { if (x.g && !firstMs.has(x.g)) firstMs.set(x.g, Date.parse(x.t) || 0); });
-  let prevMo = null, anyTeam = false;
+  let prevMo = null, anyTeam = false, wholeTop = '';
   const rows = [...byG.values()].sort((a, b) => sparkUnit === 'y' ? (firstMs.get(a.gid) - firstMs.get(b.gid)) : 0).map(e => {
     const g = resultGameById(e.gid);
     if (g && isTeamGame(g) && sparkUnit === 'd') anyTeam = true; // 日の単位だけ
@@ -12069,23 +12076,27 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
       const ft = gameTotals(g), fp = playedFlags(g), fr = me != null && fp[me] ? 1 + fp.reduce((a, p, i) => a + (p && ft[i] > ft[me] ? 1 : 0), 0) : null;
       const fn = (g.rounds || []).filter(r => { const mem = roundMembers(r, s); return me != null && mem.includes(me); }).length;
       whole = `<span class="sp-whole"><span class="sp-wl"><b>ゲーム全体</b><small>全${days.length}日 ・ ${fn}試合</small></span>${fr ? `<span class="sp-rank${fr <= 3 ? ' r' + fr : ''}"><span class="sp-md">${fr <= 3 ? medalSvg(fr, 16, false) : ''}</span>${fr}位<small>/${fp.filter(Boolean).length}人</small></span><b class="sp-wsc ${scoreCls(ft[me])}">${fmtScore(ft[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>`;
+      if (byG.size === 1) { wholeTop = whole; whole = ''; } // 1ゲームなら上の まとめ の欄へ
     }
-    const dayTag = '';
-    return `${moHead}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
+    const dayTag = multi ? `<em class="sp-dn">${dI + 1}日目</em>` : ''; // 試合名の横（下の行に入れると2行になりカードが高くなった。2026-10-08）
+    return `${moHead}${whole}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
-        <span class="sp-meta">${multi ? `<em class="sp-dn">${dI + 1}日目の成績</em> ` : ''}<span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
+        <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
       <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}"><span class="sp-md">${rank <= 3 ? medalSvg(rank, 18, false) : ''}</span>${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
-      <span class="sp-cnts">${cnts}</span>${whole}
+      <span class="sp-cnts">${cnts}</span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
   // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
   const one = byG.size === 1 ? resultGameById([...byG.keys()][0]) : null;
   const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
+  // まとめ: 複数のゲームなら合計（ゲーム数・試合数・合計スコア）、1ゲームで2日以上ならゲーム全体の成績
+  const nR = day.items.length, sum = day.items.reduce((a, x) => a + (Number(x.sc) || 0), 0);
+  const mid = byG.size > 1 ? `<span class="sp-whole sp-tot"><span class="sp-wl"><b>合計</b><small>${gamesRoundsText(byG.size, nR)}</small></span><b class="sp-wsc ${scoreCls(sum)}">${fmtScore(sum)}</b></span>` : wholeTop;
   return `<span class="sp-tag${anyTeam ? ' team' : ''}">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
-    <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
+    <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${navOf(mid)}${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
 function scrollSparksEnd() {
