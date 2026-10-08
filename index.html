@@ -1222,8 +1222,6 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .mu-cand { background: #F4F7F6; box-shadow: inset 0 0 0 1px #DCE4E2; } .mu-cand .cw-pick { margin: 0; }
 .mu-sel-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 12px; font-weight: 800; color: #5F6E6B; }
 .mu-sel .mu-p { box-shadow: inset 0 0 0 1.5px var(--pc-soft); }
-.mu-chg { height: 28px; padding: 0 12px; border: 0; border-radius: 14px; background: var(--pc); color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
-.mu-chg.on { background: #EEF2F1; color: #33413E; }
 .mu-none { font-size: 12.5px; color: #8A9AA5; }
 .mu-flow { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-dot { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 11px; font-style: normal; font-weight: 800; }
@@ -5378,7 +5376,7 @@ function openCircleMember(mid) {
 // ---- 対戦を見る（2026-10-07）: 選んだ人（2人以上）が全員同じ卓にいた試合だけで、その人たちの間の勝ち越しと、いっしょに打った試合 ----
 // 入口: 仲間ページの上の「対戦を見る」・対戦成績の相手のカード・総当たり表のマス・メンバーの成績の相手のカード／個人の対戦成績の相手のカード。
 // 目線・同卓者（ページ全体の絞り込み）の代わり。数えるのは期間（直近n戦は全部）・上の四麻｜三麻・合計｜個人戦｜チーム戦
-let mup = null; // { kind: 'circle' | 'my', P: [人], pick: 人を選ぶ一覧を開いているか }
+let mup = null; // { kind: 'circle' | 'my', P: [人], back }
 function mupEntries() {
   if (mup.kind === 'circle') return Object.entries((circleData && circleData.games) || {}).map(([sid, ge]) => ({ sid, g: circleSess[sid],
     pidOf: m => { const st = ((ge && ge.seats) || {})[m]; return st && st.mid && rosterOf()[st.mid] ? st.mid : null; } })).filter(e => e.g && e.g.settings);
@@ -5454,15 +5452,15 @@ function openCircleMatchup(P, fromMember = null) {
   if (!circleData) return;
   const my = myCircleMid();
   P = (P || (my ? [my] : [])).filter((p, i, a) => rosterOf()[p] && a.indexOf(p) === i).slice(0, MUP_MAX);
-  mup = { kind: 'circle', P, pick: P.length < MUP_MAX, back: fromMember && rosterOf()[fromMember] ? fromMember : null };
+  mup = { kind: 'circle', P, back: fromMember && rosterOf()[fromMember] ? fromMember : null };
   renderMatchup();
 }
-function openMyMatchup(i) { const c = myPairCtx; if (!c || !c.keys[i]) return; mup = { kind: 'my', P: ['@me', c.keys[i]], pick: false }; renderMatchup(); }
+function openMyMatchup(i) { const c = myPairCtx; if (!c || !c.keys[i]) return; mup = { kind: 'my', P: ['@me', c.keys[i]] }; renderMatchup(); }
 // 選べるのは2人まで（3人以上は見せ方が変わって煩雑になるので、2026-10-08 ユーザー判断でやめた）
 const MUP_MAX = 2;
 function mupToggle(p) {
-  if (mup.P.includes(p)) { mup.P = mup.P.filter(x => x !== p); mup.pick = true; }
-  else if (mup.P.length < MUP_MAX) { mup.P = mup.P.concat([p]); if (mup.P.length >= MUP_MAX) mup.pick = false; }
+  if (mup.P.includes(p)) mup.P = mup.P.filter(x => x !== p);
+  else if (mup.P.length < MUP_MAX) mup.P = mup.P.concat([p]);
   renderMatchup();
 }
 function mupReopen() { if (mup) renderMatchup(); }
@@ -5481,10 +5479,11 @@ function renderMatchup() {
   const res = P.length >= 2 ? mupCompute(P) : null;
   // 選んでいる人（上の枠）と、足せる人（下の候補）を分ける
   const chips = P.map(p => `<span class="mu-p">${mupAvHtml(p)}<b>${esc(mupName(p))}</b>${edit ? `<button type="button" aria-label="${esc(mupName(p))}を外す" onclick="mupToggle('${p}')">×</button>` : ''}</span>`).join('');
-  const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}/${MUP_MAX}人）</span>${edit && P.length < MUP_MAX ? `<button type="button" class="mu-chg${mup.pick ? ' on' : ''}" onclick="mup.pick=!mup.pick;renderMatchup()">${mup.pick ? '選び終わる' : '人を足す'}</button>` : ''}</div>
+  const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}/${MUP_MAX}人）</span></div>
     <div class="mu-people">${chips || '<span class="mu-none">まだだれも選んでいません</span>'}</div></div>`;
   const cand = edit ? Object.entries(rosterOf()).filter(([m]) => !P.includes(m)).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')) : [];
-  const picker = edit && mup.pick && P.length < MUP_MAX ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます（2人まで。入れ替えるときは上の × で外す）</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
+  // 2人そろうまでは候補をいつも出す（「人を足す｜選び終わる」の切り替えは2026-10-08にやめた）。2人そろえば候補は消える
+  const picker = edit && P.length < MUP_MAX ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます（2人まで。入れ替えるときは上の × で外す）</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
   let body = '';
   if (!res) body = `<div class="mu-empty">2人を選ぶと、2人が同じ卓にいた試合だけで、どちらが勝ち越しているか・2人の成績・いっしょに打ったゲームが見られます。自分以外の人どうしも選べます。</div>`;
   else {
