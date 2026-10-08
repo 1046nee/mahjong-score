@@ -775,6 +775,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .flt.mp-pwrap { border-color: #1F2A28; background: #1F2A28; color: #fff; }
 .flt.mp-pwrap .ico { --i1: #fff; --i2: #fff; }
 .flt.mp-pwrap .flt-x { background: rgba(255,255,255,.22); color: #fff; }
+/* 期間を絞っている（すべての期間以外）ときは琥珀色＝絞り込み中だと一目でわかる（2026-10-08）。合計｜個人戦｜チーム戦の個人戦・チーム戦も同じ色 */
+.flt.mp-pwrap.on { border-color: #B8741A; background: #B8741A; }
 .flt-x { flex: none; width: 24px; height: 24px; margin-left: 4px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--pc-ink); font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; }
 .mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 359px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
@@ -1262,6 +1264,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sk-seg { display: flex; gap: 2px; padding: 3px; margin: -2px 0 10px; border-radius: 10px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); } /* 主色の淡い地＋選んだものは主色で塗る（2026-10-07 目立たせた） */
 .sk-seg button { flex: 1; border: 0; background: none; padding: 5px 0; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; color: var(--pc-ink); cursor: pointer; }
 .sk-seg button.on { background: var(--pc); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.sk-seg.filt { background: #FBF1E2; box-shadow: inset 0 0 0 1px #E9C99A; } .sk-seg.filt button { color: #7A4A0E; }
+.sk-seg.filt button.on { background: #B8741A; color: #fff; } /* 個人戦・チーム戦で絞っているとき（合計以外） */
 .sk-wrap .sk-seg { margin: 0 0 10px; }
 .sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
 .sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
@@ -3921,7 +3925,7 @@ function circleWithNames() { return circleWith.filter(m => rosterOf()[m]).map(ro
 function joinNames(ns) { return ns.length === 2 ? ns.join('と') : ns.join('・'); }
 function circleFilterText() {
   const w = circleWithNames();
-  return [periodLabel(), circleMode === '3' ? '三麻' : '四麻', w.length ? `${joinNames(w)}が参加した試合` : ''].filter(Boolean).join(' ・ ');
+  return [periodLabel(), circleMode === '3' ? '三麻' : '四麻', statKindText(), w.length ? `${joinNames(w)}が参加した試合` : ''].filter(Boolean).join(' ・ ');
 }
 // 見出しの下の1行。同卓者を選んでいれば「じろうとさぶろうが参加した試合のみ」（順位・成績表・対戦・過去の試合は、目線の人ではなく
 // 選んだ同卓者が全員出た試合で数える＝circleWithOk）。目線は結果の見え方が変わるタブ（過去の試合・対戦）でだけ書く
@@ -8271,7 +8275,7 @@ function buildMyStatsCanvas() {
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
   ctx.fillText('自分の成績', IMG_PAD, IMG_BAND / 2 - 8);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${periodLabel()} ・ ${fmtDate(new Date().toISOString())} 時点 ・ ${gamesRoundsText(st.groups.length, total)}`, IMG_PAD, IMG_BAND / 2 + 11, W / 2 + 40);
+  ctx.fillText(`${[periodLabel(), statKindText()].filter(Boolean).join(' ・ ')} ・ ${fmtDate(new Date().toISOString())} 時点 ・ ${gamesRoundsText(st.groups.length, total)}`, IMG_PAD, IMG_BAND / 2 + 11, W / 2 + 40);
   ctx.globalAlpha = 1;
   ctx.font = imgFont(13, true); ctx.textAlign = 'right';
   ctx.fillText(st.myNames.join('・'), W - IMG_PAD, IMG_BAND / 2, W / 2 - IMG_PAD);
@@ -11481,10 +11485,12 @@ let statKind = (() => { try { const v = localStorage.getItem(STAT_KIND_KEY); ret
 let statKindAvail = false;
 function isTeamGame(g) { const s = (g && g.settings) || {}; return !!(s.teamMode && s.teams); }
 function statKindOk(g) { return !statKindAvail || statKind === 'all' || (statKind === 'team') === isTeamGame(g); }
+// 画像の帯に書く成績の種類（チーム戦のゲームがある画面だけ。2026-10-08）
+function statKindText() { return statKindAvail ? { all: '合計（個人戦＋チーム戦）', ind: '個人戦のみ', team: 'チーム戦のみ' }[statKind] : ''; }
 function setStatKindAvail(games) { statKindAvail = (games || []).some(isTeamGame); }
 function statKindSegHtml() {
   if (!statKindAvail) return '';
-  return `<span class="sk-seg" role="tablist" aria-label="成績の種類">${[['all', '合計'], ['ind', '個人戦'], ['team', 'チーム戦']].map(([k, l]) =>
+  return `<span class="sk-seg${statKind !== 'all' ? ' filt' : ''}" role="tablist" aria-label="成績の種類">${[['all', '合計'], ['ind', '個人戦'], ['team', 'チーム戦']].map(([k, l]) =>
     `<button type="button" role="tab" class="${statKind === k ? 'on' : ''}" aria-selected="${statKind === k}" onclick="event.stopPropagation();setStatKind('${k}',this)">${l}</button>`).join('')}</span>`;
 }
 function setStatKind(k, el) {
