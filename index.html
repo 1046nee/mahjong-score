@@ -1101,7 +1101,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sw-wrap { margin: 10px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
-.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1px solid #D5DEDB; }
+.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1.5px solid #8A9AA5; } /* 下の線は濃いめのグレー（2026-10-08 目立たせた） */
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
 .sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
@@ -1548,9 +1548,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .seg.sm { margin: 0; }
 .seg.sm button { height: 34px; font-size: 13px; letter-spacing: -.2px; }
 /* 中身を切り替えるタブ（順位・成績表…／成績表・対戦成績・過去の試合）は下線のタブ。上の四麻｜三麻（地のある切り替え）と見分けがつくように（2026-10-08） */
-.seg.tabbar { padding: 4px; gap: 4px; background: #fff; border-radius: 14px; box-shadow: var(--sh-1); } /* 白い帯の上の、選ぶと主色で塗られるタブ（上の個人｜仲間ページの主色の下線・四麻｜三麻の灰色の切り替えと別の印象。2026-10-08） */
-.seg.tabbar button { height: 36px; border-radius: 10px; background: none; box-shadow: none; color: #5F6E6B; font-size: 14px; font-weight: 700; }
-.seg.tabbar button.on { background: var(--pc); box-shadow: none; color: #fff; font-weight: 800; } /* 主色で塗る（すぐ下の指標の黒いピルと被らないように） */
+.seg.tabbar { padding: 4px; gap: 4px; background: #fff; border-radius: 14px; box-shadow: var(--sh-1); } /* 白い帯の上の、選ぶと黒い字＋淡い地になるタブ（上の個人｜仲間ページの主色の下線・四麻｜三麻の灰色の切り替えと別の印象。2026-10-08） */
+.seg.tabbar button { height: 36px; border-radius: 10px; background: none; box-shadow: none; color: #8A9AA5; font-size: 14px; font-weight: 700; }
+.seg.tabbar button.on { background: #EEF2F1; box-shadow: none; color: #1F2A28; font-weight: 900; } /* 選んでいるタブはカードの見出し（通算順位など）と同じ黒い字＋淡い灰色の地（2026-10-08） */
 .seg.xs { display: inline-flex; align-self: flex-start; margin: 0 0 14px; padding: 2px; border-radius: 9px; } /* 縦並びの flex の中でも横に伸ばさない */
 .seg.xs button { flex: none; min-width: 56px; height: 26px; padding: 0 12px; border-radius: 7px; font-size: 13px; }
 .seg.xs button.on[data-np="3"], .sanma .seg button.on { color: #4261AA; }
