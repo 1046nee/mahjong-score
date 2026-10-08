@@ -1317,7 +1317,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-big { font-size: 18px; white-space: nowrap; text-align: right; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .sp-big.pos { color: #1A237E; } .sp-big.neg { color: #C62828; }
 .sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .sp-top .gk svg { width: 24px; height: 24px; }
-.sp-top .sp-gn { flex: 1; }
+.sp-top .sp-gn { flex: 0 1 auto; min-width: 0; }
+.sp-dn { flex: none; margin-left: 2px; padding: 0 7px; height: 18px; border-radius: 9px; background: var(--pc-tint); color: var(--pc-ink); font-size: 11px; font-style: normal; font-weight: 800; line-height: 18px; } /* 2日以上のゲームの「n日目」 */
 .sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
 /* 着順の回数はカードの全幅で1行（4つが改行しない） */
 .sp-cnts { display: flex; flex-wrap: nowrap; gap: 4px; margin-top: 6px; }
@@ -11838,9 +11839,13 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
     const tot = gameTotals(gDay), played = playedFlags(gDay);
     const rank = me != null && played[me] ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0) : null;
     const nP = played.filter(Boolean).length;
+    // 2日以上にわたるゲームは、この日が何日目か（2026-10-08）。年・月の単位のときは出さない
+    const days = gameDaysList(g), dI = days.indexOf(day.k);
+    // ゲームが1つなら日付の横に出すので、ここには出さない（狭い画面でゲーム名が隠れないように）
+    const dayTag = byG.size > 1 && days.length > 1 && dI >= 0 ? `<em class="sp-dn">${dI + 1}日目</em>` : '';
     return `<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
-        <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span></span>
+        <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
         <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
       <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}"><span class="sp-md">${rank <= 3 ? medalSvg(rank, 18, false) : ''}</span>${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
@@ -11848,7 +11853,10 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
       <span class="sp-cnts">${cnts}</span>
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
-  return `<span class="sp-tag">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}</span>
+  // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
+  const one = byG.size === 1 ? resultGameById([...byG.keys()][0]) : null;
+  const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
+  return `<span class="sp-tag">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
