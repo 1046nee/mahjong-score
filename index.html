@@ -10681,7 +10681,7 @@ function msCompareTableHtml(np, forImage = false) {
   // 列＝個人と仲間ページごと。仲間ページの成績表と同じ表（gridTableHtml）にする（2026-10-08）
   const L = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { ...m, key: k, label: k === 'all' ? '個人' : label,
     n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount } : null; }).filter(Boolean);
-  if (L.length < 2) return '';
+  if (!L.length) return ''; // 仲間ページが無くても「個人」1列で出す（個人ページの最初のタブ。2026-10-08）
   return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`);
 }
 function msCompareHtml(np) {
@@ -10690,7 +10690,7 @@ function msCompareHtml(np) {
   // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
   return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表（${np === 3 ? '三麻' : '四麻'}）</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
     ${statCondHtml('mine')}${t}
-    <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
+    <div class="ms-note">${(t.match(/<th title=/g) || []).length > 1 ? '個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。' : '自分を選んだすべての試合の成績。仲間ページに試合を入れると、仲間ページごとの列が並びます。'}</div></div>`;
 }
 // くらべる表だけの画像（上の帯に「くらべる（四麻）」と条件・日付、下に majasco.jp）
 function buildCompareCanvas(np) {
@@ -12012,11 +12012,11 @@ function renderHistory() {
   refreshHistoryGames();
 }
 // 点数の欄の下の［過去の試合｜相手｜くらべる］。既定は過去の試合。くらべる（個人と仲間ページの成績の表）は、くらべる相手がいるときだけ
-let mpPane = null; // 'hist' | 'h2h' | 'sum'（くらべる）。null＝過去の試合
+let mpPane = null; // 'hist' | 'h2h' | 'sum'（成績表）。null＝成績表（成績が無ければ過去の試合）
 function curMpPane(st, cmp) {
   if (mpSelecting) return 'hist';
   if (mpPane === 'sum' && !cmp) return 'hist';
-  return mpPane || 'hist';
+  return mpPane || (cmp ? 'sum' : 'hist'); // 既定は成績表（成績が無いときは過去の試合。2026-10-08）
 }
 function setMpPane(k) { mpPane = k; renderMpPanes(collectMyStats()); }
 function renderMpPanes(st) {
@@ -12024,7 +12024,7 @@ function renderMpPanes(st) {
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   const pane = curMpPane(st, cmp);
-  const tabs = [['hist', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', '成績表']] : []);
+  const tabs = (cmp ? [['sum', '成績表']] : []).concat([['h2h', '対戦成績'], ['hist', '過去の試合']]); // 左から 成績表・対戦成績・過去の試合（2026-10-08）
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
     `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
   // 過去の試合のすぐ上の1行: 小さい期間のピル（上の期間と同じもの）＋「＋ 追加」「まとめて送る」（2026-10-07 縦に長くしないよう1行に）

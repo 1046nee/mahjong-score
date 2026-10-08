@@ -482,9 +482,9 @@ def main():
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
         tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
         stats_txt = pg.evaluate("document.getElementById('mp-stats').innerText")
-        shown = pg.evaluate("document.getElementById('mp-pane-hist').style.display !== 'none'")
-        results.append(("[10a2] 成績カードのすぐ下に素点・順位点・最高/最低点数などの欄、その下に［過去の試合｜対戦成績］（最初は過去の試合）。ホーム画面に追加の案内は無い", True,
-                        all(w in stats_txt for w in ["素点", "順位点", "最高点数", "最低点数", "箱下"]) and all(w in tabs for w in ["過去の試合", "対戦成績"]) and shown
+        shown = pg.evaluate("document.getElementById('mp-pane-hist').style.display === 'none' && document.getElementById('mp-pane-sum').innerText.includes('成績表')")
+        results.append(("[10a2] 成績カードのすぐ下に素点・順位点・最高/最低点数などの欄、その下に［成績表｜対戦成績｜過去の試合］（最初は成績表）。ホーム画面に追加の案内は無い", True,
+                        all(w in stats_txt for w in ["素点", "順位点", "最高点数", "最低点数", "箱下"]) and tabs.replace(chr(10), '').replace(' ', '').startswith('成績表対戦成績過去の試合') and shown
                         and "ホーム画面に追加" not in pg.evaluate("document.getElementById('mp-me').innerText")))
         # 過去の試合の行を押すと、画面を移らずに結果のシート（総合順位・試合ごとのスコア）。閉じればマイページのまま
         pg.evaluate("window.scrollTo(0, 300)")
