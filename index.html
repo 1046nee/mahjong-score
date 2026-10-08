@@ -99,7 +99,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .login-note a { color: #177083; }
 .login-local { margin-top: 12px; padding: 9px 12px; background: #fff8e6; border: 1px solid #f2e3b3; border-radius: 10px; font-size: 12px; color: #8a6d1a; line-height: 1.7; }
 /* ゲーム設定画面だけ左上に表示する「戻る」ボタン */
-.header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: none; background: #f0f5f4; color: var(--pc); font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
+.header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #C3CECB; background: #F4F7F6; color: #1F2A28; /* シートの×・戻ると同じトーン（2026-10-08） */ font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
 
 /* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
 .page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
@@ -743,6 +743,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 
 /* ==== マイページ 2026-09-29: 成績が最初・四麻と三麻を別カード・期間・打った日・まとめて送る/取り込む ==== */
 .mp-bar { display: flex; align-items: center; gap: 10px; margin: 12px 16px 0; }
+.acct-who { display: flex; flex-direction: column; gap: 2px; margin: 0 2px 12px; } .acct-who b { font-size: 16px; font-weight: 900; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .acct-who small { font-size: 12px; color: #5F6E6B; }
 .mp-bar .mp-av { width: 38px; height: 38px; border-radius: 50%; flex: none; display: grid; place-items: center; overflow: hidden; background: var(--pc); color: #fff; font-size: 16px; font-weight: 900; }
 .mp-bar .mp-av img { width: 100%; height: 100%; object-fit: cover; }
 .mp-bar .mp-who { flex: 1; min-width: 0; }
@@ -1103,7 +1104,15 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cal-m.today { outline: 2px solid #E3B341; outline-offset: -2px; } /* 今年・今月（月の今日と同じ枠） */
 .cg-sub.cg-flow { display: block; white-space: normal; overflow-wrap: anywhere; line-height: 1.6; }
 .cg-row .gm-date span { font-size: 9px; white-space: nowrap; }
-.sw-wrap { margin: 10px 0 0; }
+.sw-wrap { margin: 4px 0 0; } /* ヘッダーのすぐ下（名前とアイコンの帯はやめた。2026-10-08） */
+/* 切り替えの下の見出し（個人／仲間ページ）: 1行目＝名前と操作、その下に四麻・三麻の数。どちらも同じ高さ（2026-10-08） */
+.pg-head { padding: 10px 16px 0; }
+.pg-top { display: flex; align-items: center; gap: 10px; height: 30px; }
+.pg-top h1 { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; margin: 0; font-size: 18px; font-weight: 900; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-top h1 .ico { flex: none; --i1: var(--pc); --i2: var(--pc-soft); }
+.pg-head #circle-actions { margin: 0; }
+.pg-head #circle-title { display: block; font-size: 20px; font-weight: 900; line-height: 30px; -webkit-line-clamp: unset; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
+.pg-head .cc-rows { margin: 4px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
 .sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1.5px solid #8A9AA5; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scroll-snap-type: x proximity; scroll-padding: 0 16px; } /* 仲間ページが多くても指で横にすべらせて選べる（2026-10-08） */
@@ -2119,7 +2128,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="global-header">
     <button type="button" class="header-back" id="header-back" aria-label="前のページに戻る">‹</button>
     <span class="global-logo" onclick="goHome()"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></span>
-    <button type="button" class="hdr-acct" id="hdr-acct" onclick="goMyPage()" aria-label="ログイン">ログイン</button>
+    <button type="button" class="hdr-acct" id="hdr-acct" onclick="hdrAcctClick()" aria-label="ログイン">ログイン</button>
   </div>
 </div>
 <div id="sync-bar" class="sync-bar" hidden aria-live="polite"></div>
@@ -2674,6 +2683,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-history" class="view">
   <div id="account-card" class="mp-bar" style="display:none"></div>
   <div id="hist-circles" class="sw-wrap"></div>
+  <div class="pg-head" id="mp-head"></div>
   <div id="mp-me">
     <div id="mp-stats"></div>
     <div id="mp-pane-filt" class="mp-pane-in low-filt"></div>
@@ -2713,11 +2723,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-circle" class="view">
   <div id="circle-acct" class="mp-bar" style="display:none"></div>
   <div id="circle-switch" class="sw-wrap"></div>
-  <div id="circle-top"></div>
-  <div class="page-title-row ch-title-row">
-    <div class="ch-top"><h1 id="circle-title">仲間ページ</h1><div class="title-actions" id="circle-actions"></div></div>
-    <div class="ch-meta"><div id="circle-sub"></div></div>
+  <div class="pg-head" id="circle-head">
+    <div class="pg-top"><h1 id="circle-title">仲間ページ</h1><div class="title-actions" id="circle-actions"></div></div>
+    <div id="circle-sub"></div>
   </div>
+  <div id="circle-top"></div>
   <div class="detail-body" id="circle-body"></div>
 </div>
 
@@ -3372,6 +3382,10 @@ function renderHeaderAccount() {
   }
 }
 // ヘッダーのボタン・試合の画面の下のリンク: ログイン中はマイページ、未ログインはログイン画面
+function hdrAcctClick() {
+  if (currentUser && ['history', 'circle', 'mystats'].includes(activeViewName())) { openMpMenu(); return; }
+  goMyPage();
+}
 function goMyPage() {
   if (activeGame) leaveGame();
   showView(currentUser || !loginAvailable() ? 'history' : 'login');
@@ -4079,13 +4093,13 @@ function renderCircle() {
   document.getElementById('circle-title').textContent = circleData.name || '仲間ページ';
   const roleLabel = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[role] || (currentUser ? '閲覧中' : '閲覧中（ログインなし）');
   const meMid = myCircleMid();
-  document.getElementById('circle-sub').innerHTML = circleCountsHtml(gids) + `<span class="ch-who"><span class="ch-role">あなた：${esc(roleLabel)}</span>`
-    + (meMid ? `<span class="ch-me">名簿のあなた：<b>${esc(rosterName(meMid))}</b>${circleBadge(roster[meMid], meMid)}</span>` : '') + '</span>';
+  document.getElementById('circle-sub').innerHTML = circleCountsHtml(gids); // 必要な数だけ（立場・名簿のあなたは出さない。2026-10-08 見出しをコンパクトに）
   // 操作は連絡先アプリ風のタイル（結果のリンク／招待／設定）。招待・設定はメンバーだけ
   document.getElementById('circle-actions').innerHTML =
     `<button type="button" class="ch-act" onclick="openCircleShare()">${ico('share', 14)}共有</button>` +
     (role ? `<button type="button" class="ch-act" onclick="openCircleSettings()">${ico('gear', 14)}設定</button>` : '');
   document.getElementById('circle-switch').innerHTML = currentUser ? mpSwitchHtml(circleId) : '';
+  swShowOn('circle-switch');
   let html = '';
   // 立場ごとの案内
   if (!currentUser && loginAvailable() && circleJoinCode) {
@@ -5806,6 +5820,32 @@ function renderCircleSection() {
   const el = document.getElementById('hist-circles');
   if (!el) return;
   el.innerHTML = mpSwitchHtml('me');
+  swShowOn('hist-circles');
+  renderMpHead();
+}
+// 仲間ページが多くて切り替えが横に長いとき、選んでいる項目が見えるところまで横に送る（ページは動かさない）
+function swShowOn(id) {
+  const row = document.querySelector(`#${id} .sw-row`), on = row && row.querySelector('.sw-chip.on');
+  if (!row || !on) return;
+  const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;
+  if (l < row.scrollLeft || r > row.scrollLeft + row.clientWidth) row.scrollLeft = Math.max(0, l - 16);
+}
+// 個人の見出し: 「個人」と、自分が出た四麻・三麻のゲーム数・試合数（仲間ページの見出しと同じ形・同じ高さ）
+function renderMpHead() {
+  const el = document.getElementById('mp-head');
+  if (!el) return;
+  if (!currentUser) { el.innerHTML = ''; return; }
+  const c = { 4: { g: 0, r: 0 }, 3: { g: 0, r: 0 } };
+  (appState.games || []).forEach(g => {
+    const t = tagOf(g.id);
+    if (!g.settings || t.role === 'watch' || t.me == null) return;
+    const np = g.settings.numPlayers === 3 ? 3 : 4, me = t.me;
+    const n = (g.rounds || []).filter(r => roundMembers(r, g.settings).includes(me)).length;
+    if (!n) return;
+    c[np].g++; c[np].r += n;
+  });
+  const row = np => `<span class="cc-row${c[np].g ? '' : ' none'}"><span class="gk k${np} cc-k">${kindSvg(np, 16)}</span><b>${np === 3 ? '三麻' : '四麻'}</b>${c[np].g ? gamesRoundsText(c[np].g, c[np].r) : 'まだありません'}</span>`;
+  el.innerHTML = `<div class="pg-top"><h1>${ico('person', 18)}個人</h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
 }
 function openCircleEntryMenu() {
   document.getElementById('form-modal-title').textContent = '仲間ページ';
@@ -12688,7 +12728,7 @@ function renderAccountCard() { ['account-card', 'circle-acct'].forEach(renderAcc
 function renderAccountBar(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (!loginAvailable() || !currentUser) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = 'none'; el.innerHTML = ''; return; // 名前とアイコンの帯・歯車はやめた（ログアウトはヘッダー右上のマイページから。2026-10-08）
   el.style.display = '';
   const who = String(currentUser.displayName || currentUser.email || 'Googleアカウント');
   const ini = esc(avInitial(who)).replace(/'/g, '');
@@ -12699,8 +12739,10 @@ function renderAccountBar(id) {
     <button type="button" class="mp-gear" aria-label="設定" onclick="openMpMenu()">${ico('gear', 20)}</button>`;
 }
 function openMpMenu() {
-  document.getElementById('form-modal-title').textContent = '設定';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-group">${
+  const who = currentUser ? String(currentUser.displayName || currentUser.email || 'Googleアカウント') : '';
+  const mail = currentUser && currentUser.email && currentUser.email !== who ? currentUser.email : '';
+  document.getElementById('form-modal-title').textContent = 'アカウント';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${who ? `<div class="acct-who"><b>${esc(who)}</b>${mail ? `<small>${esc(mail)}</small>` : ''}<small>Googleでログイン中</small></div>` : ''}<div class="mn-group">${
     menuBtnHtml('phoneAdd', 'ホーム画面に追加', 'アプリのように1タップで開けます', 'closeFormModal();showInstallHelp()')}</div>
     <div class="mn-group">${menuBtnHtml('person', 'ログアウト', '記録はアカウントに残ります', 'closeFormModal();confirmSignOut()', 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;

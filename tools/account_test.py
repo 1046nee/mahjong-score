@@ -478,7 +478,8 @@ def main():
         pg.evaluate("showView('history')")
         pg.wait_for_timeout(300)
         top = pg.evaluate("document.getElementById('mp-me').firstElementChild.innerText")
-        bar = pg.evaluate("document.getElementById('account-card').innerText")
+        # 名前とアイコンの帯はやめた（2026-10-08）。名前とログアウトはヘッダー右上のマイページを押したメニューに
+        bar = pg.evaluate("(() => { hdrAcctClick(); const t = document.getElementById('form-modal-body').innerText; closeFormModal(); return t.includes('ログアウト') && document.getElementById('account-card').style.display === 'none' && document.getElementById('mp-head').innerText.includes('個人') ? t : ''; })()")
         results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）", True,
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
         tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
