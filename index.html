@@ -641,6 +641,23 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .org-name { font-size: 13px; font-weight: 700; color: #333; overflow-wrap: anywhere; }
 .org-meta { font-size: 11px; color: #8a9aa5; }
 .org-row select { width: 100%; margin-top: 6px; }
+/* 仲間ページの設定のメンバー（2026-10-08）: 頭文字・名簿の名前（1行）とGoogleアカウント名・右に権限（ピル／選ぶ） */
+.cs-h { display: flex; align-items: baseline; gap: 6px; margin: 14px 2px 4px; font-size: 15px; font-weight: 800; color: #1F2A28; } .cs-h small { font-size: 12px; font-weight: 700; color: #6B7A77; }
+.cs-note { margin: 0 2px 8px; font-size: 12px; color: #5F6E6B; line-height: 1.6; }
+.cs-list { background: #fff; border-radius: 14px; box-shadow: var(--sh-1); padding: 2px 12px; }
+.cs-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #EEF2F1; } .cs-row:first-child { border-top: 0; }
+.cs-av { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 900; }
+.cs-who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cs-who b { font-size: 14px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-who b em { margin-left: 6px; padding: 0 6px; border-radius: 8px; background: var(--pc-tint); color: var(--pc-ink); font-size: 10.5px; font-style: normal; font-weight: 800; vertical-align: 1px; }
+.cs-who b em.un { background: #FFF3E0; color: #8A5300; }
+.cs-who small { font-size: 11px; color: #6B7A77; line-height: 1.4; overflow-wrap: anywhere; } /* Googleアカウント名は全部見えるように（長ければ折り返す。名前は1行のまま） */
+.cs-who b { display: flex; align-items: center; min-width: 0; } .cs-who b > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; } .cs-who b em { flex: none; }
+.cs-pill { flex: none; padding: 0 10px; height: 26px; line-height: 26px; border-radius: 13px; background: #EEF2F1; color: #33413E; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.cs-pill.owner { background: var(--pc); color: #fff; } .cs-pill.admin { background: var(--pc-tint); color: var(--pc-ink); }
+select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; text-overflow: clip; border: 1.5px solid #C3CECB; border-radius: 15px; background-color: #F4F7F6; color: #1F2A28; font-size: 12.5px; font-weight: 800; margin: 0; }
+.cs-roles { margin-top: 10px; font-size: 12px; color: #4F5C5A; line-height: 1.6; } .cs-roles summary { cursor: pointer; font-weight: 800; color: var(--pc); }
+.cs-roles div { margin-top: 4px; } .cs-roles b { display: inline-block; min-width: 6.5em; color: #1F2A28; }
 /* チーム戦（フェーズ3）: チーム編成エディタ */
 .team-box { border: 1.5px solid #ddd; border-radius: 10px; padding: 10px; margin-bottom: 8px; background: #fff; }
 .team-box.drag-over { border-color: var(--pc); background: var(--pc-tint); }
@@ -3895,6 +3912,7 @@ function stopCircle() {
   if (circleRef && circleCb) circleRef.off('value', circleCb);
   circleRef = null; circleCb = null;
 }
+function myGoogleName() { return currentUser ? String(currentUser.displayName || currentUser.email || '').slice(0, 60) : ''; }
 async function loadCircleMembers() {
   circleMembers = null; circleSecret = null;
   if (!currentUser || !circleId) return;
@@ -3903,6 +3921,12 @@ async function loadCircleMembers() {
     const m = s.val() || {};
     circleMembers = m[myUid()] ? m : null;
   } catch (e) { circleMembers = null; } // メンバーでなければルールで読めない＝見るだけ
+  // 自分のGoogleアカウント名が無い・変わっていたら書いておく（設定の画面で、名簿の人とアカウントの対応を見せる。2026-10-08）
+  const gn = myGoogleName();
+  if (circleMembers && gn && circleMembers[myUid()].gname !== gn) {
+    circleMembers[myUid()].gname = gn;
+    db.ref(`circleMembers/${circleId}/${myUid()}/gname`).set(gn).catch(() => {});
+  }
   if (circleMembers) {
     try { circleSecret = ((await db.ref('circleSecrets/' + circleId).once('value')).val() || {}).code || null; } catch (e) {}
   }
@@ -5623,28 +5647,45 @@ function openCircleShare() {
 }
 let circleViewMsg = '';
 function openCircleInvite() { openCircleShare(); }
+// 仲間ページの設定（2026-10-08 作り直し）: 名前・メンバーと権限（名簿の名前＋Googleアカウント名・権限のピル）・参加コード・抜ける。
+// できること: 作成者＝すべて／管理者＝作成者以外のメンバーの権限を変える・外す・参加コードを作り直す／編集メンバー＝見るだけ（自分が抜ける）
+const ROLE_LABEL = { owner: '作成者', admin: '管理者', editor: '編集メンバー' };
 async function openCircleSettings() {
   if (!circleRole()) return;
   await loadCircleMembers();
-  const owner = circleRole() === 'owner';
-  const members = Object.entries(circleMembers || {}).sort((a, b) => ({ owner: 0, admin: 1, editor: 2 }[a[1].role] - { owner: 0, admin: 1, editor: 2 }[b[1].role]));
+  const myRole = circleRole(), canManage = isCircleAdmin();
+  const members = Object.entries(circleMembers || {}).sort((a, b) => ({ owner: 0, admin: 1, editor: 2 }[a[1].role] - { owner: 0, admin: 1, editor: 2 }[b[1].role])
+    || (a[0] === myUid() ? -1 : b[0] === myUid() ? 1 : 0));
   const memberRows = members.map(([uid, m]) => {
-    const label = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[m.role];
-    const who = esc(m.mid && rosterOf()[m.mid] ? rosterName(m.mid) : (m.name || 'メンバー'));
-    const ctl = owner && m.role !== 'owner'
-      ? `<select onchange="setCircleRole('${uid}',this.value)"><option value="editor"${m.role === 'editor' ? ' selected' : ''}>編集メンバー</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>管理者</option><option value="remove">外す</option></select>`
-      : `<span class="org-meta">${label}</span>`;
-    return `<div class="org-row" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="org-name">${who}${uid === myUid() ? '（あなた）' : ''}</span>${ctl}</div>`;
+    const rn = m.mid && rosterOf()[m.mid] ? rosterName(m.mid) : '';
+    const nm = rn || m.name || 'メンバー';
+    const av = m.mid && rosterOf()[m.mid] ? avColor(m.mid) : '#AEBBB8';
+    const rg = m.mid && rosterOf()[m.mid] ? rosterOf()[m.mid].gname : ''; // 本人確認のときに名簿に控えたGoogleの表示名
+    const gacct = m.gname || rg ? esc(m.gname || rg) : '（まだ開いていません）';
+    const me = uid === myUid();
+    // 権限を変えられるのは、作成者・管理者が、作成者以外の自分でない人に対して
+    const ctl = canManage && m.role !== 'owner' && !me
+      ? `<select class="cs-role" aria-label="${esc(nm)}の権限" onchange="setCircleRole('${uid}',this.value)"><option value="editor"${m.role === 'editor' ? ' selected' : ''}>編集メンバー</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>管理者</option><option value="remove">外す…</option></select>`
+      : `<span class="cs-pill ${m.role}">${ROLE_LABEL[m.role] || ''}</span>`;
+    return `<div class="cs-row"><span class="cs-av" style="background:${av}">${esc(avInitial(nm))}</span>
+      <span class="cs-who"><b><span>${esc(nm)}</span>${me ? '<em>あなた</em>' : ''}${rn ? '' : '<em class="un">未連携</em>'}</b><small>Google：${gacct}</small></span>${ctl}</div>`;
   }).join('');
+  const can = canManage
+    ? (myRole === 'owner' ? 'あなたは作成者です。メンバーの権限を変えたり外したり、参加コードを作り直したりできます。' : 'あなたは管理者です。作成者以外のメンバーの権限を変えたり外したり、参加コードを作り直したりできます。')
+    : 'あなたは編集メンバーです。試合の追加・名前の連携・名簿の編集ができます。メンバーの管理は作成者・管理者が行います。';
   document.getElementById('form-modal-title').textContent = '仲間ページの設定';
-  document.getElementById('form-modal-body').innerHTML = `
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body cs-sheet">
     <div class="field"><label>仲間ページの名前</label><div style="display:flex;gap:6px"><input type="text" id="cs-name" value="${esc(circleData.name || '')}" maxlength="${MAX_GROUP_LEN}" style="flex:1;min-width:0"><button type="button" class="edit-tab" onclick="renameCircle()">変更</button></div></div>
-    <div class="card-title" style="margin:10px 0 4px">メンバーと権限</div>
-    <div class="org-meta" style="margin-bottom:4px">管理者は、本人が連携した試合や本人確認済みの人の名前も変更できます。${owner ? '権限は作成者だけが変えられます。' : ''}</div>
-    ${memberRows}
-    ${owner ? `<button class="auto-btn sub" style="margin-top:10px" onclick="regenerateCircleCode()">参加コードを作り直す（古い招待リンクは使えなくなります）</button>` : ''}
-    ${owner ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
-    <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
+    <div class="cs-h">メンバーと権限<small>${members.length}人</small></div>
+    <div class="cs-note">${can}</div>
+    <div class="cs-list">${memberRows}</div>
+    <details class="cs-roles"><summary>権限ごとにできること</summary>
+      <div><b>作成者</b>すべて（管理者を決める・メンバーを外す・参加コードの作り直し・アイコンの色）</div>
+      <div><b>管理者</b>作成者以外のメンバーの権限を変える・外す・参加コードの作り直し。本人が連携した試合や確認済みの人の名前も直せる</div>
+      <div><b>編集メンバー</b>試合の追加・名前の連携・名簿の編集（本人が連携・確認した所は変えられない）</div></details>
+    ${canManage ? `<button class="auto-btn sub" style="margin-top:12px" onclick="regenerateCircleCode()">参加コードを作り直す（古い招待リンクは使えなくなります）</button>` : ''}
+    ${myRole === 'owner' ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
 async function renameCircle() {
@@ -5673,7 +5714,7 @@ async function setCircleRole(uid, role) {
     }
     showToast('変更しました');
     openCircleSettings();
-  } catch (e) { showToast('変更できませんでした（作成者だけが変更できます）'); }
+  } catch (e) { showToast('変更できませんでした（作成者・管理者だけが変更できます）'); }
 }
 async function issueInviteCode(cid, oldCode) {
   let code = null;

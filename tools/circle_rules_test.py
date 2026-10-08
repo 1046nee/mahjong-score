@@ -126,6 +126,22 @@ def main():
             "at": now, "name": "二重", "addedBy": B["uid"], "addedByName": "びー", "addedAt": now}))
         check("B: 自分の役割を管理者に上げられない", False, op(B, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))
         check("A（作成者）: Bを管理者にできる", True, op(A, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))
+        # 管理者はメンバーの管理（作成者以外の役割を変える・外す）と参加コードの作り直しができる。編集メンバーはできない（2026-10-08）
+        check("C: 正しい参加コードで編集メンバーとして参加できる", True, op(C, "PUT", f"circleMembers/{cid}/{C['uid']}", {"role": "editor", "name": "C", "joinedAt": now, "code": code, "gname": "Cのアカウント"}))
+        check("C（編集メンバー）: 自分のGoogleアカウント名を書ける", True, op(C, "PUT", f"circleMembers/{cid}/{C['uid']}/gname", "Cのアカウント2"))
+        check("C（編集メンバー）: 他人（管理者B）の役割を変えられない", False, op(C, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "editor"))
+        check("C（編集メンバー）: 他人（管理者B）を外せない", False, op(C, "DELETE", f"circleMembers/{cid}/{B['uid']}"))
+        check("C（編集メンバー）: 参加コードを作り直せない", False, op(C, "PUT", f"circleSecrets/{cid}", {"code": rnd(8, CODE_CHARS)}))
+        check("B（管理者）: Cを管理者にできる", True, op(B, "PUT", f"circleMembers/{cid}/{C['uid']}/role", "admin"))
+        check("B（管理者）: Cを編集メンバーに戻せる", True, op(B, "PUT", f"circleMembers/{cid}/{C['uid']}/role", "editor"))
+        check("B（管理者）: だれかを作成者にはできない", False, op(B, "PUT", f"circleMembers/{cid}/{C['uid']}/role", "owner"))
+        check("B（管理者）: 他人のGoogleアカウント名は書き換えられない", False, op(B, "PUT", f"circleMembers/{cid}/{C['uid']}/gname", "なりすまし"))
+        check("B（管理者）: 作成者Aは外せない", False, op(B, "DELETE", f"circleMembers/{cid}/{A['uid']}"))
+        code2 = rnd(8, CODE_CHARS)
+        check("B（管理者）: 参加コードを作り直せる（新しいコード・控え・古いコードを消す）", True,
+              op(B, "PUT", f"circleInvites/{code2}", cid) and op(B, "PUT", f"circleSecrets/{cid}", {"code": code2}) and op(B, "DELETE", f"circleInvites/{code}"))
+        code = code2
+        check("B（管理者）: Cを外せる", True, op(B, "DELETE", f"circleMembers/{cid}/{C['uid']}"))
         check("B（管理者）: 本人が結びつけた席も変えられる", True, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/0", {"mid": m1, "by": B["uid"], "byName": "びー", "at": now, "self": False}))
         check("B（管理者）: 本人登録された人の名前も変えられる", True, op(B, "PUT", f"circles/{cid}/roster/{m1}/name", "エー"))
         check("A（作成者）: 名簿の人のアイコンの色を決められる", True, op(A, "PUT", f"circles/{cid}/roster/{m2}/color", "#1565C0"))

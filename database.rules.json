@@ -247,9 +247,10 @@
       "$cid": {
         ".read": "auth != null && data.child(auth.uid).exists()",
         "$uid": {
-          ".write": "auth != null && (root.child('circles').child($cid).child('owner').val() === auth.uid || ($uid === auth.uid && ((!data.exists() && newData.child('role').val() === 'editor' && newData.child('code').isString() && root.child('circleInvites').child(newData.child('code').val()).val() === $cid) || (data.exists() && newData.exists() && newData.child('role').val() === data.child('role').val()) || (data.exists() && !newData.exists()))))",
+          ".write": "auth != null && (root.child('circles').child($cid).child('owner').val() === auth.uid || ($uid === auth.uid && ((!data.exists() && newData.child('role').val() === 'editor' && newData.child('code').isString() && root.child('circleInvites').child(newData.child('code').val()).val() === $cid) || (data.exists() && newData.exists() && newData.child('role').val() === data.child('role').val()) || (data.exists() && !newData.exists()))) || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin' && data.exists() && !newData.exists() && data.child('role').val() !== 'owner'))",
           ".validate": "newData.hasChildren(['role', 'name', 'joinedAt'])",
           "role": {
+            ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin' && data.exists() && data.val() !== 'owner' && newData.exists() && newData.val() !== 'owner'",
             ".validate": "newData.isString() && newData.val().matches(/^(owner|admin|editor)$/) && (newData.val() !== 'owner' || root.child('circles').child($cid).child('owner').val() === $uid)"
           },
           "name": {
@@ -264,6 +265,9 @@
           "mid": {
             ".validate": "newData.isString() && newData.val().length <= 12"
           },
+          "gname": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
           "$other": {
             ".validate": false
           }
@@ -273,7 +277,7 @@
     "circleSecrets": {
       "$cid": {
         ".read": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).exists()",
-        ".write": "auth != null && root.child('circles').child($cid).child('owner').val() === auth.uid",
+        ".write": "auth != null && (root.child('circles').child($cid).child('owner').val() === auth.uid || root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin')",
         "code": {
           ".validate": "newData.isString() && newData.val().matches(/^[A-HJ-NP-Z2-9]{8}$/)"
         },
@@ -285,7 +289,7 @@
     "circleInvites": {
       "$code": {
         ".read": true,
-        ".write": "auth != null && ((!data.exists() && newData.isString() && root.child('circles').child(newData.val()).child('owner').val() === auth.uid) || (data.exists() && !newData.exists() && root.child('circles').child(data.val()).child('owner').val() === auth.uid))",
+        ".write": "auth != null && ((!data.exists() && newData.isString() && (root.child('circles').child(newData.val()).child('owner').val() === auth.uid || root.child('circleMembers').child(newData.val()).child(auth.uid).child('role').val() === 'admin')) || (data.exists() && !newData.exists() && (root.child('circles').child(data.val()).child('owner').val() === auth.uid || root.child('circleMembers').child(data.val()).child(auth.uid).child('role').val() === 'admin')))",
         ".validate": "$code.matches(/^[A-HJ-NP-Z2-9]{8}$/) && newData.isString() && newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/)"
       }
     },

@@ -629,6 +629,10 @@
   1人が複数の仲間ページを持てる。1つの試合を複数の仲間ページに入れてもよい
 - **立場**: 見る人（閲覧リンク `#c=ID`・ログイン不要・LINEの中でもOK）／編集メンバー（ログイン＋招待リンクか参加コードで参加）／
   管理者（作成者が任命）／作成者。**点数入力（sessions）は今までどおり誰でもログインなし**。ログインが要るのは仲間ページへの追加から先だけ
+- **権限ごとにできること**（2026-10-08 ユーザー要望で管理者に広げた・ルールは `circleMembers`／`circleSecrets`／`circleInvites`、テストは circle_rules_test）:
+  作成者＝すべて（アイコンの色も）／**管理者＝作成者以外のメンバーの権限を変える（編集メンバー⇄管理者）・外す・参加コードの作り直し**、本人が連携した席や確認済みの人の名前も直せる／編集メンバー＝試合の追加・連携・名簿の編集（メンバーの管理はできない）。だれも人を作成者にはできない
+- **仲間ページの設定**（`openCircleSettings`・2026-10-08 作り直し）: 名前の変更 → 「メンバーと権限 n人」＋自分の権限の説明 → 白いカードにメンバーの行（頭文字・**名簿の名前は1行（長ければ「…」）**・「あなた」「未連携」の札・**その下に Googleアカウントの表示名**（全部見えるよう折り返す）・右に権限：作成者／管理者が作成者以外の他人を見ると選ぶ（`select.cs-role`・120px：編集メンバー／管理者／外す…）、それ以外はピル）→ 「権限ごとにできること」（たたみ）→ 参加コードを作り直す（作成者・管理者）→ 抜ける（作成者以外）。
+  Googleの表示名は `circleMembers/{cid}/{uid}/gname`（本人が仲間ページを開いたときに書く＝`loadCircleMembers`）。無ければ本人確認のときに名簿に控えた `roster/{mid}/gname`、どちらも無ければ「（まだ開いていません）」
 - データ（ルールは docs/site-spec.md）:
   - `circles/{cid}` = { id, name, createdAt, owner, roster: {mid: {name, at, uid?}}, games: {sid: {at, name, addedBy, addedByName, addedAt, seats: {席: {mid, by, byName, at, self}}}}, log }
   - `circleMembers/{cid}/{uid}` = { role: owner|admin|editor, name, joinedAt, code?, mid? }（メンバーだけが読める）
