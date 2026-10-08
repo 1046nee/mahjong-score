@@ -1055,7 +1055,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .cg-head { align-items: center; margin-bottom: 0; }
 .cg-tab .hist-kinds { margin-top: 6px; }
 /* 過去の試合・対戦成績のカード（個人と仲間ページで同じ形。2026-10-07） */
-.card-head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.card-head-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; min-height: 30px; } /* 右の「画像」（30px）が出ないとき（相手がいない対戦成績など）も同じ高さ＝タブを切り替えても下が動かない（2026-10-08） */
 .card-head-row .card-title { margin-bottom: 0; flex: none; }
 .hist-card, .my-h2h { margin-top: 12px; }
 .hist-card #hist-head { margin: 0; }
@@ -1304,7 +1304,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .mc-trend-h { display: flex; justify-content: space-between; align-items: baseline; }
 .mc-trend-h small { font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .mc-trend-h { align-items: center; }
-.ms-h-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ms-h-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; }
 .ms-card .mc-cond { margin: 0 0 8px; }
 .mc-cond { display: block; margin: -4px 0 8px; font-size: 11.5px; font-weight: 700; color: #5F6E6B; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 条件：すべての期間・… */
 /* 成績カードのまとまりと、その下（過去の試合・相手・仲間ページの中身）を分ける線 */
@@ -10869,7 +10869,7 @@ function h2hGridHtml(row, keys, nameOf, avOf, clickOf = null, lvBase = 1) {
 function h2hEmptyBodyHtml(name, rerender, others = null) {
   // others＝相手として並べる人（仲間ページは名簿の人。個人は相手が分からないので出さない）
   const grid = others && others.length ? h2hEmptyGridHtml(others, rosterName, avColor) : '';
-  return `<div class="hg-total"><span><b>${esc(name)}</b> の直接対決の合計</span><span style="color:#8A9AA5"><b>—</b>勝 <b>—</b>敗・勝率 <b>—</b>・相手0人</span></div>${h2hSortSegHtml(rerender)}${grid}`;
+  return `<div class="hg-total"><span><b>${esc(name)}</b> の直接対決の合計</span><span style="color:#8A9AA5"><b class="w" style="color:inherit">—</b>勝 <b class="l" style="color:inherit">—</b>敗・勝率 <b>—</b>・相手0人</span></div>${h2hSortSegHtml(rerender)}${grid}`;
 }
 // 選んだ人の対戦の合計（全員に対して何勝何敗か）
 function h2hTotalHtml(row, name) {
