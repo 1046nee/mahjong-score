@@ -844,7 +844,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .gm-month { font-size: 12px; font-weight: 800; color: #5F6E6B; margin: 12px 4px 6px; }
 .gm-month:first-child { margin-top: 0; }
 /* 年の切れ目の線（一覧の月の見出し・タイルの年の見出し。2026-10-07） */
-.gm-month.yr, .ht-grid + .ht-year { margin-top: 20px; padding-top: 14px; border-top: 2px solid #4F5C5A; } /* 黒っぽい線（2026-10-07 目立たせた） */
+/* 年ごとの区切り（タイル・一覧）: 年の見出しを押すと開け閉め、年と年の間は黒っぽい点線（2026-10-08） */
+.yr-sec + .yr-sec { margin-top: 16px; padding-top: 4px; border-top: 2px dashed #6B7A77; }
+.yr-h { width: 100%; padding: 0; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; align-items: center; }
+.yr-h .yr-chev { margin-left: auto; flex: none; display: inline-flex; color: #5F6E6B; transition: transform .15s; transform: rotate(90deg); }
+.yr-sec.closed .yr-chev { transform: rotate(0deg); }
+.yr-sec.closed .yr-body { display: none; }
+.yr-body .gm-month:first-child { margin-top: 0; }
 .gr { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; cursor: pointer; border-top: .5px solid #D5DEDB; }
 .gm-list .gr:first-child { border-top: 0; }
 .gr-main { flex: 1; min-width: 0; }
@@ -1196,7 +1202,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-gn b { display: block; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-gn small { display: block; font-size: 11px; color: #8A9AA5; font-weight: 700; }
 .mu-wl2 { font-weight: 900; } .mu-wl2.pos { color: #1A237E; } .mu-wl2.neg { color: #C62828; }
-.mu-yr td { padding: 10px 12px 4px; text-align: left; font-size: 12px; font-weight: 900; color: #33413E; border-top: 2px solid #4F5C5A; cursor: default; background: #fff; }
+.mu-yr td { padding: 10px 12px 4px; text-align: left; font-size: 12px; font-weight: 900; color: #33413E; border-top: 2px dashed #6B7A77; cursor: default; background: #fff; }
 .mu-sheet .mx-scroll { margin-top: 6px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-p { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 4px 0 4px; border-radius: 16px; background: #fff; box-shadow: var(--sh-1); font-size: 13px; }
 .mu-p b { font-weight: 800; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1266,9 +1272,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sk-seg { display: flex; gap: 2px; padding: 3px; margin: -2px 0 10px; border-radius: 10px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); } /* 主色の淡い地＋選んだものは主色で塗る（2026-10-07 目立たせた） */
 .sk-seg button { flex: 1; border: 0; background: none; padding: 5px 0; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; color: var(--pc-ink); cursor: pointer; }
 .sk-seg button.on { background: var(--pc); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-.sk-seg.filt { background: var(--pc); box-shadow: none; } /* 個人戦・チーム戦で絞っているとき（合計以外）: 主色の地と白を反転（地＝主色・選んだボタン＝白地に主色の字）。期間（黒白）とは別の色 */
-.sk-seg.filt button { color: rgba(255,255,255,.85); }
-.sk-seg.filt button.on { background: #fff; color: var(--pc-ink); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.sk-seg.filt button.on { background: #E75620; color: #fff; } /* 個人戦・チーム戦で絞っているとき（合計以外）: 地はそのまま、選んだボタンだけオレンジ（2026-10-08 ユーザー指定。絞り込み中に気づけるように） */
 .sk-wrap .sk-seg { margin: 0 0 10px; }
 .sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
 .sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
@@ -1819,7 +1823,7 @@ button.ios-row:active { background: #F2F6F5; }
 /* 指標のピル（横スクロール） */
 .pill-row { gap: 6px; margin-bottom: 14px; }
 .pill { flex: none; height: 32px; padding: 0 14px; border: 0; border-radius: 16px; background: #EEF2F1; color: #1F2A28; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-.pill.on { background: var(--pc); color: #fff; }
+.pill.on { background: #1F2A28; color: #fff; } /* 選んだ指標は黒（2026-10-08） */
 /* ---- 仲間ページ: 順位（表彰台＋リスト） ---- */
 .podium { display: grid; grid-template-columns: 1fr 1.12fr 1fr; align-items: end; gap: 8px; margin: 4px 0 8px; }
 .pd { text-align: center; cursor: pointer; min-width: 0; }
@@ -4154,8 +4158,13 @@ function circleRankTabHtml(st, modeChips, noBind) {
 }
 // 成績表（列＝メンバー・行＝成績項目。ゲームの「個人成績」と同じ向き）
 function circleGridHtml(st, forImage = false) {
-  const L = st.list;
   const np = circleMode === '3' ? 3 : 4;
+  // 画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
+  return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`);
+}
+// 成績表（列＝人や範囲・行＝成績項目）。仲間ページの成績表と、個人の「成績表」（個人と仲間ページごと）で共用（2026-10-08）
+// L の要素は circleStats の人と同じ形（n・games.size・rankSum・counts・top・last・score・raw…・ptMax・ptMin）
+function gridTableHtml(L, np, forImage, corner, headOf) {
   // いちばん良い値は td の地を淡いゴールドに（画像も td の地の色を読むので画面と同じになる）
   const hl = 'background:#FBF1D3;color:#7A5800;font-weight:800';
   const bestOf = (vals, dir) => {
@@ -4188,10 +4197,9 @@ function circleGridHtml(st, forImage = false) {
   add('5万点以上', L.map(p => overOf(p)), v => v + '回');
   add('箱下', L.map(p => boxOf(p)), v => v + '回');
   const w = forImage ? 90 : 76;
-  // 画面も画像も同じ明るい見出し（.tbl-soft）。画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
-  // 数字は1行で収まる大きさ（12.5px）にし、列の幅を最も長い値（「-1,234.0」「45,000」）が入る72pxにする（スコアの表と同じく、はみ出す代わりに横スクロール）
+  // 数字は1行で収まる大きさ（12.5px）にし、列の幅を最も長い値（「-1,234.0」「45,000」）が入る72pxにする（はみ出す代わりに横スクロール）
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft grid-cmp" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 72}px">
-    <thead><tr><th class="sticky-col" style="width:${w}px">メンバー</th>${L.map(p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`).join('')}</tr></thead>
+    <thead><tr><th class="sticky-col" style="width:${w}px">${corner}</th>${L.map(headOf).join('')}</tr></thead>
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
 // 総当たり表（行の人から見た、列の人との直接対決）。画面だけ（画像出力の対象外）
@@ -4325,13 +4333,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   if (games.length && circleGamesView === 'tile') glist = histTilesHtml(games.filter(x => x.g).map(x => ({ g: x.g, me: mySeatOf(x), onclick: `openResultSheet('${x.sid}',{from:'circle'})` })));
   else if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, x => `<div class="gm-list" style="margin-bottom:8px">${rowOf(x)}</div>`);
   else {
-    let prev = null;
-    games.forEach(x => {
-      const d = new Date(dayOf(x)), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-      if (key !== prev) { glist += `${prev ? '</div>' : ''}<div class="gm-month${gmYrCls(key, prev)}">${key}</div><div class="gm-list">`; prev = key; }
-      glist += rowOf(x);
-    });
-    if (prev) glist += '</div>';
+    glist = listByYearHtml(games, dayOf, rowOf, x => ((x.g && x.g.rounds) || []).length);
   }
   // 上: 件数（左）と「＋ 試合を追加」（右）→ 形式のピル → 見せ方（個人の過去の試合と同じ並び）
   const nR = games.reduce((a, x) => a + ((x.g && x.g.rounds) || []).length, 0);
@@ -5085,7 +5087,7 @@ function openCircleMember(mid) {
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
     ${mid !== myMid && myMid ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="openCircleMatchup(['${myMid}','${mid}'])">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
-    ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績とくらべる${ico('chevron', 12)}</button>` : ''}
+    ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
     ${keys.length ? `<div class="pf-h">相手ごとの成績</div>${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'])`)}` : ''}
     <div class="pf-h">連携済みの試合（${bound.length}）</div>${boundSeg}${boundHtml || '<div style="font-size:13px;color:#5F6E6B">まだありません</div>'}
     ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
@@ -10676,26 +10678,17 @@ function msRow(np, m) {
 }
 // くらべる表（画面と画像で同じ表。forImage＝画像用：横スクロールの枠・見出しのアイコンを外す）
 function msCompareTableHtml(np, forImage = false) {
-  const cols = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { k, label: k === 'all' ? '個人' : label, r: msRow(np, m) } : null; }).filter(Boolean);
-  if (cols.length < 2) return '';
-  // [見出し, 値, 色のクラス, 区切り線]。区切りは 試合数・平均着順｜率｜スコア｜点数 の切れ目（仲間ページの成績表と同じ線）
-  const pt = v => v == null ? '—' : v.toLocaleString();
-  const rows = [['ゲーム数', r => String(r.g)], ['試合数', r => String(r.n)], ['平均着順', r => r.avg.toFixed(2)], ['トップ率', r => pctText(r.top), null, 1], ['連対率', r => pctText(r.ren)],
-    ['ラス回避', r => pctText(r.las)], ['通算スコア', r => fmtScore(r.score), r => scoreCls(r.score), 1],
-    ['素点', r => r.raw == null ? '—' : fmtScore(r.raw), r => r.raw == null ? '' : scoreCls(r.raw)], ['順位点', r => r.rp == null ? '—' : fmtScore(r.rp), r => r.rp == null ? '' : scoreCls(r.rp)],
-    ['最高点数', r => pt(r.ptMax), null, 1], ['最低点数', r => pt(r.ptMin)],
-    ['5万点以上', r => r.over == null ? '—' : r.over + '回'], ['箱下', r => r.box == null ? '—' : r.box + '回']];
-  const w = 84, cw = 96; // 列（範囲）が増えると表が画面より広くなり、横にスクロールして見る
-  const table = `<table class="rounds-table tbl-soft ms-cmp" style="${forImage ? '' : `table-layout:fixed;width:100%;min-width:${w + cols.length * cw}px`}">
-      <thead><tr><th class="sticky-col" style="width:${w}px"></th>${cols.map(c2 => `<th title="${esc(c2.label)}">${forImage ? esc(c2.label) : `<span class="cmp-h">${c2.k === 'all' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(c2.label))}</i>`}<span>${esc(c2.label)}</span></span>`}</th>`).join('')}</tr></thead>
-      <tbody>${rows.filter(([label]) => !(np === 3 && label === '連対率')).map(([label, f, cls, brk]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cols.map(c2 => `<td class="${cls ? cls(c2.r) : ''}">${f(c2.r)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
-  return forImage ? table : `<div class="tbl-scroll" style="overflow-x:auto">${table}</div>`;
+  // 列＝個人と仲間ページごと。仲間ページの成績表と同じ表（gridTableHtml）にする（2026-10-08）
+  const L = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { ...m, key: k, label: k === 'all' ? '個人' : label,
+    n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount } : null; }).filter(Boolean);
+  if (L.length < 2) return '';
+  return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`);
 }
 function msCompareHtml(np) {
   const t = msCompareTableHtml(np);
   if (!t) return '';
   // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
-  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>くらべる（${np === 3 ? '三麻' : '四麻'}）</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
+  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表（${np === 3 ? '三麻' : '四麻'}）</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
     ${statCondHtml('mine')}${t}
     <div class="ms-note">個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。</div></div>`;
 }
@@ -10714,7 +10707,7 @@ function buildCompareCanvas(np) {
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = np === 3 ? '#4261AA' : '#177083'; ctx.fillRect(0, 0, W, IMG_BAND);
   ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
-  ctx.fillText(`くらべる（${np === 3 ? '三麻' : '四麻'}）`, IMG_PAD, IMG_BAND / 2 - 8);
+  ctx.fillText(`成績表（${np === 3 ? '三麻' : '四麻'}）`, IMG_PAD, IMG_BAND / 2 - 8);
   ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
   ctx.fillText(`${cond} ・ ${fmtDate(new Date().toISOString())} 時点`, IMG_PAD, IMG_BAND / 2 + 11, W - IMG_PAD * 2);
   ctx.globalAlpha = 1;
@@ -10725,9 +10718,9 @@ function buildCompareCanvas(np) {
 async function showCompareImage(np) {
   const canvas = buildCompareCanvas(np);
   if (canvas === IMG_TOO_LARGE) { showToast('列が多すぎて1枚の画像に収まりません'); return; }
-  if (!canvas) { showToast('くらべる成績がありません'); return; }
+  if (!canvas) { showToast('成績表にできる成績がありません'); return; }
   track('image_preview', { kind: 'compare' });
-  await openImagePreview(canvas, { name: '' }, 'くらべる');
+  await openImagePreview(canvas, { name: '' }, '成績表');
 }
 // 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜5万点以上・箱下）。スコアの推移は2026-09-30にやめた
 function msPtsHtml(...cols) {
@@ -10760,14 +10753,7 @@ function msGamesInner(gs, seg) {
   if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openResultSheet('${esc(x.g.id)}')` })));
   if (histView === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
     x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'ms', 'renderMyStats()');
-  let prev = null, html = '';
-  gs.forEach(({ gr, g }) => {
-    const d = new Date(gr.ms), key = `${d.getFullYear()}年${d.getMonth() + 1}月`;
-    if (key !== prev) { if (prev) html += '</div>'; html += `<div class="gm-month${gmYrCls(key, prev)}">${key}</div><div class="gm-list">`; prev = key; }
-    html += historyItemHtml(g);
-  });
-  html += '</div>';
-  return seg + html;
+  return seg + listByYearHtml(gs, x => x.gr.ms, x => historyItemHtml(x.g), x => x.gr.games);
 }
 function renderMyStats() {
   setStatKindAvail(appState.games); statCondCtx = 'mine';
@@ -10789,7 +10775,7 @@ function renderMyStats() {
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   if (myStatsTab === 'sum' && !cmp) myStatsTab = 'groups';
-  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', 'くらべる']] : []).map(([k, l]) =>
+  const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', '成績表']] : []).map(([k, l]) =>
     `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
   // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
@@ -12038,7 +12024,7 @@ function renderMpPanes(st) {
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
   const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
   const pane = curMpPane(st, cmp);
-  const tabs = [['hist', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', 'くらべる']] : []);
+  const tabs = [['hist', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', '成績表']] : []);
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
     `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
   // 過去の試合のすぐ上の1行: 小さい期間のピル（上の期間と同じもの）＋「＋ 追加」「まとめて送る」（2026-10-07 縦に長くしないよう1行に）
@@ -12147,7 +12133,7 @@ function renderHistoryList() {
     ? circleCalendarHtml(mine.map(x => ({ sid: x.g.id, g: x.g })), x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'hist', 'renderHistoryList()')
     : null;
   body.innerHTML = main != null ? main + (others.length ? `<details class="mp-others"${histOthersOpen ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}ゲーム` : '', nOut ? `出ていない ${nOut}ゲーム` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
-        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '') : (months.length ? months.map((m, i) => `<div class="gm-month${gmYrCls(m.label, i ? months[i - 1].label : null)}">${m.label}</div><div class="gm-list">${m.items.map(historyItemHtml).join('')}</div>`).join('')
+        <div class="gm-list">${others.map(x => historyItemHtml(x.g)).join('')}</div></details>` : '') : (shown.length ? listByYearHtml(shown, x => x.ms, x => historyItemHtml(x.g), x => (x.g.rounds || []).length)
       : `<div class="empty-msg" style="margin-top:10px">${periodLabel()}に自分が出た試合はまだありません${nAsk ? '（下の「その他の試合」で自分を選べます）' : ''}</div>`)
     + (shown.length < mine.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${mine.length - shown.length}ゲーム）</button>` : '')
     + (others.length ? `<details class="mp-others"${histOthersOpen || mpSelecting ? ' open' : ''} ontoggle="histOthersOpen=this.open"><summary>その他の試合（${[nAsk ? `自分を選んでいない ${nAsk}ゲーム` : '', nOut ? `出ていない ${nOut}ゲーム` : ''].filter(Boolean).join('・')}）${ico('chevron', 14)}</summary>
@@ -12185,8 +12171,32 @@ function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
 // 間違えて作った・試しに作っただけの試合をすぐ見つけられるようにする。押すと「…」と同じメニュー（結果を見る・削除）
 const HIST_FEW = 3;
 // items: [{ g, me, onclick }]。me＝自分の席（参加）／null＝出ていない／undefined＝まだ選んでいない（印を出さない）
-// 一覧の月の見出しで、年が変わるところ（「2026年1月」の前が「2025年12月」）に区切りの線（2026-10-07）
-function gmYrCls(key, prev) { return prev && String(prev).slice(0, 4) !== String(key).slice(0, 4) ? ' yr' : ''; }
+// 年ごとの区切り（タイル・一覧で共通。2026-10-08）: 年の見出し（押すと開け閉め）＋中身。年と年の間は点線
+const yrClosed = new Set(); // 閉じている年（画面をまたいで同じ。読み込み直すと全部開く）
+function yrToggle(y, el) {
+  if (yrClosed.has(y)) yrClosed.delete(y); else yrClosed.add(y);
+  const sec = el.closest('.yr-sec');
+  if (sec) sec.classList.toggle('closed', yrClosed.has(y));
+  el.setAttribute('aria-expanded', String(!yrClosed.has(y)));
+}
+function yrSecHtml(y, headInner, body) {
+  const c = yrClosed.has(y);
+  return `<section class="yr-sec${c ? ' closed' : ''}"><button type="button" class="ht-year yr-h" aria-expanded="${!c}" onclick="yrToggle(${y},this)">${headInner}<span class="yr-chev">${ico('chevron', 12)}</span></button><div class="yr-body">${body}</div></section>`;
+}
+// 一覧: 年ごと→その中を月ごと（items は新しい順）
+function listByYearHtml(items, msOf, rowOf, roundsOf) {
+  const years = [];
+  items.forEach(x => {
+    const d = new Date(msOf(x)), y = d.getFullYear(), m = d.getMonth();
+    let b = years[years.length - 1];
+    if (!b || b.y !== y) years.push(b = { y, months: [], n: 0, r: 0 });
+    let mo = b.months[b.months.length - 1];
+    if (!mo || mo.m !== m) b.months.push(mo = { m, list: [] });
+    mo.list.push(x); b.n++; b.r += roundsOf(x);
+  });
+  return years.map(b => yrSecHtml(b.y, `${b.y}年<span>${gamesRoundsText(b.n, b.r)}</span>`,
+    b.months.map(mo => `<div class="gm-month">${mo.m + 1}月</div><div class="gm-list">${mo.list.map(rowOf).join('')}</div>`).join(''))).join('');
+}
 function histTilesHtml(items) {
   if (!items.length) return '';
   const nEmpty = items.filter(x => !(x.g.rounds || []).length).length;
@@ -12221,9 +12231,9 @@ function histTilesHtml(items) {
     const nR = b.list.reduce((a, x) => a + (x.g.rounds || []).length, 0);
     const mine = b.list.filter(x => typeof x.me === 'number');
     const myR = mine.reduce((a, x) => a + (x.g.rounds || []).filter(r => roundMembers(r, x.g.settings || {}).includes(x.me)).length, 0);
-    return `<div class="ht-year">${b.y}年<span>${gamesRoundsText(b.list.length, nR)}</span>${mine.length ? `<span class="ht-mine">（参加 ${gamesRoundsText(mine.length, myR)}）</span>` : ''}</div>`;
+    return `${b.y}年<span>${gamesRoundsText(b.list.length, nR)}</span>${mine.length ? `<span class="ht-mine">（参加 ${gamesRoundsText(mine.length, myR)}）</span>` : ''}`;
   };
-  const tiles = years.map(b => `${yearHead(b)}<div class="ht-grid">${b.list.map(tileOf).join('')}</div>`).join('');
+  const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), `<div class="ht-grid">${b.list.map(tileOf).join('')}</div>`)).join('');
   return tiles; // 「nゲーム・空・少ない」の凡例は出さない（2026-10-07 ユーザー指定。タイルの点線・琥珀色の縁はそのまま）
 }
 function histKindMatch(g, k) {
