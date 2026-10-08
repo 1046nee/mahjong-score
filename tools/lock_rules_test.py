@@ -131,6 +131,14 @@ def main():
         check("[17e] 確定した試合の点数（rounds）はゲーム名と一緒でも変えられない", False,
               http("PATCH", f"sessions/{old1}", {"name": "名前", "rounds": [{"points": [1, 2, 3, 4], "scores": [9, 9, 9, 9]}]})[0])
         check("[17f] 存在しない試合にゲーム名だけを書いて作ることはできない", False, http("PUT", f"sessions/{rnd(10)}/name", "なりすまし")[0])
+        # 日の区切り（settings/dayStarts）も確定後に変えられる（2026-10-08 ユーザー要望）。ほかの設定は変えられない
+        check("[17g] 確定した試合でも、日の区切り（settings/dayStarts）だけは変えられる", True, http("PUT", f"sessions/{old1}/settings/dayStarts", [3, 5])[0])
+        check("[17h] 日の区切りに数でない値・0は拒否", False, http("PUT", f"sessions/{old1}/settings/dayStarts", ["x", 0])[0])
+        check("[17i] 日の区切りを消すのは拒否", False, http("DELETE", f"sessions/{old1}/settings/dayStarts")[0])
+        check("[17j] 確定した試合のほかの設定（settings/numPlayers）は変えられない", False, http("PUT", f"sessions/{old1}/settings/numPlayers", 3)[0])
+        check("[17k] 確定した試合の設定ごと（日の区切りと一緒でも）は変えられない", False,
+              http("PUT", f"sessions/{old1}/settings", {"playerNames": ["A", "B", "C", "D"], "numPlayers": 4, "dayStarts": [2]})[0])
+        check("[17l] 存在しない試合に日の区切りだけを書いて作ることはできない", False, http("PUT", f"sessions/{rnd(10)}/settings/dayStarts", [2])[0])
         check("[18] 古い試合に、近い締め切り（最後の入力が21時間前＝3時間後）を付けられる", True,
               http("PUT", f"sessions/{old2}", game(old2, name="ルール確認用（古い試合・打っている途中）", lockAt=P + 3 * H))[0])
         old3 = rnd(10)

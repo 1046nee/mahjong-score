@@ -1337,6 +1337,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-dn { flex: none; margin-left: 2px; padding: 0 7px; height: 18px; border-radius: 9px; background: var(--pc-tint); color: var(--pc-ink); font-size: 11px; font-style: normal; font-weight: 800; line-height: 18px; } /* 2日以上のゲームの「n日目」 */
 .sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 18px; }
 .sp-meta .sp-dn { display: inline-block; height: 16px; line-height: 16px; vertical-align: top; margin-top: 1px; } /* 札があっても行の高さは同じ（2026-10-08） */
+@media (max-width: 359px) { .sp-meta { font-size: 11px; letter-spacing: -.2px; } .sp-right { width: 84px; } .sp-body { gap: 6px; } .sp-g .sp-ch { display: none; } } /* 320px でも「n試合 ・ 平均着順」を1行に（2026-10-08） */
 /* 着順の回数はカードの全幅で1行（4つが改行しない） */
 .sp-cnts { display: flex; flex-wrap: nowrap; gap: 4px; margin-top: 6px; }
 .sp-c { flex: 1 1 0; min-width: 0; display: inline-flex; justify-content: center; align-items: baseline; gap: 2px; padding: 1px 2px; border-radius: 8px; font-size: 10.5px; font-weight: 800; white-space: nowrap; }
@@ -4488,11 +4489,10 @@ function circleGamesTabHtml(role, gids, modeChips) {
     const s = g.settings || {};
     const mySeat = myMid ? Object.keys(seats).find(k => seats[k] && seats[k].mid === myMid && played[k]) : undefined;
     const me = mySeat != null ? Number(mySeat) : null;
-    const rel = relDay(gameDayMs(g));
     const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
     const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未連携 ${nPlayed - nBound}人</span>` : '';
     return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${me == null && myMid ? ' out' : ''}" onclick="openResultSheet('${sid}',{from:'circle',me:${me == null ? 'null' : me}})">${gameKindHtml(g)}
-      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
+      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}${me == null && myMid ? '<span class="gr-out">出ていない</span>' : ''}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
       ${dots}</div>`;
   };
@@ -5463,10 +5463,9 @@ function mupGamesListHtml(res, P) {
     const g = gm.g, s = g.settings || {}, me = gm.seat[a] != null ? Number(gm.seat[a]) : null;
     const meMine = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
     const open = `openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${meMine == null ? 'null' : meMine},back:'mup'})`;
-    const rel = relDay(gameDayMs(g));
     const wl = P.length === 2 ? (() => { const w = gm.w[a] || 0, l = gm.l[a] || 0; return `<span class="mu-wl ${w > l ? 'pos' : w < l ? 'neg' : ''}">${w}勝${l}敗</span>`; })() : '';
     return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}" onclick="${open}">${gameKindHtml(g)}
-      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>
+      <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}<span class="gr-meta">いっしょに${gm.n}試合</span>${wl}</div>${oppLineHtml(g, me)}</div></div>`;
   }).join('')}</div>`;
 }
@@ -9323,7 +9322,7 @@ function renderGame() {
   // 2日以上にわたる試合（対局日を2日以上にした・入力した日が2日以上にわたる）には必ず日の区切り（記録が確定したあとは要約だけ）
   const multiDay = gameDaysList(activeGame).length > 1;
   document.getElementById('game-date').innerHTML = (playDateMs(activeGame) != null || multiDay) ? '対局日 ' + esc(fmtGameDays(activeGame))
-    + (multiDay && !isGameLocked(activeGame) ? ` <button type="button" class="day-split-btn" onclick="openDaySplit()">${ico('pencil', 12)}日の区切り</button>` : '')
+    + (multiDay ? ` <button type="button" class="day-split-btn" onclick="openDaySplit()">${ico('pencil', 12)}日の区切り</button>` : '')
     + (multiDay ? `<span class="day-split-sum">${daySplitSummary(activeGame).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
@@ -10232,7 +10231,7 @@ let daySplitState = null; // { where: 'game'|'detail', days, idx: [試合ごと�
 function daySplitGame(where) { return where === 'detail' ? detailGame : activeGame; }
 function openDaySplit(where = 'game') {
   const g = daySplitGame(where);
-  if (!g || isGameLocked(g)) return;
+  if (!g) return; // 記録の確定後も変えられる（ゲーム名と同じ。2026-10-08 ユーザー要望）
   const days = gameDaysList(g);
   if (days.length < 2) return;
   daySplitState = { where, days, idx: (g.rounds || []).map(r => roundDayIdx(g, r, days)) };
@@ -10371,7 +10370,7 @@ function saveReorder() {
   showToast('試合の順番を入れ替えました');
   track('rounds_reorder', { n: rs.length, moved: moves.length });
 }
-function saveDaySplit() {
+async function saveDaySplit() {
   const st = daySplitState, g = st && daySplitGame(st.where);
   if (!g) return;
   const n = (g.rounds || []).length;
@@ -10383,6 +10382,20 @@ function saveDaySplit() {
   const map = {};
   (s.playerNames || []).forEach((_, i) => { map[i] = i; });
   closeFormModal();
+  if (isGameLocked(g)) {
+    // 確定後は settings/dayStarts だけを書く（ルールで、確定後もここだけは書ける。点数・メンバーは変えられない）
+    try { await db.ref('sessions/' + g.id + '/settings/dayStarts').set(starts); }
+    catch (e) { showToast('変えられませんでした。通信環境を確認してください', 5000); return; }
+    const ids = new Set([g]);
+    [(appState.games || []).find(x => x.id === g.id), circleSess && circleSess[g.id], detailGame && detailGame.id === g.id ? detailGame : null, activeGame && activeGame.id === g.id ? activeGame : null]
+      .forEach(x => { if (x && x.settings) ids.add(x); });
+    ids.forEach(x => { x.settings = { ...x.settings, dayStarts: starts }; });
+    saveStorage();
+    if (st.where === 'detail') viewDetail(g); else renderGame();
+    showToast('日の区切りを保存しました');
+    track('day_split', { days: st.days.length, where: st.where, locked: true });
+    return;
+  }
   const op = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'settings', baseFp: fpOf(base), name: g.name, settings, memberMap: map,
     changes: ['日の区切り: ' + starts.map((no, k) => `${k + 2}日目は第${no}試合から`).join('、')] });
   if (st.where === 'detail' && op) {
@@ -11517,6 +11530,7 @@ function fmtDay(ms, withYear) {
   const y = (withYear || d.getFullYear() !== new Date().getFullYear()) ? d.getFullYear() + '/' : '';
   return `${y}${d.getMonth() + 1}/${d.getDate()}（${YOUBI[d.getDay()]}）`;
 }
+// 一覧には「今日」「n日前」を出さない（2026-10-08 ユーザー要望）。いまは使っていない
 function relDay(ms) {
   const a = new Date(); a.setHours(0, 0, 0, 0);
   const b = new Date(ms); b.setHours(0, 0, 0, 0);
@@ -12193,7 +12207,6 @@ function historyItemHtml(g) {
   const ms = gameDayMs(g);
   const st = histState(g);
   const id = esc(g.id);
-  const rel = relDay(ms);
   const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
   let sub;
   if (st === 'me') sub = `<div class="gr-sub">${myResultHtml(g)}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, tagOf(g.id).me)}`;
@@ -12203,7 +12216,7 @@ function historyItemHtml(g) {
   const on = mpSelecting && mpSel.has(g.id);
   return `<div class="gr ${st} k${(s.numPlayers === 3 ? 3 : 4)}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `openResultSheet('${id}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}${gameKindHtml(g)}
-    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}${rel && gameDaysList(g).length === 1 ? `<b>${rel}</b>` : ''}</span></div>${sub}${mpSelecting ? '' : gameCircleLineHtml(g)}</div>
+    <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>${sub}${mpSelecting ? '' : gameCircleLineHtml(g)}</div>
     ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
   </div>`;
 }
@@ -12835,7 +12848,7 @@ function renderDetailBody(g) {
   document.getElementById(P + '-title').textContent = g.name;
   const multiDayD = gameDaysList(g).length > 1; // 試合の画面と同じく、2日以上にわたる試合には必ず日の区切り
   document.getElementById(P + '-date').innerHTML = (playDateMs(g) != null || multiDayD) ? '対局日 ' + esc(fmtGameDays(g))
-    + (multiDayD && !detailRO && !isGameLocked(g) ? ` <button type="button" class="day-split-btn" onclick="openDaySplit('detail')">${ico('pencil', 12)}日の区切り</button>` : '')
+    + (multiDayD && !detailRO ? ` <button type="button" class="day-split-btn" onclick="openDaySplit('detail')">${ico('pencil', 12)}日の区切り</button>` : '')
     + (multiDayD ? `<span class="day-split-sum">${daySplitSummary(g).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;

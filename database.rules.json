@@ -25,6 +25,13 @@
         },
         "settings": {
           ".validate": "newData.hasChildren(['playerNames', 'numPlayers'])",
+          "dayStarts": {
+            ".write": "data.parent().parent().exists() && newData.exists()",
+            ".validate": "newData.hasChildren()",
+            "$i": {
+              ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isNumber() && newData.val() >= 1 && newData.val() <= 10000"
+            }
+          },
           "playerNames": {
             "$i": {
               ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length <= 60"
