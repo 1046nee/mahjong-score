@@ -4401,7 +4401,7 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   add('試合数', L.map(p => p.n), String);
   add('平均着順', L.map(p => p.rankSum / p.n), v => v.toFixed(2), 'min');
   // 1着〜n着の行ラベルに着順の色の見本（画面だけ。画像の表のセルには要素を入れない）
-  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), fmtCnt, null, null, v => (v > 0 ? '' : '#ccc')); // 0回は薄い字（ゲームの個人成績と同じ）
+  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), v => fmtCnt(v) + '回', null, null, v => (v > 0 ? '' : '#ccc')); // 0回は薄い字（ゲームの個人成績と同じ）。5万点以上・箱下と同じく「回」を付ける（2026-10-08）
   add('トップ率', L.map(p => p.top / p.n), pctText, 'max', 'cat-break');
   if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
@@ -9070,7 +9070,7 @@ function rankCountHtml(rounds, s, forImage = false) {
         `<td style="${avgs[i] === bestAvg ? hl : 'font-weight:700'}">${avgs[i].toFixed(2)}</td>`];
       for (let rank = 0; rank < slots; rank++) {
         const c = counts[i][rank];
-        cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}</td>`);
+        cells.push(`<td style="${c > 0 ? 'font-weight:700' : 'color:#ccc'}">${fmtCount(c)}回</td>`); // 5万点以上・箱下と同じく「回」（2026-10-08）
       }
       cells.push(`<td style="${tops[i] === bestTop ? hl : 'font-weight:700'}">${tops[i]}%</td>`);
       if (slots !== 3) cells.push(`<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`); // 三麻は連対率＝ラス回避なので出さない
