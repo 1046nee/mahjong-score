@@ -1205,19 +1205,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-pos { font-size: 12px; color: #5F6E6B; font-weight: 700; white-space: nowrap; } .mu-pos b { font-size: 16px; color: #1F2A28; font-weight: 900; }
 .mu-bar { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: #E3E9E7; overflow: hidden; } .mu-bar i { display: block; height: 100%; background: #D4A017; }
 .mu-gt-wrap { border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
-.mu-gt { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-.mu-gt th { padding: 8px 4px 6px; font-size: 11px; font-weight: 800; color: #fff; background: var(--pc); text-align: center; vertical-align: bottom; }
-.mu-gt th span { display: block; max-width: 56px; margin: 2px auto 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mu-gt th.sticky-col { text-align: left; padding-left: 12px; z-index: 2; }
-.mu-gt td { padding: 8px 4px; text-align: center; border-top: .5px solid #E3E9E7; font-weight: 700; cursor: pointer; }
+.mu-gt { font-variant-numeric: tabular-nums; } /* いっしょに打ったゲームの表（成績の表と同じ .rounds-table） */
+.mu-gt th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-gt td { font-weight: 700; cursor: pointer; }
 .mu-gt tr:active td { background: #F4F7F6; }
-.mu-gt td.best { background: #FBF3DC; font-weight: 900; } /* そのゲームでいちばんスコアの多い人 */
-.mu-gt .sticky-col { position: sticky; left: 0; background: #fff; text-align: left; padding-left: 12px; max-width: 140px; }
-.mu-gt th.sticky-col { background: var(--pc); }
+.mu-gt td.best { background: #FBF1D3; color: #7A5800 !important; font-weight: 800; } /* そのゲームでいちばんスコアの多い人（成績の表のいちばん良い値と同じ色） */
+.mu-gt td.sticky-col { background: #fff; max-width: 140px; }
 .mu-gn b { display: block; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-gn small { display: block; font-size: 11px; color: #8A9AA5; font-weight: 700; }
 .mu-wl2 { font-weight: 900; } .mu-wl2.pos { color: #1A237E; } .mu-wl2.neg { color: #C62828; }
-.mu-yr td { padding: 10px 12px 4px; text-align: left; font-size: 12px; font-weight: 900; color: #33413E; border-top: 2px dashed #6B7A77; cursor: default; background: #fff; }
+.mu-yr td { padding: 8px 8px 4px; text-align: left; font-size: 12px; font-weight: 900; color: #33413E; border-top: 6px solid #F4F7F6; cursor: default; background: #fff; } /* 年の切れ目（成績の表の区切りと同じ） */
 .mu-sheet .mx-scroll { margin-top: 6px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-p { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 4px 0 4px; border-radius: 16px; background: #fff; box-shadow: var(--sh-1); font-size: 13px; }
 .mu-p b { font-weight: 800; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1931,6 +1928,13 @@ button.ios-row:active { background: #F2F6F5; }
 .mx-corner .c-top { position: absolute; top: 4px; right: 5px; font-size: 10px; font-weight: 800; color: #4F5C5A; }
 .mx-corner .c-bot { position: absolute; bottom: 4px; left: 6px; font-size: 10px; font-weight: 800; color: var(--pc); }
 .mx-vs { display: block; font-size: 9px; font-weight: 700; color: #8A9AA5; line-height: 1.1; }
+/* 総当たり表も成績の表と同じ主色の見出し（2026-10-08） */
+.h2h-matrix.mx-solid th { color: #fff; }
+.h2h-matrix.mx-solid th.mx-corner { background: var(--pc) linear-gradient(to top right, transparent calc(50% - .75px), rgba(255,255,255,.6) 50%, transparent calc(50% + .75px)) !important; }
+.h2h-matrix.mx-solid .mx-corner .c-top, .h2h-matrix.mx-solid .mx-corner .c-bot { color: #fff; }
+.h2h-matrix.mx-solid .mx-vs { color: rgba(255,255,255,.7); }
+.h2h-matrix.mx-solid th.me .mx-nm { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.h2h-matrix.mx-solid td.sticky-col { background: #fff; }
 .h2h-matrix tr.mx-me td { background: var(--pc-bg) !important; }
 .h2h-matrix tr.mx-me td.mx-rh { background: var(--pc-tint) !important; }
 /* 総当たり表は表の中でスクロールし、上の名前の行と左の名前の列を固定（下へスクロールしても相手が分かる） */
@@ -4293,7 +4297,7 @@ function circleGridHtml(st, forImage = false) {
   const np = circleMode === '3' ? 3 : 4;
   if (!st.list.length) st = { ...st, list: Object.keys(rosterOf()).map(k => emptyStatP(np, { key: k })) }; // 試合が無くても名簿の人の列を残す
   // 画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
-  return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`);
+  return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${esc(rosterName(p.key))}</th>`); // 見出しに顔は出さない（2026-10-08）
 }
 // 試合の無い人・範囲の空の成績（表の列だけ残して「—」を出す用。2026-10-08）
 function emptyStatP(np, extra = {}) { return { n: 0, games: { size: 0 }, rankSum: 0, counts: new Array(np).fill(0), top: 0, last: 0, score: 0, ptMax: null, ptMin: null, raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0, ...extra }; }
@@ -4311,12 +4315,12 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
     return dir === 'min' ? Math.min(...f) : Math.max(...f);
   };
   const rows = [];
-  const add = (label, vals, fmt, dir, cls, colorOf) => {
+  const add = (label, vals, fmt, dir, cls, colorOf, thin) => {
     vals = vals.map((v, i) => (L[i] && L[i].n ? v : null)); // この条件で試合の無い列は数字を出さない（表は残す）
     const b = bestOf(vals, dir);
     rows.push(`<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col">${label}</td>${vals.map(v => {
       if (v == null || isNaN(v)) return '<td style="color:#ccc">—</td>';
-      const st2 = (b != null && Math.abs(v - b) < 1e-9) ? hl : `font-weight:700;${colorOf ? 'color:' + colorOf(v) : ''}`;
+      const st2 = (b != null && Math.abs(v - b) < 1e-9) ? hl : `${thin ? '' : 'font-weight:700;'}${colorOf ? 'color:' + colorOf(v) : ''}`;
       return `<td style="${st2}">${fmt(v)}</td>`;
     }).join('')}</tr>`);
   };
@@ -4329,10 +4333,11 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
   add('通算スコア', L.map(p => p.score), fmtScore, null, 'cat-break', h2hColor);
-  add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor);
-  add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor);
-  add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
-  add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
+  // 素点・順位点・最高点数・最低点数は細い字（ゲームの個人成績と同じ。2026-10-08）
+  add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor, true);
+  add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor, true);
+  add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max', null, null, true);
+  add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString(), null, null, null, true);
   add('5万点以上', L.map(p => overOf(p)), v => v + '回', null, null, v => (v > 0 ? '#1A237E' : '')); // 1回以上は青・箱下は赤（0回は今のまま）
   add('箱下', L.map(p => boxOf(p)), v => v + '回', null, null, v => (v > 0 ? '#C62828' : ''));
   const w = forImage ? 90 : 76;
@@ -4373,7 +4378,7 @@ function mxTableHtml(keys, nameOf, pairOf, myKey, onRow, forImage = false, onCel
     const txt = `${nameOf(a)} → ${nameOf(b)}：${h2hRecordText(e)}（${e.n}試合）`;
     return `<td title="${esc(txt)}" onclick="${onCell ? onCell(a, b) : 'showToast(this.title)'}"><span class="mx ${d > 0 ? 'w' : d < 0 ? 'l' : 'e'}">${e.w}-${e.l}</span>${e.d ? `<div class="mx-d">${e.d}分</div>` : ''}</td>`;
   }).join('')}</tr>`).join('');
-  return `<div class="tbl-scroll mx-scroll"><table class="rounds-table h2h-matrix tbl-soft" style="table-layout:fixed;width:${headW + keys.length * colW}px">
+  return `<div class="tbl-scroll mx-scroll"><table class="rounds-table h2h-matrix mx-solid" style="table-layout:fixed;width:${headW + keys.length * colW}px">
     <thead><tr><th class="sticky-col mx-corner" style="width:${headW}px"><span class="c-top">相手→</span><span class="c-bot">見る人↓</span></th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 const MX_NOTE = '行の人から見た、列の人との直接対決（勝ち-負け）です。マスを押すと、試合数も出ます。';
@@ -5372,20 +5377,22 @@ function mupReopen() { if (mup) renderMatchup(); }
 // 条件で全員がそろった試合が無いときの説明（下の表やカードは同じ形のまま「—」で残す。2026-10-08）
 function mupEmptyHtml() { return ''; } // 条件で0件のときも文は出さない（0-0・「—」の形が残る。2026-10-08）
 function mupTapeHtml(res, a, b) {
+  // 成績の表と同じ形（主色の見出し・項目は左の列・良い方は淡い金色）。2026-10-08
   const A = res.people[a], B = res.people[b];
   const rows = [
     ['平均着順', A.rankSum / A.n, B.rankSum / B.n, v => v.toFixed(2), true],
-    ['トップ率', A.top / A.n, B.top / B.n, pctText, false],
+    ['トップ率', A.top / A.n, B.top / B.n, pctText, false, 1],
     ['ラス率', A.las / A.n, B.las / B.n, pctText, true],
-    ['1試合の平均スコア', A.score / A.n, B.score / B.n, v => fmtScore(Math.round(v * 10) / 10), false],
-    ['最高スコア', A.best, B.best, v => fmtScore(v), false],
+    ['1試合の平均スコア', A.score / A.n, B.score / B.n, v => fmtScore(Math.round(v * 10) / 10), false, 1, true],
+    ['最高スコア', A.best, B.best, v => fmtScore(v), false, 0, true],
   ];
-  const who = p => `<b class="mu-tw">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></b>`;
-  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="mu-tape"><div class="mu-tr mu-tr-h">${who(a)}<span></span>${who(b)}</div>${rows.map(([l, x, y, f, low]) => {
-    const ok = v => v != null && !isNaN(v), g = v => (ok(v) ? f(v) : '—');
-    const ax = ok(x) && ok(y) && (low ? x < y : x > y), bx = ok(x) && ok(y) && (low ? y < x : y > x);
-    return `<div class="mu-tr"><b class="${ax ? 'win' : ''}">${g(x)}</b><span>${l}</span><b class="${bx ? 'win' : ''}">${g(y)}</b></div>`;
-  }).join('')}</div>`;
+  const hl = 'background:#FBF1D3;color:#7A5800;font-weight:800';
+  const ok = v => v != null && !isNaN(v);
+  const td = (v, o, f, low, signed) => { const best = ok(v) && ok(o) && v !== o && (low ? v < o : v > o);
+    return `<td style="${best ? hl : `font-weight:700;${signed && ok(v) ? 'color:' + h2hColor(v) : ''}`}">${ok(v) ? f(v) : '<span style="color:#ccc">—</span>'}</td>`; };
+  return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="tbl-scroll"><table class="rounds-table" style="table-layout:fixed;width:100%">
+    <thead><tr><th class="sticky-col" style="width:44%"></th><th>${esc(mupName(a))}</th><th>${esc(mupName(b))}</th></tr></thead>
+    <tbody>${rows.map(([l, x, y, f, low, brk, signed]) => `<tr${brk ? ' class="cat-break"' : ''}><td class="sticky-col">${l}</td>${td(x, y, f, low, signed)}${td(y, x, f, low, signed)}</tr>`).join('')}</tbody></table></div>`;
 }
 function renderMatchup() {
   const P = mup.P, edit = mup.kind === 'circle';
@@ -5447,8 +5454,8 @@ function mupGamesTableHtml(res, P) {
       ${P.map(p => { const v = gm.sc[p] || 0; return `<td class="${v === best ? 'best ' : ''}${scoreCls(v)}">${fmtScore(v)}</td>`; }).join('')}${rec}</tr>`;
   }).join('');
   const firstY = res.games.length ? new Date(res.games[0].ms).getFullYear() : '';
-  return `<div class="tbl-scroll mu-gt-wrap"><table class="mu-gt" style="min-width:${110 + P.length * 58 + (two ? 48 : 0)}px">
-    <thead><tr><th class="sticky-col">${firstY}年</th>${P.map(p => `<th title="${esc(mupName(p))}">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></th>`).join('')}${two ? '<th>勝敗</th>' : ''}</tr></thead>
+  return `<div class="tbl-scroll"><table class="rounds-table mu-gt" style="min-width:${110 + P.length * 58 + (two ? 48 : 0)}px">
+    <thead><tr><th class="sticky-col">${firstY}年</th>${P.map(p => `<th title="${esc(mupName(p))}">${esc(mupName(p))}</th>`).join('')}${two ? '<th>勝敗</th>' : ''}</tr></thead>
     <tbody>${rows || `<tr><td colspan="${P.length + 1 + (two ? 1 : 0)}" style="padding:16px 12px;color:#8A9AA5;font-weight:700;cursor:default">いっしょに打ったゲームはありません</td></tr>`}</tbody></table></div>`;
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
@@ -8918,7 +8925,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // メンバーごとに成績項目順のセルを作り、行=成績項目に組み替える
   // 行順: まず全体像（試合数・平均着順）→ 着順の内訳 → 率（トップ率→連対率→ラス回避）→ 点数系
   const statLabels = ['試合数', '平均着順', ...Array.from({length: slots}, (_, r) => `${r + 1}着`),
-    'トップ率', ...(slots === 3 ? [] : ['連対率']), 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数']; // 5万点以上・箱下は自分の成績（マイページなど）だけ（2026-10-05）
+    'トップ率', ...(slots === 3 ? [] : ['連対率']), 'ラス回避', 'スコア', '素点', '順位点', '最高点数', '最低点数', '5万点以上', '箱下']; // 5万点以上・箱下もゲームの個人成績に出す（2026-10-08）
   // チップ・焼き鳥・チョンボは記録しているグループだけ（旧データは記録があれば出す）。回数は単位なし
   const useChips = !!s.bonusEnabled || rounds.some(r => r.chips);
   const useYaki = !!s.yakitori || rounds.some(r => r.yakitori);
@@ -8952,9 +8959,10 @@ function rankCountHtml(rounds, s, forImage = false) {
         `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
         `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
       if (ptsCnt[i]) {
-        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`);
+        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`,
+          `<td style="${overCnt[i] ? 'font-weight:700;color:#1A237E' : ''}">${overCnt[i]}回</td>`, `<td style="${boxCnt[i] ? 'font-weight:700;color:#C62828' : ''}">${boxCnt[i]}回</td>`); // 1回以上は青・赤
       } else {
-        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`);
+        cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`);
       }
       if (useChips) {
         const c = extra.chips[i] || 0;
@@ -10911,7 +10919,7 @@ function msCompareTableHtml(np, forImage = false) {
     return m ? { ...m, key: k, label: lb, n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount }
       : emptyStatP(np, { key: k, label: lb }); }); // 試合の無い範囲も列を残して「—」（2026-10-08）
   if (!L.length) return ''; // 仲間ページが無くても「個人」1列で出す（個人ページの最初のタブ。2026-10-08）
-  return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`, { best: false });
+  return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${esc(c2.label)}</th>`, { best: false }); // 見出しに印は出さない（2026-10-08）
 }
 function msCompareHtml(np) {
   const t = msCompareTableHtml(np);
