@@ -1332,6 +1332,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sp-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .sp-top .gk svg { width: 24px; height: 24px; }
 .sp-top .sp-gn { flex: 0 1 auto; min-width: 0; }
+.sp-whole { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 7px 10px; border-radius: 10px; background: #F4F7F6; } /* 2日以上のゲームの全体の成績 */
+.sp-wl { flex: 1; min-width: 0; display: flex; flex-direction: column; } .sp-wl b { font-size: 12px; font-weight: 900; color: #33413E; } .sp-wl small { font-size: 11px; font-weight: 700; color: #6B7A77; }
+.sp-whole .sp-rank { font-size: 13px; } .sp-wsc { flex: none; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; } .sp-wsc.pos { color: #1A237E; } .sp-wsc.neg { color: #C62828; }
+.sp-meta .sp-dn { margin: 0 4px 0 0; }
 .sp-dn { flex: none; margin-left: 2px; padding: 0 7px; height: 18px; border-radius: 9px; background: var(--pc-tint); color: var(--pc-ink); font-size: 11px; font-style: normal; font-weight: 800; line-height: 18px; } /* 2日以上のゲームの「n日目」 */
 .sp-meta { font-size: 12px; font-weight: 700; color: #4F5C5A; margin-top: 4px; font-variant-numeric: tabular-nums; }
 /* 着順の回数はカードの全幅で1行（4つが改行しない） */
@@ -11695,10 +11699,30 @@ function sparkUnitSegHtml() {
     `<button type="button" role="tab" class="${sparkUnit === k ? 'on' : ''}" aria-selected="${sparkUnit === k}" onclick="event.stopPropagation();setSparkUnit('${k}',this)">${l}</button>`).join('')}</span>`;
 }
 // 単位を変えたら、いま見ている画面を描き直す（メンバーの成績のシートなら、そのシートを開き直す）
+// 単位（年｜月｜日）を変えたとき、点を選んでいたら、それに関係する点を選んだままにする（2026-10-08）
+// 狭い→広い: 含む点（2026/10/8 → 2026年10月 → 2026年）。広い→狭い: その範囲の中のいちばん新しい点（2026年 → その年の最後の月 → その月の最後の日）
+// キーは 日 'YYYY-MM-DD'・月 'YYYY-MM'・年 'YYYY' なので、前方一致で見つかる
 function setSparkUnit(u, el) {
+  const host = el && el.closest('#mp-stats, #circle-top, #ms-top, .pf-sheet');
+  const hostSel = host ? (host.id ? '#' + host.id : '.pf-sheet') : null;
+  const pop = host && host.querySelector('.sp-pop:not([hidden])');
+  let keep = null;
+  if (pop && pop.dataset.rid) { const reg = sparkReg[pop.dataset.rid], d = reg && reg.days[+pop.dataset.i]; if (d) keep = d.k; }
   sparkUnit = u;
   try { localStorage.setItem(SPARK_UNIT_KEY, u); } catch (e) {}
   rerenderStatsFrom(el);
+  if (keep && hostSel) setTimeout(() => sparkSelectKey(hostSel, keep), 30);
+}
+function sparkSelectKey(hostSel, k) {
+  const svg = document.querySelector(`${hostSel} .mc-spark[data-rid]`);
+  const reg = svg && sparkReg[svg.dataset.rid];
+  if (!reg) return;
+  let i = reg.days.findIndex(d => k.startsWith(d.k));
+  if (i < 0) for (let j = reg.days.length - 1; j >= 0; j--) if (reg.days[j].k.startsWith(k)) { i = j; break; }
+  if (i < 0) return;
+  sparkSelect(svg.dataset.rid, i);
+  const dot = svg.querySelector(`circle.dot[data-d="${i}"]`), sc = svg.closest('.mc-scroll');
+  if (dot && sc) { const r = dot.getBoundingClientRect(), b = sc.getBoundingClientRect(); if (r.left < b.left + 24 || r.right > b.right - 24) sc.scrollLeft += r.left - b.left - b.width / 2; }
 }
 function miniSparkHtml(h, np = 4, endVal = null) {
   if (!h.length) return '<span class="mc-spark-empty"><span>まだ試合がありません</span></span>';
@@ -11907,16 +11931,23 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
     const nP = played.filter(Boolean).length;
     // 2日以上にわたるゲームは、この日が何日目か（2026-10-08）。年・月の単位のときは出さない
     const days = gameDaysList(g), dI = days.indexOf(day.k);
-    // ゲームが1つなら日付の横に出すので、ここには出さない（狭い画面でゲーム名が隠れないように）
-    const dayTag = byG.size > 1 && days.length > 1 && dI >= 0 ? `<em class="sp-dn">${dI + 1}日目</em>` : '';
+    const multi = sparkUnit === 'd' && days.length > 1 && dI >= 0;
+    // ゲーム全体（全日）の成績も並べる（2026-10-08）: 何日目の成績かがわかるように、上は「n日目」、下は「ゲーム全体（全n日）」
+    let whole = '';
+    if (multi) {
+      const ft = gameTotals(g), fp = playedFlags(g), fr = me != null && fp[me] ? 1 + fp.reduce((a, p, i) => a + (p && ft[i] > ft[me] ? 1 : 0), 0) : null;
+      const fn = (g.rounds || []).filter(r => { const mem = roundMembers(r, s); return me != null && mem.includes(me); }).length;
+      whole = `<span class="sp-whole"><span class="sp-wl"><b>ゲーム全体</b><small>全${days.length}日 ・ ${fn}試合</small></span>${fr ? `<span class="sp-rank${fr <= 3 ? ' r' + fr : ''}"><span class="sp-md">${fr <= 3 ? medalSvg(fr, 16, false) : ''}</span>${fr}位<small>/${fp.filter(Boolean).length}人</small></span><b class="sp-wsc ${scoreCls(ft[me])}">${fmtScore(ft[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>`;
+    }
+    const dayTag = '';
     return `${moHead}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
-        <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
+        <span class="sp-meta">${multi ? `<em class="sp-dn">${dI + 1}日目の成績</em> ` : ''}<span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
       <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}"><span class="sp-md">${rank <= 3 ? medalSvg(rank, 18, false) : ''}</span>${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${fmtScore(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
-      <span class="sp-cnts">${cnts}</span>
+      <span class="sp-cnts">${cnts}</span>${whole}
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
   // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
