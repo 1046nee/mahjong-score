@@ -1101,7 +1101,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sw-wrap { margin: 10px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
-.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1.5px solid #8A9AA5; } /* 下の線は濃いめのグレー（2026-10-08 目立たせた） */
+.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1.5px solid #8A9AA5; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scroll-snap-type: x proximity; scroll-padding: 0 16px; } /* 仲間ページが多くても指で横にすべらせて選べる（2026-10-08） */
+.sw-row > * { scroll-snap-align: start; } /* 下の線は濃いめのグレー（2026-10-08 目立たせた） */
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
 .sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
@@ -1192,7 +1193,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-tape { display: flex; flex-direction: column; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); overflow: hidden; }
 .mu-tr { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 8px 12px; border-top: .5px solid #E3E9E7; font-variant-numeric: tabular-nums; }
 .mu-tr:first-child { border-top: 0; }
-.mu-tr-h { background: #F4F7F6; } .mu-tr-h b.mu-tw { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 13px; color: #1F2A28; }
+.mu-tr-h { background: var(--pc); } .mu-tr.mu-tr-h b.mu-tw { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 13px; color: #fff; }
 .mu-tr-h b.mu-tw:last-child { justify-content: flex-end; } .mu-tw span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-tr span { font-size: 11.5px; font-weight: 700; color: #5F6E6B; text-align: center; white-space: nowrap; }
 .mu-tr b { font-size: 15px; font-weight: 800; color: #8A9AA5; } .mu-tr b:last-child { text-align: right; }
@@ -1205,14 +1206,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-bar { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: #E3E9E7; overflow: hidden; } .mu-bar i { display: block; height: 100%; background: #D4A017; }
 .mu-gt-wrap { border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-gt { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-.mu-gt th { padding: 8px 4px 6px; font-size: 11px; font-weight: 800; color: #5F6E6B; background: #F4F7F6; text-align: center; vertical-align: bottom; }
+.mu-gt th { padding: 8px 4px 6px; font-size: 11px; font-weight: 800; color: #fff; background: var(--pc); text-align: center; vertical-align: bottom; }
 .mu-gt th span { display: block; max-width: 56px; margin: 2px auto 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-gt th.sticky-col { text-align: left; padding-left: 12px; z-index: 2; }
 .mu-gt td { padding: 8px 4px; text-align: center; border-top: .5px solid #E3E9E7; font-weight: 700; cursor: pointer; }
 .mu-gt tr:active td { background: #F4F7F6; }
 .mu-gt td.best { background: #FBF3DC; font-weight: 900; } /* そのゲームでいちばんスコアの多い人 */
 .mu-gt .sticky-col { position: sticky; left: 0; background: #fff; text-align: left; padding-left: 12px; max-width: 140px; }
-.mu-gt th.sticky-col { background: #F4F7F6; }
+.mu-gt th.sticky-col { background: var(--pc); }
 .mu-gn b { display: block; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-gn small { display: block; font-size: 11px; color: #8A9AA5; font-weight: 700; }
 .mu-wl2 { font-weight: 900; } .mu-wl2.pos { color: #1A237E; } .mu-wl2.neg { color: #C62828; }
@@ -1910,6 +1911,7 @@ button.ios-row:active { background: #F2F6F5; }
 .rounds-table.tbl-soft td.sticky-col { background: #fff; font-size: 13px; font-weight: 600; box-shadow: inset -.5px 0 0 #D5DEDB; }
 .rounds-table.tbl-soft tr.cat-break td { border-top: 6px solid #F4F7F6; }
 .th-av { display: block; width: 22px; height: 22px; margin: 0 auto 3px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; line-height: 22px; }
+.rounds-table:not(.tbl-soft) th .th-av { box-shadow: 0 0 0 1.5px #fff; } /* 主色の見出しの上の顔 */
 .rk-mini { display: inline-block; width: 10px; height: 14px; margin-right: 6px; border-radius: 3px; vertical-align: -2px; }
 .rk-mini.r1 { background: var(--rk1); } .rk-mini.r2 { background: var(--rk2-tint); box-shadow: inset 0 0 0 1.5px var(--rk2); }
 .rk-mini.r3 { background: var(--rk3-tint); box-shadow: inset 0 0 0 1.5px var(--rk3); } .rk-mini.r4 { background: var(--rk4); }
@@ -1978,6 +1980,10 @@ button.ios-row:active { background: #F2F6F5; }
 .lb-avg::before, .lb-avg::after { content: ''; flex: 1; border-top: 1.5px dashed #C3CECB; }
 .lb-avg span { flex: none; }
 .empty-note { margin: 2px 0 10px; padding: 12px 14px; border-radius: 12px; background: #F4F7F6; font-size: 13px; color: #5F6E6B; line-height: 1.7; } /* 条件で数える試合が無いとき（表やカードは残す） */
+.rk-in-l { animation: rkInL .26s ease-out; } .rk-in-r { animation: rkInR .26s ease-out; } /* 指標を切り替えたときに中身がすべり込む */
+@keyframes rkInL { from { transform: translateX(60px); opacity: .2; } to { transform: none; opacity: 1; } }
+@keyframes rkInR { from { transform: translateX(-60px); opacity: .2; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .rk-in-l, .rk-in-r { animation: none; } }
 .pd-empty .pd { cursor: default; } .pd-empty .pd-base { opacity: .45; } /* 試合が無いときの表彰台（台だけ） */
 .hg-empty .hg-card { color: #AEBBB8; } .hg-empty .hg-rec b, .hg-empty .hg-pct b, .hg-empty .hg-meta b { color: #AEBBB8; }
 .lb-under-h { margin: 16px 2px 8px; padding-top: 12px; border-top: 1px solid #D5DEDB; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 6試合未満（順位なし） */
@@ -2763,7 +2769,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="modal-backdrop" id="quick-start" onclick="if(event.target===this)closeQuickStart()">
   <div class="qs-modal">
     <div class="qs-title">何人で打ちますか？</div>
-    <div class="qs-desc">選ぶだけで、すぐ点数入力を始められます。<br>メンバー名やルールは、あとからいつでも変えられます。</div>
+    <div class="qs-desc">選ぶだけで、すぐ点数入力を始められます。<br>メンバー名やルールは、あとからすぐ変えられます。</div>
     <button type="button" class="qs-btn qs-4" onclick="quickStart(4)">
       <span class="qs-n">4<small>人</small></span>
       <span class="qs-t"><b>四麻ではじめる</b><small>25,000点持ち・ウマ10-30</small></span>
@@ -4184,28 +4190,47 @@ function rankSubHtml(p, m) { return rankSubParts(p, m).map(t => `<span class="nw
 function circleKindSegHtml() { const h = statKindSegHtml(); return h ? `<div class="sk-wrap">${h}</div>` : ''; }
 // 通算順位のカードを左右にスワイプすると、指標（通算スコア→平均着順→トップ率…）を切り替える（2026-10-08）。
 // 横にスクロールする所（指標のピル・表）から始めたスワイプは、そちらのスクロールに任せる
+// 指に付いて中身（表彰台・順位のカード）が左右に動き、離すと次の指標の中身がすべり込む（2026-10-08）
+const RANK_BODY_SEL = '.podium, .lb-grid, .lb-avg, .lb-under-h, .lb-none, .rank-card > .h2h-note';
 (function rankSwipe() {
-  let sx = 0, sy = 0, ok = false;
+  let sx = 0, sy = 0, ok = false, horiz = null, els = [];
+  const move = x => els.forEach(el => { el.style.transform = x ? `translateX(${x}px)` : ''; el.style.opacity = x ? String(Math.max(.35, 1 - Math.abs(x) / 260)) : ''; });
   document.addEventListener('touchstart', e => {
     const c = e.target.closest && e.target.closest('#circle-body .rank-card');
     ok = !!c && !e.target.closest('.pill-row, .tbl-scroll, .seg, button.pill');
-    if (ok) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }
+    horiz = null; els = [];
+    if (ok) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; els = [...c.querySelectorAll(RANK_BODY_SEL)]; els.forEach(el => { el.style.transition = 'none'; }); }
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!ok) return;
+    const dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+    if (horiz == null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horiz = Math.abs(dx) > Math.abs(dy) * 1.2;
+    if (horiz) move(dx * .85);
   }, { passive: true });
   document.addEventListener('touchend', e => {
     if (!ok) return; ok = false;
-    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    shiftCircleMetric(dx < 0 ? 1 : -1);
+    const dx = e.changedTouches[0].clientX - sx;
+    const go = horiz && Math.abs(dx) >= 50 && shiftCircleMetric(dx < 0 ? 1 : -1, true);
+    if (!go) { els.forEach(el => { el.style.transition = 'transform .18s ease-out, opacity .18s'; }); move(0); }
   }, { passive: true });
 })();
-function shiftCircleMetric(dir) {
+function shiftCircleMetricTo(k) {
+  const ms = CIRCLE_METRICS.map(([x]) => x), d = ms.indexOf(k) - ms.indexOf(circleMetric);
+  if (!d) return;
+  circleMetric = ms[ms.indexOf(k) - Math.sign(d)];
+  shiftCircleMetric(Math.sign(d));
+}
+function shiftCircleMetric(dir, swiped = false) {
   const ms = CIRCLE_METRICS.map(([k]) => k), i = Math.max(0, ms.indexOf(circleMetric));
   const j = i + dir;
-  if (j < 0 || j >= ms.length) return;
+  if (j < 0 || j >= ms.length) return false;
   circleMetric = ms[j];
   renderCircle();
-  const on = document.querySelector('#circle-body .rank-card .pill.on');
+  const card = document.querySelector('#circle-body .rank-card');
+  if (card) card.querySelectorAll(RANK_BODY_SEL).forEach(el => { el.classList.add(dir > 0 ? 'rk-in-l' : 'rk-in-r'); });
+  const on = card && card.querySelector('.pill.on');
   if (on) on.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  return true;
 }
 // 通算順位の空の形（2026-10-08）: 表彰台は台だけ（1〜3）、その下に名簿の人を「—」のカードで並べる（試合があるときと同じ並び）
 function rankEmptyBodyHtml() {
@@ -4235,7 +4260,7 @@ function circleRankTabHtml(st, modeChips, noBind) {
   const { m, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const my = myCircleMid();
   const chips = `<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
-    `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="shiftCircleMetricTo('${k}')">${l}</button>`).join('')}</div>`;
   const top3 = q.slice(0, 3);
   const order = [1, 0, 2].filter(i => top3[i]);
   const podium = `<div class="podium" style="grid-template-columns:${order.map(i => (i === 0 ? '1.12fr' : '1fr')).join(' ')}">${order.map(i => {
@@ -4299,7 +4324,7 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   add('試合数', L.map(p => p.n), String);
   add('平均着順', L.map(p => p.rankSum / p.n), v => v.toFixed(2), 'min');
   // 1着〜n着の行ラベルに着順の色の見本（画面だけ。画像の表のセルには要素を入れない）
-  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), fmtCnt);
+  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), fmtCnt, null, null, v => (v > 0 ? '' : '#ccc')); // 0回は薄い字（ゲームの個人成績と同じ）
   add('トップ率', L.map(p => p.top / p.n), pctText, 'max', 'cat-break');
   if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
@@ -4312,7 +4337,7 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   add('箱下', L.map(p => boxOf(p)), v => v + '回', null, null, v => (v > 0 ? '#C62828' : ''));
   const w = forImage ? 90 : 76;
   // 数字は1行で収まる大きさ（12.5px）にし、列の幅を最も長い値（「-1,234.0」「45,000」）が入る72pxにする（はみ出す代わりに横スクロール）
-  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table tbl-soft grid-cmp" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 72}px">
+  return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table grid-cmp" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${w + L.length * 72}px">
     <thead><tr><th class="sticky-col" style="width:${w}px">${corner}</th>${L.map(headOf).join('')}</tr></thead>
     <tbody>${rows.join('')}</tbody></table></div>`;
 }
@@ -8944,7 +8969,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // 「スコア」から下は点数系＝上（着順の回数・率）とは数字の意味が変わるので、その境目に区切り線を入れる
   // （チップ・焼き鳥・チョンボの記録も同じく、最初の1行の上に区切り線）
   const rows = statLabels.map((label, ri) =>
-    `<tr${(label === 'スコア' || label === firstExtra) ? ' class="cat-break"' : ''}><td class="sticky-col">${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join('');
+    `<tr${(label === 'スコア' || label === 'トップ率' || label === firstExtra) ? ' class="cat-break"' : ''}><td class="sticky-col">${!forImage && /^\d着$/.test(label) ? `<span class="rk-mini ${rkCls(+label[0], slots)}"></span>` : ''}${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join(''); // 着順の色の見本・率の前の区切り線は成績表と同じ（2026-10-08）
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
     <thead>${teamNameRowHtml(s, forImage)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
