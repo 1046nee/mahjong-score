@@ -952,7 +952,8 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .ht-n b { font-size: 20px; font-weight: 900; color: var(--pc); line-height: 1; font-variant-numeric: tabular-nums; }
 .ht-n .ht-d { margin-left: auto; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .ht-tag { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
-.ht-sc b { font-size: 17px; } .ht-sc b.pos { color: #1A237E; } .ht-sc b.neg { color: #C62828; } .ht-sc b.nil, .ht-sc b:not(.pos):not(.neg) { color: #1F2A28; }
+.ht-sc { min-width: 0; gap: 4px; } .ht-sc b { font-size: 17px; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: clip; white-space: nowrap; } .ht-sc .ht-d { flex: none; }
+.ht-grid.sc2 .ht-sc b { font-size: 15px; } .ht-grid.sc3 .ht-sc b { font-size: 13px; } /* スコアの桁が多いときは全部のタイルで同じだけ小さく */ .ht-sc b.pos { color: #1A237E; } .ht-sc b.neg { color: #C62828; } .ht-sc b.nil, .ht-sc b:not(.pos):not(.neg) { color: #1F2A28; }
 /* メンバーの成績: 連携している試合の1行（日付・試合名・その人のスコア） */
 /* メンバーの成績のシート: 地を選んでいる形式の色に（四麻＝少し緑・三麻＝淡い青）。カード・タイルは白で浮かせる */
 :root { --pc-page: #E6F1EC; }
@@ -1750,7 +1751,9 @@ button.ios-row:active { background: #F2F6F5; }
 .gm-list { display: flex; flex-direction: column; gap: 8px; }
 .gm-list .gr { background: #fff; border-radius: 14px; border-top: 0; box-shadow: inset 0 0 0 1.5px var(--kb, #D5DEDB), var(--sh-1); }
 .gr.k4, .ht.k4, .rg-row.k4, .cg-card.k4 { --kb: #5FA3A6; } .gr.k3, .ht.k3, .rg-row.k3, .cg-card.k3 { --kb: #7F96CF; } /* 試合のカードの枠: 四麻＝緑・三麻＝青 */
-.gr.tm, .ht.tm, .cg-card.tm { --kb: #F08A4B; } /* チーム戦＝オレンジ（2026-10-08） */
+.gr.tm, .ht.tm, .cg-card.tm, .sp-g.tm { --kb: #F08A4B; }
+.sp-g.k4 { --kb: #5FA3A6; } .sp-g.k3 { --kb: #7F96CF; } .sp-g.tm { --kb: #F08A4B; }
+.sp-g.k4, .sp-g.k3 { box-shadow: inset 0 0 0 1.5px var(--kb); } /* 推移の点のカードの試合も試合のカードと同じ枠（2026-10-08） */ /* チーム戦＝オレンジ（2026-10-08） */
 .pf-card .cg-card.k4, .pf-card .cg-card.k3, .pf-card .cg-card.tm { box-shadow: inset 0 0 0 1.5px var(--kb); }
 .gm-row { position: relative; display: flex; align-items: center; gap: 12px; min-height: 72px; padding: 12px 8px 12px 14px; cursor: pointer; }
 .gm-row + .gm-row::before { content: ''; position: absolute; top: 0; left: 70px; right: 0; border-top: .5px solid #D5DEDB; }
@@ -4197,7 +4200,12 @@ function renderCircle() {
   else html += circleRankTabHtml(st, modeChips, noBind);
   html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
   const body = document.getElementById('circle-body');
+  // 描き直すあいだに高さが縮むと画面が上にずれるので、前の高さを保ってから戻す（タブを押すと縦に動くことがあった。2026-10-08）
+  const y0 = window.scrollY;
+  body.style.minHeight = body.offsetHeight + 'px';
   body.innerHTML = html;
+  if (Math.abs(window.scrollY - y0) > 1) window.scrollTo(0, y0);
+  requestAnimationFrame(() => { body.style.minHeight = ''; });
   revealOnInRows(body);
   updateScrollHints();
 }
@@ -11936,7 +11944,8 @@ function setSparkUnit(u, el) {
   if (t) { // グラフのカードだけ差し替える
     const box = document.createElement('div'); box.innerHTML = trendHtml(t.hist, t.np, t.score);
     const nt = box.firstElementChild; tr.replaceWith(nt);
-    const sc = nt.querySelector('.mc-scroll'); if (sc) sc.scrollLeft = sc.scrollWidth;
+    const sc = nt.querySelector('.mc-scroll');
+    if (sc) { sc.removeAttribute('data-end'); sc.scrollLeft = sc.scrollWidth; } // 右端へ送るのはここで済ませる（あとから右端へ戻されないように）
     if (keep) sparkSelectKeyIn(nt, keep);
     return;
   }
@@ -11953,7 +11962,11 @@ function sparkSelectKeyIn(root, k) {
   if (i < 0) return;
   sparkSelect(svg.dataset.rid, i);
   const dot = svg.querySelector(`circle.dot[data-d="${i}"]`), sc = svg.closest('.mc-scroll');
-  if (dot && sc) { const r = dot.getBoundingClientRect(), b = sc.getBoundingClientRect(); if (r.left < b.left + 24 || r.right > b.right - 24) sc.scrollLeft += r.left - b.left - b.width / 2; }
+  if (sc) sc.removeAttribute('data-end');
+  // 選んだ点をグラフの真ん中あたりへ（端なら見えるところまで）。下のカードが画面の外なら、見えるところまで縦に送る
+  if (dot && sc) { const r = dot.getBoundingClientRect(), b = sc.getBoundingClientRect(); sc.scrollLeft += (r.left + r.width / 2) - (b.left + b.width / 2); }
+  const pop = document.getElementById('pop-' + svg.dataset.rid);
+  if (pop && !pop.hidden) { const pr = pop.getBoundingClientRect(); if (pr.bottom > window.innerHeight || pr.top < 0) pop.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
 }
 // 試合が無いときのグラフ: 試合があるときと同じ大きさ・同じ目盛り（+100・0・-100）の空のグラフに、説明を重ねる（形を崩さない。2026-10-08）
 function emptySparkHtml(msg) {
@@ -12185,7 +12198,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
       }
     }
     const dayTag = multi ? `<em class="sp-dn">${dI + 1}日目</em>` : ''; // 試合名の横（下の行に入れると2行になりカードが高くなった。2026-10-08）
-    return `${moHead}${whole}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
+    return `${moHead}${whole}<button type="button" class="sp-g k${(g.settings && g.settings.numPlayers) === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
         <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
@@ -12450,7 +12463,13 @@ function curMpPane(st, cmp) {
   if (mpPane === 'sum' && !cmp) return 'hist';
   return mpPane || (cmp ? 'sum' : 'hist'); // 既定は成績表（成績が無いときは過去の試合。2026-10-08）
 }
-function setMpPane(k) { mpPane = k; renderMpPanes(collectMyStats()); }
+function setMpPane(k) {
+  const y0 = window.scrollY, box = document.getElementById('mp-me');
+  if (box) box.style.minHeight = box.offsetHeight + 'px'; // 描き直すあいだ高さを保つ（縦に動かないように）
+  mpPane = k; renderMpPanes(collectMyStats());
+  if (Math.abs(window.scrollY - y0) > 1) window.scrollTo(0, y0);
+  requestAnimationFrame(() => { if (box) box.style.minHeight = ''; });
+}
 function renderMpPanes(st) {
   setTimeout(scrollSparksEnd, 0);
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
@@ -12670,7 +12689,10 @@ function histTilesHtml(items) {
   };
   // 年の中を月ごとに区切る（一覧と同じ「10月」の見出し。2026-10-08）
   const byMonth = list => { const out = []; list.forEach(x => { const m = new Date(gameDayMs(x.g)).getMonth(); let b = out[out.length - 1]; if (!b || b.m !== m) out.push(b = { m, list: [] }); b.list.push(x); }); return out; };
-  const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), byMonth(b.list).map(mo => moSecHtml(mo.m, mo.list.length, mo.list.reduce((a, x) => a + (x.g.rounds || []).length, 0), `<div class="ht-grid">${mo.list.map(tileOf).join('')}</div>`)).join(''))).join('');
+  // スコアを出すタイル（メンバーの成績の連携済みの試合）は、いちばん長いスコアに合わせて全部のタイルで同じ大きさ（2026-10-08）
+  const scLen = Math.max(0, ...items.filter(x => x.score != null).map(x => fmtScore(x.score).length));
+  const scCls = scLen >= 8 ? ' sc3' : scLen >= 6 ? ' sc2' : '';
+  const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), byMonth(b.list).map(mo => moSecHtml(mo.m, mo.list.length, mo.list.reduce((a, x) => a + (x.g.rounds || []).length, 0), `<div class="ht-grid${scCls}">${mo.list.map(tileOf).join('')}</div>`)).join(''))).join('');
   return tiles; // 「nゲーム・空・少ない」の凡例は出さない（2026-10-07 ユーザー指定。タイルの点線・琥珀色の縁はそのまま）
 }
 function histKindMatch(g, k) {
