@@ -1643,6 +1643,9 @@ button.ios-row:active { background: #F2F6F5; }
 /* シートの見出しは上に貼り付けて、右に「×」（スクロールしても閉じられる）。下へスワイプしても閉じる（initSheetSwipe） */
 .fm-back { display: none; flex: none; align-items: center; gap: 2px; height: 36px; padding: 0 14px 0 10px; border: 1.5px solid #C3CECB; border-radius: 18px; background: #F4F7F6; color: #1F2A28; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
 .fm-back .ico { transform: rotate(180deg); }
+/* 見出しが残りの幅を取り、「戻る」は×のすぐ左に寄せる（space-between だと空の操作欄の分も間が空き、戻るが×から離れていた。2026-10-08） */
+#form-modal-title { flex: 1 1 auto; min-width: 0; }
+#form-modal-actions:empty { display: none !important; }
 #form-modal:has(.sheet-body) .fm-back { display: inline-flex; }
 .fm-x { display: none; flex: none; width: 36px; height: 36px; border: 1.5px solid #C3CECB; border-radius: 50%; background: #F4F7F6; color: #1F2A28; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; } /* 戻ると同じ。ほかの灰色のボタンと同じ色味のまま、細い灰色の枠と濃い字で見やすく（2026-10-08） */
 #form-modal:has(.sheet-body) .fm-x { display: grid; place-items: center; }
