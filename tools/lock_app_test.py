@@ -111,8 +111,8 @@ def main():
                             n_rounds(v) == 2 and v.get("lockAt", 0) > lock2))
             # 確定した状態（画面の中だけで lockAt を過去にする）では入力の入口を出さない
             pg.evaluate("activeGame.lockAt = serverNow() - 1000; renderGame()")
-            results.append(("[7] 確定した試合は「確定しています」と出て、点数入力・行のタップが出ず、設定の編集の代わりに「ゲーム名の変更」", True,
-                            pg.evaluate("""document.getElementById('game-state').innerText.includes('記録は確定しています')
+            results.append(("[7] 確定した試合は確定の表示を出さず（2026-10-08）、点数入力・行のタップが出ず、設定の編集の代わりに「ゲーム名の変更」", True,
+                            pg.evaluate("""!document.getElementById('game-state').innerText.includes('確定')
                               && getComputedStyle(document.querySelector('#view-game .fab')).display === 'none'
                               && document.getElementById('game-edit-btn').textContent === 'ゲーム名の変更' && document.querySelector('#view-game .title-actions button[onclick=\"openShareSheet()\"]').textContent === '共有'
                               && ![...document.querySelectorAll('#rounds-table tbody tr')].some(tr => (tr.getAttribute('onclick') || '').includes('openRoundMenu'))""")))
@@ -126,8 +126,8 @@ def main():
             pg.evaluate(f"leaveGame(); joinSession('{old}')")
             pg.wait_for_function(f"() => activeGame && activeGame.id === '{old}'", timeout=20000)
             pg.wait_for_timeout(2500)
-            results.append(("[9] 締め切りの無い古い試合（最後の入力が2日前）を開くと「確定しています」になり、入力の入口が出ない", True,
-                            pg.evaluate("isGameLocked(activeGame) && document.getElementById('game-state').innerText.includes('記録は確定しています') && getComputedStyle(document.querySelector('#view-game .fab')).display === 'none'")))
+            results.append(("[9] 締め切りの無い古い試合（最後の入力が2日前）を開くと確定（表示は出さない）になり、入力の入口が出ない", True,
+                            pg.evaluate("isGameLocked(activeGame) && !document.getElementById('game-state').innerText.includes('確定') && getComputedStyle(document.querySelector('#view-game .fab')).display === 'none'")))
             ov = server_get(old) or {}
             results.append(("[10] 古い試合に、過ぎた締め切り（最後の入力から24時間）が本番に書き込まれる（ルールの貼り替え後）", True,
                             isinstance(ov.get("lockAt"), (int, float)) and ov["lockAt"] < time.time() * 1000))

@@ -932,23 +932,24 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .ht-year span { font-size: 12px; font-weight: 700; color: #5F6E6B; white-space: nowrap; } /* 狭い画面でも「2026年」や件数の途中で折らない（入らなければ件数ごと次の行へ） */
 .ht-year .ht-mine { margin-left: -4px; color: #177083; }
 .ht-legend + .ht-year { margin-top: 4px; }
-.ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-.ht { aspect-ratio: 1 / 1; min-width: 0; overflow: hidden; display: flex; flex-direction: column; gap: 3px; padding: 8px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
+.ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+/* 中身が入りきらないときは正方形より少し縦に伸びる（切って隠さない。2026-10-08: 名前の2行目・顔・+n が欠けていた） */
+.ht { aspect-ratio: 1 / 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 7px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
 .ht:active { opacity: .75; }
 .ht.k4, .ht.k3 { border-color: var(--kb); }
-.ht-top { display: flex; align-items: center; gap: 4px; height: 18px; }
+.ht-top { display: flex; align-items: center; gap: 3px; height: 18px; flex: none; }
 .ht-k { width: 14px; height: 14px; margin: 0; flex: none; }
-.ht-multi { flex: none; height: 16px; padding: 0 5px; border-radius: 8px; background: #C07A22; color: #fff; font-size: 10px; font-weight: 800; line-height: 16px; }
-.ht-top em { margin-left: auto; flex: none; font-style: normal; height: 18px; padding: 0 7px; border-radius: 9px; font-size: 10.5px; font-weight: 800; line-height: 18px; }
+.ht-multi { flex: none; height: 16px; padding: 0 4px; border-radius: 8px; background: #C07A22; color: #fff; font-size: 9.5px; font-weight: 800; line-height: 16px; }
+.ht-top em { margin-left: auto; flex: none; font-style: normal; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 10px; font-weight: 800; line-height: 18px; }
 .ht-me { background: var(--pc-tint); color: var(--pc); }
 .ht-out { background: #6B7A77; color: #fff; }
-.ht-name { flex: 1; min-height: 0; font-size: 12.5px; font-weight: 800; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
-.ht-avs { display: flex; height: 20px; align-items: center; padding-left: 2px; overflow: hidden; }
+.ht-name { flex: none; max-height: 2.5em; font-size: 12px; font-weight: 800; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.ht-avs { display: flex; height: 20px; flex: none; margin-top: auto; align-items: center; padding-left: 2px; } /* 名前の下の余りは顔の上に寄せる（顔とスコアはいつも下にそろう） */
 .ht-avs i { width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; flex: none; }
 .ht-avs i.me { box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--pc); z-index: 1; margin: 0 4px 0 2px; }
 .ht-avs i.more { width: auto; min-width: 16px; padding: 0 3px; border-radius: 8px; }
 .ht-avs i.more { background: #E3E9E8; color: #4F5C5A; font-size: 9px; }
-.ht-n { display: flex; align-items: baseline; gap: 2px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
+.ht-n { display: flex; flex: none; align-items: baseline; gap: 2px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .ht-n b { font-size: 20px; font-weight: 900; color: var(--pc); line-height: 1; font-variant-numeric: tabular-nums; }
 .ht-n .ht-d { margin-left: auto; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
 .ht-tag { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
@@ -6336,7 +6337,7 @@ function lockedToast() { showToast('この試合は記録が確定している�
 function endedToast() { showToast('対局は終了しています。入力するときは「再開する」を押してください'); }
 function gameStateHtml(g, withButton) {
   if (isGameLocked(g)) {
-    return `<div class="gs-box locked"><b>記録は確定しています</b>（${fmtDateTime(lockAtOf(g))}）。点数の入力・修正はできません。結果を見る・共有する・画像にするのはこれまでどおりできます。</div>`;
+    return ''; // 記録が確定していることの表示は出さない（2026-10-08 ユーザー指定。入力の入口が出ないだけ・直そうとしたときはトースト）
   }
   // 対局を終えたあとは「終了しました」の案内を出さない（2026-10-03 ユーザー指定）。試合の画面にはボタン（チップ・再開）だけ置く
   if (isGameEnded(g)) {
@@ -11441,7 +11442,7 @@ function renderResultSheet() {
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
   const backTo = st.ret && st.ret.back === 'mup' && mup ? sheetBackMark('mupReopen()', '対戦に戻る')
     : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${st.ret.member}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}${locked ? ' ・ 記録は確定しています' : ''}</div>
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     ${rsFoldHtml('tbl', tblTitle, table, rs.length < 10, rs.length ? `${rs.length}試合` : '')}${extra}
     <div class="mn-group" style="margin-top:14px">${acts}</div>
@@ -11511,7 +11512,6 @@ function openRenameGame(id) {
   document.getElementById('form-modal-title').textContent = 'ゲーム名の変更';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="field"><label>ゲーム名</label><input type="text" id="rn-name" value="${esc(g.name || '')}" maxlength="${MAX_GROUP_LEN}"></div>
-    ${isGameLocked(g) ? '<div class="h2h-note" style="margin-top:0">記録は確定していますが、ゲーム名だけはいつでも変えられます（点数・メンバーは変えられません）。</div>' : ''}
     <button class="confirm-btn" style="margin-top:10px" onclick="saveRenameGame('${esc(id)}')">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -12679,7 +12679,7 @@ function histTilesHtml(items) {
     const nP = played.filter(Boolean).length;
     const st = !n ? ' empty' : n <= HIST_FEW ? ' few' : '';
     const d = new Date(gameDayMs(g));
-    const MAXAV = 4;
+    const MAXAV = who.length > 4 ? 3 : 4; // 5人以上は3人＋「+n」（幅104pxのタイルでも欠けない数。2026-10-08）
     const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('')
       + (who.length > MAXAV ? `<i class="more">+${who.length - MAXAV}</i>` : '');
     const mark = hideMark ? '' : me == null ? (me === null ? '<em class="ht-out">不参加</em>' : '') : '<em class="ht-me">参加</em>';
