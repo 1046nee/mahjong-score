@@ -775,8 +775,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .flt.mp-pwrap { border-color: #1F2A28; background: #1F2A28; color: #fff; }
 .flt.mp-pwrap .ico { --i1: #fff; --i2: #fff; }
 .flt.mp-pwrap .flt-x { background: rgba(255,255,255,.22); color: #fff; }
-/* 期間を絞っている（すべての期間以外）ときは琥珀色＝絞り込み中だと一目でわかる（2026-10-08）。合計｜個人戦｜チーム戦の個人戦・チーム戦も同じ色 */
-.flt.mp-pwrap.on { border-color: #B8741A; background: #B8741A; }
+/* 期間を絞っている（すべての期間以外）ときは黒より少し明るい濃いグレー（元の色の小さな変化。2026-10-08） */
+.flt.mp-pwrap.on { border-color: #55625F; background: #55625F; }
 .flt-x { flex: none; width: 24px; height: 24px; margin-left: 4px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--pc-ink); font-size: 14px; font-weight: 800; line-height: 1; cursor: pointer; display: inline-grid; place-items: center; }
 .mp-pwrap .mp-period > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 359px) { .mp-pwrap.has-x .mp-period .ico { display: none; } } /* 狭い画面で「×」を出すときは ▾ を省いて1行に */
@@ -1264,8 +1264,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sk-seg { display: flex; gap: 2px; padding: 3px; margin: -2px 0 10px; border-radius: 10px; background: var(--pc-tint); box-shadow: inset 0 0 0 1px var(--pc-line2); } /* 主色の淡い地＋選んだものは主色で塗る（2026-10-07 目立たせた） */
 .sk-seg button { flex: 1; border: 0; background: none; padding: 5px 0; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; color: var(--pc-ink); cursor: pointer; }
 .sk-seg button.on { background: var(--pc); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-.sk-seg.filt { background: #FBF1E2; box-shadow: inset 0 0 0 1px #E9C99A; } .sk-seg.filt button { color: #7A4A0E; }
-.sk-seg.filt button.on { background: #B8741A; color: #fff; } /* 個人戦・チーム戦で絞っているとき（合計以外） */
+.sk-seg.filt { box-shadow: inset 0 0 0 1.5px var(--pc); } /* 個人戦・チーム戦で絞っているとき（合計以外）: 主色の枠を濃く・選んだボタンも一段濃い主色（元の色の小さな変化） */
+.sk-seg.filt button.on { background: var(--pc-ink); }
 .sk-wrap .sk-seg { margin: 0 0 10px; }
 .sp-unit { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: #EEF2F1; }
 .sp-unit button { border: 0; background: none; padding: 2px 10px; border-radius: 7px; font: inherit; font-size: 12px; font-weight: 800; color: #5F6E6B; cursor: pointer; }
