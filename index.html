@@ -19,7 +19,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="canonical" href="https://majasco.jp/">
 <link rel="icon" href="/favicon.ico" sizes="48x48 32x32 16x16">
 <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon.png">
-<link rel="apple-touch-icon" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.json">
 <!-- 検索結果でのサイト名・ロゴ・サイトリンク向けの構造化データ -->
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"まじゃすこ","alternateName":["majasco","まじゃすこ / majasco"],"url":"https://majasco.jp/"}</script>
@@ -6683,6 +6683,7 @@ const viewScroll = {};
 try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
 function activeViewName() { const v = document.querySelector('.view.active'); return v ? v.id.replace(/^view-/, '') : null; }
 function showView(name, skipHistory = false, restore = false) {
+  if (appUpdatePending) setTimeout(applyAppUpdate, 300); // 新しい版を待っていれば、切り替えたあと安全なら読み込み直す
   { const cur = activeViewName(); if (cur && cur !== name) viewScroll[cur] = window.scrollY; }
   // 過去の試合・自分の成績はアカウントに残す機能＝ログインが必要（ブラウザだけに残る履歴は画面に出さない）
   if (loginAvailable()) {
@@ -13179,6 +13180,42 @@ db.ref('.info/connected').on('value', snap => {
 });
 window.addEventListener('online', () => flushOutbox());
 document.addEventListener('visibilitychange', () => { if (!document.hidden) flushOutbox(); });
+// ---- 新しい版が出たら読み込み直す（2026-10-08） ----
+// ホーム画面に追加したアプリは閉じても裏で開いたままのことが多く、再読み込みの操作も無いので、古い版のまま何日も使われる。
+// デプロイのときに GitHub Actions が APP_VERSION（下の印）と /version.txt に同じコミットを書き込む。
+// アプリに戻ってきたとき（と30分ごと）に /version.txt を見て、違えば読み込み直す。
+// 点数の入力中・シートを開いている・未送信がある・文字を入力中のときは待って、次に安全なとき（画面の切り替え・戻ってきたとき）に読み込む
+const APP_VERSION = '__APP_VERSION__';
+var appUpdatePending = false, appVerCheckedAt = 0; // var: 起動中に showView から先に読まれるため（let だと宣言前で止まる）
+function appReloadSafe() {
+  if (document.hidden) return false;
+  if (outbox.length) return false;
+  if (!['home', 'history', 'mystats', 'circle', 'login', 'detail', 'watch'].includes(activeViewName())) return false;
+  if (document.querySelector('.sheet.open, .modal-backdrop.open, .img-modal.open')) return false;
+  const f = document.activeElement;
+  if (f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName)) return false;
+  return true;
+}
+function applyAppUpdate() {
+  if (!appUpdatePending || !appReloadSafe()) return;
+  // 同じ版のために2回は読み込み直さない（配信の切り替わりの途中で古い index.html が返っても、読み込みを繰り返さない）
+  try { if (sessionStorage.getItem('majasco-reloaded-for') === appUpdatePending) return; sessionStorage.setItem('majasco-reloaded-for', appUpdatePending); } catch (e) { return; }
+  location.reload();
+}
+async function checkAppVersion(force) {
+  if (APP_VERSION.startsWith('__')) return; // 手元・テスト（印が入っていない）は見ない
+  if (!force && Date.now() - appVerCheckedAt < 60000) return;
+  appVerCheckedAt = Date.now();
+  try {
+    const r = await fetch('/version.txt?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const v = (await r.text()).trim();
+    if (/^[0-9a-f]{7,40}$/.test(v) && v !== APP_VERSION) { appUpdatePending = v; applyAppUpdate(); }
+  } catch (e) { /* 電波が無いときは次の機会に */ }
+}
+// 待っている版があっても毎回見直す（その後さらに新しい版が出ていれば、そちらを待つ）
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { applyAppUpdate(); checkAppVersion(); } });
+setInterval(() => { applyAppUpdate(); checkAppVersion(true); }, 30 * 60 * 1000);
 setInterval(updateSyncUi, 1000);
 flushOutbox();
 if (appState.games && appState.games.length) requestPersistentStorage(); // 履歴を持つ端末は保存データの保護を要求

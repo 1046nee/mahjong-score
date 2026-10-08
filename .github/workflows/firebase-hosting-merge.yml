@@ -22,6 +22,12 @@ jobs:
           python3 -m pip install --quiet playwright
           python3 -m playwright install --with-deps chromium
           python3 tools/smoke_test.py
+      # 版の印（アプリが新しい版に気づいて読み込み直すため。index.html の __APP_VERSION__ と /version.txt に同じコミット）
+      - name: 版の印を入れる
+        run: |
+          test "$(grep -c "'__APP_VERSION__'" index.html)" = 1
+          sed -i "s/'__APP_VERSION__'/'$GITHUB_SHA'/" index.html
+          echo "$GITHUB_SHA" > version.txt
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

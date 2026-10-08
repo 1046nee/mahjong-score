@@ -23,6 +23,10 @@
 - スモークテスト = tools/smoke_test.py（LP表示→グループ作成→URL共有→別タブで自動参加→点数入力→結果表示の主要動線を実ブラウザで検証。
   2026-07-18の「共有URLで開くとLPしか出ない」障害の再発防止。落ちたらActionsのログで原因を確認して修正後に再push）
 - Firebase設定は firebase.json / .firebaserc にコミット済み
+- **デプロイは同時に1つだけ**（ワークフローの `concurrency`・新しいpushが来たら古い方を止める）。続けてpushしたとき、前のデプロイが後から終わって古い版で上書きするのを防ぐ
+- **版の印**（2026-10-08）: デプロイの直前に、index.html の `'__APP_VERSION__'` をコミットのSHAに置き換え、同じSHAを `/version.txt` に書く（リポジトリには入れない・.gitignore）。
+  アプリは戻ってきたとき（と30分ごと）に `/version.txt` を見て、違えば読み込み直す（index.html の `checkAppVersion`。詳しくは docs/app-spec.md「新しい版の読み込み直し」）。
+  **`'__APP_VERSION__'` の文字は index.html に1か所だけ**にする（ワークフローが数を確かめ、違えばデプロイを止める）
 
 ## RTDBセキュリティルール（database.rules.json）
 - **正はリポジトリの database.rules.json**。ただしGitHub ActionsはHostingしかデプロイしないので、
@@ -90,7 +94,7 @@
 1. GTMスクリプト（viewport直後・titleより上）+ body直後にGTM noscript
 2. AdSenseメタタグ＋adsbygoogle.js（GTM直後）
 3. title / meta description / canonical
-4. favicon（/favicon.ico + /assets/favicon.png）+ apple-touch-icon + manifest
+4. favicon（/favicon.ico + /assets/favicon.png）+ apple-touch-icon（**/assets/apple-touch-icon.png**＝角まで塗った180px。透明の角があるとiPhoneのホーム画面で角が黒くなる）+ manifest
 5. OGP（og:title/description/url/type/site_name/locale/image+width+height）
 6. twitter:card(summary_large_image) + twitter:site(@majasco_jp) + twitter:image + **twitter:title + twitter:description**
 7. sitemap.xmlに追加
