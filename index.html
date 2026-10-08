@@ -1101,17 +1101,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sw-wrap { margin: 10px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
-.sw-row { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; border-bottom: 1px solid #D5DEDB; }
+.sw-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px 16px 6px; } /* 個人｜仲間ページは丸いピル（中身を切り替える下線のタブと見分ける。2026-10-08） */
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
-.sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
-.sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: none; color: #5F6E6B; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.sw-sep { flex: none; align-self: center; width: 1.5px; height: 22px; margin: 0 2px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
+.sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 10px; border: 1.5px solid #D5DEDB; border-radius: 19px; background: #fff; color: #4F5C5A; font-size: 14px; font-weight: 800; box-shadow: 0 1px 2px rgba(16,40,36,.05); cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .sw-chip .ico { --i1: #8A9AA5; --i2: #C9D3D1; }
-.sw-chip.on { color: var(--pc); }
-.sw-chip.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
-.sw-chip.on .ico { --i1: var(--pc); --i2: var(--pc-soft); }
+.sw-chip.on { border-color: var(--pc); background: var(--pc); color: #fff; } /* 主色で塗る（期間の黒いピル・四麻｜三麻・下線のタブと別の見た目） */
+.sw-chip.on .ico { --i1: #fff; --i2: rgba(255,255,255,.6); }
 .sw-chip:not(.on) .sw-av { opacity: .75; }
-.sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
+.sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; border-style: dashed; box-shadow: none; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
 .sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; }
 .mp-others { margin-top: 12px; }
@@ -11740,7 +11739,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const col = end >= 0 ? '#1A237E' : '#C62828';
   // 点の色＝その日のスコアの正負（プラス＝紺・マイナス＝赤・0＝灰）
   // チーム戦（リーグ戦）の試合がある点は、オレンジの輪で囲む（2026-10-08）
-  days.forEach(d => { d.team = d.items.some(it => { const g = it.g && resultGameById(it.g); return !!(g && isTeamGame(g)); }); });
+  days.forEach(d => { d.team = sparkUnit === 'd' && d.items.some(it => { const g = it.g && resultGameById(it.g); return !!(g && isTeamGame(g)); }); }); // 日の単位だけ
   const dots = days.map((d, i) => `${d.team ? `<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="6.2" class="dot-team"/>` : ''}<circle cx="${x(i + 1).toFixed(1)}" cy="${y(ys[i + 1]).toFixed(1)}" r="3.6" data-d="${i}" class="dot ${d.sc > 0 ? 'dp' : d.sc < 0 ? 'dn' : 'dz'}"/>`).join('');
   // 押せる範囲は点のまわりの縦の帯（指でも当たるように）。押した点には輪
   const rid = 'sp' + (++sparkRegSeq);
@@ -11886,7 +11885,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
   let prevMo = null, anyTeam = false;
   const rows = [...byG.values()].sort((a, b) => sparkUnit === 'y' ? (firstMs.get(a.gid) - firstMs.get(b.gid)) : 0).map(e => {
     const g = resultGameById(e.gid);
-    if (g && isTeamGame(g)) anyTeam = true;
+    if (g && isTeamGame(g) && sparkUnit === 'd') anyTeam = true; // 日の単位だけ
     let moHead = '';
     if (sparkUnit === 'y') { const mo = new Date(firstMs.get(e.gid)).getMonth() + 1; if (mo !== prevMo) { moHead = `<div class="sp-mo">${mo}月</div>`; prevMo = mo; } }
     if (!g || !g.settings) return '';
@@ -11923,7 +11922,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}) {
   // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
   const one = byG.size === 1 ? resultGameById([...byG.keys()][0]) : null;
   const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
-  return `<span class="sp-tag${anyTeam ? ' team' : ''}">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${anyTeam ? '・チーム戦' : ''}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
+  return `<span class="sp-tag${anyTeam ? ' team' : ''}">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${rows}`;
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
