@@ -5,6 +5,11 @@ on:
   push:
     branches:
       - main
+# 続けてpushしたとき、前のデプロイが後から終わって新しい版を古い版で上書きしないよう、
+# 同時に走るデプロイは1つだけにし、新しいpushが来たら古い方を止める（2026-10-08 実際に古い版に戻った）
+concurrency:
+  group: firebase-hosting-live
+  cancel-in-progress: true
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
