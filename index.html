@@ -1949,6 +1949,7 @@ button.ios-row:active { background: #F2F6F5; }
 .lb-avg { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 2px 0; font-size: 10.5px; font-weight: 700; color: #8A9AA5; } /* 平均の点線（目立たせない） */
 .lb-avg::before, .lb-avg::after { content: ''; flex: 1; border-top: 1.5px dashed #C3CECB; }
 .lb-avg span { flex: none; }
+.empty-note { margin: 2px 0 10px; padding: 12px 14px; border-radius: 12px; background: #F4F7F6; font-size: 13px; color: #5F6E6B; line-height: 1.7; } /* 条件で数える試合が無いとき（表やカードは残す） */
 .lb-under-h { margin: 16px 2px 8px; padding-top: 12px; border-top: 1px solid #D5DEDB; font-size: 12px; font-weight: 800; color: #5F6E6B; } /* 6試合未満（順位なし） */
 .lb-cell.under .lc-rk { color: #AEBBB8; }
 .lb-none { margin: 4px 0 8px; padding: 14px; border-radius: 12px; background: #F4F7F6; font-size: 13px; color: #5F6E6B; line-height: 1.6; }
@@ -4083,13 +4084,15 @@ function renderCircle() {
     `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
-  const noBind = `<div style="font-size:13px;color:#5F6E6B">名前を名簿の人と連携すると、ここに通算が出ます。</div>`;
+  // 数える試合が無いときの説明（表やカードは残す。2026-10-08）: 連携がまだ無いのか、いまの条件で試合が無いのかを分けて書く
+  const anyBound = Object.values(circleData.games || {}).some(ge => Object.values((ge && ge.seats) || {}).some(x => x && x.mid));
+  const noBind = `<div class="empty-note">${anyBound ? `${esc(condShortText())}で数える試合はありません。上の四麻｜三麻・期間・合計｜個人戦｜チーム戦を変えると出ます。` : '名前を名簿の人と連携すると、ここに通算が出ます。'}</div>`;
   if (circleTab === 'games') html += circleGamesTabHtml(role, gids, modeChips);
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
   else if (!gids.length) html += noGames;
   else if (circleTab === 'grid') {
     html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`, 'period')}${modeChips}${circleKindSegHtml()}
-      ${st.list.length ? circleGridHtml(st) + `<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>` : noBind}</div>`;
+      ${st.list.length ? '' : noBind}${circleGridHtml(st)}${`<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>`}</div>`;
   } else if (circleTab === 'h2h') html += circleH2HTabHtml(st, modeChips, noBind);
   else html += circleRankTabHtml(st, modeChips, noBind);
   html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
@@ -4145,7 +4148,11 @@ function rankSubHtml(p, m) { return rankSubParts(p, m).map(t => `<span class="nw
 function circleKindSegHtml() { const h = statKindSegHtml(); return h ? `<div class="sk-wrap">${h}</div>` : ''; }
 function circleRankTabHtml(st, modeChips, noBind) {
   const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleRankImage()">${ico('image', 16)}画像</button>`, 'period');
-  if (!st.list.length) return `<div class="card">${head}${modeChips}${circleKindSegHtml()}${noBind}</div>`;
+  if (!st.list.length) { // 数える試合が無くても、指標のピルと説明は残す（2026-10-08）
+    const m0 = circleMetricsFor(st).some(([k]) => k === circleMetric) ? circleMetric : 'score';
+    return `<div class="card">${head}${modeChips}${circleKindSegHtml()}<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
+      `<button type="button" role="tab" class="pill${k === m0 ? ' on' : ''}" aria-selected="${k === m0}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>${noBind}</div>`;
+  }
   const { m, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const my = myCircleMid();
   const chips = `<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
@@ -4180,9 +4187,14 @@ function circleRankTabHtml(st, modeChips, noBind) {
 // 成績表（列＝メンバー・行＝成績項目。ゲームの「個人成績」と同じ向き）
 function circleGridHtml(st, forImage = false) {
   const np = circleMode === '3' ? 3 : 4;
+  if (!st.list.length) st = { ...st, list: Object.keys(rosterOf()).map(k => emptyStatP(np, { key: k })) }; // 試合が無くても名簿の人の列を残す
   // 画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
   return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${forImage ? '' : `<span class="th-av" style="background:${avColor(p.key)}">${esc(avInitial(rosterName(p.key)))}</span>`}${esc(rosterName(p.key))}</th>`);
 }
+// 試合の無い人・範囲の空の成績（表の列だけ残して「—」を出す用。2026-10-08）
+function emptyStatP(np, extra = {}) { return { n: 0, games: { size: 0 }, rankSum: 0, counts: new Array(np).fill(0), top: 0, last: 0, score: 0, ptMax: null, ptMin: null, raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0, ...extra }; }
+// いまの条件（形式・期間・合計｜個人戦｜チーム戦）の短い文（「四麻・2026年・チーム戦のみ」）
+function condShortText() { return [mpMode === 3 ? '三麻' : '四麻', curPeriod() === 'all' ? '' : periodLabel(), statKindAvail && statKind !== 'all' ? (statKind === 'team' ? 'チーム戦のみ' : '個人戦のみ') : ''].filter(Boolean).join('・'); }
 // 成績表（列＝人や範囲・行＝成績項目）。仲間ページの成績表と、個人の「成績表」（個人と仲間ページごと）で共用（2026-10-08）
 // L の要素は circleStats の人と同じ形（n・games.size・rankSum・counts・top・last・score・raw…・ptMax・ptMin）
 function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
@@ -4196,6 +4208,7 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   };
   const rows = [];
   const add = (label, vals, fmt, dir, cls, colorOf) => {
+    vals = vals.map((v, i) => (L[i] && L[i].n ? v : null)); // この条件で試合の無い列は数字を出さない（表は残す）
     const b = bestOf(vals, dir);
     rows.push(`<tr${cls ? ` class="${cls}"` : ''}><td class="sticky-col">${label}</td>${vals.map(v => {
       if (v == null || isNaN(v)) return '<td style="color:#ccc">—</td>';
@@ -4265,7 +4278,12 @@ function circleMatrixHtml(st) {
   return mxTableHtml(keys, k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], circleFocus, a => `circleFocus=circleKeys[circleKeys.indexOf('${a}')];renderCircle()`, false, (a, b) => `openCircleMatchup(['${a}','${b}'])`);
 }
 function circleH2HTabHtml(st, modeChips, noBind) {
-  if (!st.list.length) return `<div class="card">${circleCardHead('対戦成績', '', 'period')}${modeChips}${circleKindSegHtml()}${noBind}</div>`;
+  if (!st.list.length) {
+    // いまの条件で試合が無くても、総当たり表（空）と対戦成績のカードは残す
+    const ks = Object.keys(rosterOf());
+    return `${ks.length > 1 ? `<div class="card">${circleCardHead('総当たり表', '', 'period')}${circleKindSegHtml()}${mxLegendHtml('')}${mxTableHtml(ks, k => rosterName(k), () => null, myCircleMid(), null)}</div>` : ''}
+      <div class="card">${circleCardHead('対戦成績', '', 'period')}${modeChips}${noBind}</div>`;
+  }
   const my = circleViewMid(); // 目線の人を最初に選び、先頭に
   if (!circleFocus || !st.acc[circleFocus]) circleFocus = my && st.acc[my] ? my : st.list[0].key;
   // だれから見る？は自分を先頭に（あとは通算の順）
@@ -5239,6 +5257,8 @@ function mupToggle(p) { mup.P = mup.P.includes(p) ? mup.P.filter(x => x !== p) :
 function mupReopen() { if (mup) renderMatchup(); }
 // 2人: 対戦の数字（勝ち-負け）→ 最近の流れ（勝った人の顔を古い順に）→ 2人をくらべる（いっしょに打った試合での成績を左右に）→ ゲームごとの勝ち負け
 // 3人以上: このメンバーがそろった試合で「メンバーの中で何番目だったか」→ 最近の流れ（メンバー内トップの顔）→ メンバーどうしの勝ち負けの表 → ゲームごとの順番
+// 条件で全員がそろった試合が無いときの説明（下の表やカードは同じ形のまま「—」で残す。2026-10-08）
+function mupEmptyHtml(res) { return res.games.length ? '' : `<div class="empty-note">${esc(condShortText())}で、全員が同じ卓にいた試合はありません。上の期間・四麻｜三麻・合計｜個人戦｜チーム戦を変えると出ます。</div>`; }
 function mupTapeHtml(res, a, b) {
   const A = res.people[a], B = res.people[b];
   const rows = [
@@ -5250,8 +5270,9 @@ function mupTapeHtml(res, a, b) {
   ];
   const who = p => `<b class="mu-tw">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></b>`;
   return `<div class="pf-h">2人をくらべる（いっしょに打った試合だけ）</div><div class="mu-tape"><div class="mu-tr mu-tr-h">${who(a)}<span></span>${who(b)}</div>${rows.map(([l, x, y, f, low]) => {
-    const ax = low ? x < y : x > y, bx = low ? y < x : y > x;
-    return `<div class="mu-tr"><b class="${ax ? 'win' : ''}">${f(x)}</b><span>${l}</span><b class="${bx ? 'win' : ''}">${f(y)}</b></div>`;
+    const ok = v => v != null && !isNaN(v), g = v => (ok(v) ? f(v) : '—');
+    const ax = ok(x) && ok(y) && (low ? x < y : x > y), bx = ok(x) && ok(y) && (low ? y < x : y > x);
+    return `<div class="mu-tr"><b class="${ax ? 'win' : ''}">${g(x)}</b><span>${l}</span><b class="${bx ? 'win' : ''}">${g(y)}</b></div>`;
   }).join('')}</div>`;
 }
 function renderMatchup() {
@@ -5265,25 +5286,24 @@ function renderMatchup() {
   const picker = edit && mup.pick ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
   let body = '';
   if (!res) body = `<div class="mu-empty">2人以上を選ぶと、その人たちが全員同じ卓にいた試合だけで、だれが勝ち越しているか・最近の流れ・いっしょに打った試合が見られます。自分以外の人どうしも選べます。</div>`;
-  else if (!res.games.length) body = `<div class="mu-empty">${curPeriod() === 'all' ? '' : esc(periodLabel()) + 'に'}全員が同じ卓にいた${res.np === 3 ? '三麻' : '四麻'}の試合はありません。</div>`;
   else if (P.length === 2) {
-    const [a, b] = P, x = res.people[a], v = x.vs[b];
-    const lead = v.w > v.l ? `${esc(mupName(a))}の勝ち越し` : v.w < v.l ? `${esc(mupName(b))}の勝ち越し` : '五分';
+    const [a, b] = P, x = res.people[a], v = x.vs[b] || { w: 0, l: 0, d: 0 };
+    const lead = !res.games.length ? '試合なし' : v.w > v.l ? `${esc(mupName(a))}の勝ち越し` : v.w < v.l ? `${esc(mupName(b))}の勝ち越し` : '五分';
     const vs = `<div class="mu-vs"><div class="mu-side">${mupAvHtml(a, ' lg')}<b>${esc(mupName(a))}</b></div>
       <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
-    body = `${vs}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
+    body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   } else {
     const n = res.people[P[0]].n;
     const order = P.slice().sort((a, b) => res.people[a].gPosSum - res.people[b].gPosSum || res.people[b].score - res.people[a].score);
     const maxTop = Math.max(...P.map(p => res.people[p].gTop)) || 1;
     const tbl = `<div class="mu-meta" style="margin-top:0">${P.length}人が全員そろった ${gamesRoundsText(res.games.length, n)}で、<b>メンバーの中で何番目だったか</b>（卓のほかの人は数えない）</div>
       <div class="mu-tbl">${order.map((p, i) => { const x = res.people[p];
-        return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.gPosSum / x.n).toFixed(2)}</b>番目</span>
-          <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${pctText(x.gTop / x.n)}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
+        return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.n ? (x.gPosSum / x.n).toFixed(2) : '—')}</b>番目</span>
+          <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${x.n ? pctText(x.gTop / x.n) : '—'}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
     const mx = `<div class="pf-h">メンバーどうしの勝ち負け</div>${mxLegendHtml(edit ? 'マスを押すと2人の対戦' : '')}${mxTableHtml(order, mupName, (x, y) => res.people[x].vs[y], null, null, false, edit ? (x, y) => `openCircleMatchup(['${x}','${y}'])` : null)}`;
-    body = `${tbl}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
+    body = `${mupEmptyHtml(res)}${tbl}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   }
   if (res && res.games.length) body += `<div class="h2h-note">行を押すと、そのゲームの結果が見られます。スコアはそのゲームの中で全員がいた試合の合計（いちばん多い人に色）。${P.length === 2 ? `勝敗は${esc(mupName(P[0]))}から見た勝ち-負け。` : ''}</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
@@ -5317,7 +5337,7 @@ function mupGamesTableHtml(res, P) {
   const firstY = res.games.length ? new Date(res.games[0].ms).getFullYear() : '';
   return `<div class="tbl-scroll mu-gt-wrap"><table class="mu-gt" style="min-width:${110 + P.length * 58 + (two ? 48 : 0)}px">
     <thead><tr><th class="sticky-col">${firstY}年</th>${P.map(p => `<th title="${esc(mupName(p))}">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></th>`).join('')}${two ? '<th>勝敗</th>' : ''}</tr></thead>
-    <tbody>${rows}</tbody></table></div>`;
+    <tbody>${rows || `<tr><td colspan="${P.length + 1 + (two ? 1 : 0)}" style="padding:16px 12px;color:#8A9AA5;font-weight:700;cursor:default">いっしょに打ったゲームはありません</td></tr>`}</tbody></table></div>`;
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
 async function claimCircleMember(mid) {
@@ -10761,8 +10781,9 @@ function msRow(np, m) {
 // くらべる表（画面と画像で同じ表。forImage＝画像用：横スクロールの枠・見出しのアイコンを外す）
 function msCompareTableHtml(np, forImage = false) {
   // 列＝個人と仲間ページごと。仲間ページの成績表と同じ表（gridTableHtml）にする（2026-10-08）
-  const L = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np]; return m ? { ...m, key: k, label: k === 'all' ? '個人' : label,
-    n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount } : null; }).filter(Boolean);
+  const L = msScopes().map(([k, label]) => { const m = msStatsFor(k).modes[np], lb = k === 'all' ? '個人' : label;
+    return m ? { ...m, key: k, label: lb, n: m.games, games: { size: m.groups }, rankSum: m.avgRankSum, top: m.counts[0] || 0, last: m.lastCount }
+      : emptyStatP(np, { key: k, label: lb }); }); // 試合の無い範囲も列を残して「—」（2026-10-08）
   if (!L.length) return ''; // 仲間ページが無くても「個人」1列で出す（個人ページの最初のタブ。2026-10-08）
   return gridTableHtml(L, np, forImage, '範囲', c2 => `<th title="${esc(c2.label)}">${forImage ? '' : (c2.key === 'all' ? `<span class="th-av" style="background:var(--pc);--i1:#fff;--i2:#fff">${ico('person', 13)}</span>` : `<span class="th-av" style="background:#E75620;border-radius:6px">${esc(avInitial(c2.label))}</span>`)}${esc(c2.label)}</th>`, { best: false });
 }
@@ -10771,7 +10792,7 @@ function msCompareHtml(np) {
   if (!t) return '';
   // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
   return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表（${np === 3 ? '三麻' : '四麻'}）</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
-    ${cardCondSegHtml()}${t}
+    ${cardCondSegHtml()}${msStatsFor('all').modes[np] ? '' : `<div class="empty-note">${esc(condShortText())}の成績はありません。上の四麻｜三麻・期間・合計｜個人戦｜チーム戦を変えると出ます。</div>`}${t}
     <div class="ms-note">${(t.match(/<th title=/g) || []).length > 1 ? '個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。' : '自分を選んだすべての試合の成績。仲間ページに試合を入れると、仲間ページごとの列が並びます。'}</div></div>`;
 }
 // くらべる表だけの画像（上の帯に「くらべる（四麻）」と条件・日付、下に majasco.jp）
@@ -10855,7 +10876,7 @@ function renderMyStats() {
     `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}個人` : `<span class="sw-av">${esc(avInitial(l))}</span>${esc(l)}`}</button>`).join('')}</div>`;
   renderAccountBar('ms-acct');
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
-  const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
+  const cmp = msCompareHtml(mpMode); // 成績が無くても表は出す（2026-10-08）
   if (myStatsTab === 'sum' && !cmp) myStatsTab = 'groups';
   const tabs = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', '成績表']] : []).map(([k, l]) =>
     `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
@@ -12122,7 +12143,7 @@ function setMpPane(k) { mpPane = k; renderMpPanes(collectMyStats()); }
 function renderMpPanes(st) {
   setTimeout(scrollSparksEnd, 0);
   msScope = 'all'; // くらべる表の「個人」を選んだ列にする
-  const cmp = st.modes[mpMode] ? msCompareHtml(mpMode) : '';
+  const cmp = msCompareHtml(mpMode); // 成績が無くても表は出す（タブを消さない。2026-10-08）
   const pane = curMpPane(st, cmp);
   const tabs = (cmp ? [['sum', '成績表']] : []).concat([['h2h', '対戦成績'], ['hist', '過去の試合']]); // 左から 成績表・対戦成績・過去の試合（2026-10-08）
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
