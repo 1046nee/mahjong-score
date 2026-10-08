@@ -1154,6 +1154,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .hg-card { background: #fff; border-radius: 14px; padding: 10px; box-shadow: inset 0 0 0 1px #E3E9E7; min-width: 0; }
 .hg-card.tap { cursor: pointer; }
 /* 対戦を見る（mup） */
+.pf-mode { display: flex; justify-content: flex-end; margin: -4px 0 10px; } .pf-mode .seg { margin: 0; }
 .mu-people { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .mu-sel, .mu-cand { padding: 10px 12px 12px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); margin-bottom: 10px; }
 .mu-cand { background: #F4F7F6; box-shadow: inset 0 0 0 1px #DCE4E2; } .mu-cand .cw-pick { margin: 0; }
@@ -1178,6 +1179,20 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mu-g-vs { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-variant-numeric: tabular-nums; } .mu-g-vs > span { color: #AEBBB8; } .mu-g-vs b { font-weight: 800; }
 .mu-pos { font-size: 12px; color: #5F6E6B; font-weight: 700; white-space: nowrap; } .mu-pos b { font-size: 16px; color: #1F2A28; font-weight: 900; }
 .mu-bar { display: inline-block; width: 44px; height: 6px; border-radius: 3px; background: #E3E9E7; overflow: hidden; } .mu-bar i { display: block; height: 100%; background: #D4A017; }
+.mu-gt-wrap { border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
+.mu-gt { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.mu-gt th { padding: 8px 4px 6px; font-size: 11px; font-weight: 800; color: #5F6E6B; background: #F4F7F6; text-align: center; vertical-align: bottom; }
+.mu-gt th span { display: block; max-width: 56px; margin: 2px auto 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-gt th.sticky-col { text-align: left; padding-left: 12px; z-index: 2; }
+.mu-gt td { padding: 8px 4px; text-align: center; border-top: .5px solid #E3E9E7; font-weight: 700; cursor: pointer; }
+.mu-gt tr:active td { background: #F4F7F6; }
+.mu-gt td.best { background: #FBF3DC; font-weight: 900; } /* そのゲームでいちばんスコアの多い人 */
+.mu-gt .sticky-col { position: sticky; left: 0; background: #fff; text-align: left; padding-left: 12px; max-width: 140px; }
+.mu-gt th.sticky-col { background: #F4F7F6; }
+.mu-gn b { display: block; font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-gn small { display: block; font-size: 11px; color: #8A9AA5; font-weight: 700; }
+.mu-wl2 { font-weight: 900; } .mu-wl2.pos { color: #1A237E; } .mu-wl2.neg { color: #C62828; }
+.mu-yr td { padding: 10px 12px 4px; text-align: left; font-size: 12px; font-weight: 900; color: #33413E; border-top: 2px solid #4F5C5A; cursor: default; background: #fff; }
 .mu-sheet .mx-scroll { margin-top: 6px; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); }
 .mu-p { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 4px 0 4px; border-radius: 16px; background: #fff; box-shadow: var(--sh-1); font-size: 13px; }
 .mu-p b { font-weight: 800; max-width: 8em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4232,8 +4247,7 @@ function fltHtml(on, main, onclick, xLabel, xClick, title = '') {
 // 目線・同卓のピルは2026-10-07にやめ、「対戦を見る」1つに（選んだ人たちの間の勝ち越しと、いっしょに打った試合）
 function circleWithRowHtml() {
   circleWith = [];
-  if (Object.keys(rosterOf()).length < 2) return '';
-  return `<div class="cv-row">${fltHtml(false, `${ico('people', 14)}<span class="flt-t">対戦を見る</span>${ico('chevron', 11)}`, 'openCircleMatchup()')}</div>`;
+  return ''; // 成績カードの上の「対戦を見る」ピルも2026-10-08にやめた（入口は対戦成績のカード・総当たり表のマス・メンバーの成績）
 }
 // 名簿の人を選ぶ一覧（対戦を見る）は、アイコンの色でまとめて並べる（色の選択肢と同じ順＝色相→濃さ。同じ色の中は名前順）
 function avColorOrder(c) {
@@ -4981,8 +4995,10 @@ function openCircleMember(mid) {
   const row = st.acc[mid] || {};
   const keys = h2hSortedKeys(row);
   const hist = p ? sortHist(p.hist) : [];
-  const modeChips = modes.length > 1 ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
-    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="mpMode=${m};circleMode='${m}';circleFocus=null;renderCircle();openCircleMember('${mid}')">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+  // 四麻｜三麻はマイページ・仲間ページと同じ切り替え（印つき・四麻が左・試合の無い形式は押せない。2026-10-08）
+  const gcM = { 4: 0, 3: 0 };
+  Object.keys(circleData.games || {}).forEach(sid => { const g = circleSess[sid]; if (g) gcM[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
+  const modeChips = `<div class="pf-mode">${modeSegHtml(gcM, `circleMode=String(mpMode);circleFocus=null;renderCircle();openCircleMember('${mid}')`)}</div>`;
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist,
@@ -5188,12 +5204,7 @@ function renderMatchup() {
       <div class="mu-mid"><div class="mu-rec"><b class="w">${v.w}</b><span>-</span><b class="l">${v.l}</b></div>${v.d ? `<small>${v.d}分</small>` : ''}<em class="${v.w > v.l ? 'pos' : v.w < v.l ? 'neg' : ''}">${lead}</em></div>
       <div class="mu-side">${mupAvHtml(b, ' lg')}<b>${esc(mupName(b))}</b></div></div>
       <div class="mu-meta">いっしょに打った ${gamesRoundsText(res.games.length, x.n)}。同じ試合で上の着順なら勝ち</div>`;
-    const list = res.games.map(gm => {
-      const w = gm.w[a] || 0, l = gm.l[a] || 0, d = gm.n - w - l;
-      const tag = w > l ? `<em class="pos">${esc(mupName(a))} ${w}-${l}</em>` : w < l ? `<em class="neg">${esc(mupName(b))} ${l}-${w}</em>` : `<em>五分 ${w}-${l}</em>`;
-      return mupGameRow(gm, `${tag}<span class="mu-g-vs">${mupAvHtml(a, ' sm')}<b class="${scoreCls(gm.sc[a])}">${fmtScore(gm.sc[a])}</b><span>／</span>${mupAvHtml(b, ' sm')}<b class="${scoreCls(gm.sc[b])}">${fmtScore(gm.sc[b])}</b></span>`);
-    }).join('');
-    body = `${vs}${mupFlowHtml(res, P)}${mupTapeHtml(res, a, b)}<div class="pf-h">ゲームごとの勝ち負け（新しい順）</div><div class="mu-list">${list}</div>`;
+    body = `${vs}${mupFlowHtml(res, P)}${mupTapeHtml(res, a, b)}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   } else {
     const n = res.people[P[0]].n;
     const order = P.slice().sort((a, b) => res.people[a].gPosSum - res.people[b].gPosSum || res.people[b].score - res.people[a].score);
@@ -5203,13 +5214,9 @@ function renderMatchup() {
         return `<div class="mu-row"><span class="mu-rk">${i < 3 ? medalSvg(i + 1, 18, false) : i + 1}</span>${mupAvHtml(p)}<b class="mu-nm">${esc(mupName(p))}</b><span class="mu-pos">平均 <b>${(x.gPosSum / x.n).toFixed(2)}</b>番目</span>
           <span class="mu-sub"><span class="mu-bar"><i style="width:${(x.gTop / maxTop * 100).toFixed(1)}%"></i></span>いちばん上 ${Math.round(x.gTop * 10) / 10}回（${pctText(x.gTop / x.n)}）<b class="${scoreCls(x.score)}">${fmtScore(x.score)}</b></span></div>`; }).join('')}</div>`;
     const mx = `<div class="pf-h">メンバーどうしの勝ち負け</div>${mxLegendHtml(edit ? 'マスを押すと2人の対戦' : '')}${mxTableHtml(order, mupName, (x, y) => res.people[x].vs[y], null, null, false, edit ? (x, y) => `openCircleMatchup(['${x}','${y}'])` : null)}`;
-    const list = res.games.map(gm => {
-      const ord = P.slice().sort((a, b) => (gm.sc[b] || 0) - (gm.sc[a] || 0));
-      return mupGameRow(gm, `<span class="mu-g-sc">${ord.map((p, i) => `<span class="mu-g-p">${i < 3 ? medalSvg(i + 1, 14, false) : ''}${mupAvHtml(p, ' sm')}<b class="${scoreCls(gm.sc[p])}">${fmtScore(gm.sc[p])}</b></span>`).join('')}</span>`);
-    }).join('');
-    body = `${tbl}${mupFlowHtml(res, P)}${mx}<div class="pf-h">ゲームごと（新しい順・スコアの多い順）</div><div class="mu-list">${list}</div>`;
+    body = `${tbl}${mupFlowHtml(res, P)}${mx}<div class="pf-h">いっしょに打ったゲーム（新しい順）</div>${mupGamesTableHtml(res, P)}`;
   }
-  if (res && res.games.length) body += `<div class="h2h-note">ゲームを押すと、その試合の結果が見られます。スコアはそのゲームの中で全員がいた試合の合計です。</div>`;
+  if (res && res.games.length) body += `<div class="h2h-note">行を押すと、そのゲームの結果が見られます。スコアはそのゲームの中で全員がいた試合の合計（いちばん多い人に色）。${P.length === 2 ? `勝敗は${esc(mupName(P[0]))}から見た勝ち-負け。` : ''}</div>`;
   document.getElementById('form-modal-title').textContent = '対戦を見る';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body pf-sheet mu-sheet">${sel}${picker}
     ${statCondHtml('mine').split('条件：').join(`条件：${mpMode === 3 ? '三麻' : '四麻'} ・ `)}
@@ -5217,12 +5224,25 @@ function renderMatchup() {
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
-function mupGameRow(gm, inner) {
-  const me = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
-  const rel = relDay(gm.ms);
-  return `<button type="button" class="mu-g" onclick="openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${me == null ? 'null' : me},back:'mup'})">
-    <span class="mu-g-top"><b>${esc(gm.g.name || '')}</b><small>${fmtGameDays(gm.g)}${rel && gameDaysList(gm.g).length === 1 ? ` ${rel}` : ''} ・ ${gm.n}試合</small></span>
-    <span class="mu-g-in">${inner}</span></button>`;
+// いっしょに打ったゲームの表（行＝ゲーム・列＝選んだ人の合計スコア。2人なら右に勝敗）。縦に長いカードの羅列より見比べやすいように（2026-10-08）
+function mupGamesTableHtml(res, P) {
+  const two = P.length === 2;
+  let prevY = null;
+  const rows = res.games.map(gm => {
+    const d = new Date(gm.ms), y = d.getFullYear();
+    const yr = prevY !== null && y !== prevY ? `<tr class="mu-yr"><td colspan="${P.length + 1 + (two ? 1 : 0)}">${y}年</td></tr>` : '';
+    prevY = y;
+    const best = Math.max(...P.map(p => gm.sc[p] || 0));
+    const me = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
+    const open = `openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${me == null ? 'null' : me},back:'mup'})`;
+    const rec = two ? (() => { const w = gm.w[P[0]] || 0, l = gm.l[P[0]] || 0; return `<td class="mu-wl2 ${w > l ? 'pos' : w < l ? 'neg' : ''}">${w}-${l}</td>`; })() : '';
+    return `${yr}<tr onclick="${open}"><td class="sticky-col mu-gn"><b>${esc(gm.g.name || '')}</b><small>${d.getMonth() + 1}/${d.getDate()} ・ ${gm.n}試合</small></td>
+      ${P.map(p => { const v = gm.sc[p] || 0; return `<td class="${v === best ? 'best ' : ''}${scoreCls(v)}">${fmtScore(v)}</td>`; }).join('')}${rec}</tr>`;
+  }).join('');
+  const firstY = res.games.length ? new Date(res.games[0].ms).getFullYear() : '';
+  return `<div class="tbl-scroll mu-gt-wrap"><table class="mu-gt" style="min-width:${110 + P.length * 58 + (two ? 48 : 0)}px">
+    <thead><tr><th class="sticky-col">${firstY}年</th>${P.map(p => `<th title="${esc(mupName(p))}">${mupAvHtml(p, ' sm')}<span>${esc(mupName(p))}</span></th>`).join('')}${two ? '<th>勝敗</th>' : ''}</tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 // 名簿で「これは私」。参加していない（見ているだけの）人も、ログインしていれば自分を選べる（ルールも同じ）
 async function claimCircleMember(mid) {
