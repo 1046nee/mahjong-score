@@ -158,7 +158,7 @@
 - 各HTMLの静的.site-head/.site-footはJS無効時のフォールバック。デザイン変更はrenderChromeを直す
 - **フッターは全ページ標準12リンク・同一順序**: トップ/スコア計算の基本/よくある質問/ブログ/お知らせ/お知らせRSS/
   利用規約/プライバシーポリシー/運営者について/お問い合わせ/X（公式）/Instagram（公式）。
-  **renderChromeと静的HTML（.site-foot・固定ページの.footer・index.htmlの.footer-links）の両方を同じ内容に保つ**
+  **renderChromeと静的HTML（.site-foot・index.htmlの.footer-links）の両方を同じ内容に保つ**。見た目も全ページLPと同じ緑・2列（faq・privacy・terms・score-basics の灰色の .footer は2026-10-08に .site-foot へ統一。マイページ（個人・自分の成績・仲間ページ）にもLPのフッターを写して「トップ」を足して置く＝`mountMpFooters`）
   （静的側はAdSense/クローラー対策の本体。リンクを増減するときは全部直す）
 - **一覧4ページ（blog.html・/mahjong/・/news/・/blog/）の記事カードは静的HTML**。
   新記事公開時は BLOG_POSTS 追加後に `node tools/build_post_lists.js` を実行して再生成（→ docs/blog-spec.md）。

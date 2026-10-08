@@ -285,6 +285,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* フッター（濃い緑背景・リンクは2列で揃える） */
 .site-footer { background: #177083; text-align: center; padding: 34px 20px 44px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }
 .site-footer a { color: #fff; text-decoration: underline; margin: 0; font-size: 13px; line-height: 1.6; }
+.mp-foot-sp { flex: 1 0 40px; } /* マイページのフッターを画面の下に寄せる（中身が短いとき） */
+.site-footer.mp-sitefoot { margin-top: 0; }
 .footer-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; max-width: 440px; margin: 0 auto 18px; text-align: left; }
 
 /* Setup */
@@ -10791,7 +10793,7 @@ function msCompareHtml(np) {
   const t = msCompareTableHtml(np);
   if (!t) return '';
   // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
-  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表（${np === 3 ? '三麻' : '四麻'}）</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
+  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
     ${cardCondSegHtml()}${msStatsFor('all').modes[np] ? '' : `<div class="empty-note">${esc(condShortText())}の成績はありません。上の四麻｜三麻・期間・合計｜個人戦｜チーム戦を変えると出ます。</div>`}${t}
     <div class="ms-note">${(t.match(/<th title=/g) || []).length > 1 ? '個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。' : '自分を選んだすべての試合の成績。仲間ページに試合を入れると、仲間ページごとの列が並びます。'}</div></div>`;
 }
@@ -11608,6 +11610,20 @@ function rerenderStatsFrom(el) {
   if (sheet && sheet.classList.contains('mu-sheet')) { rerenderPage(); renderMatchup(); return; }
   rerenderPage();
 }
+// マイページ（個人・自分の成績・仲間ページ）の下にもLPと同じフッター（緑・2列リンク）。LPのフッターを写して置く（2026-10-08）
+function mountMpFooters() {
+  const src = document.querySelector('#view-home .site-footer');
+  if (!src) return;
+  ['view-history', 'view-mystats', 'view-circle'].forEach(id => {
+    const v = document.getElementById(id);
+    if (!v || v.querySelector(':scope > .site-footer')) return;
+    const sp = document.createElement('div'); sp.className = 'mp-foot-sp';
+    const f = src.cloneNode(true); f.classList.add('mp-sitefoot');
+    const ln = f.querySelector('.footer-links'); if (ln) ln.insertAdjacentHTML('afterbegin', '<a href="/">トップ</a>'); // ほかのページのフッターと同じ12リンク（LPは自分のページなので「トップ」が無い）
+    v.appendChild(sp); v.appendChild(f);
+  });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountMpFooters); else mountMpFooters();
 function rerenderPage() {
   if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
