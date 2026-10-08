@@ -4539,13 +4539,13 @@ async function showCircleH2HImage() {
 async function showMyH2HImage() {
   const c = myPairCtx; if (!c || !c.keys.length) return;
   const keys = h2hSortKeys(c.row, c.keys);
-  const sub = [mpMode === 3 ? '三麻' : '四麻', periodLabel(), statKindText()].filter(Boolean).join(' ・ ');
-  const canvas = buildTablesCanvas('自分の対戦成績', `${sub} ・ ${fmtDate(new Date().toISOString())} 時点`, mpMode === 3 ? '三麻' : '四麻',
+  // 仲間ページの対戦成績の画像と同じ形（左上に名前・右に「〇〇の対戦成績」）
+  const canvas = buildTablesCanvas('個人', `${myFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, 'あなたの対戦成績',
     [{ label: 'あなたから見た直接対決（勝ち-負け）', html: h2hRowsTableHtml(c.row, keys, k => c.disp[k], null, true) }], mpMode === 3);
   if (canvas === IMG_TOO_LARGE) { showToast('相手が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'my_h2h' });
-  await openImagePreview(canvas, { name: '' }, '対戦成績');
+  await openImagePreview(canvas, { name: '個人' }, 'あなたの対戦成績');
 }
 async function showCircleImage() {
   if (!circleData) return;
@@ -10798,35 +10798,17 @@ function msCompareHtml(np) {
     ${cardCondSegHtml()}${msStatsFor('all').modes[np] ? '' : `<div class="empty-note">${esc(condShortText())}の成績はありません。上の四麻｜三麻・期間・合計｜個人戦｜チーム戦を変えると出ます。</div>`}${t}
     <div class="ms-note">${(t.match(/<th title=/g) || []).length > 1 ? '個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。' : '自分を選んだすべての試合の成績。仲間ページに試合を入れると、仲間ページごとの列が並びます。'}</div></div>`;
 }
-// くらべる表だけの画像（上の帯に「くらべる（四麻）」と条件・日付、下に majasco.jp）
-function buildCompareCanvas(np) {
-  const html = msCompareTableHtml(np, true);
-  if (!html) return null;
-  const body = imgTableHtmlCanvas(html, np === 3);
-  if (!body) return null;
-  const bs = imgCssSize(body);
-  const W = IMG_PAD * 2 + Math.max(bs.w, 320), H = IMG_BAND + 12 + bs.h + 14 + IMG_FOOT;
-  const sc = imgFitScale(W, H);
-  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
-  const { c, ctx } = imgCanvas(W, H, sc);
-  const cond = statCondHtml('mine').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = np === 3 ? '#4261AA' : '#177083'; ctx.fillRect(0, 0, W, IMG_BAND);
-  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
-  ctx.fillText(`成績表（${np === 3 ? '三麻' : '四麻'}）`, IMG_PAD, IMG_BAND / 2 - 8);
-  ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85;
-  ctx.fillText(`${cond} ・ ${fmtDate(new Date().toISOString())} 時点`, IMG_PAD, IMG_BAND / 2 + 11, W - IMG_PAD * 2);
-  ctx.globalAlpha = 1;
-  ctx.drawImage(body, IMG_PAD, IMG_BAND + 12, bs.w, bs.h);
-  drawImgFooter(ctx, W, H);
-  return c;
-}
+// 個人の画像の帯の文（仲間ページの circleFilterText と同じ並び＝期間・形式・合計｜個人戦｜チーム戦）
+function myFilterText() { return [periodLabel(), mpMode === 3 ? '三麻' : '四麻', statKindText()].filter(Boolean).join(' ・ '); }
+// 個人の成績表の画像は、仲間ページの成績表の画像と同じ形（buildTablesCanvas: 左上に名前・その下に条件と日付・右に形式・表の見出し「成績表」。2026-10-08）
 async function showCompareImage(np) {
-  const canvas = buildCompareCanvas(np);
+  const html = msCompareTableHtml(np, true);
+  const canvas = html ? buildTablesCanvas('個人', `${myFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, np === 3 ? '三麻' : '四麻',
+    [{ label: '成績表', html }], np === 3) : null;
   if (canvas === IMG_TOO_LARGE) { showToast('列が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) { showToast('成績表にできる成績がありません'); return; }
   track('image_preview', { kind: 'compare' });
-  await openImagePreview(canvas, { name: '' }, '成績表');
+  await openImagePreview(canvas, { name: '個人' }, '成績表'); // 仲間ページと同じ「〇〇 の成績表」
 }
 // 点数の細かい数字を1枚に（3列×2段: 素点・順位点｜最高・最低点数｜5万点以上・箱下）。スコアの推移は2026-09-30にやめた
 function msPtsHtml(...cols) {
