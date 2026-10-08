@@ -848,18 +848,17 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 年の切れ目の線（一覧の月の見出し・タイルの年の見出し。2026-10-07） */
 /* 年ごとの区切り（タイル・一覧）: 年の見出しを押すと開け閉め、年と年の間は黒っぽい点線（2026-10-08） */
 /* 年＝主色の淡い帯の見出し（押すと開け閉め）、月＝淡い灰色の角丸の箱（2026-10-08 点線の区切りから変えた） */
-.yr-sec + .yr-sec { margin-top: 18px; }
-.yr-h { width: 100%; margin: 0 0 10px; padding: 9px 12px; border: 0; border-radius: 12px; background: var(--pc-tint); color: var(--pc-ink); font-family: inherit; text-align: left; cursor: pointer; align-items: center; }
-.yr-h span { color: var(--pc-ink); opacity: .8; }
-.yr-h .ht-mine { color: var(--pc-ink); opacity: 1; }
-.yr-sec.closed .yr-h { margin-bottom: 0; }
+.yr-sec + .yr-sec { margin-top: 0; border-top: 1px solid #E3E9E7; } /* 年と年の間は細い線だけ（閉じても隙間を空けない。2026-10-08） */
+.yr-h { display: flex; align-items: center; gap: 8px; width: 100%; margin: 0; padding: 12px 2px; border: 0; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.yr-h .ht-year { margin: 0; flex: 1; min-width: 0; }
+.yr-sec:not(.closed) .yr-body { padding-bottom: 14px; }
 .mo-sec { padding: 10px; border-radius: 14px; background: #F2F5F4; }
 .mo-sec + .mo-sec { margin-top: 10px; }
 .mo-h { display: flex; align-items: baseline; gap: 8px; margin: 0 2px 8px; }
 .mo-h b { font-size: 13.5px; font-weight: 900; color: #1F2A28; }
 .mo-h span { font-size: 11.5px; font-weight: 700; color: #6B7A77; }
 .mo-sec .ht-grid { gap: 7px; }
-.yr-h .yr-chev { margin-left: auto; flex: none; display: inline-flex; color: var(--pc-ink); transition: transform .15s; transform: rotate(90deg); }
+.yr-h .yr-chev { margin-left: auto; flex: none; display: inline-flex; align-self: center; color: #5F6E6B; transition: transform .15s; transform: rotate(90deg); }
 .yr-sec.closed .yr-chev { transform: rotate(0deg); }
 .yr-sec.closed .yr-body { display: none; }
 .yr-body .gm-month:first-child { margin-top: 0; }
@@ -1419,7 +1418,8 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mode-seg button small { font-size: 10px; font-weight: 700; }
 @media (max-width: 379px) { .mode-seg button { padding: 0 9px; } } /* 「すべての期間」と1行に収める。試合の無い形式にも（なし）は出さない（2026-10-07） */
 .mode-seg button:disabled { color: #AEBBB8; cursor: default; }
-.cg-games { margin: -4px 0 14px; }
+.cg-games { margin: 4px 0 0; } /* 個人の過去の試合と同じ間隔（2026-10-08） */
+.yr-sec:last-child:not(.closed) .yr-body { padding-bottom: 0; }
 .ch-who { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
 .ch-who .ch-role { margin-left: 0; }
 .ch-me { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-size: 12px; color: #4F5C5A; }
@@ -4397,12 +4397,13 @@ function circleGamesTabHtml(role, gids, modeChips) {
   }
   // 上: 件数（左）と「＋ 試合を追加」（右）→ 形式のピル → 見せ方（個人の過去の試合と同じ並び）
   const nR = games.reduce((a, x) => a + ((x.g && x.g.rounds) || []).length, 0);
-  const addB = role ? `<button type="button" class="btn-tint" onclick="openCircleAddGames()">＋ 試合を追加</button>` : '';
-  const head = `${circleCardHead('過去の試合', addB, 'period')}<div class="mp-sec-head cg-head"><span class="mp-sec-note">${circleKind === 'all' ? '' : HIST_KINDS.find(([k]) => k === circleKind)[1] + ' '}${gamesRoundsText(games.length, nR)}${games.length < gids.length ? `（全${gids.length}ゲーム中）` : ''}</span></div>`;
+  // 個人の過去の試合と同じ形（見出しの右に丸い「＋ 追加」・合計｜個人戦｜チーム戦の下に「nゲーム / n試合」。2026-10-08）
+  const addB = role ? `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openCircleAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button></span>` : '';
+  const head = `${circleCardHead('過去の試合', addB, 'period')}<div class="mp-sec-note hist-cnt cg-head">${gamesRoundsText(games.length, nR)}</div>`;
   if (!all.length) return `<div class="card cg-tab">${head}<div class="mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
   // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
-  return `<div class="card cg-tab">${circleCardHead('過去の試合', addB, 'period')}${kinds}${head.slice(head.indexOf('<div class="mp-sec-head cg-head">'))}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
-    ${glist ? `<div class="cg-games">${glist}</div>` : (curPeriod() !== 'all' ? `<div class="empty-msg" style="margin-top:14px">${esc(periodLabel())}の試合はありません</div><button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '<div class="empty-msg" style="margin-top:14px">この形式の試合はありません</div>')}</div>`;
+  return `<div class="card cg-tab">${circleCardHead('過去の試合', addB, 'period')}${kinds}${head.slice(head.indexOf('<div class="mp-sec-note hist-cnt cg-head">'))}<div class="hist-viewseg">${histOrderSegHtml('renderCircle()', 'circleGamesView', 'list')}</div>
+    ${glist ? `<div class="cg-games">${glist}</div>` : histEmptyHtml()}</div>`;
 }
 // ---- 試合のカレンダー（月ごと。試合のある日に印・押すとその日の試合） ----
 let circleGamesView = 'tile'; // 既定はタイル（2026-10-07・個人の過去の試合と同じ）
@@ -10853,7 +10854,7 @@ function msGamesHtml(st) {
   return `<div class="card hist-card">${msGamesInner(gs, seg)}</div>`;
 }
 function msGamesInner(gs, seg) {
-  if (!gs.length) return seg + `<div class="ms-empty">この範囲の試合はありません</div>`;
+  if (!gs.length) return seg + histEmptyHtml();
   if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openResultSheet('${esc(x.g.id)}')` })));
   if (histView === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
     x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'ms', 'renderMyStats()');
@@ -12238,8 +12239,7 @@ function renderHistoryList() {
   const modeName = (mpMode === 3 ? '三麻' : '四麻') + 'の';
 
   if (!list.length) {
-    body.innerHTML = `<div class="empty-msg" style="margin-top:14px">${q ? '条件に一致する試合がありません' : `${periodLabel()}の${modeName}試合はありません`}</div>`
-      + (curPeriod() !== 'all' && !q ? `<button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : '');
+    body.innerHTML = q ? '<div class="empty-msg" style="margin-top:14px">条件に一致する試合がありません</div>' : histEmptyHtml();
     renderSendBar();
     return;
   }
@@ -12256,7 +12256,7 @@ function renderHistoryList() {
     m.items.push(x.g);
   });
   if (histView === 'tile' && !mpSelecting) {
-    if (cnt) cnt.textContent = `${gamesRoundsText(list.length, list.reduce((a, x) => a + (x.g.rounds || []).length, 0))}（自分が出ていない試合も）`;
+    if (cnt) cnt.textContent = `${gamesRoundsText(list.length, list.reduce((a, x) => a + (x.g.rounds || []).length, 0))}`;
     body.innerHTML = histTilesHtml(list.slice().sort((a, b) => b.ms - a.ms).map(x => {
       const t = histState(x.g);
       return { g: x.g, me: t === 'me' ? tagOf(x.g.id).me : t === 'out' ? null : undefined, onclick: `openResultSheet('${esc(x.g.id)}')` };
@@ -12317,9 +12317,11 @@ function yrToggle(y, el) {
 }
 function yrSecHtml(y, headInner, body) {
   const c = yrClosed.has(y);
-  return `<section class="yr-sec${c ? ' closed' : ''}"><button type="button" class="ht-year yr-h" aria-expanded="${!c}" onclick="yrToggle(${y},this)">${headInner}<span class="yr-chev">${ico('chevron', 12)}</span></button><div class="yr-body">${body}</div></section>`;
+  return `<section class="yr-sec${c ? ' closed' : ''}"><button type="button" class="yr-h" aria-expanded="${!c}" onclick="yrToggle(${y},this)"><span class="ht-year">${headInner}</span><span class="yr-chev">${ico('chevron', 12)}</span></button><div class="yr-body">${body}</div></section>`;
 }
 // 月の区画（2026-10-08）: 淡い地の角丸の箱に「10月 2ゲーム / 3試合」の見出しと中身（一覧の行・タイルは白いので箱の上で浮く）
+// 過去の試合が条件で0件のときの文（個人・仲間ページ・自分の成績で同じ。2026-10-08）
+function histEmptyHtml() { return `<div class="empty-note" style="margin-top:12px">${esc(condShortText())}の試合はありません。${curPeriod() !== 'all' ? '' : '上の四麻｜三麻・合計｜個人戦｜チーム戦を変えると出ます。'}</div>${curPeriod() !== 'all' ? `<button type="button" class="mp-more" onclick="setMpPeriod('all')">すべての期間を見る</button>` : ''}`; }
 function moSecHtml(m, nG, nR, inner) { return `<div class="mo-sec"><div class="mo-h"><b>${m + 1}月</b><span>${gamesRoundsText(nG, nR)}</span></div>${inner}</div>`; }
 // 一覧: 年ごと→その中を月ごと（items は新しい順）
 function listByYearHtml(items, msOf, rowOf, roundsOf) {
