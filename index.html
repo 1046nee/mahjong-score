@@ -1048,6 +1048,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .low-filt { margin-top: 12px; }
 .low-filt .mp-filters .mp-pwrap { margin-bottom: 0; }
 #circle-body > .low-filt { margin-bottom: -6px; } /* すぐ下のタブとの間を詰める */
+/* 上の線（.mp-split）から下の期間＋四麻｜三麻までは、個人と同じ間（17px）。2026-10-08 仲間ページだけ45px空いていた */
+#circle-body { padding-top: 0; } #circle-body > .low-filt:first-child { margin-top: 0; }
+/* 見出し（.pg-head）から上の期間＋四麻｜三麻までも詰める（24px → 12px。個人・仲間ページ同じ） */
+#mp-stats > .mp-sec:first-child, #circle-top > .mp-sec:first-child { margin-top: 12px; }
 #mp-pane-filt + .mp-pane-tabs { margin-top: 10px; }
 .hist-card .gm-month:first-child { margin-top: 4px; }
 .cg-games { margin-top: 8px; }
