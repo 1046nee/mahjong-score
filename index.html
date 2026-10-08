@@ -1354,13 +1354,18 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mc-spark .sp-lab rect { fill: #fff; stroke: var(--pc-ink); stroke-width: 1.2; }
 .mc-spark .sp-lab text { font-size: 9.5px; font-weight: 900; fill: #1F2A28; font-variant-numeric: tabular-nums; }
 .mc-spark .sp-lab text.pos { fill: #1A237E; } .mc-spark .sp-lab text.neg { fill: #C62828; }
-.sp-nav { display: flex; align-items: center; gap: 6px; margin-top: 12px; min-height: 32px; } /* カードの上: ‹ まとめ › */
+.sp-nav { display: flex; align-items: center; gap: 4px; margin-top: 12px; height: 32px; } /* カードの上: ‹ まとめ ›。まとめの有無で高さを変えない（いつも32px・1行） */
 .sp-sum { flex: 1; min-width: 0; }
-.sp-sum .sp-whole { margin-top: 0; background: #fff; }
-.sp-sum .sp-whole { flex-wrap: wrap; row-gap: 2px; column-gap: 6px; padding: 6px 10px; } .sp-sum .sp-wl { flex: 1 0 100%; flex-direction: row; align-items: baseline; gap: 6px; } .sp-sum .sp-wsc { margin-left: auto; } /* 上の段に見出しと日数・試合数、下の段に順位とスコア */ .sp-whole .sp-wl small, .sp-whole .sp-wl b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 「全2日 ・ 4試合」が折れない */
+.sp-line { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border-radius: 16px; background: #fff; white-space: nowrap; font-size: 12px; font-variant-numeric: tabular-nums; }
+.sp-line > b:first-child { flex: none; font-weight: 900; color: #33413E; }
+.sp-line > small { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 700; color: #6B7A77; }
+.sp-lr { flex: none; display: inline-flex; align-items: center; gap: 2px; margin-left: auto; font-size: 12.5px; font-weight: 900; color: #1F2A28; } .sp-lr small { font-size: 10px; font-weight: 700; color: #5F6E6B; }
+.sp-lsc { flex: none; font-size: 14px; font-weight: 900; } .sp-tot .sp-lsc { margin-left: auto; } .sp-lsc.pos { color: #1A237E; } .sp-lsc.neg { color: #C62828; }
 .sp-g + .sp-whole, .sp-mo + .sp-whole { margin-top: 10px; } /* 複数ゲームのとき: 2日以上のゲームの全体の成績は、そのカードのすぐ上 */
 .sp-whole + .sp-g { margin-top: 4px; }
-.sp-nb { flex: none; display: inline-grid; place-items: center; width: 44px; height: 32px; padding: 0; border: 0; border-radius: 16px; background: #fff; color: var(--pc); cursor: pointer; }
+.sp-g + .sp-whole, .sp-mo + .sp-whole { margin-top: 10px; } /* 複数ゲームのとき: 2日以上のゲームの全体の成績は、そのカードのすぐ上 */
+.sp-whole + .sp-g { margin-top: 4px; }
+.sp-nb { flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 16px; background: #fff; color: var(--pc); cursor: pointer; }
 .sp-nb.pv svg { transform: rotate(180deg); }
 .sp-nb:disabled { visibility: hidden; }
 .sp-h { display: flex; align-items: center; gap: 8px; padding: 0 2px 2px; font-size: 13px; color: #1F2A28; }
@@ -12076,7 +12081,10 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
       const ft = gameTotals(g), fp = playedFlags(g), fr = me != null && fp[me] ? 1 + fp.reduce((a, p, i) => a + (p && ft[i] > ft[me] ? 1 : 0), 0) : null;
       const fn = (g.rounds || []).filter(r => { const mem = roundMembers(r, s); return me != null && mem.includes(me); }).length;
       whole = `<span class="sp-whole"><span class="sp-wl"><b>ゲーム全体</b><small>全${days.length}日 ・ ${fn}試合</small></span>${fr ? `<span class="sp-rank${fr <= 3 ? ' r' + fr : ''}"><span class="sp-md">${fr <= 3 ? medalSvg(fr, 16, false) : ''}</span>${fr}位<small>/${fp.filter(Boolean).length}人</small></span><b class="sp-wsc ${scoreCls(ft[me])}">${fmtScore(ft[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>`;
-      if (byG.size === 1) { wholeTop = whole; whole = ''; } // 1ゲームなら上の まとめ の欄へ
+      if (byG.size === 1) { // 1ゲームなら矢印のあいだの まとめ に1行で（2026-10-08 高さを変えない）
+        wholeTop = `<span class="sp-line"><b>全体</b><small>全${days.length}日・${fn}試合</small>${fr ? `<span class="sp-lr">${fr <= 3 ? medalSvg(fr, 14, false) : ''}${fr}位<small>/${fp.filter(Boolean).length}人</small></span><b class="sp-lsc ${scoreCls(ft[me])}">${fmtScore(ft[me])}</b>` : ''}</span>`;
+        whole = '';
+      }
     }
     const dayTag = multi ? `<em class="sp-dn">${dI + 1}日目</em>` : ''; // 試合名の横（下の行に入れると2行になりカードが高くなった。2026-10-08）
     return `${moHead}${whole}<button type="button" class="sp-g" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
@@ -12094,7 +12102,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
   const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
   // まとめ: 複数のゲームなら合計（ゲーム数・試合数・合計スコア）、1ゲームで2日以上ならゲーム全体の成績
   const nR = day.items.length, sum = day.items.reduce((a, x) => a + (Number(x.sc) || 0), 0);
-  const mid = byG.size > 1 ? `<span class="sp-whole sp-tot"><span class="sp-wl"><b>合計</b><small>${gamesRoundsText(byG.size, nR)}</small></span><b class="sp-wsc ${scoreCls(sum)}">${fmtScore(sum)}</b></span>` : wholeTop;
+  const mid = byG.size > 1 ? `<span class="sp-line sp-tot"><b>合計</b><small>${gamesRoundsText(byG.size, nR)}</small><b class="sp-lsc ${scoreCls(sum)}">${fmtScore(sum)}</b></span>` : wholeTop;
   return `<span class="sp-tag${anyTeam ? ' team' : ''}">${day.label ? esc(day.label) : fmtDay(ymdToMs(day.k))}${oDays.length > 1 && oI >= 0 ? `・${oI + 1}日目` : ''}</span>
     <button type="button" class="sp-x" aria-label="閉じる" onclick="event.stopPropagation();closeSparkPop(this)">×</button>${navOf(mid)}${rows}`;
 }
