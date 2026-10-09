@@ -642,6 +642,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 開け閉めできるカードの見出しの行は、開いていても（右に画像などのボタン30px）閉じていても（開け閉めだけ26px）同じ高さ＝見出しが上下に動かない（2026-10-09） */
 .card div:has(> .card-title):has(.card-collapse) { min-height: 30px; }
 .card div:has(> .card-title) > .card-title { flex: none; white-space: nowrap; } /* 見出しは折り返さない */
+.rf-btns { display: flex; gap: 6px; flex: none; margin-left: auto; }
+tr.day-row td { background: #F1F5F4 !important; padding: 4px 0 !important; text-align: left; border-bottom: 1px solid #E3EAE8; }
+tr.day-row span { position: sticky; left: 8px; display: inline-flex; align-items: baseline; gap: 6px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
+tr.day-row b { font-size: 11.5px; font-weight: 900; color: var(--pc); }
 .rounds-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 11px; color: #8A9AA5; }
 .card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--pc-bg); color: var(--pc); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
@@ -9532,7 +9536,17 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
     const who = nm && nm.length === pts.length ? nm.map((x, i) => `${x} ${Number(pts[i]).toLocaleString()}`).join('　') : '';
     return `<tr class="rmk-del"><td class="sticky-col">${ico('trash', 13)}</td><td colspan="${ncol}"><b>試合${serial}を削除しました</b><span>${fmtTime(e.at)}${who ? ` ・ ${esc(who)}` : ''}</span></td></tr>`;
   };
-  const liveRow = idx => roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1) });
+  // 2日以上にわたる試合は、日が変わる所に「2日目 8/25（日）」の行（日の区切り）
+  const days = gameDaysList(g);
+  let lastDay = -1;
+  const dayRow = idx => {
+    if (days.length < 2) return '';
+    const k = roundDayIdx(g, g.rounds[idx], days);
+    if (k === lastDay) return '';
+    lastDay = k;
+    return `<tr class="day-row"><td colspan="${ncol + 1}"><span><b>${k + 1}日目</b>${esc(fmtDay(ymdToMs(days[k])))}</span></td></tr>`;
+  };
+  const liveRow = idx => dayRow(idx) + roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1) });
   if (locked) return idxs.map(liveRow).join('');
   // 枠の順に描く。直近n試合に絞っているときは、いちばん上に出す試合より前の灰色の行は出さない
   const lay = roundLayout(g), vis = new Set(idxs);
@@ -10175,9 +10189,8 @@ function renderGame() {
   // グループ名に日付を入れなくても分かるよう、作成日を自動表示する
   // 2日以上にわたる試合（対局日を2日以上にした・入力した日が2日以上にわたる）には必ず日の区切り（記録が確定したあとは要約だけ）
   const multiDay = gameDaysList(activeGame).length > 1;
+  // 日の区切りは試合結果の表の中（「n日目」の行）と表の下のボタンへ（見出しに縦に積むと長くなった。2026-10-09）
   document.getElementById('game-date').innerHTML = (playDateMs(activeGame) != null || multiDay) ? '対局日 ' + esc(fmtGameDays(activeGame))
-    + (multiDay ? ` <button type="button" class="day-split-btn" onclick="openDaySplit()">${ico('pencil', 12)}日の区切り</button>` : '')
-    + (multiDay ? `<span class="day-split-sum">${daySplitSummary(activeGame).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : activeGame.createdAt ? '作成日 ' + new Date(activeGame.createdAt).toLocaleDateString('ja-JP') : '';
 
   // 総合順位カード（順位リスト＋スコア/チップ切替）
@@ -10237,7 +10250,7 @@ function renderGame() {
   // 「並べ替え」は見出しの行ではなく表の下（見出しの行にボタンが4つ並ぶと、狭い画面で「試合結果」が2行に折れた。2026-10-09）
   const canReorder = !gLocked && roundLayout(activeGame).length >= 2; // 灰色の行（消した試合）も動かせるので、枠の数で見る
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds)
-    ? (gLocked ? '' : `<div class="rounds-foot"><span>行をタップすると修正・削除できます</span>${canReorder ? '<button type="button" class="edit-tab" onclick="openReorder()">並べ替え</button>' : ''}</div>`)
+    ? ((!gLocked || multiDay) ? `<div class="rounds-foot"><span>${gLocked ? '' : multiDay ? '行を押すと修正・削除' : '行をタップすると修正・削除できます'}</span><span class="rf-btns">${multiDay ? `<button type="button" class="edit-tab" onclick="openDaySplit()">日の区切り</button>` : ''}${canReorder ? '<button type="button" class="edit-tab" onclick="openReorder()">並べ替え</button>' : ''}</span></div>` : '')
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-flex' : 'none';
@@ -13764,8 +13777,6 @@ function renderDetailBody(g) {
   document.getElementById(P + '-title').textContent = g.name;
   const multiDayD = gameDaysList(g).length > 1; // 試合の画面と同じく、2日以上にわたる試合には必ず日の区切り
   document.getElementById(P + '-date').innerHTML = (playDateMs(g) != null || multiDayD) ? '対局日 ' + esc(fmtGameDays(g))
-    + (multiDayD && !detailRO ? ` <button type="button" class="day-split-btn" onclick="openDaySplit('detail')">${ico('pencil', 12)}日の区切り</button>` : '')
-    + (multiDayD ? `<span class="day-split-sum">${daySplitSummary(g).map(t => `<span>${esc(t)}</span>`).join('')}</span>` : '')
     : g.createdAt ? '作成日 ' + new Date(g.createdAt).toLocaleDateString('ja-JP') : '';
   const s = g.settings;
   const hasRounds = g.rounds.length > 0;
@@ -13794,7 +13805,7 @@ function renderDetailBody(g) {
     ${detailCardHead('試合結果', 'rounds', logBtn + imgBtn)}
     ${collapsedCards.rounds ? '' : roundsHtml}
     ${(g.rounds.length && !collapsedCards.rounds)
-      ? ((detailRO || gLocked) ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>') + roundsMoreBtnHtml(g.rounds.length)
+      ? ((detailRO || (gLocked && !multiDayD)) ? '' : `<div class="rounds-foot"><span>${gLocked ? '' : '行をタップすると点数を修正できます'}</span><span class="rf-btns">${multiDayD ? `<button type="button" class="edit-tab" onclick="openDaySplit('detail')">日の区切り</button>` : ''}</span></div>`) + roundsMoreBtnHtml(g.rounds.length)
       : ''}</div>`;
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}画像</button>`;
