@@ -686,7 +686,9 @@ tr.day-row b { font-size: 11.5px; font-weight: 900; color: var(--pc); }
 /* 見出しの行は縦のスクロールでだけ止まり（横には一緒に動く）、左の列は横のスクロールでだけ止まる。左上の角はどちらでも動かない。
    端で表ごと弾む動きは止める（見出しまで揺れて落ち着かなかった）。チーム戦は「チーム」の行の下に「メンバー」の行を止める（--trh） */
 #rounds-wrap, #detail-rounds-wrap { overflow: auto; max-height: min(70vh, 560px); overscroll-behavior-x: none; }
-#rounds-wrap thead th, #detail-rounds-wrap thead th { position: sticky; top: 0; z-index: 2; }
+#rounds-wrap thead th, #detail-rounds-wrap thead th { position: sticky; top: 0; z-index: 2; border: 0 !important; will-change: transform; backface-visibility: hidden; }
+/* ↑ 元の罫線（border）は消して、下の box-shadow の線だけにする（両方あると、貼り付いていないときに線が二重になった）。
+   見出しのマスは最初から別の層に置き、横にスクロールしたときの描き直しのちらつきを減らす（2026-10-09） */
 #rounds-wrap thead tr:not(.team-row) th, #detail-rounds-wrap thead tr:not(.team-row) th { top: var(--trh, 0px); }
 #rounds-wrap thead th.sticky-col, #detail-rounds-wrap thead th.sticky-col { left: 0; z-index: 3; }
 /* 貼り付けた見出しは罫線（border）が描かれないので、チームの下の白線・チームの間の線は box-shadow で引き直す */
