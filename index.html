@@ -1292,7 +1292,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .cp-list { padding: 0 12px; } .cp-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; border: 0; border-top: .5px solid #E3E9E8; background: none; font: inherit; text-align: left; cursor: pointer; }
 .cp-row:first-child { border-top: 0; } .cp-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .cp-t b { font-size: 15px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cp-t small { font-size: 12px; color: #5F6E6B; }
 .cp-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 10px; min-height: 30px; }
-.cp-row.sort { cursor: default; } .cp-mv { flex: none; display: flex; gap: 6px; } .cp-mv button { width: 36px; height: 32px; border: 1px solid var(--pc-line2); border-radius: 10px; background: #fff; color: var(--pc); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; } .cp-mv button:disabled { opacity: .35; cursor: default; }
+.cp-row.sort { cursor: default; } .cp-mv { flex: none; display: flex; gap: 6px; } .cp-mv button { width: 36px; height: 32px; border: 1px solid var(--pc-line2); border-radius: 10px; background: #fff; color: var(--pc); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; } .cp-mv button:disabled { opacity: .35; cursor: default; } .cp-mv .cp-hide { width: auto; padding: 0 10px; font-size: 13px; color: #5F6E6B; border-color: #D5DEDC; }
 .cp-on { flex: none; font-size: 11px; font-weight: 800; color: var(--pc); }
 .sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
@@ -3650,6 +3650,7 @@ async function signOutAccount() {
   appState.games = []; saveStorage();
   gameTags = {}; saveTags();
   myCircles = {}; circleSeen = {}; saveCircleSeen();
+  try { localStorage.removeItem(CIRCLE_HIDDEN_KEY); } catch (e) {}
   currentUser = null;
   renderHeaderAccount(); renderRecentGames();
   showView('home');
@@ -4051,6 +4052,7 @@ async function openCircle(cid) {
     circleId = cid; circleData = snap.val(); circleMode = null; circleFocus = null;
     circleSeen[cid] = { name: circleData.name || '', at: new Date().toISOString() };
     saveCircleSeen();
+    setCircleHidden(cid, false); // 一覧から外していても、開き直したらまた出す
     await Promise.all([loadCircleMembers(), loadCircleSessions(true)]); // 試合は毎回最新を読む（あとから足したメンバー・試合を反映する）
     if (circleId !== cid) return; // 読んでいるあいだに別の仲間ページへ切り替えた
     circleStore[cid] = { data: circleData, sess: circleSess, members: circleMembers, secret: circleSecret };
@@ -6195,6 +6197,7 @@ function allCircleEntries() {
   const all = {};
   Object.entries(circleSeen).forEach(([cid, m]) => { all[cid] = { name: m.name, at: m.at, member: false }; });
   Object.entries(myCircles).forEach(([cid, m]) => { all[cid] = { name: m.name || (all[cid] && all[cid].name) || '', at: m.at, member: true }; });
+  circleHidden().forEach(cid => { delete all[cid]; }); // 一覧から外したもの（この端末だけ。仲間ページからは抜けない）
   const ord = circleOrder(), pos = cid => { const i = ord.indexOf(cid); return i < 0 ? 1e9 : i; };
   return Object.entries(all).sort((a, b) => (pos(a[0]) - pos(b[0])) || (b[1].member - a[1].member) || new Date(b[1].at || 0) - new Date(a[1].at || 0));
 }
@@ -6202,6 +6205,29 @@ function allCircleEntries() {
 const CIRCLE_ORDER_KEY = 'mahjong-circle-order';
 function circleOrder() { try { const a = JSON.parse(localStorage.getItem(CIRCLE_ORDER_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 let circlePickerSort = false;
+// 一覧から外す（自分の画面に出さない）。この端末に覚える。見ただけのものは控えごと消す。
+// リンク・参加コード・試合の画面から開き直すと、また一覧に出る（openCircle）
+const CIRCLE_HIDDEN_KEY = 'mahjong-circle-hidden';
+function circleHidden() { try { const a = JSON.parse(localStorage.getItem(CIRCLE_HIDDEN_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function setCircleHidden(cid, on) {
+  const a = circleHidden().filter(x => x !== cid);
+  if (on) a.push(cid);
+  try { localStorage.setItem(CIRCLE_HIDDEN_KEY, JSON.stringify(a)); } catch (e) { /* 覚えられなくても困らない */ }
+}
+function hideCircle(cid) {
+  const ent = allCircleEntries().find(([c]) => c === cid);
+  if (!ent) return;
+  const name = ent[1].name || (circleCardInfo[cid] || {}).name || '仲間ページ';
+  if (!confirm(`「${name}」を一覧から外しますか？\n（${ent[1].member ? '仲間ページからは抜けません。' : ''}リンクから開くと、また表示されます）`)) return;
+  if (ent[1].member) setCircleHidden(cid, true);
+  else { delete circleSeen[cid]; saveCircleSeen(); }
+  if (lastCircleId() === cid) { try { localStorage.removeItem(LAST_CIRCLE_KEY); } catch (e) {} }
+  if (cid === circleId && document.getElementById('view-circle').classList.contains('active')) { closeFormModal(); showView('history'); }
+  else if (allCircleEntries().length) openCirclePicker();
+  else closeFormModal();
+  renderCircleSection();
+  showToast('一覧から外しました');
+}
 function moveCircleOrder(cid, d) {
   const ids = allCircleEntries().map(([c]) => c), i = ids.indexOf(cid), j = i + d;
   if (i < 0 || j < 0 || j >= ids.length) return;
@@ -6255,13 +6281,13 @@ function openCirclePicker() {
     const role = cid === circleId && circleRole() ? ROLE[circleRole()] : info.owner && info.owner === myUid() ? '作成者' : m.member ? '参加中' : '見ただけ';
     const nums = info.people != null ? ` ・ 名簿 ${info.people}人 ・ ${info.games}ゲーム` : '';
     if (circlePickerSort) return `<div class="cp-row sort">${circleAvHtml(name, cid, 34)}<span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>
-      <span class="cp-mv"><button type="button" aria-label="上へ" onclick="moveCircleOrder('${esc(cid)}',-1)"${k === 0 ? ' disabled' : ''}>↑</button><button type="button" aria-label="下へ" onclick="moveCircleOrder('${esc(cid)}',1)"${k === list.length - 1 ? ' disabled' : ''}>↓</button></span></div>`;
+      <span class="cp-mv"><button type="button" aria-label="上へ" onclick="moveCircleOrder('${esc(cid)}',-1)"${k === 0 ? ' disabled' : ''}>↑</button><button type="button" aria-label="下へ" onclick="moveCircleOrder('${esc(cid)}',1)"${k === list.length - 1 ? ' disabled' : ''}>↓</button><button type="button" class="cp-hide" onclick="hideCircle('${esc(cid)}')">外す</button></span></div>`;
     return `<button type="button" class="cp-row${on ? ' on' : ''}" onclick="closeFormModal();openCircle('${esc(cid)}')">${circleAvHtml(name, cid, 34)}
       <span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>${on ? `<span class="cp-on">表示中</span>` : `<span class="mb-chev">${ico('chevron', 14)}</span>`}</button>`;
   }).join('');
   document.getElementById('form-modal-title').textContent = '仲間ページ';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="cp-head"><span class="mn-sub" style="margin:0">${list.length}つ</span>
-      ${list.length > 1 ? `<button type="button" class="btn-tint" onclick="circlePickerSort=!circlePickerSort;openCirclePicker()">${circlePickerSort ? '完了' : '並べ替え'}</button>` : ''}</div>
+      ${list.length ? `<button type="button" class="btn-tint" onclick="circlePickerSort=!circlePickerSort;openCirclePicker()">${circlePickerSort ? '完了' : '並べ替え・外す'}</button>` : ''}</div>
     <div class="mn-group cp-list">${rows}</div>
     ${loginAvailable() ? `<div class="mn-group">${menuBtnHtml('people', '作る・参加する', '新しい仲間ページ・参加コード', 'openCircleEntryMenu()')}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
