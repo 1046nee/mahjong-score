@@ -849,7 +849,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .mc-more { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 800; color: var(--pc); white-space: nowrap; }
 .mp-acts-r { display: flex; gap: 6px; flex: none; }
 .mp-act.sm { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 15px; font-size: 13px; border-width: 1.5px; white-space: nowrap; gap: 3px; }
-@media (max-width: 374px) { .mp-act.sm .ma-t { display: none; } .mp-act.sm:not(.wide) { padding: 0; width: 30px; } } /* 狭い画面はアイコンだけ（.wide＝字をいつも出すボタン＝「＋ 仲間ページに追加」） */
+@media (max-width: 374px) { .mp-act.sm .ma-t { display: none; } } /* 狭い画面はアイコンだけ（.wide＝字をいつも出すボタン＝「＋ 仲間ページに追加」） */
 .hist-viewseg { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mp-period.sm { flex: 0 1 auto; min-width: 0; }
 .mp-period.sm > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2121,6 +2121,41 @@ button.ios-row:active { background: #F2F6F5; }
 .watch-cta { background: #fff; border-radius: 16px; padding: 16px; text-align: center; }
 .watch-cta b { display: block; font-size: 15px; color: #1f2a28; margin-bottom: 4px; }
 .watch-cta span { display: block; font-size: 12px; color: #5f6e6b; line-height: 1.7; margin-bottom: 12px; }
+
+/* ==== ボタンの見た目を役目ごとにそろえる（2026-10-09・docs/app-spec.md「ボタン」）====
+   同じ役目のボタンは同じ形・同じ色。字の大きさだけは置き場所に合わせて変えてよい。
+   そろえないもの（あえて違う）: CTAのオレンジ（.cta-btn .fab .img-btn-main）、Google・LINE、人数を選ぶ大きなボタン（四麻＝緑・三麻＝青）、
+   画像のプレビューの暗い画面のボタン、押せるカード・行・タイル */
+/* 1) 主ボタン（主色で塗る・決定や作成）: 高さ48・角14・16px/800。押せないときは灰#AEBBB8 */
+.confirm-btn, .submit-btn, .go-game-btn { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; padding: 10px 16px; border: 0; border-radius: 14px; background: var(--pc); color: #fff; font-size: 16px; font-weight: 800; line-height: 1.3; }
+.confirm-btn:disabled, .submit-btn:disabled, .add-member-btn:disabled { background: #AEBBB8 !important; color: #fff; }
+.confirm-btn:active:not(:disabled), .submit-btn:active:not(:disabled), .go-game-btn:active { opacity: .85; }
+/* 入力欄の横に置く小さい主ボタン（追加・コピー・変更・開く）: 主色で塗る・入力欄の高さに合わせる・角10・14px/800 */
+.add-member-btn, .copy-btn, .in-btn { flex: none; align-self: stretch; min-height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--pc); color: #fff; font-size: 14px; font-weight: 800; white-space: nowrap; cursor: pointer; }
+.in-btn:disabled, .copy-btn:disabled { background: #AEBBB8; cursor: not-allowed; }
+/* 2) 副ボタン（白地＋主色の枠）: 高さ48・枠1.5・角14・15px/800（以前のオレンジの薄い地＋枠＝.auto-btn もここ。オレンジはCTAだけ） */
+.auto-btn, .auto-btn.sub, .end-game-btn, .gs-acts .gs-btn, .mp-act:not(.sm) { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; height: auto; padding: 10px 16px; border: 1.5px solid var(--pc); border-radius: 14px; background: #fff; color: var(--pc); font-size: 15px; font-weight: 800; line-height: 1.3; }
+.auto-btn:disabled { background: #F4F7F6; color: #AEBBB8; border-color: #D5DEDB; }
+.auto-btn:active:not(:disabled), .end-game-btn:active, .gs-acts .gs-btn:active { background: var(--pc-tint); }
+/* 3) 閉じる・キャンセル（下の大きいボタン）: 灰地#EEF2F1・主色の字・高さ48・角14・15px/700。危ない操作の赤い字は各所の指定のまま */
+.modal-cancel, .sheet-close { min-height: 48px; height: auto; padding: 10px 16px; border: 0; border-radius: 14px; background: #EEF2F1; color: var(--pc); font-size: 15px; font-weight: 700; line-height: 1.3; }
+.modal-cancel:active, .sheet-close:active { background: #E3E9E7; }
+.modal-danger { min-height: 48px; border-radius: 14px; font-weight: 800; }
+.modal-action { min-height: 48px; border-radius: 14px; background: var(--pc-tint); font-weight: 800; }
+.modal-action.danger { background: #FDECEA; color: #C62828; }
+/* 4) カードの見出しの右など、白い地の上の小さい操作: 薄い主色の地・高さ30・丸・13px/800（画像・プレビュー・履歴・＋ 追加・送る・並べ替え…） */
+.btn-tint, .edit-tab, .mp-act.sm { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 30px; height: auto; padding: 0 12px; border: 0; border-radius: 15px; background: var(--pc-tint); color: var(--pc); font-size: 13px; font-weight: 800; line-height: 1.2; white-space: nowrap; box-shadow: none; }
+.btn-tint:active, .edit-tab:active, .mp-act.sm:active { background: var(--pc-line); }
+.edit-tab.sheet-ok { background: var(--pc); color: #fff; }
+.edit-tab.sheet-ok:disabled { background: #AEBBB8; opacity: 1; }
+@media (max-width: 374px) { .mp-act.sm:not(.wide) { padding: 0; width: 30px; } }
+/* 5) 画面の地の上の小さい操作（ページの名前の右の 共有・設定・設定の編集）: 白地＋薄い影・高さ30・丸・12px/800 */
+.ch-act, .title-edit-btn, #view-game.sanma .title-edit-btn, #view-detail.sanma .title-edit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 30px; padding: 0 12px; border: 0; border-radius: 15px; background: #fff; color: var(--pc); box-shadow: 0 0 0 1px var(--pc-line), var(--sh-1); font-size: 12px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
+.ch-act:active, .title-edit-btn:active { background: var(--pc-tint); }
+/* 6) 切り替え（ゲームを作る画面の 四麻｜三麻・個人戦｜チーム戦）もほかの切り替え（.seg）と同じ形: 灰色の溝に白く浮いた選択 */
+.toggle-group { padding: 2px; border: 0; border-radius: 10px; background: #E3E9E7; gap: 2px; }
+.toggle-btn { min-height: 36px; padding: 6px 8px; border-radius: 8px; background: transparent; color: #4F5C5A; font-weight: 700; }
+.toggle-btn.active, .sanma .toggle-btn.active { background: #fff; color: var(--pc); font-weight: 800; box-shadow: var(--sh-thumb); }
 </style>
 </head>
 <body>
@@ -5370,7 +5405,7 @@ function openCircleMember(mid) {
   // 「同じ人としてまとめる」（試合を別の人に付け替える）は2026-10-02にやめた（間違えて別の人にまとめてしまうおそれ）
   const admin = (canEdit || r.uid === myUid() || (r.uid && isCircleAdmin())) ? `<div class="pf-h">管理</div><div class="pf-admin">
       ${canEdit ? `<div class="field"><label>名簿での名前</label><div style="display:flex;gap:6px"><input type="text" id="cm-rename" value="${esc(r.name)}" maxlength="${MAX_NAME_LEN}" style="flex:1;min-width:0"
-        oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="btn-tint" disabled onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
+        oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="in-btn" disabled onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
       ${isCircleOwner() ? avColorPickerHtml(mid) : ''}
       ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
       ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す</button>` : ''}
@@ -5381,8 +5416,8 @@ function openCircleMember(mid) {
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
-    ${mid !== myMid && myMid ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="openCircleMatchup(['${myMid}','${mid}'],'${mid}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
-    ${mid === myMid && currentUser ? `<button type="button" class="btn-tint" style="width:100%;height:40px;margin-top:10px;border-radius:12px" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
+    ${mid !== myMid && myMid ? `<button type="button" class="auto-btn sub" style="margin:10px 0 0" onclick="openCircleMatchup(['${myMid}','${mid}'],'${mid}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
+    ${mid === myMid && currentUser ? `<button type="button" class="auto-btn sub" style="margin:10px 0 0" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
     <div class="pf-card"><div class="card-head-row"><div class="card-title">対戦成績</div></div>${condLineHtml()}
     ${keys.length ? `${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${mid}')`, h2hLvBase(md => circleStatsP(md).acc[mid] || {}))}<div class="h2h-note">相手のカードを押すと、2人のどちらが勝ち越しているかと、いっしょに打った試合が見られます。</div>` : h2hEmptyBodyHtml(r.name, `openCircleMember('${mid}')`, Object.keys(rosterOf()).filter(k => k !== mid))}</div>
     <div class="pf-card"><div class="card-head-row"><div class="card-title">連携済みの試合</div></div>${condLineHtml()}<div class="mp-sec-note hist-cnt">${gamesRoundsText(bound.length, bound.reduce((a, b) => a + (b.g ? (b.g.rounds || []).filter(r => roundMembers(r, b.g.settings || {}).includes(b.seat)).length : 0), 0))}</div>${boundSeg}${boundHtml || '<div class="empty-note" style="margin-bottom:0">試合はありません</div>'}</div>
@@ -5723,7 +5758,7 @@ async function openCircleSettings() {
     : 'あなたは編集メンバーです。試合の追加・名前の連携・名簿の編集ができます。メンバーの管理は作成者・管理者が行います。';
   document.getElementById('form-modal-title').textContent = '仲間ページの設定';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body cs-sheet">
-    <div class="field"><label>仲間ページの名前</label><div style="display:flex;gap:6px"><input type="text" id="cs-name" value="${esc(circleData.name || '')}" maxlength="${MAX_GROUP_LEN}" style="flex:1;min-width:0"><button type="button" class="edit-tab" onclick="renameCircle()">変更</button></div></div>
+    <div class="field"><label>仲間ページの名前</label><div style="display:flex;gap:6px"><input type="text" id="cs-name" value="${esc(circleData.name || '')}" maxlength="${MAX_GROUP_LEN}" style="flex:1;min-width:0"><button type="button" class="in-btn" onclick="renameCircle()">変更</button></div></div>
     <div class="cs-h">メンバーと権限<small>${members.length}人</small></div>
     <div class="cs-note">${can}</div>
     <div class="cs-list">${memberRows}</div>
@@ -5947,7 +5982,7 @@ function openCircleEntryMenu() {
     <div class="mn-group">${menuBtnHtml('people', '仲間ページを作る', 'いつものメンバーで1つ作る', `closeFormModal();${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}`)}</div>
     <div class="mn-group" style="padding:12px"><div style="font-size:13px;font-weight:700;color:#33544A;margin-bottom:6px">招待リンク・参加コードを持っている</div>
       <div style="display:flex;gap:6px"><input type="text" id="circle-open-input" placeholder="招待リンク・参加コード・仲間ページのリンク" style="flex:1;min-width:0;font-size:16px;padding:8px;border:1px solid #CFE3DB;border-radius:10px">
-      <button type="button" class="btn-tint" style="height:40px;border-radius:10px" onclick="const v=document.getElementById('circle-open-input').value;closeFormModal();openCircleFromInput(v)">開く</button></div></div>
+      <button type="button" class="in-btn" onclick="const v=document.getElementById('circle-open-input').value;closeFormModal();openCircleFromInput(v)">開く</button></div></div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
