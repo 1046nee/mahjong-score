@@ -426,7 +426,9 @@ function opCases(w) {
       const ok1 = w.normSessionId('ABCDEFGHJK') === 'ABCDEFGHJK' && w.normSessionId('#ABCDEFGHJK/') === 'ABCDEFGHJK'
         && w.normSessionId('ABCDEFGHJK%20') === 'ABCDEFGHJK' && w.normSessionId(' ABCDEFGHJK。') === 'ABCDEFGHJK'
         && w.normSessionId('ABCDEFGHJKabcdefghjk23') === 'ABCDEFGHJKabcdefghjk23' && w.normSessionId('ABCDEFGHJKa') === null
-        && w.normSessionId('ABCDEF') === null && w.normSessionId('ABCDEFGHI1') === null;
+        && w.normSessionId('ABCDEF') === null && w.normSessionId('ABCDEFGHI1') === null
+        && w.normGame({ id: 'ZZZZZZZZZZ', rounds: {} }, 'ABCDEFGHJK').id === 'ABCDEFGHJK'   // 読んだ場所が id（中身の id と食い違っても）
+        && w.normGame({ id: 'ZZZZZZZZZZ' }).id === 'ZZZZZZZZZZ';
       const saved = w.eval('appState.games');
       try {
         w.eval(`appState.games = [

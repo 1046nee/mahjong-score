@@ -3280,10 +3280,11 @@ function dedupeGames() {
   const list = appState.games || [];
   const score = g => [((g.log || []).length), ((g.rounds || []).length), Date.parse(g.lastAccess || g.createdAt || 0) || 0];
   const better = (a, b) => { const x = score(a), y = score(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
-  const byId = new Map();
+  const byId = new Map(), noId = [];
   let changed = false;
   list.forEach(g => {
-    if (!g || !g.id) { changed = true; return; }
+    if (!g) { changed = true; return; }
+    if (!g.id) { noId.push(g); return; } // IDの無い控えは消さずにそのまま残す（データを失わない方を取る）
     const id = normSessionId(g.id) || g.id;
     if (id !== g.id) { g = { ...g, id }; changed = true; }
     const cur = byId.get(id);
@@ -3294,7 +3295,7 @@ function dedupeGames() {
     const la = [keep.lastAccess, other.lastAccess].filter(Boolean).sort().pop();
     byId.set(id, la ? { ...keep, lastAccess: la } : keep);
   });
-  if (changed) appState.games = [...byId.values()];
+  if (changed) appState.games = [...byId.values(), ...noId];
   return changed;
 }
 function saveStorage() {
@@ -3493,12 +3494,12 @@ async function mergeMyListData(data) {
   const toFetch = entries.filter(([gid]) => !known.has(gid) && !deletedGids[gid]);
   const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
   const results = await Promise.all(toFetch.map(([gid, meta]) =>
-    db.ref('sessions/' + gid).once('value').then(s => ({ meta, val: s.val() })).catch(() => null)));
+    db.ref('sessions/' + gid).once('value').then(s => ({ gid, meta, val: s.val() })).catch(() => null)));
   let added = 0;
   results.forEach(r => {
     if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
-    if ((appState.games || []).some(g => g.id === r.val.id)) return; // 読んでいるあいだに別の所から足された（同時に2回取り込むと2つ並んだ）
-    appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
+    if ((appState.games || []).some(g => g.id === r.gid)) return; // 読んでいるあいだに別の所から足された（同時に2回取り込むと2つ並んだ）
+    appState.games.push({ ...r.val, id: r.gid, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
       lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
     // 取り込んだゲームのプレイヤー名を「登録名」にも反映する（この端末で作成した場合と同じ扱い。
     // 引き継ぎ後のセットアップで過去のメンバー名が候補に出るようになる）
@@ -4013,7 +4014,7 @@ function syncCircleGamesToMine(quiet) {
     if (!src || deletedGids[sid]) return;
     let g = (appState.games || []).find(x => x.id === sid);
     if (!g) {
-      g = { ...src, lastAccess: new Date(gameDayMs(src)).toISOString() };
+      g = { ...src, id: sid, lastAccess: new Date(gameDayMs(src)).toISOString() };
       appState.games.push(g);
       myListSynced.delete(sid);
       syncGroupToMyList(g);
@@ -4138,7 +4139,7 @@ async function loadCircleMembers() {
 async function loadCircleSessions(force) {
   const sids = Object.keys((circleData && circleData.games) || {}).filter(sid => force || !circleSess[sid]);
   await Promise.all(sids.map(sid => db.ref('sessions/' + sid).once('value')
-    .then(s => { if (s.exists()) circleSess[sid] = normGame(s.val()); }).catch(() => {})));
+    .then(s => { if (s.exists()) circleSess[sid] = normGame(s.val(), sid); }).catch(() => {})));
 }
 async function refreshCircle() {
   if (!circleId) return;
@@ -5407,7 +5408,7 @@ async function runCircleAddGames() {
   try {
     for (const id of ids) {
       let g = (appState.games || []).find(x => x.id === id);
-      try { const s = await db.ref('sessions/' + id).once('value'); if (s.exists()) g = normGame(s.val()); else g = null; } catch (e) {}
+      try { const s = await db.ref('sessions/' + id).once('value'); if (s.exists()) g = normGame(s.val(), id); else g = null; } catch (e) {}
       if (!g) { missing++; continue; }
       const r = await addGameToCircle(circleId, g, true);
       if (r.added) { added++; unbound += r.unbound; }
@@ -5612,7 +5613,7 @@ async function openBindEditor(sid) {
   if (!circleRole()) return;
   // 仲間ページを開いたあとにメンバーを足した・試合を入力した場合に備えて、その試合だけ最新を読み直す
   //（以前は開いた時点の中身のままで、あとから足したメンバーの席が出てこなかった）
-  try { const snap = await db.ref('sessions/' + sid).once('value'); if (snap.exists()) circleSess[sid] = normGame(snap.val()); } catch (e) {}
+  try { const snap = await db.ref('sessions/' + sid).once('value'); if (snap.exists()) circleSess[sid] = normGame(snap.val(), sid); } catch (e) {}
   const g = circleSess[sid];
   if (!g) return;
   const seats = circleSeatsOf(sid);
@@ -6585,7 +6586,7 @@ function startListening() {
   sessionCallback = sessionRef.on('value', snapshot => {
     const data = snapshot.val();
     if (!data) return;
-    serverGame = normGame(data);
+    serverGame = normGame(data, sessionId);
     if (typeof data.lockAt !== 'number') stampLockAt(sessionId); // 古い試合: 確定の時刻を書き込む（書けたら value がもう一度来る）
     refreshActiveGame();
     noteGameChanged(sessionId); // 見るだけのリンクがある試合なら写しを更新する
@@ -6661,9 +6662,13 @@ function canonVal(v) {
   return v;
 }
 function fpOf(v) { const c = canonVal(v); return JSON.stringify(c === undefined ? null : c); }
-function normGame(v) {
+// key＝読んだ場所（sessions/{key}）。渡されたら試合の id は必ずそれにする（中身の id が場所と食い違っていても、
+// 端末の控え・一覧・引き継ぎはいつも場所で数える。食い違うと「まだ無い」と思って同じ試合をもう1つ足していた。2026-10-09）
+function normGame(v, key) {
   const arr = x => x ? (Array.isArray(x) ? x : Object.values(x)).filter(Boolean) : [];
-  return { ...v, rounds: arr(v.rounds), log: arr(v.log) };
+  const g = { ...v, rounds: arr(v.rounds), log: arr(v.log) };
+  if (key && normSessionId(key) === key) g.id = key;
+  return g;
 }
 // 試合の「中身」＝人が入力した部分（スコアは設定から計算し直すので含めない）
 function roundCore(r) {
@@ -7127,7 +7132,7 @@ async function reloadDetailFromServer(gid) {
   try {
     const snap = await db.ref('sessions/' + gid).once('value');
     if (!snap.exists() || !detailGame || detailGame.id !== gid) return;
-    Object.assign(detailGame, normGame(snap.val()));
+    Object.assign(detailGame, normGame(snap.val(), gid));
     saveStorage();
     if (document.getElementById('view-detail').classList.contains('active')) viewDetail(detailGame);
   } catch (e) { /* 取り直せなくても次に開いたときに合う */ }
@@ -7493,7 +7498,7 @@ async function freshServerGame(sid) {
   if (serverGame && sessionId === sid) return serverGame;
   const s = await db.ref('sessions/' + sid).once('value');
   if (!s.exists()) throw new Error('gone');
-  return normGame(s.val());
+  return normGame(s.val(), sid);
 }
 async function createViewLink(sid, src) {
   let vid = await loadViewId(sid);
@@ -7682,6 +7687,7 @@ function renderRecentGames() {
   const wrap = document.getElementById('recent-games');
   const list = document.getElementById('recent-games-list');
   if (!wrap || !list) return;
+  if (dedupeGames()) saveStorage();
   const games = [...(appState.games || [])].sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0));
   if (!games.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
@@ -13586,7 +13592,7 @@ async function prefetchCircles() {
       if (!snap || !snap.exists()) continue;
       const data = snap.val(), sess = {};
       await Promise.all(Object.keys(data.games || {}).map(sid => db.ref('sessions/' + sid).once('value')
-        .then(x => { if (x.exists()) sess[sid] = normGame(x.val()); }).catch(() => {})));
+        .then(x => { if (x.exists()) sess[sid] = normGame(x.val(), sid); }).catch(() => {})));
       if (!circleStore[cid]) circleStore[cid] = { data, sess, members: null, secret: null };
     }
   } finally { circlePrefetching = false; }
@@ -13610,6 +13616,7 @@ async function prefetchCircleColors() {
 }
 // 過去の試合（選んだ期間・打った日の新しい順・月ごとの見出し）
 function renderHistoryList() {
+  if (dedupeGames()) saveStorage(); // 描く前にも同じ試合を1つに（最後の砦）
   const body = document.getElementById('history-body');
   const cnt = document.getElementById('hist-count');
   const games = appState.games || [];
@@ -13853,7 +13860,7 @@ async function runAddGames() {
       try { snap = await db.ref('sessions/' + id).once('value'); } catch (e) {}
       if (!snap || !snap.exists()) { missing++; continue; }
       if ((appState.games || []).some(g => g.id === id)) { already++; continue; } // 読んでいるあいだに別の所から足された
-      const g = { ...normGame(snap.val()), lastAccess: new Date().toISOString() };
+      const g = { ...normGame(snap.val(), id), lastAccess: new Date().toISOString() };
       unmarkDeleted(id);
       myListSynced.delete(id);
       appState.games.push(g);
@@ -14164,7 +14171,7 @@ async function openDetailEdit() {
   // 開く前に最新を取り込む（古い控えを基準にすると、保存時に他の人の変更とぶつかりやすい）
   try {
     const snap = await db.ref('sessions/' + g.id).once('value');
-    if (snap.exists()) { Object.assign(g, normGame(snap.val())); saveStorage(); }
+    if (snap.exists()) { Object.assign(g, normGame(snap.val(), g.id)); saveStorage(); }
   } catch (e) { /* オフラインは手元の控えで続行（送信キューが後で送る） */ }
   document.getElementById('form-modal-title').textContent = '結果を編集';
   document.getElementById('form-modal-body').innerHTML = `
