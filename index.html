@@ -470,15 +470,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .lg-old::after { content: ' →'; }
 .lg-h { display: flex; align-items: center; gap: 5px; }
 .lg-t { margin-top: 2px; font-size: 10.5px; font-weight: 700; color: #6B7A77; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.lg-k { display: inline-flex; align-items: center; gap: 2px; padding: 1px 5px 1px 3px; border-radius: 6px; font-size: 10px; font-weight: 800; color: #fff; line-height: 1.5; }
+/* 履歴の札: アイコン無し・淡い地に色の字（修正＝琥珀・削除＝赤・戻す＝緑・入力と設定＝灰）。試合結果の表の「修正済」「削除」「戻した」も同じ（2026-10-09） */
+.lg-k, .rno-mk, .rno-del { display: inline-block; width: fit-content; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 800; line-height: 1.6; white-space: nowrap; background: #EEF2F1; color: #5F6E6B; }
 .lg-k i { font-style: normal; font-size: 11px; line-height: 1; } .lg-k .ico { --i1: #fff; --i2: rgba(255,255,255,.45); }
-.lg-k.add { background: var(--pc); } .lg-k.edit { background: #E75620; } .lg-k.del { background: #C62828; } .lg-k.set { background: #5B6B8C; } .lg-k.undo { background: #7A6A9A; }
-.lg-no { margin-top: 2px; font-size: 12.5px; font-weight: 800; color: #1F2A28; } .lg-no small { display: block; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
+.lg-k.edit, .rno-mk.ed { background: #FFF3DC; color: #9A5B12; } .lg-k.del, .rno-del { background: #FBE9E9; color: #C62828 !important; } .lg-k.back, .rno-mk.rs { background: #E3F2EA; color: #2E7D5B; }
+.lg-no { font-size: 12px; font-weight: 600; color: #1F2A28; } .lg-no small { display: block; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
 .lg-undo { display: inline-flex; align-items: center; gap: 3px; margin-top: 4px; height: 22px; padding: 0 7px; border: 1px solid var(--pc-line2); border-radius: 11px; background: var(--pc-tint); color: var(--pc); font: inherit; font-size: 10.5px; font-weight: 800; cursor: pointer; }
-.lg-row.del td { background: #F4F5F5; } .lg-row.del td b { color: #9AA8A4; } .lg-row.del td.sticky-col { box-shadow: inset 3px 0 0 #C62828; }
-.lg-row.edit td.sticky-col { box-shadow: inset 3px 0 0 #E75620; }
-.lg-row.add td.sticky-col { box-shadow: inset 3px 0 0 var(--pc); }
-.lg-row.set td.sticky-col { box-shadow: inset 3px 0 0 #5B6B8C; } .lg-row.undo td { background: #F6F4FA; } .lg-row.undo td.sticky-col { box-shadow: inset 3px 0 0 #7A6A9A; }
+.lg-row.del td { background: #F1F3F3; } .lg-row.del td b { color: #A9B4B2; } /* 削除は試合結果の表の灰色の行と同じ */
 .lg-table td.lg-wide { text-align: left; white-space: normal; padding: 7px 10px; } .lg-wide b { font-size: 12.5px; }
 .lg-changes { margin: 2px 0 0; padding-left: 16px; font-size: 11.5px; color: #4F5C5A; line-height: 1.55; }
 .lg-pts { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 11.5px; color: #6B7A77; } .lg-pts span { white-space: nowrap; }
@@ -487,16 +485,15 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .seg.lg-tabs { display: flex; margin: 0 0 10px; } .lg-tabs button { flex: 1; }
 .lg-table tr.lg-game { cursor: pointer; } .lg-table tr.lg-game .lg-no { margin: 0 0 2px; } .lg-table tr.lg-game .lg-h { flex-wrap: wrap; gap: 3px; }
 .lg-foot { margin-top: 6px; font-size: 11px; color: #8A9AA5; text-align: center; }
+.lg-chg { margin-top: 2px; font-size: 11px; font-weight: 600; color: #5F6E6B; line-height: 1.55; }
 .st-list { padding: 4px 12px; } .st-date { margin: 8px 0 2px; font-size: 11px; font-weight: 800; color: var(--pc); }
 .st-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: .5px solid #EEF2F1; font-size: 12.5px; line-height: 1.55; color: #33413E; }
 .st-row .st-t { flex: none; width: 40px; font-weight: 800; color: #5F6E6B; } .st-row b { display: block; font-weight: 800; color: #1F2A28; } .st-row span:not(.st-t) { display: block; font-size: 11.5px; color: #5F6E6B; }
-.lg-k.back { background: #2E7D5B; } .lg-row.back td.sticky-col { box-shadow: inset 3px 0 0 #2E7D5B; } .lg-row.back td { background: #EEF8F4; }
+
 .lg-d { margin-top: 1px; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
 .lg-row.lg-now td { background: var(--pc-tint); border-top: 2px solid var(--pc-line2); } .lg-nowt { font-size: 13px; font-weight: 900; color: var(--pc); }
 .rh-note { margin: 0 2px 8px; font-size: 12px; color: #5F6E6B; line-height: 1.65; }
-.rno-mk { display: block; width: fit-content; margin-top: 2px; font-size: 9px; font-weight: 800; line-height: 1.5; border-radius: 6px; } .rno-mk.ed { color: #A9B4B2; }
-.rno-mk[role=button] { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-.rno-mk.rs { padding: 0 5px; background: #E3F2EA; color: #2E7D5B; text-decoration: none; }
+.rno-mk, .rno-del { display: block; margin-top: 2px; font-size: 9px; } .rno-mk[role=button] { cursor: pointer; }
 .ud-row.edit td.sticky-col { box-shadow: inset 3px 0 0 #E3B341; } .ud-row.back td { background: #EEF8F4; } .ud-row.back td.sticky-col { box-shadow: inset 3px 0 0 var(--pc); }
 .ud-row.gone td { background: #F4F5F5; } .ud-row.gone td b { color: #9AA8A4; } .ud-row.gone td.sticky-col { box-shadow: inset 3px 0 0 #C62828; }
 .ud-row .ud-k { display: inline-block; margin-top: 2px; }
@@ -1668,7 +1665,7 @@ tr.rmk-gone td > div { color: #A9B4B2 !important; } tr.rmk-gone .rk-tag { backgr
 tr.rmk-gone td.sticky-col { box-shadow: inset 3px 0 0 #B4C0BD; }
 tr.rmk-gone.can-back { cursor: pointer; } tr.rmk-gone.can-back td { cursor: pointer; }
 tr.rmk-gone td > div.rno-back { margin-top: 2px; font-size: 9px; font-weight: 800; color: var(--pc) !important; white-space: nowrap; }
-.rno-del { display: inline-block; margin-top: 1px; padding: 0 5px; border-radius: 6px; background: #DDE3E1; color: #6B7A77 !important; font-size: 9px; font-weight: 800; line-height: 1.5; }
+
 tr.rmk-del td { background: repeating-linear-gradient(135deg, #FBF3F3 0 6px, #F7EAEA 6px 12px) !important; color: #C62828; cursor: default; }
 tr.rmk-del td.sticky-col { text-align: center; box-shadow: inset 3px 0 0 #C62828; } tr.rmk-del .ico { --i1: #C62828; --i2: #F3C7C7; }
 tr.rmk-del td[colspan] { text-align: left; font-size: 12px; line-height: 1.5; padding: 7px 10px; white-space: normal; }
@@ -6499,6 +6496,7 @@ function applyOp(game, op) {
       g.rounds[i] = r;
       g.log = appendLog(g.log, { type: 'edit', at: op.at, no: i + 1, prev: orig.points || null, points: r.points, names: nameList(members), op: op.id, ...(r.id ? { rid: r.id } : {}) });
     } else {
+      pinDeletedSlots(g); // 枠の記録が無い古い削除の行を、いま見えている所に留める（でないと削除のたびに古い灰色の行が動いた）
       const slot = roundLayout(g).findIndex(it => it.del == null && it.idx === i); // 消す前の表の枠（灰色の行はここに留まる）
       g.rounds.splice(i, 1);
       // 履歴の試合番号を今の番号に合わせて振り直す（削除した試合の履歴は「旧」、それより後は1つ繰り上げ）
@@ -6575,6 +6573,7 @@ function applyOp(game, op) {
     const r = { ...de.round, members };
     r.scores = rescore(r, s);
     // 戻す位置＝その枠より前にある、残っている試合の数（同じ枠に戻る）。枠が分からなければ op.pos
+    pinDeletedSlots(g);
     const lay = roundLayout(g), k = lay.findIndex(it => it.del && it.del.op === op.del);
     const at = Math.max(0, Math.min(g.rounds.length, k >= 0 ? lay.slice(0, k).filter(it => it.del == null).length : (Number(op.pos) || 0)));
     g.rounds.splice(at, 0, r);
@@ -9303,11 +9302,11 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
   const serial = (from && from.serial) || idx + 1;
   // from.gone＝消した試合（記録が確定するまで、元の場所に灰色で残す。押せない）
   // back＝押すと戻せる（記録が確定するまで）
-  if (from && from.gone) return `<tr class="rmk-gone${from.back ? ' can-back' : ''}${from.cls ? ' ' + from.cls : ''}"${from.back || from.click ? ` onclick="${onclickJs}"` : ''}><td class="sticky-col"><div>${serial}</div><div class="rno-del">削除</div>${from.back ? '<div class="rno-back">押して戻す</div>' : ''}${from.tag || ''}</td>${cells}</tr>`;
+  if (from && from.gone) return `<tr class="rmk-gone${from.back ? ' can-back' : ''}${from.cls ? ' ' + from.cls : ''}"${from.back || from.click ? ` onclick="${onclickJs}"` : ''}><td class="sticky-col"><div>${serial}</div><div class="rno-del">削除</div>${from.tag || ''}</td>${cells}</tr>`;
   // from.cls＝行に足すクラス、from.showPos＝いつも「第◯試合」を出す、from.tag＝番号の欄に足す印（並べ替えの画面）
   const trCls = [from && from.active ? 'rmk-mv' : '', (from && from.cls) || ''].filter(Boolean).join(' ');
   return `<tr onclick="${onclickJs}" style="cursor:pointer"${trCls ? ` class="${trCls}"` : ''}>
-    <td class="sticky-col"><div>${serial}</div>${(from && from.showPos) || serial !== idx + 1 ? `<div class="rno-pos">第${idx + 1}試合</div>` : ''}${(from && from.tag) || ''}${editedMark}${pendMark}</td>
+    <td class="sticky-col"><div>${serial}</div>${from && from.showPos ? `<div class="rno-pos">第${idx + 1}試合</div>` : ''}${(from && from.tag) || ''}${editedMark}${pendMark}</td>
     ${cells}
   </tr>`;
 }
@@ -9413,6 +9412,13 @@ function roundLayout(g, order) {
   });
   return out;
 }
+// 枠の記録（slot）が無い削除の記録に、いまの表での位置を書き込む（applyOp の中で g.log を差し替える）。
+// 枠の無い記録は番号の順で入る所に置くので、ほかの試合を消すと位置が変わってしまう。先に今の位置で留めておけば、表はそのまま
+function pinDeletedSlots(g) {
+  const pos = new Map();
+  roundLayout(g).forEach((it, k) => { if (it.del && typeof it.del.slot !== 'number') pos.set(it.del, k); });
+  if (pos.size) g.log = g.log.map(e => pos.has(e) ? { ...e, slot: pos.get(e) } : e);
+}
 // 消した試合の行に出す中身（削除の記録に残した試合そのもの。無ければ名前と点数から）。組めなければ null
 function deletedRoundOf(g, e) {
   const s = g.settings, pn = s.playerNames || [];
@@ -9463,7 +9469,7 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
     const canBack = !!(e.round && e.round.id && e.op) && !locked && !(g !== activeGame && detailRO);
     const back = `openDeletedRoundMenu('${g === activeGame ? 'game' : 'detail'}','${e.op}',${pos})`;
     const serial = logSerialOf(g, e) || e.no, r = deletedRoundOf(g, e);
-    if (r) return roundRowHtml(r, -1, back, s, false, false, { serial, gone: true, back: canBack });
+    if (r) return roundRowHtml(r, -1, back, s, false, false, { serial, gone: true, back: canBack, click: !(g !== activeGame && detailRO) });
     const nm = e.names || null, pts = e.points || [];
     const who = nm && nm.length === pts.length ? nm.map((x, i) => `${x} ${Number(pts[i]).toLocaleString()}`).join('　') : '';
     return `<tr class="rmk-del"><td class="sticky-col">${ico('trash', 13)}</td><td colspan="${ncol}"><b>試合${serial}を削除しました</b><span>${fmtTime(e.at)}${who ? ` ・ ${esc(who)}` : ''}</span></td></tr>`;
@@ -9918,7 +9924,7 @@ function isUndoLog(e) { return !!e && logKind(e) === 'settings' && /(の状態�
 // 左の欄に 時刻・種類の札（アイコン）・試合の番号、右にメンバーごとの点数。修正は変わったマスだけ「前（小さく）→ 後」。
 // 削除は灰色の行、設定・並べ替え・取り消しは横いっぱいの1マスに中身。取り消せる変更は左の欄に「取り消す」
 const LG_KIND = { add: ['add', '入力', null], edit: ['edit', '修正', 'pencil'], delete: ['del', '削除', 'trash'], settings: ['set', '設定', 'gear'], undo: ['undo', '取消', 'refresh'], back: ['back', '戻す', 'refresh'] };
-function lgKindChip(k) { const [c, l, ic] = LG_KIND[k] || LG_KIND.settings; return `<span class="lg-k ${c}">${ic ? ico(ic, 11) : '<i>＋</i>'}${l}</span>`; }
+function lgKindChip(k) { const [c, l] = LG_KIND[k] || LG_KIND.settings; return `<span class="lg-k ${c}">${l}</span>`; }
 function lgTheadHtml(g, first) {
   const s = g.settings;
   return `<thead><tr><th class="sticky-col">${first}</th>${memberDisplayOrder(s).map(i => `<th>${esc(s.playerNames[i])}</th>`).join('')}</tr></thead>`;
@@ -9976,8 +9982,8 @@ function openRoundHistory(where, idx, delOp) {
   const canEdit = !!r && !isGameLocked(g) && (where === 'game' ? true : !detailRO);
   document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="rh-note">この試合の入力・修正・削除・戻した記録です（古い順）。修正したマスは「前 → 後」。${canEdit ? '前の点数に戻したいときは、その点数を見ながら「点数を修正する」で入れ直してください。' : ''}</div>
-    ${evs.length ? '' : '<div class="rh-note">この試合の履歴は残っていません（古いデータ・履歴が多くて押し出されたもの）。</div>'}
+    <div class="rh-note">古い順。修正したマスは「前 → 後」。</div>
+    ${evs.length ? '' : '<div class="rh-note">この試合の履歴は残っていません。</div>'}
     <div class="lg-scroll ud-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '日時')}<tbody>${rows}</tbody></table></div>
     ${canEdit ? `<button type="button" class="confirm-btn" style="margin-top:12px" onclick="closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}">点数を修正する</button>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -9998,8 +10004,8 @@ function gamesLogHtml(g) {
   items.sort((a, b) => a.serial - b.serial);
   const rows = items.map(it => {
     const edits = it.evs.filter(e => e.type === 'edit').length, last = it.evs[it.evs.length - 1];
-    const tags = (edits ? `<span class="lg-k edit">${ico('pencil', 11)}修正${edits > 1 ? edits : ''}</span>` : '')
-      + (it.del ? `<span class="lg-k del">${ico('trash', 11)}削除</span>` : it.r && isRestoredRound(g, it.r) ? `<span class="lg-k back">${ico('refresh', 11)}戻した</span>` : '');
+    const tags = (edits ? `<span class="lg-k edit">修正${edits > 1 ? edits : ''}</span>` : '')
+      + (it.del ? '<span class="lg-k del">削除</span>' : it.r && isRestoredRound(g, it.r) ? '<span class="lg-k back">戻した</span>' : '');
     const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => g.settings.playerNames[m]);
     const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${memberDisplayOrder(g.settings).length}"></td>`;
     const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}')` : `openRoundHistory('${where}',${it.idx})`;
@@ -10007,21 +10013,19 @@ function gamesLogHtml(g) {
       ${tags ? `<div class="lg-tags">${tags}</div>` : ''}${last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
   }).join('');
   return `<div class="lg-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '試合')}<tbody>${rows}</tbody></table></div>
-    <div class="lg-foot">行を押すと、その試合の入力・修正・削除の記録</div>`;
+    <div class="lg-foot">行を押すと、その試合の履歴</div>`;
 }
 // 設定: ゲーム設定・名前・並べ替えなどの変更だけを、上が古い順に短く（1件＝時刻・何を・変わった所）
 function settingsLogHtml(g) {
   const evs = logEvents(g.log).filter(e => logKind(e) === 'settings' && !e.undel);
   if (!evs.length) return '<div class="lg-scroll lg-empty">設定の変更はありません</div>';
-  let prevDate = null;
+  const md = at => { const t = Date.parse(at), d = t ? new Date(t) : null; return d ? `${d.getMonth() + 1}/${d.getDate()} ${fmtTime(at)}` : ''; };
   const rows = evs.map(e => {
-    const date = fmtDate(e.at), head = date !== prevDate ? `<div class="st-date">${date || '日時不明'}</div>` : '';
-    prevDate = date;
     const label = isUndoLog(e) && !/取り消し/.test(e.label || '') ? '変更を取り消し' : (e.label || '設定を変更');
     const ch = e.label === '試合の順番を入れ替え' ? [] : (e.changes || []); // 並べ替えの中身は試合の表で分かるので書かない
-    return `${head}<div class="st-row"><span class="st-t">${fmtTime(e.at)}</span><div><b>${esc(label)}</b>${ch.length ? `<span>${ch.map(esc).join('<br>')}</span>` : ''}</div></div>`;
+    return `<tr class="lg-row"><td class="sticky-col"><div class="lg-t" style="margin:0">${md(e.at)}</div></td><td class="lg-wide"><b>${esc(label)}</b>${ch.length ? `<div class="lg-chg">${ch.map(esc).join('<br>')}</div>` : ''}</td></tr>`;
   }).join('');
-  return `<div class="lg-scroll st-list">${rows}</div>`;
+  return `<div class="lg-scroll"><table class="rounds-table lg-table"><thead><tr><th class="sticky-col">日時</th><th style="text-align:left;padding-left:10px">内容</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function renderGame() {
   if (!activeGame) return;
@@ -10180,7 +10184,7 @@ function openRoundMenu(idx, where = 'game') {
   const canEdit = !isGameLocked(g) && !(where === 'detail' && detailRO);
   const t = Date.parse(r.at);
   document.getElementById('form-modal-title').textContent = `試合${roundSerialAt(g, idx)}`;
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">第${idx + 1}試合${t ? ` ・ 入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正済' : ''}</div>
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${t ? `入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正済' : ''}</div>
     <div class="mn-group">${canEdit ? menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`) : ''}
       ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx})`)}</div>
     ${canEdit ? `<div class="mn-group">${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから戻せます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
