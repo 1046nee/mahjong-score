@@ -498,6 +498,7 @@ def main():
         # 過去の試合の行を押すと、画面を移らずに結果のシート（総合順位・試合ごとのスコア）。閉じればマイページのまま
         pg.evaluate("window.scrollTo(0, 300)")
         y0 = pg.evaluate("window.scrollY")
+        pg.evaluate("appState.games.forEach(g => { g.endedAt = Date.now() - 1000; })")  # 終えた試合は「詳しく見る」（対局中は「ゲームを見る」＝試合の画面。2026-10-09）
         pg.evaluate("histView = 'new'; renderHistoryList()")  # 既定はタイル（2026-10-07）。ここからは一覧の行を押して確かめる
         pg.evaluate("document.querySelector('#history-body .gr').click()")
         sheet = pg.evaluate("document.getElementById('form-modal').classList.contains('open') ? document.getElementById('form-modal-body').innerText : ''")
@@ -513,26 +514,28 @@ def main():
         pg.wait_for_timeout(300)
         results.append(("[10a7] 結果のシートの「詳しく見る」→ 戻るで、マイページの見ていた位置に戻る（ホームに戻らない）", True,
                         in_detail and pg.evaluate("document.getElementById('view-history').classList.contains('active')") and abs(pg.evaluate("window.scrollY") - y0) < 4))
+        pg.evaluate("appState.games.forEach(g => { delete g.endedAt; })")  # 対局中に戻す（「ゲームを見る」で試合の画面へ）
         # 試合の画面 → 戻るでも、ホームではなくマイページの元の位置へ
-        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「続きを入力する／点数を直す」から
+        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「ゲームを見る」から
         pg.evaluate("document.querySelector('#history-body .gr').click()")
         pg.evaluate("(() => { const id = rsState.id; closeFormModal(); openHistMenu(id); })()")
-        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /続きを入力する|点数を直す/.test(b.innerText)).click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /ゲームを見る/.test(b.innerText)).click()")
         pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.evaluate("document.getElementById('header-back').click()")
         pg.wait_for_timeout(300)
         results.append(("[10a8] 過去の試合の「…」から試合の画面を開いて戻ると、ホームではなくマイページの見ていた位置に戻る", True,
                         pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame") and abs(pg.evaluate("window.scrollY") - y0) < 4))
         # 端末（ブラウザ）の「戻る」でも同じ
-        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「続きを入力する／点数を直す」から
+        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「ゲームを見る」から
         pg.evaluate("document.querySelector('#history-body .gr').click()")
         pg.evaluate("(() => { const id = rsState.id; closeFormModal(); openHistMenu(id); })()")
-        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /続きを入力する|点数を直す/.test(b.innerText)).click()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /ゲームを見る/.test(b.innerText)).click()")
         pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.go_back()
         pg.wait_for_timeout(400)
         results.append(("[10a9] 試合の画面で端末の「戻る」を押しても、マイページの見ていた位置に戻る（試合の画面の後始末もする）", True,
                         pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame && !sessionRef") and abs(pg.evaluate("window.scrollY") - y0) < 4))
+        pg.evaluate("appState.games.forEach(g => { g.endedAt = Date.now() - 1000; })")  # 終えた試合は「詳しく見る」（対局中は「ゲームを見る」＝試合の画面。2026-10-09）
         # 推移の点のカード → 試合 → 結果の画面 → 詳しく見る → 戻る で、カードと結果の画面まで開き直す
         pg.evaluate("window.scrollTo(0, 0); document.querySelector('#mp-stats .sp-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))")
         pg.evaluate("document.querySelector('#mp-stats .sp-g').click()")
