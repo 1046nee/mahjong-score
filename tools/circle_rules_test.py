@@ -113,7 +113,6 @@ def main():
         check("B: 自分が本人登録していない人の席を「本人」にはできない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": B["uid"], "at": now, "self": True}))
         check("B: 結びつけた人を他人の名前で記録できない", False, op(B, "PUT", f"circles/{cid}/games/{sid}/seats/1", {"mid": m2, "by": A["uid"], "at": now, "self": False}))
         check("B: 他人が追加した試合を外せない（管理者でない）", False, op(B, "DELETE", f"circles/{cid}/games/{sid}"))
-        check("A: 確定の期限（追加から24時間）の無い試合は、追加した本人でも外せない（古い試合＝確定済み）", False, op(A, "DELETE", f"circles/{cid}/games/{sid}"))
         T = server_now()
         sid2, sid3 = rnd(10, ID_CHARS), rnd(10, ID_CHARS)
         check("A: 期限（24時間後）を付けて試合を追加できる", True, op(A, "PUT", f"circles/{cid}/games/{sid2}", {
@@ -122,6 +121,12 @@ def main():
             "at": now, "name": "抜け道", "addedBy": A["uid"], "addedByName": "えー", "addedAt": now, "lockAt": T + 48 * 3600 * 1000}))
         check("B: 他人が追加した試合は、期限内でも外せない（管理者でない）", False, op(B, "DELETE", f"circles/{cid}/games/{sid2}"))
         check("A: 自分が追加した試合は、期限（24時間）までは外せる", True, op(A, "DELETE", f"circles/{cid}/games/{sid2}"))
+        # 確定した試合（期限の無い古い追加）: 追加した本人（編集メンバー）は外せない。作成者・管理者は外せる（2026-10-09）
+        sid4 = rnd(10, ID_CHARS)
+        check("B: 期限なしで試合を追加できる（すぐ確定）", True, op(B, "PUT", f"circles/{cid}/games/{sid4}", {
+            "at": now, "name": "確定済み", "addedBy": B["uid"], "addedByName": "びー", "addedAt": now}))
+        check("B（編集メンバー）: 確定した試合は、追加した本人でも外せない", False, op(B, "DELETE", f"circles/{cid}/games/{sid4}"))
+        check("A（作成者）: 確定した試合も外せる", True, op(A, "DELETE", f"circles/{cid}/games/{sid4}"))
         check("B: Aが追加した試合を追加し直して上書きできない（同じ試合は二重に入らない）", False, op(B, "PUT", f"circles/{cid}/games/{sid}", {
             "at": now, "name": "二重", "addedBy": B["uid"], "addedByName": "びー", "addedAt": now}))
         check("B: 自分の役割を管理者に上げられない", False, op(B, "PUT", f"circleMembers/{cid}/{B['uid']}/role", "admin"))

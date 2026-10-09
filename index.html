@@ -5163,6 +5163,7 @@ function circleLogHtml() {
 // （あとの変更を黙って消さない）。②押すと先に確認の画面（いま → 戻したあと）を見せ、納得したら「元に戻す」。
 // ③元に戻したことは取り消せない（やり直しの、やり直しはしない）。同じにしたいときは、ふつうに連携・名前の変更・追加をする
 const UNDO_KINDS = ['bind', 'add_game', 'rename'];
+const CIRCLE_UNDO_MS = 24 * 3600 * 1000;
 function undoTargetOf(e, byId) {
   if (!e) return null;
   if (e.kind === 'undo') return undoTargetOf(byId[e.undo && e.undo.ref], byId);
@@ -5175,6 +5176,8 @@ function undoCheck(e, log) {
   if (!e || !e.undo || !UNDO_KINDS.includes(e.kind)) return null;
   const byId = Object.fromEntries(log.map(x => [x.id, x]));
   const tgt = undoTargetOf(e, byId), t0 = new Date(e.at || 0).getTime();
+  // 連携・試合の追加は、24時間たったら戻せない（ボタンも出さない。2026-10-09）。名簿の名前は時間で区切らない
+  if ((e.kind === 'bind' || e.kind === 'add_game') && serverNow() - t0 > CIRCLE_UNDO_MS) return null;
   const later = log.some(x => x.id !== e.id && new Date(x.at || 0).getTime() > t0 && undoTargetOf(x, byId) === tgt);
   if (later) return { ok: false, why: 'このあとに同じ所の変更があるため、元に戻せません' };
   const u = e.undo;
@@ -5217,7 +5220,7 @@ function openUndoCircleLog(lid) {
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ud-sheet">
     <div class="ud-src"><span class="log-tag set">戻す変更</span><b>${esc(e.byName || 'メンバー')}</b>・${fmtDate(e.at)} ${fmtTime(e.at)}<div>${esc(e.text || '')}</div></div>
     <div class="ud-h">戻すと、こう変わります</div>
-    <div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">項目</th><th>いま</th><th>戻したあと</th></tr></thead>
+    <div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">項目</th><th>変更前（今）</th><th>変更後</th></tr></thead>
       <tbody>${rows.map(([k, a, b]) => `<tr><td class="sticky-col">${esc(k)}</td><td>${esc(a)}</td><td class="ud-after">${esc(b)}</td></tr>`).join('')}</tbody></table></div>
     <div class="ud-note">${e.kind === 'add_game' ? '試合そのものは消えません。' : ''}${e.kind === 'add_game' && /名簿に/.test(e.text || '') ? 'このとき名簿に足された人は残ります。' : ''}戻したことは取り消せません。</div>
     <button type="button" class="confirm-btn" style="margin-top:14px" onclick="undoCircleLog('${lid}')">元に戻す</button>
@@ -5496,11 +5499,13 @@ async function setRosterColor(mid, c) {
 // 仲間ページに入れた試合は、追加から24時間で確定して外せなくなる（ge.lockAt。期限の無い古い試合は最初から確定）
 const CIRCLE_GAME_FIX_MS = 24 * 3600 * 1000;
 function circleGameRemovable(ge) { return !!ge && typeof ge.lockAt === 'number' && serverNow() < ge.lockAt; }
+// 外せる人: 追加した人は追加から24時間まで。作成者・管理者はいつでも（2026-10-09。ルールも同じ）
+function canRemoveCircleGame(ge) { return !!ge && !!circleRole() && (isCircleAdmin() || (ge.addedBy === myUid() && circleGameRemovable(ge))); }
 function openCircleGameMenu(sid) {
   const ge = circleData.games[sid];
   const role = circleRole();
   const mayRemove = role && (ge.addedBy === myUid() || isCircleAdmin());
-  const canRemove = mayRemove && circleGameRemovable(ge);
+  const canRemove = canRemoveCircleGame(ge), open = circleGameRemovable(ge);
   document.getElementById('form-modal-title').textContent = ge.name || '試合';
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#8a9aa5;margin-bottom:10px">${esc(ge.addedByName || 'メンバー')}さんが${fmtDate(ge.addedAt)}に追加</div>
@@ -5510,19 +5515,20 @@ function openCircleGameMenu(sid) {
     ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${sid}')">ゲーム名の変更</button>` : ''}
     ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
     ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>
-      <div class="h2h-note">外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。それを過ぎると、この仲間ページに確定します。</div>`
+      <div class="h2h-note">${open ? `外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。${isCircleAdmin() ? '作成者・管理者はそのあとも外せます。' : 'それを過ぎると、この仲間ページに確定します。'}` : '確定した試合です。作成者・管理者だけが外せます。'}</div>`
       : mayRemove ? '<div class="h2h-note">追加から24時間たったので、この試合はこの仲間ページに確定しています（外せません）。</div>' : ''}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
 async function removeCircleGame(sid) {
   const ge = circleData.games[sid];
+  if (ge && !circleGameRemovable(ge) && !confirm(`確定した試合「${ge.name || ''}」を、この仲間ページから外しますか？（試合そのものは消えません）`)) return;
   closeFormModal();
   try {
     await db.ref(`circles/${circleId}/games/${sid}`).remove();
     await addCircleLog('remove_game', `試合「${ge.name || ''}」を外しました`);
     showToast('仲間ページから外しました');
-  } catch (e) { showToast('外せませんでした（権限がないか、追加から24時間を過ぎています）', 4000); }
+  } catch (e) { showToast('外せませんでした（権限がないか、追加から24時間を過ぎています）', 4000); } // 作成者・管理者でも、ルールが古いと確定後は弾かれる
 }
 let bindState = null; // { sid, rows: [{ seat, name, cur, sel, locked }] }
 async function openBindEditor(sid) {
@@ -12292,9 +12298,9 @@ function gameActsHtml(g, rawId, opts = {}) {
   const rename = menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${id}')`);
   if (ge) {
     // 仲間ページの試合: 名前の連携・ゲーム名の変更（参加したメンバー）・この仲間ページから外す（追加から24時間・追加した人と作成者・管理者）
-    const role = circleRole(), mayRemove = role && (ge.addedBy === myUid() || isCircleAdmin()), canRemove = mayRemove && circleGameRemovable(ge);
+    const role = circleRole(), canRemove = canRemoveCircleGame(ge);
     if (role && circleSess[rawId]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`) + rename;
-    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）`, `removeCircleGame('${id}')`, 'danger');
+    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '試合そのものは消えません（作成者・管理者）', `removeCircleGame('${id}')`, 'danger');
   } else if (inHist) {
     // 個人の過去の試合: 共有・ゲーム名の変更・この試合での自分・過去の試合から削除
     acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`) + rename
