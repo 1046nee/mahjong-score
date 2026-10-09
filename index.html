@@ -574,6 +574,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sanma .mini-toggle button.on { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
 .metric-seg { margin: 0 0 12px; }
+/* 元に戻すの確認の画面（2026-10-09） */
+.ud-src { padding: 10px 12px; border-radius: 12px; background: #F4F7F6; font-size: 12.5px; color: #4F5C5A; line-height: 1.6; }
+.ud-src .log-tag { margin-right: 6px; } .ud-src b { color: #1F2A28; } .ud-src div { margin-top: 2px; color: #1F2A28; font-weight: 700; }
+.ud-h { margin: 14px 0 8px; font-size: 14px; font-weight: 800; color: #1F2A28; line-height: 1.5; }
+.ud-table { width: 100%; } .ud-table td { white-space: normal; } .ud-table td.ud-after { font-weight: 800; color: var(--pc); background: var(--pc-tint); }
+.ud-note { margin-top: 10px; font-size: 12px; color: #5F6E6B; line-height: 1.7; }
+.log-nounde { margin-top: 4px; font-size: 11.5px; color: #8A9AA5; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
 /* カード右上の開閉ボタン（▾=表示中 / ▸=たたんだ状態） */
@@ -5041,17 +5048,88 @@ function circleLogHtml() {
     const date = fmtDate(e.at);
     if (date !== prevDate) { rows += `<div class="log-date">${date || '日時不明'}</div>`; prevDate = date; }
     const [cls, label] = TAG[e.kind] || ['set', '変更'];
-    const canUndo = circleRole() && e.undo && e.kind !== 'undo' && !undone.has(e.id) && ['bind', 'add_game', 'rename'].includes(e.kind)
-      && (e.kind !== 'add_game' || circleGameRemovable(circleData.games && circleData.games[e.undo.sid])); // 追加の取り消し＝外す（24時間まで）
+    const uc = circleRole() && !undone.has(e.id) ? undoCheck(e, log) : null; // 戻せるか（いちばん新しい変更で、そのあと変わっていないときだけ）
     rows += `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span><span class="log-tag ${cls}">${label}</span>
       <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}${undone.has(e.id) ? '<span style="color:#8A9AA5">（元に戻しました）</span>' : ''}</div>
-      ${canUndo ? `<button type="button" class="btn-tint" style="margin-top:6px;height:28px" onclick="undoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`;
+      ${uc && uc.ok ? `<button type="button" class="btn-tint" style="margin-top:6px" onclick="openUndoCircleLog('${e.id}')">元に戻す…</button>` : uc && uc.why ? `<div class="log-nounde">${esc(uc.why)}</div>` : ''}</div></div>`;
   });
   return `<div class="log-list">${rows}</div>${log.length > 50 ? `<div class="h2h-note">最新50件を表示しています（全${log.length}件）</div>` : ''}`;
 }
+// ---- 元に戻す（2026-10-09 作り直し）----
+// 決まり: ①戻せるのは「その対象（試合・名簿の人）へのいちばん新しい変更」で、そのあと状態が変わっていないときだけ
+// （あとの変更を黙って消さない）。②押すと先に確認の画面（いま → 戻したあと）を見せ、納得したら「元に戻す」。
+// ③元に戻したことは取り消せない（やり直しの、やり直しはしない）。同じにしたいときは、ふつうに連携・名前の変更・追加をする
+const UNDO_KINDS = ['bind', 'add_game', 'rename'];
+function undoTargetOf(e, byId) {
+  if (!e) return null;
+  if (e.kind === 'undo') return undoTargetOf(byId[e.undo && e.undo.ref], byId);
+  const u = e.undo || {};
+  if (e.kind === 'rename') return u.mid ? 'm:' + u.mid : null;
+  if (['bind', 'add_game', 'remove_game'].includes(e.kind)) return u.sid ? 'g:' + u.sid : (e.kind === 'remove_game' ? 'g:?' : null);
+  return null;
+}
+function undoCheck(e, log) {
+  if (!e || !e.undo || !UNDO_KINDS.includes(e.kind)) return null;
+  const byId = Object.fromEntries(log.map(x => [x.id, x]));
+  const tgt = undoTargetOf(e, byId), t0 = new Date(e.at || 0).getTime();
+  const later = log.some(x => x.id !== e.id && new Date(x.at || 0).getTime() > t0 && undoTargetOf(x, byId) === tgt);
+  if (later) return { ok: false, why: 'このあとに同じ所の変更があるため、元に戻せません' };
+  const u = e.undo;
+  if (e.kind === 'bind') {
+    const seats = circleSeatsOf(u.sid);
+    if (!circleData.games || !circleData.games[u.sid]) return { ok: false, why: 'この試合はもう仲間ページにありません' };
+    if (u.after && Object.entries(u.after).some(([seat, mid]) => ((seats[seat] && seats[seat].mid) || null) !== (mid || null))) return { ok: false, why: 'このあと連携が変わっているため、元に戻せません' };
+    if (Object.keys(u.seats || {}).some(seat => !canChangeSeat(seats[seat]))) return { ok: false, why: '本人が連携した席があるため、本人・作成者・管理者だけが戻せます' };
+  } else if (e.kind === 'add_game') {
+    const ge = circleData.games && circleData.games[u.sid];
+    if (!ge) return { ok: false, why: '' };
+    if (!circleGameRemovable(ge)) return { ok: false, why: '追加から24時間たって確定したため、外せません' };
+    if (!(ge.addedBy === myUid() || isCircleAdmin())) return { ok: false, why: '' };
+  } else if (e.kind === 'rename') {
+    const r = rosterOf()[u.mid];
+    if (!r) return { ok: false, why: '' };
+    if (u.after != null && r.name !== u.after) return { ok: false, why: 'このあと名前が変わっているため、元に戻せません' };
+    if (!canEditRosterMember(r)) return { ok: false, why: '' };
+  }
+  return { ok: true };
+}
+// 確認の画面: だれが・いつ・何をしたか → 戻すと、こう変わります（いま → 戻したあと）→ 元に戻す／キャンセル
+function openUndoCircleLog(lid) {
+  const log = Object.entries((circleData && circleData.log) || {}).map(([id, x]) => ({ id, ...x }));
+  const e = log.find(x => x.id === lid);
+  const uc = undoCheck(e, log);
+  if (!uc || !uc.ok) { showToast((uc && uc.why) || 'この変更は元に戻せません', 4000); return; }
+  const u = e.undo, rows = [];
+  const nm = mid => (mid && rosterOf()[mid] ? rosterName(mid) : '連携なし');
+  if (e.kind === 'bind') {
+    const g = circleSess[u.sid], seats = circleSeatsOf(u.sid), names = (g && g.settings && g.settings.playerNames) || [];
+    Object.entries(u.seats || {}).forEach(([seat, b]) => rows.push([`試合での名前「${names[seat] || '席' + (+seat + 1)}」`, nm(seats[seat] && seats[seat].mid), nm(b && b.mid)]));
+  } else if (e.kind === 'rename') {
+    rows.push(['名簿の名前', rosterName(u.mid), u.before]);
+  } else if (e.kind === 'add_game') {
+    const ge = circleData.games[u.sid], nb = Object.values((ge && ge.seats) || {}).filter(x => x && x.mid).length;
+    rows.push([`試合「${(ge && ge.name) || ''}」`, `この仲間ページにある${nb ? `（連携 ${nb}人）` : ''}`, 'この仲間ページから外れる']);
+  }
+  const what = { bind: '連携を、変更する前に戻します。', rename: '名簿の名前を、変更する前に戻します。', add_game: '試合をこの仲間ページから外します（試合そのもの・ほかの人の記録は消えません）。' }[e.kind];
+  document.getElementById('form-modal-title').textContent = '元に戻す';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ud-sheet">
+    <div class="ud-src"><span class="log-tag set">戻す変更</span><b>${esc(e.byName || 'メンバー')}</b>・${fmtDate(e.at)} ${fmtTime(e.at)}<div>${esc(e.text || '')}</div></div>
+    <div class="ud-h">${what}戻すと、こう変わります</div>
+    <div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">項目</th><th>いま</th><th>戻したあと</th></tr></thead>
+      <tbody>${rows.map(([k, a, b]) => `<tr><td class="sticky-col">${esc(k)}</td><td>${esc(a)}</td><td class="ud-after">${esc(b)}</td></tr>`).join('')}</tbody></table></div>
+    ${e.kind === 'add_game' && /名簿に/.test(e.text || '') ? '<div class="ud-note">このとき名簿に足された人は、名簿に残ります（試合が無い人は、あとから名簿で外せます）。</div>' : ''}
+    <div class="ud-note">元に戻したことは、あとから取り消せません。もう一度同じにしたいときは、ふつうに${e.kind === 'bind' ? '連携' : e.kind === 'rename' ? '名前の変更' : '試合の追加'}をし直してください。</div>
+    <button type="button" class="confirm-btn" style="margin-top:14px" onclick="undoCircleLog('${lid}')">元に戻す</button>
+    <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
 async function undoCircleLog(lid) {
-  const e = circleData && circleData.log && circleData.log[lid];
+  const log = Object.entries((circleData && circleData.log) || {}).map(([id, x]) => ({ id, ...x }));
+  const e = log.find(x => x.id === lid);
   if (!e || !e.undo) return;
+  const uc = undoCheck(e, log); // 確認の画面を開いているあいだに、ほかの人が変えていないか
+  if (!uc || !uc.ok) { closeFormModal(); showToast((uc && uc.why) || 'この変更は元に戻せません', 4500); return; }
+  closeFormModal();
   const u = e.undo;
   try {
     if (e.kind === 'bind') {
@@ -5424,7 +5502,8 @@ async function saveBindEditor() {
     });
     if (!changes.length) { showToast('変更はありませんでした'); return; }
     await db.ref('circles/' + circleId).update(upd);
-    await addCircleLog('bind', `「${g.name || ''}」の連携: ${changes.join('、')}`, { sid: s.sid, seats: before });
+    const after = Object.fromEntries(Object.entries(upd).map(([k, v]) => [k.split('/').pop(), v ? v.mid : null])); // 変更後（元に戻すとき、そのあと変わっていないか確かめる）
+    await addCircleLog('bind', `「${g.name || ''}」の連携: ${changes.join('、')}`, { sid: s.sid, seats: before, after });
     showToast('連携を保存しました');
     circleData.games[s.sid] = circleData.games[s.sid] || {};
     circleData.games[s.sid].seats = { ...(circleData.games[s.sid].seats || {}), ...Object.fromEntries(Object.entries(upd).map(([k, v]) => [k.split('/').pop(), v]).filter(([, v]) => v)) };
@@ -5785,7 +5864,7 @@ async function renameCircleMember(mid) {
   closeFormModal();
   try {
     await db.ref(`circles/${circleId}/roster/${mid}/name`).set(name);
-    await addCircleLog('rename', `名簿の名前: ${before} → ${name}`, { mid, before });
+    await addCircleLog('rename', `名簿の名前: ${before} → ${name}`, { mid, before, after: name });
     showToast('名前を変更しました');
   } catch (e) { showToast('変更できませんでした（本人確認済みの人は、本人・作成者・管理者だけが変更できます）', 5000); }
 }
