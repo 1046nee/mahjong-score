@@ -2818,7 +2818,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="share-card">
       <div class="share-check"><svg class="ico" width="30" height="30" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></div>
       <div class="share-title">ゲームを作成しました！</div>
-      <div class="share-desc">このURLをメンバーに共有すると、全員が同じスコアをリアルタイムで見られます。</div>
+      <div class="share-desc">メンバーに送ると、全員で同じ結果を見られます</div>
       <div class="share-url-row">
         <input type="text" id="share-url" readonly onclick="this.select()">
         <button class="copy-btn" onclick="copyShareUrl()">コピー</button>
@@ -2922,7 +2922,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <button type="button" class="auto-btn sub" id="chip-entry-btn" style="display:none" onclick="openChipSheet()">チップを入力する（途中でも入れておけます）</button>
     <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
-      <div class="end-game-note">終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。</div></div>
+      <div class="end-game-note">終了から12時間で記録が確定します。</div></div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)"><svg class="ico" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>結果をまとめて画像にする</button>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
     <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()"><svg class="ico" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-people"/></svg>仲間ページに追加</button>
@@ -2939,11 +2939,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <h1 class="login-title">ログインすると、<br>麻雀の記録が<span class="brand-green">ずっと残る</span>。</h1>
     <p class="login-lead">試合の記録・共有だけなら、ログインはいりません。<br>ログインすると、こんなことができるようになります。</p>
     <div id="login-action-top" class="login-top"></div>
-    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="10" width="17" height="30" rx="4" fill="#9fc3bd"/><rect x="11" y="14" width="11" height="18" rx="2" fill="#ffffff"/><rect x="24" y="8" width="17" height="30" rx="4" fill="#177083"/><rect x="27" y="12" width="11" height="18" rx="2" fill="#E4F3EC"/><g transform="translate(15 30)"><circle cx="6" cy="6" r="5" fill="none" stroke="#E75620" stroke-width="3.2"/><line x1="9.8" y1="9.8" x2="19" y2="19" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="15" x2="18" y2="12" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/></g></svg></div><div><b>過去の試合がずっと残る</b><span>アカウントに保存されるので、ブラウザのデータが消えても、機種変更しても、ホーム画面のアプリでも同じ一覧が見られます。</span></div></div>
-    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div><div><b>自分の成績がわかる</b><span>試合をまたいで、通算スコア・平均着順・着順の分布・トップ率を自動で集計します。</span></div></div>
-    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="13" width="24" height="28" rx="4" fill="#9fc3bd"/><rect x="13" y="9" width="24" height="28" rx="4" fill="#ffffff" stroke="#177083" stroke-width="2"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M18 17 H32"/><path d="M18 23 H32"/><path d="M18 29 H27"/></g><path d="M31 31 h10 v5 a5 5 0 0 1 -10 0 Z" fill="#E75620"/><rect x="35" y="40" width="2" height="3" fill="#E75620"/><rect x="32.5" y="43" width="7" height="2" rx="1" fill="#E75620"/></svg></div><div><b>仲間ページで通算順位</b><span>定例会や大会の試合を集めて、自分が入っていない試合も含めた通算順位を仲間全員で見られます。</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="10" width="17" height="30" rx="4" fill="#9fc3bd"/><rect x="11" y="14" width="11" height="18" rx="2" fill="#ffffff"/><rect x="24" y="8" width="17" height="30" rx="4" fill="#177083"/><rect x="27" y="12" width="11" height="18" rx="2" fill="#E4F3EC"/><g transform="translate(15 30)"><circle cx="6" cy="6" r="5" fill="none" stroke="#E75620" stroke-width="3.2"/><line x1="9.8" y1="9.8" x2="19" y2="19" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="15" x2="18" y2="12" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/></g></svg></div><div><b>過去の試合がずっと残る</b><span>機種変更しても同じ一覧が見られます</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div><div><b>自分の成績がわかる</b><span>試合をまたいで成績を自動で集計</span></div></div>
+    <div class="login-benefit"><div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="13" width="24" height="28" rx="4" fill="#9fc3bd"/><rect x="13" y="9" width="24" height="28" rx="4" fill="#ffffff" stroke="#177083" stroke-width="2"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M18 17 H32"/><path d="M18 23 H32"/><path d="M18 29 H27"/></g><path d="M31 31 h10 v5 a5 5 0 0 1 -10 0 Z" fill="#E75620"/><rect x="35" y="40" width="2" height="3" fill="#E75620"/><rect x="32.5" y="43" width="7" height="2" rx="1" fill="#E75620"/></svg></div><div><b>仲間ページで通算順位</b><span>定例会・大会の通算順位を仲間で見られる</span></div></div>
     <div id="login-action"></div>
-    <p class="login-note">使うのはGoogleアカウントの識別子だけです。表示名・メールアドレスは、ログイン中であることの表示にだけ使います（<a href="/privacy.html">プライバシーポリシー</a>）。</p>
+    <p class="login-note">使うのはGoogleアカウントの識別子だけです（<a href="/privacy.html">プライバシーポリシー</a>）</p>
   </div>
 </div>
 
@@ -5508,7 +5508,7 @@ async function removeCircleGame(sid) {
     await db.ref(`circles/${circleId}/games/${sid}`).remove();
     await addCircleLog('remove_game', `試合「${ge.name || ''}」を外しました`);
     showToast('仲間ページから外しました');
-  } catch (e) { showToast('外せませんでした（追加から24時間以内に、追加した人・作成者・管理者だけが外せます）', 5000); }
+  } catch (e) { showToast('外せませんでした（権限がないか、追加から24時間を過ぎています）', 4000); }
 }
 let bindState = null; // { sid, rows: [{ seat, name, cur, sel, locked }] }
 async function openBindEditor(sid) {
@@ -5597,7 +5597,7 @@ async function saveBindEditor() {
     setTimeout(() => syncCircleGamesToMine(false), 2600);
     track('circle_bind', { changes: changes.length });
   } catch (e) {
-    showToast('保存できませんでした。本人が連携した席は、本人・作成者・管理者だけが変更できます', 5000);
+    showToast('保存できませんでした（本人が連携した席です）', 4000);
   }
 }
 
@@ -5953,7 +5953,7 @@ async function renameCircleMember(mid) {
     await db.ref(`circles/${circleId}/roster/${mid}/name`).set(name);
     await addCircleLog('rename', `名簿の名前: ${before} → ${name}`, { mid, before, after: name });
     showToast('名前を変更しました');
-  } catch (e) { showToast('変更できませんでした（本人確認済みの人は、本人・作成者・管理者だけが変更できます）', 5000); }
+  } catch (e) { showToast('変更できませんでした（本人確認済みの人です）', 4000); }
 }
 async function mergeCircleMember(mid) {
   const into = document.getElementById('cm-merge').value;
@@ -5963,7 +5963,7 @@ async function mergeCircleMember(mid) {
   // 付け替える席に、変更できない（本人が連携した）席がないか
   const seats = [];
   Object.entries(circleData.games || {}).forEach(([sid, ge]) => Object.entries((ge && ge.seats) || {}).forEach(([seat, s]) => { if (s && s.mid === mid) seats.push({ sid, seat, s }); }));
-  if (seats.some(x => !canChangeSeat(x.s))) { showToast('本人が連携した試合が含まれるため、本人・作成者・管理者だけがまとめられます', 5000); return; }
+  if (seats.some(x => !canChangeSeat(x.s))) { showToast('本人が連携した試合があるため、まとめられません', 4000); return; }
   if (!confirm(`「${from.name}」の試合${seats.length}件を「${to.name}」に付け替えて、名簿から「${from.name}」を消します。よろしいですか？`)) return;
   closeFormModal();
   try {
@@ -6775,7 +6775,7 @@ function confirmEndGame() {
   if (activeGame.settings.bonusEnabled) { openChipSheet('end'); return; } // チップありは、終了の前にチップを入れる
   document.getElementById('confirm-modal-title').textContent = '対局を終了';
   document.getElementById('confirm-modal-desc').textContent =
-    `「${activeGame.name || ''}」の対局を終了します。12時間後に記録が確定し、それ以降は誰も点数を書き換えられなくなります（見る・共有するのはできます）。確定するまでは修正・再開できます。`;
+    `「${activeGame.name || ''}」を終了します。12時間後に記録が確定します（それまでは修正・再開できます）。`;
   const ok = document.getElementById('confirm-modal-ok');
   ok.textContent = '終了する';
   ok.onclick = () => { closeConfirmModal(); setGameEnded(true); };
@@ -6785,7 +6785,7 @@ function confirmReopenGame() {
   if (!activeGame) return;
   document.getElementById('confirm-modal-title').textContent = '対局を再開';
   document.getElementById('confirm-modal-desc').textContent =
-    '対局を再開して、続きを入力できるようにします。再開したあとは、最後の入力から24時間で自動的に記録が確定します（もう一度「対局を終了」を押すと、その12時間後に確定します）。';
+    '再開すると続きを入力できます。最後の入力から24時間で確定します。';
   const ok = document.getElementById('confirm-modal-ok');
   ok.textContent = '再開する';
   ok.onclick = () => { closeConfirmModal(); setGameEnded(false); };
@@ -7205,7 +7205,7 @@ function renderShareSheet() {
   // .sheet-body で包むとスマホでは下から出るボトムシートになる。並び順と #share-sheet-url はテスト（[11a]）が見ている
   document.getElementById('form-modal-body').innerHTML = `<div id="share-sheet" class="sheet-body">
     <div class="sh-opt main"><div class="sh-h"><span class="sh-ico">${ico('link', 22)}</span>この試合のURL</div>
-      <div class="sh-d">開いた人は結果を見られ、点数の入力・修正もできます。仲間に送るときはこちら。</div>
+      <div class="sh-d">開いた人は入力・修正もできます</div>
       <div class="sh-url"><input type="text" id="share-sheet-url" readonly value="${esc(shareUrlOf(g.id))}" onclick="this.select()"><button type="button" onclick="shareCopy('member')">コピー</button></div>
       <div class="sh-btns">${navigator.share ? `<button type="button" onclick="shareNative('member')">ほかのアプリへ</button>` : ''}<button type="button" class="line" onclick="shareLine('member')">LINEで送る</button></div>
     </div>
@@ -10127,7 +10127,7 @@ function renderGame() {
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
   { const en = document.querySelector('#end-game-wrap .end-game-note');
     { const cb = document.getElementById('chip-entry-btn'); if (cb) cb.style.display = (s.bonusEnabled && hasRounds && !gLocked && !gEnded) ? '' : 'none'; }
-    if (en && !gLocked && !gEnded) en.textContent = `終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。終了しなくても、最後の入力から24時間で確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
+    if (en && !gLocked && !gEnded) en.textContent = `終了から12時間、または最後の入力から24時間で記録が確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
   renderGameCircles(activeGame, 'game-circles');
 
   // チーム順位（チーム戦が有効なグループのみ）
@@ -10290,7 +10290,7 @@ function confirmDeleteRound(idx, where = 'game') {
   if (!g || !g.rounds[idx]) return;
   closeFormModal();
   document.getElementById('confirm-modal-title').textContent = `試合${roundSerialAt(g, idx)}を削除`;
-  document.getElementById('confirm-modal-desc').textContent = '全員の画面で灰色になり、合計から外れます。記録が確定するまでは、灰色の行から戻せます。';
+  document.getElementById('confirm-modal-desc').textContent = '灰色の行で残り、合計から外れます（確定まで復元できます）';
   const okBtn = document.getElementById('confirm-modal-ok');
   okBtn.textContent = '削除する';
   okBtn.onclick = () => { closeConfirmModal(); deleteRound(idx, where); };
@@ -11045,7 +11045,7 @@ async function saveGameEdit() {
   // 編集中に他の人が先に設定を変えていたら、上書きせずに知らせて開き直す（変更前の値を基準に差分を作っているため）
   if (fpOf({ name: activeGame.name, settings: activeGame.settings }) !== fpOf(base)) {
     closeFormModal();
-    showToast('編集しているあいだに、他の人が設定を変更しました。最新の設定で開き直したので、もう一度変更してください', 7000);
+    showToast('他の人が先に設定を変えました。もう一度変更してください', 5000);
     openGameEdit();
     return;
   }
@@ -11102,7 +11102,7 @@ function renderDaySplit() {
   };
   document.getElementById('form-modal-title').textContent = '日の区切り';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="mp-note" style="margin:0 2px 8px">試合ごとに、打った日を押してください。ある試合を2日目にすると、それより後の試合も2日目以降になります。</div>
+    <div class="mp-note" style="margin:0 2px 8px">試合ごとに打った日を押してください</div>
     <div class="ds-sum">${st.days.map((_, k) => `<span><b>${k + 1}日目</b> ${cnt[k]}試合</span>`).join('')}</div>
     <div class="mn-group ds-list">${rs.map((r, i) => `<div class="ds-rrow${i > 0 && st.idx[i] !== st.idx[i - 1] ? ' brk' : ''}">
         <div class="ds-rno"><b>第${i + 1}試合</b><span>${hint(r)}</span></div>
@@ -11184,7 +11184,7 @@ function renderReorder() {
   const selName = sel != null ? nameOf(a[sel]) + (selPos != null ? `（第${selPos + 1}試合）` : '') : '';
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
-    <div class="ro-help">${sel == null ? '<b>動かしたい行を押してください。</b>灰色の行（削除した試合）も同じように動かせます。'
+    <div class="ro-help">${sel == null ? '<b>動かしたい行を押してください。</b>'
       : `<b>${selName}を選んでいます。</b>入れたい所の行（点線の枠）を押すと、そこへ動きます。`}</div>
     ${sel != null ? `<div class="ro-selbar"><span>${selName}</span>
       <button type="button" class="ro-tool" aria-label="上へ" ${sel === 0 ? 'disabled' : ''} onclick="moveReorder(${sel},-1)">↑ 上へ</button>
@@ -11313,12 +11313,12 @@ function renderTagEditor() {
     `<button type="button" class="tag-me-chip${on(i) ? ' on' : ''}" onclick="tagEditRole='play';tagEditMe=${i};renderTagEditor()">${esc(n)}</button>`).join('');
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px;overflow-wrap:anywhere">${esc(g.name || '')}</div>
-    <div style="font-size:12px;color:#667;margin-bottom:8px">自分はどれ？（選ぶと、マイページの「個人」の成績と対戦相手に入ります）</div>
+    <div style="font-size:12px;color:#667;margin-bottom:8px">自分はどれ？</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">${chips}</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #eee;padding-top:10px">
       <button type="button" class="tag-me-chip${tagEditRole === 'watch' ? ' on' : ''}" onclick="tagEditRole='watch';tagEditMe=null;renderTagEditor()">自分は出ていない</button>
     </div>
-    <div style="font-size:11px;color:#8a9aa5;margin-top:8px;line-height:1.6">「自分は出ていない」にした試合は、記録係をしただけ・見ていただけの試合として成績に入れません。</div>
+    <div style="font-size:11px;color:#8a9aa5;margin-top:8px;line-height:1.6">「出ていない」にした試合は成績に入りません</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveTagEditor()"${tagEditRole === 'watch' || tagEditMe != null ? '' : ' disabled'}>保存する</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
 }
@@ -11538,7 +11538,7 @@ function myH2HCardHtml(rerender = 'renderMyStats()') {
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
   return `${seg}<div class="card my-h2h">${head}
     ${h2hTotalHtml(row, 'あなた')}${h2hSortSegHtml(rerender)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openMyMatchup(${keys.indexOf(k)})`, h2hLvBase(md => collectMyH2H(md).row))}
-    <div class="h2h-note">相手のカードを押すと、どちらが勝ち越しているかと、いっしょに打った試合が見られます。<br>${H2H_NOTE}<br>ゲームをまたいで、同じ名前の人を同じ相手としてまとめています（仮の名前A・B…は除きます）。名簿で人を正確に見分けたいときは仲間ページを使ってください。</div></div>`;
+    <div class="h2h-note">勝ち・負け＝同じ試合で上・下の着順だった回数</div></div>`;
 }
 // 「相性がいい相手／手ごわい相手」のカード（選び方は h2hSummaryHtml と同じ＝3試合以上・勝率60%以上／40%以下）。
 // h2hSummaryHtml（1行の文）は結果詳細・試合の画面で使うので残す
@@ -13695,25 +13695,25 @@ function showInstallHelp() {
     <div class="ih-step">${svgMenu}<div class="ih-cap"><b>①</b> アドレスバー右の「…」→ <b>②</b>「共有」をタップ</div></div>
     <div class="ih-step">${svgSheet}<div class="ih-cap">下にスクロールして <b>③</b>「ホーム画面に追加」をタップ</div></div>
     <div class="ih-step">${svgAdd}<div class="ih-cap">右上の <b>④</b>「追加」をタップして完了</div></div>
-    <div style="font-size:11px;color:#8a9aa5;line-height:1.7;margin-bottom:14px">※画面下に共有ボタン（□に↑）が出ている場合は、そこから直接「ホーム画面に追加」でもOKです。</div>`;
+    <div style="font-size:11px;color:#8a9aa5;line-height:1.7;margin-bottom:14px">※共有ボタン（□に↑）からでも追加できます</div>`;
   const androidBlock = `<div style="font-weight:700;margin-bottom:4px">Android（Chrome）</div>
     <ol style="margin:0 0 12px;padding-left:20px;line-height:1.9">
       <li>右上の<b>メニュー</b>（︙）をタップ</li>
-      <li><b>「ホーム画面に追加」</b>（または「アプリをインストール」）をタップ</li>
+      <li><b>「ホーム画面に追加」</b>をタップ</li>
     </ol>`;
   document.getElementById('form-modal-title').textContent = 'ホーム画面に追加する';
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px">
-      ホーム画面に追加すると、アプリのようにワンタップで開けるようになります。
+      ワンタップで開けるようになります。
     </div>
     <div style="font-size:12px;color:#2f5d35;background:#eef9ef;border:1px solid #bfe3c3;border-radius:10px;padding:9px 12px;line-height:1.8;margin-bottom:14px">
-      ホーム画面に追加したまじゃすこは、ブラウザとは別のアプリとして開きます（OSの仕様）。<b>追加したアプリでも一度「Googleでログイン」</b>すれば、ブラウザと同じ過去の試合・成績・仲間ページが見られます。
+      <b>追加したアプリでも一度ログイン</b>すると、同じ成績が見られます。
     </div>
     <div style="font-size:13px;color:#333">
       ${iosBlock}
       ${androidBlock}
       <div style="font-weight:700;margin-bottom:4px">パソコン</div>
-      <div style="margin-bottom:4px;line-height:1.8">ブックマーク（お気に入り）に追加しておけば十分です。Chromeならアドレスバー右端のインストールアイコンからアプリとして追加もできます。</div>
+      <div style="margin-bottom:4px;line-height:1.8">ブックマークに追加しておけば十分です。</div>
     </div>
     <button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
