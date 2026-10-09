@@ -7979,7 +7979,10 @@ async function startGame() {
 // LPから直行する quickStart の両方がここを通る（作成手順を1本にして分岐を減らす）。
 //  opts.toGame  : true なら共有画面を挟まずゲーム画面へ直行する（クイックスタート）
 //  opts.saveNames: false なら登録名に保存しない（仮名のA・B・C…で候補を汚さないため）
+let creatingGame = false; // 作成中にもう一度押しても2つ作らない（2026-10-09）
 async function createGame(name, settings, opts = {}) {
+  if (creatingGame) return false;
+  creatingGame = true;
   if (opts.saveNames !== false) savePlayerNames(settings.playerNames);
   showLoading(true);
   try {
@@ -7999,7 +8002,7 @@ async function createGame(name, settings, opts = {}) {
     }
     track('group_create', { num_players: settings.numPlayers, member_count: settings.playerNames.length, team_mode: !!settings.teamMode, bonus_enabled: settings.bonusEnabled, quick_start: !!opts.toGame });
     return true;
-  } catch(e) { alert('ゲームの作成に失敗しました。'); return false; } finally { showLoading(false); }
+  } catch(e) { alert('ゲームの作成に失敗しました。'); return false; } finally { showLoading(false); creatingGame = false; }
 }
 
 // ---- クイックスタート ----
