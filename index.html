@@ -498,6 +498,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .seg.lg-tabs { display: flex; margin: 0 0 10px; } .lg-tabs button { flex: 1; }
 .lg-table tr.lg-game { cursor: pointer; } .lg-table tr.lg-game .lg-no { margin: 0 0 2px; } .lg-table tr.lg-game .lg-h { flex-wrap: wrap; gap: 3px; }
 .lg-foot { margin-top: 6px; font-size: 11px; color: #8A9AA5; text-align: center; }
+/* 試合ごと: 1試合のかたまり（1行目＝いま、下に変遷） */
+.lg-grp { cursor: pointer; } .lg-grp td { border-bottom: 0 !important; } .lg-grp tr:last-child td { border-bottom: 1px solid #E8EEEC !important; }
+.lg-gh.del td { background: #F1F3F3; } .lg-gh.del td b { color: #A9B4B2; }
+.lg-ev td { padding: 1px 3px !important; font-size: 10.5px !important; font-weight: 600; color: #8A9AA5; line-height: 1.7; white-space: nowrap; }
+.lg-ev td.sticky-col { padding-left: 8px !important; } .lg-ev td.ch { color: #9A5B12; font-weight: 800; background: #FFF6E6; } .lg-ev.delete td:not(.sticky-col) { color: #B4C0BD; }
+.lg-ev .lg-k { font-size: 9px; padding: 0 4px; line-height: 1.5; } .tl-t { margin-left: 4px; font-size: 10px; font-weight: 700; color: #8A9AA5; }
+.lg-ev td.tl-note { text-align: left; padding-left: 10px !important; color: #2E7D5B; font-weight: 700; }
+.lg-grp tr:last-child td { padding-bottom: 6px !important; }
 .lg-chg { margin-top: 2px; font-size: 11px; font-weight: 600; color: #5F6E6B; line-height: 1.55; }
 .st-list { padding: 4px 12px; } .st-date { margin: 8px 0 2px; font-size: 11px; font-weight: 800; color: var(--pc); }
 .st-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: .5px solid #EEF2F1; font-size: 12.5px; line-height: 1.55; color: #33413E; }
@@ -675,8 +683,18 @@ tr.day-row td { background: #F1F5F4 !important; padding: 4px 0 !important; text-
 tr.day-row span { position: sticky; left: 8px; display: inline-flex; align-items: baseline; gap: 6px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
 tr.day-row b { font-size: 11.5px; font-weight: 900; color: var(--pc); }
 /* 試合結果の表も総当たり表と同じく、表の中でスクロールし、上のメンバーの行を固定（2026-10-09。画面の上に写しを出すやり方はやめた） */
-#rounds-wrap, #detail-rounds-wrap { overflow: auto; max-height: min(70vh, 560px); }
-#rounds-wrap thead, #detail-rounds-wrap thead { position: sticky; top: 0; z-index: 2; }
+/* 見出しの行は縦のスクロールでだけ止まり（横には一緒に動く）、左の列は横のスクロールでだけ止まる。左上の角はどちらでも動かない。
+   端で表ごと弾む動きは止める（見出しまで揺れて落ち着かなかった）。チーム戦は「チーム」の行の下に「メンバー」の行を止める（--trh） */
+#rounds-wrap, #detail-rounds-wrap { overflow: auto; max-height: min(70vh, 560px); overscroll-behavior-x: none; }
+#rounds-wrap thead th, #detail-rounds-wrap thead th { position: sticky; top: 0; z-index: 2; }
+#rounds-wrap thead tr:not(.team-row) th, #detail-rounds-wrap thead tr:not(.team-row) th { top: var(--trh, 0px); }
+#rounds-wrap thead th.sticky-col, #detail-rounds-wrap thead th.sticky-col { left: 0; z-index: 3; }
+/* 貼り付けた見出しは罫線（border）が描かれないので、チームの下の白線・チームの間の線は box-shadow で引き直す */
+#rounds-wrap thead tr.team-row th, #detail-rounds-wrap thead tr.team-row th { box-shadow: inset 0 -1px 0 rgba(255,255,255,.85); }
+#rounds-wrap thead th.tb, #detail-rounds-wrap thead th.tb { box-shadow: inset 1px 0 0 rgba(255,255,255,.85); }
+#rounds-wrap thead tr.team-row th.tb, #detail-rounds-wrap thead tr.team-row th.tb { box-shadow: inset 1px 0 0 rgba(255,255,255,.85), inset 0 -1px 0 rgba(255,255,255,.85); }
+#rounds-wrap thead th.sticky-col, #detail-rounds-wrap thead th.sticky-col { box-shadow: inset -1px 0 0 rgba(255,255,255,.85); }
+#rounds-wrap thead tr.team-row th.sticky-col, #detail-rounds-wrap thead tr.team-row th.sticky-col { box-shadow: inset -1px 0 0 rgba(255,255,255,.85), inset 0 -1px 0 rgba(255,255,255,.85); }
 .rounds-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 11px; color: #8A9AA5; }
 .card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--pc-bg); color: var(--pc); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
@@ -1976,7 +1994,7 @@ button.ios-row:active { background: #F2F6F5; }
 .menu-btn .mb-t { flex: 1; min-width: 0; }
 .menu-btn small { display: block; font-size: 12px; font-weight: 500; color: #5F6E6B; margin-top: 2px; }
 .menu-btn.danger { color: #c62828; }
-.menu-btn.danger .mb-ico { background: #FDECEC; }
+.menu-btn.danger .mb-ico, .mn-group .menu-btn.danger:nth-child(even) .mb-ico { background: #FDECEC; }
 .mb-chev { margin-left: auto; color: #B5C0BD; display: grid; }
 /* ---- 仲間ページのカード（マイページの「仲間」） ---- */
 .cc-card { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px; margin-bottom: 8px; background: #fff; border: none; border-radius: 16px; box-shadow: var(--sh-1); cursor: pointer; text-align: left; }
@@ -2164,7 +2182,7 @@ button.ios-row:active { background: #F2F6F5; }
 .h2h-matrix tr.mx-me td { background: var(--pc-bg) !important; }
 .h2h-matrix tr.mx-me td.mx-rh { background: var(--pc-tint) !important; }
 /* 総当たり表は表の中でスクロールし、上の名前の行と左の名前の列を固定（下へスクロールしても相手が分かる） */
-.mx-scroll { overflow: auto; max-height: min(70vh, 560px); }
+.mx-scroll { overflow: auto; max-height: min(70vh, 560px); overscroll-behavior-x: none; }
 .mx-scroll thead th { position: sticky; top: 0; z-index: 2; }
 .mx-scroll thead th.sticky-col { left: 0; z-index: 3; }
 .h2h-matrix th.me .mx-nm { color: var(--pc); font-weight: 800; }
@@ -9307,7 +9325,7 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
   }).join('');
   // 「修正済」「戻した」（削除から戻した試合。記録が確定するまで）は押すとこの試合の履歴（from.hist）
   const histOn = !forImage && from && from.hist;
-  const markTag = (t, cls) => histOn ? `<div class="rno-mk ${cls}" role="button" onclick="event.stopPropagation();${from.hist}">${t}</div>` : `<div class="rno-mk ${cls}">${t}</div>`;
+  const markTag = (t, cls) => `<div class="rno-mk ${cls}">${t}</div>`; // 札は押せない（行のどこを押しても同じシート。2026-10-09）
   const editedMark = ((!compact && r.edited) ? (histOn ? markTag('修正', 'ed') : '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正</div>') : '')
     + (from && from.restored ? markTag('復元', 'rs') : ''); // 札は「削除」と同じ2文字（修正・復元）
   // 送信キューに残っている試合（電波待ち）。画像には出さない
@@ -9505,6 +9523,7 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
     hist: `openRoundHistory('${where}',${idx})`, restored: !locked && isRestoredRound(g, g.rounds[idx]) });
   if (locked) return idxs.map(liveRow).join('');
   // 枠の順に描く。直近n試合に絞っているときは、いちばん上に出す試合より前の灰色の行は出さない
+  requestAnimationFrame(() => ['rounds-wrap', 'detail-rounds-wrap'].forEach(id => syncTeamRowH(document.getElementById(id))));
   const lay = roundLayout(g), vis = new Set(idxs);
   const first = lay.findIndex(it => it.del == null && vis.has(it.idx));
   let html = '', live = 0;
@@ -9517,6 +9536,8 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   if (wakeAt) { clearTimeout(roundMarkTimer); roundMarkTimer = setTimeout(() => { if (activeGame && document.getElementById('view-game').classList.contains('active')) renderGame(); else if (detailGame && document.getElementById('view-detail').classList.contains('active')) renderDetailBody(detailGame); }, Math.min(2147000000, Math.max(1000, wakeAt - Date.now() + 500))); }
   return html;
 }
+// チーム戦の表は見出しが2行。「メンバー」の行を「チーム」の行のすぐ下に止めるため、チームの行の高さを渡す
+function syncTeamRowH(wrap) { requestAnimationFrame(() => { const tr = wrap && wrap.querySelector('thead tr.team-row'); if (wrap) wrap.style.setProperty('--trh', tr ? tr.offsetHeight + 'px' : '0px'); }); }
 // 試合結果の表の最終行に置く合計行（画面・画像で共用）。
 // 表示を直近n試合に絞っていても、合計は常に全試合の累計（総合順位カードの値と一致する）
 function roundsTotalRowHtml(g) {
@@ -9943,10 +9964,10 @@ const LG_KIND = { add: ['add', '入力', null], edit: ['edit', '修正', 'pencil
 function lgKindChip(k) { const [c, l] = LG_KIND[k] || LG_KIND.settings; return `<span class="lg-k ${c}">${l}</span>`; }
 // 見出しをシートの上に留める表（2026-10-09 案A）: 見出しだけの表と中身の表に分け、見出しはシートの見出しのすぐ下に貼り付く。
 // 縦はシートだけがスクロールする（表の中に縦のスクロールを作らない）。横は中身の表だけが動き、見出しが付いてくる
-function stickTableHtml(style, firstW, headRow, bodyRows) {
+function stickTableHtml(style, firstW, headRow, bodyRows, rawBody = false) {
   const cg = `<colgroup><col style="width:${firstW}px"></colgroup>`;
   return `<div class="stt"><div class="stt-h"><table class="rounds-table lg-table" style="${style}">${cg}<thead>${headRow}</thead></table></div>
-    <div class="stt-b" onscroll="this.previousElementSibling.scrollLeft=this.scrollLeft"><table class="rounds-table lg-table" style="${style}">${cg}<tbody>${bodyRows}</tbody></table></div></div>`;
+    <div class="stt-b" onscroll="this.previousElementSibling.scrollLeft=this.scrollLeft"><table class="rounds-table lg-table" style="${style}">${cg}${rawBody ? bodyRows : `<tbody>${bodyRows}</tbody>`}</table></div></div>`;
 }
 function lgHeadRow(g, first) { const s = g.settings; return `<tr><th class="sticky-col">${first}</th>${memberDisplayOrder(s).map(i => `<th>${esc(s.playerNames[i])}</th>`).join('')}</tr>`; }
 function lgTheadHtml(g, first) {
@@ -10026,17 +10047,36 @@ function gamesLogHtml(g) {
   });
   if (!items.length) return '<div class="lg-empty">まだ試合がありません</div>';
   items.sort((a, b) => a.serial - b.serial);
+  // 1試合＝1かたまり（tbody）: 1行目に「試合n」といまの点数、変更があった試合は下に 入力 → 修正 → 削除 → 復元 を1行ずつ（その時の点数。変わったマスは琥珀）
+  const order = memberDisplayOrder(g.settings), pn = g.settings.playerNames, ncol = order.length;
+  const valsOf = (names, pts) => { const m = {}; (names || []).forEach((nm, k) => { m[nm] = pts && pts[k]; }); return m; };
+  const f = x => (x == null || x === '') ? '' : Number(x).toLocaleString();
   const rows = items.map(it => {
     const edits = it.evs.filter(e => e.type === 'edit').length, last = it.evs[it.evs.length - 1];
     const tags = (edits ? `<span class="lg-k edit">修正${edits > 1 ? edits : ''}</span>` : '')
       + (it.del ? '<span class="lg-k del">削除</span>' : it.r && isRestoredRound(g, it.r) ? '<span class="lg-k back">復元</span>' : '');
-    const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => g.settings.playerNames[m]);
-    const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${memberDisplayOrder(g.settings).length}"></td>`;
+    const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => pn[m]);
+    const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${ncol}"></td>`;
     const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}')` : `openRoundHistory('${where}',${it.idx})`;
-    return `<tr class="lg-row lg-game${it.del ? ' del' : ''}" onclick="${click}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>
-      ${tags ? `<div class="lg-tags">${tags}</div>` : ''}${last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
+    const many = it.evs.length > 1;
+    let html = `<tr class="lg-gh${it.del ? ' del' : ''}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>${tags ? `<div class="lg-tags">${tags}</div>` : ''}${!many && last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
+    if (many) {
+      let prev = null;
+      it.evs.forEach(e => {
+        const kind = e.type === 'settings' ? 'back' : e.type;
+        const head = `<td class="sticky-col"><span class="lg-k ${LG_KIND[kind][0]}">${LG_KIND[kind][1]}</span><span class="tl-t">${fmtTime(e.at)}</span></td>`;
+        if (!e.points) { html += `<tr class="lg-ev">${head}<td colspan="${ncol}" class="lg-wide tl-note">削除から復元</td></tr>`; return; }
+        const v = valsOf(e.names || names, e.points);
+        html += `<tr class="lg-ev ${kind}">${head}${order.map(m => {
+          const nm = pn[m]; if (!(nm in v)) return '<td></td>';
+          const ch = prev && prev[nm] !== undefined && Number(prev[nm]) !== Number(v[nm]);
+          return `<td class="${ch ? 'ch' : ''}">${f(v[nm])}</td>`; }).join('')}</tr>`;
+        prev = v;
+      });
+    }
+    return `<tbody class="lg-grp" onclick="${click}">${html}</tbody>`;
   }).join('');
-  return `${stickTableHtml(tableStyleFor(g.settings.playerNames.length), 84, lgHeadRow(g, '試合'), rows)}
+  return `${stickTableHtml(tableStyleFor(g.settings.playerNames.length), 84, lgHeadRow(g, '試合'), rows, true)}
     <div class="lg-foot">行を押すと、その試合の履歴</div>`;
 }
 // 設定: ゲーム設定・名前・並べ替えなどの変更だけを、上が古い順に短く（1件＝時刻・何を・変わった所）
@@ -10120,6 +10160,7 @@ function renderGame() {
   }
   tableHtml += '</tbody>';
   wrap.innerHTML = `<table class="rounds-table" id="rounds-table" style="${tableStyleFor(s.playerNames.length)}">${tableHtml}</table>`;
+  syncTeamRowH(wrap);
 
   // 履歴（試合結果カード内）
   let logEl = document.getElementById('game-log');
@@ -10218,11 +10259,12 @@ function openRoundMenu(idx, where = 'game') {
   if (!r) return;
   const canEdit = !isGameLocked(g) && !(where === 'detail' && detailRO);
   const t = Date.parse(r.at);
+  // 履歴を上に。点数を修正する・削除する は似た操作なので隣に並べる（削除は赤）
   document.getElementById('form-modal-title').textContent = `試合${roundSerialAt(g, idx)}`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${t ? `入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正あり' : ''}</div>
-    <div class="mn-group">${canEdit ? menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`) : ''}
-      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx})`)}</div>
-    ${canEdit ? `<div class="mn-group">${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから戻せます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
+    <div class="mn-group">${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx})`)}</div>
+    ${canEdit ? `<div class="mn-group">${menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`)}
+      ${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから復元できます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
