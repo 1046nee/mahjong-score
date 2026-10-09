@@ -6575,7 +6575,11 @@ function applyOp(game, op) {
     });
     // 並べ替えのあいだに足された試合は、今の順のまま最後に（消された試合は目印が見つからないので自然に抜ける）
     g.rounds.forEach((_, i) => { if (!used.has(i)) order.push(i); });
-    if (order.every((v, k) => v === k)) return { status: 'already', game };
+    // 消した試合の枠（op.delSlots＝削除の op の id → 新しい枠）。並べ替えの画面で灰色の行も動かせる（2026-10-09）
+    const ds = op.delSlots || {};
+    const slotMoved = g.log.some(e => e && e.type === 'delete' && ds[e.op] != null && e.slot !== ds[e.op]);
+    if (order.every((v, k) => v === k) && !slotMoved) return { status: 'already', game };
+    if (slotMoved) g.log = g.log.map(e => (e && e.type === 'delete' && ds[e.op] != null && e.slot !== ds[e.op]) ? { ...e, slot: ds[e.op] } : e);
     const map = {};
     order.forEach((oldI, newI) => { map[oldI + 1] = newI + 1; });
     g.rounds = order.map(i => g.rounds[i]);
@@ -9319,7 +9323,7 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
   const serial = (from && from.serial) || idx + 1;
   // from.gone＝消した試合（記録が確定するまで、元の場所に灰色で残す。押せない）
   // back＝押すと戻せる（記録が確定するまで）
-  if (from && from.gone) return `<tr class="rmk-gone${from.back ? ' can-back' : ''}"${from.back ? ` onclick="${onclickJs}"` : ''}><td class="sticky-col"><div>${serial}</div><div class="rno-del">削除</div>${from.back ? '<div class="rno-back">押して戻す</div>' : ''}</td>${cells}</tr>`;
+  if (from && from.gone) return `<tr class="rmk-gone${from.back ? ' can-back' : ''}${from.cls ? ' ' + from.cls : ''}"${from.back || from.click ? ` onclick="${onclickJs}"` : ''}><td class="sticky-col"><div>${serial}</div><div class="rno-del">削除</div>${from.back ? '<div class="rno-back">押して戻す</div>' : ''}${from.tag || ''}</td>${cells}</tr>`;
   // from.cls＝行に足すクラス、from.showPos＝いつも「第◯試合」を出す、from.tag＝番号の欄に足す印（並べ替えの画面）
   const trCls = [from && from.active ? 'rmk-mv' : '', (from && from.cls) || ''].filter(Boolean).join(' ');
   return `<tr onclick="${onclickJs}" style="cursor:pointer"${trCls ? ` class="${trCls}"` : ''}>
@@ -9333,29 +9337,50 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
 // 元は試合の履歴の「入力」の記録（op＝その試合のid）の順。保存するデータは増やさない。
 // 記録が見つからない試合（古いデータ・履歴が長すぎて古い記録が消えたもの）は入力日時の順で先頭から番号を振り、見つかった試合はその後ろに続ける
 const roundSerialMemo = new WeakMap();
+// 試合の目印（番号の表のキー）: id があれば id、無ければ入力日時
+const roundKeyOf = r => r ? (r.id ? 'r:' + r.id : 'a:' + (r.at || '')) : '';
 function roundSerialInfo(g) {
   const rs = (g && g.rounds) || [], log = (g && g.log) || [];
-  const sig = rs.length + '|' + log.length + '|' + rs.map(r => r && r.id).join(',');
+  const last = log.length ? log[log.length - 1] : null;
+  const sig = rs.length + '|' + log.length + '|' + (last && (last.op || last.at)) + '|' + rs.map(roundKeyOf).join(',');
   const c = roundSerialMemo.get(g);
   if (c && c.sig === sig) return c;
   const adds = [], addPos = new Map();
   log.forEach(e => { if (e && e.type === 'add' && e.op && !addPos.has(e.op)) { addPos.set(e.op, adds.length); adds.push(e); } });
-  const unmatched = rs.filter(r => !r || !r.id || !addPos.has(r.id)).sort((a, b) => ((a && Date.parse(a.at)) || 0) - ((b && Date.parse(b.at)) || 0));
-  const base = unmatched.length, map = new Map();
-  unmatched.forEach((r, i) => map.set(r, i + 1));
-  rs.forEach(r => { if (r && r.id && addPos.has(r.id)) map.set(r, base + addPos.get(r.id) + 1); });
+  // 入力の記録が無い試合（古いデータ・履歴が押し出された）は入力日時の順に 1 から。消した試合（戻していないもの）も数に入れる
+  // （入れないと、そういう試合を消したときに、ほかの試合の番号が1つずれる）
+  const liveIds = new Set(rs.map(r => r && r.id).filter(Boolean)), seen = new Set(), un = [];
+  rs.forEach((r, i) => { if (!r || !r.id || !addPos.has(r.id)) un.push({ key: roundKeyOf(r), at: Date.parse(r && r.at) || 0, i }); });
+  log.forEach((e, i) => {
+    if (!e || e.type !== 'delete') return;
+    const rid = e.round && e.round.id;
+    if (rid) { if (addPos.has(rid) || liveIds.has(rid) || seen.has(rid)) return; seen.add(rid); }
+    else if (!e.round) return; // 中身の無い古い削除の記録は、入力の記録の点数で突き合わせる（logSerialOf）
+    un.push({ key: 'd:' + e.op, at: Date.parse((e.round && e.round.at) || e.at) || 0, i: rs.length + i });
+  });
+  un.sort((a, b) => a.at - b.at || a.i - b.i);
+  const base = un.length, map = new Map();
+  un.forEach((x, i) => map.set(x.key, i + 1));
+  rs.forEach(r => { if (r && r.id && addPos.has(r.id)) map.set(roundKeyOf(r), base + addPos.get(r.id) + 1); });
   const info = { sig, map, base, adds, addPos, next: base + adds.length + 1 };
   roundSerialMemo.set(g, info);
   return info;
 }
 // 記録が確定したら（終了から12時間・最後の入力から24時間）、そのときの並びで 1 から順に振り直す（番号＝第◯試合）
-function roundSerialAt(g, idx) { if (isGameLocked(g)) return idx + 1; const r = g && g.rounds && g.rounds[idx]; return (r && roundSerialInfo(g).map.get(r)) || idx + 1; }
+function roundSerialAt(g, idx) { if (isGameLocked(g)) return idx + 1; const r = g && g.rounds && g.rounds[idx]; return (r && roundSerialInfo(g).map.get(roundKeyOf(r))) || idx + 1; }
 function nextRoundSerial(g) { return g ? roundSerialInfo(g).next : 1; }
-// 履歴の記録 e の試合の番号（入力の記録は op から・いまある試合は位置から・消した試合は入力の記録の点数で突き合わせる）
+// 履歴の記録 e の試合の番号。消した試合は削除の記録に残した試合の id から（点数で突き合わせると、修正してから消した試合や
+// 同じ点数の試合で取り違える）。中身の無い古い削除の記録だけ点数で突き合わせる
 function logSerialOf(g, e) {
   if (isGameLocked(g)) return typeof e.no === 'number' ? e.no : null; // 確定後は並びの番号（履歴の no は並べ替え・削除で振り直してある）
   const info = roundSerialInfo(g);
   if (e.type === 'add' && e.op && info.addPos.has(e.op)) return info.base + info.addPos.get(e.op) + 1;
+  if (e.type === 'delete' && e.round) {
+    const rid = e.round.id;
+    if (rid && info.addPos.has(rid)) return info.base + info.addPos.get(rid) + 1;
+    if (info.map.has('d:' + e.op)) return info.map.get('d:' + e.op);
+    if (rid && info.map.has('r:' + rid)) return info.map.get('r:' + rid); // 戻した試合
+  }
   if (!e.old && typeof e.no === 'number' && g.rounds && g.rounds[e.no - 1]) return roundSerialAt(g, e.no - 1);
   if (e.points) { const fp = fpOf(e.points); const i = info.adds.findIndex(a => a.old && a.points && fpOf(a.points) === fp); if (i >= 0) return info.base + i + 1; }
   return typeof e.no === 'number' ? e.no : null;
@@ -9470,7 +9495,7 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   const first = lay.findIndex(it => it.del == null && vis.has(it.idx));
   let html = '', live = 0;
   lay.forEach((it, k) => {
-    if (it.del) { if (first < 0 || k > first) html += delRow(it.del, live); }
+    if (it.del) { if (first < 0 || idxs.length >= n || k > first) html += delRow(it.del, live); } // 全部出しているときは一番上の灰色の行も出す
     else { if (vis.has(it.idx)) html += liveRow(it.idx); live++; }
   });
   // 印が消える時刻に描き直す（開いたままでも、しばらくしたら普段の表示に戻る）
@@ -10143,7 +10168,7 @@ function renderGame() {
     wrap.closest('.card').appendChild(logEl);
   }
   // 「並べ替え」は見出しの行ではなく表の下（見出しの行にボタンが4つ並ぶと、狭い画面で「試合結果」が2行に折れた。2026-10-09）
-  const canReorder = (activeGame.rounds || []).length >= 2 && !gLocked;
+  const canReorder = !gLocked && roundLayout(activeGame).length >= 2; // 灰色の行（消した試合）も動かせるので、枠の数で見る
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds)
     ? (gLocked ? '' : `<div class="rounds-foot"><span>行をタップすると修正・削除できます</span>${canReorder ? '<button type="button" class="edit-tab" onclick="openReorder()">並べ替え</button>' : ''}</div>`)
       + roundsMoreBtnHtml(activeGame.rounds.length)
@@ -11059,92 +11084,103 @@ function renderDaySplit() {
 // ---- 試合の順番の入れ替え ----
 // 1試合ずつ↑↓で動かし、最後にまとめて保存（1つの操作として送る＝途中の順番は誰にも見えない）。
 // 試合は入力した日時・修正の印ごと動き、履歴の「第n試合」は新しい番号に振り直す。日の区切り（2日目は第n試合から）は位置で決まる
-let reorderState = null; // { idx: [元の番号（0始まり）を新しい順に] }
+// 並べ替え（2026-10-09）: 表の枠ごと（残っている試合も、灰色の消した試合も）同じように動かせる。
+// reorderState.items＝枠を新しい順に並べたもの [{ idx }（残っている試合）| { del }（削除の記録）]・orig＝開いたときの枠の位置
+let reorderState = null;
 function openReorder() {
   const g = activeGame;
-  if (!g || isGameLocked(g) || (g.rounds || []).length < 2) return;
-  reorderState = { idx: g.rounds.map((_, i) => i) };
+  if (!g || isGameLocked(g)) return;
+  const items = roundLayout(g).map((it, k) => ({ ...it, orig: k }));
+  if (items.length < 2) return;
+  reorderState = { items };
   renderReorder();
   document.getElementById('form-modal').classList.add('open');
 }
+function reorderJustScroll() { const el = document.querySelector('tr.ro-just'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
 function moveReorder(k, d) {
-  const a = reorderState.idx, j = k + d;
+  const a = reorderState.items, j = k + d;
   if (j < 0 || j >= a.length) return;
   [a[k], a[j]] = [a[j], a[k]];
-  reorderState.just = a[j]; // いま動かした試合（元の番号で覚える）を光らせる
+  reorderState.just = a[j].orig; // いま動かした枠（開いたときの位置で覚える）を光らせる
   if (reorderState.sel === k) reorderState.sel = j; // 選んだまま、動かした先へついていく
-  renderReorder();
-  const el = document.querySelector('tr.ro-just'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  renderReorder(); reorderJustScroll();
 }
+function reorderItemAt(g, it) { return Date.parse(it.del ? ((it.del.round && it.del.round.at) || it.del.at) : g.rounds[it.idx].at) || 0; }
 function sortReorderByTime() {
-  const rs = activeGame.rounds || [];
-  reorderState.idx.sort((x, y) => (Date.parse(rs[x].at) || 0) - (Date.parse(rs[y].at) || 0) || x - y);
-  renderReorder();
+  const g = activeGame;
+  reorderState.items.sort((x, y) => reorderItemAt(g, x) - reorderItemAt(g, y) || x.orig - y.orig);
+  reorderState.sel = null; renderReorder();
 }
-// 並べ替え（2026-10-09 作り直し）: 長押しのドラッグをやめ、「動かす試合を押す → 入れたい所の『ここへ』を押す」。
-// 1行＝1試合の短いカード（番号・その試合の順位の名前とスコアを1行に）。選んだ行だけに ↑↓ を出し、行と行のあいだに「ここへ」を出す。
-// 動かした試合は琥珀色＋取り消し線の「元3」、押されてずれただけの試合は灰色。いま動かした行は少し光らせて見える所へ送る
+function resetReorder() { reorderState.items.sort((x, y) => x.orig - y.orig); reorderState.sel = null; renderReorder(); }
 function selectReorder(k) { reorderState.sel = reorderState.sel === k ? null : k; renderReorder(); }
-function placeReorder(t) { const k = reorderState.sel; if (k != null) dropReorder(t > k ? t + 1 : t); } // 選んだ試合を第(t+1)試合へ
+function placeReorder(t) { const k = reorderState.sel; if (k != null) dropReorder(t > k ? t + 1 : t); } // 選んだ枠を t 番目へ
 function dropReorder(i) {
-  const a = reorderState.idx, k = reorderState.sel;
+  const a = reorderState.items, k = reorderState.sel;
   if (k == null) return;
   const [x] = a.splice(k, 1);
   a.splice(i > k ? i - 1 : i, 0, x);
-  reorderState.sel = null; reorderState.just = x;
-  renderReorder();
-  const el = document.querySelector('tr.ro-just'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  reorderState.sel = null; reorderState.just = x.orig;
+  renderReorder(); reorderJustScroll();
 }
 function renderReorder() {
-  // 並べ替えの画面も試合結果の表と同じ形（2026-10-09）。消した試合は灰色のまま同じ枠に留まり、動かせない。
-  // 試合の行を押して選ぶ → ほかの行の「ここへ」を押すと、その第◯試合へ動く（↑↓で1つずつも）
-  const g = activeGame, s = g.settings, a = reorderState.idx, sel = reorderState.sel;
+  // 並べ替えの画面も試合結果の表と同じ形。灰色の行（消した試合）も、ほかの試合と同じように選んで動かせる。
+  // 行を押して選ぶ → ほかの行の「ここへ」を押すとそこへ動く（↑↓で1つずつも）。第◯試合は残っている試合だけで数える
+  const g = activeGame, s = g.settings, a = reorderState.items, sel = reorderState.sel;
   const days = gameDaysList(g), st = g.settings.dayStarts;
   const dayAt = pos => (Array.isArray(st) && st.length && days.length > 1) ? Math.min(days.length - 1, st.filter(n => Number(n) >= 2 && pos + 1 >= Number(n)).length) : -1;
-  const act = reorderActiveSet(a.map(v => v + 1));
+  const act = reorderActiveSet(a.map(it => it.orig + 1));
   const moved = act.size;
-  const serialOf = oi => roundSerialAt(g, oi);
   const ncol = memberDisplayOrder(s).length;
-  let p = 0, lastDay = -1, rows = '';
-  roundLayout(g, a).forEach(it => {
+  const nameOf = it => it.del ? `試合${logSerialOf(g, it.del) || it.del.no}（削除）` : `試合${roundSerialAt(g, it.idx)}`;
+  let p = 0, lastDay = -1, rows = '', selPos = null;
+  a.forEach((it, k) => {
+    const on = sel === k, to = sel != null && !on;
+    const cls = ['ro-tr', on ? 'ro-on' : '', act.has(k) ? 'ro-mv' : it.orig !== k ? 'ro-sh' : '', reorderState.just === it.orig ? 'ro-just' : '', to ? 'ro-to' : ''].filter(Boolean).join(' ');
+    const click = to ? `placeReorder(${k})` : `selectReorder(${k})`;
+    const tag = (to ? '<div class="ro-here">ここへ</div>' : '') + (it.orig !== k ? `<div class="ro-was">元 ${it.orig + 1}行目</div>` : '');
     if (it.del) {
       const r = deletedRoundOf(g, it.del), sn = logSerialOf(g, it.del) || it.del.no;
-      rows += r ? roundRowHtml(r, -1, '', s, false, false, { serial: sn, gone: true })
-        : `<tr class="rmk-gone"><td class="sticky-col"><div>${sn}</div><div class="rno-del">削除</div></td><td colspan="${ncol}">—</td></tr>`;
+      rows += r ? roundRowHtml(r, -1, click, s, false, false, { serial: sn, gone: true, click: true, cls, tag })
+        : `<tr class="rmk-gone ${cls}" onclick="${click}"><td class="sticky-col"><div>${sn}</div><div class="rno-del">削除</div>${tag}</td><td colspan="${ncol}">—</td></tr>`;
       return;
     }
-    const k = p++, oi = it.idx, on = sel === k, dk = dayAt(k);
+    const pos = p++, dk = dayAt(pos);
+    if (on) selPos = pos;
     if (dk >= 0 && dk !== lastDay) { rows += `<tr class="ro-dayrow"><td colspan="${ncol + 1}">${dk + 1}日目</td></tr>`; lastDay = dk; }
-    const to = sel != null && !on;
-    const tag = (to ? '<div class="ro-here">ここへ</div>' : '') + (oi !== k ? `<div class="ro-was">元 第${oi + 1}</div>` : '');
-    const cls = ['ro-tr', on ? 'ro-on' : '', act.has(k) ? 'ro-mv' : oi !== k ? 'ro-sh' : '', reorderState.just === oi ? 'ro-just' : '', to ? 'ro-to' : ''].filter(Boolean).join(' ');
-    rows += roundRowHtml(g.rounds[oi], k, to ? `placeReorder(${k})` : `selectReorder(${k})`, s, false, false, { serial: serialOf(oi), showPos: true, tag, cls });
+    rows += roundRowHtml(g.rounds[it.idx], pos, click, s, false, false, { serial: roundSerialAt(g, it.idx), showPos: true, tag, cls });
   });
+  const selName = sel != null ? nameOf(a[sel]) + (selPos != null ? `（第${selPos + 1}試合）` : '') : '';
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
-    <div class="ro-help">${sel == null ? '<b>動かしたい試合の行を押してください。</b>灰色の行（削除した試合）はその場に留まります。'
-      : `<b>試合${serialOf(a[sel])}を選んでいます。</b>入れたい所の行（「ここへ」）を押すと、その第◯試合へ動きます。`}</div>
-    ${sel != null ? `<div class="ro-selbar"><span>試合${serialOf(a[sel])}（第${sel + 1}試合）</span>
+    <div class="ro-help">${sel == null ? '<b>動かしたい行を押してください。</b>灰色の行（削除した試合）も同じように動かせます。'
+      : `<b>${selName}を選んでいます。</b>入れたい所の行（「ここへ」）を押すと、そこへ動きます。`}</div>
+    ${sel != null ? `<div class="ro-selbar"><span>${selName}</span>
       <button type="button" class="ro-tool" aria-label="上へ" ${sel === 0 ? 'disabled' : ''} onclick="moveReorder(${sel},-1)">↑ 上へ</button>
       <button type="button" class="ro-tool" aria-label="下へ" ${sel === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${sel},1)">↓ 下へ</button>
       <button type="button" class="ro-tool" onclick="selectReorder(${sel})">やめる</button></div>`
     : `<div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
-      <button type="button" class="ro-tool" onclick="reorderState.idx=activeGame.rounds.map((_, i) => i);reorderState.sel=null;renderReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
-      <span class="ro-count">${moved ? `${moved}試合を動かしています` : ''}</span></div>`}
+      <button type="button" class="ro-tool" onclick="resetReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
+      <span class="ro-count">${moved ? `${moved}行を動かしています` : ''}</span></div>`}
     <div class="ro-tblwrap" style="overflow-x:auto"><table class="rounds-table ro-table" style="${tableStyleFor(s.playerNames.length)}">${roundsTheadHtml(s)}<tbody>${rows}</tbody></table></div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>この順番で保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
 function saveReorder() {
-  const g = activeGame, a = reorderState && reorderState.idx;
-  if (!g || !a || isGameLocked(g)) return;
-  if (a.every((v, k) => v === k)) { closeFormModal(); return; }
+  const g = activeGame, items = reorderState && reorderState.items;
+  if (!g || !items || isGameLocked(g)) return;
+  if (items.every((it, k) => it.orig === k)) { closeFormModal(); return; }
   takeBackup(g, '試合の順番を入れ替え', (g.rounds || []).length); // 書き込む前の状態を控える（「もとに戻す」で戻せる）
   const rs = g.rounds || [];
-  const moves = a.map((oi, k) => oi !== k ? `試合${roundSerialAt(g, oi)}→${k + 1}番目` : '').filter(Boolean);
+  const live = items.filter(it => it.del == null);
+  // 消した試合の新しい枠（削除の記録の slot を書き換える）
+  const delSlots = {};
+  items.forEach((it, k) => { if (it.del && it.del.op) delSlots[it.del.op] = k; });
+  const moves = [];
+  live.forEach((it, k) => { if (it.idx !== k) moves.push(`試合${roundSerialAt(g, it.idx)}→${k + 1}番目`); });
+  items.forEach((it, k) => { if (it.del && it.orig !== k) moves.push(`削除した試合${logSerialOf(g, it.del) || it.del.no}→${k + 1}行目`); });
   closeFormModal();
   enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'reorder',
-    order: a.map(oi => ({ id: rs[oi].id || null, at: rs[oi].at || null })),
+    order: live.map(it => ({ id: rs[it.idx].id || null, at: rs[it.idx].at || null })), delSlots,
     changes: moves.length > 6 ? moves.slice(0, 6).concat([`ほか${moves.length - 6}件`]) : moves });
   showToast('試合の順番を入れ替えました');
   track('rounds_reorder', { n: rs.length, moved: moves.length });

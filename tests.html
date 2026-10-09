@@ -397,6 +397,19 @@ function opCases(w) {
       const r = apply(x, { id: 'u9', sid: 'TESTGAME01', at: T(12), kind: 'undelete', del: 'd3', pos: 0, label: '' });
       return slot === 1 && lay === 'op2,X,op0,late' && r.status === 'apply' && r.game.rounds.map(z => z.id).join() === 'op2,op1,op0,late';
     }],
+    ['applyOp 並べ替えで消した試合の枠も動かせる（delSlots）・消した試合の番号は修正してから消しても入力順のまま', () => {
+      const g = withRounds(P1, P2, P3);
+      let x = apply(g, { id: 'e5', sid: 'TESTGAME01', at: T(8), kind: 'edit', target: w.roundTarget(g.rounds[1]), label: '', round: { points: P1, members: [0, 1, 2, 3] }, names: NAMES }).game;
+      x = apply(x, { id: 'd5', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(x.rounds[1]), label: '' }).game;
+      x.lockAt = Date.now() + 3600000;   // 確定前（確定後は番号が並びの順になる）
+      const de = x.log[x.log.length - 1], sn = w.logSerialOf(x, de);
+      const ro = x.rounds.map(r => ({ id: r.id, at: r.at }));
+      const r = apply(x, { id: 'ro5', sid: 'TESTGAME01', at: T(10), kind: 'reorder', order: ro, delSlots: { d5: 0 }, changes: [] });
+      const lay = w.roundLayout(r.game).map(it => it.del ? 'X' : r.game.rounds[it.idx].id).join();
+      const serials = r.game.rounds.map((_, i) => w.roundSerialAt(r.game, i)).join();
+      return sn === 2 && r.status === 'apply' && lay === 'X,op0,op2' && serials === '1,3'
+        && apply(r.game, { id: 'ro6', sid: 'TESTGAME01', at: T(11), kind: 'reorder', order: ro, delSlots: { d5: 0 }, changes: [] }).status === 'already';
+    }],
     ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
       const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
       return pal.length === 30 && auto.length === 30 && pal.every(c => w.whiteContrast(c) >= 3)
