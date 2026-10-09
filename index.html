@@ -11985,8 +11985,19 @@ function sparkSelectKeyIn(root, k) {
   if (sc) sc.removeAttribute('data-end');
   // 選んだ点をグラフの真ん中あたりへ（端なら見えるところまで）。下のカードが画面の外なら、見えるところまで縦に送る
   if (dot && sc) { const r = dot.getBoundingClientRect(), b = sc.getBoundingClientRect(); sc.scrollLeft += (r.left + r.width / 2) - (b.left + b.width / 2); }
+  // 下のカードは、頭（最初の120pxほど）が画面の下に隠れているときだけ少し送る。グラフは必ず画面に残す
+  // （以前は scrollIntoView で、年の単位のように中身の長いカードだとカードの頭まで送られ、グラフが画面の上に消えた。2026-10-09）
   const pop = document.getElementById('pop-' + svg.dataset.rid);
-  if (pop && !pop.hidden) { const pr = pop.getBoundingClientRect(); if (pr.bottom > window.innerHeight || pr.top < 0) pop.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  if (pop && !pop.hidden) {
+    // シート（メンバーの成績など）の中ではシートの箱が、それ以外は画面が動く
+    const box = svg.closest('.form-modal-box'), bb = box ? box.getBoundingClientRect() : null;
+    const pr = pop.getBoundingClientRect(), gr = svg.getBoundingClientRect();
+    const vb = bb ? bb.bottom : window.innerHeight, top0 = bb ? bb.top + 64 : 64; // 上の貼り付いたヘッダー（シートの見出し）の分
+    const want = Math.min(pr.height, 120);
+    let dy = pr.top + want > vb ? pr.top + want - vb + 12 : 0;
+    dy = Math.min(dy, Math.max(0, gr.top - top0)); // グラフの上端より上には送らない
+    if (dy > 0) (box || window).scrollBy({ top: dy, behavior: 'smooth' });
+  }
 }
 // 試合が無いときのグラフ: 試合があるときと同じ大きさ・同じ目盛り（+100・0・-100）の空のグラフに、説明を重ねる（形を崩さない。2026-10-08）
 function emptySparkHtml(msg) {
