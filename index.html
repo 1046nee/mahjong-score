@@ -1997,10 +1997,12 @@ button.ios-row:active { background: #F2F6F5; }
 #form-modal:has(.sheet-body) .sheet-body > :first-child { margin-top: 0 !important; } /* 結果のシート: 見出し（2行になる長いゲーム名・右の「‹ 戻る」）に重ならないよう上に詰めない（2026-10-08） */
 .mn-group { background: #F4F7F6; border-radius: 14px; padding: 0 12px; }
 .mn-group + .mn-group { margin-top: 10px; }
-/* 中身を選ぶタブ（成績表・対戦成績・過去の試合／順位・成績表・対戦…）の枠（2026-10-09）: 個人は主色（四麻は緑・三麻は青＝.sanma で --pc が変わる）、
+/* 枠（2026-10-09）: マイページ・仲間ページの上の成績カード、中身を選ぶタブ（成績表・対戦成績・過去の試合／順位・成績表・対戦…）、タブの中のカード: 個人は主色（四麻は緑・三麻は青＝.sanma で --pc が変わる）、
    仲間ページは、その仲間ページの頭文字アイコンの色（--circ-frame。三麻でも同じ色）。box-shadow で描く（大きさが変わらない） */
-#mp-pane-tabs .seg.tabbar, #view-mystats .seg.ms-tabs.tabbar { box-shadow: 0 0 0 2px var(--pc), var(--sh-1); }
-#view-circle #circle-body > .seg.tabbar { box-shadow: 0 0 0 2px var(--circ-frame, var(--pc)), var(--sh-1); }
+/* 上の成績カード・タブ・タブの中のカードの3つを同じ色で囲う（2026-10-09 ユーザー要望） */
+#mp-stats .mc-card, #mp-pane-tabs .seg.tabbar, #view-mystats .seg.ms-tabs.tabbar,
+#mp-pane-sum .ms-card, #mp-pane-sum > .card, #mp-pane-h2h > .card, #mp-pane-hist > .card { box-shadow: 0 0 0 2px var(--pc), var(--sh-1); }
+#view-circle #circle-top .mc-card, #view-circle #circle-body > .seg.tabbar, #view-circle #circle-body > .card { box-shadow: 0 0 0 2px var(--circ-frame, var(--pc)), var(--sh-1); } /* #view-circle .card（後ろにある）より強く */
 /* その他の操作（たたむ）。閉じているときはメニューの1行と同じ見た目、開くと下に並ぶ */
 .mn-more { margin-top: 10px; } .mn-more + .mn-group { margin-top: 10px; }
 .mn-more > summary { list-style: none; padding: 10px 12px; background: #F4F7F6; border-radius: 14px; } /* 中身はメニューの1行（menu-btn）と同じ形 */
@@ -4417,7 +4419,7 @@ function renderCircle() {
   else html += (gids.length ? '' : noGames) + circleRankTabHtml(st, modeChips, noBind);
   html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
   const body = document.getElementById('circle-body');
-  body.style.setProperty('--circ-frame', circleColorOf(circleId)); // タブの枠＝仲間ページの頭文字アイコンの色（三麻・四麻に関わらず。2026-10-09）
+  document.getElementById('view-circle').style.setProperty('--circ-frame', circleColorOf(circleId)); // 枠＝仲間ページの頭文字アイコンの色（三麻・四麻に関わらず。2026-10-09）
   // 描き直すあいだに高さが縮むと画面が上にずれるので、前の高さを保ってから戻す（タブを押すと縦に動くことがあった。2026-10-08）
   const y0 = window.scrollY;
   body.style.minHeight = body.offsetHeight + 'px';
