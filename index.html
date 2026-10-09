@@ -5387,8 +5387,10 @@ async function openAddToCircle() {
   document.getElementById('form-modal').classList.add('open');
   await loadMyCircles();
   const names = ((g.settings && g.settings.playerNames) || []).map(personKey);
-  const list = await Promise.all(Object.entries(myCircles).map(([cid, m]) => db.ref('circles/' + cid).once('value')
-    .then(s => { const c = s.val(); if (!c) return null;
+  // 候補: 参加している仲間ページのうち、一覧から外したもの（circleHidden）と、もうメンバーでないもの（circleMembers に自分がいない）を除く
+  const hidden = new Set(circleHidden()), uid = myUid();
+  const list = await Promise.all(Object.entries(myCircles).filter(([cid]) => !hidden.has(cid)).map(([cid, m]) => Promise.all([db.ref('circles/' + cid).once('value'), db.ref(`circleMembers/${cid}/${uid}`).once('value').catch(() => ({ exists: () => false }))]) // 読めない＝メンバーでない（ルールでメンバーだけが読める）
+    .then(([s, mem]) => { const c = s.val(); if (!c || !mem.exists()) return null;
       const keys = new Set(Object.values(c.roster || {}).map(r => personKey(r.name)));
       const ge = c.games && c.games[g.id];
       return { cid, name: c.name || m.name || '', overlap: names.filter(k => keys.has(k)).length, already: !!ge, by: ge ? (ge.addedByName || 'メンバー') : '', at: ge ? ge.addedAt : '' }; })
@@ -12300,7 +12302,7 @@ function gameActsHtml(g, rawId, opts = {}) {
     // 仲間ページの試合: 名前の連携・ゲーム名の変更（参加したメンバー）・この仲間ページから外す（追加から24時間・追加した人と作成者・管理者）
     const role = circleRole(), canRemove = canRemoveCircleGame(ge);
     if (role && circleSess[rawId]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`) + rename;
-    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '試合そのものは消えません（作成者・管理者）', `removeCircleGame('${id}')`, 'danger');
+    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${id}')`, 'danger');
   } else if (inHist) {
     // 個人の過去の試合: 共有・ゲーム名の変更・この試合での自分・過去の試合から削除
     acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`) + rename
