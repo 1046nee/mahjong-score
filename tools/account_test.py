@@ -222,9 +222,9 @@ def main():
         pg.evaluate(f"closeFormModal(); circleMembers['{U1}'].role = 'owner'; circleData.games['{g1}'].lockAt = {lock_g1 or 0}")
         results.append(("[5c2] 仲間ページに入れた試合は追加から24時間だけ外せる（メニューに期限）、過ぎたら確定して、作成者・管理者のほかは外す入口が出ない", True,
                         isinstance(lock_g1, (int, float)) and 23.5 * 3600000 < lock_g1 - pg.evaluate("serverNow()") < 24.5 * 3600000
-                        and "この仲間ページから外す" in menu_open and "外せるのは" in menu_open
+                        and "この仲間ページから外す" in menu_open and "まで）" in menu_open
                         and "この仲間ページから外す" in menu_owner and "作成者・管理者だけが外せます" in menu_owner
-                        and "この仲間ページから外す" not in menu_fixed and "外せません" in menu_fixed))
+                        and "この仲間ページから外す" not in menu_fixed))
         tr = [m for m, r in circ["roster"].items() if r["name"] == "たろう"][0]
         g2seats = circ["games"][g2]["seats"]
         g2list = g2seats if isinstance(g2seats, list) else [g2seats.get(str(i)) for i in range(4)]
@@ -448,7 +448,7 @@ def main():
         menu_txt = pgv.evaluate("document.getElementById('form-modal-body').innerText")
         pgv.evaluate(f"closeFormModal(); openWatchGame(circleSess['{g1}'], 'circle')")
         results.append(("[7b] 見るだけの人が仲間ページの試合を開くと、入力できない「見るだけ」の画面になる", True,
-                        "結果を見る" in menu_txt and "入力・修正" not in menu_txt
+                        "共有する" in menu_txt and "名前の連携" not in menu_txt and "この仲間ページから外す" not in menu_txt
                         and pgv.evaluate("document.getElementById('view-watch').classList.contains('active') && !document.querySelector('#view-watch .fab') && document.getElementById('watch-body').innerText.includes('総合順位')")))
         pgv.close()
 

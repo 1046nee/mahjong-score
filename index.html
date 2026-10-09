@@ -5421,11 +5421,14 @@ async function runCircleAddGames() {
   track('circle_add_games', { count: added, pasted: pasted.length });
 }
 // 試合の画面・結果詳細の「仲間ページに追加」
+let circleAddId = null; // 過去の試合のメニューから開いたときの試合ID（無ければ、いま開いている試合）
 function gameForCircleAdd() {
+  if (circleAddId) { const g = (appState.games || []).find(x => x.id === circleAddId) || (circleSess && circleSess[circleAddId]); if (g) return g; }
   if (document.getElementById('view-detail').classList.contains('active') && detailGame) return detailGame;
   return activeGame;
 }
-async function openAddToCircle() {
+async function openAddToCircle(id) {
+  circleAddId = id || null;
   const g = gameForCircleAdd();
   if (!g) return;
   document.getElementById('form-modal-title').textContent = '仲間ページに追加';
@@ -5560,6 +5563,17 @@ function circleGameRemovable(ge) { return !!ge && typeof ge.lockAt === 'number' 
 function canRemoveCircleGame(ge) { return !!ge && !!circleRole() && (isCircleAdmin() || (ge.addedBy === myUid() && circleGameRemovable(ge))); }
 function openCircleGameMenu(sid) {
   const ge = circleData.games[sid];
+  // 読み込めた試合は、個人の過去の試合の「…」と同じメニュー（gameActsHtml。並びと表記を揃える。2026-10-09）
+  const gs = circleSess[sid];
+  if (gs && ge) {
+    const { acts, danger } = gameActsHtml(gs, sid, { circle: true });
+    document.getElementById('form-modal-title').textContent = ge.name || gs.name || '試合';
+    document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${esc(gameMetaText(gs))} ・ ${esc(ge.addedByName || 'メンバー')}さんが追加（${esc(fmtDay(Date.parse(ge.addedAt) || Date.now()))}）</div>
+      <div class="mn-group">${acts}</div>${danger ? `<div class="mn-group">${danger}</div>` : ''}
+      <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+    document.getElementById('form-modal').classList.add('open');
+    return;
+  }
   const role = circleRole();
   const mayRemove = role && (ge.addedBy === myUid() || isCircleAdmin());
   const canRemove = canRemoveCircleGame(ge), open = circleGameRemovable(ge);
@@ -12362,17 +12376,18 @@ function gameActsHtml(g, rawId, opts = {}) {
   let acts = canLive
     ? menuBtnHtml('table', 'ゲームを見る', isGameEnded(g) ? `再開・点数の修正もここから（${fmtDateTime(lockAtOf(g))} まで）` : '対局中・点数の入力もここから', inHist ? `closeFormModal();rejoinGame('${id}')` : `closeFormModal();joinSession('${id}')`)
     : menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `${keep}closeFormModal();viewDetailById('${id}')` : `${keep}closeFormModal();openWatchGame(resultGameById('${id}'),'${activeViewName()}')`);
+  // 並びと表記は個人・仲間ページで同じ（2026-10-09）: 見る → 共有する → ゲーム名の変更 → この試合での自分 → 名前の連携 → 仲間ページに追加 → （赤）外す・削除。
+  // その場で使えないものは出さない（自分の過去の試合に無ければ「この試合での自分」は無い、仲間ページのメンバーでなければ「名前の連携」は無い…）
+  const role = ge ? circleRole() : null;
+  acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`);
+  if (inHist || (ge && role)) acts += menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : 'みんなの画面の名前が変わります', `openRenameGame('${id}')`);
+  if (inHist) acts += menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
+  if (ge && role && circleSess[rawId]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`);
+  if (inHist && loginAvailable()) acts += menuBtnHtml('people', ge ? 'ほかの仲間ページに追加' : '仲間ページに追加', '仲間の成績・順位にこの試合を入れる', `closeFormModal();openAddToCircle('${id}')`);
   let danger = '';
-  const rename = menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${id}')`);
   if (ge) {
-    // 仲間ページの試合: 名前の連携・ゲーム名の変更（参加したメンバー）・この仲間ページから外す（追加から24時間・追加した人と作成者・管理者）
-    const role = circleRole(), canRemove = canRemoveCircleGame(ge);
-    if (role && circleSess[rawId]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`) + rename;
-    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${id}')`, 'danger');
+    if (canRemoveCircleGame(ge)) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${id}')`, 'danger');
   } else if (inHist) {
-    // 個人の過去の試合: 共有・ゲーム名の変更・この試合での自分・過去の試合から削除
-    acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`) + rename
-      + menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
     danger = menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${id}')`, 'danger');
   }
   return { acts, danger };
