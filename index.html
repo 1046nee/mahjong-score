@@ -4219,13 +4219,14 @@ function fillMyIdentity() {
 // 仲間ページの中身はタブで切り替える（順位／成績表／対戦／試合／メンバー）。
 // 1枚に全部並べると、13人・2日間の大会で縦に長くなりすぎて目的の表にたどり着けないため
 const CIRCLE_TABS = [['rank', '順位'], ['grid', '成績表'], ['h2h', '対戦'], ['games', '過去の試合'], ['people', 'メンバー']];
-const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['pmax', '最高点数']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高点数＝1試合の持ち点のいちばん高い値（ptMax。点数の記録が無い人は下）
+const CIRCLE_METRICS = [['score', '通算スコア'], ['avg', '平均着順'], ['top', 'トップ率'], ['las', 'ラス回避'], ['pmax', '最高点数'], ['pmin', '最低点数']]; // 素点・順位点の順位は2026-10-02にやめた（成績表には残す）。最高点数＝1試合の持ち点のいちばん高い値（ptMax。点数の記録が無い人は下）。最低点数＝1試合の持ち点のいちばん低い値（ptMin）で、低い人が1位（2026-10-09）
 function circleMetricsFor(st) { return CIRCLE_METRICS; } // チーム優勝率・エース回数は2026-10-07にやめた（チーム戦は「合計｜個人戦｜チーム戦」の絞り込みで見る）
 const SIGNED_METRICS = ['score', 'raw', 'rp']; // 0を中央に置いて左右に伸ばす（プラス・マイナスがある）指標
 let circleTab = 'rank', circleMetric = 'score';
 function circleMetricVal(p, m) {
   if (m === 'score') return p.score;
   if (m === 'pmax') return p.ptMax == null ? -Infinity : p.ptMax;
+  if (m === 'pmin') return p.ptMin == null ? Infinity : p.ptMin; // 低いほど上。点数の記録が無い人は下
   if (m === 'avg') return p.rankSum / p.n;
   if (m === 'top') return p.top / p.n;
   if (m === 'las') return (p.n - p.last) / p.n;
@@ -4233,7 +4234,7 @@ function circleMetricVal(p, m) {
   if (m === 'rp') return rankPtsOf(p) || 0;
   return p.score;
 }
-function circleMetricText(v, m) { if (m === 'pmax') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
+function circleMetricText(v, m) { if (m === 'pmax' || m === 'pmin') return Number.isFinite(v) ? Math.round(v).toLocaleString() : '—'; return m === 'avg' ? v.toFixed(2) : (m === 'top' || m === 'las') ? pctText(v) : fmtScore(v); }
 // 仲間ページのカードの見出し。各タブの最初のカードだけ、右に小さい期間のピル（上の期間と同じもの・下からでも変えられる。2026-10-07）。
 // 目線・同卓者・期間（ピルの無いカード）で絞っているときは、見出しの下に「いま何で数えているか」を1行で出す
 let circlePeriodPillDone = false;
@@ -4451,11 +4452,15 @@ function circleRankOrder(st) {
   const np = circleMode === '3' ? 3 : 4;
   // 順位は RANK_MIN（6）試合以上の人だけで決める（2026-10-07 ユーザーの判断）。少ない人は順位の下に「順位なし」で並べる（under）
   const tie = (a, b) => b.n - a.n; // 同じ値なら試合数の多い人を上
-  const cmp = (a, b) => (m === 'avg' ? circleMetricVal(a, m) - circleMetricVal(b, m) : circleMetricVal(b, m) - circleMetricVal(a, m)) || tie(a, b);
+  const asc = m === 'avg' || m === 'pmin'; // 小さいほど上（平均着順・最低点数）
+  const cmp = (a, b) => { const x = circleMetricVal(a, m), y = circleMetricVal(b, m); return (x === y ? 0 : asc ? (x < y ? -1 : 1) : (x > y ? -1 : 1)) || tie(a, b); }; // Infinity どうしの引き算は NaN になるので比べる
   const q = st.list.filter(rankOk).sort(cmp);
   const under = st.list.filter(p => !rankOk(p)).sort(cmp);
   const maxAbs = Math.max(...st.list.map(p => Math.abs(circleMetricVal(p, m))).filter(Number.isFinite)) || 1;
-  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'pmax' ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0) : Math.abs(v) / maxAbs;
+  // 最低点数の棒: いちばん低い人がいちばん長い（いちばん高い人との差の割合）
+  const fin = st.list.map(p => circleMetricVal(p, m)).filter(Number.isFinite), hi = fin.length ? Math.max(...fin) : 0, lo = fin.length ? Math.min(...fin) : 0;
+  const barOf = v => m === 'avg' ? (np - v) / (np - 1) : (m === 'top' || m === 'las') ? v : m === 'pmax' ? (Number.isFinite(v) ? Math.max(0, v) / maxAbs : 0)
+    : m === 'pmin' ? (Number.isFinite(v) ? (hi > lo ? 0.08 + 0.92 * (hi - v) / (hi - lo) : 1) : 0) : Math.abs(v) / maxAbs;
   const clsOf = v => SIGNED_METRICS.includes(m) ? scoreCls(v) : '';
   return { m, np, q, under, maxAbs, barOf, clsOf };
 }
