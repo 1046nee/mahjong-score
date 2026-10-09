@@ -12903,7 +12903,9 @@ function mpModeCardHtml(np, m) {
 // 成績カードの見出しの右: どの範囲の成績か（個人＝人のマーク／仲間ページ＝オレンジの頭文字＋名前）
 function mcScopeHtml(label) {
   if (!label) return '';
-  const mark = label === '個人' ? ico('person', 12) : `<i class="mc-scope-av">${esc(avInitial(label))}</i>`;
+  // 仲間ページの頭文字は、見出し・切り替えと同じ色（circleAvHtml）。どの仲間ページかは、いま見ている仲間ページ／自分の成績で選んでいる仲間ページ（2026-10-09 オレンジに固定されていた）
+  const cid = document.getElementById('view-circle').classList.contains('active') ? circleId : (typeof msScope === 'string' && msScope !== 'all' ? msScope : null);
+  const mark = label === '個人' ? ico('person', 12) : cid ? circleAvHtml(label, cid, 16, 'mc-scope-svg') : `<i class="mc-scope-av">${esc(avInitial(label))}</i>`;
   return `<em class="mc-scope">${mark}<span>${esc(label)}</span></em>`;
 }
 function mpStatsEmptyInnerHtml(np, scopeLabel, msg) {
