@@ -1997,6 +1997,14 @@ button.ios-row:active { background: #F2F6F5; }
 #form-modal:has(.sheet-body) .sheet-body > :first-child { margin-top: 0 !important; } /* 結果のシート: 見出し（2行になる長いゲーム名・右の「‹ 戻る」）に重ならないよう上に詰めない（2026-10-08） */
 .mn-group { background: #F4F7F6; border-radius: 14px; padding: 0 12px; }
 .mn-group + .mn-group { margin-top: 10px; }
+/* その他の操作（たたむ）。閉じているときはメニューの1行と同じ見た目、開くと下に並ぶ */
+.mn-more { margin-top: 10px; } .mn-more + .mn-group { margin-top: 10px; }
+.mn-more > summary { list-style: none; padding: 10px 12px; background: #F4F7F6; border-radius: 14px; } /* 中身はメニューの1行（menu-btn）と同じ形 */
+.mn-more > summary::-webkit-details-marker { display: none; }
+.mn-more-chev .ico { transform: rotate(90deg); transition: transform .15s; }
+.mn-more[open] .mn-more-chev .ico { transform: rotate(-90deg); }
+.mn-more[open] > summary { border-radius: 14px 14px 0 0; }
+.mn-more > .mn-group { border-radius: 0 0 14px 14px; border-top: .5px solid #E3E9E8; }
 .menu-btn { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 0; background: none; border: none; font-size: 15px; font-weight: 700; color: #1F2A28; cursor: pointer; text-align: left; }
 .menu-btn + .menu-btn::before { content: ''; position: absolute; top: 0; left: 48px; right: 0; border-top: .5px solid #D5DEDB; }
 .menu-btn .mb-ico { width: 36px; height: 36px; border-radius: 50%; background: var(--pc-tint); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -5567,10 +5575,10 @@ function openCircleGameMenu(sid) {
   // 読み込めた試合は、個人の過去の試合の「…」と同じメニュー（gameActsHtml。並びと表記を揃える。2026-10-09）
   const gs = circleSess[sid];
   if (gs && ge) {
-    const { acts, danger } = gameActsHtml(gs, sid, { circle: true });
+    const menu = gameActsHtml(gs, sid, { circle: true });
     document.getElementById('form-modal-title').textContent = ge.name || gs.name || '試合';
     document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${esc(gameMetaText(gs))} ・ ${esc(ge.addedByName || 'メンバー')}さんが追加（${esc(fmtDay(Date.parse(ge.addedAt) || Date.now()))}）</div>
-      <div class="mn-group">${acts}</div>${danger ? `<div class="mn-group">${danger}</div>` : ''}
+      ${gameMenuBlocksHtml(menu)}
       <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
     document.getElementById('form-modal').classList.add('open');
     return;
@@ -12372,7 +12380,7 @@ function myResultHtml(g) {
 }
 // 過去の試合・仲間ページの試合でできること（結果のシートと一覧の「…」で同じ並び。2026-10-09）。
 // いちばん上は、対局中（終了も確定もしていない）で入力できる人なら「ゲームを見る」（試合の画面）、それ以外は「詳しく見る」（結果詳細／見るだけの画面）。
-// 戻り値 { acts, danger }（danger＝赤の削除・外すは離して置く）
+// 戻り値 { acts＝見る, more＝その他の操作, danger＝赤の削除・外す（離して置く） }
 function gameActsHtml(g, rawId, opts = {}) {
   const id = esc(rawId), inHist = (appState.games || []).some(x => x.id === rawId);
   const ge = opts.circle && circleData && circleData.games && circleData.games[rawId];
@@ -12385,18 +12393,26 @@ function gameActsHtml(g, rawId, opts = {}) {
   // 並びと表記は個人・仲間ページで同じ（2026-10-09）: 見る → 共有する → ゲーム名の変更 → この試合での自分 → 名前の連携 → 仲間ページに追加 → （赤）外す・削除。
   // その場で使えないものは出さない（自分の過去の試合に無ければ「この試合での自分」は無い、仲間ページのメンバーでなければ「名前の連携」は無い…）
   const role = ge ? circleRole() : null;
-  acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`);
-  if (inHist || (ge && role)) acts += menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : 'みんなの画面の名前が変わります', `openRenameGame('${id}')`);
-  if (inHist) acts += menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
-  if (ge && role && circleSess[rawId]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`);
-  if (inHist && loginAvailable()) acts += menuBtnHtml('people', ge ? 'ほかの仲間ページに追加' : '仲間ページに追加', '仲間の成績・順位にこの試合を入れる', `closeFormModal();openAddToCircle('${id}')`);
+  // 見る・外す／削除のほかは「その他の操作」にたたむ（2026-10-09 ユーザー要望。個人・仲間ページで同じ）
+  let more = '';
+  more += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`);
+  if (inHist || (ge && role)) more += menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : 'みんなの画面の名前が変わります', `openRenameGame('${id}')`);
+  if (inHist) more += menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
+  if (ge && role && circleSess[rawId]) more += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`);
+  if (inHist && loginAvailable()) more += menuBtnHtml('people', ge ? 'ほかの仲間ページに追加' : '仲間ページに追加', '仲間の成績・順位にこの試合を入れる', `closeFormModal();openAddToCircle('${id}')`);
   let danger = '';
   if (ge) {
     if (canRemoveCircleGame(ge)) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${id}')`, 'danger');
   } else if (inHist) {
     danger = menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${id}')`, 'danger');
   }
-  return { acts, danger };
+  return { acts, more, danger };
+}
+// 試合のメニューの並び: 見る → その他の操作（たたむ）→ 赤（外す・削除）。結果のシート・個人の「…」・仲間ページの「…」で共用
+function gameMenuBlocksHtml({ acts, more, danger }, topStyle = '') {
+  return `<div class="mn-group"${topStyle ? ` style="${topStyle}"` : ''}>${acts}</div>`
+    + (more ? `<details class="mn-more"><summary class="menu-btn"><span class="mb-ico">${ico('more', 22)}</span><span class="mb-t">その他の操作<small>共有・ゲーム名の変更・この試合での自分など</small></span><span class="mb-chev mn-more-chev">${ico('chevron', 14)}</span></summary><div class="mn-group">${more}</div></details>` : '')
+    + (danger ? `<div class="mn-group">${danger}</div>` : '');
 }
 // 過去の試合の「…」メニュー（結果のシートと同じ並び）
 function openHistMenu(id) {
@@ -12406,9 +12422,9 @@ function openHistMenu(id) {
   const s = g.settings || {};
   const sub = gameMetaText(g);
   document.getElementById('form-modal-title').textContent = g.name || '試合';
-  const { acts, danger } = gameActsHtml(g, id);
+  const menu = gameActsHtml(g, id);
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${sub}</div>
-    <div class="mn-group">${acts}</div>${danger ? `<div class="mn-group">${danger}</div>` : ''}
+    ${gameMenuBlocksHtml(menu)}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -12497,15 +12513,15 @@ function renderResultSheet() {
   const extra = rs.length ? rsFoldHtml('stats', '個人成績', `<div class="rs-sec">${rankCountHtml(gf.rounds, s)}</div>`, true)
     + rsFoldHtml('chart', 'スコア推移', `<div class="rs-sec chart-wrap">${chartHtml(gf.rounds, s)}</div>`, true) : '';
   const id = esc(st.id), inHist = (appState.games || []).some(x => x.id === st.id);
-  // できることは「その他の操作」にまとめず並べる。一覧の「…」と同じ（gameActsHtml）
-  const { acts, danger } = gameActsHtml(g, st.id, { circle: st.from === 'circle', sheet: true });
+  // できること: 見る・その他の操作（たたむ）・外す／削除。一覧の「…」と同じ（gameActsHtml・gameMenuBlocksHtml）
+  const menu = gameActsHtml(g, st.id, { circle: st.from === 'circle', sheet: true });
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
   const backTo = st.ret && st.ret.back === 'mup' && mup ? sheetBackMark('mupReopen()', '対戦に戻る')
     : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${st.ret.member}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     ${rsFoldHtml('tbl', tblTitle, table, rs.length < 10, rs.length ? `${rs.length}試合` : '')}${extra}
-    <div class="mn-group" style="margin-top:14px">${acts}</div>${danger ? `<div class="mn-group">${danger}</div>` : ''}
+    ${gameMenuBlocksHtml(menu, 'margin-top:14px')}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
 

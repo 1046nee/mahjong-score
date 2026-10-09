@@ -445,7 +445,7 @@ def main():
         results.append(("[7] ログインなしでも閲覧リンクで通算順位が見られ、招待・設定は出ない", True,
                         "通算順位" in body and "むにぃ" in body and "招待" not in acts and "設定" not in acts))
         pgv.evaluate(f"circleTab = 'games'; renderCircle(); openCircleGameMenu('{g1}')")
-        menu_txt = pgv.evaluate("document.getElementById('form-modal-body').innerText")
+        menu_txt = pgv.evaluate("document.getElementById('form-modal-body').textContent")  # 「その他の操作」にたたんだ項目も含めて
         pgv.evaluate(f"closeFormModal(); openWatchGame(circleSess['{g1}'], 'circle')")
         results.append(("[7b] 見るだけの人が仲間ページの試合を開くと、入力できない「見るだけ」の画面になる", True,
                         "共有する" in menu_txt and "名前の連携" not in menu_txt and "この仲間ページから外す" not in menu_txt
