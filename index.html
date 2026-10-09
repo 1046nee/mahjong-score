@@ -4453,7 +4453,7 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   add('試合数', L.map(p => p.n), String);
   add('平均着順', L.map(p => p.rankSum / p.n), v => v.toFixed(2), 'min');
   // 1着〜n着の行ラベルに着順の色の見本（画面だけ。画像の表のセルには要素を入れない）
-  for (let r = 0; r < np; r++) add(`${forImage ? '' : `<span class="rk-mini ${rkCls(r + 1, np)}"></span>`}${r + 1}着`, L.map(p => p.counts[r]), v => fmtCnt(v) + '回', null, null, v => (v > 0 ? '' : '#ccc')); // 0回は薄い字（ゲームの個人成績と同じ）。5万点以上・箱下と同じく「回」を付ける（2026-10-08）
+  for (let r = 0; r < np; r++) add(`<span class="rk-mini ${rkCls(r + 1, np)}"></span>${r + 1}着`, L.map(p => p.counts[r]), v => fmtCnt(v) + '回', null, null, v => (v > 0 ? '' : '#ccc')); // 0回は薄い字（ゲームの個人成績と同じ）。5万点以上・箱下と同じく「回」を付ける（2026-10-08）
   add('トップ率', L.map(p => p.top / p.n), pctText, 'max', 'cat-break');
   if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
@@ -4485,10 +4485,11 @@ function mxTableHtml(keys, nameOf, pairOf, myKey, onRow, forImage = false, onCel
     // 画像用: セルの文字と地の色だけ（画像はセルの1つ目の div を文字、2つ目以降を小さな行として描く）
     const cell = e => {
       if (!e) return '<td style="color:#B5C0BD">・</td>';
-      const d = e.w - e.l, col = d > 0 ? '#1A237E' : d < 0 ? '#C62828' : '#1F2A28', bg = d > 0 ? '#E8EAF6' : d < 0 ? '#FDECEC' : '#fff';
-      return `<td style="background:${bg}"><div style="color:${col};font-weight:800">${e.w}-${e.l}</div>${e.d ? `<div style="color:#5F6E6B">${e.d}分</div>` : ''}</td>`;
+      const d = e.w - e.l, col = d > 0 ? '#1A237E' : d < 0 ? '#C62828' : '#1F2A28', pill = d > 0 ? '#E8EAF6|' : d < 0 ? '#FDECEC|' : '#FFFFFF|#DDE4E2';
+      // 画面の .mx と同じ角丸のバッジ（data-pill＝地の色|枠の色）で描く（2026-10-09）
+      return `<td data-pill="${pill}"><div style="color:${col};font-weight:800">${e.w}-${e.l}</div>${e.d ? `<div style="color:#5F6E6B">${e.d}分</div>` : ''}</td>`;
     };
-    return `<table class="rounds-table tbl-soft"><thead><tr><th class="sticky-col">見る人↓ 相手→</th>${keys.map(k => `<th>${esc(nameOf(k))}</th>`).join('')}</tr></thead>
+    return `<table class="rounds-table"><thead><tr><th class="sticky-col">見る人↓ 相手→</th>${keys.map(k => `<th>${esc(nameOf(k))}</th>`).join('')}</tr></thead>
       <tbody>${keys.map(a => `<tr><td class="sticky-col">${esc(nameOf(a))}</td>${keys.map(b => a === b ? '<td style="background:#F4F7F6;color:#B5C0BD">—</td>' : cell(pairOf(a, b))).join('')}</tr>`).join('')}</tbody></table>`;
   }
   let maxLen = 3;
@@ -4762,21 +4763,119 @@ function circleRosterTableHtml(st) {
 async function showCircleRosterImage() {
   if (!circleData) return;
   const st = circleStatsP(circleMode);
-  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`,
-    circleMode === '3' ? '三麻' : '四麻', [{ label: `名簿（順位は${RANK_MIN}試合以上の人だけ）`, html: circleRosterTableHtml(st) }], circleMode === '3');
+  // 画面のメンバーのカードと同じ並び・同じ中身（circlePeopleTabHtml と同じ順）
+  const roster = rosterOf(), myMid = myCircleMid(), ql = st.list.filter(rankOk), byKey = {};
+  st.list.forEach(p => { const i = ql.indexOf(p); byKey[p.key] = { p, rank: i >= 0 ? i + 1 : null }; });
+  const rk = k => byKey[k] ? (byKey[k].rank || 500 + st.list.indexOf(byKey[k].p)) : 999;
+  const items = Object.entries(roster).sort((a, b) => (rk(a[0]) - rk(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')).map(([mid, r]) => {
+    const e = byKey[mid];
+    return { nm: r.name, av: avColor(mid), ok: !!r.uid, me: mid === myMid, rank: e ? e.rank : null, n: e ? e.p.n : 0, avg: e ? e.p.rankSum / e.p.n : null, score: e ? e.p.score : null };
+  });
+  const canvas = cardsCanvas({ title: circleData.name || '仲間ページ', sub: `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, right: circleMode === '3' ? '三麻' : '四麻',
+    label: `名簿（${items.length}人・順位は${RANK_MIN}試合以上の人だけ）`, sanma: circleMode === '3', cols: 2, cardH: 70, items, draw: drawRosterCard });
   if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'circle_roster' });
   await openImagePreview(canvas, { name: circleData.name || '' }, '名簿');
 }
-// 対戦成績の画像（2026-10-08）: だれから見る？で選んでいる人から見た、相手ごとの直接対決の表
+
+// ---- 画面のカードと同じ見た目で画像にする（対戦成績・名簿。以前は表で、画面と見え方が違った。2026-10-09） ----
+// o = { title, sub, right, label, sanma, cols, cardH, items, draw(ctx, x, y, w, h, item, th), headH, head(ctx, x, y, w, th) }
+function imgThemeOf(sanma) { return sanma ? { pc: '#4261AA', bg: '#EEF2FA', tint: '#EAF0FB' } : { pc: '#177083', bg: '#EEF7F4', tint: '#E4F3EC' }; }
+function cardsCanvas(o) {
+  const W = COMPOSE_W, P = IMG_PAD, GAP = 8, LABEL = 28, th = imgThemeOf(o.sanma);
+  const rows = Math.ceil(o.items.length / o.cols);
+  const H = IMG_BAND + 12 + LABEL + (o.headH || 0) + rows * (o.cardH + GAP) - GAP + 14 + IMG_FOOT;
+  const sc = imgFitScale(W, H);
+  if (!imgFitsCanvas(W, H, sc)) return IMG_TOO_LARGE;
+  const { c, ctx } = imgCanvas(W, H, sc);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = th.pc; ctx.fillRect(0, 0, W, IMG_BAND);
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(16, true);
+  ctx.fillText(o.title, P, IMG_BAND / 2 - 8, W - P * 2);
+  ctx.font = imgFont(11, false); ctx.globalAlpha = 0.85; ctx.fillText(o.sub, P, IMG_BAND / 2 + 11, W / 2); ctx.globalAlpha = 1;
+  if (o.right) { ctx.font = imgFont(13, true); ctx.textAlign = 'right'; ctx.fillText(o.right, W - P, IMG_BAND / 2 + 11, W / 2 - P); ctx.textAlign = 'left'; }
+  let y = IMG_BAND + 12;
+  ctx.fillStyle = th.pc; ctx.fillRect(P, y + 4, 4, 14);
+  ctx.fillStyle = '#1a1a1a'; ctx.font = imgFont(14, true); ctx.fillText(o.label, P + 10, y + 11, W - P * 2 - 10);
+  y += LABEL;
+  if (o.head) { o.head(ctx, P, y, W - P * 2, th); y += o.headH; }
+  const cw = (W - P * 2 - GAP * (o.cols - 1)) / o.cols;
+  o.items.forEach((it, k) => o.draw(ctx, P + (k % o.cols) * (cw + GAP), y + Math.floor(k / o.cols) * (o.cardH + GAP), cw, o.cardH, it, th));
+  drawImgFooter(ctx, W, H);
+  return c;
+}
+// 文字を続けて書く（[文字, 大きさ, 太字, 色] を左から）。戻り値＝書き終わりのx
+function imgRun(ctx, x, y, parts) {
+  parts.forEach(([t, fs, bold, col]) => { ctx.font = imgFont(fs, bold); ctx.fillStyle = col; ctx.fillText(t, x, y); x += ctx.measureText(t).width; });
+  return x;
+}
+function imgAvatar(ctx, cx, cy, r, color, nm, fs) {
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.font = imgFont(fs, true); ctx.textAlign = 'center'; ctx.fillText(avInitial(nm), cx, cy + 1); ctx.textAlign = 'left';
+}
+// 対戦成績のカード（画面の .hg-card と同じ並び: 顔と名前／n勝 n敗／勝率の棒／勝率／試合数・差／着順）
+const H2H_CARD_COL = { pos: ['#F7F8FD', '#9FA8DA'], neg: ['#FEF8F8', '#EF9A9A'], even: ['#F8FAF9', '#AEBBB8'], '': ['#FFFFFF', '#E3E9E7'] };
+function drawH2HCard(ctx, x, y, w, h, it) {
+  const e = it.e, pct = h2hWinPct(e), cls = pct == null ? '' : pct === 50 ? 'even' : pct > 50 ? 'pos' : 'neg';
+  const [bg, bd] = H2H_CARD_COL[cls];
+  imgRoundRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 12); ctx.fillStyle = bg; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = bd; ctx.stroke();
+  const L = x + 10, R = x + w - 10, fit = (t, ww) => imgWrap(ctx, t, ww, 1)[0] || '';
+  imgAvatar(ctx, L + 13, y + 22, 13, it.av, it.nm, 12);
+  ctx.font = imgFont(13, true); ctx.fillStyle = '#1F2A28'; ctx.fillText(fit(it.nm, R - L - 32), L + 32, y + 22);
+  let xx = imgRun(ctx, L, y + 52, [[String(e.w), 22, true, '#1A237E'], ['勝', 11, true, '#5F6E6B']]);
+  imgRun(ctx, xx + 6, y + 52, [[String(e.l), 22, true, '#C62828'], ['敗', 11, true, '#5F6E6B']]);
+  imgRoundRect(ctx, L, y + 70, R - L, 6, 3); ctx.fillStyle = '#F3C7C7'; ctx.fill();
+  imgRoundRect(ctx, L, y + 70, (R - L) * (pct == null ? 50 : pct) / 100, 6, 3); ctx.fillStyle = '#5C6BC0'; ctx.fill();
+  imgRun(ctx, L, y + 90, [['勝率 ', 11, false, '#5F6E6B'], [pct == null ? '—' : pct + '%', 13, true, cls === 'pos' ? '#1A237E' : cls === 'neg' ? '#C62828' : '#1F2A28']].concat(e.d ? [[`  ${e.d}分`, 11, false, '#5F6E6B']] : []));
+  const diff = e.scoreA - e.scoreB, dc = diff > 0 ? '#1A237E' : diff < 0 ? '#C62828' : '#1F2A28';
+  ctx.font = imgFont(10.5, false); ctx.fillStyle = '#5F6E6B'; ctx.fillText(`${e.n}試合`, L, y + 108);
+  ctx.textAlign = 'right'; ctx.font = imgFont(10.5, true); ctx.fillStyle = dc; ctx.fillText(fmtScore(diff), R, y + 108);
+  const dw = ctx.measureText(fmtScore(diff)).width; ctx.font = imgFont(10.5, false); ctx.fillStyle = '#5F6E6B'; ctx.fillText('差 ', R - dw, y + 108);
+  ctx.textAlign = 'left'; ctx.fillText('着順', L, y + 124);
+  ctx.textAlign = 'right'; ctx.fillText(`/${(e.rankB / e.n).toFixed(2)}`, R, y + 124);
+  const bw = ctx.measureText(`/${(e.rankB / e.n).toFixed(2)}`).width; ctx.font = imgFont(10.5, true); ctx.fillStyle = '#1F2A28'; ctx.fillText((e.rankA / e.n).toFixed(2), R - bw, y + 124); ctx.textAlign = 'left';
+}
+// 対戦成績の画像（上に合計の箱、下に相手ごとのカード3列）
+function h2hCardsCanvas(title, sub, who, row, keys, nameOf, avOf, sanma) {
+  const tot = keys.reduce((a, k) => { const e = row[k]; a.w += e.w; a.l += e.l; a.d += e.d || 0; return a; }, { w: 0, l: 0, d: 0 });
+  const tp = tot.w + tot.l ? Math.round(tot.w / (tot.w + tot.l) * 100) : null;
+  return cardsCanvas({ title, sub, right: `${who}の対戦成績`, label: `${who}から見た直接対決`, sanma, cols: 3, cardH: 136, items: keys.map(k => ({ e: row[k], nm: nameOf(k), av: avOf(k) })), draw: drawH2HCard,
+    headH: 66, head: (ctx, x, y, w) => {
+      imgRoundRect(ctx, x, y, w, 54, 12); ctx.fillStyle = '#F5F8F7'; ctx.fill();
+      imgRun(ctx, x + 12, y + 17, [[who, 12, true, '#1F2A28'], [' の直接対決の合計', 12, false, '#4F5C5A']]);
+      imgRun(ctx, x + 12, y + 37, [[String(tot.w), 15, true, '#1A237E'], ['勝 ', 12, false, '#4F5C5A'], [String(tot.l), 15, true, '#C62828'], ['敗', 12, false, '#4F5C5A']]
+        .concat(tot.d ? [[` ${tot.d}分`, 12, false, '#4F5C5A']] : []).concat([['・勝率 ', 12, false, '#4F5C5A'], [tp == null ? '—' : tp + '%', 12, true, '#1F2A28'], [`・相手${keys.length}人`, 12, false, '#4F5C5A']]));
+    } });
+}
+// 名簿のカード（画面の .pp-cell と同じ: 顔（確認済みの印）・名前／順位・試合数／平均着順・通算スコア）
+function drawRosterCard(ctx, x, y, w, h, it, th) {
+  imgRoundRect(ctx, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 12); ctx.fillStyle = it.me ? th.bg : '#F4F7F6'; ctx.fill();
+  if (it.me) { ctx.lineWidth = 1.5; ctx.strokeStyle = th.tint; ctx.stroke(); }
+  const cx = x + 9 + 16, cy = y + h / 2;
+  imgAvatar(ctx, cx, cy, 16, it.av, it.nm, 14);
+  if (it.ok) { // 確認済みの印（右下の白い丸にチェック）
+    const bx = cx + 12, by = cy + 13;
+    ctx.beginPath(); ctx.arc(bx, by, 8.5, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fillStyle = th.pc; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(bx - 2.6, by + 0.2); ctx.lineTo(bx - 0.6, by + 2.2); ctx.lineTo(bx + 2.8, by - 1.8); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4; ctx.stroke();
+  }
+  const L = x + 50, fit = (t, ww) => imgWrap(ctx, t, ww, 1)[0] || '';
+  ctx.font = imgFont(13.5, true); ctx.fillStyle = it.me ? th.pc : '#1F2A28'; ctx.fillText(fit(it.nm, x + w - L - 8), L, y + 18);
+  const g = '#5F6E6B';
+  let xx = L;
+  if (it.rank && it.rank <= 3) { const [mb, mf] = MEDAL[it.rank - 1]; ctx.beginPath(); ctx.arc(xx + 7, y + 37, 7, 0, Math.PI * 2); ctx.fillStyle = mb; ctx.fill(); ctx.fillStyle = mf; ctx.font = imgFont(9, true); ctx.textAlign = 'center'; ctx.fillText(String(it.rank), xx + 7, y + 37.5); ctx.textAlign = 'left'; xx += 17; }
+  imgRun(ctx, xx, y + 37, [[it.rank ? `${it.rank}位` : '順位なし', 11, true, g], [` ・ ${it.n}試合`, 11, true, g]]);
+  const sc = it.score, scc = sc == null ? '#AEBBB8' : sc > 0 ? '#1A237E' : sc < 0 ? '#C62828' : '#1F2A28';
+  imgRun(ctx, L, y + 54, [[`平均着順 ${it.avg == null ? '—' : it.avg.toFixed(2)}  `, 11, true, g], [sc == null ? '—' : fmtScore(sc), 11, true, scc]]);
+}
+// 対戦成績の画像（2026-10-08）: だれから見る？で選んでいる人から見た、相手ごとの直接対決（画面と同じカード。2026-10-09）
 async function showCircleH2HImage() {
   if (!circleData || !circleFocus) return;
   const st = circleStatsP(circleMode), row = st.acc[circleFocus] || {}, keys = h2hSortKeys(row, h2hSortedKeys(row));
   if (!keys.length) { showToast('まだ同じ試合に出た相手がいません'); return; }
   const nm = rosterName(circleFocus);
-  const canvas = buildTablesCanvas(circleData.name || '仲間ページ', `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`,
-    `${nm}の対戦成績`, [{ label: `${nm}から見た直接対決（勝ち-負け）`, html: h2hRowsTableHtml(row, keys, rosterName, null, true) }], circleMode === '3');
+  const canvas = h2hCardsCanvas(circleData.name || '仲間ページ', `${circleFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, nm, row, keys, rosterName, avColor, circleMode === '3');
   if (canvas === IMG_TOO_LARGE) { showToast('相手が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'circle_h2h' });
@@ -4786,8 +4885,7 @@ async function showMyH2HImage() {
   const c = myPairCtx; if (!c || !c.keys.length) return;
   const keys = h2hSortKeys(c.row, c.keys);
   // 仲間ページの対戦成績の画像と同じ形（左上に名前・右に「〇〇の対戦成績」）
-  const canvas = buildTablesCanvas('個人', `${myFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, 'あなたの対戦成績',
-    [{ label: 'あなたから見た直接対決（勝ち-負け）', html: h2hRowsTableHtml(c.row, keys, k => c.disp[k], null, true) }], mpMode === 3);
+  const canvas = h2hCardsCanvas('個人', `${myFilterText()} ・ ${fmtDate(new Date().toISOString())} 時点`, 'あなた', c.row, keys, k => c.disp[k], k => avColor(c.disp[k]), mpMode === 3);
   if (canvas === IMG_TOO_LARGE) { showToast('相手が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'my_h2h' });
@@ -4825,7 +4923,7 @@ async function showCircleMatrixImage() {
 // 通算順位を、画面の見た目のまま（表彰台＋順位の行・選んでいる指標）で1枚の画像にする
 function circleRankCanvas(st) {
   const { m, np, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
-  const W = COMPOSE_W, P = IMG_PAD, PODIUM = q.length ? 192 : 0, ROW = 56;
+  const W = COMPOSE_W, P = IMG_PAD, PODIUM = q.length ? 192 : 0, ROW = 82; // 1枚＝画面の順位のカードと同じ3行（2026-10-09）
   const rest = q.slice(3).concat(under); // 6試合未満の人は順位の数字の代わりに「—」
   const H = IMG_BAND + 14 + PODIUM + Math.ceil(rest.length / 2) * ROW + 14 + IMG_FOOT;
   const sc = imgFitScale(W, H);
@@ -4886,21 +4984,26 @@ function circleRankCanvas(st) {
     ctx.fillStyle = fg; ctx.font = imgFont(11, true); ctx.textAlign = 'center'; ctx.fillText(String(i + 1), mx, my + 0.5); ctx.textAlign = 'left';
     x0 += w + GAP;
   });
-  // 4位から下は2列（順位・顔・名前・値／試合数など。画面と同じ並び・棒なし）
-  const GAP2 = 10, cw = (W - P * 2 - GAP2) / 2;
+  // 4位から下は2列。画面の順位のカードと同じ3行: 順位（または —）・顔・名前／大きな値／試合数・平均着順など。自分は淡い主色の地（2026-10-09）
+  const GAP2 = 10, cw = (W - P * 2 - GAP2) / 2, myKey = myCircleMid(), th = imgThemeOf(np === 3);
   rest.forEach((p, k) => {
-    const v = circleMetricVal(p, m), nm = rosterName(p.key);
+    const v = circleMetricVal(p, m), nm = rosterName(p.key), me = p.key === myKey;
     const x = P + (k % 2) * (cw + GAP2), y = bottom + 8 + Math.floor(k / 2) * ROW;
-    imgRoundRect(ctx, x, y, cw, ROW - 8, 12); ctx.fillStyle = '#F4F7F6'; ctx.fill();
+    imgRoundRect(ctx, x + 0.75, y + 0.75, cw - 1.5, ROW - 9.5, 12); ctx.fillStyle = me ? th.bg : '#F4F7F6'; ctx.fill();
+    if (me) { ctx.lineWidth = 1.5; ctx.strokeStyle = th.tint; ctx.stroke(); }
     const cy = y + 18;
     ctx.fillStyle = k + 3 < q.length ? '#5F6E6B' : '#AEBBB8'; ctx.font = imgFont(13, true); ctx.textAlign = 'center'; ctx.fillText(k + 3 < q.length ? String(k + 4) : '—', x + 14, cy); ctx.textAlign = 'left';
     avatar(x + 38, cy, 11, p.key, nm, 11);
-    ctx.fillStyle = colOf(v); ctx.font = imgFont(15, true); ctx.textAlign = 'right';
-    ctx.fillText(circleMetricText(v, m), x + cw - 10, cy); ctx.textAlign = 'left';
-    const valW = ctx.measureText(circleMetricText(v, m)).width;
-    ctx.fillStyle = '#1F2A28'; ctx.font = imgFont(13, true); ctx.fillText(fit(nm, cw - 56 - valW - 18), x + 54, cy);
-    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(11, false);
-    ctx.fillText(fit(rankSubText(p, m), cw - 20), x + 10, cy + 20);
+    if ((rosterOf()[p.key] || {}).uid) { // 確認済みの印（画面と同じ右下の白い丸にチェック）
+      const bx = x + 46, by = cy + 8;
+      ctx.beginPath(); ctx.arc(bx, by, 6.5, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+      ctx.beginPath(); ctx.arc(bx, by, 4.6, 0, Math.PI * 2); ctx.fillStyle = th.pc; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(bx - 2, by + 0.2); ctx.lineTo(bx - 0.5, by + 1.7); ctx.lineTo(bx + 2.1, by - 1.4); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.1; ctx.stroke();
+    }
+    ctx.fillStyle = me ? th.pc : '#1F2A28'; ctx.font = imgFont(13, true); ctx.fillText(fit(nm, cw - 64), x + 54, cy);
+    ctx.fillStyle = colOf(v); ctx.font = imgFont(18, true); ctx.fillText(circleMetricText(v, m), x + 10, cy + 25);
+    ctx.fillStyle = '#5F6E6B'; ctx.font = imgFont(11, true);
+    ctx.fillText(fit(rankSubText(p, m), cw - 20), x + 10, cy + 47);
   });
   drawImgFooter(ctx, W, H);
   return c;
@@ -8210,7 +8313,7 @@ function imgTableBodyCanvas(g, kind, compact = false) {
 }
 const IMG_TAG_W = 12; // 画像の着順の札の幅
 // 任意の表HTML（.rounds-table系）をCanvasに描き直す共通部（自分の成績シートでも使う）
-function imgTableHtmlCanvas(tableHtml, sanma = false) {
+function imgTableHtmlCanvas(tableHtml, sanma = false, minW = 0) {
   // 非表示コンテナに展開してセル情報（文字・色・太字・結合・区切り線・チームドット）を抽出。
   // 三麻は .sanma を付けないと表ヘッダーが緑のままになる（画面と配色が食い違う）
   const holder = document.createElement('div');
@@ -8223,6 +8326,8 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
     const cs = getComputedStyle(src);
     const cellCs = getComputedStyle(cell);
     const dot = cell.querySelector('.team-dot');
+    const mini = cell.querySelector('.rk-mini'); // 着順の色の見本（画面と同じ小さな角丸の四角）
+    const miniCs = mini ? getComputedStyle(mini) : null;
     // セル内は［スコア］［薄い点数］［チップ差］の縦積み。2行目以降はsubsとして小さく描く
     const divs = [...cell.querySelectorAll('div')];
     const subs = divs.slice(1).map(d => {
@@ -8245,6 +8350,8 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
       color: cs.color,
       bg: cellCs.backgroundColor,
       dot: dot ? getComputedStyle(dot).backgroundColor : null,
+      mini: miniCs ? { bg: miniCs.backgroundColor, bd: parseFloat(miniCs.borderTopWidth) ? miniCs.borderTopColor : (miniCs.boxShadow && miniCs.boxShadow !== 'none' ? (miniCs.boxShadow.match(/rgba?\([^)]*\)/) || [null])[0] : null) } : null,
+      pill: cell.dataset && cell.dataset.pill ? cell.dataset.pill.split('|') : null,
     };
   }));
   holder.remove();
@@ -8262,7 +8369,7 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
     row.forEach(c => {
       if (c.span === 1) {
         m.font = imgFont(FS, c.bold);
-        let w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0);
+        let w = m.measureText(c.t).width + 18 + (c.dot ? 14 : 0) + (c.mini ? 13 : 0) + (c.pill ? 12 : 0);
         if (c.subs && c.subs.length) {
           m.font = imgFont(SUB_FS, false);
           c.subs.forEach(sb => { w = Math.max(w, m.measureText(sb.t).width + (sb.tag ? IMG_TAG_W + 3 : 0) + 16); });
@@ -8290,13 +8397,23 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
 
   const W = colW.reduce((a, b) => a + b, 0);
   const H = layout.reduce((a, r) => a + r.h, 0);
+  // 列の少ない表は画像の幅いっぱいに広げる（画面の表も幅いっぱい。2026-10-09）: 足りない分を先頭の列以外に配る
+  if (minW && W < minW && nCols > 1) {
+    const add = (minW - W) / (nCols - 1);
+    for (let i = 1; i < nCols; i++) colW[i] += add;
+    layout.forEach(row => { let ci = 0; row.cells.forEach(c => { c.x0 = colW.slice(0, ci).reduce((a, b) => a + b, 0); c.w = colW.slice(ci, ci + c.span).reduce((a, b) => a + b, 0); ci += c.span; }); });
+    return imgTableDraw(layout, colW.reduce((a, b) => a + b, 0), H, SUB_FS, FS);
+  }
+  return imgTableDraw(layout, W, H, SUB_FS, FS);
+}
+function imgTableDraw(layout, W, H, SUB_FS, FS) {
   const { c: canvas, ctx } = imgCanvas(W, H);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   let y = 0;
   layout.forEach((row, ri) => {
     row.cells.forEach(c => {
       const x = c.x0;
-      const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)') ? '#ffffff' : c.bg;
+      const bg = (!c.bg || c.bg === 'rgba(0, 0, 0, 0)' || c.pill) ? '#ffffff' : c.bg;
       ctx.fillStyle = bg; ctx.fillRect(x, y, c.w, row.h);
       const lineCol = c.head ? 'rgba(255,255,255,0.85)' : '#dfe8e6';
       if (c.tb) { ctx.fillStyle = lineCol; ctx.fillRect(x, y, 1, row.h); }              // チームの境目
@@ -8309,7 +8426,15 @@ function imgTableHtmlCanvas(tableHtml, sanma = false) {
       c.lines.forEach((ln, li) => {
         const lw = ctx.measureText(ln).width;
         const hasDot = c.dot && li === 0;
-        const cx = c.left ? x + 9 + (hasDot ? 14 : 0) : x + (c.w - lw - (hasDot ? 14 : 0)) / 2 + (hasDot ? 14 : 0);
+        const mw = c.mini && li === 0 ? 13 : 0;
+        const cx = c.left ? x + 9 + (hasDot ? 14 : 0) + mw : x + (c.w - lw - (hasDot ? 14 : 0)) / 2 + (hasDot ? 14 : 0);
+        if (mw) { ctx.save(); imgRoundRect(ctx, cx - 13, cy0 - 6.5, 8, 13, 2); ctx.fillStyle = c.mini.bg; ctx.fill(); if (c.mini.bd) { ctx.strokeStyle = c.mini.bd; ctx.lineWidth = 1; ctx.stroke(); } ctx.restore(); }
+        if (c.pill && li === 0) { // バッジ（画面の .mx）
+          const pw = Math.max(36, lw + 12);
+          ctx.save(); imgRoundRect(ctx, x + (c.w - pw) / 2, cy0 - 11, pw, 22, 7); ctx.fillStyle = c.pill[0]; ctx.fill();
+          if (c.pill[1]) { ctx.strokeStyle = c.pill[1]; ctx.lineWidth = 1; ctx.stroke(); } ctx.restore();
+          ctx.fillStyle = c.color; ctx.font = imgFont(FS, c.bold);
+        }
         if (hasDot) {
           ctx.save(); ctx.fillStyle = c.dot; ctx.beginPath();
           ctx.arc(cx - 9, cy0, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();
@@ -9158,7 +9283,7 @@ function rankCountHtml(rounds, s, forImage = false) {
   // 「スコア」から下は点数系＝上（着順の回数・率）とは数字の意味が変わるので、その境目に区切り線を入れる
   // （チップ・焼き鳥・チョンボの記録も同じく、最初の1行の上に区切り線）
   const rows = statLabels.map((label, ri) =>
-    `<tr${(label === 'スコア' || label === 'トップ率' || label === firstExtra) ? ' class="cat-break"' : ''}><td class="sticky-col">${!forImage && /^\d着$/.test(label) ? `<span class="rk-mini ${rkCls(+label[0], slots)}"></span>` : ''}${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join(''); // 着順の色の見本・率の前の区切り線は成績表と同じ（2026-10-08）
+    `<tr${(label === 'スコア' || label === 'トップ率' || label === firstExtra) ? ' class="cat-break"' : ''}><td class="sticky-col">${/^\d着$/.test(label) ? `<span class="rk-mini ${rkCls(+label[0], slots)}"></span>` : ''}${label}</td>${cellsOf.map(c => c[ri]).join('')}</tr>`).join(''); // 着順の色の見本・率の前の区切り線は成績表と同じ（2026-10-08）
   return `<div class="${forImage ? '' : 'tbl-scroll'}" style="overflow-x:auto"><table class="rounds-table stats-table" style="${forImage ? '' : 'table-layout:fixed;'}min-width:${firstColW(forImage) + N * 58}px">
     <thead>${teamNameRowHtml(s, forImage)}${nameRow}</thead><tbody>${rows}</tbody>
   </table></div>`;
@@ -9311,7 +9436,7 @@ function renderH2HCard() {
 }
 // 表を縦に並べた1枚絵（帯＋［見出し＋表］×n＋フッター）。自分の成績シートと同じ組み方
 function buildTablesCanvas(title, sub, right, sections, sanma = false) {
-  const blocks = sections.filter(x => x.html).map(x => ({ label: x.label, b: imgTableHtmlCanvas(x.html, sanma) }));
+  const blocks = sections.filter(x => x.html).map(x => ({ label: x.label, b: imgTableHtmlCanvas(x.html, sanma, 340) }));
   if (!blocks.length) return null;
   const sizes = blocks.map(x => imgCssSize(x.b));
   const LABEL = 28, GAP = 18;
