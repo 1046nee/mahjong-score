@@ -1102,6 +1102,17 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .cal-c.has i { font-style: normal; font-size: 9px; font-weight: 800; color: var(--pc); line-height: 1; }
 .cal-c.has.on { background: var(--pc); box-shadow: none; } .cal-c.has.on b, .cal-c.has.on i { color: #fff; }
 .cal-c.today { outline: 2px solid #E3B341; outline-offset: -2px; }
+/* 仲間ページ: 出ていない試合だけの日・年・月は灰色の点線（過去の試合の「出ていない」と同じ灰色。2026-10-09） */
+.cal-c.has.out { background: #F5F7F7; box-shadow: inset 0 0 0 1.5px #AEBBB8; border: 0; } .cal-c.has.out b, .cal-c.has.out i { color: #6B7A77; } .cal-c.has.out i { font-size: 10px; }
+.cal-c.has.out:not(.on) { background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(174,187,184,.18) 5px 10px); }
+.cal-c.has.out.on { background: #6B7A77; } .cal-c.has.out.on b, .cal-c.has.out.on i { color: #fff; }
+.cal-m.out { background: repeating-linear-gradient(135deg, #F5F7F7 0 5px, #EDF1F0 5px 10px); box-shadow: inset 0 0 0 1px #C9D3D1; } .cal-m.out b { color: #5F6E6B; }
+.cal-m .cal-mine { display: block; font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--pc); margin-top: 1px; } .cal-m.out .cal-mine { color: #8A9AA5; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 11.5px; font-weight: 700; color: #5F6E6B; }
+.cal-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.cal-lg { width: 20px; height: 20px; border-radius: 6px; display: inline-grid; place-items: center; font-style: normal; font-size: 9px; font-weight: 800; line-height: 1; }
+.cal-lg.mine { background: #fff; box-shadow: inset 0 0 0 1.5px #9FC9BD; color: var(--pc); }
+.cal-lg.out { background: repeating-linear-gradient(135deg, #F5F7F7 0 4px, #E6ECEB 4px 8px); box-shadow: inset 0 0 0 1.5px #AEBBB8; color: #6B7A77; }
 .cal-hint { font-size: 12px; color: #5F6E6B; margin: 10px 2px 2px; line-height: 1.7; }
 .dr-row { display: flex; align-items: center; gap: 6px; }
 .dr-row input { flex: 1; min-width: 0; height: 46px; padding: 0 10px; border: 1.5px solid #ddd; border-radius: 10px; background: #fff; font-size: 15px; color: #1a1a1a; font-family: inherit; }
@@ -4561,7 +4572,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   let glist = '';
   const mySeatOf = x => { if (!myMid) return undefined; const seats = (x.ge && x.ge.seats) || {}; const played = playedFlags(x.g); const k = Object.keys(seats).find(k2 => seats[k2] && seats[k2].mid === myMid && played[k2]); return k != null ? Number(k) : null; };
   if (games.length && circleGamesView === 'tile') glist = histTilesHtml(games.filter(x => x.g).map(x => ({ g: x.g, me: mySeatOf(x), onclick: `openResultSheet('${x.sid}',{from:'circle'})` })));
-  else if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, x => `<div class="gm-list" style="margin-bottom:8px">${rowOf(x)}</div>`);
+  else if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, x => `<div class="gm-list" style="margin-bottom:8px">${rowOf(x)}</div>`, 'circle', 'renderCircle()', myMid ? (x => !!x.g && mySeatOf(x) != null) : null);
   else {
     glist = listByYearHtml(games, dayOf, rowOf, x => ((x.g && x.g.rounds) || []).length);
   }
@@ -4585,8 +4596,13 @@ const CAL_YEARS = 9; // 年一覧に並べる年の数（3×3。真ん中が今�
 function calToday(key) { const S = calS[key], t = new Date(); S.yc = null; S.month = t.getFullYear() * 12 + t.getMonth(); S.day = ymdLocal(t); }
 // カレンダーの案内に出す試合数（選んだゲームの試合の合計）
 function calRounds(games, sids) { return games.filter(x => x.g && sids.has(x.sid)).reduce((a, x) => a + (x.g.rounds || []).length, 0); }
-function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCircle()') {
+// meOf(x)＝その試合に自分が出たか（渡したときだけ、出た試合と出ていない試合を分けて見せる＝仲間ページ。2026-10-09）
+function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCircle()', meOf = null) {
   const S = calS[key], SK = 'calS.' + key;
+  const mineSet = new Set(meOf ? games.filter(x => meOf(x)).map(x => x.sid) : []);
+  // 年・月の箱の「nゲーム」の下に「出た m」。1つも出ていなければ箱を灰色の点線に
+  const mineLine = set => (meOf ? `<em class="cal-mine">出た ${[...set].filter(sid => mineSet.has(sid)).length}</em>` : '');
+  const outCls = set => (meOf && ![...set].some(sid => mineSet.has(sid)) ? ' out' : '');
   const byDay = {};
   games.forEach(x => { (x.g ? gameDaysList(x.g) : [ymdLocal(new Date(dayOf(x)))]).forEach(k => { (byDay[k] = byDay[k] || []).push(x); }); });
   const latest = new Date(dayOf(games[0]));
@@ -4606,7 +4622,7 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
       const set = new Set(keys.filter(k => +k.slice(0, 4) === yy).flatMap(k => byDay[k].map(x => x.sid)));
       const td = yy === thisY ? ' today' : '';
       return set.size
-        ? `<button type="button" class="cal-m${td}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span></button>`
+        ? `<button type="button" class="cal-m${td}${outCls(set)}" onclick="${SK}.month=${yy * 12 + m};${SK}.mode='year';${SK}.day=null;${rr}"><b>${yy}年</b><span>${set.size}ゲーム</span>${mineLine(set)}</button>`
         : `<span class="cal-m none${td}"><b>${yy}年</b><span>—</span></span>`;
     }).join('');
     const yrsNav = (dir, ok) => `<button type="button" class="cal-nav" aria-label="${dir < 0 ? '前の年' : '次の年'}"${ok ? '' : ' disabled'} onclick="${SK}.yc=${yc + dir * CAL_YEARS};${rr}">${dir < 0 ? '‹' : '›'}</button>`;
@@ -4619,7 +4635,7 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
     keys.filter(k => +k.slice(0, 4) === y).forEach(k => { const mm = +k.slice(5, 7) - 1; perMonth[mm].days++; byDay[k].forEach(x => perMonth[mm].games.add(x.sid)); });
     const td = i => (y === thisY && i === thisM ? ' today' : '');
     const cells = perMonth.map((p, i) => p.games.size
-      ? `<button type="button" class="cal-m${td(i)}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span></button>`
+      ? `<button type="button" class="cal-m${td(i)}${outCls(p.games)}" onclick="${SK}.month=${y * 12 + i};${SK}.mode='month';${SK}.day=null;${rr}"><b>${i + 1}月</b><span>${p.games.size}ゲーム</span>${mineLine(p.games)}</button>`
       : `<span class="cal-m none${td(i)}"><b>${i + 1}月</b><span>—</span></span>`).join('');
     const yearSet = new Set(keys.filter(k => +k.slice(0, 4) === y).flatMap(k => byDay[k].map(x => x.sid)));
     const total = yearSet.size, totalR = calRounds(games, yearSet);
@@ -4638,8 +4654,10 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
     const k = pre + String(d).padStart(2, '0');
     const n = (byDay[k] || []).length;
     const dow = (first.getDay() + d - 1) % 7;
+    // 自分が出た試合のある日＝今までの印（●）。出ていない試合だけの日＝灰色の点線の枠に ○
+    const dayOut = meOf && n && !byDay[k].some(x => mineSet.has(x.sid));
     cells += n
-      ? `<button type="button" class="cal-c has${S.day === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="${SK}.day='${k}';${rr}"><b>${d}</b><i>${n > 1 ? n + '件' : '●'}</i></button>`
+      ? `<button type="button" class="cal-c has${dayOut ? ' out' : ''}${S.day === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="${SK}.day='${k}';${rr}"><b>${d}</b><i>${n > 1 ? n + '件' : dayOut ? '○' : '●'}</i></button>`
       : `<span class="cal-c${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}"><b>${d}</b></span>`;
   }
   const allMonths = keys.map(k => +k.slice(0, 4) * 12 + (+k.slice(5, 7) - 1));
@@ -4652,6 +4670,7 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
   return `<div class="cal">${modeSeg}
     <div class="cal-head">${nav(-1, S.month > minM)}<b>${y}年${m + 1}月</b>${nav(1, S.month < maxM)}</div>
     <div class="cal-grid">${'日月火水木金土'.split('').map((w, i) => `<span class="cal-w${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}">${w}</span>`).join('')}${cells}</div>
+    ${meOf ? `<div class="cal-legend"><span><i class="cal-lg mine">●</i>自分が出た試合がある日</span><span><i class="cal-lg out">○</i>出ていない試合だけの日</span></div>` : ''}
   </div>${dayList}`;
 }
 function circlePeopleTabHtml(st) {
@@ -12646,7 +12665,7 @@ function histKindPillsHtml(games, rerender, key = 'histKind') {
 // 過去の試合の「追加」「まとめて送る」。カードの見出しの右（仲間ページの「＋ 試合を追加」と同じ場所・2026-10-07）。
 // 狭い画面（375px未満）はアイコンだけ
 function histActsHtml() {
-  return `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button><button type="button" class="mp-act sm" onclick="startSelectSend()" title="まとめて送る" aria-label="まとめて送る">${ico('share', 14)}<span class="ma-t">送る</span></button></span>`;
+  return `<span class="mp-acts-r"><button type="button" class="mp-act sm wide" onclick="openAddGames()" title="個人ページに追加" aria-label="個人ページに追加">＋ 個人ページに追加</button><button type="button" class="mp-act sm" onclick="startSelectSend()" title="まとめて送る" aria-label="まとめて送る">${ico('share', 14)}<span class="ma-t">送る</span></button></span>`;
 }
 function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
   const cur = key === 'circleGamesView' ? circleGamesView : key === 'cmBoundView' ? cmBoundView : key === 'mupGamesView' ? mupGamesView : histView;
