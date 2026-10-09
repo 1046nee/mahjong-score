@@ -1580,6 +1580,10 @@ tr.rmk-mv td { background: #FFF8E8 !important; }
 tr.rmk-mv td.sticky-col { box-shadow: inset 3px 0 0 #E3B341; }
 .rno-pos { font-size: 9px; font-weight: 600; color: #AEBBB8; margin-top: 1px; white-space: nowrap; } /* 番号と並びの位置が違うときの「第◯試合」（修正済と同じ薄さ） */
 .rmk-from { font-size: 9.5px; font-weight: 800; color: #8A5A00; margin-top: 1px; white-space: nowrap; } .rmk-from.sh { color: #AEBBB8; font-weight: 700; }
+tr.rmk-gone td { background: #F1F3F3 !important; color: #A9B4B2 !important; cursor: default; }
+tr.rmk-gone td > div { color: #A9B4B2 !important; } tr.rmk-gone .rk-tag { background: #C9D1CF !important; color: #fff !important; }
+tr.rmk-gone td.sticky-col { box-shadow: inset 3px 0 0 #B4C0BD; }
+.rno-del { display: inline-block; margin-top: 1px; padding: 0 5px; border-radius: 6px; background: #DDE3E1; color: #6B7A77 !important; font-size: 9px; font-weight: 800; line-height: 1.5; }
 tr.rmk-del td { background: repeating-linear-gradient(135deg, #FBF3F3 0 6px, #F7EAEA 6px 12px) !important; color: #C62828; cursor: default; }
 tr.rmk-del td.sticky-col { text-align: center; box-shadow: inset 3px 0 0 #C62828; } tr.rmk-del .ico { --i1: #C62828; --i2: #F3C7C7; }
 tr.rmk-del td[colspan] { text-align: left; font-size: 12px; line-height: 1.5; padding: 7px 10px; white-space: normal; }
@@ -8430,7 +8434,7 @@ function imgTableBodyCanvas(g, kind, compact = false) {
   // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
   let tableHtml;
   if (kind === 'rounds') {
-    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact, { serial: roundSerialAt(g, idx) })).join('');
+    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact)).join('');
     rows = rows.replace(/<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済<\/div>/g, '');
     rows += roundsTotalRowHtml(g);
     tableHtml = `<table class="rounds-table">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table>`;
@@ -9262,6 +9266,8 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
   // from＝さっき並べ替えで動かした試合の元の番号（しばらく「元 第n」と琥珀色の地で出す。recentRoundMarks）
   // from＝{ serial: その試合の番号（入力順）, active: さっき並べ替えで動かした試合か }。番号と並びの位置が違えば、番号の下に薄く「第◯試合」
   const serial = (from && from.serial) || idx + 1;
+  // from.gone＝消した試合（記録が確定するまで、元の場所に灰色で残す。押せない）
+  if (from && from.gone) return `<tr class="rmk-gone"><td class="sticky-col"><div>${serial}</div><div class="rno-del">削除</div></td>${cells}</tr>`;
   return `<tr onclick="${onclickJs}" style="cursor:pointer"${from && from.active ? ' class="rmk-mv"' : ''}>
     <td class="sticky-col"><div>${serial}</div>${serial !== idx + 1 ? `<div class="rno-pos">第${idx + 1}試合</div>` : ''}${editedMark}${pendMark}</td>
     ${cells}
@@ -9288,10 +9294,12 @@ function roundSerialInfo(g) {
   roundSerialMemo.set(g, info);
   return info;
 }
-function roundSerialAt(g, idx) { const r = g && g.rounds && g.rounds[idx]; return (r && roundSerialInfo(g).map.get(r)) || idx + 1; }
+// 記録が確定したら（終了から12時間・最後の入力から24時間）、そのときの並びで 1 から順に振り直す（番号＝第◯試合）
+function roundSerialAt(g, idx) { if (isGameLocked(g)) return idx + 1; const r = g && g.rounds && g.rounds[idx]; return (r && roundSerialInfo(g).map.get(r)) || idx + 1; }
 function nextRoundSerial(g) { return g ? roundSerialInfo(g).next : 1; }
 // 履歴の記録 e の試合の番号（入力の記録は op から・いまある試合は位置から・消した試合は入力の記録の点数で突き合わせる）
 function logSerialOf(g, e) {
+  if (isGameLocked(g)) return typeof e.no === 'number' ? e.no : null; // 確定後は並びの番号（履歴の no は並べ替え・削除で振り直してある）
   const info = roundSerialInfo(g);
   if (e.type === 'add' && e.op && info.addPos.has(e.op)) return info.base + info.addPos.get(e.op) + 1;
   if (!e.old && typeof e.no === 'number' && g.rounds && g.rounds[e.no - 1]) return roundSerialAt(g, e.no - 1);
@@ -9316,13 +9324,13 @@ function reorderActiveSet(fromSeq) {
 let roundMarkTimer = null;
 function recentRoundMarks(g) {
   const out = { moved: {}, deleted: [], until: 0, active: new Set() };
-  if (!g || isGameEnded(g) || isGameLocked(g)) return out;
+  if (!g || isGameLocked(g)) return out;
   const now = Date.now(), log = (g.log || []).filter(e => e && e.at);
   const fresh = e => { const t = Date.parse(e.at); return t && now - t < RECENT_MARK_MS && now - t > -60000; };
   const isRe = e => e.type === 'settings' && e.label === '試合の順番を入れ替え';
   let lastRe = -1; log.forEach((e, i) => { if (isRe(e)) lastRe = i; });
   const keep = e => { out.until = Math.max(out.until, Date.parse(e.at) + RECENT_MARK_MS); };
-  if (lastRe >= 0 && fresh(log[lastRe]) && !log.slice(lastRe + 1).some(e => e.type === 'delete' || isRe(e))) {
+  if (lastRe >= 0 && !isGameEnded(g) && fresh(log[lastRe]) && !log.slice(lastRe + 1).some(e => e.type === 'delete' || isRe(e))) {
     // 記録の形: 新「試合3→1番目」・旧「第3試合→第1試合」。どちらも行き先の位置を拾う
     (log[lastRe].changes || []).forEach(t => { const m = /^(?:試合(\d+)→(\d+)番目|第(\d+)試合→第(\d+)試合)$/.exec(t); if (m) out.moved[+(m[2] || m[4])] = +(m[1] || m[3]); });
     if (Object.keys(out.moved).length) {
@@ -9332,12 +9340,25 @@ function recentRoundMarks(g) {
       out.active = new Set([...out_].map(i => i + 1).filter(p => out.moved[p] != null)); // 動かした試合（位置）
     }
   }
-  const dels = log.map((e, i) => ({ e, i })).filter(x => x.e.type === 'delete' && x.i > lastRe && typeof x.e.no === 'number' && fresh(x.e));
+  // 消した試合は記録が確定するまで出し続ける（時間では消さない）。場所: 最後の並べ替えより後に消したものは、消したときの場所
+  // （あとで前の方を消していたら1つ前へ）。並べ替えより前に消したものは、番号の順で入る所（番号がそれより大きい最初の試合の前）
+  const n = (g.rounds || []).length;
+  const dels = log.map((e, i) => ({ e, i })).filter(x => x.e.type === 'delete' && typeof x.e.no === 'number');
   dels.forEach((d, k) => {
-    let p = d.e.no; // いまの番号で、消した試合があった場所（この番号の試合の前）。あとで前の方を消していたら1つ前へ
-    dels.slice(k + 1).forEach(d2 => { if (d2.e.no < p) p--; });
-    out.deleted.push({ pos: p, no: d.e.no, at: d.e.at, e: d.e }); keep(d.e);
+    let p;
+    if (d.i > lastRe) {
+      p = d.e.no;
+      dels.slice(k + 1).forEach(d2 => { if (d2.e.no < p) p--; });
+    } else {
+      const ds = logSerialOf(g, d.e) || 0;
+      const at = Array.from({ length: n }, (_, i) => roundSerialAt(g, i)).findIndex(v => v > ds);
+      p = at >= 0 ? at + 1 : n + 1;
+    }
+    out.deleted.push({ pos: p, no: d.e.no, at: d.e.at, e: d.e });
   });
+  // 消した試合・番号と並びのずれがあれば、確定する時刻に描き直す（灰色の行が消え、番号が 1 から順になる）
+  const la = lockAtOf(g);
+  if (la && (out.deleted.length || Array.from({ length: n }, (_, i) => roundSerialAt(g, i)).some((v, i) => v !== i + 1))) out.lockLocal = la - serverTimeOffset;
   return out;
 }
 // 試合結果の表の行（印つき）。idxs＝表示する試合（直近n試合に絞っているときも）。onclickOf(idx)
@@ -9345,6 +9366,14 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   const s = g.settings, mk = recentRoundMarks(g), n = (g.rounds || []).length, ncol = memberDisplayOrder(s).length;
   const delRow = d => {
     const st = s, nm = d.e.names || null, pts = d.e.points || [];
+    // 元の行のまま灰色にする（名前から今のメンバーの位置を探し、点数からスコアを出し直す）。探せなければ文字の行
+    const pn = s.playerNames || [], mem = nm ? nm.map(x => pn.indexOf(x)) : [];
+    if (nm && nm.length && nm.length === pts.length && mem.every(m => m >= 0) && new Set(mem).size === mem.length) {
+      try {
+        const r = { members: mem, points: pts.map(Number), scores: calcScores(pts.map(Number), s) };
+        if (r.scores && r.scores.length === mem.length) return roundRowHtml(r, -1, '', s, false, false, { serial: logSerialOf(g, d.e) || d.no, gone: true });
+      } catch (e) { /* 文字の行にする */ }
+    }
     const who = nm && nm.length === pts.length ? nm.map((x, i) => `${x} ${Number(pts[i]).toLocaleString()}`).join('　') : '';
     return `<tr class="rmk-del"><td class="sticky-col">${ico('trash', 13)}</td><td colspan="${ncol}"><b>試合${logSerialOf(g, d.e) || d.no}を削除しました</b><span>${fmtTime(d.at)}${who ? ` ・ ${esc(who)}` : ''}</span></td></tr>`;
   };
@@ -9355,7 +9384,8 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   });
   if (!idxs.length || idxs[idxs.length - 1] === n - 1) mk.deleted.filter(d => d.pos > n).forEach(d => { html += delRow(d); });
   // 印が消える時刻に描き直す（開いたままでも、しばらくしたら普段の表示に戻る）
-  if (mk.until) { clearTimeout(roundMarkTimer); roundMarkTimer = setTimeout(() => { if (activeGame && document.getElementById('view-game').classList.contains('active')) renderGame(); else if (detailGame && document.getElementById('view-detail').classList.contains('active')) renderDetailBody(detailGame); }, Math.max(1000, mk.until - Date.now() + 500)); }
+  const wake = [mk.until, mk.lockLocal].filter(t => t && t > Date.now() - 1000), wakeAt = wake.length ? Math.min(...wake) : 0;
+  if (wakeAt) { clearTimeout(roundMarkTimer); roundMarkTimer = setTimeout(() => { if (activeGame && document.getElementById('view-game').classList.contains('active')) renderGame(); else if (detailGame && document.getElementById('view-detail').classList.contains('active')) renderDetailBody(detailGame); }, Math.min(2147000000, Math.max(1000, wakeAt - Date.now() + 500))); }
   return html;
 }
 // 試合結果の表の最終行に置く合計行（画面・画像で共用）。
