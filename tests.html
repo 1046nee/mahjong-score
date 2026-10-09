@@ -374,6 +374,18 @@ function opCases(w) {
       const r = apply(ro, { id: 'e9', sid: 'TESTGAME01', at: T(9), kind: 'edit', target, label: '第1試合の修正', round: { points: [36000, 28000, 21000, 15000], members: [0, 1, 2, 3] }, names: NAMES });
       return r.status === 'apply' && r.game.rounds[2].id === 'op0' && r.game.rounds[2].points[0] === 36000 && r.game.log[r.game.log.length - 1].no === 3;
     }],
+    ['applyOp 削除した試合を戻す: 削除の記録に残した中身で、同じ id・同じ場所に戻り、履歴の番号も戻る（二度目は already）', () => {
+      const g = withRounds(P1, P2, P3);
+      const d = apply(g, { id: 'd2', sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[1]), label: '試合2の削除' }).game;
+      const de = d.log[d.log.length - 1];
+      const op = { id: 'u1', sid: 'TESTGAME01', at: T(10), kind: 'undelete', del: 'd2', pos: 1, label: '削除した試合2を戻す' };
+      const r = apply(d, op), R = r.game.rounds, L = r.game.log;
+      const noOf = o => L.find(e => e.op === o).no;
+      return de.round && de.round.id === 'op1' && Array.isArray(de.pnames)
+        && r.status === 'apply' && R.map(x => x.id).join() === 'op0,op1,op2' && arrEq(R[1].points, P2) && R[1].at === T(1)
+        && noOf('op0') === 1 && noOf('op1') === 2 && !L.find(e => e.op === 'op1').old && noOf('op2') === 3
+        && apply(r.game, op).status === 'already' && apply(r.game, { ...op, id: 'u2' }).status === 'already';
+    }],
     ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
       const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
       return pal.length === 30 && auto.length === 30 && pal.every(c => w.whiteContrast(c) >= 3)
