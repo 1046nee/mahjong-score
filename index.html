@@ -679,9 +679,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .cs-who b em.un { background: #FFF3E0; color: #8A5300; }
 .cs-who small { font-size: 11px; color: #6B7A77; line-height: 1.4; overflow-wrap: anywhere; } /* Googleアカウント名は全部見えるように（長ければ折り返す。名前は1行のまま） */
 .cs-who b { display: flex; align-items: center; min-width: 0; } .cs-who b > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; } .cs-who b em { flex: none; }
-.cs-pill { flex: none; padding: 0 10px; height: 26px; line-height: 26px; border-radius: 13px; background: #EEF2F1; color: #33413E; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.cs-pill { flex: none; box-sizing: border-box; width: 114px; text-align: center; padding: 0 8px; height: 30px; line-height: 30px; border-radius: 15px; background: #EEF2F1; color: #33413E; font-size: 12px; font-weight: 800; white-space: nowrap; }
 .cs-pill.owner { background: var(--pc); color: #fff; } .cs-pill.admin { background: var(--pc-tint); color: var(--pc-ink); }
-select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; text-overflow: clip; border: 1.5px solid #C3CECB; border-radius: 15px; background-color: #F4F7F6; color: #1F2A28; font-size: 12.5px; font-weight: 800; margin: 0; }
+select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px; padding: 0 22px 0 8px; text-overflow: clip; text-align: center; text-align-last: center; border: 1.5px solid var(--pc-line2); border-radius: 15px; color: var(--pc-ink); font-size: 12px; font-weight: 800; margin: 0; cursor: pointer;
+  -webkit-appearance: none; appearance: none; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2378918B' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 9px center; }
 .cs-roles { margin-top: 10px; font-size: 12px; color: #4F5C5A; line-height: 1.6; } .cs-roles summary { cursor: pointer; font-weight: 800; color: var(--pc); }
 .cs-roles div { margin-top: 4px; } .cs-roles b { display: inline-block; min-width: 6.5em; color: #1F2A28; }
 /* チーム戦（フェーズ3）: チーム編成エディタ */
@@ -2164,7 +2165,7 @@ button.ios-row:active { background: #F2F6F5; }
 .sh-url input { flex: 1; min-width: 0; height: 40px; font-size: 13px; padding: 0 10px; border: 1px solid #CFDCD8; border-radius: 10px; background: #fff; color: #33544a; }
 .sh-url button, .sh-btns button { flex-shrink: 0; border: none; border-radius: 10px; height: 40px; padding: 0 14px; font-size: 14px; font-weight: 800; cursor: pointer; background: var(--pc); color: #fff; }
 .sh-btns { display: flex; gap: 6px; margin-top: 8px; }
-.sh-btns button { flex: 1; height: 44px; font-size: 15px; background: #fff; color: var(--pc); border: 1.5px solid var(--pc-line2); }
+.sh-btns button { flex: 1; min-width: 0; height: 44px; padding: 0 8px; white-space: nowrap; font-size: 15px; background: #fff; color: var(--pc); border: 1.5px solid var(--pc-line2); }
 .sh-btns button.line { background: #06C755; border-color: #06C755; color: #fff; }
 .sh-make { width: 100%; height: 44px; background: #fff; border: 1.5px solid var(--pc); color: var(--pc); border-radius: 12px; padding: 0; font-size: 15px; font-weight: 800; cursor: pointer; }
 /* 見るだけのページ（#v=） */
@@ -5950,11 +5951,10 @@ function openCircleShare() {
   document.getElementById('form-modal-title').textContent = '共有';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body" id="circle-share">
     <div class="sh-opt"><div class="sh-h"><span class="sh-ico">${ico('share', 18)}</span>仲間のリンク</div>
-      <div class="sh-d">このリンク1本で、<b>結果はログインなしで見られ</b>、Googleでログインすると<b>参加</b>して、名簿で自分を選んだり試合を追加したりできます。
-        結果の書き換えや試合の削除はできません（仲間ページの試合は最後の入力から24時間で記録が確定）。</div>
+      <div class="sh-d"><b>仲間だけに送ってください。</b>結果はログインなしで見られ、Googleでログインすると参加して試合を追加できます。</div>
       <div class="sh-btns"><button type="button" class="line" onclick="window.open(lineShareUrl(circleInviteMsg),'_blank')">LINEで送る</button>
         <button type="button" onclick="copyText(circleInviteLink,'仲間のリンクをコピーしました')">リンクをコピー</button></div>
-      ${code ? `<div class="sh-d" style="margin:10px 0 0">口頭で伝えるなら参加コード <b class="invite-code" style="font-size:18px;letter-spacing:2px">${fmtInviteCode(code)}</b></div>` : ''}</div>
+      ${code ? `<div class="sh-d" style="margin:10px 0 0">口頭で伝えるなら参加コード <b class="invite-code" style="font-size:18px;letter-spacing:2px;white-space:nowrap">${fmtInviteCode(code)}</b></div>` : ''}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -5996,7 +5996,7 @@ async function openCircleSettings() {
       <div><b>作成者</b>すべて（管理者を決める・メンバーを外す・参加コードの作り直し・アイコンの色）</div>
       <div><b>管理者</b>作成者以外のメンバーの権限を変える・外す・参加コードの作り直し。本人が連携した試合や確認済みの人の名前も直せる</div>
       <div><b>編集メンバー</b>試合の追加・名前の連携・名簿の編集（本人が連携・確認した所は変えられない）</div></details>
-    ${canManage ? `<button class="auto-btn sub" style="margin-top:12px" onclick="regenerateCircleCode()">参加コードを作り直す（古い招待リンクは使えなくなります）</button>` : ''}
+    ${canManage ? `<button class="auto-btn sub" style="margin-top:12px" onclick="regenerateCircleCode()">参加コードを作り直す</button>` : ''}
     ${myRole === 'owner' ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
