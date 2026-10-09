@@ -422,6 +422,22 @@ function opCases(w) {
       return dayIds(a) === 'op1:0,op2:1,op3:1' && dayIds(b) === 'op0:0,op2:1,op3:1' && b.log[b.log.length - 1].day === 0 && dayIds(b2) === ok
         && dayIds(c) === 'op0:0,op1:0,op3:1' && c.log[c.log.length - 1].day === 1 && dayIds(c2) === ok;
     }],
+    ['同じ試合を2つ持たない: URLの余計な文字を落としてIDを直し、同じIDの試合は中身の新しい1つにまとめる', () => {
+      const ok1 = w.normSessionId('ABCDEFGHJK') === 'ABCDEFGHJK' && w.normSessionId('#ABCDEFGHJK/') === 'ABCDEFGHJK'
+        && w.normSessionId('ABCDEFGHJK%20') === 'ABCDEFGHJK' && w.normSessionId(' ABCDEFGHJK。') === 'ABCDEFGHJK'
+        && w.normSessionId('ABCDEFGHJKabcdefghjk23') === 'ABCDEFGHJKabcdefghjk23' && w.normSessionId('ABCDEFGHJKa') === null
+        && w.normSessionId('ABCDEF') === null && w.normSessionId('ABCDEFGHI1') === null;
+      const saved = w.eval('appState.games');
+      try {
+        w.eval(`appState.games = [
+          { id: 'ABCDEFGHJK', name: 'a', rounds: [1], log: [1], lastAccess: '2026-10-01T00:00:00Z' },
+          { id: 'ABCDEFGHJK/', name: 'b', rounds: [1, 2], log: [1, 2], lastAccess: '2026-09-01T00:00:00Z' },
+          { id: 'ZZZZZZZZZZ', name: 'c', rounds: [], log: [] }]`);
+        const ch = w.dedupeGames(), gs = w.eval('appState.games');
+        const a = gs.find(g => g.id === 'ABCDEFGHJK');
+        return ok1 && ch && gs.length === 2 && a.name === 'b' && a.lastAccess === '2026-10-01T00:00:00Z' && w.dedupeGames() === false;
+      } finally { w.eval('appState.games = ' + JSON.stringify(saved || [])); }
+    }],
     ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
       const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
       return pal.length === 30 && auto.length === 30 && pal.every(c => w.whiteContrast(c) >= 3)

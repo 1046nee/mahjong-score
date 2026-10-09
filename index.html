@@ -3261,8 +3261,44 @@ const MAX_HISTORY = 100;
 function loadStorage() {
   try { const d = localStorage.getItem('mahjong-v3'); if (d) appState = JSON.parse(d); } catch(e) {}
   if (!appState.players) appState.players = [];
+  dedupeGames();
+}
+// ---- 同じ試合を2つ持たない（2026-10-09）----
+// 試合ID＝10文字（新）か22文字（旧）。URLの後ろに余計な文字（末尾の / ・空白・句読点など）が付いて来ても、
+// Firebase は sessions/ID/ を同じ試合として返すので、余計な文字ごとIDにすると同じ試合が別のIDで2つ並んだ。
+// 入口（URL・joinSession）で正しい形に直し、保存・読み込みのたびに同じIDの試合を1つにまとめる
+const SID_RE = /^([A-HJ-NP-Za-hj-km-np-z2-9]{22}|[A-HJ-NP-Za-hj-km-np-z2-9]{10})(?![A-HJ-NP-Za-hj-km-np-z2-9])/;
+function normSessionId(raw) {
+  let v = String(raw || '');
+  try { v = decodeURIComponent(v); } catch (e) { /* そのまま */ }
+  const m = SID_RE.exec(v.trim().replace(/^#/, ''));
+  return m ? m[1] : null;
+}
+// 同じIDの試合が2つ以上あれば1つにまとめる（中身の新しい方＝履歴・試合の多い方、同じなら最後に開いた方を残す）。
+// IDが正しい形でない控え（余計な文字つき）は、正しいIDに直してからまとめる。まとめたら true
+function dedupeGames() {
+  const list = appState.games || [];
+  const score = g => [((g.log || []).length), ((g.rounds || []).length), Date.parse(g.lastAccess || g.createdAt || 0) || 0];
+  const better = (a, b) => { const x = score(a), y = score(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] > y[i]; return false; };
+  const byId = new Map();
+  let changed = false;
+  list.forEach(g => {
+    if (!g || !g.id) { changed = true; return; }
+    const id = normSessionId(g.id) || g.id;
+    if (id !== g.id) { g = { ...g, id }; changed = true; }
+    const cur = byId.get(id);
+    if (!cur) { byId.set(id, g); return; }
+    changed = true;
+    // 最後に開いた時刻は新しい方を引き継ぐ（一覧の並びが変わらないように）
+    const keep = better(g, cur) ? g : cur, other = keep === g ? cur : g;
+    const la = [keep.lastAccess, other.lastAccess].filter(Boolean).sort().pop();
+    byId.set(id, la ? { ...keep, lastAccess: la } : keep);
+  });
+  if (changed) appState.games = [...byId.values()];
+  return changed;
 }
 function saveStorage() {
+  dedupeGames();
   // 容量オーバーで保存が丸ごと失敗する（＝最新の変更が消える）よりは、
   // 一番古い履歴を落として今の状態を確実に残す。gamesは常に新しい順なので末尾＝最古
   for (;;) {
@@ -3461,6 +3497,7 @@ async function mergeMyListData(data) {
   let added = 0;
   results.forEach(r => {
     if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
+    if ((appState.games || []).some(g => g.id === r.val.id)) return; // 読んでいるあいだに別の所から足された（同時に2回取り込むと2つ並んだ）
     appState.games.push({ ...r.val, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
       lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
     // 取り込んだゲームのプレイヤー名を「登録名」にも反映する（この端末で作成した場合と同じ扱い。
@@ -5153,8 +5190,9 @@ function circleLogHtml() {
     const [cls, label] = TAG[e.kind] || ['set', '変更'];
     const uc = circleRole() && !undone.has(e.id) ? undoCheck(e, log) : null; // 戻せるか（いちばん新しい変更で、そのあと変わっていないときだけ）
     rows += `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span><span class="log-tag ${cls}">${label}</span>
-      <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}${undone.has(e.id) ? '<span style="color:#8A9AA5">（戻しました）</span>' : ''}</div>
-      ${uc && uc.ok ? `<button type="button" class="btn-tint" style="margin-top:6px" onclick="openUndoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`; // 戻せない理由は書かない（長い説明が並んで読みにくかった。2026-10-09）
+      <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}</div>
+      ${undone.has(e.id) ? '<button type="button" class="btn-tint" style="margin-top:6px" disabled>元に戻しました</button>'
+        : uc && uc.ok ? `<button type="button" class="btn-tint" style="margin-top:6px" onclick="openUndoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`; // 戻せない理由は書かない（長い説明が並んで読みにくかった。2026-10-09）
   });
   return `<div class="log-list">${rows}</div>${log.length > 50 ? `<div class="h2h-note">最新50件を表示しています（全${log.length}件）</div>` : ''}`;
 }
@@ -5162,7 +5200,7 @@ function circleLogHtml() {
 // 決まり: ①戻せるのは「その対象（試合・名簿の人）へのいちばん新しい変更」で、そのあと状態が変わっていないときだけ
 // （あとの変更を黙って消さない）。②押すと先に確認の画面（いま → 戻したあと）を見せ、納得したら「元に戻す」。
 // ③元に戻したことは取り消せない（やり直しの、やり直しはしない）。同じにしたいときは、ふつうに連携・名前の変更・追加をする
-const UNDO_KINDS = ['bind', 'add_game', 'rename'];
+const UNDO_KINDS = ['bind', 'add_game', 'remove_game', 'rename'];
 const CIRCLE_UNDO_MS = 24 * 3600 * 1000;
 function undoTargetOf(e, byId) {
   if (!e) return null;
@@ -5176,8 +5214,8 @@ function undoCheck(e, log) {
   if (!e || !e.undo || !UNDO_KINDS.includes(e.kind)) return null;
   const byId = Object.fromEntries(log.map(x => [x.id, x]));
   const tgt = undoTargetOf(e, byId), t0 = new Date(e.at || 0).getTime();
-  // 連携・試合の追加は、24時間たったら戻せない（ボタンも出さない。2026-10-09）。名簿の名前は時間で区切らない
-  if ((e.kind === 'bind' || e.kind === 'add_game') && serverNow() - t0 > CIRCLE_UNDO_MS) return null;
+  // 連携・試合の追加・外すは、24時間たったら戻せない（ボタンも出さない。2026-10-09）。名簿の名前は時間で区切らない
+  if (['bind', 'add_game', 'remove_game'].includes(e.kind) && serverNow() - t0 > CIRCLE_UNDO_MS) return null;
   const later = log.some(x => x.id !== e.id && new Date(x.at || 0).getTime() > t0 && undoTargetOf(x, byId) === tgt);
   if (later) return { ok: false, why: 'このあとに同じ所の変更があるため、元に戻せません' };
   const u = e.undo;
@@ -5191,6 +5229,10 @@ function undoCheck(e, log) {
     if (!ge) return { ok: false, why: '' };
     if (!circleGameRemovable(ge)) return { ok: false, why: '追加から24時間たって確定したため、外せません' };
     if (!(ge.addedBy === myUid() || isCircleAdmin())) return { ok: false, why: '' };
+  } else if (e.kind === 'remove_game') {
+    // 外した試合を戻す: いまこの仲間ページに無いこと（だれかが追加し直していれば戻さない）
+    if (!u.sid || !u.entry) return null;
+    if (circleData.games && circleData.games[u.sid]) return { ok: false, why: 'この試合はもう仲間ページにあります' };
   } else if (e.kind === 'rename') {
     const r = rosterOf()[u.mid];
     if (!r) return { ok: false, why: '' };
@@ -5212,6 +5254,9 @@ function openUndoCircleLog(lid) {
     Object.entries(u.seats || {}).forEach(([seat, b]) => rows.push([`試合での名前「${names[seat] || '席' + (+seat + 1)}」`, nm(seats[seat] && seats[seat].mid), nm(b && b.mid)]));
   } else if (e.kind === 'rename') {
     rows.push(['名簿の名前', rosterName(u.mid), u.before]);
+  } else if (e.kind === 'remove_game') {
+    const nb = Object.values(u.entry.seats || {}).filter(x => x && x.mid && rosterOf()[x.mid]).length;
+    rows.push([`試合「${u.entry.name || ''}」`, 'この仲間ページにない', `この仲間ページに戻る${nb ? `（連携 ${nb}人）` : ''}`]);
   } else if (e.kind === 'add_game') {
     const ge = circleData.games[u.sid], nb = Object.values((ge && ge.seats) || {}).filter(x => x && x.mid).length;
     rows.push([`試合「${(ge && ge.name) || ''}」`, `この仲間ページにある${nb ? `（連携 ${nb}人）` : ''}`, 'この仲間ページから外れる']);
@@ -5222,7 +5267,7 @@ function openUndoCircleLog(lid) {
     <div class="ud-h">戻すと、こう変わります</div>
     <div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">項目</th><th>変更前（今）</th><th>変更後</th></tr></thead>
       <tbody>${rows.map(([k, a, b]) => `<tr><td class="sticky-col">${esc(k)}</td><td>${esc(a)}</td><td class="ud-after">${esc(b)}</td></tr>`).join('')}</tbody></table></div>
-    <div class="ud-note">${e.kind === 'add_game' ? '試合そのものは消えません。' : ''}${e.kind === 'add_game' && /名簿に/.test(e.text || '') ? 'このとき名簿に足された人は残ります。' : ''}戻したことは取り消せません。</div>
+    <div class="ud-note">${e.kind === 'add_game' ? '試合そのものは消えません。' : ''}${e.kind === 'remove_game' ? '連携は、戻すあなたが連携した形になります。' : ''}${e.kind === 'add_game' && /名簿に/.test(e.text || '') ? 'このとき名簿に足された人は残ります。' : ''}戻したことは取り消せません。</div>
     <button type="button" class="confirm-btn" style="margin-top:14px" onclick="undoCircleLog('${lid}')">元に戻す</button>
     <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -5251,6 +5296,16 @@ async function undoCircleLog(lid) {
       if (ge && !(ge.addedBy === myUid() || isCircleAdmin())) throw new Error('locked');
       if (ge && !circleGameRemovable(ge)) throw new Error('fixed');
       await db.ref(`circles/${circleId}/games/${u.sid}`).remove();
+    } else if (e.kind === 'remove_game') {
+      // 戻す人が追加し直す形（ルール上、追加した人は自分になる。表示の「◯◯さんが追加」は元の人のまま）。
+      // まだ外せる期間に外した試合は、そこから24時間外せる。確定してから外した試合は、確定したまま戻す
+      const x = u.entry, at = new Date().toISOString(), myMid = myCircleMid();
+      const entry = { at: x.at || at, name: String(x.name || '').slice(0, 120), addedBy: myUid(), addedByName: String(x.addedByName || myCircleName()).slice(0, 60), addedAt: x.addedAt || at };
+      if (x.open) entry.lockAt = serverNow() + CIRCLE_GAME_FIX_MS;
+      const seats = {};
+      Object.entries(x.seats || {}).forEach(([k, v]) => { if (v && v.mid && rosterOf()[v.mid]) seats[k] = { mid: v.mid, by: myUid(), byName: myCircleName(), at, self: v.mid === myMid }; });
+      if (Object.keys(seats).length) entry.seats = seats;
+      await db.ref(`circles/${circleId}/games/${u.sid}`).set(entry);
     } else if (e.kind === 'rename') {
       if (!canEditRosterMember(rosterOf()[u.mid])) throw new Error('locked');
       await db.ref(`circles/${circleId}/roster/${u.mid}/name`).set(u.before);
@@ -5524,11 +5579,17 @@ function openCircleGameMenu(sid) {
 }
 async function removeCircleGame(sid) {
   const ge = circleData.games[sid];
-  if (ge && !circleGameRemovable(ge) && !confirm(`確定した試合「${ge.name || ''}」を、この仲間ページから外しますか？（試合そのものは消えません）`)) return;
+  if (!ge) return;
+  if (!confirm(`${circleGameRemovable(ge) ? '' : '確定した'}試合「${ge.name || ''}」を、この仲間ページから外しますか？\n（試合そのものは消えません。24時間以内なら、変更の履歴から元に戻せます）`)) return;
   closeFormModal();
+  // 戻すための中身（2026-10-09）: 名前・日時・追加した人の名前・連携（mid だけ）・まだ外せる期間だったか
+  const seats = {};
+  Object.entries(ge.seats || {}).forEach(([k, v]) => { if (v && v.mid) seats[k] = { mid: v.mid }; });
+  const keep = { at: ge.at || '', name: ge.name || '', addedByName: ge.addedByName || '', addedAt: ge.addedAt || '', open: circleGameRemovable(ge) };
+  if (Object.keys(seats).length) keep.seats = seats;
   try {
     await db.ref(`circles/${circleId}/games/${sid}`).remove();
-    await addCircleLog('remove_game', `試合「${ge.name || ''}」を外しました`);
+    await addCircleLog('remove_game', `試合「${ge.name || ''}」を外しました`, { sid, entry: keep });
     showToast('仲間ページから外しました');
   } catch (e) { showToast('外せませんでした（権限がないか、追加から24時間を過ぎています）', 4000); } // 作成者・管理者でも、ルールが古いと確定後は弾かれる
 }
@@ -7568,7 +7629,9 @@ function showLoading(show) {
 }
 // 試合の画面を開いた画面（「戻る」で戻る先）。マイページ・仲間ページ・結果詳細から開いたときだけ
 let gameReturnTo = null, gameReturnPushed = false;
-async function joinSession(id) {
+async function joinSession(rawId) {
+  const id = normSessionId(rawId);
+  if (!id) { alert('このURLのゲームは見つかりませんでした。'); showView('home'); return; }
   { const act = activeViewName(); gameReturnTo = ['history', 'circle', 'mystats', 'detail', 'watch'].includes(act) ? act : null; }
   showLoading(true);
   try {
@@ -13771,6 +13834,7 @@ async function runAddGames() {
       let snap = null;
       try { snap = await db.ref('sessions/' + id).once('value'); } catch (e) {}
       if (!snap || !snap.exists()) { missing++; continue; }
+      if ((appState.games || []).some(g => g.id === id)) { already++; continue; } // 読んでいるあいだに別の所から足された
       const g = { ...normGame(snap.val()), lastAccess: new Date().toISOString() };
       unmarkDeleted(id);
       myListSynced.delete(id);
@@ -14232,7 +14296,7 @@ if (urlHash === 'mypage' || urlHash === 'login') {
 } else if (/^v=[A-HJ-NP-Za-hj-km-np-z2-9]{12}$/.test(urlHash)) {
   openWatchLink(urlHash.slice(2)); // 見るだけのリンク（試合の一覧には残さない・入力の画面は出さない）
 } else if (urlHash && urlHash.length >= 8) {
-  joinSession(urlHash);
+  joinSession(urlHash); // 余計な文字が付いていても joinSession が正しいIDに直す
 } else if (myListId) {
   // 作成済みの端末は起動時に静かに同期する。ホーム画面に追加したアプリは
   // ブラウザと別の保存領域なので、この取り込みがブラウザ⇄アプリの橋渡しになる
