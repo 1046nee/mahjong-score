@@ -1133,7 +1133,9 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .pg-top h1 { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; margin: 0; font-size: 18px; font-weight: 900; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pg-top h1 .ico { flex: none; --i1: var(--pc); --i2: var(--pc-soft); }
 .pg-head #circle-actions { margin: 0; }
-.pg-head #circle-title { display: block; font-size: 20px; font-weight: 900; line-height: 30px; -webkit-line-clamp: unset; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
+.pg-head #circle-title { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; line-height: 30px; -webkit-line-clamp: unset; }
+.pg-head #circle-title .ci-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-head #circle-title .ci-av { width: 26px; height: 26px; border-radius: 8px; font-size: 14px; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
 .pg-head .cc-rows { margin: 4px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
@@ -4126,7 +4128,8 @@ function renderCircle() {
   const roster = rosterOf();
   const gids = Object.keys(circleData.games || {});
   const nRounds = gids.reduce((a, sid) => a + ((circleSess[sid] && circleSess[sid].rounds) || []).length, 0);
-  document.getElementById('circle-title').textContent = circleData.name || '仲間ページ';
+  // 仲間ページの頭文字のアイコン（上の「個人｜仲間ページ」の切り替えと同じ）＋名前。個人の見出し（人のアイコン＋個人）と同じ並び（2026-10-09）
+  { const nm = circleData.name || '仲間ページ'; document.getElementById('circle-title').innerHTML = `<span class="sw-av ci-av" aria-hidden="true">${esc(avInitial(nm))}</span><span class="ci-name">${esc(nm)}</span>`; }
   const roleLabel = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[role] || (currentUser ? '閲覧中' : '閲覧中（ログインなし）');
   const meMid = myCircleMid();
   document.getElementById('circle-sub').innerHTML = circleCountsHtml(gids); // 必要な数だけ（立場・名簿のあなたは出さない。2026-10-08 見出しをコンパクトに）
