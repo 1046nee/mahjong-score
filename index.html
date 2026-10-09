@@ -1552,11 +1552,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .ro-list.picking .ro-row:not(.on) { opacity: .82; }
 .ro-sheet .ro-chips { gap: 3px; } .ro-sheet .ro-p { font-size: 11.5px; padding: 1px 6px 1px 2px; } .ro-sheet .ro-p i { width: 15px; height: 15px; font-size: 9.5px; }
 .ro-sheet .ro-sub { margin-top: 3px; font-size: 10.5px; }
-.ro-sheet .ro-no b { font-size: 18px; }
 /* 行と行のあいだの「ここへ」（選んでいるあいだだけ） */
-.ro-slot { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 30px; border: 1.5px dashed var(--pc); border-radius: 10px; background: var(--pc-tint); color: var(--pc); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
-.ro-slot .ico { transform: rotate(90deg); }
-.ro-slot:active { background: var(--pc-line); }
 .ro-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 4px; border-radius: 14px; background: #fff; border: 1px solid #DDE6E3; box-shadow: 0 1px 2px rgba(16,40,36,.06); transition: transform .15s ease, box-shadow .15s ease; }
 .ro-list.dragging .ro-row { transition: transform .15s ease; }
 .ro-row.drag { transition: none; z-index: 2; position: relative; box-shadow: 0 10px 24px rgba(16,40,36,.22); border-color: #177083; }
@@ -1569,7 +1565,16 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .ro-head { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
 .ro-serial { font-size: 11px; font-weight: 900; color: var(--pc); background: #E4F3EC; border-radius: 6px; padding: 1px 6px; }
 .sanma .ro-serial { background: #EAF0FB; }
-.ro-head .ro-was { font-size: 10px; font-weight: 800; color: #8A5A00; text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.ro-head .ro-was { font-size: 10px; font-weight: 800; color: #8A5A00; }
+.ro-line { display: flex; align-items: stretch; gap: 6px; }
+.ro-line > .ro-row { flex: 1; min-width: 0; }
+.ro-pos { flex: none; box-sizing: border-box; width: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-radius: 12px; background: #F1F5F4; border: 1.5px solid transparent; color: #6B7A77; font: inherit; font-size: 10.5px; font-weight: 800; line-height: 1.1; padding: 0; }
+.ro-pos b { font-size: 19px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; }
+.ro-pos.on { background: var(--pc-tint); border-color: var(--pc); }
+.ro-pos.to { border: 1.5px dashed var(--pc); background: var(--pc-tint); color: var(--pc); cursor: pointer; }
+.ro-pos.to b { color: var(--pc-ink); }
+.ro-pos em { font-style: normal; font-size: 9.5px; margin-top: 1px; }
+.ro-pos.to:active { background: var(--pc-line); }
 /* 試合結果の表の、並べ替え・削除の直後の印（しばらくだけ） */
 tr.rmk-mv td { background: #FFF8E8 !important; }
 tr.rmk-mv td.sticky-col { box-shadow: inset 3px 0 0 #E3B341; }
@@ -10910,6 +10915,7 @@ function sortReorderByTime() {
 // 1行＝1試合の短いカード（番号・その試合の順位の名前とスコアを1行に）。選んだ行だけに ↑↓ を出し、行と行のあいだに「ここへ」を出す。
 // 動かした試合は琥珀色＋取り消し線の「元3」、押されてずれただけの試合は灰色。いま動かした行は少し光らせて見える所へ送る
 function selectReorder(k) { reorderState.sel = reorderState.sel === k ? null : k; renderReorder(); }
+function placeReorder(t) { const k = reorderState.sel; if (k != null) dropReorder(t > k ? t + 1 : t); } // 選んだ試合を第(t+1)試合へ
 function dropReorder(i) {
   const a = reorderState.idx, k = reorderState.sel;
   if (k == null) return;
@@ -10932,23 +10938,24 @@ function renderReorder() {
   const when = r => { const t = Date.parse(r.at), d = t ? new Date(t) : null; return d ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''; };
   const act = reorderActiveSet(a.map(v => v + 1));
   const moved = act.size;
-  // 「ここへ」には、入れたあとに何試合目になるかを書く（第◯試合に、選んだ試合を持っていく）
-  const slot = i => (sel == null || i === sel || i === sel + 1) ? '' : `<button type="button" class="ro-slot" onclick="dropReorder(${i})">${ico('chevron', 12)}ここへ（第${(i > sel ? i - 1 : i) + 1}試合にする）</button>`;
+  // 左の「第k試合」は場所の札（試合のカードとは別）。試合を選ぶと、ほかの札が「ここへ」になり、押すとその第k試合へ動く
+  const pos = k => (sel != null && k !== sel)
+    ? `<button type="button" class="ro-pos to" onclick="placeReorder(${k})" aria-label="第${k + 1}試合へ動かす">第<b>${k + 1}</b>試合<em>ここへ</em></button>`
+    : `<div class="ro-pos${sel === k ? ' on' : ''}">第<b>${k + 1}</b>試合</div>`;
   const serialOf = oi => roundSerialAt(g, oi);
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
-    <div class="ro-help">${sel == null ? '<b>動かしたい試合を押してください。</b>' : `<b>試合${serialOf(a[sel])}を選んでいます。</b>第何試合にするかを「ここへ」で選ぶか、↑↓で1つずつ動かします（もう一度押すと選ぶのをやめます）。`}</div>
+    <div class="ro-help">${sel == null ? '<b>動かしたい試合を押してください。</b>' : `<b>試合${serialOf(a[sel])}を選んでいます。</b>左の「第◯試合」を押すと、そこへ動きます。↑↓で1つずつも動かせます（もう一度押すと選ぶのをやめます）。`}</div>
     <div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
       <button type="button" class="ro-tool" onclick="reorderState.idx=activeGame.rounds.map((_, i) => i);reorderState.sel=null;renderReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
       <span class="ro-count">${moved ? `${moved}試合を動かしています` : ''}</span></div>
     <div class="ro-list${sel != null ? ' picking' : ''}" id="ro-list">${a.map((oi, k) => {
       const r = rs[oi], dk = dayAt(k), on = sel === k;
-      return `${slot(k)}<div class="ro-row${on ? ' on' : ''}${act.has(k) ? ' mv' : oi !== k ? ' sh' : ''}${reorderState.just === oi ? ' just' : ''}" data-k="${k}" onclick="selectReorder(${k})" role="button" tabindex="0" aria-pressed="${on}">
-        <div class="ro-no"><small>第</small><b>${k + 1}</b><small>試合</small></div>
+      return `<div class="ro-line">${pos(k)}<div class="ro-row${on ? ' on' : ''}${act.has(k) ? ' mv' : oi !== k ? ' sh' : ''}${reorderState.just === oi ? ' just' : ''}" data-k="${k}" onclick="selectReorder(${k})" role="button" tabindex="0" aria-pressed="${on}">
         <div class="ro-main"><div class="ro-head"><span class="ro-serial${serialOf(oi) !== k + 1 ? ' off' : ''}">試合${serialOf(oi)}</span>${oi !== k ? `<span class="ro-was">元は第${oi + 1}試合</span>` : ''}</div><div class="ro-chips">${line(r)}</div>
           <div class="ro-sub">${dk >= 0 ? `<span class="ro-day">${dk + 1}日目</span>` : ''}<span>入力 ${when(r)}${r.edited ? ' ・ 修正あり' : ''}</span></div></div>
-        ${on ? `<div class="ro-btns" onclick="event.stopPropagation()"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div>` : ''}</div>`;
-    }).join('')}${slot(a.length)}</div>
+        ${on ? `<div class="ro-btns" onclick="event.stopPropagation()"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div>` : ''}</div></div>`;
+    }).join('')}</div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>この順番で保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
