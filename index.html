@@ -100,6 +100,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .login-local { margin-top: 12px; padding: 9px 12px; background: #fff8e6; border: 1px solid #f2e3b3; border-radius: 10px; font-size: 12px; color: #8a6d1a; line-height: 1.7; }
 /* ゲーム設定画面だけ左上に表示する「戻る」ボタン */
 .header-back { display: none; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #C3CECB; background: #F4F7F6; color: #1F2A28; /* シートの×・戻ると同じトーン（2026-10-08） */ font-size: 21px; font-weight: 700; line-height: 34px; text-align: center; padding: 0; cursor: pointer; }
+/* 矢印は文字（‹）ではなくアイコン。文字だと字の形で円の真ん中から左上にずれた（2026-10-09） */
+.header-back { place-items: center; } .header-back .ico { display: block; transform: rotate(180deg); --i1: #1F2A28; --i2: #1F2A28; }
 
 /* 各ページのタイトル行とアイコンボタン（文字サイズを元の18pxに） */
 .page-title-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 16px 12px; }
@@ -293,7 +295,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #view-setup { background: #DBF4F9; }
 .form-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-.card-title { font-size: 12px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+.card-title { font-size: 15px; font-weight: 800; color: #1F2A28; letter-spacing: 0; text-transform: none; margin-bottom: 12px; } /* カードの見出しはどの画面も同じ（ゲームの画面・設定も、マイページ・仲間ページと同じ15px/800。2026-10-09） */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 .field:last-child { margin-bottom: 0; }
 label { font-size: 13px; color: #555; font-weight: 600; }
@@ -571,6 +573,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mini-toggle button.on { background: var(--pc); color: #fff; }
 .sanma .mini-toggle button.on { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
+.metric-seg { margin: 0 0 12px; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
 /* カード右上の開閉ボタン（▾=表示中 / ▸=たたんだ状態） */
@@ -2202,7 +2205,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- 全画面共通ヘッダー -->
 <div class="global-header-wrap">
   <div class="global-header">
-    <button type="button" class="header-back" id="header-back" aria-label="前のページに戻る">‹</button>
+    <button type="button" class="header-back" id="header-back" aria-label="前のページに戻る"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></button>
     <span class="global-logo" onclick="goHome()"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></span>
     <button type="button" class="hdr-acct" id="hdr-acct" onclick="hdrAcctClick()" aria-label="ログイン">ログイン</button>
   </div>
@@ -2665,7 +2668,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">チーム順位</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="team-collapse"></span>
         </div>
       </div>
@@ -2680,7 +2683,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="reorder-btn" onclick="openReorder()" style="display:none">並べ替え</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
-          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
@@ -2692,7 +2695,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="rank-collapse"></span>
         </div>
       </div>
@@ -2702,7 +2705,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">対戦成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="h2h-collapse"></span>
         </div>
       </div>
@@ -2712,7 +2715,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="chart-collapse"></span>
         </div>
       </div>
@@ -2722,7 +2725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none">プレビュー</button>
+          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="ichart-collapse"></span>
         </div>
       </div>
@@ -6757,7 +6760,7 @@ function showView(name, skipHistory = false, restore = false) {
   // ホーム画面に追加したアプリはブラウザの戻るボタンが無いため、画面内に必ず戻り道を置く
   const backBtn = document.getElementById('header-back');
   const backTo = backTargetOf(name);
-  backBtn.style.display = backTo ? 'block' : 'none';
+  backBtn.style.display = backTo ? 'grid' : 'none'; // grid＝矢印のアイコンを円の真ん中に
   backBtn.onclick = backTo === 'game-leave' ? () => leaveGame(gameReturnTo) : () => showView(backTo, false, true);
 
   if (name === 'history') { renderAccountCard(); renderMyListCard(); renderHistory(); refreshMyList(); }
@@ -7691,9 +7694,10 @@ function chipTotals(g) {
 // デフォルトは合計スコアの順位。右上のトグルで「チップ最終枚数」の順位に切り替えられる。
 function metricToggleHtml(s) {
   if (!s.bonusEnabled) return '';
-  return `<div class="mini-toggle">
-    <button type="button" class="${scoreMetric === 'score' ? 'on' : ''}" onclick="setMetric('score')">スコア</button>
-    <button type="button" class="${scoreMetric === 'chips' ? 'on' : ''}" onclick="setMetric('chips')">チップ</button>
+  // 見出しの下の行に、ほかの切り替えと同じ形（.seg.xs）で置く（見出しの行に入れると狭い画面で見出しが2行になった。2026-10-09）
+  return `<div class="seg xs metric-seg" role="tablist" aria-label="順位の見方">
+    <button type="button" role="tab" class="${scoreMetric === 'score' ? 'on' : ''}" aria-selected="${scoreMetric === 'score'}" onclick="setMetric('score')">スコアの順位</button>
+    <button type="button" role="tab" class="${scoreMetric === 'chips' ? 'on' : ''}" aria-selected="${scoreMetric === 'chips'}" onclick="setMetric('chips')">チップの順位</button>
   </div>`;
 }
 // 順位リスト本体。metric = 'score'（pts） / 'chips'（チップ最終枚数）
@@ -7743,14 +7747,12 @@ function scoreMainHtml(g) {
   const s = g.settings;
   const hasRounds = (g.rounds || []).length > 0;
   const collapsed = collapsedCards.score;
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : s.bonusEnabled ? '6px' : '12px'}">
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : '12px'}">
     <div class="card-title" style="margin-bottom:0">総合順位</div>
-    <div style="display:flex;align-items:center;gap:8px">${collapsed ? '' : metricToggleHtml(s)}${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">プレビュー</button>`}${collapseBtnHtml('score')}</div>
+    <div style="display:flex;align-items:center;gap:6px">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
-  if (s.bonusEnabled) {
-    html += `<div class="metric-label">${scoreMetric === 'chips' ? '順位（チップ）' : '順位（スコア）'}</div>`;
-  }
+  if (s.bonusEnabled) html += metricToggleHtml(s); // スコアの順位｜チップの順位
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
   return html;
 }
@@ -9301,7 +9303,7 @@ function renderH2HCard() {
   if (!(activeGame.rounds || []).length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
   document.getElementById('h2h-collapse').innerHTML = collapseBtnHtml('h2h');
-  document.getElementById('h2h-img-btn').style.display = collapsedCards.h2h ? 'none' : 'inline-block';
+  document.getElementById('h2h-img-btn').style.display = collapsedCards.h2h ? 'none' : 'inline-flex';
   const body = document.getElementById('h2h-body');
   body.style.display = collapsedCards.h2h ? 'none' : '';
   body.innerHTML = collapsedCards.h2h ? '' : h2hCardBodyHtml(activeGame);
@@ -9519,7 +9521,7 @@ function renderGame() {
     const teamBody = document.getElementById('team-body');
     teamBody.style.display = collapsedCards.team ? 'none' : '';
     teamBody.innerHTML = collapsedCards.team ? '' : teamStandingsHtml(activeGame);
-    document.getElementById('team-img-btn').style.display = (hasRounds && !collapsedCards.team) ? 'inline-block' : 'none';
+    document.getElementById('team-img-btn').style.display = (hasRounds && !collapsedCards.team) ? 'inline-flex' : 'none';
   } else {
     teamCard.style.display = 'none';
   }
@@ -9552,9 +9554,9 @@ function renderGame() {
     ? (gLocked ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>')
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
-  document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-block' : 'none';
-  { const rb = document.getElementById('reorder-btn'); if (rb) rb.style.display = ((activeGame.rounds || []).length >= 2 && !collapsedCards.rounds && !isGameLocked(activeGame)) ? 'inline-block' : 'none'; }
-  document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-block' : 'none';
+  document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-flex' : 'none';
+  { const rb = document.getElementById('reorder-btn'); if (rb) rb.style.display = ((activeGame.rounds || []).length >= 2 && !collapsedCards.rounds && !isGameLocked(activeGame)) ? 'inline-flex' : 'none'; }
+  document.getElementById('img-btn').style.display = (hasRounds && !collapsedCards.rounds) ? 'inline-flex' : 'none';
 
   // 3人麻雀はティール↔オレンジを反転した配色に
   document.getElementById('view-game').classList.toggle('sanma', s.numPlayers === 3);
@@ -9566,7 +9568,7 @@ function renderGame() {
   if (hasRounds) {
     rankCard.style.display = 'block';
     document.getElementById('rank-collapse').innerHTML = collapseBtnHtml('rank');
-    document.getElementById('rank-img-btn').style.display = collapsedCards.rank ? 'none' : 'inline-block';
+    document.getElementById('rank-img-btn').style.display = collapsedCards.rank ? 'none' : 'inline-flex';
     const rankBody = document.getElementById('rank-body');
     rankBody.style.display = collapsedCards.rank ? 'none' : '';
     rankBody.innerHTML = collapsedCards.rank ? '' : rankCountHtml(activeGame.rounds, s);
@@ -9587,7 +9589,7 @@ function renderGame() {
     const chartBody = document.getElementById('chart-body');
     chartBody.style.display = collapsedCards.chart ? 'none' : '';
     chartBody.innerHTML = collapsedCards.chart ? '' : chartHtml(activeGame.rounds, s);
-    document.getElementById('chart-img-btn').style.display = collapsedCards.chart ? 'none' : 'inline-block';
+    document.getElementById('chart-img-btn').style.display = collapsedCards.chart ? 'none' : 'inline-flex';
   } else {
     chartCard.style.display = 'none';
   }
@@ -9600,7 +9602,7 @@ function renderGame() {
     const ichartBody = document.getElementById('ichart-body');
     ichartBody.style.display = collapsedCards.ichart ? 'none' : '';
     ichartBody.innerHTML = collapsedCards.ichart ? '' : chartHtml(activeGame.rounds, s, true);
-    document.getElementById('ichart-img-btn').style.display = collapsedCards.ichart ? 'none' : 'inline-block';
+    document.getElementById('ichart-img-btn').style.display = collapsedCards.ichart ? 'none' : 'inline-flex';
   } else {
     ichartCard.style.display = 'none';
   }
@@ -13061,7 +13063,7 @@ function renderDetailBody(g) {
   let html = gameStateHtml(g, false) + '<div id="detail-circles"></div>';
   // チーム順位（チーム戦が有効なグループのみ）
   if (s.teamMode && s.teams && hasRounds) {
-    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">プレビュー</button>`;
+    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">${ico('image', 15)}画像</button>`;
     html += `<div class="card">${detailCardHead('チーム順位', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
   // 総合順位カード（順位リスト＋スコア/チップ切替）
@@ -13069,7 +13071,7 @@ function renderDetailBody(g) {
 
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
-  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">プレビュー</button>` : '';
+  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">${ico('image', 15)}画像</button>` : '';
   const rows = visibleRoundIdx(g.rounds.length)
     .map(ridx => roundRowHtml(g.rounds[ridx], ridx, (detailRO || gLocked) ? '' : `editDetailRound(${ridx})`, s)).join('')
     + (hasRounds ? roundsTotalRowHtml(g) : '');
@@ -13084,19 +13086,19 @@ function renderDetailBody(g) {
       ? ((detailRO || gLocked) ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると点数を修正できます</div>') + roundsMoreBtnHtml(g.rounds.length)
       : ''}</div>`;
   if (g.rounds.length > 0) {
-    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">プレビュー</button>`;
+    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}画像</button>`;
     html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
-    const h2hBtn = `<button class="edit-tab" onclick="showH2HImage(detailGame)">プレビュー</button>`;
+    const h2hBtn = `<button class="edit-tab" onclick="showH2HImage(detailGame)">${ico('image', 15)}画像</button>`;
     html += `<div class="card">${detailCardHead('対戦成績', 'h2h', h2hBtn)}${collapsedCards.h2h ? '' : h2hCardBodyHtml(g)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">プレビュー</button>`;
+    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">${ico('image', 15)}画像</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
-      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">プレビュー</button>`;
+      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">${ico('image', 15)}画像</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }
