@@ -1277,7 +1277,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .sw-row > * { scroll-snap-align: start; } /* 下の線は濃いめのグレー（2026-10-08 目立たせた） */
 .sw-wrap.in-circle .sw-row { margin: 0 -16px; }
 .sw-row::-webkit-scrollbar { display: none; }
-.sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; border-radius: 1px; background: #AEBBB8; } /* 個人｜仲間ページの区切り */
+.sw-sep { flex: none; align-self: center; width: 1.5px; height: 24px; margin: 0 -6px; background: #8A9AA5; } /* 個人｜仲間ページの区切り */
 .sw-chip { position: relative; flex: none; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 2px; border: 0; border-radius: 0; background: none; color: #5F6E6B; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .sw-chip .ico { --i1: #8A9AA5; --i2: #C9D3D1; }
 .sw-chip.on { color: var(--pc); }
@@ -5934,7 +5934,7 @@ async function confirmMySeats() {
   } catch (e) { showToast('確認できませんでした'); }
 }
 async function unclaimCircleMember(mid) {
-  if (!confirm('確認済みを外して、名簿で自分を選び直しますか？（試合の連携は残ります）')) return;
+  if (!confirm(`「${rosterName(mid)}」の本人確認を外しますか？（試合の連携は残ります）`)) return;
   try {
     const upd = { [`circles/${circleId}/roster/${mid}/uid`]: null, [`circles/${circleId}/roster/${mid}/gname`]: null,
       [`circles/${circleId}/roster/${mid}/gphoto`]: null, [`circles/${circleId}/roster/${mid}/gat`]: null };
@@ -6039,6 +6039,7 @@ async function openCircleSettings() {
       <div><b>管理者</b>作成者以外のメンバーの権限を変える・外す・参加コードの作り直し。本人が連携した試合や確認済みの人の名前も直せる</div>
       <div><b>編集メンバー</b>試合の追加・名前の連携・名簿の編集（本人が連携・確認した所は変えられない）</div></details>
     ${canManage ? `<button class="auto-btn sub" style="margin-top:12px" onclick="regenerateCircleCode()">参加コードを作り直す</button>` : ''}
+    ${myCircleMid() && rosterOf()[myCircleMid()] && rosterOf()[myCircleMid()].uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal();unclaimCircleMember('${myCircleMid()}')">自分の本人確認を外す（${esc(rosterName(myCircleMid()))}）</button>` : ''}
     ${myRole === 'owner' ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
