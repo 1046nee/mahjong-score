@@ -1135,7 +1135,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .pg-head #circle-actions { margin: 0; }
 .pg-head #circle-title { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; line-height: 30px; -webkit-line-clamp: unset; }
 .pg-head #circle-title .ci-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pg-head #circle-title .ci-av { width: 26px; height: 26px; border-radius: 8px; font-size: 14px; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
+.pg-head #circle-title .ci-av { width: 26px; height: 26px; border-radius: 8px; font-size: 14px; padding-bottom: 2px; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
 .pg-head .cc-rows { margin: 4px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
@@ -1152,7 +1152,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .sw-chip:not(.on) .sw-av { opacity: .75; }
 .sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
-.sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; }
+.sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; line-height: 1; padding-bottom: 1px; } /* 見出し（line-height 30px）の中に置いても文字が下にずれない。かなや漢字は字の箱の下寄りに描かれるので1px上げる（2026-10-09） */
 .mp-others { margin-top: 12px; }
 .mp-others summary { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; font-size: 13px; font-weight: 800; color: #5F6E6B; cursor: pointer; list-style: none; }
 .mp-others summary::-webkit-details-marker { display: none; }
