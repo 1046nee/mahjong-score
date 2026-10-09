@@ -1609,6 +1609,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .mc-scope-av { flex: none; width: 15px; height: 15px; border-radius: 4px; display: inline-grid; place-items: center; background: #E75620; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 900; }
 .ch-title-row { padding-top: 6px; }
 #circle-top:empty { display: none; }
+#circle-body > .askme:first-child, #circle-body > .cm-note:first-child { margin-top: 12px; } /* 上の区切り線にくっついて、案内のカードの上が欠けて見えた（2026-10-09） */
 .mode-seg button small { font-size: 10px; font-weight: 700; }
 @media (max-width: 379px) { .mode-seg button { padding: 0 9px; } } /* 「すべての期間」と1行に収める。試合の無い形式にも（なし）は出さない（2026-10-07） */
 .mode-seg button:disabled { color: #AEBBB8; cursor: default; }
@@ -2003,7 +2004,7 @@ button.ios-row:active { background: #F2F6F5; }
 /* 上の成績カード・タブ・タブの中のカードの3つを同じ色で囲う（2026-10-09 ユーザー要望） */
 #mp-stats .mc-card, #mp-pane-tabs .seg.tabbar, #view-mystats .seg.ms-tabs.tabbar,
 #mp-pane-sum .ms-card, #mp-pane-sum > .card, #mp-pane-h2h > .card, #mp-pane-hist > .card { box-shadow: 0 0 0 2px var(--pc), var(--sh-1); }
-#view-circle #circle-top .mc-card, #view-circle #circle-body > .seg.tabbar, #view-circle #circle-body > .card { box-shadow: 0 0 0 2px var(--circ-frame, var(--pc)), var(--sh-1); } /* #view-circle .card（後ろにある）より強く */
+#view-circle #circle-top .mc-card, #view-circle #circle-body > .seg.tabbar, #view-circle #circle-body > .card:not(.askme) { box-shadow: 0 0 0 2px var(--circ-frame, var(--pc)), var(--sh-1); } /* #view-circle .card（後ろにある）より強く */
 /* その他の操作（たたむ）。閉じているときはメニューの1行と同じ見た目、開くと下に並ぶ */
 .mn-more { margin-top: 10px; } .mn-more + .mn-group { margin-top: 10px; }
 .mn-more > summary { list-style: none; padding: 10px 12px; background: #F4F7F6; border-radius: 14px; } /* 中身はメニューの1行（menu-btn）と同じ形 */
