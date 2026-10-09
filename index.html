@@ -1298,6 +1298,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .pair-lead b { font-weight: 800; }
 .hg-card.pos { box-shadow: inset 0 0 0 1.5px #9FA8DA; background: #F7F8FD; }
 .hg-card.neg { box-shadow: inset 0 0 0 1.5px #EF9A9A; background: #FEF8F8; }
+.hg-card.even { box-shadow: inset 0 0 0 1.5px #AEBBB8; background: #F8FAF9; } /* 五分: 青・赤の枠と同じくらいの濃さの灰色 */
 .hg-top { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .hg-name { font-size: 13px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hg-rec { display: flex; align-items: baseline; gap: 2px; margin-top: 6px; font-variant-numeric: tabular-nums; }
@@ -10908,7 +10909,7 @@ function h2hGridHtml(row, keys, nameOf, avOf, clickOf = null, lvBase = 1) {
   return `<div class="hg-grid">${keys.map(k => {
     const e = row[k], nm = nameOf(k);
     const pct = h2hWinPct(e);
-    const cls = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
+    const cls = pct == null ? '' : pct === 50 ? 'even' : pct > 50 ? 'pos' : 'neg'; // 五分（勝ち負けが同じ数）も枠を付ける（勝ち越し・負け越しと同じ濃さの灰色。2026-10-09）
     const diff = e.scoreA - e.scoreB;
     // 数字の桁で文字の大きさを変える（4桁勝4桁敗でも1行に収める）
     return `<div class="hg-card ${cls}${sz}${clickOf ? ' tap' : ''}"${clickOf ? ` role="button" tabindex="0" onclick="${clickOf(k)}"` : ''}>
