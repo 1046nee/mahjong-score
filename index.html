@@ -4614,11 +4614,11 @@ function gridTableHtml(L, np, forImage, corner, headOf, opts = {}) {
   if (np !== 3) add('連対率', L.map(p => (p.counts[0] + p.counts[1]) / p.n), pctText, 'max'); // 三麻は連対率＝ラス回避なので出さない
   add('ラス回避', L.map(p => (p.n - p.last) / p.n), pctText, 'max');
   add('通算スコア', L.map(p => p.score), fmtScore, null, 'cat-break', h2hColor);
-  // 素点・順位点・最高点数・最低点数は細い字（ゲームの個人成績と同じ。2026-10-08）
-  add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor, true);
-  add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor, true);
-  add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max', null, null, true);
-  add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString(), null, null, null, true);
+  // 素点・順位点・最高点数・最低点数もほかの行と同じ太字（2026-10-09 ユーザー要望。画像も同じ＝表の字の太さを読む）
+  add('素点', L.map(p => rawPtsOf(p)), fmtScore, null, null, h2hColor);
+  add('順位点', L.map(p => rankPtsOf(p)), fmtScore, null, null, h2hColor);
+  add('最高点数', L.map(p => p.ptMax), v => v.toLocaleString(), 'max');
+  add('最低点数', L.map(p => p.ptMin), v => v.toLocaleString());
   add('5万点以上', L.map(p => overOf(p)), v => v + '回', null, null, v => (v > 0 ? '#1A237E' : '')); // 1回以上は青・箱下は赤（0回は今のまま）
   add('箱下', L.map(p => boxOf(p)), v => v + '回', null, null, v => (v > 0 ? '#C62828' : ''));
   const w = forImage ? 90 : 76;
@@ -9927,10 +9927,10 @@ function rankCountHtml(rounds, s, forImage = false) {
       if (slots !== 3) cells.push(`<td style="${rentais[i] === bestRentai ? hl : 'font-weight:700'}">${rentais[i]}%</td>`); // 三麻は連対率＝ラス回避なので出さない
       cells.push(`<td style="${pcts[i] === bestPct ? hl : 'font-weight:700'}">${pcts[i]}%</td>`,
         `<td style="font-weight:700;color:${scoreColor(sv)}">${signedPt(sv)}</td>`,
-        `<td style="color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
-        `<td style="color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
+        `<td style="font-weight:700;color:${scoreColor(raw)}">${signedPt(raw)}</td>`,
+        `<td style="font-weight:700;color:${scoreColor(rankPt)}">${signedPt(rankPt)}</td>`);
       if (ptsCnt[i]) {
-        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : ''}">${ptsMax[i].toLocaleString()}</td>`, `<td>${ptsMin[i].toLocaleString()}</td>`,
+        cells.push(`<td style="${ptsMax[i] === bestPtMax ? hl : 'font-weight:700'}">${ptsMax[i].toLocaleString()}</td>`, `<td style="font-weight:700">${ptsMin[i].toLocaleString()}</td>`,
           `<td style="${overCnt[i] ? 'font-weight:700;color:#1A237E' : ''}">${overCnt[i]}回</td>`, `<td style="${boxCnt[i] ? 'font-weight:700;color:#C62828' : ''}">${boxCnt[i]}回</td>`); // 1回以上は青・赤
       } else {
         cells.push(`<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`, `<td>${dash}</td>`);
@@ -12011,8 +12011,8 @@ function myStatsTableHtml(st) {
   if (cols.some(np => np !== 3)) row('連対率', cols.map(np => np === 3 ? '<td style="color:#ccc">—</td>' : `<td style="font-weight:700">${pct(np, b => b.counts[0] + (b.counts[1] || 0))}</td>`));
   row('ラス回避', cols.map(np => `<td style="font-weight:700">${pct(np, b => b.games - b.lastCount)}</td>`));
   row('通算スコア', cols.map(np => scoreCell(st.modes[np].score)), 'cat-break');
-  row('最高点数', cols.map(np => `<td>${st.modes[np].ptMax != null ? st.modes[np].ptMax.toLocaleString() : '—'}</td>`));
-  row('最低点数', cols.map(np => `<td>${st.modes[np].ptMin != null ? st.modes[np].ptMin.toLocaleString() : '—'}</td>`));
+  row('最高点数', cols.map(np => st.modes[np].ptMax != null ? `<td style="font-weight:700">${st.modes[np].ptMax.toLocaleString()}</td>` : '<td style="color:#ccc">—</td>'));
+  row('最低点数', cols.map(np => st.modes[np].ptMin != null ? `<td style="font-weight:700">${st.modes[np].ptMin.toLocaleString()}</td>` : '<td style="color:#ccc">—</td>'));
   const head = cols.map(np => `<th>${np === 3 ? '三麻' : '四麻'}</th>`).join('');
   // 項目列は78px（最長ラベル「通算スコア」=60px＋余白が収まる幅。64pxでははみ出す）
   return `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table stats-table" style="table-layout:fixed;min-width:${78 + cols.length * 96}px">
