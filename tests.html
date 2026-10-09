@@ -410,6 +410,18 @@ function opCases(w) {
       return sn === 2 && r.status === 'apply' && lay === 'X,op0,op2' && serials === '1,3'
         && apply(r.game, { id: 'ro6', sid: 'TESTGAME01', at: T(11), kind: 'reorder', order: ro, delSlots: { d5: 0 }, changes: [] }).status === 'already';
     }],
+    ['applyOp 日の区切り: 試合を消しても戻しても、ほかの試合の日は変わらない（dayStarts をずらす。消した試合の日は記録に残る）', () => {
+      const two = () => { const g = withRounds(P1, P2, P3, P1); g.settings = { ...g.settings, playDate: '2026-09-25', playDateEnd: '2026-09-26', dayStarts: [3] }; return g; };
+      const dayIds = g => { const ds = w.gameDaysList(g); return g.rounds.map(r => r.id + ':' + w.roundDayIdx(g, r, ds)).join(); };
+      const del = (g, k, id) => apply(g, { id, sid: 'TESTGAME01', at: T(9), kind: 'delete', target: w.roundTarget(g.rounds[k]), label: '' }).game;
+      const und = (g, id) => apply(g, { id: 'u' + id, sid: 'TESTGAME01', at: T(9), kind: 'undelete', del: id, pos: 0, label: '' }).game;
+      const a = del(two(), 0, 'da');                 // 1日目の試合を消す → 2日目の試合は2日目のまま
+      const b = del(two(), 1, 'db'), b2 = und(b, 'db'); // 1日目の最後を消して戻す → 1日目に戻る
+      const c = del(two(), 2, 'dc'), c2 = und(c, 'dc'); // 2日目の最初を消して戻す → 2日目に戻る
+      const ok = 'op0:0,op1:0,op2:1,op3:1';
+      return dayIds(a) === 'op1:0,op2:1,op3:1' && dayIds(b) === 'op0:0,op2:1,op3:1' && b.log[b.log.length - 1].day === 0 && dayIds(b2) === ok
+        && dayIds(c) === 'op0:0,op1:0,op3:1' && c.log[c.log.length - 1].day === 1 && dayIds(c2) === ok;
+    }],
     ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
       const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
       return pal.length === 30 && auto.length === 30 && pal.every(c => w.whiteContrast(c) >= 3)

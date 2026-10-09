@@ -486,7 +486,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* 履歴の札: アイコン無し・淡い地に色の字（修正＝琥珀・削除＝赤・戻す＝緑・入力と設定＝灰）。試合結果の表の「修正済」「削除」「戻した」も同じ（2026-10-09） */
 .lg-k, .rno-mk, .rno-del { display: inline-block; width: fit-content; padding: 0 5px; border-radius: 4px; font-size: 10px; font-weight: 800; line-height: 1.6; white-space: nowrap; background: #EEF2F1; color: #5F6E6B; }
 .lg-k i { font-style: normal; font-size: 11px; line-height: 1; } .lg-k .ico { --i1: #fff; --i2: rgba(255,255,255,.45); }
-.lg-k.edit, .rno-mk.ed { background: #FFF3DC; color: #9A5B12; } .lg-k.del, .rno-del { background: #FBE9E9; color: #C62828 !important; } .lg-k.back, .rno-mk.rs { background: #E3F2EA; color: #2E7D5B; }
+.lg-k.edit, .rno-mk.ed { background: #FFF3DC; color: #9A5B12; } .lg-k.del, .rno-del { background: #FBE9E9; color: #C62828 !important; } .lg-k.back, .rno-mk.rs { background: #E3F2EA; color: #2E7D5B; } .lg-k.add { background: #EAF2F4; color: var(--pc); }
 .lg-no { font-size: 12px; font-weight: 600; color: #1F2A28; } .lg-no small { display: block; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
 .lg-undo { display: inline-flex; align-items: center; gap: 3px; margin-top: 4px; height: 22px; padding: 0 7px; border: 1px solid var(--pc-line2); border-radius: 11px; background: var(--pc-tint); color: var(--pc); font: inherit; font-size: 10.5px; font-weight: 800; cursor: pointer; }
 .lg-row.del td { background: #F1F3F3; } .lg-row.del td b { color: #A9B4B2; } /* 削除は試合結果の表の灰色の行と同じ */
@@ -6610,7 +6610,9 @@ function applyOp(game, op) {
     } else {
       pinDeletedSlots(g); // 枠の記録が無い古い削除の行を、いま見えている所に留める（でないと削除のたびに古い灰色の行が動いた）
       const slot = roundLayout(g).findIndex(it => it.del == null && it.idx === i); // 消す前の表の枠（灰色の行はここに留まる）
+      const days0 = gameDaysList(g), day = days0.length > 1 ? roundDayIdx(g, orig, days0) : null; // 消した試合が何日目だったか
       g.rounds.splice(i, 1);
+      shiftDayStarts(g, i + 1, -1);
       // 履歴の試合番号を今の番号に合わせて振り直す（削除した試合の履歴は「旧」、それより後は1つ繰り上げ）
       g.log = g.log.map(e => {
         if (!e || e.old || typeof e.no !== 'number') return e;
@@ -6620,7 +6622,7 @@ function applyOp(game, op) {
       });
       // round＝消した試合そのもの・pnames＝そのときのメンバー表（灰色の行に元のまま出し、押すと戻せるように。2026-10-09）
       g.log = appendLog(g.log, { type: 'delete', at: op.at, no: i + 1, old: true, points: orig.points || null,
-        names: nameList(roundMembers(orig, s)), op: op.id, round: JSON.parse(JSON.stringify(orig)), pnames: pn.slice(), slot });
+        names: nameList(roundMembers(orig, s)), op: op.id, round: JSON.parse(JSON.stringify(orig)), pnames: pn.slice(), slot, ...(day != null ? { day } : {}) });
     }
     return done();
   }
@@ -6689,6 +6691,7 @@ function applyOp(game, op) {
     const lay = roundLayout(g), k = lay.findIndex(it => it.del && it.del.op === op.del);
     const at = Math.max(0, Math.min(g.rounds.length, k >= 0 ? lay.slice(0, k).filter(it => it.del == null).length : (Number(op.pos) || 0)));
     g.rounds.splice(at, 0, r);
+    shiftDayStarts(g, at + 1, 1, typeof de.day === 'number' ? de.day : null);
     // 履歴の番号: 戻した場所より後は1つ繰り下げ、この試合の入力・修正の記録は「旧」から戻す
     g.log = g.log.map(e => {
       if (!e || typeof e.no !== 'number') return e;
@@ -9524,6 +9527,16 @@ function roundLayout(g, order) {
   });
   return out;
 }
+// 日の区切り（settings.dayStarts＝2日目・3日目…が始まる試合の位置）を、試合を消した・戻したぶんずらす（2026-10-09）。
+// 位置で持っているので、ずらさないと消した試合より後の試合が前の日へ移ってしまった。
+// pos＝消した・戻した試合の位置（1始まり）。d＝-1（消した）/ +1（戻した）。戻した試合がちょうど日の始まりの位置に入るときは、
+// その試合の日（day＝0始まり。削除の記録に残した日）より後の日だけずらす（分からなければ、後ろの日の最初の試合として入れる）
+function shiftDayStarts(g, pos, d, day = null) {
+  const st = g.settings && g.settings.dayStarts;
+  if (!Array.isArray(st) || !st.length) return;
+  const out = st.map((n, k) => { n = Number(n); return n > pos || (d > 0 && n === pos && day != null && day < k + 1) ? n + d : n; });
+  if (out.some((n, k) => n !== Number(st[k]))) g.settings = { ...g.settings, dayStarts: out };
+}
 // 枠の記録（slot）が無い削除の記録に、いまの表での位置を書き込む（applyOp の中で g.log を差し替える）。
 // 枠の無い記録は番号の順で入る所に置くので、ほかの試合を消すと位置が変わってしまう。先に今の位置で留めておけば、表はそのまま
 function pinDeletedSlots(g) {
@@ -9604,15 +9617,43 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   requestAnimationFrame(() => ['rounds-wrap', 'detail-rounds-wrap'].forEach(id => syncTeamRowH(document.getElementById(id))));
   const lay = roundLayout(g), vis = new Set(idxs);
   const first = lay.findIndex(it => it.del == null && vis.has(it.idx));
+  const delDay = layoutDelDays(g, lay, days);
   let html = '', live = 0;
   lay.forEach((it, k) => {
-    if (it.del) { if (first < 0 || idxs.length >= n || k > first) html += delRow(it.del, live); } // 全部出しているときは一番上の灰色の行も出す
+    if (it.del) {
+      if (first < 0 || idxs.length >= n || k > first) { // 全部出しているときは一番上の灰色の行も出す
+        const dk = delDay[k];
+        if (days.length > 1 && dk !== lastDay) { lastDay = dk; html += `<tr class="day-row"><td colspan="${ncol + 1}"><span><b>${dk + 1}日目</b>${esc(fmtDay(ymdToMs(days[dk])))}</span></td></tr>`; }
+        html += delRow(it.del, live);
+      }
+    }
     else { if (vis.has(it.idx)) html += liveRow(it.idx); live++; }
   });
   // 印が消える時刻に描き直す（開いたままでも、しばらくしたら普段の表示に戻る）
   const wake = [mk.until, mk.lockLocal].filter(t => t && t > Date.now() - 1000), wakeAt = wake.length ? Math.min(...wake) : 0;
   if (wakeAt) { clearTimeout(roundMarkTimer); roundMarkTimer = setTimeout(() => { if (activeGame && document.getElementById('view-game').classList.contains('active')) renderGame(); else if (detailGame && document.getElementById('view-detail').classList.contains('active')) renderDetailBody(detailGame); }, Math.min(2147000000, Math.max(1000, wakeAt - Date.now() + 500))); }
   return html;
+}
+// 表の枠ごとの日（灰色の行＝消した試合の分だけ。0始まり）。消した試合の日＝削除の記録の day（無ければ入力した日）を、
+// 前後の残っている試合の日の間に収める（日は表の上から順にしか進まない）
+function layoutDelDays(g, lay, days) {
+  const out = {};
+  if (days.length < 2) return out;
+  const liveDay = lay.map(it => it.del ? null : roundDayIdx(g, g.rounds[it.idx], days));
+  lay.forEach((it, k) => {
+    if (!it.del) return;
+    let lo = 0, hi = days.length - 1;
+    for (let j = k - 1; j >= 0; j--) if (liveDay[j] != null) { lo = liveDay[j]; break; }
+    for (let j = k + 1; j < lay.length; j++) if (liveDay[j] != null) { hi = liveDay[j]; break; }
+    const e = it.del, t = Date.parse(e.round && e.round.at);
+    let want = typeof e.day === 'number' ? e.day : (t ? days.indexOf(ymdLocal(new Date(t))) : -1);
+    if (want < 0) want = lo;
+    out[k] = Math.max(lo, Math.min(hi, want, days.length - 1));
+  });
+  // 前の灰色の行より前の日にはしない
+  let cur = 0;
+  lay.forEach((it, k) => { if (it.del) { out[k] = Math.max(out[k], cur); cur = out[k]; } else cur = liveDay[k]; });
+  return out;
 }
 // チーム戦の表は見出しが2行。「メンバー」の行を「チーム」の行のすぐ下に止めるため、チームの行の高さを渡す
 function syncTeamRowH(wrap) { requestAnimationFrame(() => { const tr = wrap && wrap.querySelector('thead tr.team-row'); if (wrap) wrap.style.setProperty('--trh', tr ? tr.offsetHeight + 'px' : '0px'); }); }
@@ -10135,7 +10176,8 @@ function gamesLogHtml(g) {
   const rows = items.map(it => {
     const edits = it.evs.filter(e => e.type === 'edit').length, last = it.evs[it.evs.length - 1];
     const tags = (edits ? `<span class="lg-k edit">修正${edits > 1 ? edits : ''}</span>` : '')
-      + (it.del ? '<span class="lg-k del">削除</span>' : it.r && isRestoredRound(g, it.r) ? '<span class="lg-k back">復元</span>' : '');
+      + (it.del ? '<span class="lg-k del">削除</span>' : it.r && isRestoredRound(g, it.r) ? '<span class="lg-k back">復元</span>' : '')
+      || (it.evs.some(e => e.type === 'add') ? '<span class="lg-k add">入力</span>' : ''); // 入力しただけの試合（ほかの札が無いとき）
     const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => pn[m]);
     const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${ncol}"></td>`;
     const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}','log')` : `openRoundHistory('${where}',${it.idx},null,'log')`;
