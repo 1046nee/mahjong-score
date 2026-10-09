@@ -479,6 +479,13 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .lg-pts { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 11.5px; color: #6B7A77; } .lg-pts span { white-space: nowrap; }
 .lg-date td { background: #F1F5F4 !important; padding: 3px 0 !important; } .lg-date span { position: sticky; left: 8px; font-size: 11px; font-weight: 800; color: var(--pc); }
 .lg-more td { padding: 8px !important; }
+.lg-k.back { background: #2E7D5B; } .lg-row.back td.sticky-col { box-shadow: inset 3px 0 0 #2E7D5B; } .lg-row.back td { background: #EEF8F4; }
+.lg-d { margin-top: 1px; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
+.lg-row.lg-now td { background: var(--pc-tint); border-top: 2px solid var(--pc-line2); } .lg-nowt { font-size: 13px; font-weight: 900; color: var(--pc); }
+.rh-note { margin: 0 2px 8px; font-size: 12px; color: #5F6E6B; line-height: 1.65; }
+.rno-mk { display: block; width: fit-content; margin-top: 2px; font-size: 9px; font-weight: 800; line-height: 1.5; border-radius: 6px; } .rno-mk.ed { color: #A9B4B2; }
+.rno-mk[role=button] { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.rno-mk.rs { padding: 0 5px; background: #E3F2EA; color: #2E7D5B; text-decoration: none; }
 .ud-row.edit td.sticky-col { box-shadow: inset 3px 0 0 #E3B341; } .ud-row.back td { background: #EEF8F4; } .ud-row.back td.sticky-col { box-shadow: inset 3px 0 0 var(--pc); }
 .ud-row.gone td { background: #F4F5F5; } .ud-row.gone td b { color: #9AA8A4; } .ud-row.gone td.sticky-col { box-shadow: inset 3px 0 0 #C62828; }
 .ud-row .ud-k { display: inline-block; margin-top: 2px; }
@@ -3236,106 +3243,11 @@ function saveToLocalHistory() {
   syncGroupToMyList(g);       // 引き継ぎURLを作っている端末では、サーバーのリストにも追記する
 }
 
-// ---- 誤操作からの復元（端末内バックアップ） ----
-// 削除・修正・設定変更をする「直前の状態」をこの端末のlocalStorageに残す。
-// Firebase側には何も書き込まないので、保存容量・通信コスト・セキュリティルールは一切変わらない。
-// 保持は1グループ5世代・全体で約900KBまで（入りきらなければ古いものから捨てる）。
-const BK_KEY = 'mahjong-backup-v1';
-const BK_PER_GAME = 5;
-const BK_MAX_CHARS = 900000;
-function loadBackups() {
-  try { const d = localStorage.getItem(BK_KEY); const a = d ? JSON.parse(d) : []; return Array.isArray(a) ? a : []; }
-  catch(e) { return []; }
-}
-function writeBackups(list) {
-  // 容量オーバーで保存が丸ごと失敗しないよう、入りきるまで古いものから捨てる
-  let arr = list.slice();
-  while (arr.length) {
-    const json = JSON.stringify(arr);
-    if (json.length <= BK_MAX_CHARS) {
-      try { localStorage.setItem(BK_KEY, json); return true; } catch(e) { /* 容量不足 → 減らして再挑戦 */ }
-    }
-    arr.shift();
-  }
-  try { localStorage.removeItem(BK_KEY); } catch(e) {}
-  return false;
-}
-// 変更を書き込む「前」に呼ぶ。expect = 操作後に想定される試合数
-// （復元時に「その後だれかが入力していないか」を見分けるための目印）
-function takeBackup(g, label, expect) {
-  if (!g || !g.id) return null;
-  const snap = {
-    key: g.id + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-    gid: g.id,
-    at: new Date().toISOString(),
-    label: label,
-    expect: typeof expect === 'number' ? expect : (g.rounds || []).length,
-    name: g.name || '',
-    settings: JSON.parse(JSON.stringify(g.settings || {})),
-    rounds: JSON.parse(JSON.stringify(g.rounds || []))
-  };
-  let all = loadBackups().concat(snap);
-  // グループごとに最新BK_PER_GAME件だけ残す（新しい方から数えて超えた分を落とす）
-  const cnt = {};
-  all = all.slice().reverse().filter(b => {
-    cnt[b.gid] = (cnt[b.gid] || 0) + 1;
-    return cnt[b.gid] <= BK_PER_GAME;
-  }).reverse();
-  writeBackups(all);
-  return snap.key;
-}
-function backupsFor(gid) {
-  return loadBackups().filter(b => b.gid === gid).reverse(); // 新しい順
-}
-// 復元先: 開いているのが本人のグループ（Firebase）か、過去の試合（この端末の控え）かで書き戻し先が変わる
-function restoreTargetOf(gid) {
-  const detailOpen = document.getElementById('view-detail').classList.contains('active');
-  if (detailOpen && detailGame && detailGame.id === gid) return 'detail';
-  if (activeGame && activeGame.id === gid) return 'live';
-  if (detailGame && detailGame.id === gid) return 'detail';
-  return null;
-}
-function confirmRestore(key) { openRestoreSheet(key); }
-function confirmRestoreOld(key) {
-  const bk = loadBackups().find(b => b.key === key);
-  if (!bk) { showToast('この記録はもう残っていません'); return; }
-  document.getElementById('confirm-modal-title').textContent = 'この状態に戻す';
-  document.getElementById('confirm-modal-desc').textContent =
-    `${fmtDate(bk.at)} ${fmtTime(bk.at)}「${bk.label}」の直前（第${bk.rounds.length}試合まで）の状態に戻します。`
-    + 'そのあとに入力・修正した内容は取り消されます。よろしいですか？';
-  const ok = document.getElementById('confirm-modal-ok');
-  ok.textContent = '戻す';
-  ok.onclick = () => { closeConfirmModal(); closeFormModal(); restoreBackupById(key, true); };
-  document.getElementById('confirm-modal').classList.add('open');
-}
-// force=false のときは、想定より試合数が変わっていたら（＝他の人が入力した可能性）確認を挟む
-function restoreBackupById(key, force) {
-  const bk = loadBackups().find(b => b.key === key);
-  if (!bk) { showToast('この記録はもう残っていません'); return; }
-  const where = restoreTargetOf(bk.gid);
-  if (!where) { showToast('この結果を開いてから戻してください'); return; }
-  const cur = where === 'live' ? activeGame : detailGame;
-  if (!force && (cur.rounds || []).length !== bk.expect) { confirmRestore(key); return; }
-  applyRestore(bk, where);
-}
-function applyRestore(bk, where) {
-  // 履歴に残す名前は「何を取り消したか」（以前は「2026.10.09（金） 05:59の状態にもどす」で、長くて何をしたか分からなかった）
-  const label = bk.label === 'もとに戻す' ? '取り消しを元に戻す' : `「${bk.label}」を取り消し`;
-  const g = where === 'live' ? activeGame : detailGame;
-  takeBackup(g, 'もとに戻す', bk.rounds.length); // 復元そのものも取り消せるようにする
-  // 「戻す」を押した時点で画面に見えていた状態を基準にする（その後に他の人が入力していたら戻さない）
-  // 結果詳細からの復元もサーバーへ書く（端末内だけ戻すと、サーバーから取り直す入り口で巻き戻ってしまう）
-  const op = enqueueOp({ id: newOpId(), sid: bk.gid, at: new Date().toISOString(), kind: 'restore',
-    baseFp: fpOf({ name: g.name, settings: g.settings, rounds: (g.rounds || []).map(roundCore) }),
-    snap: { name: bk.name, settings: bk.settings, rounds: bk.rounds }, label });
-  if (where !== 'live') {
-    const r = applyOp(detailGame, op);
-    if (r.status === 'apply') Object.assign(detailGame, r.game);
-    saveStorage();
-    viewDetail(detailGame);
-  }
-  showToast('取り消しました');
-}
+// ---- 「元に戻す」は 2026-10-09 にやめた ----
+// 変更の前の状態を端末に控えて戻す仕組みだったが、控えは変更した人の端末にしか無く、人によってできることが違った。
+// いまは 修正は入れ直す・消した試合は灰色の行から戻す・どの変更も履歴（試合ごとの履歴も）で前後が見える、で足りる。
+// 以前の控えはもう使わないので消しておく
+try { localStorage.removeItem('mahjong-backup-v1'); } catch (e) { /* 消せなくても困らない */ }
 
 // ---- Firebase ----
 function generateSessionId() {
@@ -6573,7 +6485,7 @@ function applyOp(game, op) {
       if (orig.id) r.id = orig.id;
       r.scores = rescore(r, s);
       g.rounds[i] = r;
-      g.log = appendLog(g.log, { type: 'edit', at: op.at, no: i + 1, prev: orig.points || null, points: r.points, names: nameList(members), op: op.id });
+      g.log = appendLog(g.log, { type: 'edit', at: op.at, no: i + 1, prev: orig.points || null, points: r.points, names: nameList(members), op: op.id, ...(r.id ? { rid: r.id } : {}) });
     } else {
       const slot = roundLayout(g).findIndex(it => it.del == null && it.idx === i); // 消す前の表の枠（灰色の行はここに留まる）
       g.rounds.splice(i, 1);
@@ -6657,10 +6569,10 @@ function applyOp(game, op) {
     // 履歴の番号: 戻した場所より後は1つ繰り下げ、この試合の入力・修正の記録は「旧」から戻す
     g.log = g.log.map(e => {
       if (!e || typeof e.no !== 'number') return e;
-      if (e.old) return (e.type !== 'delete' && (e.op === r.id || (r.op && e.op === r.op))) ? { ...e, old: false, no: at + 1 } : e;
+      if (e.old) return (e.type !== 'delete' && (e.op === r.id || e.rid === r.id || (r.op && e.op === r.op))) ? { ...e, old: false, no: at + 1 } : e;
       return e.no >= at + 1 ? { ...e, no: e.no + 1 } : e;
     });
-    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: op.label || '削除した試合を戻す', op: op.id });
+    g.log = appendLog(g.log, { type: 'settings', at: op.at, label: op.label || '削除した試合を戻す', op: op.id, rid: r.id, undel: true });
     return done();
   }
   if (op.kind === 'restore') {
@@ -7453,7 +7365,7 @@ function showToast(msg, ms = 2500) {
 }
 // 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
 // ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒／履歴の削除は4秒）
-// key: バックアップのキー（restoreBackupByIdで戻す）または関数（押したらそのまま実行）
+// key: 押したら実行する関数（この端末の中だけの操作の取り消し: 過去の試合の一覧から外す・自分を選ぶ など）
 function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   if (!key) { showToast(msg); return; }
   const el = document.getElementById('toast');
@@ -7464,7 +7376,7 @@ function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   btn.type = 'button';
   btn.className = 'toast-undo';
   btn.textContent = '元に戻す';
-  btn.onclick = () => { el.classList.remove('show', 'act'); typeof key === 'function' ? key() : restoreBackupById(key, false); };
+  btn.onclick = () => { el.classList.remove('show', 'act'); key(); };
   el.appendChild(span);
   el.appendChild(btn);
   el.classList.add('act', 'show');
@@ -9366,7 +9278,11 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
       : '';
     return `<td${tb} style="${st}"><div>${sc > 0 ? '+' : ''}${sc.toFixed(1)}</div>${raw}${markHtml}</td>`;
   }).join('');
-  const editedMark = (!compact && r.edited) ? '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>' : '';
+  // 「修正済」「戻した」（削除から戻した試合。記録が確定するまで）は押すとこの試合の履歴（from.hist）
+  const histOn = !forImage && from && from.hist;
+  const markTag = (t, cls) => histOn ? `<div class="rno-mk ${cls}" role="button" onclick="event.stopPropagation();${from.hist}">${t}</div>` : `<div class="rno-mk ${cls}">${t}</div>`;
+  const editedMark = ((!compact && r.edited) ? (histOn ? markTag('修正済', 'ed') : '<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済</div>') : '')
+    + (from && from.restored ? markTag('戻した', 'rs') : '');
   // 送信キューに残っている試合（電波待ち）。画像には出さない
   const pendMark = (!forImage && isPendingRound(r)) ? '<div class="pend-mark">未送信</div>' : '';
   // 試合番号は個人成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
@@ -9550,7 +9466,9 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
     lastDay = k;
     return `<tr class="day-row"><td colspan="${ncol + 1}"><span><b>${k + 1}日目</b>${esc(fmtDay(ymdToMs(days[k])))}</span></td></tr>`;
   };
-  const liveRow = idx => dayRow(idx) + roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1) });
+  const where = g === activeGame ? 'game' : 'detail';
+  const liveRow = idx => dayRow(idx) + roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1),
+    hist: `openRoundHistory('${where}',${idx})`, restored: !locked && isRestoredRound(g, g.rounds[idx]) });
   if (locked) return idxs.map(liveRow).join('');
   // 枠の順に描く。直近n試合に絞っているときは、いちばん上に出す試合より前の灰色の行は出さない
   const lay = roundLayout(g), vis = new Set(idxs);
@@ -9977,159 +9895,17 @@ function renderLogModal() {
     `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML =
-    backupSectionHtml(g)
-    + `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
+    `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
     + renderLogList(g.log, g)
     + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
-}
-// ---- 変更の前に戻す（2026-10-09 作り直し）----
-// この端末に残している「削除・修正・設定変更などをする直前の状態」（takeBackup）から戻す。
-// 見せ方: ①履歴の上に「変更の前に戻す」。行は「〇時〇分の『第3試合を修正』の前に戻す」＋何が変わるかの短い説明（いまと比べて作る）。
-// いまと同じになる控え・同じ中身が続く控えは出さない。「戻す」をした直前の控え（＝戻したのを取り消す）は、いちばん新しいときだけ出す。
-// ②押すと同じシートの中で確認の画面（いま → 戻したあと を試合ごとに）。「この状態に戻す」で初めて書き込む
-function bkCurGame(gid) { const w = restoreTargetOf(gid); return w ? (w === 'live' ? activeGame : detailGame) : null; }
-function bkSame(a, b) { return fpOf({ name: a.name || '', settings: a.settings, rounds: (a.rounds || []).map(roundCore) }) === fpOf({ name: b.name || '', settings: b.settings, rounds: (b.rounds || []).map(roundCore) }); }
-// いま（cur）→ 戻したあと（bk）で何が変わるか: [{ no, kind: 'gone'|'back'|'edit', a, b }] と設定の変更の文
-function bkDiff(cur, bk) {
-  // 試合を中身で突き合わせる（番号で比べると、途中を消したときに後ろの試合が全部「変わる」と出てしまう）。
-  // 同じ中身の試合をLCSで対応づけ、間に残ったものを 修正（両方にある）・消える（いまだけ）・戻る（戻したあとだけ）にする。番号は戻したあとの番号（消えるものはいまの番号）
-  const rs = [], A = cur.rounds || [], B = bk.rounds || [], fa = A.map(r => fpOf(roundCore(r))), fb = B.map(r => fpOf(roundCore(r)));
-  const L = Array.from({ length: A.length + 1 }, () => new Array(B.length + 1).fill(0));
-  for (let i = A.length - 1; i >= 0; i--) for (let j = B.length - 1; j >= 0; j--) L[i][j] = fa[i] === fb[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
-  let i = 0, j = 0, ga = [], gb = [];
-  const flush = () => { const k = Math.min(ga.length, gb.length);
-    for (let t = 0; t < k; t++) rs.push({ no: gb[t] + 1, kind: 'edit', a: A[ga[t]], b: B[gb[t]] });
-    ga.slice(k).forEach(x => rs.push({ no: x + 1, kind: 'gone', a: A[x] })); gb.slice(k).forEach(y => rs.push({ no: y + 1, kind: 'back', b: B[y] })); ga = []; gb = []; };
-  while (i < A.length || j < B.length) {
-    if (i < A.length && j < B.length && fa[i] === fb[j]) { flush(); i++; j++; }
-    else if (j < B.length && (i >= A.length || L[i][j + 1] >= L[i + 1][j])) gb.push(j++);
-    else ga.push(i++);
-  }
-  flush();
-  const sets = describeSettingsChanges({ name: cur.name, settings: cur.settings }, { name: bk.name, settings: bk.settings }, null);
-  if (fpOf(cur.settings.playerNames || []) !== fpOf(bk.settings.playerNames || [])) sets.push(`メンバー: ${(cur.settings.playerNames || []).join('・')} → ${(bk.settings.playerNames || []).join('・')}`);
-  return { rs, sets };
-}
-function bkDiffText(d) {
-  const t = [];
-  const gone = d.rs.filter(x => x.kind === 'gone').map(x => x.no), back = d.rs.filter(x => x.kind === 'back').map(x => x.no), edit = d.rs.filter(x => x.kind === 'edit').map(x => x.no);
-  const nos = a => (a.length > 2 ? `第${a[0]}〜${a[a.length - 1]}試合` : a.map(n => `第${n}試合`).join('・'));
-  if (edit.length) t.push(`${nos(edit)}の点数が変わります`);
-  if (back.length) t.push(`${nos(back)}が戻ります`);
-  if (gone.length) t.push(`${nos(gone)}が消えます`);
-  if (d.sets.length) t.push(d.sets.length === 1 ? d.sets[0] : `設定が${d.sets.length}か所変わります`);
-  return t;
-}
-function bkListFor(g) {
-  const all = backupsFor(g.id); // 新しい順
-  const out = [];
-  all.forEach((b, i) => {
-    if (bkSame(g, b)) return;                                        // いまと同じ（戻しても何も変わらない）
-    if (out.length && bkSame(out[out.length - 1], b)) return;        // 1つ新しい控えと同じ中身
-    if (b.label === 'もとに戻す' && i > 0) return;                     // 「戻す」の取り消しは、いちばん新しいときだけ
-    out.push(b);
-  });
-  return out;
-}
-// 控えを、その変更の履歴の行に結びつける（控えは変更を書き込む直前に取る＝時刻がほぼ同じ。種類も合わせる）。戻り値 Map(履歴の行 → 控え)
-function bkLogMatch(g) {
-  const evs = logEvents(g.log), m = new Map(), used = new Set();
-  bkListFor(g).forEach(b => {
-    const tb = Date.parse(b.at) || 0;
-    const ok = e => /削除/.test(b.label) ? e.type === 'delete' : /修正/.test(b.label) ? (e.type === 'edit' && typeof e.no === 'number') : logKind(e) === 'settings';
-    let best = null, bd = 20000;
-    evs.forEach(e => { if (used.has(e) || !ok(e)) return; const d = Math.abs((Date.parse(e.at) || 0) - tb); if (d < bd) { bd = d; best = e; } });
-    if (best) { used.add(best); m.set(best, b); }
-  });
-  return m;
-}
-// 履歴の行に結びつかなかった控えだけ、履歴の上に小さく出す（ふつうは出ない）
-function backupSectionHtml(g) {
-  if (!g || !g.id) return '';
-  const matched = new Set([...bkLogMatch(g).values()].map(b => b.key)); // 控えは読むたびに別のオブジェクトになるので key で比べる
-  const list = bkListFor(g).filter(b => !matched.has(b.key));
-  if (!list.length) return '';
-  const rows = list.slice(0, 3).map(b => {
-    const what = b.label === 'もとに戻す' ? 'さっきの取り消しをやめる' : `「${b.label}」を取り消す`;
-    const t = bkDiffText(bkDiff(g, b));
-    return `<button type="button" class="bk-row" onclick="openRestoreSheet('${b.key}')">
-      <span class="bk-info"><b>${fmtTime(b.at)} ${esc(what)}</b><span class="bk-sub">${esc(t.join('・') || '—')}</span></span>${ico('chevron', 14)}</button>`;
-  }).join('');
-  return `<div class="bk-box">
-    <div class="bk-head">変更を取り消す</div>
-    <div class="bk-lead">押すと、取り消すと何が変わるかを確かめてから取り消せます（全員の画面に反映）。</div>
-    ${rows}${list.length > 3 ? `<div class="bk-more">ほかに${list.length - 3}件（古いもの）</div>` : ''}
-  </div>`;
-}
-// 確認の画面（履歴と同じシートの中。上の × の左の「‹ 戻る」で履歴へ）
-function bkRoundText(g, r) {
-  if (!r) return '—';
-  const st = g.settings, names = roundMembers(r, st).map(m => st.playerNames[m]);
-  const v = r.points || r.scores || [];
-  return names.map((nm, i) => `${nm} ${v[i] == null ? '' : r.points ? Number(v[i]).toLocaleString() : fmtScore(v[i])}`).join('\n');
-}
-// 1人ずつの札（名前 点数）。a→b があれば変わった人だけ「a → b」
-function bkChips(g, r, other) {
-  if (!r) return '';
-  const st = g.settings, mem = roundMembers(r, st), v = r.points || r.scores || [];
-  const ov = other && (other.r.points || other.r.scores || []), omem = other && roundMembers(other.r, other.g.settings);
-  const same = other && omem.length === mem.length && omem.every((m, i) => other.g.settings.playerNames[m] === st.playerNames[mem[i]]);
-  const f = x => x == null ? '' : r.points ? Number(x).toLocaleString() : fmtScore(x);
-  return `<div class="lp-row">${mem.map((m, i) => {
-    const nm = esc(st.playerNames[m] || '');
-    if (same && Number(ov[i]) !== Number(v[i])) return `<span class="lp ch">${nm} ${f(ov[i])} → <b>${f(v[i])}</b></span>`;
-    return `<span class="lp">${nm} <b>${f(v[i])}</b></span>`; }).join('')}</div>`;
-}
-function openRestoreSheet(key) {
-  const bk = loadBackups().find(b => b.key === key);
-  const g = bk && bkCurGame(bk.gid);
-  if (!bk || !g) { showToast('この記録はもう残っていません'); return; }
-  const d = bkDiff(g, bk);
-  const undoUndo = bk.label === 'もとに戻す';
-  const KIND = { gone: ['gone', '消える'], back: ['back', '戻る'], edit: ['edit', '変わる'] };
-  const ncol = memberDisplayOrder(g.settings).length;
-  const namesOf = (gx, r) => roundMembers(r, gx.settings).map(m => gx.settings.playerNames[m]);
-  const valsOf = r => r.points || r.scores || [];
-  // 試合結果の表と同じ列で、取り消すと変わる試合だけ。変わるマスは「いま（小さく）→ 取り消したあと」
-  const rows = d.rs.map(x => {
-    const [c, t] = KIND[x.kind];
-    let cells = null;
-    if (x.kind === 'edit') {
-      const na = namesOf(g, x.a), nb = namesOf(bk, x.b);
-      if (fpOf(na) === fpOf(nb)) cells = lgCellsHtml(g, nb, valsOf(x.b), valsOf(x.a));
-    } else if (x.kind === 'back') cells = lgCellsHtml(g, namesOf(bk, x.b), valsOf(x.b));
-    else cells = lgCellsHtml(g, namesOf(g, x.a), valsOf(x.a));
-    if (cells == null) cells = `<td colspan="${ncol}" class="lg-wide">${esc(bkRoundText(x.kind === 'gone' ? g : bk, x.kind === 'gone' ? x.a : x.b).replace(/\n/g, '・'))}</td>`;
-    return `<tr class="ud-row ${c}"><td class="sticky-col"><div class="lg-no">第${x.no}試合</div><span class="ud-k ${c}">${t}</span></td>${cells}</tr>`;
-  }).join('');
-  document.getElementById('form-modal-title').textContent = undoUndo ? '取り消しをやめる' : '変更を取り消す';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ud-sheet">${sheetBackMark(`showLogModal('${logSrc}')`, '履歴に戻る')}
-    <div class="ud-src"><span class="ud-src-l">${undoUndo ? 'やめる取り消し' : '取り消す変更'}</span><span class="ud-src-t">${fmtTime(bk.at)}</span><b>${esc(undoUndo ? 'さっきの取り消し' : bk.label)}</b></div>
-    ${rows || d.sets.length ? `<div class="ud-h">${undoUndo ? 'やめると' : '取り消すと'}、こう変わります</div>` : ''}
-    ${rows ? `<div class="ud-legend"><span class="ud-k edit">変わる</span>いま → <b>取り消したあと</b>　<span class="ud-k back">戻る</span><span class="ud-k gone">消える</span></div>
-      <div class="lg-scroll ud-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '試合')}<tbody>${rows}</tbody></table></div>` : ''}
-    ${d.sets.length ? `<ul class="bk-sets">${d.sets.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
-    <div class="ud-note">全員の画面に反映されます。取り消したことも履歴に残り、すぐならその行から元に戻せます。</div>
-    <button type="button" class="confirm-btn" style="margin-top:14px" onclick="doRestore('${key}', ${(g.rounds || []).length})">${undoUndo ? '取り消しをやめる' : '取り消す'}</button>
-    <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="showLogModal('${logSrc}')">やめる</button></div>`;
-  document.getElementById('form-modal').classList.add('open');
-}
-function doRestore(key, nAtOpen) {
-  const bk = loadBackups().find(b => b.key === key);
-  const where = bk && restoreTargetOf(bk.gid);
-  if (!bk || !where) { closeFormModal(); showToast('この結果を開いてから戻してください'); return; }
-  const cur = where === 'live' ? activeGame : detailGame;
-  if ((cur.rounds || []).length !== nAtOpen) { showToast('確かめているあいだに試合数が変わりました。もう一度確かめてください', 5000); openRestoreSheet(key); return; }
-  closeFormModal();
-  applyRestore(bk, where);
 }
 // 「取り消し」（変更の前に戻す）の記録か。古い記録は「2026.10.09（金） 05:59の状態にもどす」
 function isUndoLog(e) { return !!e && logKind(e) === 'settings' && /(の状態にもどす|」を取り消し|取り消しを元に戻す)$/.test(e.label || ''); }
 // ---- 履歴の表（2026-10-09）: 試合結果の表と同じ列（メンバー）で、1行＝1つの変更。新しい順 ----
 // 左の欄に 時刻・種類の札（アイコン）・試合の番号、右にメンバーごとの点数。修正は変わったマスだけ「前（小さく）→ 後」。
 // 削除は灰色の行、設定・並べ替え・取り消しは横いっぱいの1マスに中身。取り消せる変更は左の欄に「取り消す」
-const LG_KIND = { add: ['add', '入力', null], edit: ['edit', '修正', 'pencil'], delete: ['del', '削除', 'trash'], settings: ['set', '設定', 'gear'], undo: ['undo', '取消', 'refresh'] };
+const LG_KIND = { add: ['add', '入力', null], edit: ['edit', '修正', 'pencil'], delete: ['del', '削除', 'trash'], settings: ['set', '設定', 'gear'], undo: ['undo', '取消', 'refresh'], back: ['back', '戻す', 'refresh'] };
 function lgKindChip(k) { const [c, l, ic] = LG_KIND[k] || LG_KIND.settings; return `<span class="lg-k ${c}">${ic ? ico(ic, 11) : '<i>＋</i>'}${l}</span>`; }
 function lgTheadHtml(g, first) {
   const s = g.settings;
@@ -10149,8 +9925,44 @@ function lgCellsHtml(g, names, vals, prev) {
   }
   return cells.join('');
 }
+// ---- 試合ごとの履歴（2026-10-09）: その試合の 入力 → 修正 → 削除 → 戻す を古い順に、試合結果の表と同じ列で。最後に「いま」 ----
+// 試合は id で引く（入力の記録の op・修正と戻すの記録の rid・削除の記録の round.id）。rid の無い古い修正の記録は、いまの位置（no）で拾う
+function roundHistoryOf(g, idx) {
+  const r = g.rounds[idx], rid = r && r.id;
+  return (g.log || []).filter(e => {
+    if (!e) return false;
+    if (rid && (e.rid === rid || (e.type === 'add' && e.op === rid) || (e.type === 'delete' && e.round && e.round.id === rid))) return true;
+    return !e.rid && !e.old && e.no === idx + 1 && (e.type === 'add' || e.type === 'edit') && !(e.type === 'add' && e.op && rid && e.op !== rid);
+  });
+}
+// 削除から戻した試合か（記録が確定するまで「戻した」の印。押すとこの試合の履歴）
+function isRestoredRound(g, r) { return !!(r && r.id && (g.log || []).some(e => e && e.type === 'delete' && e.round && e.round.id === r.id)); }
+function openRoundHistory(where, idx) {
+  const g = where === 'game' ? activeGame : detailGame, r = g && g.rounds[idx];
+  if (!r) return;
+  const evs = roundHistoryOf(g, idx), serial = roundSerialAt(g, idx), ncol = memberDisplayOrder(g.settings).length;
+  const curNames = roundMembers(r, g.settings).map(m => g.settings.playerNames[m]);
+  const rowOf = (kind, e, cells) => `<tr class="lg-row ${LG_KIND[kind][0]}"><td class="sticky-col"><div class="lg-h"><span class="lg-t">${e ? fmtTime(e.at) : ''}</span>${lgKindChip(kind)}</div>${e ? `<div class="lg-d">${esc(fmtDate(e.at))}</div>` : ''}</td>${cells}</tr>`;
+  let rows = evs.map(e => {
+    const names = e.names || curNames;
+    if (e.type === 'settings') return rowOf('back', e, `<td colspan="${ncol}" class="lg-wide"><b>削除から戻した</b></td>`);
+    const kind = e.type === 'delete' ? 'delete' : e.type;
+    const cells = e.points ? lgCellsHtml(g, names, e.points, e.type === 'edit' ? e.prev : null) : null;
+    return rowOf(kind, e, cells || `<td colspan="${ncol}" class="lg-wide"><b>${{ add: '入力', edit: '修正', delete: '削除' }[e.type] || ''}</b></td>`);
+  }).join('');
+  const now = lgCellsHtml(g, curNames, r.points || r.scores || []);
+  rows += `<tr class="lg-row lg-now"><td class="sticky-col"><b class="lg-nowt">いま</b></td>${now || `<td colspan="${ncol}"></td>`}</tr>`;
+  const canEdit = !isGameLocked(g) && (where === 'game' ? true : !detailRO);
+  document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="rh-note">この試合の入力・修正・削除・戻した記録です（古い順）。修正したマスは「前 → 後」。${canEdit ? '前の点数に戻したいときは、その点数を見ながら「点数を修正する」で入れ直してください。' : ''}</div>
+    ${evs.length ? '' : '<div class="rh-note">この試合の履歴は残っていません（古いデータ・履歴が多くて押し出されたもの）。</div>'}
+    <div class="lg-scroll ud-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '日時')}<tbody>${rows}</tbody></table></div>
+    ${canEdit ? `<button type="button" class="confirm-btn" style="margin-top:12px" onclick="closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}">点数を修正する</button>` : ''}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
 function renderLogList(log, g) {
-  const bkOf = g ? bkLogMatch(g) : new Map(); // その変更の直前の控え（あれば「取り消す」）
   let events = logEvents(log);
   if (logFilter !== 'all') events = events.filter(e => logKind(e) === logFilter);
   if (events.length === 0) return '<div class="lg-scroll lg-empty">該当する履歴はありません</div>';
@@ -10162,13 +9974,11 @@ function renderLogList(log, g) {
   events.forEach(e => {
     const date = fmtDate(e.at);
     if (date !== prevDate) { rows += `<tr class="lg-date"><td colspan="${ncol + 1}"><span>${date || '日時不明'}</span></td></tr>`; prevDate = date; }
-    const isUndo = isUndoLog(e), kind = isUndo ? 'undo' : logKind(e);
+    const isUndo = isUndoLog(e), kind = e.undel ? 'back' : isUndo ? 'undo' : logKind(e);
     const no = typeof e.no === 'number' ? (logSerialOf(g, e) || e.no) : null;
     const round = (!e.old && typeof e.no === 'number' && g.rounds) ? g.rounds[e.no - 1] : null;
     const names = e.names || (round ? roundMembers(round, g.settings).map(m => g.settings.playerNames[m]) : null);
-    const bk = bkOf.get(e);
-    const undoBtn = bk ? `<button type="button" class="lg-undo" onclick="openRestoreSheet('${bk.key}')">${ico('refresh', 11)}${isUndo ? 'やめる' : '取り消す'}</button>` : '';
-    const head = `<td class="sticky-col"><div class="lg-h"><span class="lg-t">${fmtTime(e.at)}</span>${lgKindChip(kind)}</div>${no ? `<div class="lg-no">試合${no}${e.old && e.type !== 'delete' ? '<small>あとで削除</small>' : ''}</div>` : ''}${undoBtn}</td>`;
+    const head = `<td class="sticky-col"><div class="lg-h"><span class="lg-t">${fmtTime(e.at)}</span>${lgKindChip(kind)}</div>${no ? `<div class="lg-no">試合${no}${e.old && e.type !== 'delete' ? '<small>あとで削除</small>' : ''}</div>` : ''}</td>`;
     let cells = null;
     if (e.points && (e.type === 'add' || e.type === 'edit' || e.type === 'delete')) cells = lgCellsHtml(g, names, e.points, e.type === 'edit' ? e.prev : null);
     if (cells == null) {
@@ -10340,6 +10150,7 @@ function openRoundMenu(idx) {
   document.getElementById('action-modal-title').textContent = `試合${roundSerialAt(activeGame, idx)}（第${idx + 1}試合）`;
   document.getElementById('action-modal-body').innerHTML =
     `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
+     <button class="modal-action" onclick="closeActionModal();openRoundHistory('game',${idx})">この試合の履歴</button>
      <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この試合を削除する</button>`;
   document.getElementById('action-modal').classList.add('open');
 }
@@ -10385,10 +10196,9 @@ function deleteRound(idx) {
   const old = activeGame.rounds[idx];
   if (!old) return;
   const no = roundSerialAt(activeGame, idx);
-  const bkKey = takeBackup(activeGame, `試合${no}を削除`, activeGame.rounds.length - 1); // 書き込む前の状態を控える
   enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'delete',
     target: roundTarget(old), label: `試合${no}の削除` });
-  showUndoToast('削除しました', bkKey);
+  showToast('削除しました（灰色の行を押すと戻せます）', 3500);
 }
 
 // ---- 点数入力シート ----
@@ -10800,12 +10610,10 @@ function submitRound() {
     names: ctx.settings.playerNames.slice() }; // 入力したときのメンバー表（途中でメンバーが変わっても追えるように）
   const eno = isEdit ? roundSerialAt(ctx.game, editingIndex) : null;
   if (isEdit) { op.target = roundTarget(orig); op.label = `試合${eno}の修正`; }
-  // 修正は上書きなので、書き込む前の状態を控えておく（新規入力は消えるものが無いので不要）
-  const bkKey = isEdit ? takeBackup(ctx.game, `試合${eno}を修正`, nBefore) : null;
   closeSheet();
   // ここで入力は確定（端末の送信キューに入る）。送信は裏で続け、送れないあいだは画面上部の帯で知らせる
   ctx.submit(op);
-  if (bkKey) showUndoToast('修正しました', bkKey);
+  if (isEdit) showToast('修正しました');
   else if (nBefore + 1 >= MAX_ROUNDS - 20) showToast(`あと${MAX_ROUNDS - nBefore - 1}試合で上限です`);
   track('round_submit', { is_edit: isEdit, round_no: isEdit ? editingIndex + 1 : nBefore + 1 });
 }
@@ -11104,14 +10912,12 @@ async function saveGameEdit() {
   const next = { name, settings };
   if (fpOf(base) === fpOf(next)) { closeFormModal(); showToast('変更はありませんでした'); return; }
   const changes = describeSettingsChanges(base, next, editMembersState);
-  // ルール変更は全試合が再計算される＝取り返しがつかないので、必ず変更前を控える
-  const bkKey = takeBackup(activeGame, 'ゲーム設定を変更', activeGame.rounds.length);
   closeFormModal();
   enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'settings',
     baseFp: fpOf(base), name, settings, memberMap: mapOldToNew, changes });
   editBase = null;
   savePlayerNames(settings.playerNames);
-  showUndoToast('設定を更新しました', bkKey, UNDO_TOAST_SHORT_MS);
+  showToast('設定を更新しました');
 }
 
 // ---- 2日以上にわたる試合: 何試合目からが何日目か ----
@@ -11255,7 +11061,6 @@ function saveReorder() {
   const g = activeGame, items = reorderState && reorderState.items;
   if (!g || !items || isGameLocked(g)) return;
   if (items.every((it, k) => it.orig === k)) { closeFormModal(); return; }
-  takeBackup(g, '試合の順番を入れ替え', (g.rounds || []).length); // 書き込む前の状態を控える（「もとに戻す」で戻せる）
   const rs = g.rounds || [];
   const live = items.filter(it => it.del == null);
   // 消した試合の新しい枠（削除の記録の slot を書き換える）
@@ -13933,7 +13738,6 @@ function saveDetailEdit() {
   const changes = [];
   if (newName !== g.name) changes.push(`ゲーム名: ${g.name} → ${newName}`);
   g.settings.playerNames.forEach((nm, i) => { if (nm !== newPlayers[i]) changes.push(`名前変更: ${nm} → ${newPlayers[i]}`); });
-  const bkKey = takeBackup(g, '名前を編集', (g.rounds || []).length);
   // 最新の設定の上に名前だけを載せる（設定の編集・新しい試合など他の人の変更を消さない）。送信はキューが続ける
   const op = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'rename',
     baseFp, name: newName, playerNames: newPlayers, changes });
@@ -13945,7 +13749,7 @@ function saveDetailEdit() {
   saveStorage();
   closeFormModal();
   viewDetail(g);
-  showUndoToast('更新しました', bkKey);
+  showToast('更新しました');
 }
 
 // アプリ内アイコン（スプライト #i-名前 を参照する）。絵文字の代わりに使う。
