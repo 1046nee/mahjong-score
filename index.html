@@ -10050,7 +10050,8 @@ function roundHistoryOf(g, idx) {
 }
 // 削除から戻した試合か（記録が確定するまで「戻した」の印。押すとこの試合の履歴）
 function isRestoredRound(g, r) { return !!(r && r.id && (g.log || []).some(e => e && e.type === 'delete' && e.round && e.round.id === r.id)); }
-function openRoundHistory(where, idx, delOp) {
+// from＝どこから開いたか（'log'＝全体の履歴・'menu'＝試合のシート・'del'＝消した試合のシート）。右上に「‹ 戻る」を出し、来た所へ戻る（2026-10-09）
+function openRoundHistory(where, idx, delOp, from, pos) {
   const g = where === 'game' ? activeGame : detailGame;
   if (!g) return;
   // 消した試合（delOp＝削除の op の id）は、削除の記録に残した試合の id で引く。いまの行は出さない
@@ -10076,7 +10077,9 @@ function openRoundHistory(where, idx, delOp) {
   }
   const canEdit = !!r && !isGameLocked(g) && (where === 'game' ? true : !detailRO);
   document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+  const backJs = from === 'log' ? `showLogModal('${logSrc}')` : from === 'menu' ? `openRoundMenu(${idx},'${where}')` : from === 'del' ? `openDeletedRoundMenu('${where}','${delOp}',${pos || 0})` : '';
+  const backLbl = from === 'log' ? '履歴に戻る' : '戻る';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${backJs ? sheetBackMark(backJs, backLbl) : ''}
     <div class="rh-note">古い順。修正したマスは「前 → 後」。</div>
     ${evs.length ? '' : '<div class="rh-note">この試合の履歴は残っていません。</div>'}
     ${stickTableHtml(tableStyleFor(g.settings.playerNames.length), 84, lgHeadRow(g, '日時'), rows)}
@@ -10107,7 +10110,7 @@ function gamesLogHtml(g) {
       + (it.del ? '<span class="lg-k del">削除</span>' : it.r && isRestoredRound(g, it.r) ? '<span class="lg-k back">復元</span>' : '');
     const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => pn[m]);
     const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${ncol}"></td>`;
-    const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}')` : `openRoundHistory('${where}',${it.idx})`;
+    const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}','log')` : `openRoundHistory('${where}',${it.idx},null,'log')`;
     const many = it.evs.length > 1;
     let html = `<tr class="lg-gh${it.del ? ' del' : ''}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>${tags ? `<div class="lg-tags">${tags}</div>` : ''}${!many && last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
     if (many) {
@@ -10312,7 +10315,7 @@ function openRoundMenu(idx, where = 'game') {
   // 履歴を上に。点数を修正する・削除する は似た操作なので隣に並べる（削除は赤）
   document.getElementById('form-modal-title').textContent = `試合${roundSerialAt(g, idx)}`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${t ? `入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正あり' : ''}</div>
-    <div class="mn-group">${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx})`)}</div>
+    <div class="mn-group">${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx},null,'menu')`)}</div>
     ${canEdit ? `<div class="mn-group">${menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`)}
       ${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから復元できます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -10328,7 +10331,7 @@ function openDeletedRoundMenu(where, delOp, pos) {
   document.getElementById('form-modal-title').textContent = `試合${no}（削除）`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">削除 ${fmtTime(de.at)}</div>
     <div class="mn-group">${canBack ? menuBtnHtml('refresh', 'この試合を復元する', 'この場所に戻ります（全員の画面）', `closeFormModal();undeleteRound('${where}','${delOp}',${pos},${no})`) : ''}
-      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',null,'${delOp}')`)}</div>
+      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',null,'${delOp}','del',${pos})`)}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
