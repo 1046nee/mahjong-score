@@ -37,6 +37,7 @@
 - **セッションに新しいトップレベルキーを追加するときは、必ずdatabase.rules.jsonにも追加してコンソールに再適用する**（忘れると保存が全部失敗する）
 - 2026-08-08: mylists/groups/$gidに`deleted`（boolean・削除印）を追加。**コンソールへの再適用が必要**
   （未適用でもアプリはremoveへフォールバックして動くが、別端末への削除の伝播が効かない）
+- **2026-10-09: users/$uid に circleHidden・circleOrder（仲間ページの「外す」と並び）を追加。コンソールへの再適用が必要**
 - **2026-09-25: users と仲間ページ（circles / circleMembers / circleSecrets / circleInvites）を追加。コンソールへの再適用が必要**
   （未適用の間は「まとめ」の欄が出ない・ログイン後の同期が失敗する。グループの記録・共有は影響なし）
   - users/$uid: 本人（auth.uid）だけが読み書き。listId（14文字）・createdAt のみ

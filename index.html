@@ -3650,7 +3650,7 @@ async function signOutAccount() {
   appState.games = []; saveStorage();
   gameTags = {}; saveTags();
   myCircles = {}; circleSeen = {}; saveCircleSeen();
-  try { localStorage.removeItem(CIRCLE_HIDDEN_KEY); } catch (e) {}
+  try { [CIRCLE_HIDDEN_KEY, CIRCLE_ORDER_KEY, CIRCLE_PREFS_SYNCED].forEach(k => localStorage.removeItem(k)); } catch (e) {}
   currentUser = null;
   renderHeaderAccount(); renderRecentGames();
   showView('home');
@@ -6190,6 +6190,44 @@ async function runCreateCircle() {
 async function loadMyCircles() {
   if (!currentUser) { myCircles = {}; return; }
   try { myCircles = (await db.ref(`users/${myUid()}/circles`).once('value')).val() || {}; } catch (e) {}
+  await loadCirclePrefs();
+}
+// 仲間ページの並びと「外す」はアカウントにも保存する（users/{uid}/circleOrder＝{cid: 何番目}・circleHidden＝{cid: true}。2026-10-09）。
+// ログイン中はアカウントの値が正: 読んだらこの端末の控え（localStorage）に写す。
+// まだアカウントに無ければ（初めて）この端末の控えを上げる。上げられたら、その人のぶんは同期済みの印（CIRCLE_PREFS_SYNCED）を付け、
+// 以後はアカウントが空でも空として扱う（ほかの端末で戻したものを、古い控えで上げ直さない）
+const CIRCLE_PREFS_SYNCED = 'mahjong-circle-prefs-synced';
+const CIRCLE_ID_RE = /^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/;
+async function loadCirclePrefs() {
+  if (!currentUser) return;
+  const uid = myUid();
+  let synced = false;
+  try { synced = localStorage.getItem(CIRCLE_PREFS_SYNCED) === uid; } catch (e) {}
+  try {
+    const [h, o] = await Promise.all([db.ref(`users/${uid}/circleHidden`).once('value'), db.ref(`users/${uid}/circleOrder`).once('value')]);
+    const hv = h.val(), ov = o.val();
+    if (!synced && hv == null && ov == null) {
+      if (!circleHidden().length && !circleOrder().length) { try { localStorage.setItem(CIRCLE_PREFS_SYNCED, uid); } catch (e) {} return; }
+      const up = {};
+      circleHidden().filter(c => CIRCLE_ID_RE.test(c)).forEach(c => { up['circleHidden/' + c] = true; });
+      circleOrder().filter(c => CIRCLE_ID_RE.test(c)).forEach((c, k) => { up['circleOrder/' + c] = k; });
+      await db.ref(`users/${uid}`).update(up);
+      try { localStorage.setItem(CIRCLE_PREFS_SYNCED, uid); } catch (e) {}
+      return;
+    }
+    const hid = Object.keys(hv || {}).filter(c => hv[c] === true);
+    const ord = Object.keys(ov || {}).sort((a, b) => ov[a] - ov[b]);
+    try {
+      localStorage.setItem(CIRCLE_HIDDEN_KEY, JSON.stringify(hid));
+      localStorage.setItem(CIRCLE_ORDER_KEY, JSON.stringify(ord));
+      localStorage.setItem(CIRCLE_PREFS_SYNCED, uid);
+    } catch (e) {}
+  } catch (e) { /* 読めない・ルールが古い: この端末の控えのまま */ }
+}
+// アカウントへ書く（失敗しても、この端末の控えは変わっている）
+function putCirclePref(path, val) {
+  if (!currentUser) return;
+  db.ref(`users/${myUid()}/${path}`).set(val).catch(() => {});
 }
 // 過去の試合の画面の「仲間ページ」欄
 // マイページの「仲間」: 参加している仲間ページ（アカウント）＋この端末で見た仲間ページ
@@ -6197,22 +6235,24 @@ function allCircleEntries() {
   const all = {};
   Object.entries(circleSeen).forEach(([cid, m]) => { all[cid] = { name: m.name, at: m.at, member: false }; });
   Object.entries(myCircles).forEach(([cid, m]) => { all[cid] = { name: m.name || (all[cid] && all[cid].name) || '', at: m.at, member: true }; });
-  circleHidden().forEach(cid => { delete all[cid]; }); // 一覧から外したもの（この端末だけ。仲間ページからは抜けない）
+  circleHidden().forEach(cid => { delete all[cid]; }); // 一覧から外したもの（仲間ページからは抜けない）
   const ord = circleOrder(), pos = cid => { const i = ord.indexOf(cid); return i < 0 ? 1e9 : i; };
   return Object.entries(all).sort((a, b) => (pos(a[0]) - pos(b[0])) || (b[1].member - a[1].member) || new Date(b[1].at || 0) - new Date(a[1].at || 0));
 }
-// 仲間ページの並び（一覧で並べ替えた順。この端末に保存。並べていないものは後ろに今までの順で）
+// 仲間ページの並び（一覧で並べ替えた順。この端末とアカウントに保存。並べていないものは後ろに今までの順で）
 const CIRCLE_ORDER_KEY = 'mahjong-circle-order';
 function circleOrder() { try { const a = JSON.parse(localStorage.getItem(CIRCLE_ORDER_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 let circlePickerSort = false;
-// 一覧から外す（自分の画面に出さない）。この端末に覚える。見ただけのものは控えごと消す。
+// 一覧から外す（自分の画面に出さない）。この端末とアカウントに覚える（ログイン中はほかの端末でも外れる）。見ただけのものは控えごと消す。
 // リンク・参加コード・試合の画面から開き直すと、また一覧に出る（openCircle）
 const CIRCLE_HIDDEN_KEY = 'mahjong-circle-hidden';
 function circleHidden() { try { const a = JSON.parse(localStorage.getItem(CIRCLE_HIDDEN_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
 function setCircleHidden(cid, on) {
   const a = circleHidden().filter(x => x !== cid);
+  const was = circleHidden().includes(cid);
   if (on) a.push(cid);
   try { localStorage.setItem(CIRCLE_HIDDEN_KEY, JSON.stringify(a)); } catch (e) { /* 覚えられなくても困らない */ }
+  if (was !== !!on && CIRCLE_ID_RE.test(cid)) putCirclePref('circleHidden/' + cid, on ? true : null);
 }
 function hideCircle(cid) {
   const ent = allCircleEntries().find(([c]) => c === cid);
@@ -6233,6 +6273,8 @@ function moveCircleOrder(cid, d) {
   if (i < 0 || j < 0 || j >= ids.length) return;
   [ids[i], ids[j]] = [ids[j], ids[i]];
   try { localStorage.setItem(CIRCLE_ORDER_KEY, JSON.stringify(ids)); } catch (e) { /* 保存できなくても困らない */ }
+  const obj = {}; ids.filter(c => CIRCLE_ID_RE.test(c)).forEach((c, k) => { obj[c] = k; });
+  putCirclePref('circleOrder', obj);
   openCirclePicker();
   renderCircleSection();
 }

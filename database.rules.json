@@ -105,6 +105,16 @@
         "$other": {
           ".validate": false
         },
+        "circleHidden": {
+          "$cid": {
+            ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.val() === true"
+          }
+        },
+        "circleOrder": {
+          "$cid": {
+            ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.isNumber() && newData.val() >= 0 && newData.val() < 1000"
+          }
+        },
         "circles": {
           "$cid": {
             ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.hasChildren(['at'])",
