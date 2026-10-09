@@ -451,20 +451,25 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .log-tag.set { background: #5b6b8c; }
 .log-tag.undo { background: #7A6A9A; }
 /* 履歴の表（2026-10-09）。高さは決まった高さ＝タブを切り替えても変わらない。見出しの行と左の欄は固定 */
-.lg-scroll { height: min(60vh, 540px); overflow: auto; border-radius: 12px; border: 1px solid #E3EAE8; background: #fff; -webkit-overflow-scrolling: touch; }
+.lg-scroll { height: min(60vh, 540px); overflow: auto; background: #fff; -webkit-overflow-scrolling: touch; } /* 試合結果の表と同じく角のある表（丸い枠に入れない。2026-10-09） */
 .lg-scroll.ud-scroll { height: auto; max-height: min(46vh, 420px); }
 .lg-empty { display: grid; place-items: center; color: #8A9AA5; font-size: 13px; }
 .lg-table thead th { position: sticky; top: 0; z-index: 2; } .lg-table thead th.sticky-col { z-index: 3; }
 .lg-table th.sticky-col, .lg-table td.sticky-col { width: 84px; }
 .lg-table thead th { font-size: 11.5px; padding: 7px 3px; line-height: 1.3; }
 .lg-table td { font-size: 12px; padding: 7px 3px; vertical-align: middle; font-variant-numeric: tabular-nums; }
+.lg-table td b { white-space: nowrap; letter-spacing: -.2px; } /* 数字は折り返さず、詰めて列に収める */
+.lg-table td.sticky-col { overflow: hidden; white-space: nowrap; }
+.lg-table td.sticky-col .lg-k { max-width: 100%; }
+.lg-tags { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 2px; }
+.lg-table tr.lg-latest td { background: #eef5f3 !important; font-weight: 700; } .lg-table tr.lg-latest td.sticky-col { font-size: 12px; font-weight: 600; color: #1F2A28; }
 .lg-table td b { font-weight: 800; color: #1F2A28; }
 .lg-table td.lg-na { background: #FAFBFB; }
 .lg-table td.lg-ch { background: #FFF6E6; } .lg-table td.lg-ch b { color: #9A5B12; }
-.lg-old { display: block; font-size: 9.5px; font-weight: 600; color: #A9B4B2; line-height: 1.2; white-space: nowrap; }
+.lg-old { display: block; letter-spacing: -.2px; font-size: 9.5px; font-weight: 600; color: #A9B4B2; line-height: 1.2; white-space: nowrap; }
 .lg-old::after { content: ' →'; }
 .lg-h { display: flex; align-items: center; gap: 5px; }
-.lg-t { font-size: 11.5px; font-weight: 800; color: #5F6E6B; }
+.lg-t { margin-top: 2px; font-size: 10.5px; font-weight: 700; color: #6B7A77; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lg-k { display: inline-flex; align-items: center; gap: 2px; padding: 1px 5px 1px 3px; border-radius: 6px; font-size: 10px; font-weight: 800; color: #fff; line-height: 1.5; }
 .lg-k i { font-style: normal; font-size: 11px; line-height: 1; } .lg-k .ico { --i1: #fff; --i2: rgba(255,255,255,.45); }
 .lg-k.add { background: var(--pc); } .lg-k.edit { background: #E75620; } .lg-k.del { background: #C62828; } .lg-k.set { background: #5B6B8C; } .lg-k.undo { background: #7A6A9A; }
@@ -9955,7 +9960,8 @@ function openRoundHistory(where, idx, delOp) {
   const evs = de ? (g.log || []).filter(e => e && (e === de || (rid && (e.rid === rid || (e.type === 'add' && e.op === rid) || (e.type === 'delete' && e.round && e.round.id === rid))))) : roundHistoryOf(g, idx);
   const serial = de ? (logSerialOf(g, de) || de.no) : roundSerialAt(g, idx), ncol = memberDisplayOrder(g.settings).length;
   const curNames = r ? roundMembers(r, g.settings).map(m => g.settings.playerNames[m]) : (de.names || []);
-  const rowOf = (kind, e, cells) => `<tr class="lg-row ${LG_KIND[kind][0]}"><td class="sticky-col"><div class="lg-h"><span class="lg-t">${e ? fmtTime(e.at) : ''}</span>${lgKindChip(kind)}</div>${e ? `<div class="lg-d">${esc(fmtDate(e.at))}</div>` : ''}</td>${cells}</tr>`;
+  const md = at => { const t = Date.parse(at), d = t ? new Date(t) : null; return d ? `${d.getMonth() + 1}/${d.getDate()} ${fmtTime(at)}` : ''; };
+  const rowOf = (kind, e, cells) => `<tr class="lg-row ${LG_KIND[kind][0]}"><td class="sticky-col">${lgKindChip(kind)}${e ? `<div class="lg-t">${md(e.at)}</div>` : ''}</td>${cells}</tr>`;
   let rows = evs.map(e => {
     const names = e.names || curNames;
     if (e.type === 'settings') return rowOf('back', e, `<td colspan="${ncol}" class="lg-wide"><b>削除から戻した</b></td>`);
@@ -9965,7 +9971,7 @@ function openRoundHistory(where, idx, delOp) {
   }).join('');
   if (r) {
     const now = lgCellsHtml(g, curNames, r.points || r.scores || []);
-    rows += `<tr class="lg-row lg-now"><td class="sticky-col"><b class="lg-nowt">いま</b></td>${now || `<td colspan="${ncol}"></td>`}</tr>`;
+    rows += `<tr class="lg-latest cat-break"><td class="sticky-col">最新</td>${now || `<td colspan="${ncol}"></td>`}</tr>`; // 試合結果の表の「合計」の行と同じ体裁
   }
   const canEdit = !!r && !isGameLocked(g) && (where === 'game' ? true : !detailRO);
   document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
@@ -9998,7 +10004,7 @@ function gamesLogHtml(g) {
     const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${memberDisplayOrder(g.settings).length}"></td>`;
     const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}')` : `openRoundHistory('${where}',${it.idx})`;
     return `<tr class="lg-row lg-game${it.del ? ' del' : ''}" onclick="${click}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>
-      <div class="lg-h">${tags}${last ? `<span class="lg-t">${fmtTime(last.at)}</span>` : ''}</div></td>${cells}</tr>`;
+      ${tags ? `<div class="lg-tags">${tags}</div>` : ''}${last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
   }).join('');
   return `<div class="lg-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '試合')}<tbody>${rows}</tbody></table></div>
     <div class="lg-foot">行を押すと、その試合の入力・修正・削除の記録</div>`;
@@ -11094,7 +11100,7 @@ function renderReorder() {
     ${sel != null ? `<div class="ro-selbar"><span>${selName}</span>
       <button type="button" class="ro-tool" aria-label="上へ" ${sel === 0 ? 'disabled' : ''} onclick="moveReorder(${sel},-1)">↑ 上へ</button>
       <button type="button" class="ro-tool" aria-label="下へ" ${sel === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${sel},1)">↓ 下へ</button>
-      <button type="button" class="ro-tool" onclick="selectReorder(${sel})">やめる</button></div>`
+      <button type="button" class="ro-tool" onclick="selectReorder(${sel})">選び直す</button></div>`
     : `<div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
       <button type="button" class="ro-tool" onclick="resetReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
       <span class="ro-count">${moved ? `${moved}行 移動` : ''}</span></div>`}
