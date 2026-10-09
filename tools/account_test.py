@@ -513,17 +513,21 @@ def main():
         pg.wait_for_timeout(300)
         results.append(("[10a7] 結果のシートの「詳しく見る」→ 戻るで、マイページの見ていた位置に戻る（ホームに戻らない）", True,
                         in_detail and pg.evaluate("document.getElementById('view-history').classList.contains('active')") and abs(pg.evaluate("window.scrollY") - y0) < 4))
-        # 点数を入れる・直す（試合の画面）→ 戻るでも、ホームではなくマイページの元の位置へ
+        # 試合の画面 → 戻るでも、ホームではなくマイページの元の位置へ
+        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「続きを入力する／点数を直す」から
         pg.evaluate("document.querySelector('#history-body .gr').click()")
-        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('点数を')).click()")
+        pg.evaluate("(() => { const id = rsState.id; closeFormModal(); openHistMenu(id); })()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /続きを入力する|点数を直す/.test(b.innerText)).click()")
         pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.evaluate("document.getElementById('header-back').click()")
         pg.wait_for_timeout(300)
-        results.append(("[10a8] 結果のシートから試合の画面を開いて戻ると、ホームではなくマイページの見ていた位置に戻る", True,
+        results.append(("[10a8] 過去の試合の「…」から試合の画面を開いて戻ると、ホームではなくマイページの見ていた位置に戻る", True,
                         pg.evaluate("document.getElementById('view-history').classList.contains('active') && !activeGame") and abs(pg.evaluate("window.scrollY") - y0) < 4))
         # 端末（ブラウザ）の「戻る」でも同じ
+        # 結果のシートには点数の入力の入口を置かない（2026-10-09）。試合の画面は一覧の「…」の「続きを入力する／点数を直す」から
         pg.evaluate("document.querySelector('#history-body .gr').click()")
-        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => b.innerText.includes('点数を')).click()")
+        pg.evaluate("(() => { const id = rsState.id; closeFormModal(); openHistMenu(id); })()")
+        pg.evaluate("[...document.querySelectorAll('#form-modal-body .menu-btn')].find(b => /続きを入力する|点数を直す/.test(b.innerText)).click()")
         pg.wait_for_function("() => document.getElementById('view-game').classList.contains('active') && activeGame", timeout=10000)
         pg.go_back()
         pg.wait_for_timeout(400)

@@ -11947,7 +11947,7 @@ function openHistMenu(id) {
 
 // ---- 試合の結果を手軽に見る（シート）。過去の試合・仲間ページの試合・推移のグラフから開き、閉じれば元の画面のまま ----
 // 中身: 総合順位（2日以上にわたる試合は「通算｜1日目｜2日目…」で切り替え）と試合ごとのスコアの表（見るだけ）。
-// 下に「詳しく見る」（結果詳細）・「点数を入れる・直す」（記録が確定する前だけ）・「その他の操作」
+// 下に「詳しく見る」（結果詳細）と、その試合でできること（共有・ゲーム名の変更・この試合での自分・削除／仲間ページでは 連携・名前・外す）を並べる
 let rsState = null; // { id, me, day: null|何日目（0始まり）, from: 'hist'|'circle' }
 function resultGameById(id) {
   return (appState.games || []).find(x => x.id === id) || (circleSess && circleSess[id])
@@ -12029,19 +12029,32 @@ function renderResultSheet() {
   const extra = rs.length ? rsFoldHtml('stats', '個人成績', `<div class="rs-sec">${rankCountHtml(gf.rounds, s)}</div>`, true)
     + rsFoldHtml('chart', 'スコア推移', `<div class="rs-sec chart-wrap">${chartHtml(gf.rounds, s)}</div>`, true) : '';
   const id = esc(st.id), inHist = (appState.games || []).some(x => x.id === st.id);
-  const locked = isGameLocked(g), canInput = !locked && (inHist || !!circleRole());
+  // できることは「その他の操作」にまとめず、ここに並べる（2026-10-09）。点数の入力・修正は試合の画面から（ここには出さない）。
+  // 「結果を見る」と「詳しく見る」は同じ所へ行くので「詳しく見る」1つ
   const back = activeViewName();
-  const acts = menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `keepSheetReturn();closeFormModal();viewDetailById('${id}')` : `keepSheetReturn();closeFormModal();openWatchGame(resultGameById('${id}'),'${back}')`)
-    + (canInput ? menuBtnHtml('pencil', g.endedAt ? '点数を直す' : '点数を入れる・直す', `${fmtDateTime(lockAtOf(g))} に記録が確定するまで`, `keepSheetReturn();closeFormModal();joinSession('${id}')`) : '')
-    + (st.from === 'circle' && circleData && circleData.games && circleData.games[st.id] ? menuBtnHtml('more', 'その他の操作', '名前の連携・この仲間ページから外す', `openCircleGameMenu('${id}')`)
-      : inHist ? menuBtnHtml('more', 'その他の操作', '共有・この試合での自分・削除', `openHistMenu('${id}')`) : '');
+  let acts = menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `keepSheetReturn();closeFormModal();viewDetailById('${id}')` : `keepSheetReturn();closeFormModal();openWatchGame(resultGameById('${id}'),'${back}')`);
+  let danger = '';
+  const ge = st.from === 'circle' && circleData && circleData.games && circleData.games[st.id];
+  if (ge) {
+    // 仲間ページの試合: 名前の連携・ゲーム名の変更（参加したメンバー）・この仲間ページから外す（追加から24時間・追加した人と作成者・管理者）
+    const role = circleRole(), mayRemove = role && (ge.addedBy === myUid() || isCircleAdmin()), canRemove = mayRemove && circleGameRemovable(ge);
+    if (role && circleSess[st.id]) acts += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`)
+      + menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${id}')`);
+    if (canRemove) danger = menuBtnHtml('trash', 'この仲間ページから外す', `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）`, `removeCircleGame('${id}')`, 'danger');
+  } else if (inHist) {
+    // 個人の過去の試合: 共有・ゲーム名の変更・この試合での自分・過去の試合から削除
+    acts += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`)
+      + menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${id}')`)
+      + menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
+    danger = menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${id}')`, 'danger');
+  }
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
   const backTo = st.ret && st.ret.back === 'mup' && mup ? sheetBackMark('mupReopen()', '対戦に戻る')
     : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${st.ret.member}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     ${rsFoldHtml('tbl', tblTitle, table, rs.length < 10, rs.length ? `${rs.length}試合` : '')}${extra}
-    <div class="mn-group" style="margin-top:14px">${acts}</div>
+    <div class="mn-group" style="margin-top:14px">${acts}</div>${danger ? `<div class="mn-group">${danger}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
 }
 
