@@ -508,6 +508,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .bk-info b { font-weight: 800; }
 .bk-sub { font-size: 11.5px; color: #5F6E6B; }
 .bk-more { margin-top: 6px; font-size: 11px; color: #8A9AA5; }
+/* 履歴の行の中の「この変更の前に戻す」（その変更の直前の状態に戻す。押すと確かめの画面）2026-10-09 */
+.log-undo { display: flex; align-items: center; gap: 6px; width: 100%; margin-top: 6px; padding: 7px 10px; border: 0; border-radius: 10px; background: var(--pc-tint); color: var(--pc); font: inherit; text-align: left; cursor: pointer; }
+.log-undo > span { flex: 1; min-width: 0; display: flex; flex-direction: column; } .log-undo b { font-size: 12px; font-weight: 800; } .log-undo small { font-size: 10.5px; font-weight: 600; color: #4F5C5A; }
+.log-undo:active { background: var(--pc-line); }
 .bk-pts { white-space: pre-line !important; font-size: 12px; line-height: 1.5; text-align: left; }
 .bk-k { display: block; margin-top: 2px; font-size: 10.5px; font-weight: 800; } .bk-k.gone { color: #C62828; } .bk-k.back { color: var(--pc); } .bk-k.edit { color: #9A5B12; }
 .bk-sets { margin: 10px 0 0; padding-left: 18px; font-size: 12.5px; color: #1F2A28; line-height: 1.7; }
@@ -1541,7 +1545,17 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .ro-tool { height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #CFDCD9; background: #fff; color: #177083; font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .ro-tool:disabled { color: #AEBBB8; cursor: default; }
 .ro-count { margin-left: auto; font-size: 12px; font-weight: 800; color: #8A5A00; }
-.ro-list { display: flex; flex-direction: column; gap: 8px; }
+.ro-list { display: flex; flex-direction: column; gap: 6px; }
+.ro-sheet .ro-row { padding: 8px 10px; gap: 10px; cursor: pointer; }
+.ro-sheet .ro-row.on { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc), 0 6px 16px rgba(16,40,36,.14); }
+.ro-list.picking .ro-row:not(.on) { opacity: .82; }
+.ro-sheet .ro-chips { gap: 3px; } .ro-sheet .ro-p { font-size: 11.5px; padding: 1px 6px 1px 2px; } .ro-sheet .ro-p i { width: 15px; height: 15px; font-size: 9.5px; }
+.ro-sheet .ro-sub { margin-top: 3px; font-size: 10.5px; }
+.ro-sheet .ro-no b { font-size: 18px; }
+/* 行と行のあいだの「ここへ」（選んでいるあいだだけ） */
+.ro-slot { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; min-height: 30px; border: 1.5px dashed var(--pc); border-radius: 10px; background: var(--pc-tint); color: var(--pc); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+.ro-slot .ico { transform: rotate(90deg); }
+.ro-slot:active { background: var(--pc-line); }
 .ro-row { display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 4px; border-radius: 14px; background: #fff; border: 1px solid #DDE6E3; box-shadow: 0 1px 2px rgba(16,40,36,.06); transition: transform .15s ease, box-shadow .15s ease; }
 .ro-list.dragging .ro-row { transition: transform .15s ease; }
 .ro-row.drag { transition: none; z-index: 2; position: relative; box-shadow: 0 10px 24px rgba(16,40,36,.22); border-color: #177083; }
@@ -2711,7 +2725,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="score-main-body"></div>
     </div>
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div id="rounds-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
@@ -9741,9 +9755,23 @@ function bkListFor(g) {
   });
   return out;
 }
+// 控えを、その変更の履歴の行に結びつける（控えは変更を書き込む直前に取る＝時刻がほぼ同じ。種類も合わせる）。戻り値 Map(履歴の行 → 控え)
+function bkLogMatch(g) {
+  const evs = logEvents(g.log), m = new Map(), used = new Set();
+  bkListFor(g).forEach(b => {
+    const tb = Date.parse(b.at) || 0;
+    const ok = e => /削除/.test(b.label) ? e.type === 'delete' : /修正/.test(b.label) ? (e.type === 'edit' && typeof e.no === 'number') : logKind(e) === 'settings';
+    let best = null, bd = 20000;
+    evs.forEach(e => { if (used.has(e) || !ok(e)) return; const d = Math.abs((Date.parse(e.at) || 0) - tb); if (d < bd) { bd = d; best = e; } });
+    if (best) { used.add(best); m.set(best, b); }
+  });
+  return m;
+}
+// 履歴の行に結びつかなかった控えだけ、履歴の上に小さく出す（ふつうは出ない）
 function backupSectionHtml(g) {
   if (!g || !g.id) return '';
-  const list = bkListFor(g);
+  const matched = new Set([...bkLogMatch(g).values()].map(b => b.key)); // 控えは読むたびに別のオブジェクトになるので key で比べる
+  const list = bkListFor(g).filter(b => !matched.has(b.key));
   if (!list.length) return '';
   const rows = list.slice(0, 3).map(b => {
     const what = b.label === 'もとに戻す' ? '「戻す」をする前（戻したのを取り消す）' : `「${b.label}」の前`;
@@ -9778,7 +9806,7 @@ function openRestoreSheet(key) {
     <div class="ud-h">戻すと、こう変わります</div>
     ${rows ? `<div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">試合</th><th>いま</th><th>戻したあと</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
     ${d.sets.length ? `<ul class="bk-sets">${d.sets.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
-    <div class="ud-note">戻すと、全員の画面がこの状態になります。この画面を開いたあとにだれかが入力・修正していたら、戻さずにお知らせします。戻したあとでも、すぐなら履歴の「「戻す」をする前に戻す」で取り消せます。</div>
+    <div class="ud-note">戻すと、全員の画面がこの状態になります。この画面を開いたあとにだれかが入力・修正していたら、戻さずにお知らせします。戻したことも履歴に残り、すぐならその行の「この変更の前に戻す」で取り消せます。</div>
     <button type="button" class="confirm-btn" style="margin-top:14px" onclick="doRestore('${key}', ${(g.rounds || []).length})">この状態に戻す</button>
     <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="showLogModal('${logSrc}')">やめる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -9793,6 +9821,7 @@ function doRestore(key, nAtOpen) {
   applyRestore(bk, where);
 }
 function renderLogList(log, g) {
+  const bkOf = g ? bkLogMatch(g) : new Map(); // その変更の直前の控え（あれば行に「この変更の前に戻す」）
   let events = logEvents(log);
   if (logFilter !== 'all') events = events.filter(e => logKind(e) === logFilter);
   if (events.length === 0) return '<div style="text-align:center;color:#888;font-size:13px;padding:12px 0">該当する履歴はありません</div>';
@@ -9841,10 +9870,13 @@ function renderLogList(log, g) {
     if (kind === 'settings' && Array.isArray(e.changes) && e.changes.length) {
       body = `<ul class="log-changes">${e.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
     }
-    rows += `<div class="log-row">
+    const bk = bkOf.get(e);
+    const bkHtml = bk ? (() => { const t = bkDiffText(bkDiff(g, bk));
+      return `<button type="button" class="log-undo" onclick="openRestoreSheet('${bk.key}')">${ico('refresh', 13)}<span><b>この変更の前に戻す</b>${t.length ? `<small>${esc(t.join('・'))}</small>` : ''}</span>${ico('chevron', 12)}</button>`; })() : '';
+    rows += `<div class="log-row${bk ? ' has-undo' : ''}">
       <span class="log-time">${fmtTime(e.at)}</span>
       <span class="log-tag ${tagCls}">${tagLabel}</span>
-      <div class="log-content"><b>${esc(label)}</b>${body}</div>
+      <div class="log-content"><b>${esc(label)}</b>${body}${bkHtml}</div>
     </div>`;
   });
   const moreBtn = total > LOG_PREVIEW
@@ -9900,6 +9932,7 @@ function renderGame() {
   const wrap = document.getElementById('rounds-wrap');
   document.getElementById('rounds-collapse').innerHTML = collapseBtnHtml('rounds');
   wrap.style.display = collapsedCards.rounds ? 'none' : '';
+  document.getElementById('rounds-head').style.marginBottom = collapsedCards.rounds ? '0' : '12px'; // 閉じたときは見出しの下に余白を残さない（ほかのカードと同じ高さ）
   wrap.style.overflowX = 'auto';
   let tableHtml = roundsTheadHtml(s) + '<tbody>';
   if (hasRounds) {
@@ -10824,6 +10857,7 @@ function moveReorder(k, d) {
   if (j < 0 || j >= a.length) return;
   [a[k], a[j]] = [a[j], a[k]];
   reorderState.just = a[j]; // いま動かした試合（元の番号で覚える）を光らせる
+  if (reorderState.sel === k) reorderState.sel = j; // 選んだまま、動かした先へついていく
   renderReorder();
   const el = document.querySelector('.ro-row.just'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
@@ -10832,73 +10866,49 @@ function sortReorderByTime() {
   reorderState.idx.sort((x, y) => (Date.parse(rs[x].at) || 0) - (Date.parse(rs[y].at) || 0) || x - y);
   renderReorder();
 }
-// 1行＝1試合のカード: 左につまみ（≡）・番号、真ん中にその試合の順位（着順の色のチップ＝名前とスコア）、右に↑↓。
-// 動かした試合は琥珀色の地と「元は第n試合」。つまみを押したまま上下に動かして並べ替えられる（スマホの指でも）
+// 並べ替え（2026-10-09 作り直し）: 長押しのドラッグをやめ、「動かす試合を押す → 入れたい所の『ここへ』を押す」。
+// 1行＝1試合の短いカード（番号・その試合の順位の名前とスコアを1行に）。選んだ行だけに ↑↓ を出し、行と行のあいだに「ここへ」を出す。
+// 動かした試合は琥珀色＋取り消し線の「元3」、押されてずれただけの試合は灰色。いま動かした行は少し光らせて見える所へ送る
+function selectReorder(k) { reorderState.sel = reorderState.sel === k ? null : k; renderReorder(); }
+function dropReorder(i) {
+  const a = reorderState.idx, k = reorderState.sel;
+  if (k == null) return;
+  const [x] = a.splice(k, 1);
+  a.splice(i > k ? i - 1 : i, 0, x);
+  reorderState.sel = null; reorderState.just = x;
+  renderReorder();
+  const el = document.querySelector('.ro-row.just'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
 function renderReorder() {
-  const g = activeGame, rs = g.rounds || [], names = g.settings.playerNames || [], a = reorderState.idx;
+  const g = activeGame, rs = g.rounds || [], names = g.settings.playerNames || [], a = reorderState.idx, sel = reorderState.sel;
   const np = g.settings.numPlayers === 3 ? 3 : 4;
   const days = gameDaysList(g), st = g.settings.dayStarts;
   const dayAt = pos => (Array.isArray(st) && st.length && days.length > 1) ? Math.min(days.length - 1, st.filter(n => Number(n) >= 2 && pos + 1 >= Number(n)).length) : -1;
-  const chips = r => {
+  const line = r => {
     const mem = roundMembers(r, g.settings), sc = r.scores || [], pts = r.points || [];
     const ord = mem.map((m, k) => k).sort((x, y) => (Number(pts[y] ?? sc[y]) || 0) - (Number(pts[x] ?? sc[x]) || 0));
     return ord.map((k, rank) => `<span class="ro-p ${rkCls(rank + 1, np)}"><i>${rank + 1}</i>${esc(names[mem[k]] || '')}<b class="${scoreCls(sc[k])}">${sc[k] == null ? '' : fmtScore(sc[k])}</b></span>`).join('');
   };
-  const when = r => { const t = Date.parse(r.at), d = t ? new Date(t) : null; return d ? `入力 ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''; };
-  const act = reorderActiveSet(a.map(v => v + 1)); // 動かした試合（位置）。ずれただけの試合は控えめ
+  const when = r => { const t = Date.parse(r.at), d = t ? new Date(t) : null; return d ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''; };
+  const act = reorderActiveSet(a.map(v => v + 1));
   const moved = act.size;
+  const slot = i => (sel == null || i === sel || i === sel + 1) ? '' : `<button type="button" class="ro-slot" onclick="dropReorder(${i})">${ico('chevron', 12)}ここへ</button>`;
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="ro-help"><span class="ro-grip-ico" aria-hidden="true">≡</span>を押したまま上下に動かすか、↑↓で動かして「保存する」。入力した日時・修正の履歴は、その試合と一緒に動きます。</div>
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
+    <div class="ro-help">${sel == null ? '<b>動かしたい試合を押してください。</b>' : `<b>第${sel + 1}試合を選んでいます。</b>入れたい所の「ここへ」を押すか、↑↓で1つずつ動かします（もう一度押すと選ぶのをやめます）。`}</div>
     <div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
-      <button type="button" class="ro-tool" onclick="reorderState.idx=activeGame.rounds.map((_, i) => i);renderReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
-      <span class="ro-count">${moved ? `${moved}試合を動かしています` : 'まだ動かしていません'}</span></div>
-    <div class="ro-list" id="ro-list">${a.map((oi, k) => {
-      const r = rs[oi], dk = dayAt(k);
-      return `<div class="ro-row${act.has(k) ? ' mv' : oi !== k ? ' sh' : ''}${reorderState.just === oi ? ' just' : ''}" data-k="${k}">
-        <button type="button" class="ro-grip" aria-label="つまんで動かす" onpointerdown="roDragStart(event,${k})">≡</button>
-        <div class="ro-no">${oi !== k ? `<span class="ro-was">元${oi + 1}</span>` : ''}<b>${k + 1}</b><small>試合目</small></div>
-        <div class="ro-main"><div class="ro-chips">${chips(r)}</div>
-          <div class="ro-sub">${dk >= 0 ? `<span class="ro-day">${dk + 1}日目</span>` : ''}${oi !== k ? `<span class="ro-from">元は第${oi + 1}試合 ${oi > k ? '↑' : '↓'}</span>` : ''}<span>${when(r)}${r.edited ? ' ・ 修正あり' : ''}</span></div></div>
-        <div class="ro-btns"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div></div>`;
-    }).join('')}</div>
-    <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>保存する</button>
+      <button type="button" class="ro-tool" onclick="reorderState.idx=activeGame.rounds.map((_, i) => i);reorderState.sel=null;renderReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
+      <span class="ro-count">${moved ? `${moved}試合を動かしています` : ''}</span></div>
+    <div class="ro-list${sel != null ? ' picking' : ''}" id="ro-list">${a.map((oi, k) => {
+      const r = rs[oi], dk = dayAt(k), on = sel === k;
+      return `${slot(k)}<div class="ro-row${on ? ' on' : ''}${act.has(k) ? ' mv' : oi !== k ? ' sh' : ''}${reorderState.just === oi ? ' just' : ''}" data-k="${k}" onclick="selectReorder(${k})" role="button" tabindex="0" aria-pressed="${on}">
+        <div class="ro-no">${oi !== k ? `<span class="ro-was">元${oi + 1}</span>` : ''}<b>${k + 1}</b></div>
+        <div class="ro-main"><div class="ro-chips">${line(r)}</div>
+          <div class="ro-sub">${dk >= 0 ? `<span class="ro-day">${dk + 1}日目</span>` : ''}<span>入力 ${when(r)}${r.edited ? ' ・ 修正あり' : ''}</span></div></div>
+        ${on ? `<div class="ro-btns" onclick="event.stopPropagation()"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div>` : ''}</div>`;
+    }).join('')}${slot(a.length)}</div>
+    <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>この順番で保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
-}
-// つまみを押したまま動かす: 動かしている行は指についてくる・ほかの行はよけて隙間を空ける。離したところに入れる
-function roDragStart(e, k) {
-  const list = document.getElementById('ro-list');
-  if (!list) return;
-  e.preventDefault();
-  const rows = [...list.querySelectorAll('.ro-row')];
-  const row = rows[k];
-  const n = rows.length;
-  const step = rows.length > 1 ? rows[1].getBoundingClientRect().top - rows[0].getBoundingClientRect().top : row.getBoundingClientRect().height;
-  const y0 = e.clientY;
-  let to = k;
-  row.classList.add('drag');
-  list.classList.add('dragging');
-  const move = ev => {
-    const dy = ev.clientY - y0;
-    row.style.transform = `translateY(${dy}px)`;
-    to = Math.max(0, Math.min(n - 1, k + Math.round(dy / step)));
-    rows.forEach((r, i) => {
-      if (i === k) return;
-      const shift = (k < to && i > k && i <= to) ? -step : (k > to && i >= to && i < k) ? step : 0;
-      r.style.transform = shift ? `translateY(${shift}px)` : '';
-    });
-  };
-  const up = () => {
-    window.removeEventListener('pointermove', move);
-    window.removeEventListener('pointerup', up);
-    window.removeEventListener('pointercancel', up);
-    list.classList.remove('dragging');
-    if (to !== k) { const a = reorderState.idx; const [x] = a.splice(k, 1); a.splice(to, 0, x); reorderState.just = x; }
-    renderReorder();
-  };
-  window.addEventListener('pointermove', move);
-  window.addEventListener('pointerup', up);
-  window.addEventListener('pointercancel', up);
 }
 function saveReorder() {
   const g = activeGame, a = reorderState && reorderState.idx;
