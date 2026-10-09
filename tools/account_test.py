@@ -486,7 +486,7 @@ def main():
         pg.wait_for_timeout(300)
         top = pg.evaluate("document.getElementById('mp-me').firstElementChild.innerText")
         # 名前とアイコンの帯はやめた（2026-10-08）。名前とログアウトはヘッダー右上のマイページを押したメニューに
-        bar = pg.evaluate("(() => { hdrAcctClick(); const t = document.getElementById('form-modal-body').innerText; closeFormModal(); return t.includes('ログアウト') && document.getElementById('account-card').style.display === 'none' && document.getElementById('mp-head').innerText.includes('個人') ? t : ''; })()")
+        bar = pg.evaluate("(() => { hdrAcctClick(); const t = document.getElementById('form-modal-body').innerText; closeFormModal(); return t.includes('ログアウト') && document.getElementById('account-card').style.display === 'none' && document.getElementById('mp-head').innerText.includes(myLabel()) ? t : ''; })()")
         results.append(("[10a] マイページのいちばん上は自分の成績（四麻のカード：平均着順・通算スコア・トップ率・ラス回避・直近のスコアの推移）", True,
                         "テスト1" in bar and all(w in top for w in ["四麻", "平均着順", "通算スコア", "トップ率", "ラス回避", "スコアの推移"])))
         tabs = pg.evaluate("document.getElementById('mp-pane-tabs').innerText")
@@ -581,7 +581,7 @@ def main():
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「追加」「送る」（見せ方と同じ1行）・形式のピル・並び順、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["追加", "送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会"])))  # 「作る・参加する」は仲間ページの一覧（openCirclePicker）へ移した（2026-10-09）
+                        all(w in me_txt for w in ["追加", "送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in [pg.evaluate("myLabel()"), "金曜会"])))  # 「個人」は自分の名前（myLabel）に変わる（2026-10-09）  # 「作る・参加する」は仲間ページの一覧（openCirclePicker）へ移した（2026-10-09）
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,

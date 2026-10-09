@@ -1284,11 +1284,13 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .sw-chip.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
 .sw-chip.on .ico { --i1: var(--pc); --i2: var(--pc-soft); }
 .sw-chip:not(.on) .sw-av { opacity: .75; }
-.sw-chip.circ { min-width: 0; max-width: 62%; } .sw-chip .sw-cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw-chip.circ, .sw-chip.me { min-width: 0; max-width: 62%; } .sw-chip.me { max-width: 34%; } .sw-chip .sw-cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sw-dd { display: inline-flex; transform: rotate(90deg); opacity: .8; }
 .sw-more { flex: none; align-self: center; height: 26px; padding: 0 8px 0 10px; border: 1px solid #D5DEDB; border-radius: 13px; background: #fff; color: #5F6E6B; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
 .cp-list { padding: 0 12px; } .cp-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; border: 0; border-top: .5px solid #E3E9E8; background: none; font: inherit; text-align: left; cursor: pointer; }
 .cp-row:first-child { border-top: 0; } .cp-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .cp-t b { font-size: 15px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cp-t small { font-size: 12px; color: #5F6E6B; }
+.cp-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 10px; min-height: 30px; }
+.cp-row.sort { cursor: default; } .cp-mv { flex: none; display: flex; gap: 6px; } .cp-mv button { width: 36px; height: 32px; border: 1px solid var(--pc-line2); border-radius: 10px; background: #fff; color: var(--pc); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; } .cp-mv button:disabled { opacity: .35; cursor: default; }
 .cp-on { flex: none; font-size: 11px; font-weight: 800; color: var(--pc); }
 .sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
@@ -4349,15 +4351,16 @@ function renderCircle() {
   // 数える試合が無いときの説明（表やカードは残す。2026-10-08）: 連携がまだ無いのか、いまの条件で試合が無いのかを分けて書く
   const anyBound = Object.values(circleData.games || {}).some(ge => Object.values((ge && ge.seats) || {}).some(x => x && x.mid));
   // 条件で数える試合が無いときは文を出さない（表やカードの形が「—」で残るため。2026-10-08）。連携がまだ1つも無いときだけ案内
-  const noBind = anyBound ? '' : `<div class="empty-note">名前を名簿の人と連携すると、ここに通算が出ます。</div>`;
+  const noBind = anyBound || !gids.length ? '' : `<div class="empty-note">名前を名簿の人と連携すると、ここに通算が出ます。</div>`;
   if (circleTab === 'games') html += circleGamesTabHtml(role, gids, modeChips);
   else if (circleTab === 'people') html += circlePeopleTabHtml(st);
-  else if (!gids.length) html += noGames;
+  else if (!gids.length && !['rank', 'grid', 'h2h'].includes(circleTab)) html += noGames;
   else if (circleTab === 'grid') {
+    if (!gids.length) html += noGames; // 試合が無くても、表の形（空）は下に出す（2026-10-09）
     html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`, 'period')}${modeChips}${circleKindSegHtml()}
       ${st.list.length ? '' : noBind}${circleGridHtml(st)}${`<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>`}</div>`;
-  } else if (circleTab === 'h2h') html += circleH2HTabHtml(st, modeChips, noBind);
-  else html += circleRankTabHtml(st, modeChips, noBind);
+  } else if (circleTab === 'h2h') html += (gids.length ? '' : noGames) + circleH2HTabHtml(st, modeChips, noBind);
+  else html += (gids.length ? '' : noGames) + circleRankTabHtml(st, modeChips, noBind);
   html += `<button class="auto-btn sub" style="margin-top:4px" onclick="refreshCircle()">${ico('refresh', 18, 'ico-in')}最新の状態にする</button>`;
   const body = document.getElementById('circle-body');
   // 描き直すあいだに高さが縮むと画面が上にずれるので、前の高さを保ってから戻す（タブを押すと縦に動くことがあった。2026-10-08）
@@ -6190,7 +6193,20 @@ function allCircleEntries() {
   const all = {};
   Object.entries(circleSeen).forEach(([cid, m]) => { all[cid] = { name: m.name, at: m.at, member: false }; });
   Object.entries(myCircles).forEach(([cid, m]) => { all[cid] = { name: m.name || (all[cid] && all[cid].name) || '', at: m.at, member: true }; });
-  return Object.entries(all).sort((a, b) => (b[1].member - a[1].member) || new Date(b[1].at || 0) - new Date(a[1].at || 0));
+  const ord = circleOrder(), pos = cid => { const i = ord.indexOf(cid); return i < 0 ? 1e9 : i; };
+  return Object.entries(all).sort((a, b) => (pos(a[0]) - pos(b[0])) || (b[1].member - a[1].member) || new Date(b[1].at || 0) - new Date(a[1].at || 0));
+}
+// 仲間ページの並び（一覧で並べ替えた順。この端末に保存。並べていないものは後ろに今までの順で）
+const CIRCLE_ORDER_KEY = 'mahjong-circle-order';
+function circleOrder() { try { const a = JSON.parse(localStorage.getItem(CIRCLE_ORDER_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+let circlePickerSort = false;
+function moveCircleOrder(cid, d) {
+  const ids = allCircleEntries().map(([c]) => c), i = ids.indexOf(cid), j = i + d;
+  if (i < 0 || j < 0 || j >= ids.length) return;
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  try { localStorage.setItem(CIRCLE_ORDER_KEY, JSON.stringify(ids)); } catch (e) { /* 保存できなくても困らない */ }
+  openCirclePicker();
+  renderCircleSection();
 }
 // カードに出す人数・ゲーム数（名簿と試合の一覧だけ読む。成績は開いたときに控えた値を出す）
 // 読み込み中にもう一度呼ばれたら、同じ読み込みの終わりを待つ（すぐ返すと、待っていた画面が描き直されない）
@@ -6221,27 +6237,29 @@ function mpSwitchHtml(active) {
   const ids = list.map(([cid]) => cid), cur = active !== 'me' ? active : (ids.includes(lastCircleId()) ? lastCircleId() : ids[0]);
   const ent = list.find(([cid]) => cid === cur), name = ent ? (ent[1].name || (circleCardInfo[cur] || {}).name || '仲間ページ') : '';
   const circ = cur
-    ? chip(active !== 'me', `${circleAvHtml(name, cur)}<span class="sw-cn">${esc(name)}</span><span class="sw-dd">${ico('chevron', 12)}</span>`, active !== 'me' ? 'openCirclePicker()' : `openCircle('${esc(cur)}')`, ' circ')
+    ? chip(active !== 'me', `${circleAvHtml(name, cur)}<span class="sw-cn">${esc(name)}</span><span class="sw-dd">${ico('chevron', 12)}</span>`, active !== 'me' ? 'circlePickerSort=false;openCirclePicker()' : `openCircle('${esc(cur)}')`, ' circ')
     : (loginAvailable() ? chip(false, '＋ 仲間ページ', 'openCircleEntryMenu()', ' add') : '');
   return `<div class="sw-row" role="tablist" aria-label="個人と仲間ページの切り替え">
-    ${chip(active === 'me', `${ico('person', 16)}個人`, "showView('history')")}
+    ${chip(active === 'me', `${ico('person', 16)}<span class="sw-cn">${esc(myLabel())}</span>`, "showView('history')", ' me')}
     ${circ ? '<span class="sw-sep" aria-hidden="true"></span>' : ''}${circ}
-    ${cur && active === 'me' && ids.length > 1 ? `<button type="button" class="sw-more" onclick="openCirclePicker()" aria-label="仲間ページを選ぶ">${ids.length}つ${ico('chevron', 11)}</button>` : ''}
   </div>`;
 }
 // 仲間ページの一覧（選ぶ・ぱっと見で管理する）: アイコン・名前・自分の立場・名簿の人数・試合（ゲーム）の数。下に「＋ 作る・参加する」
 function openCirclePicker() {
   const list = allCircleEntries();
   const ROLE = { owner: '作成者', admin: '管理者', editor: '編集メンバー' };
-  const rows = list.map(([cid, m]) => {
+  const rows = list.map(([cid, m], k) => {
     const info = circleCardInfo[cid] || {}, name = m.name || info.name || '仲間ページ', on = cid === circleId && document.getElementById('view-circle').classList.contains('active');
     const role = cid === circleId && circleRole() ? ROLE[circleRole()] : info.owner && info.owner === myUid() ? '作成者' : m.member ? '参加中' : '見ただけ';
     const nums = info.people != null ? ` ・ 名簿 ${info.people}人 ・ ${info.games}ゲーム` : '';
+    if (circlePickerSort) return `<div class="cp-row sort">${circleAvHtml(name, cid, 34)}<span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>
+      <span class="cp-mv"><button type="button" aria-label="上へ" onclick="moveCircleOrder('${esc(cid)}',-1)"${k === 0 ? ' disabled' : ''}>↑</button><button type="button" aria-label="下へ" onclick="moveCircleOrder('${esc(cid)}',1)"${k === list.length - 1 ? ' disabled' : ''}>↓</button></span></div>`;
     return `<button type="button" class="cp-row${on ? ' on' : ''}" onclick="closeFormModal();openCircle('${esc(cid)}')">${circleAvHtml(name, cid, 34)}
       <span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>${on ? `<span class="cp-on">表示中</span>` : `<span class="mb-chev">${ico('chevron', 14)}</span>`}</button>`;
   }).join('');
   document.getElementById('form-modal-title').textContent = '仲間ページ';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${list.length}つ</div>
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="cp-head"><span class="mn-sub" style="margin:0">${list.length}つ</span>
+      ${list.length > 1 ? `<button type="button" class="btn-tint" onclick="circlePickerSort=!circlePickerSort;openCirclePicker()">${circlePickerSort ? '完了' : '並べ替え'}</button>` : ''}</div>
     <div class="mn-group cp-list">${rows}</div>
     ${loginAvailable() ? `<div class="mn-group">${menuBtnHtml('people', '作る・参加する', '新しい仲間ページ・参加コード', 'openCircleEntryMenu()')}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
@@ -6277,7 +6295,7 @@ function renderMpHead() {
     c[np].g++; c[np].r += n;
   });
   const row = np => `<span class="cc-row${c[np].g ? '' : ' none'}"><span class="gk k${np} cc-k">${kindSvg(np, 16)}</span><b>${np === 3 ? '三麻' : '四麻'}</b>${c[np].g ? gamesRoundsText(c[np].g, c[np].r) : 'まだありません'}</span>`;
-  el.innerHTML = `<div class="pg-top"><h1>${ico('person', 18)}個人</h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
+  el.innerHTML = `<div class="pg-top"><h1>${ico('person', 18)}<span class="ci-name">${esc(myLabel())}</span></h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
 }
 function openCircleEntryMenu() {
   document.getElementById('form-modal-title').textContent = '仲間ページ';
@@ -11295,6 +11313,33 @@ const TAGS_KEY = 'mahjong-tags-v1';
 let gameTags = {};
 try { gameTags = JSON.parse(localStorage.getItem(TAGS_KEY)) || {}; } catch (e) { gameTags = {}; }
 function saveTags() { try { localStorage.setItem(TAGS_KEY, JSON.stringify(gameTags)); } catch (e) {} }
+// ---- マイページの自分の名前（2026-10-09）: 「個人」の代わりに出す。試合で自分として選んだ名前のうちいちばん多いもの。
+// アカウントのメニューで決めた名前があればそれ（この端末に保存）。まだ自分を選んだ試合が無ければ「個人」
+const MY_NAME_KEY = 'mahjong-my-name';
+function myNameSet() { try { return localStorage.getItem(MY_NAME_KEY) || ''; } catch (e) { return ''; } }
+function myAutoName() {
+  const cnt = {};
+  (appState.games || []).forEach(g => { const t = tagOf(g.id), nm = t.role === 'play' && t.me != null && g.settings && g.settings.playerNames ? g.settings.playerNames[t.me] : ''; if (nm) cnt[nm] = (cnt[nm] || 0) + 1; });
+  const best = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+  return best ? best[0] : '';
+}
+function myLabel() { return myNameSet() || myAutoName() || '個人'; }
+function openMyNameEdit() {
+  document.getElementById('form-modal-title').textContent = 'マイページの名前';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="field"><label>名前</label><input type="text" id="my-name" maxlength="${MAX_NAME_LEN}" value="${esc(myNameSet())}" placeholder="${esc(myAutoName() || '例: むにぃ')}"></div>
+    <div class="mp-note" style="margin:0 2px 10px">空のままなら、試合で自分として選んだ名前を使います</div>
+    <button class="confirm-btn" onclick="saveMyName()">保存する</button>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function saveMyName() {
+  const v = clampName(document.getElementById('my-name').value, MAX_NAME_LEN);
+  try { if (v) localStorage.setItem(MY_NAME_KEY, v); else localStorage.removeItem(MY_NAME_KEY); } catch (e) { /* 保存できなくても困らない */ }
+  closeFormModal();
+  if (document.getElementById('view-history').classList.contains('active')) renderHistory();
+  showToast('名前を変えました');
+}
 function tagOf(gid) {
   const t = gameTags[gid] || {};
   return { role: t.role === 'watch' ? 'watch' : 'play', me: typeof t.me === 'number' ? t.me : null };
@@ -11892,7 +11937,7 @@ function renderMyStats() {
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'groups';
   // 範囲の切り替えは、マイページの「個人｜仲間ページ」と同じ位置・同じ形（押すと範囲が変わるだけで画面は移らない）
   const scopeRow = `<div class="sw-row" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
-    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}個人` : `${circleAvHtml(l, k)}${esc(l)}`}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}${esc(myLabel())}` : `${circleAvHtml(l, k)}${esc(l)}`}</button>`).join('')}</div>`;
   renderAccountBar('ms-acct');
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const cmp = msCompareHtml(mpMode); // 成績が無くても表は出す（2026-10-08）
@@ -12646,7 +12691,8 @@ function isTeamGame(g) { const s = (g && g.settings) || {}; return !!(s.teamMode
 function statKindOk(g) { return !statKindAvail || statKind === 'all' || (statKind === 'team') === isTeamGame(g); }
 // 画像の帯に書く成績の種類（チーム戦のゲームがある画面だけ。2026-10-08）
 function statKindText() { return statKindAvail ? { all: '合計（個人戦＋チーム戦）', ind: '個人戦のみ', team: 'チーム戦のみ' }[statKind] : ''; }
-function setStatKindAvail(games) { statKindAvail = (games || []).some(isTeamGame); }
+// 試合がまだ無いときも出す（空のカードと同じく、形を先に見せる。2026-10-09）
+function setStatKindAvail(games) { statKindAvail = !(games || []).length || games.some(isTeamGame); }
 function statKindSegHtml() {
   if (!statKindAvail) return '';
   return `<span class="sk-seg${statKind !== 'all' ? ' filt' : ''}" role="tablist" aria-label="成績の種類">${[['all', '合計'], ['ind', '個人戦'], ['team', 'チーム戦']].map(([k, l]) =>
@@ -13651,7 +13697,8 @@ function openMpMenu() {
   const mail = currentUser && currentUser.email && currentUser.email !== who ? currentUser.email : '';
   document.getElementById('form-modal-title').textContent = 'アカウント';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${who ? `<div class="acct-who"><b>${esc(who)}</b>${mail ? `<small>${esc(mail)}</small>` : ''}<small>Googleでログイン中</small></div>` : ''}<div class="mn-group">${
-    menuBtnHtml('phoneAdd', 'ホーム画面に追加', 'アプリのように1タップで開けます', 'closeFormModal();showInstallHelp()')}</div>
+    menuBtnHtml('phoneAdd', 'ホーム画面に追加', 'アプリのように1タップで開けます', 'closeFormModal();showInstallHelp()')}
+    ${menuBtnHtml('pencil', 'マイページの名前', esc(myLabel()), 'openMyNameEdit()')}</div>
     <div class="mn-group">${menuBtnHtml('person', 'ログアウト', '記録はアカウントに残ります', 'closeFormModal();confirmSignOut()', 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
