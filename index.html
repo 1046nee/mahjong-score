@@ -1565,10 +1565,14 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 @keyframes ro-just { 0% { box-shadow: 0 0 0 4px rgba(227,179,65,.55); } 100% { box-shadow: 0 1px 2px rgba(16,40,36,.06); } }
 @media (prefers-reduced-motion: reduce) { .ro-row.just { animation: none; box-shadow: 0 0 0 3px rgba(227,179,65,.45); } }
 .ro-row.sh .ro-from { color: #8A9AA5; font-weight: 700; } .ro-row.sh .ro-was { color: #AEBBB8; }
-.ro-no .ro-was { display: block; font-size: 10px; font-weight: 800; color: #8A5A00; text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.ro-head { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+.ro-serial { font-size: 11px; font-weight: 900; color: var(--pc); background: #E4F3EC; border-radius: 6px; padding: 1px 6px; }
+.sanma .ro-serial { background: #EAF0FB; }
+.ro-head .ro-was { font-size: 10px; font-weight: 800; color: #8A5A00; text-decoration: line-through; text-decoration-thickness: 1.5px; }
 /* 試合結果の表の、並べ替え・削除の直後の印（しばらくだけ） */
 tr.rmk-mv td { background: #FFF8E8 !important; }
 tr.rmk-mv td.sticky-col { box-shadow: inset 3px 0 0 #E3B341; }
+.rno-pos { font-size: 9px; font-weight: 600; color: #AEBBB8; margin-top: 1px; white-space: nowrap; } /* 番号と並びの位置が違うときの「第◯試合」（修正済と同じ薄さ） */
 .rmk-from { font-size: 9.5px; font-weight: 800; color: #8A5A00; margin-top: 1px; white-space: nowrap; } .rmk-from.sh { color: #AEBBB8; font-weight: 700; }
 tr.rmk-del td { background: repeating-linear-gradient(135deg, #FBF3F3 0 6px, #F7EAEA 6px 12px) !important; color: #C62828; cursor: default; }
 tr.rmk-del td.sticky-col { text-align: center; box-shadow: inset 3px 0 0 #C62828; } tr.rmk-del .ico { --i1: #C62828; --i2: #F3C7C7; }
@@ -1576,9 +1580,9 @@ tr.rmk-del td[colspan] { text-align: left; font-size: 12px; line-height: 1.5; pa
 tr.rmk-del b { font-weight: 800; margin-right: 6px; } tr.rmk-del span { color: #8A6A6A; font-size: 11px; }
 .ro-grip { flex: none; width: 30px; height: 44px; border: 0; border-radius: 8px; background: none; color: #8A9AA5; font-size: 20px; font-weight: 900; cursor: grab; touch-action: none; }
 .ro-grip:active { cursor: grabbing; background: #EEF2F1; color: #177083; }
-.ro-no { flex: none; width: 34px; text-align: center; line-height: 1.1; }
+.ro-no { flex: none; width: 36px; text-align: center; line-height: 1.1; }
 .ro-no b { display: block; font-size: 20px; font-weight: 900; color: #1F2A28; font-variant-numeric: tabular-nums; }
-.ro-no small { font-size: 9.5px; font-weight: 700; color: #8A9AA5; }
+.ro-no small { display: block; font-size: 9.5px; font-weight: 700; color: #8A9AA5; }
 .ro-main { flex: 1; min-width: 0; }
 .ro-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .ro-p { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 3px; border-radius: 11px; background: #F4F7F6; font-size: 12px; font-weight: 700; color: #1F2A28; }
@@ -8421,7 +8425,7 @@ function imgTableBodyCanvas(g, kind, compact = false) {
   // 画面と同じレンダラでHTMLを組み立て（表示ロジックを一元化するため）
   let tableHtml;
   if (kind === 'rounds') {
-    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact)).join('');
+    let rows = g.rounds.map((r, idx) => roundRowHtml(r, idx, 'void(0)', s, true, compact, { serial: roundSerialAt(g, idx) })).join('');
     rows = rows.replace(/<div style="font-size:9px;color:#c0c4cc;margin-top:1px">修正済<\/div>/g, '');
     rows += roundsTotalRowHtml(g);
     tableHtml = `<table class="rounds-table">${roundsTheadHtml(s, true)}<tbody>${rows}</tbody></table>`;
@@ -9251,12 +9255,45 @@ function roundRowHtml(r, idx, onclickJs, s, forImage = false, compact = false, f
   const pendMark = (!forImage && isPendingRound(r)) ? '<div class="pend-mark">未送信</div>' : '';
   // 試合番号は個人成績の項目列と同じ体裁（.sticky-col: 12px・600・左詰め・標準色）
   // from＝さっき並べ替えで動かした試合の元の番号（しばらく「元 第n」と琥珀色の地で出す。recentRoundMarks）
-  // from＝{ no: 元の番号, active: 動かした試合か（ずれただけなら控えめに） }
+  // from＝{ serial: その試合の番号（入力順）, active: さっき並べ替えで動かした試合か }。番号と並びの位置が違えば、番号の下に薄く「第◯試合」
+  const serial = (from && from.serial) || idx + 1;
   return `<tr onclick="${onclickJs}" style="cursor:pointer"${from && from.active ? ' class="rmk-mv"' : ''}>
-    <td class="sticky-col"><div>${idx+1}</div>${from ? `<div class="rmk-from${from.active ? '' : ' sh'}">元 第${from.no}</div>` : ''}${editedMark}${pendMark}</td>
+    <td class="sticky-col"><div>${serial}</div>${serial !== idx + 1 ? `<div class="rno-pos">第${idx + 1}試合</div>` : ''}${editedMark}${pendMark}</td>
     ${cells}
   </tr>`;
 }
+// ---- 試合の番号（2026-10-09）----
+// 試合の番号＝入力した順に付く、その試合だけの番号。並べ替えても変わらず、消した試合の番号は欠番になる（次の試合は続きの番号）。
+// 並び順の位置（第◯試合）と番号が違うときは、番号の下に薄く「第◯試合」。
+// 元は試合の履歴の「入力」の記録（op＝その試合のid）の順。保存するデータは増やさない。
+// 記録が見つからない試合（古いデータ・履歴が長すぎて古い記録が消えたもの）は入力日時の順で先頭から番号を振り、見つかった試合はその後ろに続ける
+const roundSerialMemo = new WeakMap();
+function roundSerialInfo(g) {
+  const rs = (g && g.rounds) || [], log = (g && g.log) || [];
+  const sig = rs.length + '|' + log.length + '|' + rs.map(r => r && r.id).join(',');
+  const c = roundSerialMemo.get(g);
+  if (c && c.sig === sig) return c;
+  const adds = [], addPos = new Map();
+  log.forEach(e => { if (e && e.type === 'add' && e.op && !addPos.has(e.op)) { addPos.set(e.op, adds.length); adds.push(e); } });
+  const unmatched = rs.filter(r => !r || !r.id || !addPos.has(r.id)).sort((a, b) => ((a && Date.parse(a.at)) || 0) - ((b && Date.parse(b.at)) || 0));
+  const base = unmatched.length, map = new Map();
+  unmatched.forEach((r, i) => map.set(r, i + 1));
+  rs.forEach(r => { if (r && r.id && addPos.has(r.id)) map.set(r, base + addPos.get(r.id) + 1); });
+  const info = { sig, map, base, adds, addPos, next: base + adds.length + 1 };
+  roundSerialMemo.set(g, info);
+  return info;
+}
+function roundSerialAt(g, idx) { const r = g && g.rounds && g.rounds[idx]; return (r && roundSerialInfo(g).map.get(r)) || idx + 1; }
+function nextRoundSerial(g) { return g ? roundSerialInfo(g).next : 1; }
+// 履歴の記録 e の試合の番号（入力の記録は op から・いまある試合は位置から・消した試合は入力の記録の点数で突き合わせる）
+function logSerialOf(g, e) {
+  const info = roundSerialInfo(g);
+  if (e.type === 'add' && e.op && info.addPos.has(e.op)) return info.base + info.addPos.get(e.op) + 1;
+  if (!e.old && typeof e.no === 'number' && g.rounds && g.rounds[e.no - 1]) return roundSerialAt(g, e.no - 1);
+  if (e.points) { const fp = fpOf(e.points); const i = info.adds.findIndex(a => a.old && a.points && fpOf(a.points) === fp); if (i >= 0) return info.base + i + 1; }
+  return typeof e.no === 'number' ? e.no : null;
+}
+
 // ---- 並べ替え・削除の直後の印（2026-10-09）----
 // 並べ替えた試合は「元 第n」、消した試合はその場所に「第n試合を削除しました」の行を、しばらく（RECENT_MARK_MS）出す。
 // 対局を終えた・記録が確定したら出さない。元になるのは全員の画面で同じ試合の履歴（g.log）＝ほかの人の画面にも出る。
@@ -9281,11 +9318,13 @@ function recentRoundMarks(g) {
   let lastRe = -1; log.forEach((e, i) => { if (isRe(e)) lastRe = i; });
   const keep = e => { out.until = Math.max(out.until, Date.parse(e.at) + RECENT_MARK_MS); };
   if (lastRe >= 0 && fresh(log[lastRe]) && !log.slice(lastRe + 1).some(e => e.type === 'delete' || isRe(e))) {
-    (log[lastRe].changes || []).forEach(t => { const m = /^第(\d+)試合→第(\d+)試合$/.exec(t); if (m) out.moved[+m[2]] = +m[1]; });
+    // 記録の形: 新「試合3→1番目」・旧「第3試合→第1試合」。どちらも行き先の位置を拾う
+    (log[lastRe].changes || []).forEach(t => { const m = /^(?:試合(\d+)→(\d+)番目|第(\d+)試合→第(\d+)試合)$/.exec(t); if (m) out.moved[+(m[2] || m[4])] = +(m[1] || m[3]); });
     if (Object.keys(out.moved).length) {
       keep(log[lastRe]);
-      const n = (g.rounds || []).length, seq = Array.from({ length: n }, (_, i) => out.moved[i + 1] || (i + 1));
-      out.active = new Set([...reorderActiveSet(seq)].map(i => i + 1)); // 動かした試合（番号）
+      const n = (g.rounds || []).length, seq = Array.from({ length: n }, (_, i) => roundSerialAt(g, i));
+      const out_ = reorderActiveSet(seq);
+      out.active = new Set([...out_].map(i => i + 1).filter(p => out.moved[p] != null)); // 動かした試合（位置）
     }
   }
   const dels = log.map((e, i) => ({ e, i })).filter(x => x.e.type === 'delete' && x.i > lastRe && typeof x.e.no === 'number' && fresh(x.e));
@@ -9302,13 +9341,12 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   const delRow = d => {
     const st = s, nm = d.e.names || null, pts = d.e.points || [];
     const who = nm && nm.length === pts.length ? nm.map((x, i) => `${x} ${Number(pts[i]).toLocaleString()}`).join('　') : '';
-    return `<tr class="rmk-del"><td class="sticky-col">${ico('trash', 13)}</td><td colspan="${ncol}"><b>第${d.no}試合を削除しました</b><span>${fmtTime(d.at)}${who ? ` ・ ${esc(who)}` : ''}</span></td></tr>`;
+    return `<tr class="rmk-del"><td class="sticky-col">${ico('trash', 13)}</td><td colspan="${ncol}"><b>試合${logSerialOf(g, d.e) || d.no}を削除しました</b><span>${fmtTime(d.at)}${who ? ` ・ ${esc(who)}` : ''}</span></td></tr>`;
   };
   let html = '';
   idxs.forEach(idx => {
     mk.deleted.filter(d => d.pos === idx + 1).forEach(d => { html += delRow(d); });
-    const f = mk.moved[idx + 1] || null;
-    html += roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, f ? { no: f, active: mk.active.has(idx + 1) } : null);
+    html += roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1) });
   });
   if (!idxs.length || idxs[idxs.length - 1] === n - 1) mk.deleted.filter(d => d.pos > n).forEach(d => { html += delRow(d); });
   // 印が消える時刻に描き直す（開いたままでも、しばらくしたら普段の表示に戻る）
@@ -9854,7 +9892,7 @@ function renderLogList(log, g) {
     // 番号付きエントリは（現）/（旧）を付けて現在の試合番号と対応させる。旧形式はlabelをそのまま表示
     const verb = { add: '入力', edit: '修正', delete: '削除' }[e.type] || '';
     const label = typeof e.no === 'number'
-      ? `（${e.old ? '旧' : '現'}）第${e.no}試合を${verb}`
+      ? `試合${logSerialOf(g, e) || e.no}を${verb}${e.old && e.type !== 'delete' ? '（あとで削除）' : ''}`
       : (e.label || '');
     const round = (!e.old && typeof e.no === 'number' && g && g.rounds) ? g.rounds[e.no - 1] : null;
     const names = e.names || (round ? roundMembers(round, g.settings).map(m => g.settings.playerNames[m]) : null);
@@ -10038,7 +10076,7 @@ function leaveGame(to) {
 // ---- 局の編集メニュー ----
 function openRoundMenu(idx) {
   if (isGameLocked(activeGame)) { lockedToast(); return; }
-  document.getElementById('action-modal-title').textContent = `第${idx+1}試合`;
+  document.getElementById('action-modal-title').textContent = `試合${roundSerialAt(activeGame, idx)}（第${idx + 1}試合）`;
   document.getElementById('action-modal-body').innerHTML =
     `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
      <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この試合を削除する</button>`;
@@ -10048,7 +10086,7 @@ function closeActionModal() {
   document.getElementById('action-modal').classList.remove('open');
 }
 function confirmDeleteRound(idx) {
-  document.getElementById('confirm-modal-title').textContent = `第${idx+1}試合を削除`;
+  document.getElementById('confirm-modal-title').textContent = `試合${roundSerialAt(activeGame, idx)}を削除`;
   document.getElementById('confirm-modal-desc').textContent = 'この試合の記録を削除します。全員の画面から削除されます（あとから「元に戻す」で戻せます）。よろしいですか？';
   const okBtn = document.getElementById('confirm-modal-ok');
   okBtn.textContent = '削除する'; // 復元の確認で文言を変えるので毎回セットし直す
@@ -10062,9 +10100,10 @@ function deleteRound(idx) {
   if (!activeGame) return;
   const old = activeGame.rounds[idx];
   if (!old) return;
-  const bkKey = takeBackup(activeGame, `第${idx + 1}試合を削除`, activeGame.rounds.length - 1); // 書き込む前の状態を控える
+  const no = roundSerialAt(activeGame, idx);
+  const bkKey = takeBackup(activeGame, `試合${no}を削除`, activeGame.rounds.length - 1); // 書き込む前の状態を控える
   enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'delete',
-    target: roundTarget(old), label: `第${idx + 1}試合の削除` });
+    target: roundTarget(old), label: `試合${no}の削除` });
   showUndoToast('削除しました', bkKey);
 }
 
@@ -10164,8 +10203,8 @@ function openSheetCtx(ctx, idx) {
 
   // チップ入力ありの場合はタイトル表記を「点数 / チップ入力」に切り替える
   document.getElementById('sheet-title').textContent = isEdit
-    ? `第${idx+1}試合を修正`
-    : `第${ctx.rounds.length + 1}試合の点数入力`;
+    ? `試合${roundSerialAt(ctx.game, idx)}を修正`
+    : `試合${nextRoundSerial(ctx.game)}の点数入力`;
   // メンバーが1試合の人数より多いグループのみ「今回の対局メンバー」選択を表示
   document.getElementById('sheet-members-area').style.display = s.playerNames.length > s.numPlayers ? 'block' : 'none';
   renderSheetMembers();
@@ -10475,9 +10514,10 @@ function submitRound() {
   if (!isEdit) round.at = now;
   const op = { id: newOpId(), sid: ctx.sid, at: now, kind: isEdit ? 'edit' : 'add', round,
     names: ctx.settings.playerNames.slice() }; // 入力したときのメンバー表（途中でメンバーが変わっても追えるように）
-  if (isEdit) { op.target = roundTarget(orig); op.label = `第${editingIndex + 1}試合の修正`; }
+  const eno = isEdit ? roundSerialAt(ctx.game, editingIndex) : null;
+  if (isEdit) { op.target = roundTarget(orig); op.label = `試合${eno}の修正`; }
   // 修正は上書きなので、書き込む前の状態を控えておく（新規入力は消えるものが無いので不要）
-  const bkKey = isEdit ? takeBackup(ctx.game, `第${editingIndex + 1}試合を修正`, nBefore) : null;
+  const bkKey = isEdit ? takeBackup(ctx.game, `試合${eno}を修正`, nBefore) : null;
   closeSheet();
   // ここで入力は確定（端末の送信キューに入る）。送信は裏で続け、送れないあいだは画面上部の帯で知らせる
   ctx.submit(op);
@@ -10892,18 +10932,20 @@ function renderReorder() {
   const when = r => { const t = Date.parse(r.at), d = t ? new Date(t) : null; return d ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''; };
   const act = reorderActiveSet(a.map(v => v + 1));
   const moved = act.size;
-  const slot = i => (sel == null || i === sel || i === sel + 1) ? '' : `<button type="button" class="ro-slot" onclick="dropReorder(${i})">${ico('chevron', 12)}ここへ</button>`;
+  // 「ここへ」には、入れたあとに何試合目になるかを書く（第◯試合に、選んだ試合を持っていく）
+  const slot = i => (sel == null || i === sel || i === sel + 1) ? '' : `<button type="button" class="ro-slot" onclick="dropReorder(${i})">${ico('chevron', 12)}ここへ（第${(i > sel ? i - 1 : i) + 1}試合にする）</button>`;
+  const serialOf = oi => roundSerialAt(g, oi);
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
-    <div class="ro-help">${sel == null ? '<b>動かしたい試合を押してください。</b>' : `<b>第${sel + 1}試合を選んでいます。</b>入れたい所の「ここへ」を押すか、↑↓で1つずつ動かします（もう一度押すと選ぶのをやめます）。`}</div>
+    <div class="ro-help">${sel == null ? '<b>動かしたい試合を押してください。</b>' : `<b>試合${serialOf(a[sel])}を選んでいます。</b>第何試合にするかを「ここへ」で選ぶか、↑↓で1つずつ動かします（もう一度押すと選ぶのをやめます）。`}</div>
     <div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
       <button type="button" class="ro-tool" onclick="reorderState.idx=activeGame.rounds.map((_, i) => i);reorderState.sel=null;renderReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
       <span class="ro-count">${moved ? `${moved}試合を動かしています` : ''}</span></div>
     <div class="ro-list${sel != null ? ' picking' : ''}" id="ro-list">${a.map((oi, k) => {
       const r = rs[oi], dk = dayAt(k), on = sel === k;
       return `${slot(k)}<div class="ro-row${on ? ' on' : ''}${act.has(k) ? ' mv' : oi !== k ? ' sh' : ''}${reorderState.just === oi ? ' just' : ''}" data-k="${k}" onclick="selectReorder(${k})" role="button" tabindex="0" aria-pressed="${on}">
-        <div class="ro-no">${oi !== k ? `<span class="ro-was">元${oi + 1}</span>` : ''}<b>${k + 1}</b></div>
-        <div class="ro-main"><div class="ro-chips">${line(r)}</div>
+        <div class="ro-no"><small>第</small><b>${k + 1}</b><small>試合</small></div>
+        <div class="ro-main"><div class="ro-head"><span class="ro-serial${serialOf(oi) !== k + 1 ? ' off' : ''}">試合${serialOf(oi)}</span>${oi !== k ? `<span class="ro-was">元は第${oi + 1}試合</span>` : ''}</div><div class="ro-chips">${line(r)}</div>
           <div class="ro-sub">${dk >= 0 ? `<span class="ro-day">${dk + 1}日目</span>` : ''}<span>入力 ${when(r)}${r.edited ? ' ・ 修正あり' : ''}</span></div></div>
         ${on ? `<div class="ro-btns" onclick="event.stopPropagation()"><button type="button" aria-label="上へ" ${k === 0 ? 'disabled' : ''} onclick="moveReorder(${k},-1)">↑</button><button type="button" aria-label="下へ" ${k === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${k},1)">↓</button></div>` : ''}</div>`;
     }).join('')}${slot(a.length)}</div>
@@ -10916,7 +10958,7 @@ function saveReorder() {
   if (a.every((v, k) => v === k)) { closeFormModal(); return; }
   takeBackup(g, '試合の順番を入れ替え', (g.rounds || []).length); // 書き込む前の状態を控える（「もとに戻す」で戻せる）
   const rs = g.rounds || [];
-  const moves = a.map((oi, k) => oi !== k ? `第${oi + 1}試合→第${k + 1}試合` : '').filter(Boolean);
+  const moves = a.map((oi, k) => oi !== k ? `試合${roundSerialAt(g, oi)}→${k + 1}番目` : '').filter(Boolean);
   closeFormModal();
   enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'reorder',
     order: a.map(oi => ({ id: rs[oi].id || null, at: rs[oi].at || null })),
@@ -11871,7 +11913,7 @@ function renderResultSheet() {
   // 試合ごとのスコア・個人成績・スコア推移は見出しを押して開け閉めできる（rsFoldHtml）。試合ごとのスコアは10試合以上なら最初は閉じる
   const table = !rs.length ? '<div class="rs-empty">この日の試合はありません</div>'
     : `<div class="tbl-scroll rs-tbl" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(names.length)}">${roundsTheadHtml(s)}
-      <tbody>${rs.map(x => roundRowHtml(x.r, x.i, '', s)).join('')}${roundsTotalRowHtml(gf)}</tbody></table></div>`;
+      <tbody>${rs.map(x => roundRowHtml(x.r, x.i, '', s, false, false, { serial: roundSerialAt(gf, x.i) })).join('')}${roundsTotalRowHtml(gf)}</tbody></table></div>`;
   const tblTitle = `試合ごとのスコア${st.day != null ? `（${st.day + 1}日目）` : ''}`;
   // 個人成績とスコア推移（試合の画面と同じ部品。対戦成績は出さない）
   const extra = rs.length ? rsFoldHtml('stats', '個人成績', `<div class="rs-sec">${rankCountHtml(gf.rounds, s)}</div>`, true)
