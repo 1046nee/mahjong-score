@@ -1269,7 +1269,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .pg-head #circle-actions { margin: 0; }
 .pg-head #circle-title { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 900; line-height: 30px; -webkit-line-clamp: unset; }
 .pg-head #circle-title .ci-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pg-head #circle-title .ci-av { width: 26px; height: 26px; border-radius: 8px; font-size: 14px; padding-bottom: 2px; } .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
+ .pg-top h1 { font-size: 20px; line-height: 30px; } /* 個人と仲間ページで同じ大きさ・1行（長い名前は「…」） */
 .pg-head .cc-rows { margin: 4px 0 0; }
 .sw-wrap.in-circle { margin: 0 0 12px; }
 /* 個人｜仲間ページの切り替え＝ページのタブ（下線）。期間・形式の「ボタン」と見分けるため、枠や塗りを付けない */
@@ -1284,9 +1284,15 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .sw-chip.on::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--pc); }
 .sw-chip.on .ico { --i1: var(--pc); --i2: var(--pc-soft); }
 .sw-chip:not(.on) .sw-av { opacity: .75; }
+.sw-chip.circ { min-width: 0; max-width: 62%; } .sw-chip .sw-cn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw-dd { display: inline-flex; transform: rotate(90deg); opacity: .8; }
+.sw-more { flex: none; align-self: center; height: 26px; padding: 0 8px 0 10px; border: 1px solid #D5DEDB; border-radius: 13px; background: #fff; color: #5F6E6B; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
+.cp-list { padding: 0 12px; } .cp-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; border: 0; border-top: .5px solid #E3E9E8; background: none; font: inherit; text-align: left; cursor: pointer; }
+.cp-row:first-child { border-top: 0; } .cp-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .cp-t b { font-size: 15px; font-weight: 800; color: #1F2A28; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cp-t small { font-size: 12px; color: #5F6E6B; }
+.cp-on { flex: none; font-size: 11px; font-weight: 800; color: var(--pc); }
 .sw-chip.add { color: var(--pc); font-size: 13px; font-weight: 800; }
 /* 仲間ページのアイコン（名前の頭文字）はオレンジ（人の顔の色 avColor と見分ける。ユーザー指定・2026-09-29） */
-.sw-av { width: 22px; height: 22px; border-radius: 7px; flex: none; display: grid; place-items: center; background: #E75620; color: #fff; font-size: 12px; font-weight: 900; line-height: 1; padding-bottom: 1px; } /* 見出し（line-height 30px）の中に置いても文字が下にずれない。かなや漢字は字の箱の下寄りに描かれるので1px上げる（2026-10-09） */
+.sw-av { flex: none; display: block; overflow: visible; } /* 仲間ページのアイコンは SVG（circleAvHtml）。頭文字の位置は SVG の中で決める */ /* 見出し（line-height 30px）の中に置いても文字が下にずれない。かなや漢字は字の箱の下寄りに描かれるので1px上げる（2026-10-09） */
 .mp-others { margin-top: 12px; }
 .mp-others summary { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; font-size: 13px; font-weight: 800; color: #5F6E6B; cursor: pointer; list-style: none; }
 .mp-others summary::-webkit-details-marker { display: none; }
@@ -4017,6 +4023,7 @@ async function bindLaterSeats() {
   } catch (e) { return 0; }
 }
 async function openCircle(cid) {
+  try { localStorage.setItem(LAST_CIRCLE_KEY, cid); } catch (e) { /* 覚えられなくても困らない */ }
   if (circleId !== cid) { circleWith = []; } // 別の仲間ページへ移ったら戻す
   if (circleJoinCode && joinCid && joinCid !== cid) circleJoinCode = null;
   const cached = circleStore[cid];
@@ -4275,7 +4282,7 @@ function renderCircle() {
   const gids = Object.keys(circleData.games || {});
   const nRounds = gids.reduce((a, sid) => a + ((circleSess[sid] && circleSess[sid].rounds) || []).length, 0);
   // 仲間ページの頭文字のアイコン（上の「個人｜仲間ページ」の切り替えと同じ）＋名前。個人の見出し（人のアイコン＋個人）と同じ並び（2026-10-09）
-  { const nm = circleData.name || '仲間ページ'; document.getElementById('circle-title').innerHTML = `<span class="sw-av ci-av" aria-hidden="true">${esc(avInitial(nm))}</span><span class="ci-name">${esc(nm)}</span>`; }
+  { const nm = circleData.name || '仲間ページ'; document.getElementById('circle-title').innerHTML = `${circleAvHtml(nm, circleId, 26, 'ci-av')}<span class="ci-name">${esc(nm)}</span>`; }
   const roleLabel = { owner: '作成者', admin: '管理者', editor: '編集メンバー' }[role] || (currentUser ? '閲覧中' : '閲覧中（ログインなし）');
   const meMid = myCircleMid();
   document.getElementById('circle-sub').innerHTML = circleCountsHtml(gids); // 必要な数だけ（立場・名簿のあなたは出さない。2026-10-08 見出しをコンパクトに）
@@ -4291,9 +4298,9 @@ function renderCircle() {
     html += `<div class="card askme"><div class="askme-q">結果はログインなしで見られます。<b>Googleでログインすると参加して</b>、名簿で自分を選んで自分の成績に入れたり、試合を追加したりできます。</div>
       <button type="button" class="google-btn" style="margin-top:4px" onclick="startCircleJoin()">${googleBtnInner('Googleでログインして参加')}</button></div>`;
   } else if (!currentUser) {
-    html += `<div class="cm-note">見るだけならログインはいりません。${loginAvailable() ? '<b>Googleでログインすると、名簿で自分を選んで、ここでの試合を自分の成績に入れられます。</b>' : ''}試合の追加や名前の連携は、招待リンクから参加したメンバーができます。${loginAvailable() ? `<br><a onclick="openJoinByCodePrompt()">参加コードを持っている</a>` : ''}</div>`;
+    html += `<div class="cm-note">見るだけならログインはいりません。${loginAvailable() ? '<b>Googleでログインすると、名簿で自分を選んで、ここでの試合を自分の成績に入れられます。</b>' : ''}試合の追加や名前の連携は、仲間のリンクから参加したメンバーができます。${loginAvailable() ? `<br><a onclick="openJoinByCodePrompt()">参加コードを持っている</a>` : ''}</div>`;
   } else if (!role && myCircleMid()) {
-    html += `<div class="cm-note">試合の追加や名前の連携は、招待リンクか参加コードで参加したメンバーができます。<br><a onclick="openJoinByCodePrompt()">参加コードを入力する</a></div>`;
+    html += `<div class="cm-note">試合の追加や名前の連携は、仲間のリンクか参加コードで参加したメンバーができます。<br><a onclick="openJoinByCodePrompt()">参加コードを入力する</a></div>`;
   } else if (!myCircleMid()) {
     const cand = Object.entries(roster).filter(([, r]) => r && !r.uid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
     html += `<div class="card askme"><div class="askme-q">この仲間ページで、あなたは名簿のどの人ですか？</div>
@@ -6085,7 +6092,7 @@ async function issueInviteCode(cid, oldCode) {
   return code;
 }
 async function regenerateCircleCode() {
-  if (!confirm('参加コードを作り直すと、今までの招待リンクとコードでは参加できなくなります（参加済みの人はそのまま）。作り直しますか？')) return;
+  if (!confirm('参加コードを作り直すと、今までの仲間のリンクとコードでは参加できなくなります（参加済みの人はそのまま）。作り直しますか？')) return;
   try {
     circleSecret = await issueInviteCode(circleId, circleSecret);
     await addCircleLog('code', '参加コードを作り直しました');
@@ -6094,7 +6101,7 @@ async function regenerateCircleCode() {
   } catch (e) { showToast('作り直せませんでした'); }
 }
 async function leaveCircle() {
-  if (!confirm('この仲間ページから抜けますか？（結果はリンクから見られます。もう一度参加するには招待が必要です）')) return;
+  if (!confirm('この仲間ページから抜けますか？（結果はリンクから見られます。もう一度参加するには仲間のリンクが必要です）')) return;
   closeFormModal();
   try {
     const uid = myUid();
@@ -6116,7 +6123,7 @@ function openCreateCircle() {
   document.getElementById('form-modal-body').innerHTML = `
     <div class="field"><label>仲間ページの名前</label><input type="text" id="cc-name" maxlength="${MAX_GROUP_LEN}" placeholder="例: Mリーグ／〇〇株式会社"></div>
     <div class="field"><label>あなたの名前（試合で使う名前・名簿に入ります）</label><input type="text" id="cc-me" maxlength="${MAX_NAME_LEN}" placeholder="例: むにぃ"></div>
-    <div style="font-size:11px;color:#8a9aa5;line-height:1.6;margin-bottom:6px">作ったあと、仲間を招待リンクで招待し、「試合を追加」で過去の試合をまとめて取り込めます。結果は「結果のリンク」でログインなしの人にも見せられます。</div>
+    <div style="font-size:11px;color:#8a9aa5;line-height:1.6;margin-bottom:6px">作ったら、右上の「共有」から仲間のリンクを送ると、仲間が参加できます。過去の試合は「試合を追加」でまとめて取り込めます。</div>
     <button class="confirm-btn" onclick="runCreateCircle()">作る</button>
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button>`;
   document.getElementById('form-modal').classList.add('open');
@@ -6154,6 +6161,7 @@ async function runCreateCircle() {
     await db.ref(`circles/${cid}/roster/${mid}`).set({ name: me, at, uid });
     await db.ref(`users/${uid}/circles/${cid}`).set({ at, name });
     myCircles[cid] = { at, name };
+    circleCreated[cid] = Date.parse(at) || Date.now();
     await db.ref(`circles/${cid}/log`).push({ at, by: uid, byName: me, kind: 'create', text: `仲間ページ「${name}」を作りました`.slice(0, 300) });
     showLoading(false);
     // 試合の画面から作った場合は、その試合をそのまま入れる
@@ -6164,7 +6172,7 @@ async function runCreateCircle() {
       await addThisGameToCircle(cid);
     } else {
       await openCircle(cid);
-      showToast('作りました。「招待」から仲間を招待できます', 4000);
+      showToast('作りました。右上の「共有」から仲間のリンクを送ると、仲間が参加できます', 5000);
     }
     track('circle_create');
   } catch (e) {
@@ -6195,27 +6203,50 @@ function loadCircleCardInfo() {
 }
 async function loadCircleCardInfoIds(ids) {
   await Promise.all(ids.map(cid => Promise.all([
-    db.ref(`circles/${cid}/roster`).once('value'), db.ref(`circles/${cid}/games`).once('value'), db.ref(`circles/${cid}/name`).once('value')])
-    .then(([r, g, n]) => { circleCardInfo[cid] = { people: Object.keys(r.val() || {}).length, games: Object.keys(g.val() || {}).length, name: n.val() || '', sids: Object.keys(g.val() || {}) }; })
+    db.ref(`circles/${cid}/roster`).once('value'), db.ref(`circles/${cid}/games`).once('value'), db.ref(`circles/${cid}/name`).once('value'), db.ref(`circles/${cid}/createdAt`).once('value'), db.ref(`circles/${cid}/owner`).once('value')])
+    .then(([r, g, n, c, o]) => { circleCardInfo[cid] = { people: Object.keys(r.val() || {}).length, games: Object.keys(g.val() || {}).length, name: n.val() || '', sids: Object.keys(g.val() || {}), owner: o.val() || '' }; if (c.val()) circleCreated[cid] = Date.parse(c.val()) || 0; })
     .catch(() => { circleCardInfo[cid] = { err: true }; })));
   // マイページの成績タブの「くらべる」表も、仲間ページの試合の一覧が届いてから描き直す（前は切り替えだけ描き直し、表が出なかった）
   if (document.getElementById('view-history').classList.contains('active')) { renderCircleSection(); renderMpPanes(collectMyStats()); }
   if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
 }
 // マイページの上（#hist-circles）と仲間ページの上に同じ切り替えを出す: 「個人」＋参加している・見た仲間ページ＋「＋ 作る」
+// 切り替えは「個人｜仲間ページ▾」の2つ（2026-10-09。仲間ページが増えるたびに横に並べると長くなった）。
+// 仲間ページのチップには、いま見ている（なければ最後に見た）仲間ページを出す。仲間ページを見ているときに押すと一覧（openCirclePicker）
+const LAST_CIRCLE_KEY = 'mahjong-last-circle';
+function lastCircleId() { try { return localStorage.getItem(LAST_CIRCLE_KEY) || ''; } catch (e) { return ''; } }
 function mpSwitchHtml(active) {
   const list = allCircleEntries();
   const chip = (on, label, js, extra = '') => `<button type="button" class="sw-chip${on ? ' on' : ''}${extra}" onclick="${js}">${label}</button>`;
+  const ids = list.map(([cid]) => cid), cur = active !== 'me' ? active : (ids.includes(lastCircleId()) ? lastCircleId() : ids[0]);
+  const ent = list.find(([cid]) => cid === cur), name = ent ? (ent[1].name || (circleCardInfo[cur] || {}).name || '仲間ページ') : '';
+  const circ = cur
+    ? chip(active !== 'me', `${circleAvHtml(name, cur)}<span class="sw-cn">${esc(name)}</span><span class="sw-dd">${ico('chevron', 12)}</span>`, active !== 'me' ? 'openCirclePicker()' : `openCircle('${esc(cur)}')`, ' circ')
+    : (loginAvailable() ? chip(false, '＋ 仲間ページ', 'openCircleEntryMenu()', ' add') : '');
   return `<div class="sw-row" role="tablist" aria-label="個人と仲間ページの切り替え">
     ${chip(active === 'me', `${ico('person', 16)}個人`, "showView('history')")}
-    ${list.length ? '<span class="sw-sep" aria-hidden="true"></span>' : ''}
-    ${list.map(([cid, m]) => {
-      const info = circleCardInfo[cid] || {};
-      const name = m.name || info.name || '仲間ページ';
-      return chip(active === cid, `<span class="sw-av">${esc(avInitial(name))}</span>${esc(name)}`, `openCircle('${esc(cid)}')`);
-    }).join('')}
-    ${loginAvailable() ? chip(false, '＋ 作る・参加する', 'openCircleEntryMenu()', ' add') : ''}
+    ${circ ? '<span class="sw-sep" aria-hidden="true"></span>' : ''}${circ}
+    ${cur && active === 'me' && ids.length > 1 ? `<button type="button" class="sw-more" onclick="openCirclePicker()" aria-label="仲間ページを選ぶ">${ids.length}つ${ico('chevron', 11)}</button>` : ''}
   </div>`;
+}
+// 仲間ページの一覧（選ぶ・ぱっと見で管理する）: アイコン・名前・自分の立場・名簿の人数・試合（ゲーム）の数。下に「＋ 作る・参加する」
+function openCirclePicker() {
+  const list = allCircleEntries();
+  const ROLE = { owner: '作成者', admin: '管理者', editor: '編集メンバー' };
+  const rows = list.map(([cid, m]) => {
+    const info = circleCardInfo[cid] || {}, name = m.name || info.name || '仲間ページ', on = cid === circleId && document.getElementById('view-circle').classList.contains('active');
+    const role = cid === circleId && circleRole() ? ROLE[circleRole()] : info.owner && info.owner === myUid() ? '作成者' : m.member ? '参加中' : '見ただけ';
+    const nums = info.people != null ? ` ・ 名簿 ${info.people}人 ・ ${info.games}ゲーム` : '';
+    return `<button type="button" class="cp-row${on ? ' on' : ''}" onclick="closeFormModal();openCircle('${esc(cid)}')">${circleAvHtml(name, cid, 34)}
+      <span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>${on ? `<span class="cp-on">表示中</span>` : `<span class="mb-chev">${ico('chevron', 14)}</span>`}</button>`;
+  }).join('');
+  document.getElementById('form-modal-title').textContent = '仲間ページ';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${list.length}つ</div>
+    <div class="mn-group cp-list">${rows}</div>
+    ${loginAvailable() ? `<div class="mn-group">${menuBtnHtml('people', '作る・参加する', '新しい仲間ページ・参加コード', 'openCircleEntryMenu()')}</div>` : ''}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+  if (list.some(([cid]) => !circleCardInfo[cid] || circleCardInfo[cid].people == null)) loadCircleCardInfo().then(() => { if (document.getElementById('form-modal-title').textContent === '仲間ページ' && document.querySelector('.cp-list')) openCirclePicker(); });
 }
 function renderCircleSection() {
   const el = document.getElementById('hist-circles');
@@ -6253,8 +6284,8 @@ function openCircleEntryMenu() {
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="mp-note" style="margin:0 2px 10px">定例会や大会の試合をまとめて、通算順位・成績表・対戦成績を仲間全員で見られるページです。</div>
     <div class="mn-group">${menuBtnHtml('people', '仲間ページを作る', 'いつものメンバーで1つ作る', `closeFormModal();${currentUser ? 'openCreateCircle()' : 'openAddToCircleLogin()'}`)}</div>
-    <div class="mn-group" style="padding:12px"><div style="font-size:13px;font-weight:700;color:#33544A;margin-bottom:6px">招待リンク・参加コードを持っている</div>
-      <div style="display:flex;gap:6px"><input type="text" id="circle-open-input" placeholder="招待リンク・参加コード・仲間ページのリンク" style="flex:1;min-width:0;font-size:16px;padding:8px;border:1px solid #CFE3DB;border-radius:10px">
+    <div class="mn-group" style="padding:12px"><div style="font-size:13px;font-weight:700;color:#33544A;margin-bottom:6px">仲間のリンク・参加コードを持っている</div>
+      <div style="display:flex;gap:6px"><input type="text" id="circle-open-input" placeholder="仲間のリンク・参加コード" style="flex:1;min-width:0;font-size:16px;padding:8px;border:1px solid #CFE3DB;border-radius:10px">
       <button type="button" class="in-btn" onclick="const v=document.getElementById('circle-open-input').value;closeFormModal();openCircleFromInput(v)">開く</button></div></div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -6303,12 +6334,12 @@ function renderJoin() {
   const el = document.getElementById('join-body');
   if (!el) return;
   if (!joinCid) {
-    el.innerHTML = `<div class="card"><div class="card-title">この招待は使えません</div>
-      <div style="font-size:13px;color:#555;line-height:1.8">参加コードが作り直されたか、仲間ページが削除された可能性があります。招待してくれた人に、新しい招待リンクをもらってください。</div>
+    el.innerHTML = `<div class="card"><div class="card-title">このリンクは使えません</div>
+      <div style="font-size:13px;color:#555;line-height:1.8">参加コードが作り直されたか、仲間ページが削除された可能性があります。リンクを送ってくれた人に、新しい仲間のリンクをもらってください。</div>
       <button class="auto-btn sub" style="margin-top:10px" onclick="showView('home')">トップへ</button></div>`;
     return;
   }
-  const head = `<div class="join-head"><div class="join-kicker">仲間ページへの招待</div><div class="join-name">${esc(joinName || '仲間ページ')}</div>
+  const head = `<div class="join-head"><div class="join-kicker">仲間ページへの参加</div><div class="join-name">${esc(joinName || '仲間ページ')}</div>
     <div class="join-steps"><span class="${currentUser ? 'done' : 'now'}">① ログイン</span><span class="${currentUser ? 'now' : ''}">② 参加</span><span>③ 名簿で自分を選ぶ</span></div></div>`;
   let main = '';
   if (!loginAvailable()) {
@@ -6360,7 +6391,7 @@ async function doJoin() {
     track('circle_join', { already: member });
   } catch (e) {
     joinBusy = false;
-    joinError = '参加できませんでした。参加コードが作り直された可能性があります。招待してくれた人に新しいリンクをもらってください。';
+    joinError = '参加できませんでした。参加コードが作り直された可能性があります。リンクを送ってくれた人に新しいリンクをもらってください。';
     renderJoin();
   }
 }
@@ -11861,7 +11892,7 @@ function renderMyStats() {
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'groups';
   // 範囲の切り替えは、マイページの「個人｜仲間ページ」と同じ位置・同じ形（押すと範囲が変わるだけで画面は移らない）
   const scopeRow = `<div class="sw-row" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
-    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}個人` : `<span class="sw-av">${esc(avInitial(l))}</span>${esc(l)}`}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}個人` : `${circleAvHtml(l, k)}${esc(l)}`}</button>`).join('')}</div>`;
   renderAccountBar('ms-acct');
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const cmp = msCompareHtml(mpMode); // 成績が無くても表は出す（2026-10-08）
@@ -11906,6 +11937,27 @@ function seatAvColor(g, i) {
     if (r) return r.color || autoAvColor(st.mid);
   }
   return avColor(names[i]);
+}
+// ---- 仲間ページのアイコン（2026-10-09）----
+// 頭文字は SVG で描く。かな・漢字は字の箱の真ん中、英字・数字は大文字の高さの真ん中に置く（CSS の文字の箱では、かな・漢字と英字で
+// 上下のずれ方が違い、どちらかが中心から外れた）。色は仲間ページの id から決める（緑系・青系＝四麻・三麻の色は使わない）。
+// 2026-10-09 より前に作った仲間ページは今までどおりオレンジ
+const CIRCLE_COLOR_SINCE = Date.parse('2026-10-09T08:22:00Z');
+const circleCreated = {}; // cid → 作った時刻（ms）
+function hexHue(c) { const n = parseInt(c.slice(1), 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return -1; let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; return h < 0 ? h + 360 : h; }
+let circlePal = null;
+function circleColorOf(cid) {
+  let t = circleCreated[cid];
+  if (t == null && circleData && circleId === cid && circleData.createdAt) t = circleCreated[cid] = Date.parse(circleData.createdAt) || 0;
+  if (!t || t < CIRCLE_COLOR_SINCE) return '#E75620';
+  if (!circlePal) circlePal = AV_PALETTE.filter(c => { const h = hexHue(c); return h >= 0 && (h < 75 || h > 255) && whiteContrast(c) >= 3; });
+  let h = 0; for (const ch of String(cid)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return circlePal[h % circlePal.length];
+}
+function circleAvHtml(name, cid, size = 22, cls = '') {
+  const ch = avInitial(name), latin = /^[\x21-\x7E]$/.test(ch), fs = Math.round(size * 0.56), r = Math.round(size * 0.3);
+  const y = latin ? (size / 2 + fs * 0.36).toFixed(1) : (size / 2).toFixed(1);
+  return `<svg class="sw-av${cls ? ' ' + cls : ''}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><rect width="${size}" height="${size}" rx="${r}" fill="${circleColorOf(cid)}"/><text x="${size / 2}" y="${y}" text-anchor="middle"${latin ? '' : ' dominant-baseline="central"'} fill="#fff" font-size="${fs}" font-weight="900" font-family="inherit">${esc(ch)}</text></svg>`;
 }
 function avInitial(name) { const t = String(name || '').trim(); return t ? [...t][0].toUpperCase() : '?'; }
 function fmtScore(v) { const r = Math.round(v * 10) / 10; return (r > 0 ? '+' : '') + r.toFixed(1); }

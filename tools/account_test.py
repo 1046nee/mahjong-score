@@ -188,7 +188,7 @@ def main():
         pg.evaluate("showView('history')")
         pg.wait_for_timeout(300)
         results.append(("[5a] 過去の試合に「仲間ページ」欄と「作る」ボタンが出る", True,
-                        pg.evaluate("document.getElementById('hist-circles').innerText.includes('作る・参加する')")))
+                        pg.evaluate("document.getElementById('hist-circles').innerText.includes('仲間ページ')")))  # 仲間ページが無いときは「＋ 仲間ページ」（2026-10-09）
         pg.evaluate("openCreateCircle(); document.getElementById('cc-name').value = '金曜会'; document.getElementById('cc-me').value = 'むにぃ';")
         pg.evaluate("runCreateCircle()")
         pg.wait_for_function(SAFE % "document.querySelector('#view-circle').classList.contains('active') && circleData", timeout=10000)
@@ -581,7 +581,7 @@ def main():
         me_txt = pg.evaluate("document.getElementById('mp-me').innerText")
         sw = pg.evaluate("document.getElementById('hist-circles').innerText")
         results.append(("[10b] 上に「個人｜仲間ページ」の切り替え、「過去の試合」のタブに「追加」「送る」（見せ方と同じ1行）・形式のピル・並び順、自分が出た試合（月の見出し）", True,
-                        all(w in me_txt for w in ["追加", "送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会", "作る・参加する"])))
+                        all(w in me_txt for w in ["追加", "送る", "すべて", "一覧", "カレンダー", "タイル", "年", "月", "金曜会1"]) and all(w in sw for w in ["個人", "金曜会"])))  # 「作る・参加する」は仲間ページの一覧（openCirclePicker）へ移した（2026-10-09）
         pg.evaluate("histOthersOpen = true; renderHistoryList()")
         row3 = pg.evaluate(f"(() => {{ const r = [...document.querySelectorAll('#history-body .gr')].find(x => x.innerText.includes('金曜会3')); return r ? r.className + '|' + r.innerText : ''; }})()")
         results.append(("[10c] 自分を選んでいない試合は「その他の試合」にたたまれ、その行で名前（いつもの名前）か「出ていない」を選べる", True,
