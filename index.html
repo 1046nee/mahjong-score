@@ -2763,6 +2763,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div id="rank-body" style="margin-top:12px"></div>
     </div>
+    <div class="card" id="mx-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">総当たり表</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab" id="mx-img-btn" onclick="showMatrixImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <span id="mx-collapse"></span>
+        </div>
+      </div>
+      <div id="mx-body" style="margin-top:12px"></div>
+    </div>
     <div class="card" id="h2h-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">対戦成績</div>
@@ -9693,6 +9703,9 @@ function h2hMatrixHtml(g, forImage = false) {
     <thead><tr><th class="sticky-col" style="width:${firstColW(forImage)}px">勝-負</th>${head}</tr></thead>
     <tbody>${rows}</tbody></table></div>`;
 }
+// 総当たり表のカードの中身（試合の画面・結果の画面。2人以上が試合に出ていれば）
+function h2hMatrixVisible(g) { return playedFlags(g).filter(Boolean).length >= 2; }
+function h2hMatrixBodyHtml(g) { return h2hMatrixVisible(g) ? `${mxLegendHtml('名前を押すとその人の対戦成績')}${h2hMatrixHtml(g)}` : ''; }
 function h2hCardBodyHtml(g) {
   const s = g.settings, names = s.playerNames;
   const f = h2hFocusOf(g);
@@ -9704,15 +9717,25 @@ function h2hCardBodyHtml(g) {
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   const row = acc[f] || {};
   const keys = h2hSortedKeys(row);
-  // 総当たり表を先に（全員の関係がひと目でわかる）、その下に「だれから見る？」と相手ごとのカード
-  return `<div class="mx-title" style="margin-top:0">総当たり表</div>${mxLegendHtml()}${h2hMatrixHtml(g)}
-    <div class="who-lb" style="margin-top:16px">だれから見る？</div><div class="who-row">${who}</div>
+  // 総当たり表は別のカード（h2hMatrixBodyHtml。仲間ページと同じ2枚。2026-10-09）。こちらは「だれから見る？」と相手ごとのカード
+  return `<div class="who-lb" style="margin-top:0">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${esc(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div>`;
 }
 function renderH2HCard() {
-  const card = document.getElementById('h2h-card');
+  const card = document.getElementById('h2h-card'), mx = document.getElementById('mx-card');
   if (!card || !activeGame) return;
+  if (mx) {
+    const on = (activeGame.rounds || []).length && h2hMatrixVisible(activeGame);
+    mx.style.display = on ? 'block' : 'none';
+    if (on) {
+      document.getElementById('mx-collapse').innerHTML = collapseBtnHtml('mx');
+      document.getElementById('mx-img-btn').style.display = collapsedCards.mx ? 'none' : 'inline-flex';
+      const mb = document.getElementById('mx-body');
+      mb.style.display = collapsedCards.mx ? 'none' : '';
+      mb.innerHTML = collapsedCards.mx ? '' : h2hMatrixBodyHtml(activeGame);
+    }
+  }
   if (!(activeGame.rounds || []).length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
   document.getElementById('h2h-collapse').innerHTML = collapseBtnHtml('h2h');
@@ -9762,15 +9785,29 @@ function buildTablesCanvas(title, sub, right, sections, sanma = false) {
 async function showH2HImage(g) {
   if (!g || !(g.rounds || []).length) return;
   const f = h2hFocusOf(g);
+  if (f < 0) return;
   const names = g.settings.playerNames;
-  const canvas = buildTablesCanvas('対戦成績', g.name || '', f >= 0 ? `${names[f]} から見た成績` : '', [
-    { label: `${f >= 0 ? names[f] : ''} の相手別`, html: f >= 0 ? h2hGroupTableHtml(g, f, true) : '' },
-    { label: '総当たり表（行の人から見た勝ち-負け）', html: h2hMatrixHtml(g, true) }
-  ], g.settings.numPlayers === 3);
-  if (canvas === IMG_TOO_LARGE) { showToast('メンバーが多すぎて1枚の画像に収まりません'); return; }
+  const row = (h2hAdd({}, g, m => (m < names.length ? m : null))[f]) || {}, keys = h2hSortKeys(row, h2hSortedKeys(row));
+  if (!keys.length) { showToast('まだ同じ試合に出た相手がいません'); return; }
+  // 仲間ページ・マイページの対戦成績の画像と同じ形（画面と同じ相手ごとのカード）
+  const canvas = h2hCardsCanvas(g.name || '', fmtDate(g.createdAt || new Date().toISOString()), names[f], row, keys, k => names[k], k => seatAvColor(g, k), g.settings.numPlayers === 3);
+  if (canvas === IMG_TOO_LARGE) { showToast('相手が多すぎて1枚の画像に収まりません'); return; }
   if (!canvas) return;
   track('image_preview', { kind: 'h2h' });
-  await openImagePreview(canvas, g, '対戦成績');
+  await openImagePreview(canvas, g, `${names[f]}の対戦成績`);
+}
+// 総当たり表の画像（仲間ページと同じ表）
+async function showMatrixImage(g) {
+  if (!g || !h2hMatrixVisible(g)) return;
+  const s = g.settings, names = s.playerNames, played = playedFlags(g);
+  const order = memberDisplayOrder(s).filter(i => played[i]);
+  const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
+  const canvas = buildTablesCanvas(g.name || '', fmtDate(g.createdAt || new Date().toISOString()), s.numPlayers === 3 ? '三麻' : '四麻',
+    [{ label: '総当たり表（左の人から見た、上の人との勝ち-負け）', html: mxTableHtml(order, i => names[i], (a, b) => acc[a] && acc[a][b], null, null, true) }], s.numPlayers === 3);
+  if (canvas === IMG_TOO_LARGE) { showToast('人数が多すぎて1枚の画像に収まりません'); return; }
+  if (!canvas) return;
+  track('image_preview', { kind: 'matrix' });
+  await openImagePreview(canvas, g, '総当たり表');
 }
 
 // ---- 履歴表示（入力・修正・削除の3パターン） ----
@@ -13610,6 +13647,8 @@ function renderDetailBody(g) {
     const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}画像</button>`;
     html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
     const h2hBtn = `<button class="edit-tab" onclick="showH2HImage(detailGame)">${ico('image', 15)}画像</button>`;
+    const mxBtn = `<button class="edit-tab" onclick="showMatrixImage(detailGame)">${ico('image', 15)}画像</button>`;
+    if (h2hMatrixVisible(g)) html += `<div class="card">${detailCardHead('総当たり表', 'mx', mxBtn)}${collapsedCards.mx ? '' : h2hMatrixBodyHtml(g)}</div>`;
     html += `<div class="card">${detailCardHead('対戦成績', 'h2h', h2hBtn)}${collapsedCards.h2h ? '' : h2hCardBodyHtml(g)}</div>`;
   }
 
