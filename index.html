@@ -1587,9 +1587,9 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .mc-cond.cc-cond { margin: 0 0 10px; } /* 仲間ページのカードの条件の1行（成績カードと同じ形） */
 .cc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 30px; } /* 右のボタン（画像＝30px）が無いカードも同じ高さ。タブを切り替えても条件の行・合計｜個人戦｜チーム戦の位置が動かない（2026-10-08） */
 .cc-head-r { display: flex; gap: 6px; min-width: 0; align-items: center; }
-.ro-help { font-size: 12.5px; color: #4F5C5A; line-height: 1.7; margin: 0 2px 10px; }
+.ro-help { font-size: 12.5px; color: #4F5C5A; line-height: 1.7; margin: 0 2px 10px; min-height: 3.4em; } /* 選ぶ前後で表の位置が動かないように2行分 */
 .ro-grip-ico { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: #EEF2F1; color: #177083; font-weight: 900; margin-right: 2px; }
-.ro-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.ro-tools { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; height: 42px; box-sizing: border-box; }
 .ro-tool { height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid #CFDCD9; background: #fff; color: #177083; font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .ro-tool:disabled { color: #AEBBB8; cursor: default; }
 .ro-count { margin-left: auto; font-size: 12px; font-weight: 800; color: #8A5A00; }
@@ -1623,9 +1623,13 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 @media (prefers-reduced-motion: reduce) { .ro-table tr.ro-just td { animation: none; } }
 .ro-table .ro-here { display: inline-block; margin-top: 2px; padding: 1px 6px; border: 1.5px dashed var(--pc); border-radius: 6px; background: var(--pc-tint); color: var(--pc); font-size: 9.5px; font-weight: 800; line-height: 1.6; white-space: nowrap; }
 .ro-table tr.ro-to { cursor: pointer; }
-.ro-table .ro-was { margin-top: 1px; font-size: 9px; font-weight: 800; color: #8A5A00; white-space: nowrap; } .ro-table tr.ro-sh .ro-was { color: #9AA8A4; }
+.ro-table .ro-was { position: absolute; top: 5px; right: 5px; font-size: 9px; font-weight: 800; color: #8A5A00; white-space: nowrap; line-height: 1.2; }
+.ro-table .rno-pos { display: inline-block; padding: 0 2px; } .ro-count { white-space: nowrap; font-size: 11.5px; } .ro-tools .ro-tool, .ro-selbar .ro-tool { white-space: nowrap; flex: none; }
+.ro-table tr.ro-to td { background: #F5FAF8; }
+.ro-table tr.ro-to .rno-pos { outline: 1.5px dashed var(--pc); outline-offset: 1px; border-radius: 4px; color: var(--pc) !important; font-weight: 800; }
+.ro-table tr.ro-to.rmk-gone td.sticky-col { outline: 1.5px dashed var(--pc); outline-offset: -3px; } .ro-table tr.ro-sh .ro-was { color: #9AA8A4; }
 .ro-table tr.ro-dayrow td { background: #F4F7F6; color: #5F6E6B; font-size: 11px; font-weight: 800; text-align: left; padding: 3px 10px; }
-.ro-selbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; padding: 6px 8px; border-radius: 12px; background: var(--pc-tint); }
+.ro-selbar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; height: 42px; box-sizing: border-box; padding: 0 8px; border-radius: 12px; background: var(--pc-tint); }
 .ro-selbar span { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 800; color: var(--pc-ink); white-space: nowrap; }
 .ro-line { display: flex; align-items: stretch; gap: 6px; }
 .ro-line > .ro-row { flex: 1; min-width: 0; }
@@ -11217,7 +11221,9 @@ function renderReorder() {
     const on = sel === k, to = sel != null && !on;
     const cls = ['ro-tr', on ? 'ro-on' : '', act.has(k) ? 'ro-mv' : it.orig !== k ? 'ro-sh' : '', reorderState.just === it.orig ? 'ro-just' : '', to ? 'ro-to' : ''].filter(Boolean).join(' ');
     const click = to ? `placeReorder(${k})` : `selectReorder(${k})`;
-    const tag = (to ? '<div class="ro-here">ここへ</div>' : '') + (it.orig !== k ? `<div class="ro-was">元 ${it.orig + 1}行目</div>` : '');
+    // 選ぶ前と後で行の高さを変えない（2026-10-09）: 「ここへ」は行の色と「第◯試合」の点線の枠で示し、行を増やさない。
+    // 元の位置は番号の欄の右上に小さく重ねる
+    const tag = it.orig !== k ? `<span class="ro-was">元${it.orig + 1}</span>` : '';
     if (it.del) {
       const r = deletedRoundOf(g, it.del), sn = logSerialOf(g, it.del) || it.del.no;
       rows += r ? roundRowHtml(r, -1, click, s, false, false, { serial: sn, gone: true, click: true, cls, tag })
@@ -11233,14 +11239,14 @@ function renderReorder() {
   document.getElementById('form-modal-title').textContent = '試合の順番を入れ替え';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ro-sheet">
     <div class="ro-help">${sel == null ? '<b>動かしたい行を押してください。</b>灰色の行（削除した試合）も同じように動かせます。'
-      : `<b>${selName}を選んでいます。</b>入れたい所の行（「ここへ」）を押すと、そこへ動きます。`}</div>
+      : `<b>${selName}を選んでいます。</b>入れたい所の行（点線の枠）を押すと、そこへ動きます。`}</div>
     ${sel != null ? `<div class="ro-selbar"><span>${selName}</span>
       <button type="button" class="ro-tool" aria-label="上へ" ${sel === 0 ? 'disabled' : ''} onclick="moveReorder(${sel},-1)">↑ 上へ</button>
       <button type="button" class="ro-tool" aria-label="下へ" ${sel === a.length - 1 ? 'disabled' : ''} onclick="moveReorder(${sel},1)">↓ 下へ</button>
       <button type="button" class="ro-tool" onclick="selectReorder(${sel})">やめる</button></div>`
     : `<div class="ro-tools"><button type="button" class="ro-tool" onclick="sortReorderByTime()">入力した日時の順</button>
       <button type="button" class="ro-tool" onclick="resetReorder()"${moved ? '' : ' disabled'}>元に戻す</button>
-      <span class="ro-count">${moved ? `${moved}行を動かしています` : ''}</span></div>`}
+      <span class="ro-count">${moved ? `${moved}行 移動` : ''}</span></div>`}
     <div class="ro-tblwrap" style="overflow-x:auto"><table class="rounds-table ro-table" style="${tableStyleFor(s.playerNames.length)}">${roundsTheadHtml(s)}<tbody>${rows}</tbody></table></div>
     <button class="confirm-btn" style="margin-top:12px" onclick="saveReorder()"${moved ? '' : ' disabled'}>この順番で保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
