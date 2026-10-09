@@ -498,11 +498,19 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .toast-undo { background: #fff; color: #333; border: 0; border-radius: 14px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 
 /* 変更前の記録（履歴モーダル内） */
-.bk-box { border: 1px solid #e2ece7; border-radius: 12px; padding: 12px; margin-bottom: 14px; background: #f7fbfa; }
-.bk-head { font-size: 13px; font-weight: 700; color: var(--pc); margin-bottom: 4px; }
-.bk-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid #e8f0ed; }
-.bk-info { flex: 1; min-width: 0; font-size: 12px; color: #333; overflow-wrap: anywhere; }
-.bk-sub { font-size: 11px; color: #8a9aa5; margin-top: 1px; }
+.bk-box { border-radius: 14px; padding: 12px; margin-bottom: 14px; background: #F4F7F6; }
+.bk-head { font-size: 14px; font-weight: 800; color: #1F2A28; margin-bottom: 2px; }
+.bk-lead { font-size: 11.5px; color: #5F6E6B; line-height: 1.6; margin-bottom: 8px; }
+/* 1行＝押せるカード（いつの・何の前に戻すか／戻すと何が変わるか）。右に › */
+.bk-row { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; padding: 10px 12px; border: 0; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px #E3E9E7; text-align: left; font: inherit; color: var(--pc); cursor: pointer; }
+.bk-row:active { background: var(--pc-tint); }
+.bk-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: #1F2A28; overflow-wrap: anywhere; }
+.bk-info b { font-weight: 800; }
+.bk-sub { font-size: 11.5px; color: #5F6E6B; }
+.bk-more { margin-top: 6px; font-size: 11px; color: #8A9AA5; }
+.bk-pts { white-space: pre-line !important; font-size: 12px; line-height: 1.5; text-align: left; }
+.bk-k { display: block; margin-top: 2px; font-size: 10.5px; font-weight: 800; } .bk-k.gone { color: #C62828; } .bk-k.back { color: var(--pc); } .bk-k.edit { color: #9A5B12; }
+.bk-sets { margin: 10px 0 0; padding-left: 18px; font-size: 12.5px; color: #1F2A28; line-height: 1.7; }
 
 /* Loading */
 .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
@@ -3168,7 +3176,8 @@ function restoreTargetOf(gid) {
   if (detailGame && detailGame.id === gid) return 'detail';
   return null;
 }
-function confirmRestore(key) {
+function confirmRestore(key) { openRestoreSheet(key); }
+function confirmRestoreOld(key) {
   const bk = loadBackups().find(b => b.key === key);
   if (!bk) { showToast('この記録はもう残っていません'); return; }
   document.getElementById('confirm-modal-title').textContent = 'この状態に戻す';
@@ -9609,25 +9618,105 @@ function renderLogModal() {
     + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
   document.getElementById('form-modal').classList.add('open');
 }
-// 「変更前の記録」＝この端末に残っているスナップショット一覧
+// ---- 変更の前に戻す（2026-10-09 作り直し）----
+// この端末に残している「削除・修正・設定変更などをする直前の状態」（takeBackup）から戻す。
+// 見せ方: ①履歴の上に「変更の前に戻す」。行は「〇時〇分の『第3試合を修正』の前に戻す」＋何が変わるかの短い説明（いまと比べて作る）。
+// いまと同じになる控え・同じ中身が続く控えは出さない。「戻す」をした直前の控え（＝戻したのを取り消す）は、いちばん新しいときだけ出す。
+// ②押すと同じシートの中で確認の画面（いま → 戻したあと を試合ごとに）。「この状態に戻す」で初めて書き込む
+function bkCurGame(gid) { const w = restoreTargetOf(gid); return w ? (w === 'live' ? activeGame : detailGame) : null; }
+function bkSame(a, b) { return fpOf({ name: a.name || '', settings: a.settings, rounds: (a.rounds || []).map(roundCore) }) === fpOf({ name: b.name || '', settings: b.settings, rounds: (b.rounds || []).map(roundCore) }); }
+// いま（cur）→ 戻したあと（bk）で何が変わるか: [{ no, kind: 'gone'|'back'|'edit', a, b }] と設定の変更の文
+function bkDiff(cur, bk) {
+  // 試合を中身で突き合わせる（番号で比べると、途中を消したときに後ろの試合が全部「変わる」と出てしまう）。
+  // 同じ中身の試合をLCSで対応づけ、間に残ったものを 修正（両方にある）・消える（いまだけ）・戻る（戻したあとだけ）にする。番号は戻したあとの番号（消えるものはいまの番号）
+  const rs = [], A = cur.rounds || [], B = bk.rounds || [], fa = A.map(r => fpOf(roundCore(r))), fb = B.map(r => fpOf(roundCore(r)));
+  const L = Array.from({ length: A.length + 1 }, () => new Array(B.length + 1).fill(0));
+  for (let i = A.length - 1; i >= 0; i--) for (let j = B.length - 1; j >= 0; j--) L[i][j] = fa[i] === fb[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  let i = 0, j = 0, ga = [], gb = [];
+  const flush = () => { const k = Math.min(ga.length, gb.length);
+    for (let t = 0; t < k; t++) rs.push({ no: gb[t] + 1, kind: 'edit', a: A[ga[t]], b: B[gb[t]] });
+    ga.slice(k).forEach(x => rs.push({ no: x + 1, kind: 'gone', a: A[x] })); gb.slice(k).forEach(y => rs.push({ no: y + 1, kind: 'back', b: B[y] })); ga = []; gb = []; };
+  while (i < A.length || j < B.length) {
+    if (i < A.length && j < B.length && fa[i] === fb[j]) { flush(); i++; j++; }
+    else if (j < B.length && (i >= A.length || L[i][j + 1] >= L[i + 1][j])) gb.push(j++);
+    else ga.push(i++);
+  }
+  flush();
+  const sets = describeSettingsChanges({ name: cur.name, settings: cur.settings }, { name: bk.name, settings: bk.settings }, null);
+  if (fpOf(cur.settings.playerNames || []) !== fpOf(bk.settings.playerNames || [])) sets.push(`メンバー: ${(cur.settings.playerNames || []).join('・')} → ${(bk.settings.playerNames || []).join('・')}`);
+  return { rs, sets };
+}
+function bkDiffText(d) {
+  const t = [];
+  const gone = d.rs.filter(x => x.kind === 'gone').map(x => x.no), back = d.rs.filter(x => x.kind === 'back').map(x => x.no), edit = d.rs.filter(x => x.kind === 'edit').map(x => x.no);
+  const nos = a => (a.length > 2 ? `第${a[0]}〜${a[a.length - 1]}試合` : a.map(n => `第${n}試合`).join('・'));
+  if (edit.length) t.push(`${nos(edit)}の点数が変わります`);
+  if (back.length) t.push(`${nos(back)}が戻ります`);
+  if (gone.length) t.push(`${nos(gone)}が消えます`);
+  if (d.sets.length) t.push(d.sets.length === 1 ? d.sets[0] : `設定が${d.sets.length}か所変わります`);
+  return t;
+}
+function bkListFor(g) {
+  const all = backupsFor(g.id); // 新しい順
+  const out = [];
+  all.forEach((b, i) => {
+    if (bkSame(g, b)) return;                                        // いまと同じ（戻しても何も変わらない）
+    if (out.length && bkSame(out[out.length - 1], b)) return;        // 1つ新しい控えと同じ中身
+    if (b.label === 'もとに戻す' && i > 0) return;                     // 「戻す」の取り消しは、いちばん新しいときだけ
+    out.push(b);
+  });
+  return out;
+}
 function backupSectionHtml(g) {
   if (!g || !g.id) return '';
-  const list = backupsFor(g.id);
+  const list = bkListFor(g);
   if (!list.length) return '';
-  const rows = list.map(b => `
-    <div class="bk-row">
-      <div class="bk-info"><b>${esc(b.label)}</b>
-        <div class="bk-sub">この操作の直前／第${b.rounds.length}試合まで／${fmtDate(b.at)} ${fmtTime(b.at)}</div>
-      </div>
-      <button type="button" class="edit-tab" style="flex-shrink:0" onclick="confirmRestore('${b.key}')">戻す</button>
-    </div>`).join('');
+  const rows = list.slice(0, 3).map(b => {
+    const what = b.label === 'もとに戻す' ? '「戻す」をする前（戻したのを取り消す）' : `「${b.label}」の前`;
+    const t = bkDiffText(bkDiff(g, b));
+    return `<button type="button" class="bk-row" onclick="openRestoreSheet('${b.key}')">
+      <span class="bk-info"><b>${fmtTime(b.at)} ${esc(what)}に戻す</b><span class="bk-sub">${esc(t.join('・') || '—')}</span></span>${ico('chevron', 14)}</button>`;
+  }).join('');
   return `<div class="bk-box">
-    <div class="bk-head">変更をもとに戻す</div>
-    <div style="font-size:11px;color:#8a9aa5;line-height:1.6;margin-bottom:4px">
-      削除・修正・設定変更をする直前の状態を、この端末に最新5件まで残しています（戻すと全員の画面に反映されます）。
-    </div>
-    ${rows}
+    <div class="bk-head">変更の前に戻す</div>
+    <div class="bk-lead">押すと、戻すと何が変わるかを確かめてから戻せます（この端末に残っている直前の状態。戻すと全員の画面に反映）。</div>
+    ${rows}${list.length > 3 ? `<div class="bk-more">ほかに${list.length - 3}件（古いもの）</div>` : ''}
   </div>`;
+}
+// 確認の画面（履歴と同じシートの中。上の × の左の「‹ 戻る」で履歴へ）
+function bkRoundText(g, r) {
+  if (!r) return '—';
+  const st = g.settings, names = roundMembers(r, st).map(m => st.playerNames[m]);
+  const v = r.points || r.scores || [];
+  return names.map((nm, i) => `${nm} ${v[i] == null ? '' : r.points ? Number(v[i]).toLocaleString() : fmtScore(v[i])}`).join('\n');
+}
+function openRestoreSheet(key) {
+  const bk = loadBackups().find(b => b.key === key);
+  const g = bk && bkCurGame(bk.gid);
+  if (!bk || !g) { showToast('この記録はもう残っていません'); return; }
+  const d = bkDiff(g, bk);
+  const what = bk.label === 'もとに戻す' ? '「戻す」をする前' : `「${bk.label}」をする前`;
+  const kindTxt = { gone: '消える', back: '戻る', edit: '点数が変わる' };
+  const rows = d.rs.map(x => `<tr><td class="sticky-col">第${x.no}試合<small class="bk-k ${x.kind}">${kindTxt[x.kind]}</small></td><td class="bk-pts">${esc(bkRoundText(g, x.a))}</td><td class="bk-pts ud-after">${esc(x.kind === 'gone' ? '（なくなる）' : bkRoundText(bk, x.b))}</td></tr>`).join('');
+  document.getElementById('form-modal-title').textContent = 'この状態に戻す';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body ud-sheet">${sheetBackMark(`showLogModal('${logSrc}')`, '履歴に戻る')}
+    <div class="ud-src"><span class="log-tag set">戻す先</span><b>${fmtDate(bk.at)} ${fmtTime(bk.at)}</b> の ${esc(what)}の状態<div>第${(bk.rounds || []).length}試合まで</div></div>
+    <div class="ud-h">戻すと、こう変わります</div>
+    ${rows ? `<div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">試合</th><th>いま</th><th>戻したあと</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+    ${d.sets.length ? `<ul class="bk-sets">${d.sets.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+    <div class="ud-note">戻すと、全員の画面がこの状態になります。この画面を開いたあとにだれかが入力・修正していたら、戻さずにお知らせします。戻したあとでも、すぐなら履歴の「「戻す」をする前に戻す」で取り消せます。</div>
+    <button type="button" class="confirm-btn" style="margin-top:14px" onclick="doRestore('${key}', ${(g.rounds || []).length})">この状態に戻す</button>
+    <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="showLogModal('${logSrc}')">やめる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function doRestore(key, nAtOpen) {
+  const bk = loadBackups().find(b => b.key === key);
+  const where = bk && restoreTargetOf(bk.gid);
+  if (!bk || !where) { closeFormModal(); showToast('この結果を開いてから戻してください'); return; }
+  const cur = where === 'live' ? activeGame : detailGame;
+  if ((cur.rounds || []).length !== nAtOpen) { showToast('確かめているあいだに試合数が変わりました。もう一度確かめてください', 5000); openRestoreSheet(key); return; }
+  closeFormModal();
+  applyRestore(bk, where);
 }
 function renderLogList(log, g) {
   let events = logEvents(log);
