@@ -584,6 +584,10 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .score-swap { transition: opacity 0.18s ease, transform 0.18s ease; }
 .score-swap.swapping { opacity: 0; transform: translateY(4px); }
 /* カード右上の開閉ボタン（▾=表示中 / ▸=たたんだ状態） */
+/* 開け閉めできるカードの見出しの行は、開いていても（右に画像などのボタン30px）閉じていても（開け閉めだけ26px）同じ高さ＝見出しが上下に動かない（2026-10-09） */
+.card div:has(> .card-title):has(.card-collapse) { min-height: 30px; }
+.card div:has(> .card-title) > .card-title { flex: none; white-space: nowrap; } /* 見出しは折り返さない */
+.rounds-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 11px; color: #8A9AA5; }
 .card-collapse { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--pc-bg); color: var(--pc); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; }
 .sanma .card-collapse { color: #4261AA; }
 
@@ -755,7 +759,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--pc); }
 .auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
-/* 副次アクション（CSV書き出し）。主役の「まとめてプレビュー」とぶつからないよう控えめな配色にする
+/* 副次アクション（CSV書き出し）。「結果をまとめて画像にする」と並ぶ副ボタン。控えめな配色にする
    （オレンジはCTA限定のため、こちらはメインカラーの緑／三麻は青） */
 .auto-btn.sub { background: #fff; color: var(--pc); border-color: var(--pc); font-size: 14px; padding: 11px; }
 .sanma .auto-btn.sub, .sanma-mode .auto-btn.sub { color: #4261AA; border-color: #4261AA; }
@@ -2688,7 +2692,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="reorder-btn" onclick="openReorder()" style="display:none">並べ替え</button>
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
           <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
           <span id="rounds-collapse"></span>
@@ -2741,7 +2744,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="auto-btn sub" id="chip-entry-btn" style="display:none" onclick="openChipSheet()">チップを入力する（途中でも入れておけます）</button>
     <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
       <div class="end-game-note">終了すると、12時間後に記録が確定して誰も書き換えられなくなります（それまでは修正・再開できます）。</div></div>
-    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)">結果をまとめてプレビュー</button>
+    <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)"><svg class="ico" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>結果をまとめて画像にする</button>
     <button class="auto-btn sub" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)">CSVで書き出す</button>
     <button class="auto-btn sub" id="circle-add-btn" style="display:none" onclick="openAddToCircle()"><svg class="ico" width="20" height="20" aria-hidden="true" focusable="false"><use href="#i-people"/></svg>仲間ページに追加</button>
     <div style="text-align:center;margin-top:14px">
@@ -2932,13 +2935,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="sheet-box">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="sheet-title">結果をまとめて画像に</div>
-      <button class="edit-tab" onclick="closeComposeModal()" style="font-size:12px;padding:6px 12px">キャンセル</button>
+      <button class="edit-tab" onclick="closeComposeModal()">キャンセル</button>
     </div>
     <div style="font-size:12px;color:#8a9aa5;line-height:1.7;margin-bottom:10px">
-      入れたい項目を選ぶと、縦長の1枚にまとめて表示します。その場で確認して、保存・共有やPDFにもできます。
+      入れたい項目を選ぶと、縦長の1枚の画像にまとめます。できた画像を見て、保存・共有やPDFにできます（カードごとの画像は、各カードの右上の「画像」から）。
     </div>
     <div id="compose-list"></div>
-    <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">まとめて表示する</button>
+    <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">1枚の画像にする</button>
   </div>
 </div>
 
@@ -8999,7 +9002,7 @@ async function runCompose() {
     closeComposeModal();
     await openImagePreview(canvas, g, '結果まとめ');
   } finally {
-    btn.disabled = false; btn.textContent = 'まとめて表示する';
+    btn.disabled = false; btn.textContent = '1枚の画像にする';
   }
 }
 
@@ -9754,8 +9757,10 @@ function renderGame() {
     logEl = document.createElement('div'); logEl.id = 'game-log';
     wrap.closest('.card').appendChild(logEl);
   }
+  // 「並べ替え」は見出しの行ではなく表の下（見出しの行にボタンが4つ並ぶと、狭い画面で「試合結果」が2行に折れた。2026-10-09）
+  const canReorder = (activeGame.rounds || []).length >= 2 && !gLocked;
   logEl.innerHTML = (hasRounds && !collapsedCards.rounds)
-    ? (gLocked ? '' : '<div style="font-size:11px;color:#aaa;margin-top:6px">行をタップすると修正・削除できます</div>')
+    ? (gLocked ? '' : `<div class="rounds-foot"><span>行をタップすると修正・削除できます</span>${canReorder ? '<button type="button" class="edit-tab" onclick="openReorder()">並べ替え</button>' : ''}</div>`)
       + roundsMoreBtnHtml(activeGame.rounds.length)
     : '';
   document.getElementById('log-btn').style.display = (logEvents(activeGame.log).length > 0 && !collapsedCards.rounds) ? 'inline-flex' : 'none';
@@ -13315,7 +13320,7 @@ function renderDetailBody(g) {
     </div></div>`;
   if (g.rounds.length > 0) {
     // まとめプレビューとCSVは画面末尾に並ぶ対（ゲーム画面と同じ並び）
-    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">結果をまとめてプレビュー</button>`;
+    html += `<button class="auto-btn" style="margin-top:4px" onclick="openComposeModal(detailGame)">${ico('image', 18)}結果をまとめて画像にする</button>`;
     html += `<button class="auto-btn sub" onclick="openCsvModal(detailGame)">CSVで書き出す</button>`;
     if (loginAvailable() && !detailRO) html += `<button class="auto-btn sub" onclick="openAddToCircle()">${ico('people', 20)}仲間ページに追加</button>`;
   }
