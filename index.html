@@ -479,6 +479,12 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .lg-pts { display: flex; flex-wrap: wrap; gap: 0 10px; font-size: 11.5px; color: #6B7A77; } .lg-pts span { white-space: nowrap; }
 .lg-date td { background: #F1F5F4 !important; padding: 3px 0 !important; } .lg-date span { position: sticky; left: 8px; font-size: 11px; font-weight: 800; color: var(--pc); }
 .lg-more td { padding: 8px !important; }
+.seg.lg-tabs { display: flex; margin: 0 0 10px; } .lg-tabs button { flex: 1; }
+.lg-table tr.lg-game { cursor: pointer; } .lg-table tr.lg-game .lg-no { margin: 0 0 2px; } .lg-table tr.lg-game .lg-h { flex-wrap: wrap; gap: 3px; }
+.lg-foot { margin-top: 6px; font-size: 11px; color: #8A9AA5; text-align: center; }
+.st-list { padding: 4px 12px; } .st-date { margin: 8px 0 2px; font-size: 11px; font-weight: 800; color: var(--pc); }
+.st-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: .5px solid #EEF2F1; font-size: 12.5px; line-height: 1.55; color: #33413E; }
+.st-row .st-t { flex: none; width: 40px; font-weight: 800; color: #5F6E6B; } .st-row b { display: block; font-weight: 800; color: #1F2A28; } .st-row span:not(.st-t) { display: block; font-size: 11.5px; color: #5F6E6B; }
 .lg-k.back { background: #2E7D5B; } .lg-row.back td.sticky-col { box-shadow: inset 3px 0 0 #2E7D5B; } .lg-row.back td { background: #EEF8F4; }
 .lg-d { margin-top: 1px; font-size: 9.5px; font-weight: 700; color: #A9B4B2; }
 .lg-row.lg-now td { background: var(--pc-tint); border-top: 2px solid var(--pc-line2); } .lg-nowt { font-size: 13px; font-weight: 900; color: var(--pc); }
@@ -1123,7 +1129,7 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .ds-rno b { font-size: 14px; font-weight: 900; color: #1F2A28; }
 .ds-rno span { font-size: 11px; color: #5F6E6B; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .ds-days { display: flex; gap: 6px; flex-wrap: wrap; }
-.ds-days button { display: inline-flex; align-items: baseline; gap: 4px; height: 32px; padding: 0 12px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 800; cursor: pointer; }
+.ds-days button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; height: 32px; line-height: 1; padding: 0 12px; border: 1px solid #D5DEDB; border-radius: 16px; background: #fff; color: #33544A; font-size: 13px; font-weight: 800; cursor: pointer; }
 .ds-days button small { font-size: 11px; font-weight: 700; color: #8A9AA5; }
 .ds-days button.on { background: var(--pc); border-color: var(--pc); color: #fff; }
 .ds-days button.on small { color: rgba(255,255,255,.8); }
@@ -9449,8 +9455,8 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   const s = g.settings, mk = recentRoundMarks(g), n = (g.rounds || []).length, ncol = memberDisplayOrder(s).length;
   const locked = isGameLocked(g);
   const delRow = (e, pos) => {
-    const canBack = !!(e.round && e.round.id && e.op) && !locked;
-    const back = canBack ? `askUndelete('${g === activeGame ? 'game' : 'detail'}','${e.op}',${pos})` : '';
+    const canBack = !!(e.round && e.round.id && e.op) && !locked && !(g !== activeGame && detailRO);
+    const back = `openDeletedRoundMenu('${g === activeGame ? 'game' : 'detail'}','${e.op}',${pos})`;
     const serial = logSerialOf(g, e) || e.no, r = deletedRoundOf(g, e);
     if (r) return roundRowHtml(r, -1, back, s, false, false, { serial, gone: true, back: canBack });
     const nm = e.names || null, pts = e.points || [];
@@ -9878,7 +9884,7 @@ const LOG_PREVIEW = 50;
 let logShowAll = false;
 function showLogModal(src) {
   logSrc = src;
-  logFilter = 'all';
+  logFilter = 'games';
   logShowAll = false;
   renderLogModal();
 }
@@ -9890,15 +9896,15 @@ function setLogFilter(f) {
 function renderLogModal() {
   const g = logSrc === 'detail' ? detailGame : activeGame;
   if (!g) return;
-  // タブの色は履歴タグ（.log-tag）と同じ配色: 入力=緑 / 修正=オレンジ / 削除=赤 / 設定=青灰
-  const TAB_COLORS = { all: '#555', add: 'var(--pc)', edit: '#E75620', delete: '#c62828', settings: '#5b6b8c' };
-  const tabs = [['all', 'すべて'], ['add', '入力'], ['edit', '修正'], ['delete', '削除'], ['settings', '設定']].map(([k, l]) =>
-    `<button type="button" class="edit-tab" style="flex:1;${logFilter === k ? `background:${TAB_COLORS[k]};color:#fff` : `color:${TAB_COLORS[k]}`}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
+  // 履歴は「試合ごと」（入力・修正・削除は試合ごとにまとめる）と「設定」の2つ（2026-10-09）
+  if (logFilter !== 'settings') logFilter = 'games';
+  const tabs = [['games', '試合ごと'], ['settings', '設定']].map(([k, l]) =>
+    `<button type="button" class="${logFilter === k ? 'on' : ''}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
-  document.getElementById('form-modal-body').innerHTML =
-    `<div style="display:flex;gap:6px;margin-bottom:12px">${tabs}</div>`
-    + renderLogList(g.log, g)
-    + `<button class="modal-cancel" style="width:100%;margin-top:14px" onclick="closeFormModal()">閉じる</button>`;
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
+    <div class="seg lg-tabs">${tabs}</div>
+    ${renderLogList(g.log, g)}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
 // 「取り消し」（変更の前に戻す）の記録か。古い記録は「2026.10.09（金） 05:59の状態にもどす」
@@ -9938,11 +9944,17 @@ function roundHistoryOf(g, idx) {
 }
 // 削除から戻した試合か（記録が確定するまで「戻した」の印。押すとこの試合の履歴）
 function isRestoredRound(g, r) { return !!(r && r.id && (g.log || []).some(e => e && e.type === 'delete' && e.round && e.round.id === r.id)); }
-function openRoundHistory(where, idx) {
-  const g = where === 'game' ? activeGame : detailGame, r = g && g.rounds[idx];
-  if (!r) return;
-  const evs = roundHistoryOf(g, idx), serial = roundSerialAt(g, idx), ncol = memberDisplayOrder(g.settings).length;
-  const curNames = roundMembers(r, g.settings).map(m => g.settings.playerNames[m]);
+function openRoundHistory(where, idx, delOp) {
+  const g = where === 'game' ? activeGame : detailGame;
+  if (!g) return;
+  // 消した試合（delOp＝削除の op の id）は、削除の記録に残した試合の id で引く。いまの行は出さない
+  const de = delOp ? (g.log || []).find(e => e && e.type === 'delete' && e.op === delOp) : null;
+  const r = de ? null : g.rounds[idx];
+  if (!r && !de) return;
+  const rid = de && de.round && de.round.id;
+  const evs = de ? (g.log || []).filter(e => e && (e === de || (rid && (e.rid === rid || (e.type === 'add' && e.op === rid) || (e.type === 'delete' && e.round && e.round.id === rid))))) : roundHistoryOf(g, idx);
+  const serial = de ? (logSerialOf(g, de) || de.no) : roundSerialAt(g, idx), ncol = memberDisplayOrder(g.settings).length;
+  const curNames = r ? roundMembers(r, g.settings).map(m => g.settings.playerNames[m]) : (de.names || []);
   const rowOf = (kind, e, cells) => `<tr class="lg-row ${LG_KIND[kind][0]}"><td class="sticky-col"><div class="lg-h"><span class="lg-t">${e ? fmtTime(e.at) : ''}</span>${lgKindChip(kind)}</div>${e ? `<div class="lg-d">${esc(fmtDate(e.at))}</div>` : ''}</td>${cells}</tr>`;
   let rows = evs.map(e => {
     const names = e.names || curNames;
@@ -9951,9 +9963,11 @@ function openRoundHistory(where, idx) {
     const cells = e.points ? lgCellsHtml(g, names, e.points, e.type === 'edit' ? e.prev : null) : null;
     return rowOf(kind, e, cells || `<td colspan="${ncol}" class="lg-wide"><b>${{ add: '入力', edit: '修正', delete: '削除' }[e.type] || ''}</b></td>`);
   }).join('');
-  const now = lgCellsHtml(g, curNames, r.points || r.scores || []);
-  rows += `<tr class="lg-row lg-now"><td class="sticky-col"><b class="lg-nowt">いま</b></td>${now || `<td colspan="${ncol}"></td>`}</tr>`;
-  const canEdit = !isGameLocked(g) && (where === 'game' ? true : !detailRO);
+  if (r) {
+    const now = lgCellsHtml(g, curNames, r.points || r.scores || []);
+    rows += `<tr class="lg-row lg-now"><td class="sticky-col"><b class="lg-nowt">いま</b></td>${now || `<td colspan="${ncol}"></td>`}</tr>`;
+  }
+  const canEdit = !!r && !isGameLocked(g) && (where === 'game' ? true : !detailRO);
   document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="rh-note">この試合の入力・修正・削除・戻した記録です（古い順）。修正したマスは「前 → 後」。${canEdit ? '前の点数に戻したいときは、その点数を見ながら「点数を修正する」で入れ直してください。' : ''}</div>
@@ -9964,39 +9978,45 @@ function openRoundHistory(where, idx) {
   document.getElementById('form-modal').classList.add('open');
 }
 function renderLogList(log, g) {
-  let events = logEvents(log);
-  if (logFilter !== 'all') events = events.filter(e => logKind(e) === logFilter);
-  if (events.length === 0) return '<div class="lg-scroll lg-empty">該当する履歴はありません</div>';
-  const total = events.length;
-  if (!logShowAll && total > LOG_PREVIEW) events = events.slice(total - LOG_PREVIEW); // 新しい方を残す
-  events = events.slice().reverse(); // 新しい順（いちばん最近の変更がすぐ見える）
-  const ncol = memberDisplayOrder(g.settings).length;
-  let rows = '', prevDate = null;
-  events.forEach(e => {
-    const date = fmtDate(e.at);
-    if (date !== prevDate) { rows += `<tr class="lg-date"><td colspan="${ncol + 1}"><span>${date || '日時不明'}</span></td></tr>`; prevDate = date; }
-    const isUndo = isUndoLog(e), kind = e.undel ? 'back' : isUndo ? 'undo' : logKind(e);
-    const no = typeof e.no === 'number' ? (logSerialOf(g, e) || e.no) : null;
-    const round = (!e.old && typeof e.no === 'number' && g.rounds) ? g.rounds[e.no - 1] : null;
-    const names = e.names || (round ? roundMembers(round, g.settings).map(m => g.settings.playerNames[m]) : null);
-    const head = `<td class="sticky-col"><div class="lg-h"><span class="lg-t">${fmtTime(e.at)}</span>${lgKindChip(kind)}</div>${no ? `<div class="lg-no">試合${no}${e.old && e.type !== 'delete' ? '<small>あとで削除</small>' : ''}</div>` : ''}</td>`;
-    let cells = null;
-    if (e.points && (e.type === 'add' || e.type === 'edit' || e.type === 'delete')) cells = lgCellsHtml(g, names, e.points, e.type === 'edit' ? e.prev : null);
-    if (cells == null) {
-      // 設定・並べ替え・取り消し（名前が今の列に見つからない古い記録もここ）
-      const label = typeof e.no === 'number' ? `試合${no}を${{ add: '入力', edit: '修正', delete: '削除' }[e.type] || ''}`
-        : isUndo && !/取り消し/.test(e.label || '') ? '変更を取り消し' : (e.label || '');
-      const ch = Array.isArray(e.changes) && e.changes.length ? `<ul class="lg-changes">${e.changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : '';
-      const pts = !ch && e.points ? `<div class="lg-pts">${e.points.map((p, i) => `<span>${esc((names && names[i]) || '')} ${Number(p).toLocaleString()}</span>`).join('')}</div>` : '';
-      cells = `<td colspan="${ncol}" class="lg-wide"><b>${esc(label)}</b>${ch}${pts}</td>`;
-    }
-    rows += `<tr class="lg-row ${LG_KIND[kind] ? LG_KIND[kind][0] : 'set'}">${head}${cells}</tr>`;
-  });
-  const moreBtn = total > LOG_PREVIEW
-    ? `<tr class="lg-more"><td colspan="${ncol + 1}"><button class="auto-btn" onclick="toggleLogShowAll()">${logShowAll ? `最新${LOG_PREVIEW}件だけ表示する` : `もっと前も表示する（全${total}件）`}</button></td></tr>` : '';
-  return `<div class="lg-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '時刻・内容')}<tbody>${rows}${moreBtn}</tbody></table></div>`;
+  return logFilter === 'settings' ? settingsLogHtml(g) : gamesLogHtml(g);
 }
-
+// 試合ごと: 1行＝1試合（入力した順＝番号の順。上が古い）。いまの点数（消した試合は灰色）と、修正の回数・削除・戻したの札。押すとその試合の履歴
+function gamesLogHtml(g) {
+  const where = logSrc === 'detail' ? 'detail' : 'game', log = g.log || [], locked = isGameLocked(g);
+  const items = (g.rounds || []).map((r, idx) => ({ r, idx, serial: roundSerialAt(g, idx), evs: roundHistoryOf(g, idx) }));
+  if (!locked) deletedEntries(g).forEach(d => {
+    const rid = d.e.round && d.e.round.id;
+    items.push({ del: d.e, serial: logSerialOf(g, d.e) || d.e.no, evs: log.filter(e => e && (e === d.e || (rid && (e.rid === rid || (e.type === 'add' && e.op === rid))))) });
+  });
+  if (!items.length) return '<div class="lg-scroll lg-empty">まだ試合がありません</div>';
+  items.sort((a, b) => a.serial - b.serial);
+  const rows = items.map(it => {
+    const edits = it.evs.filter(e => e.type === 'edit').length, last = it.evs[it.evs.length - 1];
+    const tags = (edits ? `<span class="lg-k edit">${ico('pencil', 11)}修正${edits > 1 ? edits : ''}</span>` : '')
+      + (it.del ? `<span class="lg-k del">${ico('trash', 11)}削除</span>` : it.r && isRestoredRound(g, it.r) ? `<span class="lg-k back">${ico('refresh', 11)}戻した</span>` : '');
+    const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => g.settings.playerNames[m]);
+    const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${memberDisplayOrder(g.settings).length}"></td>`;
+    const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}')` : `openRoundHistory('${where}',${it.idx})`;
+    return `<tr class="lg-row lg-game${it.del ? ' del' : ''}" onclick="${click}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>
+      <div class="lg-h">${tags}${last ? `<span class="lg-t">${fmtTime(last.at)}</span>` : ''}</div></td>${cells}</tr>`;
+  }).join('');
+  return `<div class="lg-scroll"><table class="rounds-table lg-table" style="${tableStyleFor(g.settings.playerNames.length)}">${lgTheadHtml(g, '試合')}<tbody>${rows}</tbody></table></div>
+    <div class="lg-foot">行を押すと、その試合の入力・修正・削除の記録</div>`;
+}
+// 設定: ゲーム設定・名前・並べ替えなどの変更だけを、上が古い順に短く（1件＝時刻・何を・変わった所）
+function settingsLogHtml(g) {
+  const evs = logEvents(g.log).filter(e => logKind(e) === 'settings' && !e.undel);
+  if (!evs.length) return '<div class="lg-scroll lg-empty">設定の変更はありません</div>';
+  let prevDate = null;
+  const rows = evs.map(e => {
+    const date = fmtDate(e.at), head = date !== prevDate ? `<div class="st-date">${date || '日時不明'}</div>` : '';
+    prevDate = date;
+    const label = isUndoLog(e) && !/取り消し/.test(e.label || '') ? '変更を取り消し' : (e.label || '設定を変更');
+    const ch = e.label === '試合の順番を入れ替え' ? [] : (e.changes || []); // 並べ替えの中身は試合の表で分かるので書かない
+    return `${head}<div class="st-row"><span class="st-t">${fmtTime(e.at)}</span><div><b>${esc(label)}</b>${ch.length ? `<span>${ch.map(esc).join('<br>')}</span>` : ''}</div></div>`;
+  }).join('');
+  return `<div class="lg-scroll st-list">${rows}</div>`;
+}
 function renderGame() {
   if (!activeGame) return;
   const s = activeGame.settings;
@@ -10047,7 +10067,7 @@ function renderGame() {
   let tableHtml = roundsTheadHtml(s) + '<tbody>';
   if (hasRounds) {
     // 試合数が多いときは直近だけ描く（下のボタンで全件に切り替えられる）
-    tableHtml += roundRowsWithMarks(activeGame, visibleRoundIdx(activeGame.rounds.length), idx => gLocked ? '' : `openRoundMenu(${idx})`);
+    tableHtml += roundRowsWithMarks(activeGame, visibleRoundIdx(activeGame.rounds.length), idx => `openRoundMenu(${idx})`); // 確定後も押せる（履歴だけ）
     tableHtml += roundsTotalRowHtml(activeGame);
   } else {
     // 作りたてのグループはここが最初に目に入るので、次にどこを押せばいいかまで書く
@@ -10145,25 +10165,48 @@ function leaveGame(to) {
   showView(back || 'home', false, !!back);
 }
 
-// ---- 局の編集メニュー ----
-function openRoundMenu(idx) {
-  if (isGameLocked(activeGame)) { lockedToast(); return; }
-  document.getElementById('action-modal-title').textContent = `試合${roundSerialAt(activeGame, idx)}（第${idx + 1}試合）`;
-  document.getElementById('action-modal-body').innerHTML =
-    `<button class="modal-action" onclick="closeActionModal();openSheet(${idx})">点数を修正する</button>
-     <button class="modal-action" onclick="closeActionModal();openRoundHistory('game',${idx})">この試合の履歴</button>
-     <button class="modal-action danger" onclick="closeActionModal();confirmDeleteRound(${idx})">この試合を削除する</button>`;
-  document.getElementById('action-modal').classList.add('open');
+// ---- 試合の行を押したときのシート（2026-10-09: 試合の画面・結果の画面で同じ。下から出る）----
+// 点数を修正する・この試合の履歴・削除（記録の確定後・見るだけのときは履歴だけ）
+function roundWhereGame(where) { return where === 'detail' ? detailGame : activeGame; }
+function openRoundMenu(idx, where = 'game') {
+  const g = roundWhereGame(where), r = g && g.rounds[idx];
+  if (!r) return;
+  const canEdit = !isGameLocked(g) && !(where === 'detail' && detailRO);
+  const t = Date.parse(r.at);
+  document.getElementById('form-modal-title').textContent = `試合${roundSerialAt(g, idx)}`;
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">第${idx + 1}試合${t ? ` ・ 入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正済' : ''}</div>
+    <div class="mn-group">${canEdit ? menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`) : ''}
+      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx})`)}</div>
+    ${canEdit ? `<div class="mn-group">${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから戻せます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+// 灰色の行（消した試合）を押したとき: この試合を戻す・この試合の履歴
+function openDeletedRoundMenu(where, delOp, pos) {
+  const g = roundWhereGame(where);
+  const de = g && (g.log || []).find(e => e && e.type === 'delete' && e.op === delOp);
+  if (!de) return;
+  const no = logSerialOf(g, de) || de.no;
+  const canBack = !!(de.round && de.round.id) && !isGameLocked(g) && !(where === 'detail' && detailRO);
+  document.getElementById('form-modal-title').textContent = `試合${no}（削除）`;
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">削除 ${fmtTime(de.at)}</div>
+    <div class="mn-group">${canBack ? menuBtnHtml('refresh', 'この試合を戻す', 'この場所に戻ります（全員の画面）', `closeFormModal();undeleteRound('${where}','${delOp}',${pos},${no})`) : ''}
+      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',null,'${delOp}')`)}</div>
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
 }
 function closeActionModal() {
   document.getElementById('action-modal').classList.remove('open');
 }
-function confirmDeleteRound(idx) {
-  document.getElementById('confirm-modal-title').textContent = `試合${roundSerialAt(activeGame, idx)}を削除`;
-  document.getElementById('confirm-modal-desc').textContent = 'この試合を削除します。全員の画面で灰色になり、合計から外れます。記録が確定するまでは、灰色の行を押すと戻せます。よろしいですか？';
+function confirmDeleteRound(idx, where = 'game') {
+  const g = roundWhereGame(where);
+  if (!g || !g.rounds[idx]) return;
+  closeFormModal();
+  document.getElementById('confirm-modal-title').textContent = `試合${roundSerialAt(g, idx)}を削除`;
+  document.getElementById('confirm-modal-desc').textContent = '全員の画面で灰色になり、合計から外れます。記録が確定するまでは、灰色の行から戻せます。';
   const okBtn = document.getElementById('confirm-modal-ok');
-  okBtn.textContent = '削除する'; // 復元の確認で文言を変えるので毎回セットし直す
-  okBtn.onclick = () => { closeConfirmModal(); deleteRound(idx); };
+  okBtn.textContent = '削除する';
+  okBtn.onclick = () => { closeConfirmModal(); deleteRound(idx, where); };
   document.getElementById('confirm-modal').classList.add('open');
 }
 // 消した試合を戻す（灰色の行を押す）。where＝'game'（試合の画面）／'detail'（結果の画面）
@@ -10192,13 +10235,14 @@ function undeleteRound(where, delOp, pos, no) {
 function closeConfirmModal() {
   document.getElementById('confirm-modal').classList.remove('open');
 }
-function deleteRound(idx) {
-  if (!activeGame) return;
-  const old = activeGame.rounds[idx];
-  if (!old) return;
-  const no = roundSerialAt(activeGame, idx);
-  enqueueOp({ id: newOpId(), sid: sessionId, at: new Date().toISOString(), kind: 'delete',
+function deleteRound(idx, where = 'game') {
+  const g = roundWhereGame(where);
+  const old = g && g.rounds[idx];
+  if (!old || isGameLocked(g)) return;
+  const no = roundSerialAt(g, idx);
+  const q = enqueueOp({ id: newOpId(), sid: g.id, at: new Date().toISOString(), kind: 'delete',
     target: roundTarget(old), label: `試合${no}の削除` });
+  if (where === 'detail') { const r = applyOp(g, q); if (r.status === 'apply') Object.assign(g, r.game); saveStorage(); viewDetail(g); } // 結果の画面は端末の控えにも先に反映
   showToast('削除しました（灰色の行を押すと戻せます）', 3500);
 }
 
@@ -11930,10 +11974,11 @@ function myResultHtml(g) {
 function gameActsHtml(g, rawId, opts = {}) {
   const id = esc(rawId), inHist = (appState.games || []).some(x => x.id === rawId);
   const ge = opts.circle && circleData && circleData.games && circleData.games[rawId];
-  const live = !isGameEnded(g) && !isGameLocked(g), canLive = live && (inHist || (ge && circleRole() && circleSess[rawId]));
+  // 終えたあとでも記録が確定する前なら試合の画面へ（再開・点数の修正はそこから。2026-10-09 に終えた試合を外していて再開できなくなっていた）
+  const live = !isGameLocked(g), canLive = live && (inHist || (ge && circleRole() && circleSess[rawId]));
   const keep = opts.sheet ? 'keepSheetReturn();' : '';
   let acts = canLive
-    ? menuBtnHtml('table', 'ゲームを見る', '対局中・点数の入力もここから', inHist ? `closeFormModal();rejoinGame('${id}')` : `closeFormModal();joinSession('${id}')`)
+    ? menuBtnHtml('table', 'ゲームを見る', isGameEnded(g) ? `再開・点数の修正もここから（${fmtDateTime(lockAtOf(g))} まで）` : '対局中・点数の入力もここから', inHist ? `closeFormModal();rejoinGame('${id}')` : `closeFormModal();joinSession('${id}')`)
     : menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `${keep}closeFormModal();viewDetailById('${id}')` : `${keep}closeFormModal();openWatchGame(resultGameById('${id}'),'${activeViewName()}')`);
   let danger = '';
   const rename = menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : '', `openRenameGame('${id}')`);
@@ -13622,7 +13667,7 @@ function renderDetailBody(g) {
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
   const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">${ico('image', 15)}画像</button>` : '';
-  const rows = roundRowsWithMarks(g, visibleRoundIdx(g.rounds.length), ridx => (detailRO || gLocked) ? '' : `editDetailRound(${ridx})`)
+  const rows = roundRowsWithMarks(g, visibleRoundIdx(g.rounds.length), ridx => detailRO ? '' : `openRoundMenu(${ridx},'detail')`)
     + (hasRounds ? roundsTotalRowHtml(g) : '');
   const roundsHtml = `<div class="tbl-scroll" style="overflow-x:auto"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
       ${roundsTheadHtml(s)}
