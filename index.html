@@ -849,7 +849,7 @@ select.cs-role { flex: none; width: 120px; height: 30px; padding: 0 20px 0 8px; 
 .mc-more { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 800; color: var(--pc); white-space: nowrap; }
 .mp-acts-r { display: flex; gap: 6px; flex: none; }
 .mp-act.sm { height: 30px; min-width: 30px; padding: 0 10px; border-radius: 15px; font-size: 13px; border-width: 1.5px; white-space: nowrap; gap: 3px; }
-@media (max-width: 374px) { .mp-act.sm .ma-t { display: none; } .mp-act.sm { padding: 0; width: 30px; } } /* 狭い画面はアイコンだけ */
+@media (max-width: 374px) { .mp-act.sm .ma-t { display: none; } .mp-act.sm:not(.wide) { padding: 0; width: 30px; } } /* 狭い画面はアイコンだけ（.wide＝字をいつも出すボタン＝「＋ 仲間ページに追加」） */
 .hist-viewseg { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .mp-period.sm { flex: 0 1 auto; min-width: 0; }
 .mp-period.sm > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4568,7 +4568,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   // 上: 件数（左）と「＋ 試合を追加」（右）→ 形式のピル → 見せ方（個人の過去の試合と同じ並び）
   const nR = games.reduce((a, x) => a + ((x.g && x.g.rounds) || []).length, 0);
   // 個人の過去の試合と同じ形（見出しの右に丸い「＋ 追加」・合計｜個人戦｜チーム戦の下に「nゲーム / n試合」。2026-10-08）
-  const addB = role ? `<span class="mp-acts-r"><button type="button" class="mp-act sm" onclick="openCircleAddGames()" title="試合を追加" aria-label="試合を追加">＋<span class="ma-t"> 追加</span></button></span>` : '';
+  const addB = role ? `<span class="mp-acts-r"><button type="button" class="mp-act sm wide" onclick="openCircleAddGames()" title="仲間ページに追加" aria-label="仲間ページに追加">＋ 仲間ページに追加</button></span>` : '';
   const head = `${circleCardHead('過去の試合', addB, 'period')}<div class="mp-sec-note hist-cnt cg-head">${gamesRoundsText(games.length, nR)}</div>`;
   if (!all.length) return `<div class="card cg-tab">${head}<div class="mp-empty"><b>まだ試合がありません</b><span>${role ? '「＋ 試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに出ます。'}</span></div></div>`;
   // 1つの箱に入れる（仲間ページの本文は要素ごとに16pxの間が空くため）
