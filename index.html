@@ -3273,7 +3273,9 @@ function setMetric(m) {
 // ---- Storage ----
 // 履歴の保持件数。100件×平均10KB＝約1MBで、localStorageの一般的な上限5MBに収まる。
 // 万一あふれてもsaveStorageが古い履歴から落として保存自体は必ず成功させる
-const MAX_HISTORY = 100;
+// 2026-10-10: 100件で切っていたため、仲間ページの試合が自分の一覧に入るたびに古い個人の試合が押し出され、
+// 引き継ぎ（アカウント）からも新しい100件しか取り込まず、個人の試合が消えて成績にも入らなかった。件数ではほぼ切らない
+const MAX_HISTORY = 3000;
 function loadStorage() {
   try { const d = localStorage.getItem('mahjong-v3'); if (d) appState = JSON.parse(d); } catch(e) {}
   if (!appState.players) appState.players = [];
@@ -3316,12 +3318,23 @@ function dedupeGames() {
 }
 function saveStorage() {
   dedupeGames();
-  // 容量オーバーで保存が丸ごと失敗する（＝最新の変更が消える）よりは、
-  // 一番古い履歴を落として今の状態を確実に残す。gamesは常に新しい順なので末尾＝最古
+  // 容量オーバーのとき: まず古い試合から「変更の履歴（log）」だけを外す（点数・成績はそのまま。履歴は開いたときにサーバーから読み直す＝_slim）。
+  // それでも入らないときだけ、いちばん古い試合を端末の控えから外す（アカウントの一覧には残っている）
+  const put = () => { localStorage.setItem('mahjong-v3', JSON.stringify(appState)); };
+  try { put(); return; } catch (e) { /* 下で減らす */ }
+  const byOld = (appState.games || []).map((g, i) => i).sort((a, b) => new Date(appState.games[a].lastAccess || appState.games[a].createdAt || 0) - new Date(appState.games[b].lastAccess || appState.games[b].createdAt || 0));
+  let k = 0;
+  for (const i of byOld.slice(0, Math.max(0, byOld.length - 20))) { // 新しい20試合は履歴ごと残す
+    const g = appState.games[i];
+    if (!g || !(g.log || []).length) continue;
+    appState.games[i] = { ...g, log: [], _slim: true };
+    if (++k % 20 === 0) { try { put(); return; } catch (e) { /* もっと減らす */ } }
+  }
   for (;;) {
-    try { localStorage.setItem('mahjong-v3', JSON.stringify(appState)); return; }
+    try { put(); return; }
     catch (e) {
       if (!appState.games || !appState.games.length) return; // これ以上減らせない
+      appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0));
       appState.games.pop();
     }
   }
@@ -7155,6 +7168,7 @@ async function reloadDetailFromServer(gid) {
     const snap = await db.ref('sessions/' + gid).once('value');
     if (!snap.exists() || !detailGame || detailGame.id !== gid) return;
     Object.assign(detailGame, normGame(snap.val(), gid));
+    delete detailGame._slim;
     saveStorage();
     if (document.getElementById('view-detail').classList.contains('active')) viewDetail(detailGame);
   } catch (e) { /* 取り直せなくても次に開いたときに合う */ }
@@ -7631,20 +7645,22 @@ function watchCtaHtml() {
 let toastTimer = null;
 // 「元に戻す」トーストの表示時間。既定8秒＝削除・修正のように取り返しがつかない操作向け。
 // 設定の更新は何度でもやり直せるので短くする（UNDO_TOAST_SHORT_MS）
-const UNDO_TOAST_MS = 8000;
+// 上に出るお知らせ（トースト）は、どれも4秒だけ出す（2026-10-10 ユーザー要望で統一。呼び出し側の秒数は使わない）
+const TOAST_MS = 4000;
+const UNDO_TOAST_MS = TOAST_MS;
 const UNDO_TOAST_SHORT_MS = 3000;
-const UNDO_TOAST_DELETE_MS = 4000; // 過去の試合の削除（端末内＋引き継ぎリストの操作なので中間の長さ）
-function showToast(msg, ms = 2500) {
+const UNDO_TOAST_DELETE_MS = TOAST_MS; // 過去の試合の削除（端末内＋引き継ぎリストの操作なので中間の長さ）
+function showToast(msg) {
   const el = document.getElementById('toast');
   el.classList.remove('act');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+  toastTimer = setTimeout(() => el.classList.remove('show'), TOAST_MS);
 }
 // 削除・修正の直後だけ「元に戻す」付きで出す。押さなければ普通に消える（履歴からも戻せる）
-// ms: 表示時間。取り返しのつかなさに応じて変える（削除・修正は8秒／設定の更新は3秒／履歴の削除は4秒）
+// 表示時間はいつも4秒（TOAST_MS。2026-10-10 に統一）
 // key: 押したら実行する関数（この端末の中だけの操作の取り消し: 過去の試合の一覧から外す・自分を選ぶ など）
-function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
+function showUndoToast(msg, key) {
   if (!key) { showToast(msg); return; }
   const el = document.getElementById('toast');
   el.textContent = '';
@@ -7659,7 +7675,7 @@ function showUndoToast(msg, key, ms = UNDO_TOAST_MS) {
   el.appendChild(btn);
   el.classList.add('act', 'show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show', 'act'), ms);
+  toastTimer = setTimeout(() => el.classList.remove('show', 'act'), TOAST_MS);
 }
 function showLoading(show) {
   let el = document.getElementById('loading-overlay');
@@ -13668,7 +13684,7 @@ function renderHistoryList() {
   let list = games.map(g => ({ g, ms: gameDayMs(g) }))
     .filter(x => !inP || inP(x.ms))
     .filter(x => !q || (String(x.g.name || '') + ' ' + ((x.g.settings && x.g.settings.playerNames) || []).join(' ')).toLowerCase().includes(q))
-    .sort((a, b) => b.ms - a.ms).slice(0, MAX_HISTORY);
+    .sort((a, b) => b.ms - a.ms);
   // 上の四麻｜三麻と、カードの中の合計｜個人戦｜チーム戦に合わせて出す（2026-10-08）
   histKind = 'all';
   const kindEl = document.getElementById('hist-kind');
@@ -14067,7 +14083,7 @@ let detailBackTo = 'history'; // 結果詳細の戻り先（過去の試合 or �
 function viewDetailById(id) {
   resetViewLimits(); // 別の結果を開いたら「すべて表示」は解除する
   const g = appState.games.find(x => x.id === id);
-  if (g) viewDetail(g);
+  if (g) { viewDetail(g); if (g._slim) reloadDetailFromServer(id); } // 端末の容量のため履歴を外した控え: 中身を読み直す
 }
 function viewDetail(g) {
   detailRO = false;

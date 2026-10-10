@@ -440,6 +440,8 @@ function opCases(w) {
         return ok1 && ch && gs.length === 2 && a.name === 'b' && a.lastAccess === '2026-10-01T00:00:00Z' && w.dedupeGames() === false;
       } finally { w.eval('appState.games = ' + JSON.stringify(saved || [])); }
     }],
+    ['自分の一覧は件数で切らない（100件で古い個人の試合が押し出され、成績から消えていた）・お知らせはいつも4秒', () =>
+      w.eval('MAX_HISTORY') >= 1000 && w.eval('TOAST_MS') === 4000 && w.eval('UNDO_TOAST_MS') === 4000 && w.eval('UNDO_TOAST_DELETE_MS') === 4000],
     ['アイコンの色: 名前から自動で決める色は、パレットのうち白い頭文字が読める色（白とのコントラスト3以上）だけ・同じ名前はいつも同じ色', () => {
       const pal = w.eval('AV_HUES').flat(), auto = w.eval('AV_COLORS'); // const はwindowに出ないので eval で読む
       return pal.length === 30 && auto.length === 30 && pal.every(c => w.whiteContrast(c) >= 3)
