@@ -59,7 +59,7 @@
 - NG例: 「点数計算の基本」という見出しでウマ・オカを説明（→見出しは「スコア計算」に）
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
-## 公開済み記事一覧（19記事＋お知らせ6本＋更新履歴）
+## 公開済み記事一覧（15記事＋お知らせ6本＋更新履歴）
 - **お知らせ（検索に載せる・2026-10-13）**: news/nakama-page.html（仲間ページ）／news/mypage-stats.html（マイページと成績）／news/kiroku-kakutei.html（記録の確定）。実画面は `/assets/screens/*.jpg`（見本のデータ・スタブで撮影。キャプションに「名前と数字は見本のデータです」）
 - **更新履歴** `/changelog.html`（月ごと・新しい順。大きな更新を出したら1行足す＝「手入れが続いている」ことを見せる。AdSenseの「継続的なキュレーション」対策）
 0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
@@ -68,22 +68,21 @@
 1. blog-why-majasco.html — 開発ストーリー
 2. blog-uma-oka.html — ウマ・オカ入門
 3. blog-score-table.html — 翻・符の点数早見表（**2026-09-25に blog-fu-han を統合**。#fu=符の数え方・実例・符のズレ）
-4. blog-yaku-list.html — 基本役10選
+4. blog-yaku-list.html — **役・リーチ・ドラ・鳴きの基本**（2026-10-13にリーチ・ドラ・鳴きを統合。#yaku／#riichi／#dora／#naki）
 5. blog-sanma-yonma.html — 三麻と四麻の違い
 6. blog-app-guide.html — スコア記録アプリの選び方
 7. blog-rule-basics.html — 半荘・東風戦・牌の種類と読み方（**2026-09-25に blog-hai-types を統合**。#hai=牌・#136=枚数の確認）
-8. blog-riichi.html — リーチとは
-9. blog-manner.html — マナーとチョンボ・途中流局
-10. blog-starter-kit.html — 持ち物リスト
-11. blog-dora.html — ドラの仕組み
-12. blog-naki.html — 鳴きの基本
+9. blog-manner.html — **準備とマナー**（2026-10-13に持ち物リストを統合。#starter-kit／#chombo）
 13. blog-score-examples.html — スコア計算 実例12パターン
 14. blog-house-rules.html — 打つ前に決める10項目
 15. blog-score-mismatch.html — 点数が合わないときのチェックリスト
 16. blog-mawashi-uchi.html — 5人以上の回し方・試合数が違う人の比べ方
 - お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html（10月に「いまはログインで…」の追記）
 
-## 統合した記事（2026-09-25）
+## 統合した記事（2026-09-25・2026-10-13）
+- **2026-10-13: blog-riichi・blog-dora・blog-naki → blog-yaku-list（#riichi・#dora・#naki）、blog-starter-kit → blog-manner（#starter-kit）**。firebase.json の redirects（301）。
+  5回目のAdSense不合格のあと、Search Consoleで上位5本（クリック）に一般ルール記事が1本も無いことを確かめて決めた（点数早見表は13クリックで残した）。
+  統合元の各節は h2→h3 に下げて丸ごと移し（集計係の目線の節も）、締めの宣伝の節と飾りの絵だけ落とした。冒頭に「この記事でわかること」の目次（`.post-toc`）
 - **blog-fu-han → blog-score-table#fu、blog-hai-types → blog-rule-basics#hai**。firebase.json の redirects（301）で転送。
   AdSenseの「有用性の低いコンテンツ」対策として、どこにでもあるルール解説のうち**内容が重なる2本だけ**を統合した
   （残りのルール記事は検索で表示されていて、集計係の視点の節＝このサイトならではの部分があるため残した）

@@ -34,6 +34,26 @@
         "source": "/blog-hai-types.html",
         "destination": "/blog-rule-basics.html#hai",
         "type": 301
+      },
+      {
+        "source": "/blog-riichi.html",
+        "destination": "/blog-yaku-list.html#riichi",
+        "type": 301
+      },
+      {
+        "source": "/blog-dora.html",
+        "destination": "/blog-yaku-list.html#dora",
+        "type": 301
+      },
+      {
+        "source": "/blog-naki.html",
+        "destination": "/blog-yaku-list.html#naki",
+        "type": 301
+      },
+      {
+        "source": "/blog-starter-kit.html",
+        "destination": "/blog-manner.html#starter-kit",
+        "type": 301
       }
     ]
   },
