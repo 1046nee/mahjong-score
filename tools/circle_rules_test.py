@@ -165,6 +165,14 @@ def main():
         check("ログインなし: 招待の一覧は読めない", False, op(None, "GET", "circleInvites"))
         check("A: 自分の仲間ページ一覧に追加できる", True, op(A, "PUT", f"users/{A['uid']}/circles/{cid}", {"at": now, "name": "ルールテスト"}))
         check("B: 他人の仲間ページ一覧は書けない", False, op(B, "PUT", f"users/{A['uid']}/circles/{cid}", {"at": now, "name": "x"}))
+        # 仲間ページの「外す」と並びはアカウントにも保存する（users/{uid}/circleHidden・circleOrder。2026-10-09）
+        check("A: 外した仲間ページを自分のアカウントに保存できる", True, op(A, "PUT", f"users/{A['uid']}/circleHidden/{cid}", True))
+        check("A: 仲間ページの並び順を保存できる", True, op(A, "PUT", f"users/{A['uid']}/circleOrder/{cid}", 3))
+        check("A: 外したの値が true 以外は拒否", False, op(A, "PUT", f"users/{A['uid']}/circleHidden/{cid}", "x"))
+        check("A: 並び順が範囲外（1000）は拒否", False, op(A, "PUT", f"users/{A['uid']}/circleOrder/{cid}", 1000))
+        check("A: 形の違う仲間ページIDの並び順は拒否", False, op(A, "PUT", f"users/{A['uid']}/circleOrder/bad", 1))
+        check("B: 他人の並び順は書けない", False, op(B, "PUT", f"users/{A['uid']}/circleOrder/{cid}", 1))
+        check("B: 他人の外した仲間ページは読めない", False, op(B, "GET", f"users/{A['uid']}/circleHidden"))
         check("B: 仲間ページから抜けられる", True, op(B, "DELETE", f"circleMembers/{cid}/{B['uid']}"))
     finally:
         # 後片付け（作成者Aが、メンバー→参加コード→仲間ページの順に消す）
