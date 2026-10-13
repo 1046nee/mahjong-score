@@ -19,6 +19,7 @@ BLUE_SANMA = (66, 97, 170)
 ORANGE = (231, 86, 32)
 LIGHT_CYAN = (219, 244, 249)
 BEZEL = (20, 26, 30)
+APP_BG = (230, 241, 236)  # アプリ（マイページ）の地の色 #E6F1EC
 
 
 def font(size, weight):
@@ -79,14 +80,17 @@ def floating_card(canvas, im, width, x, y, radius=26):
 
 
 def phone(canvas, shot, x_center, y0, screen_w):
-    screen_h = int(shot.height * screen_w / shot.width)
+    # 画面はいつもiPhoneの縦横比（2026-10-13 ユーザー要望）。要素のスクショはアプリの地の色の上に余白をつけて置き、下はその色で埋める
+    pad = int(shot.width * 0.05)
+    sw = shot.width + 2 * pad
+    sh = max(int(sw * 844 / 390), shot.height + 2 * pad)
+    bg = Image.new("RGB", (sw, sh), APP_BG)
+    bg.paste(shot, (pad, pad))
+    screen_h = int(sh * screen_w / sw)
     bez = 16
     px0, px1 = x_center - screen_w // 2 - bez, x_center + screen_w // 2 + bez
     drop_shadow(canvas, (px0, y0, px1, min(H, y0 + screen_h + bez)), 66, blur=34, alpha=150, dy=18)
     ImageDraw.Draw(canvas).rounded_rectangle([px0, y0, px1, y0 + screen_h + 2 * bez], radius=66, fill=BEZEL)
-    # スマホの画面は白地（要素のスクショは角が透けないよう白で埋める）
-    bg = Image.new("RGB", (shot.width, shot.height), (255, 255, 255))
-    bg.paste(shot, (0, 0))
     canvas.alpha_composite(rounded(bg.resize((screen_w, screen_h), Image.LANCZOS), 48), (px0 + bez, y0 + bez))
 
 
@@ -114,7 +118,7 @@ def slide(fname, hl1, hl2, hsize, sub, shot_name, floats):
     d.text((W // 2, 278), hl2, font=font(hsize, 900), fill=(255, 255, 255), anchor="mm")
     d.text((W // 2, 383), sub, font=font(37, 600), fill=LIGHT_CYAN, anchor="mm")
     shot = Image.open(os.path.join(SHOTS, shot_name)).convert("RGB")
-    phone(canvas, shot, W // 2, 470, 470)
+    phone(canvas, shot, W // 2, 470, 460)
     for src, fw, fx, fy in floats:
         floating_card(canvas, Image.open(os.path.join(SHOTS, src)).convert("RGB"), fw, fx, fy)
     d.text((56, 1292), "majasco.jp", font=font(38, 700), fill=(255, 255, 255, 230), anchor="lm")

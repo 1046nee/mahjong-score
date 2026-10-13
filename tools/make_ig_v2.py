@@ -96,10 +96,25 @@ def floating_card(canvas, crop_im, width, x, y, radius=22):
     return h
 
 
+IPHONE_RATIO = 844 / 390  # 画面の縦÷横（iPhone 14 などの比率）
+
+
+def iphone_screen(shot):
+    """スマホの画面はいつもiPhoneの縦横比にする（2026-10-13 ユーザー要望: 中身が短いとタブレットのような横長の枠になった）。
+    中身が短ければ下を画面のいちばん下の行の色で埋める（長ければそのまま＝枠の下端は画像の外へ抜ける）"""
+    need = int(shot.width * IPHONE_RATIO)
+    if shot.height >= need:
+        return shot
+    out = Image.new("RGB", (shot.width, need), shot.getpixel((shot.width // 2, shot.height - 1)))
+    out.paste(shot, (0, 0))
+    return out
+
+
 def phone(canvas, shot, x_center, y0, screen_w, crop_top=0):
     """実スクショを載せたスマホ（下端は画面外へ抜ける）。crop_topでスクショ上部を切って見せ場を上に寄せる"""
     if crop_top:
         shot = shot.crop((0, crop_top, shot.width, shot.height))
+    shot = iphone_screen(shot)
     screen_h = int(shot.height * screen_w / shot.width)
     bez = 16
     px0 = x_center - screen_w // 2 - bez
