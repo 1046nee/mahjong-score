@@ -7,7 +7,28 @@
   <atom:link href="https://majasco.jp/news/feed.xml" rel="self" type="application/rss+xml"/>
   <description>麻雀スコア記録アプリ「まじゃすこ / majasco」のアップデート情報・お知らせ</description>
   <language>ja</language>
-  <lastBuildDate>Fri, 07 Aug 2026 12:00:00 +0900</lastBuildDate>
+  <lastBuildDate>Tue, 13 Oct 2026 12:00:00 +0900</lastBuildDate>
+  <item>
+    <title>仲間ページを追加しました｜定例会の通算順位・成績表・総当たり表をみんなで見る</title>
+    <link>https://majasco.jp/news/nakama-page.html</link>
+    <guid>https://majasco.jp/news/nakama-page.html</guid>
+    <pubDate>Tue, 13 Oct 2026 12:00:00 +0900</pubDate>
+    <description>いつものメンバーで打った複数のゲームを1つのページにまとめ、通算順位・成績表・総当たり表・2人の対戦をメンバー全員で見られる「仲間ページ」を追加しました。作り方、名簿と連携の考え方、権限の違いまで説明します。</description>
+  </item>
+  <item>
+    <title>マイページを追加しました｜Googleログインで記録を残し、自分の成績とスコアの推移を見る</title>
+    <link>https://majasco.jp/news/mypage-stats.html</link>
+    <guid>https://majasco.jp/news/mypage-stats.html</guid>
+    <pubDate>Tue, 13 Oct 2026 12:00:00 +0900</pubDate>
+    <description>Googleでログインすると、参加したゲームが機種変更しても消えずに残り、平均着順・通算スコア・トップ率などの成績と、年・月・日ごとのスコアの推移、相手ごとの対戦成績が見られるようになりました。</description>
+  </item>
+  <item>
+    <title>記録の確定を追加しました｜対局の終了から12時間で、試合の結果は誰も書き換えられなくなります</title>
+    <link>https://majasco.jp/news/kiroku-kakutei.html</link>
+    <guid>https://majasco.jp/news/kiroku-kakutei.html</guid>
+    <pubDate>Tue, 13 Oct 2026 12:00:00 +0900</pubDate>
+    <description>共有URLを知っている人なら誰でも入力できる仕組みのまま、終わった試合の結果を守るため、対局の終了から12時間（終了しなくても最後の入力から24時間）で記録が確定し、誰も書き換えられなくなるようにしました。</description>
+  </item>
   <item>
     <title>機種変更しても履歴が引き継げる「引き継ぎURL」を追加しました</title>
     <link>https://majasco.jp/news/hikitsugi-url.html</link>
@@ -23,11 +44,11 @@
     <description>試合結果をワンタップでCSVファイルとしてダウンロードできるようになりました。Excelやスプレッドシートに取り込んで、オリジナルの集計表や年間ランキングづくりに使えます。</description>
   </item>
   <item>
-    <title>大型アップデートのお知らせ｜チーム戦・チップ収支・最大40人の回し打ちに対応しました</title>
+    <title>大型アップデートのお知らせ｜チーム戦・チップの記録・最大40人の回し打ちに対応しました</title>
     <link>https://majasco.jp/news/update-2026-07.html</link>
     <guid>https://majasco.jp/news/update-2026-07.html</guid>
     <pubDate>Fri, 10 Jul 2026 12:00:00 +0900</pubDate>
-    <description>チーム戦モード、チップの収支計算、メンバー3〜40人の回し打ち対応、モバイルUIの刷新など、2026年7月の大型アップデート内容を紹介します。</description>
+    <description>チーム戦モード、チップの記録、メンバー3〜40人の回し打ち対応、モバイルUIの刷新など、2026年7月の大型アップデート内容を紹介します。</description>
   </item>
 </channel>
 </rss>

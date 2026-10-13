@@ -119,6 +119,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
 .lp-solution { background: #fff; }
+/* 実際の画面（2026-10-13）: 見本のデータで撮った画面を横に並べ、押すとそのお知らせ（機能の説明）へ */
+.lp-screens { background: #EAF0FB; }
+.lp-shots { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 4px 14px; margin: 18px -4px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.lp-shots::-webkit-scrollbar { display: none; }
+.lp-shot { flex: none; width: 74%; max-width: 280px; scroll-snap-align: center; text-decoration: none; color: inherit; background: #fff; border-radius: 16px; padding: 12px 12px 14px; box-shadow: 0 2px 12px rgba(23,112,131,.10); }
+.lp-shot img { display: block; width: 100%; height: 240px; object-fit: cover; object-position: top; border-radius: 10px; border: 1px solid #e2ece7; }
+.lp-shot b { display: block; margin-top: 10px; font-size: 15px; font-weight: 900; color: #1F2A28; }
+.lp-shot span { display: block; margin-top: 4px; font-size: 13px; line-height: 1.7; color: #4F5C5A; }
+.lp-shot em { display: inline-block; margin-top: 8px; font-style: normal; font-size: 13px; font-weight: 800; color: #177083; }
+.lp-shots-note { margin-top: 6px; font-size: 12px; color: #5f6e6b; text-align: center; }
 .lp-solution h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
 /* 特徴カードのカルーセル（横スクロール＋スナップ。常に次のカードが見える幅にする） */
 .features-wrap { position: relative; max-width: 960px; margin: 0 auto; }
@@ -2648,6 +2658,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </section>
 
+  <!-- 実際の画面（見本のデータ）。押すとそれぞれのお知らせへ（2026-10-13） -->
+  <section class="lp-section lp-screens">
+    <div class="lp-inner">
+      <h2>実際の画面で見る。</h2>
+      <p class="lp-body" style="text-align:center">記録は、打つたびに積み上がります。</p>
+      <div class="lp-shots">
+        <a class="lp-shot" href="/news/nakama-page.html"><img src="/assets/screens/circle-rank.jpg" width="716" height="1218" alt="仲間ページの通算順位の画面" loading="lazy"><b>仲間ページの通算順位</b><span>定例会のゲームを集めると、通算スコア・平均着順などの順位が自動で出ます。</span><em>くわしく ›</em></a>
+        <a class="lp-shot" href="/news/mypage-stats.html"><img src="/assets/screens/mypage-card.jpg" width="716" height="900" alt="マイページの成績カードとスコアの推移" loading="lazy"><b>自分の成績とスコアの推移</b><span>平均着順・トップ率・ラス回避と、月ごとの通算スコアのグラフ。</span><em>くわしく ›</em></a>
+        <a class="lp-shot" href="/news/nakama-page.html#h2h"><img src="/assets/screens/circle-h2h.jpg" width="716" height="902" alt="総当たり表。メンバーどうしの直接対決の勝ち負け" loading="lazy"><b>総当たり表で相性がわかる</b><span>同じ試合で上だった回数を、メンバーどうしの勝ち-負けで。</span><em>くわしく ›</em></a>
+        <a class="lp-shot" href="/news/kiroku-kakutei.html"><img src="/assets/screens/result-sheet.jpg" width="720" height="978" alt="結果のシート。試合ごとのスコアと個人成績" loading="lazy"><b>終わった結果は書き換えられない</b><span>対局の終了から12時間で記録が確定。通算成績を安心して積み上げられます。</span><em>くわしく ›</em></a>
+      </div>
+      <p class="lp-shots-note">名前と数字は見本のデータです。<a href="/changelog.html">更新履歴</a>も公開しています。</p>
+    </div>
+  </section>
+
   <!-- ⑧ クロージング（薄緑＋ミニイラスト＋バッジ＋オレンジCTA） -->
   <section class="lp-section lp-close">
     <div class="lp-inner">
@@ -2697,6 +2722,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <li><a href="faq.html">よくある質問<span class="rl-desc">使い方・ルール設定・データの保存についての19の質問と答え。</span></a></li>
       </ul>
       <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
+    </div>
+
+    <div class="info-card">
+      <h2>お知らせ</h2>
+      <ul class="read-list">
+        <li><a href="news/nakama-page.html">仲間ページを追加しました<span class="rl-desc">2026.10.13 ・ 定例会の通算順位・成績表・総当たり表をメンバー全員で。</span></a></li>
+        <li><a href="news/mypage-stats.html">マイページを追加しました<span class="rl-desc">2026.10.13 ・ Googleログインで記録を残し、自分の成績とスコアの推移を見る。</span></a></li>
+        <li><a href="news/kiroku-kakutei.html">記録の確定を追加しました<span class="rl-desc">2026.10.13 ・ 対局の終了から12時間で、試合の結果は書き換えられなくなります。</span></a></li>
+      </ul>
+      <a class="read-more-link" href="changelog.html">更新履歴を見る ›</a>
     </div>
 
     <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>

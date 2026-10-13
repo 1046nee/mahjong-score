@@ -50,7 +50,7 @@
    blog.css/blog-site.js/ads.jsの読み込みを維持。**Article JSON-LDを新記事の内容に書き換える**
 2. BLOG_POSTSの**先頭**に1件追加
 3. **`node tools/build_post_lists.js` を実行**（一覧4ページの静的カードを再生成。忘れると一覧に載らない）
-4. sitemap.xmlに`<url>`追加（**newsのお知らせ記事はnoindex運用のためsitemapに入れない**。headにnoindexを付ける）
+4. sitemap.xmlに`<url>`追加（**機能の説明として本文の厚いお知らせ（2026-10-13〜）は検索に載せてsitemapにも入れる**。短いお知らせだけnoindex＋sitemap外）
 5. お知らせなら `/news/feed.xml` に`<item>`追加（lastBuildDateも更新）
 6. 関連記事と内部リンクを張り合う。このdocの記事一覧を更新
 
@@ -59,7 +59,9 @@
 - NG例: 「点数計算の基本」という見出しでウマ・オカを説明（→見出しは「スコア計算」に）
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
-## 公開済み記事一覧（19記事＋お知らせ3本）
+## 公開済み記事一覧（19記事＋お知らせ6本＋更新履歴）
+- **お知らせ（検索に載せる・2026-10-13）**: news/nakama-page.html（仲間ページ）／news/mypage-stats.html（マイページと成績）／news/kiroku-kakutei.html（記録の確定）。実画面は `/assets/screens/*.jpg`（見本のデータ・スタブで撮影。キャプションに「名前と数字は見本のデータです」）
+- **更新履歴** `/changelog.html`（月ごと・新しい順。大きな更新を出したら1行足す＝「手入れが続いている」ことを見せる。AdSenseの「継続的なキュレーション」対策）
 0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
 0b. blog-team-tournament.html — 10人以上のチーム対抗戦・トーナメントの開き方（遊び方ガイド）
 0c. blog-season-ranking.html — 日をまたいだ通算成績と相性（直接対決・スコア差）の読み方（2026-09-25。実例はアプリの関数で検算済み）
@@ -79,7 +81,7 @@
 14. blog-house-rules.html — 打つ前に決める10項目
 15. blog-score-mismatch.html — 点数が合わないときのチェックリスト
 16. blog-mawashi-uchi.html — 5人以上の回し方・試合数が違う人の比べ方
-- お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html
+- お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html（10月に「いまはログインで…」の追記）
 
 ## 統合した記事（2026-09-25）
 - **blog-fu-han → blog-score-table#fu、blog-hai-types → blog-rule-basics#hai**。firebase.json の redirects（301）で転送。
