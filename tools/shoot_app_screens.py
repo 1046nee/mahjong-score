@@ -194,6 +194,12 @@ def main():
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
+    # 見本の試合の日付は7月なので、そのままだと「記録の確定」（最後の入力から24時間）で確定済みになり、
+    # 入力の画面が開かず「確定しているため変更できません」が写る（2026-10-13）。撮影のときだけ締め切りを先にする
+    import time
+    lock = int(time.time() * 1000) + 20 * 3600 * 1000
+    for g in GAMES.values():
+        g["lockAt"] = lock
     stub = FIREBASE_STUB % {"sessions": json.dumps(GAMES, ensure_ascii=False)}
     with sync_playwright() as p:
         exe = find_chromium()

@@ -78,6 +78,7 @@
 4. docs/sns-ops.md のチェックリストも通す
 
 ## 落とし穴
+- **見本の試合の日付が古いと「記録の確定」で入力の画面が開かない**（shoot_app_screens.py は7月の日付。2026-10-13に撮り直したら確定の案内が写った）。撮影のときだけ lockAt を先の時刻にする。make_ig_v2.py の `crop_top`（ページ全体のスクショの切り出し位置）は画面の組み方が変わるとずれるので、撮り直したら全枚数を目視する
 - リモート実行環境（Claude Code on the Web等）からは majasco.jp / Firebase への接続がegressポリシーでブロックされることがある
   → 実画面スクショは tools/shoot_app_screens.py のローカル起動＋Firebaseスタブ方式で撮る（本番データにも一切触れないので検証セッションの削除も不要）
 - フォントパスはOS依存（Windows: C:\Windows\Fonts\NotoSansJP-VF.ttf ／ Linux: /usr/share/fonts/truetype/noto-jp/NotoSansJP.ttf に配置）。make_ig_v2.pyは両対応済み
