@@ -166,6 +166,12 @@
 - スロットID空欄=非表示。追加時はAdSenseでディスプレイ広告ユニット作成→IDをAD_SLOTSへ（min-height:280px自動でCLS対策）
 - **置かない場所**: スコア入力・ゲーム画面・まとめ画面・設定モーダル・privacy/terms・404（誤クリック防止）
 
+## アフィリエイト（2026-10-15〜）
+- AdSense と同じサイトに置いてよい（広告と見分けがつかない形・禁止商材でなければ可）。記事の中の `<div class="aff-box" data-aff="キー">` に /assets/affiliate.js がカードを描く
+- `AMAZON_TAG`（Amazonアソシエイトのトラッキングid）と `RAKUTEN_ID`（楽天アフィリエイトID）を入れた店のボタンだけ出る。両方空なら枠ごと非表示。リンクは各店の検索結果（商品の手入れ不要）
+- 枠には必ず「PR」（ステマ規制）。Amazonを使うときは決められた一文を枠の下に出す（affiliate.js が自動で出す）。privacy.html の「4. アフィリエイトについて」
+- 置く所: 記事の中の道具の話の直後だけ（今は blog-manner の持ち物）。アプリ画面・LPには置かない。値段・金額は書かない。賭けを連想させる道具は載せない
+
 ## 計測
 - GTM `GTM-KMRMGKKV` 全ページ設置済み。index.htmlの`track()`がdataLayerへ送信
   （group_create / group_join / round_submit / share_copy）
