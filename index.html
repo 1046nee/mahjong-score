@@ -3241,7 +3241,7 @@ firebase.initializeApp(firebaseConfig);
 // App Check（2026-10-15）: このサイトの画面からの読み書きだけを通す（スクリプトからの大量書き込みを防ぐ）。
 // サイトキーは公開してよい値（Fraud Defense＝旧 reCAPTCHA Enterprise。reCAPTCHA v3 の Classic は非推奨と出たため）。強制（通さない）は Firebaseコンソール → App Check → Realtime Database で切り替える。
 // 手元（localhost・127.0.0.1）は、localStorage の __appcheck_debug にデバッグ用トークンがあるときだけ使う（本番DBのテスト用。tools/appcheck.py）
-const APP_CHECK_SITE_KEY = '';
+const APP_CHECK_SITE_KEY = '6LeUJvAtAAAAADlv6IRYNTcs3M_tdmp1x1oieA6b';
 try {
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   const dbg = local ? localStorage.getItem('__appcheck_debug') : null;
