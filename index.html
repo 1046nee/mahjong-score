@@ -3310,7 +3310,7 @@ function setMetric(m) {
 // 万一あふれてもsaveStorageが古い履歴から落として保存自体は必ず成功させる
 // 2026-10-10: 100件で切っていたため、仲間ページの試合が自分の一覧に入るたびに古い個人の試合が押し出され、
 // 引き継ぎ（アカウント）からも新しい100件しか取り込まず、個人の試合が消えて成績にも入らなかった。件数ではほぼ切らない
-const MAX_HISTORY = 3000;
+const MAX_HISTORY = 10000; // 2026-10-15: IndexedDB に移して1万件まで端末に持てるように
 function loadStorage() {
   try { const d = localStorage.getItem('mahjong-v3'); if (d) appState = JSON.parse(d); } catch(e) {}
   if (!appState.players) appState.players = [];
@@ -3353,6 +3353,15 @@ function dedupeGames() {
 }
 function saveStorage() {
   dedupeGames();
+  if (idbState.ok) {
+    // 試合は IndexedDB（idbFlush。少し待ってまとめて書く）。localStorage には試合のほかだけ。
+    // 移し替え（初めての書き込み）が済むまでは、localStorage にも今までどおり試合を入れておく（途中で閉じても失わない）
+    scheduleIdbFlush();
+    if (idbState.migrated) {
+      try { localStorage.setItem('mahjong-v3', JSON.stringify({ ...appState, games: [] })); } catch (e) { /* 試合は IndexedDB にある */ }
+      return;
+    }
+  }
   // 容量オーバーのとき: まず古い試合から「変更の履歴（log）」だけを外す（点数・成績はそのまま。履歴は開いたときにサーバーから読み直す＝_slim）。
   // それでも入らないときだけ、いちばん古い試合を端末の控えから外す（アカウントの一覧には残っている）
   const put = () => { localStorage.setItem('mahjong-v3', JSON.stringify(appState)); };
@@ -3374,6 +3383,111 @@ function saveStorage() {
     }
   }
 }
+// ---- 試合の控えは IndexedDB に（2026-10-15）----
+// localStorage は5MBほどで、2,000件前後で入らなくなる。IndexedDB はブラウザに入っている大きな保存場所（料金なし・サーバーは変えない）。
+// 1試合＝1件（キー＝試合ID）。書くのは前回から変わった試合だけ（rounds・log・settings の入れ物と名前・時刻で見分ける）。
+// 起動時: まず localStorage（古い端末は試合も入っている）で描き、IndexedDB を読み終えたら合わせて描き直す。
+// 読み終わるまでは IndexedDB から消さない（消すのは読み終えたあと、メモリに無い試合だけ）。消した試合（deletedGids）は取り込み直さない。
+// IndexedDB が使えない端末（古いブラウザ・一部のプライベートブラウズ）は今までどおり localStorage
+const IDB_NAME = 'majasco', IDB_STORE = 'games', IDB_FLAG = 'mahjong-games-idb';
+const idbState = { ok: false, db: null, loaded: false, migrated: false, ids: new Set(), sigs: new Map(), timer: null, busy: false, again: false };
+let idbReadyResolve;
+const idbReady = new Promise(r => { idbReadyResolve = r; });
+try { idbState.migrated = localStorage.getItem(IDB_FLAG) === '1'; } catch (e) {}
+function gameSig(g) { return [g.rounds, g.log, g.settings, (g.rounds || []).length, (g.log || []).length, g.name, g.lastAccess, g.lockAt, g.endedAt, g._slim, g.createdAt]; } // 入れ物が同じでも、足された試合・履歴は数で気づく
+function sigSame(a, b) { return !!a && !!b && a.length === b.length && a.every((x, i) => x === b[i]); }
+function idbOpen() {
+  return new Promise((res, rej) => {
+    try {
+      if (!window.indexedDB) return rej(new Error('no-idb'));
+      const r = indexedDB.open(IDB_NAME, 1);
+      r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(IDB_STORE)) r.result.createObjectStore(IDB_STORE, { keyPath: 'id' }); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error || new Error('idb-open'));
+      r.onblocked = () => rej(new Error('idb-blocked'));
+    } catch (e) { rej(e); }
+  });
+}
+async function loadGamesIdb() {
+  try {
+    const db = await idbOpen();
+    const rows = await new Promise((res, rej) => {
+      const q = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).getAll();
+      q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error);
+    });
+    idbState.db = db; idbState.ok = true;
+    const have = new Set((appState.games || []).map(g => g.id));
+    rows.forEach(g => {
+      if (!g || !g.id) return;
+      idbState.ids.add(g.id);
+      if (deletedGids[g.id]) return; // この端末で消した試合は戻さない
+      idbState.sigs.set(g.id, gameSig(g));
+      if (!have.has(g.id)) appState.games.push(g);
+      else appState.games.push(g); // 同じ試合が両方にあれば dedupeGames が中身の新しい方を残す
+    });
+    dedupeGames();
+    appState.games.sort((a, b) => new Date(b.lastAccess || b.createdAt || 0) - new Date(a.lastAccess || a.createdAt || 0));
+    idbState.loaded = true;
+    idbReadyResolve();
+    await idbFlush(); // localStorage にだけあった試合（移し替え）・読み込み中に変わった試合を書く
+    if (rows.length) afterGamesLoaded();
+  } catch (e) {
+    idbState.ok = false; idbState.loaded = true; idbReadyResolve(); // 使えない端末は localStorage のまま
+  }
+}
+// IndexedDB を読み終えたら、試合の一覧を使う画面を描き直す
+function afterGamesLoaded() {
+  try {
+    renderRecentGames();
+    const v = activeViewName();
+    if (v === 'history') renderHistory(); else if (v === 'mystats') renderMyStats();
+  } catch (e) { /* 描き直せなくても次に開いたとき出る */ }
+}
+function scheduleIdbFlush() {
+  if (!idbState.ok || !idbState.loaded) return;
+  clearTimeout(idbState.timer);
+  idbState.timer = setTimeout(idbFlush, 120);
+}
+// 変わった試合だけ書き、メモリに無い試合を消す。書き終えたら、初回は localStorage から試合を外す（移し替えの完了）
+async function idbFlush() {
+  if (!idbState.ok || !idbState.loaded || !idbState.db) return;
+  if (idbState.busy) { idbState.again = true; return; }
+  idbState.busy = true;
+  try {
+    const games = (appState.games || []).filter(g => g && g.id);
+    const put = games.filter(g => !sigSame(idbState.sigs.get(g.id), gameSig(g)));
+    const now = new Set(games.map(g => g.id));
+    const del = [...idbState.ids].filter(id => !now.has(id));
+    if (put.length || del.length || !idbState.migrated) {
+      await new Promise((res, rej) => {
+        const tx = idbState.db.transaction(IDB_STORE, 'readwrite'), st = tx.objectStore(IDB_STORE);
+        put.forEach(g => st.put(g));
+        del.forEach(id => st.delete(id));
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+      });
+      put.forEach(g => { idbState.sigs.set(g.id, gameSig(g)); idbState.ids.add(g.id); });
+      del.forEach(id => { idbState.sigs.delete(id); idbState.ids.delete(id); });
+    }
+    if (!idbState.migrated) {
+      idbState.migrated = true;
+      try { localStorage.setItem(IDB_FLAG, '1'); localStorage.setItem('mahjong-v3', JSON.stringify({ ...appState, games: [] })); } catch (e) {}
+    }
+  } catch (e) {
+    // 書けなかった（容量など）: localStorage にも残す（今までのやり方）
+    idbState.migrated = false;
+    try { localStorage.removeItem(IDB_FLAG); } catch (x) {}
+  } finally {
+    idbState.busy = false;
+    if (idbState.again) { idbState.again = false; scheduleIdbFlush(); }
+  }
+}
+// ログアウトなどで端末の控えを空にするとき（読み込みの前でも確実に消す）
+function idbClearGames() {
+  idbState.sigs.clear(); idbState.ids.clear();
+  idbOpen().then(db => { const tx = db.transaction(IDB_STORE, 'readwrite'); tx.objectStore(IDB_STORE).clear(); }).catch(() => {});
+}
+// 画面を離れるときは待たずに書く
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(idbState.timer); idbFlush(); } });
 // ブラウザに「このサイトの保存データを自動削除しないで」と要求する。
 // Chrome系・Firefoxが対応（サイトの利用実績から自動判断され、ダイアログは出ない）。
 // Safariは非対応＝iPhoneは「ホーム画面に追加」が同じ役割を果たす（7日間自動削除の対象外になる）
@@ -3531,6 +3645,7 @@ function copyMyListUrl() {
 // #my=URLで開いたときと、起動時・過去の試合を開いたときの静かな同期（refreshMyList）で共用。
 // 戻り値=新たに取り込めたグループ数
 async function mergeMyListData(data) {
+  await idbReady; // 端末の控え（IndexedDB）を読み終えてから比べる（でないと全部「無い」と思って読み直す）
   // 削除印のついたグループは、この端末の控えからも外す（別の端末での削除を伝播させる）。
   // ローカルの墓標は付けない＝リスト側の印が唯一の権威。あとで誰かが開き直して印が消えたら、
   // 次のマージで自然に取り込み直される
@@ -3557,8 +3672,12 @@ async function mergeMyListData(data) {
   // この端末で削除したグループ（墓標あり）は取り込み直さない（オフライン中に印を書けなかった場合の保険）
   const toFetch = entries.filter(([gid]) => !known.has(gid) && !deletedGids[gid]);
   const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
-  const results = await Promise.all(toFetch.map(([gid, meta]) =>
-    db.ref('sessions/' + gid).once('value').then(s => ({ gid, meta, val: s.val() })).catch(() => null)));
+  // 1万件でも読めるように、同時に読むのは100件ずつ
+  const results = [];
+  for (let i = 0; i < toFetch.length; i += 100) {
+    results.push(...await Promise.all(toFetch.slice(i, i + 100).map(([gid, meta]) =>
+      db.ref('sessions/' + gid).once('value').then(s => ({ gid, meta, val: s.val() })).catch(() => null))));
+  }
   let added = 0;
   results.forEach(r => {
     if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
@@ -3749,7 +3868,7 @@ async function signOutAccount() {
   myListSynced.clear();
   // この端末の控え（過去の試合・自分の選択・仲間ページの一覧）も消す。記録はアカウントに残っている。
   // 残すと、同じ端末で次に別の人がログインしたとき、その人のアカウントに混ざってしまう
-  appState.games = []; saveStorage();
+  appState.games = []; saveStorage(); idbClearGames();
   gameTags = {}; saveTags();
   myCircles = {}; circleSeen = {}; saveCircleSeen();
   try { [CIRCLE_HIDDEN_KEY, CIRCLE_ORDER_KEY, CIRCLE_PREFS_SYNCED].forEach(k => localStorage.removeItem(k)); } catch (e) {}
@@ -12406,6 +12525,7 @@ try { if (localStorage.getItem(MP_TAB_KEY) === 'circle') mpTab = 'circle'; } cat
 let mpMode = null;          // 個人の成績で見ている形式（4 | 3）
 let histShowAll = false;    // 過去の試合を全部出すか
 const HIST_PREVIEW = 15;
+const HIST_TILES = 60; // タイルで最初に並べる数
 // よく打つ相手（同じ試合の多い順に5人）。棒＝直接対決の勝ち負け（中央の線が五分）・右に勝率
 function mpRivalsHtml() {
   if (!mpMode) return '';
@@ -13749,10 +13869,12 @@ function renderHistoryList() {
   });
   if (histView === 'tile' && !mpSelecting) {
     if (cnt) cnt.textContent = `${gamesRoundsText(list.length, list.reduce((a, x) => a + (x.g.rounds || []).length, 0))}`;
-    body.innerHTML = histTilesHtml(list.slice().sort((a, b) => b.ms - a.ms).map(x => {
+    // タイルは新しい順に HIST_TILES 件ずつ（1万件を一度に並べると重い。2026-10-15）。下の「さらに表示」で全部
+    const sorted = list.slice().sort((a, b) => b.ms - a.ms), tshow = histShowAll ? sorted : sorted.slice(0, HIST_TILES);
+    body.innerHTML = histTilesHtml(tshow.map(x => {
       const t = histState(x.g);
       return { g: x.g, me: t === 'me' ? tagOf(x.g.id).me : t === 'out' ? null : undefined, onclick: `openResultSheet('${esc(x.g.id)}')` };
-    }));
+    })) + (tshow.length < sorted.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${sorted.length - tshow.length}ゲーム）</button>` : '');
     renderSendBar();
     return;
   }
@@ -14331,6 +14453,7 @@ if (/[?&]openExternalBrowser=/.test(location.search)) {
   history.replaceState(null, '', location.pathname + (q === '?' ? '' : q) + location.hash);
 }
 loadStorage();
+loadGamesIdb(); // 試合の控え（IndexedDB）を読み、読み終えたら描き直す
 // 送信キュー: 接続状態を見張り、つながったら・画面に戻ったら・15秒ごとに未送信を送る
 db.ref('.info/serverTimeOffset').on('value', snap => { serverTimeOffset = Number(snap.val()) || 0; });
 db.ref('.info/connected').on('value', snap => {
