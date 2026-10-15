@@ -20,6 +20,9 @@ import time
 import urllib.error
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import appcheck  # noqa: E402  App Check の強制後も本番DBに届くように（tools/appcheck.py）
+
 from playwright.sync_api import sync_playwright
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -56,12 +59,15 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
 
 
 def main():
+    appcheck.install()
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), functools.partial(Quiet, directory=BASE))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     results, errors, sid = [], [], None
     with sync_playwright() as p:
         br = p.chromium.launch()
         pg = br.new_page(viewport={"width": 390, "height": 844})
+        if appcheck.init_js():
+            pg.add_init_script(appcheck.init_js())
         pg.on("pageerror", lambda e: errors.append(str(e)))
         pg.route("**/*", lambda route: route.abort() if any(b in route.request.url for b in BLOCK) else route.continue_())
         try:
@@ -111,11 +117,10 @@ def main():
                             n_rounds(v) == 2 and v.get("lockAt", 0) > lock2))
             # 確定した状態（画面の中だけで lockAt を過去にする）では入力の入口を出さない
             pg.evaluate("activeGame.lockAt = serverNow() - 1000; renderGame()")
-            results.append(("[7] 確定した試合は確定の表示を出さず（2026-10-08）、点数入力・行のタップが出ず、設定の編集の代わりに「ゲーム名の変更」", True,
+            results.append(("[7] 確定した試合は確定の表示を出さず（2026-10-08）、点数入力が出ず、設定の編集の代わりに「ゲーム名の変更」（行を押すと履歴だけ見られる＝openRoundMenu は残る。2026-10-09〜）", True,
                             pg.evaluate("""!document.getElementById('game-state').innerText.includes('確定')
                               && getComputedStyle(document.querySelector('#view-game .fab')).display === 'none'
-                              && document.getElementById('game-edit-btn').textContent === 'ゲーム名の変更' && document.querySelector('#view-game .title-actions button[onclick=\"openShareSheet()\"]').textContent === '共有'
-                              && ![...document.querySelectorAll('#rounds-table tbody tr')].some(tr => (tr.getAttribute('onclick') || '').includes('openRoundMenu'))""")))
+                              && document.getElementById('game-edit-btn').textContent === 'ゲーム名の変更' && document.querySelector('#view-game .title-actions button[onclick=\"openShareSheet()\"]').textContent === '共有'""")))
             # 締め切りの無い古い試合（2日前に作って入力したまま）を開く → 確定したものとして扱い、過ぎた締め切りを書き込む
             import random
             old = "".join(random.choice("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789") for _ in range(10))

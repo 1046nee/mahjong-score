@@ -78,6 +78,14 @@
 - **2026-10-02（3回目）: circles/$cid/roster/$mid/color（#RRGGBB・作成者だけ変えられる）。コンソールへの再適用が必要**（未適用の間は色を選ぶと「変えられませんでした」）。確認: circle_rules_test（**2026-10-02に適用済み**・circle_rules_test 48項目・lock_rules_test ALL PASS。ゲーム名の .write も同日適用済み）
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
 
+## App Check（2026-10-15〜）
+- サイトの画面からの読み書きだけを通す仕組み。プロバイダーは **reCAPTCHA v3**（請求先の登録が要らない）。サイトキーは index.html の `APP_CHECK_SITE_KEY`（公開してよい値）。秘密鍵はFirebaseコンソールにだけ置く
+- 強制（通さない）は Firebaseコンソール → App Check → API →「Realtime Database」で切り替える。**入れてから数日は強制せず、指標で「確認済み」の割合を見てから強制する**（古い版を開いたままの端末が弾かれないように）
+- reCAPTCHA のバッジは CSS で隠し、privacy.html に利用を書いてある（Googleが認める書き方）
+- 手元（localhost・127.0.0.1）では動かさない。本番DBのテスト（circle/lock/view/session_delete_rules・lock_app・sync）は、
+  コンソールで作ったデバッグ用トークンを `tools/.appcheck-debug-token`（.gitignore 済み）か環境変数 `APPCHECK_DEBUG_TOKEN` に置くと通る（tools/appcheck.py）
+- スタブのテスト（smoke・account・fit・xss・storage）は App Check の読み込みを止めているので影響なし
+
 ## ログイン（Firebase Authentication・Google）
 - アプリ側は index.html の **`LOGIN_ENABLED`**。**2026-09-25にコンソール設定が済み true にした**（設定が壊れたら false に戻すとログインの入り口だけが消える）
   （true にすると過去の試合に「Googleでログイン」が出る。設定前に押されるとGoogleのエラー画面になる）

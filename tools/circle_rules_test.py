@@ -16,9 +16,13 @@ import json
 import random
 import time
 import re
+import os
 import sys
 import urllib.error
 import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import appcheck  # noqa: E402  App Check の強制後も本番DBに届くように（tools/appcheck.py）
 from pathlib import Path
 
 DB = "https://mahjong-score-2e8aa-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -77,6 +81,7 @@ def op(user, method, path, body=None):
 
 
 def main():
+    appcheck.install()
     A, B, C = anon_user(), anon_user(), anon_user()
     cid = rnd(10, ID_CHARS)
     code = rnd(8, CODE_CHARS)

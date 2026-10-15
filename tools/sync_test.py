@@ -26,6 +26,9 @@ import sys
 import threading
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import appcheck  # noqa: E402  App Check の強制後も本番DBに届くように（tools/appcheck.py）
+
 from playwright.sync_api import sync_playwright
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,6 +94,7 @@ def wait_until(fn, timeout_ms=20000, step_ms=500):
 
 
 def main():
+    appcheck.install()
     class Quiet(http.server.SimpleHTTPRequestHandler):
         def log_message(self, *a):
             pass
@@ -105,6 +109,9 @@ def main():
         # 2台のスマホ。localStorage（送信キュー）も別々
         dev_a = browser.new_context(viewport={"width": 390, "height": 844}, locale="ja-JP")
         dev_b = browser.new_context(viewport={"width": 390, "height": 844}, locale="ja-JP")
+        for dev in (dev_a, dev_b):
+            if appcheck.init_js():
+                dev.add_init_script(appcheck.init_js())
         try:
             # ---- 準備: Aがクイックスタートでゲームを作り、Bが共有URLから参加 ----
             a = open_game(dev_a, app)
@@ -179,7 +186,7 @@ def main():
             a.evaluate("closeFormModal()")
             a.wait_for_timeout(3000)
             st = server_get(sid, "/settings") or {}
-            ok5 = st.get("startPoints") == 25000 and st.get("returnPoints") == 35000 and "他の人が設定を変更" in toast
+            ok5 = st.get("startPoints") == 25000 and st.get("returnPoints") == 35000 and "他の人が先に設定を変え" in toast
             results.append(("[5] 編集中に他の人が設定を変えたら上書きせず知らせる", "Bの変更だけ残る・通知あり",
                             "Bの変更だけ残る・通知あり" if ok5 else f"持ち点{st.get('startPoints')}/返し点{st.get('returnPoints')}／通知:{toast[:30]!r}"))
 

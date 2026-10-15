@@ -15,9 +15,11 @@ import sys
 import time
 
 from view_rules_test import http, rnd
+import appcheck  # noqa: E402
 
 
 def main():
+    appcheck.install()
     sid = rnd(10)
     now_ms = int(time.time() * 1000)
     game = {"id": sid, "name": "ルール確認用（削除できないことの確認）", "createdAt": "2026-09-29T00:00:00.000Z",

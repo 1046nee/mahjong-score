@@ -11,9 +11,13 @@ REST API で読み書きを試して許可／拒否が期待どおりかを見�
 """
 import json
 import random
+import os
 import sys
 import urllib.error
 import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import appcheck  # noqa: E402  App Check の強制後も本番DBに届くように（tools/appcheck.py）
 
 DB = "https://mahjong-score-2e8aa-default-rtdb.asia-southeast1.firebasedatabase.app"
 ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
@@ -37,6 +41,7 @@ def http(method, path, body=None):
 
 
 def main():
+    appcheck.install()
     sid, other = rnd(10), rnd(10)
     vid, vid2 = rnd(12), rnd(12)
     game = lambda i: {"id": i, "name": "ルール確認用", "createdAt": "2026-09-26T00:00:00.000Z",

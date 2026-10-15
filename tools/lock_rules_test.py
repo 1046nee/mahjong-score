@@ -25,6 +25,9 @@ import time
 import urllib.error
 import urllib.request
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import appcheck  # noqa: E402  App Check の強制後も本番DBに届くように（tools/appcheck.py）
+
 DB = "https://mahjong-score-2e8aa-default-rtdb.asia-southeast1.firebasedatabase.app"
 ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
 H = 3600 * 1000
@@ -77,6 +80,7 @@ def report(results, title):
 
 
 def main():
+    appcheck.install()
     sid = rnd(10)
     results = []
 
