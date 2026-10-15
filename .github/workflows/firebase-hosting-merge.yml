@@ -10,11 +10,18 @@ on:
 concurrency:
   group: firebase-hosting-live
   cancel-in-progress: true
+# GITHUB_TOKEN は読むだけにする（デプロイは Firebase のサービスアカウントで行うので、書く権限は要らない）
+permissions:
+  contents: read
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
+      # persist-credentials: false＝トークンを .git/config に残さない
+      # （2026-10-15 .git がサイトと一緒に公開されていて、/.git/config からデプロイ中のトークンが読めた。firebase.json の ignore も直した）
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       # 主要動線のスモークテスト（グループ作成→URL共有→自動参加→点数入力→結果表示）。
       # 失敗したらここでジョブが止まり、壊れたコードは本番にデプロイされない
       - name: スモークテスト（失敗したらデプロイ中止）

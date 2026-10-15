@@ -156,6 +156,13 @@ def main():
         check("B: 自分の名前で履歴を残せる", True, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "byName": "びー", "kind": "bind", "text": "テスト"}))
         check("B: 他人の名前で履歴を残せない", False, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": A["uid"], "byName": "えー", "kind": "bind", "text": "なりすまし"}))
         check("C（部外者）: 履歴を書けない", False, op(C, "POST", f"circles/{cid}/log", {"at": now, "by": C["uid"], "kind": "bind", "text": "x"}))
+        # 2026-10-15 セキュリティ点検: 履歴のキー・項目、メンバーのキー、Googleの写真のURLを絞った
+        check("B: 履歴に決まっていない項目は付けられない", False, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": "bind", "text": "x", "evil": "x"}))
+        check("B（メンバー）: 履歴に元に戻す情報を付けられる", True, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": "bind", "text": "x", "undo": {"sid": sid}}))
+        check("B: 履歴のキーにプッシュID以外（' や ) を含む）は使えない", False, op(B, "PUT", f"circles/{cid}/log/bad%27key%29", {"at": now, "by": B["uid"], "kind": "bind", "text": "x"}))
+        check("A（作成者）: メンバーのキーに uid の形以外は使えない", False, op(A, "PUT", f"circleMembers/{cid}/bad%27uid", {"role": "editor", "name": "x", "joinedAt": now}))
+        check("A: Googleの写真に Google 以外のURLは入れられない", False, op(A, "PUT", f"circles/{cid}/roster/{m1}/gphoto", "https://evil.example/p.png"))
+        check("A: Googleの写真は Google の画像のURLなら入れられる", True, op(A, "PUT", f"circles/{cid}/roster/{m1}/gphoto", "https://lh3.googleusercontent.com/a/test"))
         check("ログインなし: 仲間ページ（結果）は読める", True, op(None, "GET", f"circles/{cid}"))
         check("ログインなし: 参加コードは読めない", False, op(None, "GET", f"circleSecrets/{cid}"))
         check("ログインなし: メンバー一覧は読めない", False, op(None, "GET", f"circleMembers/{cid}"))

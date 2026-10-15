@@ -166,7 +166,7 @@
               ".validate": "newData.isString() && newData.val().length <= 60 && newData.parent().child('uid').val() === auth.uid"
             },
             "gphoto": {
-              ".validate": "newData.isString() && newData.val().length <= 600 && newData.val().beginsWith('https://') && newData.parent().child('uid').val() === auth.uid"
+              ".validate": "newData.isString() && newData.val().length <= 600 && newData.val().matches(/^https:[/][/][a-z0-9-]+[.]googleusercontent[.]com[/]/) && newData.parent().child('uid').val() === auth.uid"
             },
             "gat": {
               ".validate": "newData.isString() && newData.val().length <= 40 && newData.parent().child('uid').val() === auth.uid"
@@ -233,7 +233,7 @@
         "log": {
           "$lid": {
             ".write": "auth != null && !data.exists() && (root.child('circleMembers').child($cid).child(auth.uid).exists() || newData.child('kind').val() === 'claim' || newData.child('kind').val() === 'confirm')",
-            ".validate": "newData.hasChildren(['at', 'by', 'kind']) && newData.child('by').val() === auth.uid",
+            ".validate": "$lid.matches(/^[A-Za-z0-9_-]{20}$/) && newData.hasChildren(['at', 'by', 'kind']) && newData.child('by').val() === auth.uid",
             "at": {
               ".validate": "newData.isString() && newData.val().length <= 40"
             },
@@ -245,6 +245,15 @@
             },
             "text": {
               ".validate": "newData.isString() && newData.val().length <= 300"
+            },
+            "by": {
+              ".validate": "newData.isString()"
+            },
+            "undo": {
+              ".validate": "newData.hasChildren() && root.child('circleMembers').child($cid).child(auth.uid).exists()"
+            },
+            "$other": {
+              ".validate": false
             }
           }
         },
@@ -258,7 +267,7 @@
         ".read": "auth != null && data.child(auth.uid).exists()",
         "$uid": {
           ".write": "auth != null && (root.child('circles').child($cid).child('owner').val() === auth.uid || ($uid === auth.uid && ((!data.exists() && newData.child('role').val() === 'editor' && newData.child('code').isString() && root.child('circleInvites').child(newData.child('code').val()).val() === $cid) || (data.exists() && newData.exists() && newData.child('role').val() === data.child('role').val()) || (data.exists() && !newData.exists()))) || (root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin' && data.exists() && !newData.exists() && data.child('role').val() !== 'owner'))",
-          ".validate": "newData.hasChildren(['role', 'name', 'joinedAt'])",
+          ".validate": "$uid.matches(/^[A-Za-z0-9]{1,128}$/) && newData.hasChildren(['role', 'name', 'joinedAt'])",
           "role": {
             ".write": "auth != null && root.child('circleMembers').child($cid).child(auth.uid).child('role').val() === 'admin' && data.exists() && data.val() !== 'owner' && newData.exists() && newData.val() !== 'owner'",
             ".validate": "newData.isString() && newData.val().matches(/^(owner|admin|editor)$/) && (newData.val() !== 'owner' || root.child('circles').child($cid).child('owner').val() === $uid)"

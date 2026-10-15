@@ -3276,7 +3276,7 @@ let scoreMetric = 'score';
 // スコア画面のカード開閉状態（key: team / score / rounds / rank / chart / settings）
 let collapsedCards = {};
 function collapseBtnHtml(key) {
-  return `<button type="button" class="card-collapse" onclick="toggleCard('${key}')" aria-label="表示切替">${collapsedCards[key] ? '▸' : '▾'}</button>`;
+  return `<button type="button" class="card-collapse" onclick="toggleCard('${jsq(key)}')" aria-label="表示切替">${collapsedCards[key] ? '▸' : '▾'}</button>`;
 }
 function toggleCard(key) {
   collapsedCards[key] = !collapsedCards[key];
@@ -3776,7 +3776,7 @@ function renderHeaderAccount() {
   if (currentUser) {
     const nm = String(currentUser.displayName || currentUser.email || '').trim();
     const av = currentUser.photoURL
-      ? `<img src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${esc((nm[0] || 'M').toUpperCase()).replace(/'/g, '')}'))">`
+      ? `<img src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${jsq((nm[0] || 'M').toUpperCase())}'))">`
       : esc((nm[0] || 'M').toUpperCase());
     b.classList.add('in');
     b.innerHTML = `<span class="hdr-av">${av}</span><span class="hdr-label">マイページ</span>`;
@@ -4336,13 +4336,13 @@ async function refreshCircle() {
 function circleBadge(r, mid) {
   if (!(r && r.uid)) return '';
   if (!mid) mid = Object.keys(rosterOf()).find(k => rosterOf()[k] === r);
-  return `<span class="cm-badge self" role="button" tabindex="0" title="押すと、確認に使ったGoogleアカウントが見られます" onclick="event.stopPropagation();openVerifyInfo('${mid}')">${ico('verified', 12)}確認済み</span>`;
+  return `<span class="cm-badge self" role="button" tabindex="0" title="押すと、確認に使ったGoogleアカウントが見られます" onclick="event.stopPropagation();openVerifyInfo('${jsq(mid)}')">${ico('verified', 12)}確認済み</span>`;
 }
 // 名簿の人を確認済みにしたときに残す、Googleアカウントの見た目（顔アイコン・表示名）。メールアドレスは残さない
 function googleIdentity() {
   const u = currentUser || {};
   const name = String(u.displayName || '').slice(0, 60);
-  const photo = /^https:\/\//.test(u.photoURL || '') ? String(u.photoURL).slice(0, 600) : '';
+  const photo = /^https:\/\/[a-z0-9-]+\.googleusercontent\.com\//.test(u.photoURL || '') ? String(u.photoURL).slice(0, 600) : ''; // ルールと同じ（Googleの画像サーバーのURLだけ。ほかのURLを入れて見る人のアクセスを集められないように）
   return { gname: name || null, gphoto: photo || null, gat: new Date().toISOString() };
 }
 function openVerifyInfo(mid) {
@@ -4351,7 +4351,7 @@ function openVerifyInfo(mid) {
   const mine = r.uid === myUid();
   const canRemove = !mine && isCircleAdmin();
   const face = r.gphoto
-    ? `<img class="vf-photo" src="${esc(r.gphoto)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'vf-photo vf-ini',textContent:'${esc(avInitial(r.gname || r.name)).replace(/'/g, '')}'}))">`
+    ? `<img class="vf-photo" src="${esc(r.gphoto)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'vf-photo vf-ini',textContent:'${jsq(avInitial(r.gname || r.name))}'}))">`
     : `<span class="vf-photo vf-ini">${esc(avInitial(r.gname || r.name))}</span>`;
   document.getElementById('form-modal-title').textContent = '確認済みのGoogleアカウント';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
@@ -4359,8 +4359,8 @@ function openVerifyInfo(mid) {
       <div class="vf-sub">名簿の「${esc(r.name)}」を${r.gat ? ` ${fmtDate(r.gat)} に` : ''}このアカウントで確認済み${mine ? '（あなた）' : ''}</div></div></div>
     ${r.gname || r.gphoto ? '' : '<div class="h2h-note">アイコンと表示名は、本人が次に仲間ページを開いたときに記録されます。</div>'}
     <div class="h2h-note">Googleの顔アイコンと表示名で、本当にその人かを確かめられます。メールアドレスは記録も表示もしません。心当たりがないときは、作成者・管理者が確認済みを外せます。</div>
-    ${mine ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
-    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す（間違い・なりすましのとき）</button>` : ''}
+    ${mine ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${jsq(mid)}')">確認済みを外す（自分を選び直す）</button>` : ''}
+    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${jsq(mid)}')">この人の確認済みを外す（間違い・なりすましのとき）</button>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -4532,7 +4532,7 @@ function renderCircle() {
   } else if (!myCircleMid()) {
     const cand = Object.entries(roster).filter(([, r]) => r && !r.uid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
     html += `<div class="card askme"><div class="askme-q">この仲間ページで、あなたは名簿のどの人ですか？</div>
-      <div class="askme-row">${cand.map(([mid, r]) => `<button type="button" class="askme-chip" onclick="claimCircleMember('${mid}')">${esc(r.name)}</button>`).join('')}
+      <div class="askme-row">${cand.map(([mid, r]) => `<button type="button" class="askme-chip" onclick="claimCircleMember('${jsq(mid)}')">${esc(r.name)}</button>`).join('')}
         ${role ? `<button type="button" class="askme-chip" onclick="openClaimNew()">名簿にいない（名前を入れる）</button>` : ''}</div>
       <div class="askme-sub">選ぶと、その人に<span class="cm-badge self" style="margin:0 2px">${ico('verified', 12)}確認済み</span>の印が付き、その人の連携は本人・作成者・管理者しか変えられなくなります。</div></div>`;
   }
@@ -4565,13 +4565,13 @@ function renderCircle() {
   // タブ（順位・成績表・対戦…）の上にも、上と同じ「期間＋四麻｜三麻」（下まで読んでいても指の届くところで変えられる。2026-10-07）
   if (segHtml) html += `<div class="low-filt">${mpFiltersHtml(segHtml)}</div>`;
   html += `<div class="seg sm tabbar" role="tablist">${CIRCLE_TABS.map(([k, l]) =>
-    `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${k}';renderCircle()">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${circleTab === k ? 'on' : ''}" aria-selected="${circleTab === k}" onclick="circleTab='${jsq(k)}';renderCircle()">${l}</button>`).join('')}</div>`;
   const modes = circleModes();
   if (!circleMode || !modes.includes(circleMode)) circleMode = modes[0] || '4';
   const st = gids.length ? circleStatsP(circleMode) : { list: [], acc: {} };
   if (gids.length) saveCircleSummary(st, gids.length);
   const modeChips = false ? `<div class="seg xs" role="tablist" aria-label="形式">${modes.map(m =>
-    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${m}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
+    `<button type="button" role="tab" data-np="${m}" class="${circleMode === m ? 'on' : ''}" aria-selected="${circleMode === m}" onclick="circleMode='${jsq(m)}';circleFocus=null;renderCircle()">${m === '3' ? '三麻' : '四麻'}</button>`).join('')}</div>` : '';
   const noGames = `<div class="card"><div style="font-size:13px;color:#555;line-height:1.8">まだ試合がありません。${role ? '「試合を追加」から、過去の試合やLINEのトークに貼られた試合のURLをまとめて取り込めます。' : 'メンバーが試合を追加すると、ここに通算順位が出ます。'}</div>
       ${role ? `<button class="auto-btn" style="margin-top:12px" onclick="openCircleAddGames()">試合を追加</button>` : ''}</div>`;
   // 数える試合が無いときの説明（表やカードは残す。2026-10-08）: 連携がまだ無いのか、いまの条件で試合が無いのかを分けて書く
@@ -4703,7 +4703,7 @@ function rankEmptyBodyHtml() {
   const my = myCircleMid();
   const podium = `<div class="podium pd-empty">${[2, 1, 3].map(i => `<div class="pd p${i}"><div class="pd-av" style="background:#E3E9E7;color:#AEBBB8">—</div><div class="pd-name" style="color:#AEBBB8">—</div><div class="pd-val" style="color:#AEBBB8">—</div><div class="pd-sub">0試合</div><div class="pd-base">${i}</div></div>`).join('')}</div>`;
   const ents = Object.entries(rosterOf()).sort((a, b) => (b[0] === my) - (a[0] === my) || (a[1].name || '').localeCompare(b[1].name || '', 'ja'));
-  const cells = ents.map(([mid, r]) => `<button type="button" class="lb-cell under${mid === my ? ' me' : ''}" onclick="openCircleMember('${mid}')">
+  const cells = ents.map(([mid, r]) => `<button type="button" class="lb-cell under${mid === my ? ' me' : ''}" onclick="openCircleMember('${jsq(mid)}')">
       <span class="lc-top"><b class="lc-rk">—</b><span class="pp-av lc-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</span><span class="lc-nm">${esc(r.name)}</span></span>
       <b class="lc-val" style="color:#AEBBB8">—</b><span class="lc-sub">0試合</span></button>`).join('');
   return podium + (cells ? `<div class="lb-under-h">順位なし（${RANK_MIN}試合未満）</div><div class="lb-grid">${cells}</div>` : '');
@@ -4721,22 +4721,22 @@ function circleRankTabHtml(st, modeChips, noBind) {
   if (!st.list.length) { // 数える試合が無くても、指標のピルと説明は残す（2026-10-08）
     const m0 = circleMetricsFor(st).some(([k]) => k === circleMetric) ? circleMetric : 'score';
     return `<div class="card rank-card">${head}${modeChips}${circleKindSegHtml()}<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
-      `<button type="button" role="tab" class="pill${k === m0 ? ' on' : ''}" aria-selected="${k === m0}" onclick="circleMetric='${k}';renderCircle()">${l}</button>`).join('')}</div>${noBind}${rankEmptyBodyHtml()}</div>`;
+      `<button type="button" role="tab" class="pill${k === m0 ? ' on' : ''}" aria-selected="${k === m0}" onclick="circleMetric='${jsq(k)}';renderCircle()">${l}</button>`).join('')}</div>${noBind}${rankEmptyBodyHtml()}</div>`;
   }
   const { m, q, under, maxAbs, barOf, clsOf } = circleRankOrder(st);
   const my = myCircleMid();
   const chips = `<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
-    `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="shiftCircleMetricTo('${k}')">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="pill${k === m ? ' on' : ''}" aria-selected="${k === m}" onclick="shiftCircleMetricTo('${jsq(k)}')">${l}</button>`).join('')}</div>`;
   const top3 = q.slice(0, 3);
   const order = [1, 0, 2].filter(i => top3[i]);
   const podium = `<div class="podium" style="grid-template-columns:${order.map(i => (i === 0 ? '1.12fr' : '1fr')).join(' ')}">${order.map(i => {
     const p = top3[i], v = circleMetricVal(p, m), nm = rosterName(p.key);
-    return `<div class="pd p${i + 1}${p.key === my ? ' me' : ''}" onclick="openCircleMember('${p.key}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${medalSvg(i + 1, 20)}</span></div>
+    return `<div class="pd p${i + 1}${p.key === my ? ' me' : ''}" onclick="openCircleMember('${jsq(p.key)}')"><div class="pd-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}<span class="pd-medal">${medalSvg(i + 1, 20)}</span></div>
       <div class="pd-name">${esc(nm)}</div><div class="pd-val ${clsOf(v)}" style="color:${clsOf(v) === 'neg' ? '#c62828' : clsOf(v) === 'pos' ? '#1a237e' : '#1f2a28'}">${circleMetricText(v, m)}</div>${podiumSubHtml(p, m)}<div class="pd-base">${i + 1}</div></div>`;
   }).join('')}</div>`;
   const row = (p, rank) => {
     const v = circleMetricVal(p, m), nm = rosterName(p.key), r = rosterOf()[p.key];
-    return `<button type="button" class="lb-cell${p.key === my ? ' me' : ''}${rank === '—' ? ' under' : ''}" onclick="openCircleMember('${p.key}')">
+    return `<button type="button" class="lb-cell${p.key === my ? ' me' : ''}${rank === '—' ? ' under' : ''}" onclick="openCircleMember('${jsq(p.key)}')">
       <span class="lc-top"><b class="lc-rk">${rank}</b><span class="pp-av lc-av" style="background:${avColor(p.key)}">${esc(avInitial(nm))}${r && r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 11)}</i>` : ''}</span><span class="lc-nm">${esc(nm)}</span></span>
       <b class="lc-val ${clsOf(v)}">${circleMetricText(v, m)}</b>
       <span class="lc-sub">${rankSubHtml(p, m)}</span></button>`;
@@ -4759,7 +4759,7 @@ function circleGridHtml(st, forImage = false) {
   const np = circleMode === '3' ? 3 : 4;
   if (!st.list.length) st = { ...st, list: Object.keys(rosterOf()).map(k => emptyStatP(np, { key: k })) }; // 試合が無くても名簿の人の列を残す
   // 画像は名前の上の頭文字の丸だけ省く（画像はセルの文字と地の色だけ描く）
-  return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${p.key}')" title="${esc(rosterName(p.key))}の成績"`}>${esc(rosterName(p.key))}</th>`); // 見出しに顔は出さない（2026-10-08）
+  return gridTableHtml(st.list, np, forImage, 'メンバー', p => `<th${forImage ? '' : ` class="th-link" onclick="openCircleMember('${jsq(p.key)}')" title="${esc(rosterName(p.key))}の成績"`}>${esc(rosterName(p.key))}</th>`); // 見出しに顔は出さない（2026-10-08）
 }
 // 試合の無い人・範囲の空の成績（表の列だけ残して「—」を出す用。2026-10-08）
 function emptyStatP(np, extra = {}) { return { n: 0, games: { size: 0 }, rankSum: 0, counts: new Array(np).fill(0), top: 0, last: 0, score: 0, ptMax: null, ptMin: null, raw: 0, rawSc: 0, rawN: 0, box: 0, over: 0, ...extra }; }
@@ -4847,7 +4847,7 @@ function mxTableHtml(keys, nameOf, pairOf, myKey, onRow, forImage = false, onCel
 const MX_NOTE = '行の人から見た、列の人との直接対決（勝ち-負け）です。マスを押すと、試合数も出ます。';
 function circleMatrixHtml(st) {
   const keys = st.list.map(p => p.key);
-  return mxTableHtml(keys, k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], circleFocus, a => `circleFocus=circleKeys[circleKeys.indexOf('${a}')];renderCircle()`, false, (a, b) => `openCircleMatchup(['${a}','${b}'])`);
+  return mxTableHtml(keys, k => rosterName(k), (a, b) => st.acc[a] && st.acc[a][b], circleFocus, a => `circleFocus=circleKeys[circleKeys.indexOf('${jsq(a)}')];renderCircle()`, false, (a, b) => `openCircleMatchup(['${a}','${b}'])`);
 }
 function circleH2HTabHtml(st, modeChips, noBind) {
   if (!st.list.length) {
@@ -4927,8 +4927,8 @@ function circleGamesTabHtml(role, gids, modeChips) {
   const myMid = circleViewMid(); // 目線の人（既定は名簿のあなた）の結果を出す（出ていない試合は「出ていない」）
   // 1行はマイページの過去の試合（historyItemHtml）と同じ形: 名前と日付／結果・試合数／対戦した人
   const rowOf = ({ sid, ge, g }) => {
-    const dots = `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openCircleGameMenu('${sid}')">${ico('more', 18)}</button>`;
-    if (!g) return `<div class="gr" onclick="openCircleGameMenu('${sid}')"><div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(ge.name || '')}</span></div>
+    const dots = `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openCircleGameMenu('${jsq(sid)}')">${ico('more', 18)}</button>`;
+    if (!g) return `<div class="gr" onclick="openCircleGameMenu('${jsq(sid)}')"><div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(ge.name || '')}</span></div>
       <div class="gr-sub"><span class="gr-meta">読み込めませんでした（削除された可能性があります）</span></div></div>${dots}</div>`;
     const played = playedFlags(g);
     const seats = (ge && ge.seats) || {};
@@ -4939,7 +4939,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
     const me = mySeat != null ? Number(mySeat) : null;
     const meta = [`${(g.rounds || []).length}試合`, s.teamMode && s.teams ? 'チーム戦' : ''].filter(Boolean).join(' ・ ');
     const bind = nBound < nPlayed ? `<span class="st-pill warn">${ico('warn', 12)}未連携 ${nPlayed - nBound}人</span>` : '';
-    return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}${me == null && myMid ? ' out' : ''}" onclick="openResultSheet('${sid}',{from:'circle',me:${me == null ? 'null' : me}})">${gameKindHtml(g)}
+    return `<div class="gr k${s.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}${me == null && myMid ? ' out' : ''}" onclick="openResultSheet('${jsq(sid)}',{from:'circle',me:${me == null ? 'null' : me}})">${gameKindHtml(g)}
       <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || ge.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>
         <div class="gr-sub">${seatResultHtml(g, me)}${me == null && myMid ? '<span class="gr-out">出ていない</span>' : ''}<span class="gr-meta">${meta}</span>${bind}</div>${oppLineHtml(g, me)}</div>
       ${dots}</div>`;
@@ -4948,7 +4948,7 @@ function circleGamesTabHtml(role, gids, modeChips) {
   const dayOf = x => (x.g ? ymdToMs(gameDaysList(x.g)[0]) : Date.parse(x.ge.at) || 0);
   let glist = '';
   const mySeatOf = x => { if (!myMid) return undefined; const seats = (x.ge && x.ge.seats) || {}; const played = playedFlags(x.g); const k = Object.keys(seats).find(k2 => seats[k2] && seats[k2].mid === myMid && played[k2]); return k != null ? Number(k) : null; };
-  if (games.length && circleGamesView === 'tile') glist = histTilesHtml(games.filter(x => x.g).map(x => ({ g: x.g, me: mySeatOf(x), onclick: `openResultSheet('${x.sid}',{from:'circle'})` })));
+  if (games.length && circleGamesView === 'tile') glist = histTilesHtml(games.filter(x => x.g).map(x => ({ g: x.g, me: mySeatOf(x), onclick: `openResultSheet('${jsq(x.sid)}',{from:'circle'})` })));
   else if (games.length && circleGamesView === 'cal') glist = circleCalendarHtml(games, dayOf, x => `<div class="gm-list" style="margin-bottom:8px">${rowOf(x)}</div>`, 'circle', 'renderCircle()', myMid ? (x => !!x.g && mySeatOf(x) != null) : null);
   else {
     glist = listByYearHtml(games, dayOf, rowOf, x => ((x.g && x.g.rounds) || []).length);
@@ -4990,8 +4990,8 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
   // 単位は左から「年一覧（年を選ぶ）｜年（12か月）｜月（日ごと）」
   const now = new Date(), thisY = now.getFullYear(), thisM = now.getMonth();
   const modeSeg = `<div class="cal-mode"><div class="seg xs" role="tablist" aria-label="カレンダーの単位">${[['years', '年一覧'], ['year', '年'], ['month', '月']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${k}';${rr}">${l}</button>`).join('')}</div>
-    <button type="button" class="cal-today" onclick="calToday('${key}');${rr}">今日</button></div>`;
+    `<button type="button" role="tab" class="${S.mode === k ? 'on' : ''}" aria-selected="${S.mode === k}" onclick="${SK}.mode='${jsq(k)}';${rr}">${l}</button>`).join('')}</div>
+    <button type="button" class="cal-today" onclick="calToday('${jsq(key)}');${rr}">今日</button></div>`;
   if (S.mode === 'years') {
     // 年一覧: 9年（3×3）を並べる。最初は今年が真ん中。‹ › で9年ずつ前後へ。押すとその年の12か月
     const yc = S.yc == null ? thisY : S.yc, y0 = yc - Math.floor(CAL_YEARS / 2), y1 = y0 + CAL_YEARS - 1;
@@ -5034,7 +5034,7 @@ function circleCalendarHtml(games, dayOf, rowOf, key = 'circle', rr = 'renderCir
     // 自分が出た試合のある日＝今までの印（●）。出ていない試合だけの日＝灰色の点線の枠に ○
     const dayOut = meOf && n && !byDay[k].some(x => mineSet.has(x.sid));
     cells += n
-      ? `<button type="button" class="cal-c has${dayOut ? ' out' : ''}${S.day === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="${SK}.day='${k}';${rr}"><b>${d}</b><i>${n > 1 ? n + '件' : dayOut ? '○' : '●'}</i></button>`
+      ? `<button type="button" class="cal-c has${dayOut ? ' out' : ''}${S.day === k ? ' on' : ''}${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}" onclick="${SK}.day='${jsq(k)}';${rr}"><b>${d}</b><i>${n > 1 ? n + '件' : dayOut ? '○' : '●'}</i></button>`
       : `<span class="cal-c${k === today ? ' today' : ''}${dow === 0 ? ' sun' : dow === 6 ? ' sat' : ''}"><b>${d}</b></span>`;
   }
   const allMonths = keys.map(k => +k.slice(0, 4) * 12 + (+k.slice(5, 7) - 1));
@@ -5065,7 +5065,7 @@ function circlePeopleTabHtml(st) {
     // 試合が無い人も同じ3行で「—」（形をそろえる。2026-10-08）
     const sub = e ? `${e.rank ? `<span class="nw">${e.rank <= 3 ? medalSvg(e.rank, 14, false) : ''}${e.rank}位</span> ・ ` : '<span class="nw">順位なし</span> ・ '}<span class="nw">${e.p.n}試合</span>` : '<span class="nw">順位なし</span> ・ <span class="nw">0試合</span>';
     const sub2 = e ? `<span class="nw">平均着順 ${(e.p.rankSum / e.p.n).toFixed(2)}</span> <b class="nw pp-sc ${scoreCls(e.p.score)}">${fmtScore(e.p.score)}</b>` : '<span class="nw">平均着順 —</span> <b class="nw pp-sc" style="color:#AEBBB8">—</b>';
-    return `<button type="button" class="pp-cell${mid === myMid ? ' me' : ''}" onclick="openCircleMember('${mid}')">
+    return `<button type="button" class="pp-cell${mid === myMid ? ' me' : ''}" onclick="openCircleMember('${jsq(mid)}')">
       <span class="pp-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}${r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 12)}</i>` : ''}</span>
       <span class="pp-main"><span class="pp-nm">${esc(r.name)}</span><span class="pp-sub2">${sub}</span>${sub2 ? `<span class="pp-sub2">${sub2}</span>` : ''}</span></button>`;
   }).join('');
@@ -5382,7 +5382,7 @@ function circleLogHtml() {
     rows += `<div class="log-row"><span class="log-time">${fmtTime(e.at)}</span><span class="log-tag ${cls}">${label}</span>
       <div class="log-content"><b>${esc(e.byName || 'メンバー')}</b><div class="log-text">${esc(e.text || '')}</div>
       ${undone.has(e.id) ? '<button type="button" class="btn-tint" style="margin-top:6px" disabled>元に戻しました</button>'
-        : uc && uc.ok ? `<button type="button" class="btn-tint" style="margin-top:6px" onclick="openUndoCircleLog('${e.id}')">元に戻す</button>` : ''}</div></div>`; // 戻せない理由は書かない（長い説明が並んで読みにくかった。2026-10-09）
+        : uc && uc.ok ? `<button type="button" class="btn-tint" style="margin-top:6px" onclick="openUndoCircleLog('${jsq(e.id)}')">元に戻す</button>` : ''}</div></div>`; // 戻せない理由は書かない（長い説明が並んで読みにくかった。2026-10-09）
   });
   return `<div class="log-list">${rows}</div>${log.length > 50 ? `<div class="h2h-note">最新50件を表示しています（全${log.length}件）</div>` : ''}`;
 }
@@ -5458,7 +5458,7 @@ function openUndoCircleLog(lid) {
     <div class="tbl-scroll"><table class="rounds-table ud-table"><thead><tr><th class="sticky-col">項目</th><th>変更前（今）</th><th>変更後</th></tr></thead>
       <tbody>${rows.map(([k, a, b]) => `<tr><td class="sticky-col">${esc(k)}</td><td>${esc(a)}</td><td class="ud-after">${esc(b)}</td></tr>`).join('')}</tbody></table></div>
     <div class="ud-note">${e.kind === 'add_game' ? '試合そのものは消えません。' : ''}${e.kind === 'remove_game' ? '連携は、戻すあなたが連携した形になります。' : ''}${e.kind === 'add_game' && /名簿に/.test(e.text || '') ? 'このとき名簿に足された人は残ります。' : ''}戻したことは取り消せません。</div>
-    <button type="button" class="confirm-btn" style="margin-top:14px" onclick="undoCircleLog('${lid}')">元に戻す</button>
+    <button type="button" class="confirm-btn" style="margin-top:14px" onclick="undoCircleLog('${jsq(lid)}')">元に戻す</button>
     <button type="button" class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">キャンセル</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -5644,7 +5644,7 @@ async function openAddToCircle(id) {
       return { cid, name: c.name || m.name || '', overlap: names.filter(k => keys.has(k)).length, already: !!ge, by: ge ? (ge.addedByName || 'メンバー') : '', at: ge ? ge.addedAt : '' }; })
     .catch(() => null)));
   const rows = list.filter(Boolean).sort((a, b) => b.overlap - a.overlap).map(c =>
-    `<button type="button" class="series-row" ${c.already ? 'disabled style="opacity:.55"' : `onclick="addThisGameToCircle('${c.cid}')"`}><span>${esc(c.name)}<span class="sr-sub">${c.already ? `追加済み（${esc(c.by)}さん・${fmtDay(Date.parse(c.at) || Date.now())}）` : c.overlap ? `名簿と${c.overlap}人一致` : '名簿と一致する名前なし'}</span></span><span class="sr-arrow">›</span></button>`).join('');
+    `<button type="button" class="series-row" ${c.already ? 'disabled style="opacity:.55"' : `onclick="addThisGameToCircle('${jsq(c.cid)}')"`}><span>${esc(c.name)}<span class="sr-sub">${c.already ? `追加済み（${esc(c.by)}さん・${fmtDay(Date.parse(c.at) || Date.now())}）` : c.overlap ? `名簿と${c.overlap}人一致` : '名簿と一致する名前なし'}</span></span><span class="sr-arrow">›</span></button>`).join('');
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:6px">「${esc(g.name || '')}」を入れる仲間ページを選んでください（名前がよく重なる順）。</div>
     ${rows || '<div style="font-size:12px;color:#999;padding:6px 0">参加している仲間ページはまだありません</div>'}
@@ -5695,8 +5695,8 @@ async function renderGameCircles(g, elId) {
     const bind = !st || st.unbound == null ? '' : st.unbound.length
       ? `<span class="cc-st warn" style="margin-left:4px">未連携 ${st.unbound.length}人（${st.unbound.map(esc).join('・')}）</span>`
       : `<span class="cc-st ok" style="margin-left:4px">全員連携済み</span>`;
-    return `<a onclick="openCircle('${esc(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>${bind}`
-    + (currentUser ? `<button type="button" class="gc-bind" onclick="openBindFromGame('${esc(x.cid)}','${esc(g.id)}')">${ico('people', 14)}名前の連携</button>` : ''); }).join('<br>')}</div></div>` : '';
+    return `<a onclick="openCircle('${jsq(x.cid)}')">${esc(x.name)}</a> に追加済み<span class="gc-by">（${esc(x.by)}さん・${fmtDay(Date.parse(x.at) || Date.now())}）</span>${bind}`
+    + (currentUser ? `<button type="button" class="gc-bind" onclick="openBindFromGame('${jsq(x.cid)}','${jsq(g.id)}')">${ico('people', 14)}名前の連携</button>` : ''); }).join('<br>')}</div></div>` : '';
 }
 // スコア画面から、この試合の名前を仲間ページの名簿の人と連携する（仲間ページへ移らずにその場で開く）
 async function openBindFromGame(cid, sid) {
@@ -5728,11 +5728,11 @@ function avColorPickerHtml(mid) {
   const cur = (rosterOf()[mid] || {}).color || '';
   // 白い頭文字が読みにくい色（白とのコントラスト比3未満）は出さない。色の列がずれないよう、その場所は空けておく。全部空く段は出さない
   const okc = c => whiteContrast(c) >= 3;
-  const sw = c => okc(c) ? `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${mid}','${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
+  const sw = c => okc(c) ? `<button type="button" class="av-sw${cur === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="setRosterColor('${jsq(mid)}','${jsq(c)}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
   const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
   return `<div class="field"><label>アイコンの色</label><div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div>
     <div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div>
-    ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${mid}','')">おまかせの色に戻す</button>` : ''}</div>`;
+    ${cur ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="setRosterColor('${jsq(mid)}','')">おまかせの色に戻す</button>` : ''}</div>`;
 }
 async function setRosterColor(mid, c) {
   if (!isCircleOwner()) return;
@@ -5770,12 +5770,12 @@ function openCircleGameMenu(sid) {
   document.getElementById('form-modal-title').textContent = ge.name || '試合';
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#8a9aa5;margin-bottom:10px">${esc(ge.addedByName || 'メンバー')}さんが${fmtDate(ge.addedAt)}に追加</div>
-    ${circleSess[sid] ? `<button class="auto-btn sub" onclick="openResultSheet('${sid}',{from:'circle'})">結果を見る</button>` : ''}
-    ${circleSess[sid] && role && !isGameLocked(circleSess[sid]) ? `<button class="auto-btn sub" onclick="closeFormModal();joinSession('${sid}')">試合を開く（点数の入力・修正）</button>` : ''}
-    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${sid}')">名前の連携</button>` : ''}
-    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${sid}')">ゲーム名の変更</button>` : ''}
+    ${circleSess[sid] ? `<button class="auto-btn sub" onclick="openResultSheet('${jsq(sid)}',{from:'circle'})">結果を見る</button>` : ''}
+    ${circleSess[sid] && role && !isGameLocked(circleSess[sid]) ? `<button class="auto-btn sub" onclick="closeFormModal();joinSession('${jsq(sid)}')">試合を開く（点数の入力・修正）</button>` : ''}
+    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openBindEditor('${jsq(sid)}')">名前の連携</button>` : ''}
+    ${role && circleSess[sid] ? `<button class="auto-btn sub" onclick="openRenameGame('${jsq(sid)}')">ゲーム名の変更</button>` : ''}
     ${!role ? '<div class="h2h-note">名前の連携は、参加したメンバーが確認・変更できます。自分のことなら、ログインして名簿で自分を選べば確認済みになります。</div>' : ''}
-    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${sid}')">この仲間ページから外す（試合そのものは消えません）</button>
+    ${canRemove ? `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="removeCircleGame('${jsq(sid)}')">この仲間ページから外す（試合そのものは消えません）</button>
       <div class="h2h-note">${open ? `外せるのは ${fmtDateTime(ge.lockAt)} まで（追加から24時間）。${isCircleAdmin() ? '作成者・管理者はそのあとも外せます。' : 'それを過ぎると、この仲間ページに確定します。'}` : '確定した試合です。作成者・管理者だけが外せます。'}</div>`
       : mayRemove ? '<div class="h2h-note">追加から24時間たったので、この試合はこの仲間ページに確定しています（外せません）。</div>' : ''}
     <button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal()">閉じる</button>`;
@@ -5908,7 +5908,7 @@ function openCircleMember(mid) {
   // 四麻｜三麻はマイページ・仲間ページと同じ切り替え（印つき・四麻が左・試合の無い形式は押せない。2026-10-08）
   const gcM = { 4: 0, 3: 0 };
   Object.keys(circleData.games || {}).forEach(sid => { const g = circleSess[sid]; if (g) gcM[(g.settings && g.settings.numPlayers) === 3 ? 3 : 4]++; });
-  const modeChips = `${sheetRerenderMark(`openCircleMember('${mid}')`)}${sheetFiltersHtml(gcM, `circleMode=String(mpMode);circleFocus=null;renderCircle();openCircleMember('${mid}')`)}`;
+  const modeChips = `${sheetRerenderMark(`openCircleMember('${jsq(mid)}')`)}${sheetFiltersHtml(gcM, `circleMode=String(mpMode);circleFocus=null;renderCircle();openCircleMember('${jsq(mid)}')`)}`;
   // マイページの成績カードと同じ中身（平均着順・通算スコア・トップ率・ラス回避・着順の帯・最近）。目安の線・回数・推移のグラフは出さない
   const statHtml = p
     ? `<div class="mc-card mc-static${np === 3 ? ' s3' : ''}">${mpStatsInnerHtml(np, { games: p.n, groups: p.games.size, counts: p.counts, avgRankSum: p.rankSum, lastCount: p.last, score: p.score, hist: p.hist,
@@ -5932,7 +5932,7 @@ function openCircleMember(mid) {
   bound.sort((a, b) => b.ms - a.ms); // 打った日の新しい順
   const unconfirmed = bound.filter(b => !b.stt.self).length;
   // 一覧（日付・試合名・試合での名前・その人のスコア）とタイル（試合数の代わりにその人のスコア）を切り替える
-  const boundSeg = `<div class="hist-viewseg" style="margin:0 0 8px">${histOrderSegHtml(`openCircleMember('${mid}')`, 'cmBoundView', 'list')}</div>`; // 0件でも出す（形をそろえる） // タイル｜一覧｜カレンダー（過去の試合と同じ）
+  const boundSeg = `<div class="hist-viewseg" style="margin:0 0 8px">${histOrderSegHtml(`openCircleMember('${jsq(mid)}')`, 'cmBoundView', 'list')}</div>`; // 0件でも出す（形をそろえる） // タイル｜一覧｜カレンダー（過去の試合と同じ）
   // 一覧: 相手ごとの成績のカードと同じ雰囲気（名前・大きな数字・小さな補足）。1枚＝1ゲーム。その人のスコア・順位・人数・試合数・相手
   const cgCard = b => {
     const g = b.g;
@@ -5942,7 +5942,7 @@ function openCircleMember(mid) {
     const opp = memberDisplayOrder(g.settings).filter(i => i !== b.seat && played[i] && !isPlaceholderName(names[i])).sort((x, y) => (tot[y] || 0) - (tot[x] || 0));
     const MAXO = 6;
     const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
-    return `<div class="hg-card cg-card k${g.settings.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''} ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})">
+    return `<div class="hg-card cg-card k${g.settings.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''} ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${jsq(b.sid)}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${jsq(mid)}'})">
       ${gameKindHtml(g)}
       <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
         <div class="cg-as">試合での名前：<b>${esc(names[b.seat] || '')}</b></div>
@@ -5951,8 +5951,8 @@ function openCircleMember(mid) {
     </div>`;
   };
   const boundHtml = cmBoundView === 'tile'
-    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `openResultSheet('${b.sid}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})` })))
-    : cmBoundView === 'cal' ? circleCalendarHtml(bound.map(b => ({ ...b, g: b.g })), b => b.ms, b => `<div class="cg-list" style="margin-bottom:8px">${cgCard(b)}</div>`, 'cm', `openCircleMember('${mid}')`)
+    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `openResultSheet('${jsq(b.sid)}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})` })))
+    : cmBoundView === 'cal' ? circleCalendarHtml(bound.map(b => ({ ...b, g: b.g })), b => b.ms, b => `<div class="cg-list" style="margin-bottom:8px">${cgCard(b)}</div>`, 'cm', `openCircleMember('${jsq(mid)}')`)
     : listByYearHtml(bound, b => b.ms, cgCard, b => (b.g ? (b.g.rounds || []).filter(r => roundMembers(r, b.g.settings || {}).includes(b.seat)).length : 0)); // 年・月の区画（過去の試合と同じ）
   const canEdit = canEditRosterMember(r);
   const others = Object.entries(rosterOf()).filter(([m]) => m !== mid).sort((a, b) => a[1].name.localeCompare(b[1].name, 'ja'));
@@ -5965,10 +5965,10 @@ function openCircleMember(mid) {
   // 「同じ人としてまとめる」（試合を別の人に付け替える）は2026-10-02にやめた（間違えて別の人にまとめてしまうおそれ）
   const admin = (canEdit || r.uid === myUid() || (r.uid && isCircleAdmin())) ? `<div class="pf-h">管理</div><div class="pf-admin">
       ${canEdit ? `<div class="field"><label>名簿での名前</label><div style="display:flex;gap:6px"><input type="text" id="cm-rename" value="${esc(r.name)}" maxlength="${MAX_NAME_LEN}" style="flex:1;min-width:0"
-        oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="in-btn" disabled onclick="renameCircleMember('${mid}')">変更</button></div></div>` : ''}
+        oninput="this.nextElementSibling.disabled=!this.value.trim()||this.value.trim()===this.defaultValue.trim()"><button type="button" class="in-btn" disabled onclick="renameCircleMember('${jsq(mid)}')">変更</button></div></div>` : ''}
       ${isCircleOwner() ? avColorPickerHtml(mid) : ''}
-      ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${mid}')">確認済みを外す（自分を選び直す）</button>` : ''}
-      ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${mid}')">この人の確認済みを外す</button>` : ''}
+      ${r.uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:10px" onclick="closeFormModal();unclaimCircleMember('${jsq(mid)}')">確認済みを外す（自分を選び直す）</button>` : ''}
+      ${r.uid && r.uid !== myUid() && isCircleAdmin() ? `<button class="modal-cancel" style="width:100%;margin-top:10px;color:#c62828" onclick="closeFormModal();adminUnclaimCircleMember('${jsq(mid)}')">この人の確認済みを外す</button>` : ''}
     </div>` : '';
   document.getElementById('form-modal-title').textContent = `${r.name || 'メンバー'}の成績`; // 名簿に登録されている名前＋「の成績」
   // .sheet-body で包むとスマホでは下から出るボトムシートになる
@@ -5976,12 +5976,12 @@ function openCircleMember(mid) {
     <div class="pf-head"><div class="pf-av" style="background:${avColor(mid)}">${esc(avInitial(r.name))}</div>
       <div class="pf-name">${esc(r.name)}${circleBadge(r, mid)}</div>${rankPill}</div>
     ${modeChips}${statHtml}
-    ${mid !== myMid && myMid ? `<button type="button" class="auto-btn sub" style="margin:10px 0 0" onclick="openCircleMatchup(['${myMid}','${mid}'],'${mid}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
+    ${mid !== myMid && myMid ? `<button type="button" class="auto-btn sub" style="margin:10px 0 0" onclick="openCircleMatchup(['${jsq(myMid)}','${jsq(mid)}'],'${jsq(mid)}')">あなたとの対戦を見る${ico('chevron', 12)}</button>` : ''}
     ${mid === myMid && currentUser ? `<button type="button" class="auto-btn sub" style="margin:10px 0 0" onclick="closeFormModal();msScope=circleId;myStatsTab='sum';showView('mystats')">個人の成績と並べて見る${ico('chevron', 12)}</button>` : ''}
     <div class="pf-card"><div class="card-head-row"><div class="card-title">対戦成績</div></div>${condLineHtml()}
-    ${keys.length ? `${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${mid}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${mid}')`, h2hLvBase(md => circleStatsP(md).acc[mid] || {}))}<div class="h2h-note">相手のカードを押すと、2人のどちらが勝ち越しているかと、いっしょに打った試合が見られます。</div>` : h2hEmptyBodyHtml(r.name, `openCircleMember('${mid}')`, Object.keys(rosterOf()).filter(k => k !== mid))}</div>
+    ${keys.length ? `${h2hTotalHtml(row, r.name)}${h2hSortSegHtml(`openCircleMember('${jsq(mid)}')`)}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${mid}','${k}'],'${jsq(mid)}')`, h2hLvBase(md => circleStatsP(md).acc[mid] || {}))}<div class="h2h-note">相手のカードを押すと、2人のどちらが勝ち越しているかと、いっしょに打った試合が見られます。</div>` : h2hEmptyBodyHtml(r.name, `openCircleMember('${jsq(mid)}')`, Object.keys(rosterOf()).filter(k => k !== mid))}</div>
     <div class="pf-card"><div class="card-head-row"><div class="card-title">連携済みの試合</div></div>${condLineHtml()}<div class="mp-sec-note hist-cnt">${gamesRoundsText(bound.length, bound.reduce((a, b) => a + (b.g ? (b.g.rounds || []).filter(r => roundMembers(r, b.g.settings || {}).includes(b.seat)).length : 0), 0))}</div>${boundSeg}${boundHtml || '<div class="empty-note" style="margin-bottom:0">試合はありません</div>'}</div>
-    ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${mid}')">これは私（本人確認する）</button>` : ''}
+    ${role ? `${!r.uid && !myMid ? `<button class="auto-btn" style="margin-top:12px" onclick="closeFormModal();claimCircleMember('${jsq(mid)}')">これは私（本人確認する）</button>` : ''}
       ${r.uid === myUid() && unconfirmed ? `<button class="auto-btn sub" style="margin-top:12px" onclick="closeFormModal();confirmMySeats()">ほかの人が連携した${unconfirmed}件を、本人として確認する</button>` : ''}
       ${admin}
       ${!canEdit ? '<div class="org-meta" style="color:#8A6D1A;margin-top:10px">本人確認済みの人の名前の変更は、本人・作成者・管理者だけができます。</div>' : ''}` : ''}
@@ -6095,12 +6095,12 @@ function renderMatchup() {
   const P = mup.P, edit = mup.kind === 'circle';
   const res = P.length >= 2 ? mupCompute(P) : null;
   // 選んでいる人（上の枠）と、足せる人（下の候補）を分ける
-  const chips = P.map(p => `<span class="mu-p">${mupAvHtml(p)}<b>${esc(mupName(p))}</b>${edit ? `<button type="button" aria-label="${esc(mupName(p))}を外す" onclick="mupToggle('${p}')">×</button>` : ''}</span>`).join('');
+  const chips = P.map(p => `<span class="mu-p">${mupAvHtml(p)}<b>${esc(mupName(p))}</b>${edit ? `<button type="button" aria-label="${esc(mupName(p))}を外す" onclick="mupToggle('${jsq(p)}')">×</button>` : ''}</span>`).join('');
   const sel = `<div class="mu-sel"><div class="mu-sel-h"><span>選んでいる人（${P.length}/${MUP_MAX}人）</span></div>
     <div class="mu-people">${chips || '<span class="mu-none">まだだれも選んでいません</span>'}</div></div>`;
   const cand = edit ? Object.entries(rosterOf()).filter(([m]) => !P.includes(m)).sort((a, b) => avColorOrder(avColor(a[0])) - avColorOrder(avColor(b[0])) || (a[1].name || '').localeCompare(b[1].name || '', 'ja')) : [];
   // 2人そろうまでは候補をいつも出す（「人を足す｜選び終わる」の切り替えは2026-10-08にやめた）。2人そろえば候補は消える
-  const picker = edit && P.length < MUP_MAX ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます（2人まで。入れ替えるときは上の × で外す）</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${m}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
+  const picker = edit && P.length < MUP_MAX ? `<div class="mu-cand"><div class="mu-sel-h"><span>押すと足せます（2人まで。入れ替えるときは上の × で外す）</span></div>${cand.length ? `<div class="cw-pick">${cand.map(([m, r]) => `<button type="button" class="cw-opt" onclick="mupToggle('${jsq(m)}')"><i style="background:${avColor(m)}">${esc(avInitial(r.name))}</i>${esc(r.name)}${m === myCircleMid() ? '<small>あなた</small>' : ''}</button>`).join('')}</div>` : '<div class="mu-none">名簿の全員を選んでいます</div>'}</div>` : '';
   let body = '';
   if (!res) body = `<div class="mu-empty">2人を選ぶと、2人が同じ卓にいた試合だけで、どちらが勝ち越しているか・2人の成績・いっしょに打ったゲームが見られます。自分以外の人どうしも選べます。</div>`;
   else {
@@ -6113,7 +6113,7 @@ function renderMatchup() {
     body = `${mupEmptyHtml(res)}${vs}${mupTapeHtml(res, a, b)}<div class="ms-card mu-card"><div class="ms-h">いっしょに打ったゲーム</div>${mupGamesListHtml(res, P)}${res.games.length ? `<div class="h2h-note">ゲームを押すと、そのゲームの結果が見られます。順位とスコアは${esc(mupName(P[0]))}のそのゲーム全体の結果。</div>` : ''}</div>`;
   } // 3人以上の見せ方（メンバーの中で何番目か・勝ち負けの表）は2026-10-08にやめた（2人まで）
   document.getElementById('form-modal-title').textContent = '対戦を見る';
-  const back = mup.back ? sheetBackMark(`openCircleMember('${mup.back}')`, `${rosterName(mup.back)}の成績に戻る`) : '';
+  const back = mup.back ? sheetBackMark(`openCircleMember('${jsq(mup.back)}')`, `${rosterName(mup.back)}の成績に戻る`) : '';
   // 期間＋四麻｜三麻・合計｜個人戦｜チーム戦をシートの中でも変えられる（2026-10-08）
   const gcM = { 4: 0, 3: 0 };
   mupEntries().forEach(e => { gcM[(e.g.settings && e.g.settings.numPlayers) === 3 ? 3 : 4]++; });
@@ -6143,7 +6143,7 @@ function mupGamesListHtml(res, P) {
 // 押すと結果（自分の席で開く。戻るで対戦を見るへ）
 function mupGameOpen(gm) {
   const meMine = mup.kind === 'my' ? gm.seat['@me'] : (myCircleMid() && gm.seat[myCircleMid()] != null ? gm.seat[myCircleMid()] : null);
-  return `openResultSheet('${esc(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${meMine == null ? 'null' : meMine},back:'mup'})`;
+  return `openResultSheet('${jsq(gm.sid)}',{from:'${mup.kind === 'circle' ? 'circle' : 'hist'}',me:${meMine == null ? 'null' : Number(meMine)},back:'mup'})`;
 }
 function mupGameRowHtml(gm, P) {
   const a = P[0], g = gm.g, s = g.settings || {}, me = gm.seat[a] != null ? Number(gm.seat[a]) : null;
@@ -6307,7 +6307,7 @@ async function openCircleSettings() {
     const me = uid === myUid();
     // 権限を変えられるのは、作成者・管理者が、作成者以外の自分でない人に対して
     const ctl = canManage && m.role !== 'owner' && !me
-      ? `<select class="cs-role" aria-label="${esc(nm)}の権限" onchange="setCircleRole('${uid}',this.value)"><option value="editor"${m.role === 'editor' ? ' selected' : ''}>編集メンバー</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>管理者</option><option value="remove">外す…</option></select>`
+      ? `<select class="cs-role" aria-label="${esc(nm)}の権限" onchange="setCircleRole('${jsq(uid)}',this.value)"><option value="editor"${m.role === 'editor' ? ' selected' : ''}>編集メンバー</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>管理者</option><option value="remove">外す…</option></select>`
       : `<span class="cs-pill ${m.role}">${ROLE_LABEL[m.role] || ''}</span>`;
     return `<div class="cs-row"><span class="cs-av" style="background:${av}">${esc(avInitial(nm))}</span>
       <span class="cs-who"><b><span>${esc(nm)}</span>${me ? '<em>あなた</em>' : ''}${rn ? '' : '<em class="un">未連携</em>'}</b><small>Google：${gacct}</small></span>${ctl}</div>`;
@@ -6326,7 +6326,7 @@ async function openCircleSettings() {
       <div><b>管理者</b>作成者以外のメンバーの権限を変える・外す・参加コードの作り直し。本人が連携した試合や確認済みの人の名前も直せる</div>
       <div><b>編集メンバー</b>試合の追加・名前の連携・名簿の編集（本人が連携・確認した所は変えられない）</div></details>
     ${canManage ? `<button class="auto-btn sub" style="margin-top:12px" onclick="regenerateCircleCode()">参加コードを作り直す</button>` : ''}
-    ${myCircleMid() && rosterOf()[myCircleMid()] && rosterOf()[myCircleMid()].uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal();unclaimCircleMember('${myCircleMid()}')">自分の本人確認を外す（${esc(rosterName(myCircleMid()))}）</button>` : ''}
+    ${myCircleMid() && rosterOf()[myCircleMid()] && rosterOf()[myCircleMid()].uid === myUid() ? `<button class="modal-cancel" style="width:100%;margin-top:8px" onclick="closeFormModal();unclaimCircleMember('${jsq(myCircleMid())}')">自分の本人確認を外す（${esc(rosterName(myCircleMid()))}）</button>` : ''}
     ${myRole === 'owner' ? '' : `<button class="modal-cancel" style="width:100%;margin-top:8px;color:#c62828" onclick="leaveCircle()">この仲間ページから抜ける</button>`}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -6580,7 +6580,7 @@ function mpSwitchHtml(active) {
   const ids = list.map(([cid]) => cid), cur = active !== 'me' ? active : (ids.includes(lastCircleId()) ? lastCircleId() : ids[0]);
   const ent = list.find(([cid]) => cid === cur), name = ent ? (ent[1].name || (circleCardInfo[cur] || {}).name || '仲間ページ') : '';
   const circ = cur
-    ? chip(active !== 'me', `${circleAvHtml(name, cur)}<span class="sw-cn">${esc(name)}</span><span class="sw-dd">${ico('chevron', 12)}</span>`, active !== 'me' ? 'circlePickerSort=false;openCirclePicker()' : `openCircle('${esc(cur)}')`, ' circ')
+    ? chip(active !== 'me', `${circleAvHtml(name, cur)}<span class="sw-cn">${esc(name)}</span><span class="sw-dd">${ico('chevron', 12)}</span>`, active !== 'me' ? 'circlePickerSort=false;openCirclePicker()' : `openCircle('${jsq(cur)}')`, ' circ')
     : (loginAvailable() ? chip(false, '＋ 仲間ページ', 'openCircleEntryMenu()', ' add') : '');
   return `<div class="sw-row" role="tablist" aria-label="個人と仲間ページの切り替え">
     ${chip(active === 'me', `${ico('person', 16)}<span class="sw-cn">${esc(myLabel())}</span>`, "showView('history')", ' me')}
@@ -6596,8 +6596,8 @@ function openCirclePicker() {
     const role = cid === circleId && circleRole() ? ROLE[circleRole()] : info.owner && info.owner === myUid() ? '作成者' : m.member ? '参加中' : '見ただけ';
     const nums = info.people != null ? ` ・ 名簿 ${info.people}人 ・ ${info.games}ゲーム` : '';
     if (circlePickerSort) return `<div class="cp-row sort">${circleAvHtml(name, cid, 34)}<span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>
-      <span class="cp-mv"><button type="button" aria-label="上へ" onclick="moveCircleOrder('${esc(cid)}',-1)"${k === 0 ? ' disabled' : ''}>↑</button><button type="button" aria-label="下へ" onclick="moveCircleOrder('${esc(cid)}',1)"${k === list.length - 1 ? ' disabled' : ''}>↓</button><button type="button" class="cp-hide" onclick="hideCircle('${esc(cid)}')">外す</button></span></div>`;
-    return `<button type="button" class="cp-row${on ? ' on' : ''}" onclick="closeFormModal();openCircle('${esc(cid)}')">${circleAvHtml(name, cid, 34)}
+      <span class="cp-mv"><button type="button" aria-label="上へ" onclick="moveCircleOrder('${jsq(cid)}',-1)"${k === 0 ? ' disabled' : ''}>↑</button><button type="button" aria-label="下へ" onclick="moveCircleOrder('${jsq(cid)}',1)"${k === list.length - 1 ? ' disabled' : ''}>↓</button><button type="button" class="cp-hide" onclick="hideCircle('${jsq(cid)}')">外す</button></span></div>`;
+    return `<button type="button" class="cp-row${on ? ' on' : ''}" onclick="closeFormModal();openCircle('${jsq(cid)}')">${circleAvHtml(name, cid, 34)}
       <span class="cp-t"><b>${esc(name)}</b><small>${role}${nums}</small></span>${on ? `<span class="cp-on">表示中</span>` : `<span class="mb-chev">${ico('chevron', 14)}</span>`}</button>`;
   }).join('');
   document.getElementById('form-modal-title').textContent = '仲間ページ';
@@ -6711,7 +6711,7 @@ function renderJoin() {
       <div class="join-help">ボタンで移れないときは、画面の右上（または下）の「︙」や共有ボタンから<b>「ブラウザで開く」</b>を選んでください。<br>
       または、Safari・Chromeで majasco.jp を開き、「過去の試合」→「仲間ページ」にこの参加コードを入れても参加できます。</div>
       <div class="invite-code">${fmtInviteCode(joinCode)}</div>
-      <button class="edit-tab" onclick="copyText('${fmtInviteCode(joinCode)}','参加コードをコピーしました')">コードをコピー</button>`;
+      <button class="edit-tab" onclick="copyText('${jsq(fmtInviteCode(joinCode))}','参加コードをコピーしました')">コードをコピー</button>`;
   } else if (!currentUser) {
     main = `<div style="font-size:13px;color:#555;line-height:1.8">参加すると、試合の追加や名前の連携ができます（誰が連携したかを残すため、Googleでのログインが必要です）。ログインしたら、自動でこの画面に戻って参加します。</div>
       <button type="button" class="google-btn" onclick="startJoinLogin()">${googleBtnInner('Googleでログインして参加')}</button>`;
@@ -6723,7 +6723,7 @@ function renderJoin() {
     main = `<button class="auto-btn" onclick="doJoin()">参加する</button>`;
   }
   el.innerHTML = `<div class="card">${head}${main}
-    <button class="auto-btn sub" style="margin-top:14px" onclick="openCircle('${joinCid}')">参加せずに結果だけ見る</button></div>`;
+    <button class="auto-btn sub" style="margin-top:14px" onclick="openCircle('${jsq(joinCid)}')">参加せずに結果だけ見る</button></div>`;
 }
 function startJoinLogin() {
   try { localStorage.setItem(PENDING_JOIN_KEY, JSON.stringify({ code: joinCode, at: Date.now() })); } catch (e) {}
@@ -7870,7 +7870,7 @@ function recentRowHtml(g) {
   const MAXO = 6;
   const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
   const sc = me != null && played[me] ? tot[me] : null;
-  return `<button type="button" class="rg-row rg-row2 k${np}" onclick="joinSession('${esc(g.id)}')">${gameKindHtml(g)}
+  return `<button type="button" class="rg-row rg-row2 k${np}" onclick="joinSession('${jsq(g.id)}')">${gameKindHtml(g)}
     <span class="rg-main"><span class="rg-l1"><span class="rg-name">${esc(g.name)}</span><span class="rg-date">${esc(fmtGameDays(g))}</span></span>
       ${avs ? `<span class="cg-avs"><span>${me != null ? '相手' : '対戦'}</span>${avs}</span>` : ''}</span>
     ${sc != null ? `<b class="rg-sc ${scoreCls(sc)}">${fmtScore(sc)}</b>` : `<span class="rg-n">${(g.rounds || []).length}試合</span>`}</button>`;
@@ -9920,7 +9920,7 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   const locked = isGameLocked(g);
   const delRow = (e, pos) => {
     const canBack = !!(e.round && e.round.id && e.op) && !locked && !(g !== activeGame && detailRO);
-    const back = `openDeletedRoundMenu('${g === activeGame ? 'game' : 'detail'}','${e.op}',${pos})`;
+    const back = `openDeletedRoundMenu('${g === activeGame ? 'game' : 'detail'}','${jsq(e.op)}',${pos})`;
     const serial = logSerialOf(g, e) || e.no, r = deletedRoundOf(g, e);
     if (r) return roundRowHtml(r, -1, back, s, false, false, { serial, gone: true, back: canBack, click: !(g !== activeGame && detailRO) });
     const nm = e.names || null, pts = e.points || [];
@@ -9939,7 +9939,7 @@ function roundRowsWithMarks(g, idxs, onclickOf) {
   };
   const where = g === activeGame ? 'game' : 'detail';
   const liveRow = idx => dayRow(idx) + roundRowHtml(g.rounds[idx], idx, onclickOf(idx), s, false, false, { serial: roundSerialAt(g, idx), active: mk.active.has(idx + 1),
-    hist: `openRoundHistory('${where}',${idx})`, restored: !locked && isRestoredRound(g, g.rounds[idx]) });
+    hist: `openRoundHistory('${jsq(where)}',${idx})`, restored: !locked && isRestoredRound(g, g.rounds[idx]) });
   if (locked) return idxs.map(liveRow).join('');
   // 枠の順に描く。直近n試合に絞っているときは、いちばん上に出す試合より前の灰色の行は出さない
   requestAnimationFrame(() => ['rounds-wrap', 'detail-rounds-wrap'].forEach(id => syncTeamRowH(document.getElementById(id))));
@@ -10240,7 +10240,7 @@ function h2hMatrixHtml(g, forImage = false) {
   const order = memberDisplayOrder(s).filter(i => played[i]);
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   // 画面は勝率の表（幅が変わらない）。画像は今までどおり勝ち-負けの数（画像は横に広く取れる）
-  if (!forImage) return mxTableHtml(order, i => names[i], (a, b) => acc[a] && acc[a][b], h2hFocusOf(g), a => `setH2HFocus('${esc(g.id)}',${a})`);
+  if (!forImage) return mxTableHtml(order, i => names[i], (a, b) => acc[a] && acc[a][b], h2hFocusOf(g), a => `setH2HFocus('${jsq(g.id)}',${a})`);
   const head = order.map(i => `<th>${teamDotHtml(s, i)}${esc(names[i])}</th>`).join('');
   const rows = order.map(a => `<tr><td class="sticky-col">${teamDotHtml(s, a)}${esc(names[a])}</td>${order.map(b => {
     if (a === b) return '<td style="color:#ccc;background:#f4f6f6">—</td>';
@@ -10264,13 +10264,13 @@ function h2hCardBodyHtml(g) {
   const played = playedFlags(g);
   // 仲間ページの対戦成績と同じ形: だれから見る？（顔アイコン）→ 合計 → 相手ごとのカード → 総当たり表
   const who = memberDisplayOrder(s).filter(i => played[i]).map(i =>
-    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${esc(g.id)}',${i})"><span class="who-av" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
+    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${jsq(g.id)}',${i})"><span class="who-av" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   const row = acc[f] || {};
   const keys = h2hSortedKeys(row);
   // 総当たり表は別のカード（h2hMatrixBodyHtml。仲間ページと同じ2枚。2026-10-09）。こちらは「だれから見る？」と相手ごとのカード
   return `<div class="who-lb" style="margin-top:0">だれから見る？</div><div class="who-row">${who}</div>
-    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${esc(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
+    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${jsq(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div>`;
 }
 function renderH2HCard() {
@@ -10394,7 +10394,7 @@ function renderLogModal() {
   // 履歴は「試合ごと」（入力・修正・削除は試合ごとにまとめる）と「設定」の2つ（2026-10-09）
   if (logFilter !== 'settings') logFilter = 'games';
   const tabs = [['games', '試合ごと'], ['settings', '設定']].map(([k, l]) =>
-    `<button type="button" class="${logFilter === k ? 'on' : ''}" onclick="setLogFilter('${k}')">${l}</button>`).join('');
+    `<button type="button" class="${logFilter === k ? 'on' : ''}" onclick="setLogFilter('${jsq(k)}')">${l}</button>`).join('');
   document.getElementById('form-modal-title').textContent = '履歴';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body tall">
     <div class="seg lg-tabs">${tabs}</div>
@@ -10474,7 +10474,7 @@ function openRoundHistory(where, idx, delOp, from, pos) {
   }
   const canEdit = !!r && !isGameLocked(g) && (where === 'game' ? true : !detailRO);
   document.getElementById('form-modal-title').textContent = `試合${serial}の履歴`;
-  const backJs = from === 'log' ? `showLogModal('${logSrc}')` : from === 'menu' ? `openRoundMenu(${idx},'${where}')` : from === 'del' ? `openDeletedRoundMenu('${where}','${delOp}',${pos || 0})` : '';
+  const backJs = from === 'log' ? `showLogModal('${jsq(logSrc)}')` : from === 'menu' ? `openRoundMenu(${idx},'${jsq(where)}')` : from === 'del' ? `openDeletedRoundMenu('${jsq(where)}','${jsq(delOp)}',${pos || 0})` : '';
   const backLbl = from === 'log' ? '履歴に戻る' : '戻る';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${backJs ? sheetBackMark(backJs, backLbl) : ''}
     <div class="rh-note">古い順。修正したマスは「前 → 後」。</div>
@@ -10508,7 +10508,7 @@ function gamesLogHtml(g) {
       || (it.evs.some(e => e.type === 'add') ? '<span class="lg-k add">入力</span>' : ''); // 入力しただけの試合（ほかの札が無いとき）
     const names = it.del ? (it.del.names || []) : roundMembers(it.r, g.settings).map(m => pn[m]);
     const cells = lgCellsHtml(g, names, it.del ? (it.del.points || []) : (it.r.points || it.r.scores || [])) || `<td colspan="${ncol}"></td>`;
-    const click = it.del ? `openRoundHistory('${where}',null,'${it.del.op}','log')` : `openRoundHistory('${where}',${it.idx},null,'log')`;
+    const click = it.del ? `openRoundHistory('${jsq(where)}',null,'${jsq(it.del.op)}','log')` : `openRoundHistory('${jsq(where)}',${it.idx},null,'log')`;
     const many = it.evs.length > 1;
     let html = `<tr class="lg-gh${it.del ? ' del' : ''}"><td class="sticky-col"><div class="lg-no">試合${it.serial}</div>${tags ? `<div class="lg-tags">${tags}</div>` : ''}${!many && last ? `<div class="lg-t">${fmtTime(last.at)}</div>` : ''}</td>${cells}</tr>`;
     if (many) {
@@ -10713,9 +10713,9 @@ function openRoundMenu(idx, where = 'game') {
   // 履歴を上に。点数を修正する・削除する は似た操作なので隣に並べる（削除は赤）
   document.getElementById('form-modal-title').textContent = `試合${roundSerialAt(g, idx)}`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">${t ? `入力 ${fmtTime(r.at)}` : ''}${r.edited ? ' ・ 修正あり' : ''}</div>
-    <div class="mn-group">${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',${idx},null,'menu')`)}</div>
+    <div class="mn-group">${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${jsq(where)}',${idx},null,'menu')`)}</div>
     ${canEdit ? `<div class="mn-group">${menuBtnHtml('pencil', '点数を修正する', '', `closeFormModal();${where === 'game' ? `openSheet(${idx})` : `editDetailRound(${idx})`}`)}
-      ${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから復元できます', `confirmDeleteRound(${idx},'${where}')`, 'danger')}</div>` : ''}
+      ${menuBtnHtml('trash', 'この試合を削除する', '灰色の行で残り、あとから復元できます', `confirmDeleteRound(${idx},'${jsq(where)}')`, 'danger')}</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -10728,8 +10728,8 @@ function openDeletedRoundMenu(where, delOp, pos) {
   const canBack = !!(de.round && de.round.id) && !isGameLocked(g) && !(where === 'detail' && detailRO);
   document.getElementById('form-modal-title').textContent = `試合${no}（削除）`;
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body"><div class="mn-sub">削除 ${fmtTime(de.at)}</div>
-    <div class="mn-group">${canBack ? menuBtnHtml('refresh', 'この試合を復元する', 'この場所に戻ります（全員の画面）', `closeFormModal();undeleteRound('${where}','${delOp}',${pos},${no})`) : ''}
-      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${where}',null,'${delOp}','del',${pos})`)}</div>
+    <div class="mn-group">${canBack ? menuBtnHtml('refresh', 'この試合を復元する', 'この場所に戻ります（全員の画面）', `closeFormModal();undeleteRound('${jsq(where)}','${jsq(delOp)}',${pos},${no})`) : ''}
+      ${menuBtnHtml('checklist', 'この試合の履歴', '入力・修正・削除の記録', `openRoundHistory('${jsq(where)}',null,'${jsq(delOp)}','del',${pos})`)}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -11282,7 +11282,7 @@ function renderEditMembers() {
     const action = canDelete
       ? `<button type="button" class="round-del-btn" style="flex-shrink:0" onclick="removeEditMember(${pos})">削除</button>`
       : `<span style="flex-shrink:0;font-size:10px;color:#aaa;border:1px solid #e5e5e5;border-radius:5px;padding:4px 7px;white-space:nowrap;cursor:help"
-          onclick="showToast('${reason}')">${label}</span>`;
+          onclick="showToast('${jsq(reason)}')">${label}</span>`;
     return `<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
       <input type="text" id="e-p-${pos}" value="${esc(m.name)}" style="flex:1;min-width:0" maxlength="${MAX_NAME_LEN}">
       ${action}
@@ -11763,7 +11763,7 @@ function setTag(gid, role, me) {
 // カードに出すバッジ。未設定はオレンジ系で「選べる」ことに気づかせる
 function tagBadgeHtml(g) {
   const t = tagOf(g.id);
-  const open = `event.stopPropagation();openTagEditor('${esc(g.id)}')`;
+  const open = `event.stopPropagation();openTagEditor('${jsq(g.id)}')`;
   if (t.role === 'watch') return `<button type="button" class="tag-chip watch" onclick="${open}">自分は出ていない</button>`;
   if (t.me != null) {
     const nm = (g.settings && g.settings.playerNames && g.settings.playerNames[t.me]) || '';
@@ -11955,7 +11955,7 @@ function renderOrganize() {
       .concat([`<option value="watch"${cur === 'watch' ? ' selected' : ''}>自分は出ていない</option>`]).join('');
     return `<div class="org-row"><div class="org-name">${esc(g.name || '')}</div>
       <div class="org-meta">${esc(gameMetaText(g))}</div>
-      <select onchange="orgSel['${esc(g.id)}']=this.value===''||this.value==='watch'?this.value:Number(this.value)">${opts}</select></div>`;
+      <select onchange="orgSel['${jsq(g.id)}']=this.value===''||this.value==='watch'?this.value:Number(this.value)">${opts}</select></div>`;
   }).join('');
   document.getElementById('form-modal-body').innerHTML = `
     <div style="font-size:12px;color:#555;line-height:1.7;margin-bottom:8px">あなたの名前をタップすると、その名前が出てくる試合を自動で選びます（かっこ内は出てくる件数）。違う名前で打った日は、下で個別に直せます。</div>
@@ -12009,7 +12009,7 @@ function myH2HCardHtml(rerender = 'renderMyStats()') {
   const keys = h2hSortedKeys(row);
   myPairCtx = { row, disp, keyOf, keys };
   const seg = false ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
-    `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${k}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
+    `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${jsq(k)}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
   // 仲間ページの「対戦成績」と同じカード（見出し・合計・並び順・相手ごとのカード・説明）2026-10-07
   const head = `<div class="card-head-row"><div class="card-title">対戦成績</div>${keys.length ? `<button class="btn-tint" onclick="showMyH2HImage()">${ico('image', 16)}画像</button>` : ''}</div>${cardCondSegHtml()}`;
   if (!keys.length) return `${seg}<div class="card my-h2h">${head}${h2hEmptyBodyHtml('あなた', rerender)}</div>`;
@@ -12100,7 +12100,7 @@ function h2hSortKeys(row, keys) {
 }
 function h2hSortSegHtml(rerender) {
   return `<div class="seg xs" role="tablist" aria-label="並び順" style="margin:10px 0 8px">${[['n', '試合数順'], ['pct', '勝率順']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${h2hSort === k ? 'on' : ''}" aria-selected="${h2hSort === k}" onclick="h2hSort='${k}';${rerender}">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${h2hSort === k ? 'on' : ''}" aria-selected="${h2hSort === k}" onclick="h2hSort='${jsq(k)}';${rerender}">${l}</button>`).join('')}</div>`;
 }
 function h2hListHtml(row, keys, nameOf, avOf) {
   return keys.map(k => {
@@ -12209,7 +12209,7 @@ function myStatsGroupsTableHtml(st, forImage = false) {
     const col = sc > 0 ? '#1a237e' : sc < 0 ? '#c62828' : '#1a1a1a';
     // グループ名は内側spanで3行打ち切り＋折り返し（全文はtitle）。
     // 「チーム戦」は列幅を押し広げないよう9pxのサブ行にする（<div>2つ＝画像側ではメイン＋subsとして描かれる）
-    return `<tr${forImage ? '' : ` onclick="viewDetailById('${esc(gr.id)}')" style="cursor:pointer"`}>
+    return `<tr${forImage ? '' : ` onclick="viewDetailById('${jsq(gr.id)}')" style="cursor:pointer"`}>
       <td class="sticky-col"><div class="ms-gname" title="${esc(gr.name)}">${esc(gr.name)}</div><div style="font-size:9px;color:#8a9aa5;margin-top:1px">${fmtDay(gr.ms)}</div></td>
       <td><div>${gr.np === 3 ? '三麻' : '四麻'}</div>${gr.team ? '<div style="font-size:9px;color:#8a9aa5;margin-top:1px">チーム戦</div>' : ''}</td>
       <td>${gr.games}</td>
@@ -12318,7 +12318,7 @@ function msGamesHtml(st) {
 }
 function msGamesInner(gs, seg) {
   if (!gs.length) return seg + histEmptyHtml();
-  if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openResultSheet('${esc(x.g.id)}')` })));
+  if (histView === 'tile') return seg + histTilesHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ g: x.g, me: tagOf(x.g.id).me, onclick: `openResultSheet('${jsq(x.g.id)}')` })));
   if (histView === 'cal') return seg + circleCalendarHtml(gs.slice().sort((a, b) => b.gr.ms - a.gr.ms).map(x => ({ sid: x.g.id, g: x.g })),
     x => ymdToMs(gameDaysList(x.g)[0]), x => `<div class="gm-list" style="margin-bottom:8px">${historyItemHtml(x.g)}</div>`, 'ms', 'renderMyStats()');
   return seg + listByYearHtml(gs, x => x.gr.ms, x => historyItemHtml(x.g), x => x.gr.games);
@@ -12338,13 +12338,13 @@ function renderMyStats() {
   if (!['sum', 'h2h', 'groups'].includes(myStatsTab)) myStatsTab = 'groups';
   // 範囲の切り替えは、マイページの「個人｜仲間ページ」と同じ位置・同じ形（押すと範囲が変わるだけで画面は移らない）
   const scopeRow = `<div class="sw-row" role="tablist" aria-label="範囲">${scopes.map(([k, l]) =>
-    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${esc(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}${esc(myLabel())}` : `${circleAvHtml(l, k)}${esc(l)}`}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="sw-chip${k === msScope ? ' on' : ''}" onclick="${k === 'all' ? `showView('history')` : `msScope='${jsq(k)}';renderMyStats()`}">${k === 'all' ? `${ico('person', 16)}${esc(myLabel())}` : `${circleAvHtml(l, k)}${esc(l)}`}</button>`).join('')}</div>`;
   renderAccountBar('ms-acct');
   document.getElementById('ms-switch').innerHTML = currentUser ? scopeRow : '';
   const cmp = msCompareHtml(mpMode); // 成績が無くても表は出す（2026-10-08）
   if (myStatsTab === 'sum' && !cmp) myStatsTab = 'groups';
   const tabs = `<div class="seg ms-tabs tabbar" role="tablist" aria-label="自分の成績の表示">${[['groups', '過去の試合'], ['h2h', '対戦成績']].concat(cmp ? [['sum', '成績表']] : []).map(([k, l]) =>
-    `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${k}';renderMyStats()">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${myStatsTab === k ? 'on' : ''}" aria-selected="${myStatsTab === k}" onclick="myStatsTab='${jsq(k)}';renderMyStats()">${l}</button>`).join('')}</div>`;
   // 上: 期間 → 四麻｜三麻 → 成績カード（マイページ・仲間ページと同じ位置）
   const seg = modeSegHtml({ 4: st.modes[4] ? st.modes[4].games : 0, 3: st.modes[3] ? st.modes[3].games : 0 }, 'renderMyStats()');
   const scopeLabel = msScope === 'all' ? '' : (scopes.find(([k]) => k === msScope) || [0, ''])[1];
@@ -12549,7 +12549,7 @@ function mpRivalsHtml() {
 function myResultHtml(g) {
   const t = tagOf(g.id);
   const names = (g.settings && g.settings.playerNames) || [];
-  const open = `event.stopPropagation();openTagEditor('${esc(g.id)}')`;
+  const open = `event.stopPropagation();openTagEditor('${jsq(g.id)}')`;
   if (t.role === 'watch') return `<span class="gm-none">自分は出ていない</span>`;
   if (t.me == null || t.me >= names.length) {
     if (!(g.rounds || []).length || names.every(isPlaceholderName)) return '';
@@ -12573,23 +12573,23 @@ function gameActsHtml(g, rawId, opts = {}) {
   const live = !isGameLocked(g), canLive = live && (inHist || (ge && circleRole() && circleSess[rawId]));
   const keep = opts.sheet ? 'keepSheetReturn();' : '';
   let acts = canLive
-    ? menuBtnHtml('table', 'ゲームを見る', isGameEnded(g) ? `再開・点数の修正もここから（${fmtDateTime(lockAtOf(g))} まで）` : '対局中・点数の入力もここから', inHist ? `closeFormModal();rejoinGame('${id}')` : `closeFormModal();joinSession('${id}')`)
-    : menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `${keep}closeFormModal();viewDetailById('${id}')` : `${keep}closeFormModal();openWatchGame(resultGameById('${id}'),'${activeViewName()}')`);
+    ? menuBtnHtml('table', 'ゲームを見る', isGameEnded(g) ? `再開・点数の修正もここから（${fmtDateTime(lockAtOf(g))} まで）` : '対局中・点数の入力もここから', inHist ? `closeFormModal();rejoinGame('${jsq(id)}')` : `closeFormModal();joinSession('${jsq(id)}')`)
+    : menuBtnHtml('table', '詳しく見る', '個人成績・対戦成績・スコア推移・画像', inHist ? `${keep}closeFormModal();viewDetailById('${jsq(id)}')` : `${keep}closeFormModal();openWatchGame(resultGameById('${jsq(id)}'),'${jsq(activeViewName())}')`);
   // 並びと表記は個人・仲間ページで同じ（2026-10-09）: 見る → 共有する → ゲーム名の変更 → この試合での自分 → 名前の連携 → 仲間ページに追加 → （赤）外す・削除。
   // その場で使えないものは出さない（自分の過去の試合に無ければ「この試合での自分」は無い、仲間ページのメンバーでなければ「名前の連携」は無い…）
   const role = ge ? circleRole() : null;
   // 見る・外す／削除のほかは「その他の操作」にたたむ（2026-10-09 ユーザー要望。個人・仲間ページで同じ）
   let more = '';
-  more += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${id}')`);
-  if (inHist || (ge && role)) more += menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : 'みんなの画面の名前が変わります', `openRenameGame('${id}')`);
-  if (inHist) more += menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${id}')`);
-  if (ge && role && circleSess[rawId]) more += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${id}')`);
-  if (inHist && loginAvailable()) more += menuBtnHtml('people', ge ? 'ほかの仲間ページに追加' : '仲間ページに追加', '仲間の成績・順位にこの試合を入れる', `closeFormModal();openAddToCircle('${id}')`);
+  more += menuBtnHtml('share', '共有する', '試合のURLをLINEなどで送る', `closeFormModal();openShareSheet('${jsq(id)}')`);
+  if (inHist || (ge && role)) more += menuBtnHtml('pencil', 'ゲーム名の変更', isGameLocked(g) ? '記録の確定後も、名前だけは変えられます' : 'みんなの画面の名前が変わります', `openRenameGame('${jsq(id)}')`);
+  if (inHist) more += menuBtnHtml('me', 'この試合での自分', '選んだ試合が「個人」の成績に入ります', `closeFormModal();openTagEditor('${jsq(id)}')`);
+  if (ge && role && circleSess[rawId]) more += menuBtnHtml('link', '名前の連携', '試合での名前を名簿の人につなぐ', `openBindEditor('${jsq(id)}')`);
+  if (inHist && loginAvailable()) more += menuBtnHtml('people', ge ? 'ほかの仲間ページに追加' : '仲間ページに追加', '仲間の成績・順位にこの試合を入れる', `closeFormModal();openAddToCircle('${jsq(id)}')`);
   let danger = '';
   if (ge) {
-    if (canRemoveCircleGame(ge)) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${id}')`, 'danger');
+    if (canRemoveCircleGame(ge)) danger = menuBtnHtml('trash', 'この仲間ページから外す', circleGameRemovable(ge) ? `試合そのものは消えません（${fmtDateTime(ge.lockAt)} まで）` : '確定した試合です。作成者・管理者だけが外せます（試合そのものは消えません）', `removeCircleGame('${jsq(id)}')`, 'danger');
   } else if (inHist) {
-    danger = menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${id}')`, 'danger');
+    danger = menuBtnHtml('trash', '過去の試合から削除', 'この一覧から外すだけ（試合のデータは消えません）', `closeFormModal();confirmDeleteHistory('${jsq(id)}')`, 'danger');
   }
   return { acts, more, danger };
 }
@@ -12670,7 +12670,7 @@ function reopenViewReturn(name) {
 const rsFold = {};
 function rsFoldHtml(key, title, body, defOpen, note = '') {
   const open = rsFold[key] != null ? rsFold[key] : defOpen;
-  return `<details class="rs-fold"${open ? ' open' : ''} ontoggle="rsFold['${key}']=this.open"><summary class="rs-h">${ico('chevron', 12)}<span>${esc(title)}</span>${note ? `<small>${esc(note)}</small>` : ''}</summary>${body}</details>`;
+  return `<details class="rs-fold"${open ? ' open' : ''} ontoggle="rsFold['${jsq(key)}']=this.open"><summary class="rs-h">${ico('chevron', 12)}<span>${esc(title)}</span>${note ? `<small>${esc(note)}</small>` : ''}</summary>${body}</details>`;
 }
 function renderResultSheet() {
   const st = rsState, g = st && resultGameById(st.id);
@@ -12702,7 +12702,7 @@ function renderResultSheet() {
   const menu = gameActsHtml(g, st.id, { circle: st.from === 'circle', sheet: true });
   document.getElementById('form-modal-title').textContent = g.name || '試合の結果';
   const backTo = st.ret && st.ret.back === 'mup' && mup ? sheetBackMark('mupReopen()', '対戦に戻る')
-    : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${st.ret.member}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
+    : st.ret && st.ret.member && rosterOf()[st.ret.member] ? sheetBackMark(`openCircleMember('${jsq(st.ret.member)}')`, `${rosterName(st.ret.member)}の成績に戻る`) : '';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body rs-sheet">${backTo}<div class="mn-sub">${esc(gameMetaText(g, nameHasGameDay(g)))}</div>
     ${seg}<div class="rs-box">${standings || '<div class="rs-empty">まだ試合がありません</div>'}</div>
     ${rsFoldHtml('tbl', tblTitle, table, rs.length < 10, rs.length ? `${rs.length}試合` : '')}${extra}
@@ -12719,7 +12719,7 @@ const START_CHOICES = [25000, 30000, 35000];
 function readStart(p) { return startMode[p] && startMode[p] !== 'custom' ? Number(startMode[p]) : readPts(p + '-start', 25000); }
 function startSegInner(p) {
   return START_CHOICES.map(v => [String(v), v.toLocaleString()]).concat([['custom', 'カスタム']]).map(([k, l]) =>
-    `<button type="button" role="radio" aria-checked="${startMode[p] === k}" class="${startMode[p] === k ? 'on' : ''}" onclick="setStartMode('${p}','${k}')">${l}</button>`).join('');
+    `<button type="button" role="radio" aria-checked="${startMode[p] === k}" class="${startMode[p] === k ? 'on' : ''}" onclick="setStartMode('${jsq(p)}','${jsq(k)}')">${l}</button>`).join('');
 }
 function setStartMode(p, k) {
   startMode[p] = k;
@@ -12740,13 +12740,13 @@ function ruleFieldsHtml(p, start, ret) {
   retMode[p] = ret === start ? 'off' : ret === start + 5000 ? 'on' : 'custom';
   startMode[p] = START_CHOICES.includes(start) ? String(start) : 'custom';
   return `<div class="field"><label>持ち点</label><div class="ret-seg" id="${p}-start-seg" role="radiogroup" aria-label="持ち点">${startSegInner(p)}</div>
-      <div id="${p}-start-custom" class="ret-custom"${startMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-start', start, `syncRetSeg('${p}')`)}</div></div>
+      <div id="${p}-start-custom" class="ret-custom"${startMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-start', start, `syncRetSeg('${jsq(p)}')`)}</div></div>
     <div class="field"><label>返し点</label><div class="ret-seg" id="${p}-ret-seg" role="radiogroup" aria-label="返し点">${retSegInner(p, start)}</div>
       <div id="${p}-ret-custom" class="ret-custom"${retMode[p] === 'custom' ? '' : ' style="display:none"'}>${ptsInputHtml(p + '-return', ret)}</div></div>`;
 }
 function retSegInner(p, start) {
   return [['on', 'あり', start + 5000], ['off', 'なし', start], ['custom', 'カスタム', null]].map(([k, l, v]) =>
-    `<button type="button" role="radio" aria-checked="${retMode[p] === k}" class="${retMode[p] === k ? 'on' : ''}" onclick="setRetMode('${p}','${k}')">${l}${v != null ? `<small>${v.toLocaleString()}</small>` : ''}</button>`).join('');
+    `<button type="button" role="radio" aria-checked="${retMode[p] === k}" class="${retMode[p] === k ? 'on' : ''}" onclick="setRetMode('${jsq(p)}','${jsq(k)}')">${l}${v != null ? `<small>${v.toLocaleString()}</small>` : ''}</button>`).join('');
 }
 function syncRetSeg(p) { const el = document.getElementById(p + '-ret-seg'); if (el) el.innerHTML = retSegInner(p, readStart(p)); }
 function setRetMode(p, k) {
@@ -12773,7 +12773,7 @@ function openRenameGame(id) {
   document.getElementById('form-modal-title').textContent = 'ゲーム名の変更';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="field"><label>ゲーム名</label><input type="text" id="rn-name" value="${esc(g.name || '')}" maxlength="${MAX_GROUP_LEN}"></div>
-    <button class="confirm-btn" style="margin-top:10px" onclick="saveRenameGame('${esc(id)}')">保存する</button>
+    <button class="confirm-btn" style="margin-top:10px" onclick="saveRenameGame('${jsq(id)}')">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -12847,7 +12847,7 @@ function dateRangeFieldHtml(p, start, end, note) {
   return `<div class="field"><label>対局日</label>
     <div class="dr-row"><input type="date" id="${p}-date" value="${start}"${p === 's' ? ' onchange="onSetupDateChange()"' : ''}>
       <span class="dr-to" id="${p}-to"${end ? '' : ' hidden'}>〜</span><input type="date" id="${p}-date-end" value="${end || ''}"${end ? '' : ' hidden'}></div>
-    <label class="dr-multi"><input type="checkbox" id="${p}-multi"${end ? ' checked' : ''} onchange="toggleDateEnd('${p}')">2日以上にわたる（大会など）</label>
+    <label class="dr-multi"><input type="checkbox" id="${p}-multi"${end ? ' checked' : ''} onchange="toggleDateEnd('${jsq(p)}')">2日以上にわたる（大会など）</label>
     ${note ? `<div style="font-size:11px;color:#5F6E6B;margin-top:4px">${note}</div>` : ''}</div>`;
 }
 function toggleDateEnd(p) {
@@ -13109,7 +13109,7 @@ function setStatKindAvail(games) { statKindAvail = !(games || []).length || game
 function statKindSegHtml() {
   if (!statKindAvail) return '';
   return `<span class="sk-seg${statKind !== 'all' ? ' filt' : ''}" role="tablist" aria-label="成績の種類">${[['all', '合計'], ['ind', '個人戦'], ['team', 'チーム戦']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${statKind === k ? 'on' : ''}" aria-selected="${statKind === k}" onclick="event.stopPropagation();setStatKind('${k}',this)">${l}</button>`).join('')}</span>`;
+    `<button type="button" role="tab" class="${statKind === k ? 'on' : ''}" aria-selected="${statKind === k}" onclick="event.stopPropagation();setStatKind('${jsq(k)}',this)">${l}</button>`).join('')}</span>`;
 }
 function setStatKind(k, el) {
   statKind = k;
@@ -13207,7 +13207,7 @@ function trendHtml(hist, np, score) {
 function sparkUnitCount(h) { const n = new Set(h.map(x => sparkBucket(new Date(x.t)).k)).size; return sparkUnit === 'y' ? `${n}年` : sparkUnit === 'm' ? `${n}か月` : `${n}日`; }
 function sparkUnitSegHtml() {
   return `<span class="sp-unit" role="tablist" aria-label="グラフの単位">${SPARK_UNITS.map(([k, l]) =>
-    `<button type="button" role="tab" class="${sparkUnit === k ? 'on' : ''}" aria-selected="${sparkUnit === k}" onclick="event.stopPropagation();setSparkUnit('${k}',this)">${l}</button>`).join('')}</span>`;
+    `<button type="button" role="tab" class="${sparkUnit === k ? 'on' : ''}" aria-selected="${sparkUnit === k}" onclick="event.stopPropagation();setSparkUnit('${jsq(k)}',this)">${l}</button>`).join('')}</span>`;
 }
 // 単位を変えたら、いま見ている画面を描き直す（メンバーの成績のシートなら、そのシートを開き直す）
 // 単位（年｜月｜日）を変えたとき、点を選んでいたら、それに関係する点を選んだままにする（2026-10-08）
@@ -13339,7 +13339,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   return `<span class="mc-spark-row" role="img" aria-label="${sparkUnit === 'y' ? '年' : sparkUnit === 'm' ? '月' : '打った日'}ごとの通算スコアの推移（${n}）。最後は${fmtScore(end)}">
     <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
     <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
-      data-rid="${rid}" onclick="sparkTap(event,'${rid}')" onpointerdown="sparkPress(event,'${rid}')" oncontextmenu="event.preventDefault()">${grid}
+      data-rid="${rid}" onclick="sparkTap(event,'${jsq(rid)}')" onpointerdown="sparkPress(event,'${jsq(rid)}')" oncontextmenu="event.preventDefault()">${grid}
     <polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${years}${dots}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}<g class="sp-lab" transform="translate(-200,-200)"><rect rx="4" ry="4" height="13"/><text text-anchor="middle" y="9.6"></text></g>${hits}</svg></span></span>
     <span class="sp-pop" id="pop-${rid}" hidden></span>`;
 }
@@ -13397,7 +13397,7 @@ function sparkSelect(rid, i, dir = 0) {
 // 2026-10-08 ユーザー要望: 矢印はカードの上に移し、あいだに まとめ（mid）＝2日以上のゲーム全体の成績／複数のゲームの合計スコア
 function sparkNavHtml(rid, i, mid = '') {
   const n = sparkReg[rid].days.length;
-  const b = (j, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${rid}',${j - i})" aria-label="${cls === 'pv' ? '前' : '次'}">${ico('chevron', 16)}</button>`;
+  const b = (j, cls) => `<button type="button" class="sp-nb ${cls}"${j < 0 || j >= n ? ' disabled' : ''} onclick="event.stopPropagation();sparkStep('${jsq(rid)}',${j - i})" aria-label="${cls === 'pv' ? '前' : '次'}">${ico('chevron', 16)}</button>`;
   return `<span class="sp-nav">${b(i - 1, 'pv')}<span class="sp-sum">${mid}</span>${b(i + 1, 'nx')}</span>`;
 }
 function sparkStep(rid, d) {
@@ -13495,7 +13495,7 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
       }
     }
     const dayTag = multi ? `<em class="sp-dn">${dI + 1}日目</em>` : ''; // 試合名の横（下の行に入れると2行になりカードが高くなった。2026-10-08）
-    return `${moHead}${whole}<button type="button" class="sp-g k${(g.settings && g.settings.numPlayers) === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="event.stopPropagation();openResultSheet('${esc(e.gid)}',{day:'${day.k}',me:${me == null ? 'null' : me},self:${self},member:${ctx.member ? `'${ctx.member}'` : 'null'},spark:${ctx.sel ? `{sel:'${ctx.sel}',k:'${day.k}'}` : 'null'}})">
+    return `${moHead}${whole}<button type="button" class="sp-g k${(g.settings && g.settings.numPlayers) === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="event.stopPropagation();openResultSheet('${jsq(e.gid)}',{day:'${jsq(day.k)}',me:${me == null ? 'null' : Number(me)},self:${self},member:${ctx.member ? `'${jsq(ctx.member)}'` : 'null'},spark:${ctx.sel ? `{sel:'${jsq(ctx.sel)}',k:'${jsq(day.k)}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
         <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
@@ -13584,8 +13584,8 @@ function askChipsHtml(g) {
   const order = memberDisplayOrder(g.settings).filter(i => played[i] && !isPlaceholderName(names[i]));
   if (guess >= 0) order.splice(order.indexOf(guess), 1), order.unshift(guess);
   const id = esc(g.id);
-  return order.map(i => `<button type="button" class="gr-chip${i === guess ? ' guess' : ''}" onclick="event.stopPropagation();quickTag('${id}',${i})">${esc(names[i])}${i === guess ? '<small>いつもの名前</small>' : ''}</button>`).join('')
-    + `<button type="button" class="gr-chip out" onclick="event.stopPropagation();quickTag('${id}','watch')">出ていない</button>`;
+  return order.map(i => `<button type="button" class="gr-chip${i === guess ? ' guess' : ''}" onclick="event.stopPropagation();quickTag('${jsq(id)}',${i})">${esc(names[i])}${i === guess ? '<small>いつもの名前</small>' : ''}</button>`).join('')
+    + `<button type="button" class="gr-chip out" onclick="event.stopPropagation();quickTag('${jsq(id)}','watch')">出ていない</button>`;
 }
 function quickTag(gid, v) {
   const g = (appState.games || []).find(x => x.id === gid);
@@ -13608,10 +13608,10 @@ function historyItemHtml(g) {
   else if (st === 'ask' && !mpSelecting) sub = `<div class="gr-sub">${NIL_RESULT}<span class="gr-meta">${meta}</span></div><div class="gr-ask">あなたはどれ？</div><div class="gr-chips">${askChipsHtml(g)}</div>`;
   else sub = `<div class="gr-sub">${(g.rounds || []).length ? NIL_RESULT : ''}<span class="gr-meta">${meta}</span></div>${oppLineHtml(g, null)}`;
   const on = mpSelecting && mpSel.has(g.id);
-  return `<div class="gr ${st} k${(s.numPlayers === 3 ? 3 : 4)}${isTeamGame(g) ? ' tm' : ''}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${id}')` : `openResultSheet('${id}')`}">
+  return `<div class="gr ${st} k${(s.numPlayers === 3 ? 3 : 4)}${isTeamGame(g) ? ' tm' : ''}${on ? ' sel' : ''}" onclick="${mpSelecting ? `toggleMpSel('${jsq(id)}')` : `openResultSheet('${jsq(id)}')`}">
     ${mpSelecting ? '<span class="gr-check" aria-hidden="true"></span>' : ''}${gameKindHtml(g)}
     <div class="gr-main"><div class="gr-top"><span class="gr-name">${esc(g.name || '')}</span><span class="gr-date">${fmtGameDays(g)}</span></div>${sub}${mpSelecting ? '' : gameCircleLineHtml(g)}</div>
-    ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${id}')">${ico('more', 18)}</button>`}
+    ${mpSelecting ? '' : `<button type="button" class="gm-dots" aria-label="この試合のメニュー" onclick="event.stopPropagation();openHistMenu('${jsq(id)}')">${ico('more', 18)}</button>`}
   </div>`;
 }
 
@@ -13642,7 +13642,7 @@ function gameCircleLineHtml(g) {
   return `<div class="gr-cc">${st.map(x => {
     const cls = x.unbound == null ? '' : x.unbound.length ? ' warn' : ' ok';
     const txt = x.unbound == null ? '' : x.unbound.length ? `未連携 ${x.unbound.length}人（${x.unbound.slice(0, 3).map(esc).join('・')}${x.unbound.length > 3 ? '…' : ''}）` : '全員連携済み';
-    return `<button type="button" class="cc-st${cls}" onclick="event.stopPropagation();openBindFromGame('${esc(x.cid)}','${id}')">${ico('people', 12)}<b>${esc(x.name)}</b>${txt ? ` ${txt}` : ''}</button>`;
+    return `<button type="button" class="cc-st${cls}" onclick="event.stopPropagation();openBindFromGame('${jsq(x.cid)}','${jsq(id)}')">${ico('people', 12)}<b>${esc(x.name)}</b>${txt ? ` ${txt}` : ''}</button>`;
   }).join('')}</div>`;
 }
 // 対戦した人。自分が出ていれば自分以外（「相手」）、出ていなければ全員（「対戦」）。多いときは先頭の数人＋「ほかn人」
@@ -13774,7 +13774,7 @@ function renderMpPanes(st) {
   const pane = curMpPane(st, cmp);
   const tabs = (cmp ? [['sum', '成績表']] : []).concat([['h2h', '対戦成績'], ['hist', '過去の試合']]); // 左から 成績表・対戦成績・過去の試合（2026-10-08）
   document.getElementById('mp-pane-tabs').innerHTML = `<div class="seg ms-tabs tabbar" role="tablist" aria-label="自分の成績の表示">${tabs.map(([k, l]) =>
-    `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${k}')">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${pane === k ? 'on' : ''}" aria-selected="${pane === k}" onclick="setMpPane('${jsq(k)}')">${l}</button>`).join('')}</div>`;
   // 過去の試合のすぐ上の1行: 小さい期間のピル（上の期間と同じもの）＋「＋ 追加」「まとめて送る」（2026-10-07 縦に長くしないよう1行に）
   // カードの上に、上と同じ「期間＋四麻｜三麻」（2026-10-07）
   const hc = histModeCounts();
@@ -13873,7 +13873,7 @@ function renderHistoryList() {
     const sorted = list.slice().sort((a, b) => b.ms - a.ms), tshow = histShowAll ? sorted : sorted.slice(0, HIST_TILES);
     body.innerHTML = histTilesHtml(tshow.map(x => {
       const t = histState(x.g);
-      return { g: x.g, me: t === 'me' ? tagOf(x.g.id).me : t === 'out' ? null : undefined, onclick: `openResultSheet('${esc(x.g.id)}')` };
+      return { g: x.g, me: t === 'me' ? tagOf(x.g.id).me : t === 'out' ? null : undefined, onclick: `openResultSheet('${jsq(x.g.id)}')` };
     })) + (tshow.length < sorted.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${sorted.length - tshow.length}ゲーム）</button>` : '');
     renderSendBar();
     return;
@@ -13904,7 +13904,7 @@ function histKindPillsHtml(games, rerender, key = 'histKind') {
   if (key === 'circleKind') { if (!kc[circleKind]) circleKind = 'all'; } else if (!kc[histKind]) histKind = 'all';
   const cur = key === 'circleKind' ? circleKind : histKind;
   return `<div class="mp-pills hist-kinds" role="tablist" aria-label="試合の形式">${HIST_KINDS.map(([k, l]) =>
-    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="${key}='${k}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}"${kc[k] || k === 'all' ? '' : ' disabled'} onclick="${key}='${jsq(k)}';${rerender}">${l}<small>${kc[k]}</small></button>`).join('')}</div>`;
 }
 // 見せ方「一覧｜タイル｜カレンダー」（左から）。key＝状態の変数名、listVal＝一覧の値（過去の試合 'new'・仲間ページ 'list'）
 // 過去の試合の「追加」「まとめて送る」。カードの見出しの右（仲間ページの「＋ 試合を追加」と同じ場所・2026-10-07）。
@@ -13915,7 +13915,7 @@ function histActsHtml() {
 function histOrderSegHtml(rerender, key = 'histView', listVal = 'new') {
   const cur = key === 'circleGamesView' ? circleGamesView : key === 'cmBoundView' ? cmBoundView : key === 'mupGamesView' ? mupGamesView : histView;
   return `<div class="seg xs" role="tablist" aria-label="試合の見せ方">${[['tile', 'タイル'], [listVal, '一覧'], ['cal', 'カレンダー']].map(([k, l]) =>
-    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}" onclick="${key}='${k}';${rerender}">${l}</button>`).join('')}</div>`;
+    `<button type="button" role="tab" class="${cur === k ? 'on' : ''}" aria-selected="${cur === k}" onclick="${key}='${jsq(k)}';${rerender}">${l}</button>`).join('')}</div>`;
 }
 // タイル: 試合名と試合数だけの小さな正方形を新しい順に敷き詰める。空（0試合）と少ない（3試合以下）の試合を目立たせ、
 // 間違えて作った・試しに作っただけの試合をすぐ見つけられるようにする。押すと「…」と同じメニュー（結果を見る・削除）
@@ -14104,7 +14104,7 @@ function renderAccountBar(id) {
   const who = String(currentUser.displayName || currentUser.email || 'Googleアカウント');
   const ini = esc(avInitial(who)).replace(/'/g, '');
   const av = currentUser.photoURL
-    ? `<img src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${ini}'))">`
+    ? `<img src="${esc(currentUser.photoURL)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${jsq(ini)}'))">`
     : ini;
   el.innerHTML = `<span class="mp-av">${av}</span><span class="mp-who"><h1 class="mp-name">${esc(who)}</h1><small>${accountBusy ? 'アカウントと同期しています…' : 'マイページ'}</small></span>
     <button type="button" class="mp-gear" aria-label="設定" onclick="openMpMenu()">${ico('gear', 20)}</button>`;
@@ -14444,6 +14444,12 @@ function medalSvg(rank, size = 22, withNum = true) {
 }
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// onclick="f('${jsq(x)}')" のように、HTMLの属性の中の JS の文字列に値を入れるとき用。
+// 英数字・_・- 以外は \uXXXX にする（' \ " < > & が残らないので、属性も JS の文字列も閉じられない）。
+// esc だけでは ' が残り、HTMLが &quot; を " に戻してから JS が読むので、名前やキーに ' があると JS を書き換えられる（2026-10-15 セキュリティ点検）
+function jsq(s) {
+  return String(s).replace(/[^\w-]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
 }
 
 // ---- 起動 ----
