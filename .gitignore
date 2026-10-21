@@ -6,3 +6,5 @@ __pycache__/
 version.txt
 # App Check のデバッグ用トークン（本番DBのテスト用。秘密なので公開しない。tools/appcheck.py）
 .appcheck-debug-token
+# 楽天ウェブサービスの accessKey（秘密。tools/fetch_book_covers.py が読む）
+.rakuten-access-key
