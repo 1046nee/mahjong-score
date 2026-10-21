@@ -3247,6 +3247,8 @@ try {
   const dbg = local ? localStorage.getItem('__appcheck_debug') : null;
   if (dbg) self.FIREBASE_APPCHECK_DEBUG_TOKEN = dbg;
   if (APP_CHECK_SITE_KEY && firebase.appCheck && (!local || dbg)) firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY), true);
+  // 確認が取れなかった端末を GA4 に数える（イベント appcheck_fail・理由つき）。強制してよいかの判断用（2026-10-21 未確認が7%あった）
+  if (APP_CHECK_SITE_KEY && firebase.appCheck && !local) setTimeout(() => firebase.appCheck().getToken().catch(e => track('appcheck_fail', { reason: String((e && (e.code || e.message)) || e).slice(0, 80) })), 4000);
 } catch (e) { console.warn('App Check', e); }
 const db = firebase.database();
 

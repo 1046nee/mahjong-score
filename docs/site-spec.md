@@ -80,6 +80,7 @@
 
 ## App Check（2026-10-15〜）
 - サイトの画面からの読み書きだけを通す仕組み。プロバイダーは **Fraud Defense（旧 reCAPTCHA Enterprise）**（Firebaseで reCAPTCHA v3 の Classic は非推奨と出たため。キーは Google Cloud の mahjong-score プロジェクト。無料枠は月1万回の判定→トークンの有効期間を長めにして回数を抑える）。サイトキーは index.html の `APP_CHECK_SITE_KEY`（公開してよい値）。秘密鍵はFirebaseコンソールにだけ置く
+- 確認が取れなかった端末は GA4 のイベント `appcheck_fail`（reason に理由）で数える。2026-10-21 時点で Realtime Database の未確認は7%（強制は見送り）
 - 強制（通さない）は Firebaseコンソール → App Check → API →「Realtime Database」で切り替える。**入れてから数日は強制せず、指標で「確認済み」の割合を見てから強制する**（古い版を開いたままの端末が弾かれないように）
 - reCAPTCHA のバッジは CSS で隠し、privacy.html に利用を書いてある（Googleが認める書き方）
 - 手元（localhost・127.0.0.1）では動かさない。本番DBのテスト（circle/lock/view/session_delete_rules・lock_app・sync）は、
