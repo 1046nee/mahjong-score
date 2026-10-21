@@ -92,7 +92,7 @@
   </url>
   <url>
     <loc>https://majasco.jp/blog-app-guide.html</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -169,5 +169,11 @@
   <url>
     <loc>https://majasco.jp/changelog.html</loc>
     <lastmod>2026-10-13</lastmod>
+  </url>
+  <url>
+    <loc>https://majasco.jp/blog-mahjong-ai.html</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 </urlset>

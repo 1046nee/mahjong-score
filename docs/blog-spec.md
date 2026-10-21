@@ -59,18 +59,19 @@
 - NG例: 「点数計算の基本」という見出しでウマ・オカを説明（→見出しは「スコア計算」に）
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
-## 公開済み記事一覧（15記事＋お知らせ6本＋更新履歴）
+## 公開済み記事一覧（16記事＋お知らせ6本＋更新履歴）
 - **お知らせ（検索に載せる・2026-10-13）**: news/nakama-page.html（仲間ページ）／news/mypage-stats.html（マイページと成績）／news/kiroku-kakutei.html（記録の確定）。実画面は `/assets/screens/*.jpg`（見本のデータ・スタブで撮影。キャプションに「名前と数字は見本のデータです」）
 - **更新履歴** `/changelog.html`（月ごと・新しい順。大きな更新を出したら1行足す＝「手入れが続いている」ことを見せる。AdSenseの「継続的なキュレーション」対策）
 0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
 0b. blog-team-tournament.html — 10人以上のチーム対抗戦・トーナメントの開き方（遊び方ガイド）
 0c. blog-season-ranking.html — 日をまたいだ通算成績と相性（直接対決・スコア差）の読み方（2026-09-25。実例はアプリの関数で検算済み）
+0d. blog-mahjong-ai.html — 麻雀AIの比較（2026-10-21。NAGA・Mortal・MAKA・Suphx・LuckyJ。対面のセット麻雀は牌譜が残らない→通算成績で振り返る、で集計につなぐ。料金は「有料・月ごとのポイント制」と書き、金額は書かない）
 1. blog-why-majasco.html — 開発ストーリー
 2. blog-uma-oka.html — ウマ・オカ入門
 3. blog-score-table.html — 翻・符の点数早見表（**2026-09-25に blog-fu-han を統合**。#fu=符の数え方・実例・符のズレ）
 4. blog-yaku-list.html — **役・リーチ・ドラ・鳴きの基本**（2026-10-13にリーチ・ドラ・鳴きを統合。#yaku／#riichi／#dora／#naki）
 5. blog-sanma-yonma.html — 三麻と四麻の違い
-6. blog-app-guide.html — スコア記録アプリの選び方
+6. blog-app-guide.html — スコア記録アプリの選び方（2026-10-21に実名の比較表＝雀ログ・麻雀スコア・雀簿・Mscore・雀グル・JanScore・まじゃすこを追加。開発者であることを明記し、まじゃすこに無い機能も書く。年1回は表を見直す）
 7. blog-rule-basics.html — 半荘・東風戦・牌の種類と読み方（**2026-09-25に blog-hai-types を統合**。#hai=牌・#136=枚数の確認）
 9. blog-manner.html — **準備とマナー**（2026-10-13に持ち物リストを統合。#starter-kit／#chombo）
 13. blog-score-examples.html — スコア計算 実例12パターン
