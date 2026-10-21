@@ -19,6 +19,15 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-mahjong-game-apps.html', cat: 'mahjong', date: '2026.10.21', tag: 'ゲームアプリ',
+    title: '麻雀ゲームアプリおすすめ7選｜雀魂・天鳳・MJ・麻雀格闘倶楽部などを比較（2026年版）',
+    desc: '雀魂・天鳳・MJ・麻雀格闘倶楽部など7つを、App Storeの評価と特徴で比較。目的別の選び方も。' },
+  { url: '/blog-mahjong-youtube.html', cat: 'mahjong', date: '2026.10.21', tag: 'YouTube',
+    title: '麻雀のおすすめYouTubeチャンネル｜Mリーグ・プロ団体の公式とMリーガーのチャンネル（2026年版）',
+    desc: 'Mリーグと団体の公式、チーム公式、Mリーガーのチャンネルを登録者数つきで。目的別の見方のコツも。' },
+  { url: '/blog-mahjong-books.html', cat: 'mahjong', date: '2026.10.21', tag: '麻雀の本',
+    title: '麻雀のおすすめ本｜未経験・初心者・中級者・上級者のレベル別19冊（2026年版）',
+    desc: '未経験・初心者・中級者・上級者の4段階で19冊。入門書から何切る、押し引き、データの戦術書、2026年の新刊まで。' },
   { url: '/blog-meet-mleaguer.html', cat: 'mahjong', date: '2026.10.21', tag: 'Mリーグ',
     title: 'Mリーガーに会う・一緒に打つ方法｜パブリックビューイング、撮影会、イベント、雀荘のゲスト（2026-27）',
     desc: 'PVツアーと撮影会、全40選手が登場するプレミアムナイト、一緒に打てるイベント、雀荘のゲスト来店。情報の集め方とマナーも。' },

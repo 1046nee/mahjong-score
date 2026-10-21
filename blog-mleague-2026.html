@@ -79,6 +79,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kak
 .blog-post th, .blog-post td { vertical-align: top; }
 .blog-post table.wide { min-width: 760px !important; }
 .blog-post table.wide td:first-child, .blog-post table.wide th { white-space: nowrap; }
+
+.yt { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #1f2a28; margin: 4px 0 6px; }
+.yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.blog-post .cap { font-size: 12px; color: #5F6E6B; margin: 0 0 20px; }
+.blog-post .pr-note { font-size: 12px; color: #5F6E6B; display: flex; gap: 8px; align-items: flex-start; }
+.bk-list, .app-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 18px; }
+.bk, .app { display: flex; gap: 12px; align-items: center; border: 1.5px solid #DCE6E3; border-radius: 14px; padding: 12px 14px; background: #FAFCFB; }
+.app { align-items: flex-start; }
+.bk-txt, .app-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bk-txt b, .app-txt b { font-size: 15px; color: #1f2a28; line-height: 1.5; }
+.bk-txt small, .app-txt small { font-size: 12px; color: #5F6E6B; }
+.bk-txt span, .app-txt span { font-size: 13px; color: #333; line-height: 1.7; }
+.app-txt .who { color: #177083; font-weight: 700; }
+.app img { width: 64px; height: 64px; border-radius: 14px; flex-shrink: 0; border: 1px solid #e6eeeb; }
+.app-link { font-size: 12px; font-weight: 700; color: #177083; margin-top: 2px; }
+@media (max-width: 480px) { .bk { flex-direction: column; align-items: stretch; } .bk .aff-btn { align-self: flex-start; } }
 </style>
 <link rel="stylesheet" href="/assets/blog.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "Mリーグ2026-27 完全ガイド｜全10チーム・40選手、ルール、試合の流れと見方", "description": "Mリーグ2026-27シーズンの全10チーム・40選手とオーナー企業、2026年ドラフトでの入れ替わり、ルール（持ち点・順位点・一発・裏ドラ・赤ドラ）、レギュラーシーズンからファイナルまでの流れ、試合の見方を1ページにまとめました。", "image": "https://majasco.jp/assets/ogp3.png", "datePublished": "2026-10-21", "dateModified": "2026-10-21", "author": {"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}, "publisher": {"@type": "Organization", "name": "まじゃすこ / majasco", "logo": {"@type": "ImageObject", "url": "https://majasco.jp/assets/favicon.png"}}, "mainEntityOfPage": "https://majasco.jp/blog-mleague-2026.html"}</script>
@@ -149,6 +165,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </tbody>
   </table>
   <p>朝倉康心は、2018-19の最初のシーズンにU-NEXT Piratesで戦った選手で、古巣への復帰になります。Mリーグにはチームの入れ替えを促す決まりもあり、成績が振るわないチームは選手構成を変えることが求められます。シーズンごとの入れ替わりの経緯は「<a href="/blog-mleague-history.html">Mリーグの歴史</a>」で追えます。</p>
+  <p>今季最初の役満は、ドラフトで加わったばかりの尻無濱航さんの国士無双でした（2026年10月16日）。</p>
+  <div class="yt"><iframe src="https://www.youtube-nocookie.com/embed/PBf3TdbSDqw" title="尻無濱航 2026-27シーズン役満第1号（Mリーグ公式）" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><p class="cap">出典：<a href="https://www.youtube.com/watch?v=PBf3TdbSDqw" target="_blank" rel="noopener">【26-27】尻無濱航 新加入選手が2026-27シーズン役満第1号！</a>（M.LEAGUE 公式 YouTube）</p>
 
   <div class="post-illust small" aria-hidden="true"><svg viewBox="0 0 340 84" xmlns="http://www.w3.org/2000/svg" role="img"><line x1="24" y1="42" x2="124" y2="42" stroke="#e2ece7" stroke-width="2"/><line x1="216" y1="42" x2="316" y2="42" stroke="#e2ece7" stroke-width="2"/><rect x="140" y="16" width="60" height="52" rx="8" fill="#ffffff" stroke="#9fc3bd" stroke-width="2"/><rect x="150" y="26" width="16" height="22" rx="3" fill="#177083"/><rect x="174" y="26" width="16" height="22" rx="3" fill="#E75620"/><rect x="150" y="54" width="40" height="5" rx="2.5" fill="#9fc3bd"/><path d="M110 22 Q111.5 27.5 117 29 Q111.5 30.5 110 36 Q108.5 30.5 103 29 Q108.5 27.5 110 22 Z" fill="#E75620"/><circle cx="232" cy="60" r="3" fill="#9fc3bd"/></svg></div>
 
@@ -179,7 +197,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <h2 id="watch">試合の見方と、選手に会う方法</h2>
   <ul>
-    <li><strong>ABEMAで見る</strong>：全試合が無料で生配信されます。見逃した試合の配信は、ABEMAの番組ページの案内を確かめてください。</li>
+    <li><strong>ABEMAで見る</strong>：毎週月・火・木・金の夜7時から、全試合が無料で生配信されます。見逃した試合の配信は、ABEMAの番組ページの案内を確かめてください。</li>
+    <li><strong>YouTubeで見る</strong>：<a href="https://www.youtube.com/@m-league" target="_blank" rel="noopener">M.LEAGUE公式チャンネル</a>で、毎試合のハイライトとオフショットが翌日に公開されます。ほかのおすすめは「<a href="/blog-mahjong-youtube.html">麻雀のおすすめYouTubeチャンネル</a>」で。</li>
     <li><strong>公式の情報を追う</strong>：<a href="https://m-league.jp/" target="_blank" rel="noopener">Mリーグ公式サイト</a>と<a href="https://x.com/m_league_" target="_blank" rel="noopener">公式X（@m_league_）</a>で、試合の予定・結果・イベントが発表されます。</li>
     <li><strong>会場で見る</strong>：2026年12月17日には、全40選手が登壇するパブリックビューイング「プレミアムナイト」がカナデビアホールで予定されています（チケットは公式サイトの案内から）。</li>
   </ul>
