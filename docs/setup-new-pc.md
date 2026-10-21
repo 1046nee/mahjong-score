@@ -82,3 +82,7 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
   → コマンドは必ず `python -m playwright ...` の形で実行する（`playwright install` と直接打つと「見つからない」になる）
 - .ps1に日本語コメントを書くならUTF-8 **BOM付き**で保存（Windows PowerShell 5.1はBOM無しをANSIと解釈して文字化け・パースエラーの危険）。
   スタートアップ用.vbsはUTF-16（-Encoding Unicode）で書けば日本語パスも安全
+
+## 秘密のファイル（GitHubに上がらない・必要なときだけ各PCで作る）
+- `tools/.rakuten-access-key` — 楽天ウェブサービスの accessKey（1行）。**本の記事に本を足す・表紙を取り直すとき（`python tools/fetch_book_covers.py`）だけ必要**。値は楽天ウェブサービスのアプリ管理画面で見られる。applicationId は公開してよい値でスクリプトに書いてある
+- `tools/.appcheck-debug-token` — App Check のデバッグ用トークン（1行）。App Check を強制したあと、本番DBのテスト（circle/lock/view_rules・lock_app・sync）を流すときだけ必要。Firebaseコンソール → App Check → アプリ →「デバッグトークンを管理」
