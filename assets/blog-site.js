@@ -19,6 +19,15 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-mleague-2026.html', cat: 'mahjong', date: '2026.10.21', tag: 'Mリーグ',
+    title: 'Mリーグ2026-27 完全ガイド｜全10チーム・40選手、ルール、試合の流れと見方',
+    desc: '今季の全10チーム・40選手、ドラフトでの入れ替わり、ルール、シーズンの流れと見方。各チームの公式ページへのリンクつき。' },
+  { url: '/blog-mleague-history.html', cat: 'mahjong', date: '2026.10.21', tag: 'Mリーグ',
+    title: 'Mリーグの歴史｜歴代優勝チーム・MVP・各シーズンの順位とルールの移り変わり',
+    desc: '歴代優勝チームとMVP、各シーズンのファイナル順位、チーム数・試合数・勝ち上がりの仕組みの変化を表で振り返ります。' },
+  { url: '/blog-pro-dantai-rules.html', cat: 'mahjong', date: '2026.10.21', tag: 'プロ団体',
+    title: '麻雀プロ団体とルールの違い｜連盟・最高位戦・協会・RMU・麻将連合とMリーグを比較',
+    desc: '5つのプロ団体の特徴と、一発・裏ドラ・順位点・持ち点の違いを比較表で。友人どうしで試すときの設定まで。' },
   { url: '/blog-mahjong-ai.html', cat: 'mahjong', date: '2026.10.21', tag: '麻雀AI',
     title: '麻雀AIの比較｜NAGA・Mortal・MAKA・Suphx・LuckyJの違いと、セット麻雀での振り返り方',
     desc: '使えるAIと記録を残したAIの違い、対応する牌譜と料金の形、遊んでいる場所ごとの使い分け、牌譜が残らない対面のセット麻雀の振り返り方まで。' },
