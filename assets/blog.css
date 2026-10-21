@@ -130,3 +130,26 @@ body:not(.bs-list) .site-foot a { color: #fff; }
 .blog-post .cl-list li::before { content: ''; position: absolute; left: -9px; top: 15px; width: 11px; height: 11px; border-radius: 50%; background: #177083; border: 2px solid #fff; box-shadow: 0 0 0 1px #CFE3DB; }
 .blog-post .cl-list li:hover { background: #F6FAF8; border-radius: 0 10px 10px 0; }
 .blog-post .cl-date { display: inline-block; width: auto !important; min-width: 3.4em; text-align: center; background: #E4F3EC; color: #177083; font-size: 12px; font-weight: 800; padding: 0 9px; border-radius: 20px; margin-right: 8px; text-indent: 0; }
+
+/* ---- 動画の埋め込み・アプリのアイコン・チームの印（2026-10-21）: どの記事でも同じ見た目にする ---- */
+.blog-post .yt { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #1f2a28; margin: 6px 0 6px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.blog-post .yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.blog-post .cap { font-size: 12px; color: #5F6E6B; margin: 0 0 22px; line-height: 1.7; }
+.blog-post .cap a { color: #177083; font-weight: 700; }
+.blog-post .cap .yt-url { font-weight: 400; word-break: break-all; }
+.blog-post .vcard { background: #F6FAF8; border: 1px solid #DCE8E2; border-radius: 14px; padding: 12px 14px 2px; margin: 0 0 18px; }
+.blog-post .vcard .cap { margin-bottom: 10px; }
+.blog-post .vdesc { font-size: 14px; margin: 0 0 8px; display: flex; gap: 10px; align-items: flex-start; }
+.blog-post .vno { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; color: #fff; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.blog-post .lv-guide { display: flex; flex-direction: column; gap: 6px; background: #F1F8F4; border: 1px solid #DCE8E2; border-radius: 12px; padding: 12px 16px; margin: 0 0 8px; font-size: 13px; }
+.blog-post .lv-guide i { font-style: normal; display: inline-block; min-width: 4.6em; text-align: center; color: #fff; font-weight: 800; font-size: 12px; border-radius: 20px; padding: 1px 8px; margin-right: 8px; }
+.blog-post .lv0 { background: #6FB59B; } .blog-post .lv1 { background: #2E9C8A; } .blog-post .lv2 { background: #177083; } .blog-post .lv3 { background: #4261AA; }
+.blog-post .app-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; }
+.blog-post .app { display: flex; gap: 12px; align-items: flex-start; border: 1.5px solid #DCE6E3; border-radius: 14px; padding: 12px 14px; background: #FAFCFB; }
+.blog-post .app img { width: 64px; height: 64px; border-radius: 14px; flex-shrink: 0; border: 1px solid #e6eeeb; }
+.blog-post .app-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.blog-post .app-txt b { font-size: 15px; color: #1f2a28; line-height: 1.5; }
+.blog-post .app-txt small { font-size: 12px; color: #5F6E6B; }
+.blog-post .app-txt span { font-size: 13px; color: #333; line-height: 1.7; }
+.blog-post .app-link { font-size: 12px; font-weight: 700; color: #177083; margin-top: 2px; }
+.blog-post .tm-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 5px; border-radius: 13px; color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: middle; letter-spacing: -.02em; }

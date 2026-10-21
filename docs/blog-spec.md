@@ -65,8 +65,10 @@
 0a. blog-shukei-gakari.html — 集計係8年の実話（体験談・雑記。開発者の一次情報）
 0b. blog-team-tournament.html — 10人以上のチーム対抗戦・トーナメントの開き方（遊び方ガイド）
 0c. blog-season-ranking.html — 日をまたいだ通算成績と相性（直接対決・スコア差）の読み方（2026-09-25。実例はアプリの関数で検算済み）
-0e. **麻雀情報のページ（2026-10-21〜・ユーザーの依頼）**: blog-mleague-2026.html（今季の全チーム・選手・ルール）／blog-mleague-history.html（歴代優勝・MVP・順位・仕組みの変化）／blog-pro-dantai-rules.html（5団体とルールの比較・まじゃすこでの設定）。blog-mahjong-titles.html（タイトル戦と保持者）／blog-mahjong-pro.html（プロになるには・例題は記事オリジナルで検算済み。受験料など実費の金額は書いてよい＝賭けの連想がないため。賞金は書かない）／blog-meet-mleaguer.html（PV・イベント・雀荘のゲスト。チケット代は書かずリンク）。blog-mahjong-books.html（19冊。書誌は国立国会図書館サーチで確認・楽天ブックスのアフィリエイト（ISBN検索）。表紙は楽天ウェブサービスの書籍APIで取得予定＝アプリIDが要る）／blog-mahjong-youtube.html（登録者数はYouTubeで確認した日付を書く。公式と本人のみ・切り抜きは載せない）／blog-mahjong-game-apps.html（アイコン・評価はAppleのSearch API＝itunes.apple.com/lookup。画像は mzstatic の公開URL）。
+0e. **麻雀情報のページ（2026-10-21〜・ユーザーの依頼）**: blog-mleague-2026.html（今季の全チーム・選手・ルール）／blog-mleague-history.html（歴代優勝・MVP・順位・仕組みの変化）／blog-pro-dantai-rules.html（5団体とルールの比較・まじゃすこでの設定）。blog-mahjong-titles.html（タイトル戦と保持者）／blog-mahjong-pro.html（プロになるには・例題は記事オリジナルで検算済み。受験料など実費の金額は書いてよい＝賭けの連想がないため。賞金は書かない）／blog-meet-mleaguer.html（PV・イベント・雀荘のゲスト。チケット代は書かずリンク）。blog-mahjong-books.html（19冊。書誌は国立国会図書館サーチで確認・楽天ブックスのアフィリエイト（ISBN検索）。表紙は楽天ウェブサービスの書籍APIで取得予定＝アプリIDが要る）／blog-mahjong-youtube.html（未経験・初心者・中級者・上級者のレベル別に勉強動画を埋め込み＋公式・チーム・本人チャンネルの一覧。再生数・登録者数は確認した日付を書く。解説専門のチャンネルは可・無断の切り抜きは載せない）／blog-mahjong-game-apps.html（アイコン・評価はAppleのSearch API＝itunes.apple.com/lookup。画像は mzstatic の公開URL）。
    **画像を載せるときの正規の方法**: 公式YouTubeの埋め込み（youtube-nocookie）、App Storeのアイコン（Search API）、楽天の商品画像（API）。公式サイト・Xの写真の転載はしない
+   **動画の埋め込みの書き方**: 埋め込み可（oEmbedで確認）の動画だけ。下に「動画の題名リンク／出典：チャンネル名（YouTube）・長さ・動画URL」を必ず書く（CSSは assets/blog.css の .yt / .cap / .vcard）。Xのポストを埋め込むときは公式の埋め込みコード（blockquote＋widgets.js）を使う。会社のネットワークではXが開けないので、ポストのURLはユーザーにもらう
+   **チームの印**: Mリーグのチーム表の丸い印（.tm-badge）はまじゃすこで付けた頭文字と色。公式ロゴ・公式カラーとは書かない
    人の成績・所属・タイトルは**公式サイト→Wikipedia→報道の順で確かめ、記事の最後に出典を書く**。確かめられない項目は「―」にして推測で埋めない。
    **選手の宣材写真・ユニフォーム写真・公式の画像は転載しない**（著作権・肖像権。出典を書いても引用の要件を満たさない）。代わりに公式ページへのリンクを置く。
    シーズンが変わったら（毎年秋）チーム・選手・優勝の表を更新する。列の多い表は class="wide"（横スクロール・760px）
