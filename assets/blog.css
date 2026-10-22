@@ -153,3 +153,78 @@ body:not(.bs-list) .site-foot a { color: #fff; }
 .blog-post .app-txt span { font-size: 13px; color: #333; line-height: 1.7; }
 .blog-post .app-link { font-size: 12px; font-weight: 700; color: #177083; margin-top: 2px; }
 .blog-post .tm-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; padding: 0 5px; border-radius: 13px; color: #fff; font-size: 11px; font-weight: 800; margin-right: 8px; vertical-align: middle; letter-spacing: -.02em; }
+
+/* ==== 記事ページの配色 第2版（2026-10-22・ユーザーの依頼）: 緑・青・オレンジ＋白で楽しく。
+   オレンジは装飾のアクセント（牌の印・蛍光ペン・点・小見出しの印）にも使うが、ボタンの形にするのはCTAだけ ==== */
+body:not(.bs-list) .post-layout > .blog-post { border-top: 0; position: relative; overflow: hidden; }
+body:not(.bs-list) .post-layout > .blog-post::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: linear-gradient(90deg, #177083 0 40%, #4261AA 40% 75%, #E75620 75% 100%); }
+body:not(.bs-list) .post-layout > .blog-post .post-meta { display: inline-block; background: #EAF0FB; color: #4261AA; font-weight: 700; border-radius: 20px; padding: 2px 12px; border-bottom: 0; margin-bottom: 18px; }
+/* 見出し: 色の帯に白い文字。奇数は緑・偶数は青。左に白い牌（裏がオレンジ）の印 */
+body:not(.bs-list) .post-layout > .blog-post h2 { color: #fff; background: linear-gradient(100deg, #177083, #2A8C9E); border-left: 0; border-radius: 12px; padding: 11px 16px 11px 44px; position: relative; box-shadow: 0 4px 14px rgba(23,112,131,.18); }
+body:not(.bs-list) .post-layout > .blog-post h2:nth-of-type(even) { background: linear-gradient(100deg, #4261AA, #5B7BC4); box-shadow: 0 4px 14px rgba(66,97,170,.2); }
+body:not(.bs-list) .post-layout > .blog-post h2::before { content: ""; position: absolute; left: 16px; top: 50%; width: 15px; height: 20px; margin-top: -10px; border-radius: 4px; background: #fff; box-shadow: inset 0 -5px 0 #E75620; }
+body:not(.bs-list) .post-layout > .blog-post h2 a { color: #fff; }
+body:not(.bs-list) .post-layout > .blog-post h3 { border-bottom: 2px dotted #C9D6EE; padding-left: 14px; position: relative; color: #1F2A28; }
+body:not(.bs-list) .post-layout > .blog-post h3::before { content: ""; position: absolute; left: 0; top: .35em; bottom: .65em; width: 5px; border-radius: 3px; background: #E75620; }
+body:not(.bs-list) .post-layout > .blog-post strong { color: #0F5C6B; background: linear-gradient(transparent 62%, #FFE2D3 62%); padding: 0 1px; }
+body:not(.bs-list) .post-layout > .blog-post ul li::marker { color: #E75620; }
+body:not(.bs-list) .post-layout > .blog-post ol li::marker { color: #4261AA; font-weight: 800; }
+body:not(.bs-list) .post-layout > .blog-post th { background: #4261AA; color: #fff; border-color: #4261AA; }
+body:not(.bs-list) .post-layout > .blog-post td { border-color: #DCE3F1; }
+body:not(.bs-list) .post-layout > .blog-post tbody tr:nth-child(even) td { background: #F6F8FD; }
+body:not(.bs-list) .post-layout > .blog-post td a, body:not(.bs-list) .post-layout > .blog-post p a { color: #2F56A8; }
+/* 目次: 白いカードに青い枠、項目は丸いチップ */
+body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #fff; border: 2px solid #C9D6EE; border-radius: 14px; padding: 12px 14px 8px; }
+body:not(.bs-list) .post-layout > .blog-post .post-toc b { color: #E75620; font-size: 13px; }
+body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: inline-block; background: #EAF0FB; color: #4261AA; border-radius: 20px; padding: 2px 12px; margin: 0 6px 6px 0; font-size: 13px; text-decoration: none; }
+/* 囲み: 白地に左のオレンジ線 */
+body:not(.bs-list) .post-layout > .blog-post .callout { background: #fff; border: 1.5px solid #F6D3C3; border-left: 6px solid #E75620; }
+body:not(.bs-list) .post-layout > .blog-post .callout .c-ttl { color: #E75620; }
+body:not(.bs-list) .post-layout > .blog-post .vcard { background: #fff; border: 1.5px solid #C9D6EE; }
+/* 記事の最後のCTA: 緑と青の淡いグラデーションの箱（ボタンはオレンジのまま） */
+body:not(.bs-list) .post-layout > .blog-post .cta-wrap { background: linear-gradient(135deg, #E4F3EC, #EAF0FB); border: 0; border-radius: 18px; padding: 26px 18px; }
+body:not(.bs-list) .post-layout > .blog-post .cta-wrap p { font-weight: 700; color: #1F2A28; }
+body:not(.bs-list) .side-box h2 { border-left-color: #E75620; }
+body:not(.bs-list) .side-box:nth-child(even) h2 { border-left-color: #4261AA; color: #4261AA; }
+/* 見出しのすぐ下の小さなイラスト（よくある質問・まとめ） */
+.blog-post .spot { max-width: 220px; margin: -4px auto 10px; }
+.blog-post .spot svg { width: 100%; height: auto; display: block; }
+
+/* ---- YouTubeチャンネルの紹介カード（.ch-card）: 頭文字の丸い印はまじゃすこで付けたもの。URLは大きく見せる ---- */
+.blog-post .ch-list { display: grid; gap: 12px; margin: 4px 0 22px; }
+@media (min-width: 640px) { .blog-post .ch-list.two { grid-template-columns: 1fr 1fr; } }
+.blog-post .ch-card { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1.5px solid #DCE3F1; border-radius: 16px; padding: 14px; box-shadow: 0 4px 14px rgba(66,97,170,.07); }
+.blog-post .ch-ic { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; color: #fff; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #EAF0FB; }
+.blog-post .ch-body { flex: 1; min-width: 0; }
+.blog-post .ch-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.blog-post .ch-top b { font-size: 15px; color: #1F2A28; line-height: 1.5; }
+.blog-post .ch-tag { font-size: 11px; font-weight: 800; color: #E75620; background: #FDEEE7; border-radius: 20px; padding: 0 9px; }
+.blog-post .ch-meta { display: block; font-size: 12px; color: #5F6E6B; margin-top: 1px; }
+.blog-post .ch-desc { font-size: 13px !important; line-height: 1.75; margin: 6px 0 8px !important; color: #333; }
+.blog-post a.ch-url { display: flex; flex-direction: column; gap: 0; background: #EAF0FB; border-radius: 12px; padding: 8px 12px; text-decoration: none; color: #2F56A8 !important; font-weight: 800; font-size: 14px; word-break: break-all; line-height: 1.5; }
+.blog-post a.ch-url small { font-size: 11px; color: #4261AA; font-weight: 700; }
+.blog-post a.ch-url:hover { background: #DCE6F8; }
+
+/* ---- 団体の紹介カード（.org-card）: 色の帯に団体名、下に公式サイトとYouTubeのURL ---- */
+.blog-post .org-card { border-radius: 16px; overflow: hidden; border: 1.5px solid #DCE3F1; background: #fff; margin: 4px 0 22px; box-shadow: 0 4px 14px rgba(23,112,131,.07); }
+.blog-post .org-head { background: var(--c, #177083); color: #fff; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.blog-post .org-head b { font-size: 16px; }
+.blog-post .org-head small { font-size: 12px; opacity: .9; }
+.blog-post .org-rows { padding: 10px 16px 4px; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+.blog-post .org-rows dt { color: #5F6E6B; font-weight: 700; }
+.blog-post .org-rows dd { margin: 0; color: #1F2A28; }
+.blog-post .org-links { padding: 8px 16px 14px; display: grid; gap: 8px; }
+.blog-post .ch-lead { font-size: 13px !important; font-weight: 800; color: #1F2A28; margin: 4px 0 8px !important; }
+.blog-post .ch-lead span { display: inline-block; color: #fff; border-radius: 20px; padding: 0 10px; margin-right: 6px; font-size: 12px; }
+
+/* ---- 一覧ページ（ブログ・麻雀攻略・お知らせ）の配色 第2版: 緑→青の見出し帯＋カードの上の色線（緑・青・オレンジの順） ---- */
+.bs-list .blog-hero { background: linear-gradient(120deg, #177083 0%, #2A8C9E 45%, #4261AA 100%); position: relative; overflow: hidden; padding: 38px 20px 34px; }
+.bs-list .blog-hero::before { content: ""; position: absolute; width: 180px; height: 180px; border-radius: 50%; background: rgba(255,255,255,.10); left: -50px; top: -70px; }
+.bs-list .blog-hero::after { content: ""; position: absolute; width: 64px; height: 84px; border-radius: 12px; background: #fff; box-shadow: inset 0 -16px 0 #E75620; right: -10px; bottom: -58px; transform: rotate(-14deg); opacity: .95; }
+.bs-list .blog-hero h1 { color: #fff; position: relative; }
+.bs-list .blog-hero p { color: rgba(255,255,255,.9); position: relative; }
+.bs-list .post-card { border-top: 5px solid #177083; }
+.bs-list .post-card:nth-child(3n+2) { border-top-color: #4261AA; }
+.bs-list .post-card:nth-child(3n) { border-top-color: #E75620; }
+.bs-list .post-card:nth-child(3n+2) .post-tag:not(.orange) { background: #EAF0FB; color: #4261AA; }
+.bs-list .cat-chip.on { background: linear-gradient(100deg, #177083, #4261AA); }
