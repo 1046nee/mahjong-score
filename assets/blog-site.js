@@ -119,12 +119,19 @@ const BLOG_POSTS = [
   const byDateDesc = (a, b) => b.date.localeCompare(a.date);
 
   function cardHtml(p) {
-    return `<a class="post-card" href="${p.url}">
-      <span class="post-tag${p.tagStyle === 'orange' ? ' orange' : ''}">${escHtml(p.tag || BLOG_CATS[p.cat].name)}</span>
+    // 行の左の色＝カテゴリ（緑=麻雀攻略・青=お知らせ・茶=雑記）。タグは記事の中身の目印
+    return `<a class="post-card cat-${p.cat}" href="${p.url}">
+      <span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
       <h2>${escHtml(p.title)}</h2>
       <p class="excerpt">${escHtml(p.desc)}</p>
-      <div class="foot"><span class="date">${p.date}</span><span class="read-more">記事を読む ▶</span></div>
     </a>`;
+  }
+  // カテゴリのタブ（すべて/麻雀攻略/お知らせ/雑記）。記事の数つき。tools/build_post_lists.js と同じマークアップ
+  function catNavHtml(active) {
+    const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(BLOG_CATS).map(k => [k, BLOG_CATS[k].name, BLOG_CATS[k].url]));
+    const count = k => BLOG_POSTS.filter(p => k === 'all' || p.cat === k).length;
+    return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
+      `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
   }
   function sideItem(p) {
     return `<li><a class="sb-link" href="${p.url}">${escHtml(p.title)}</a><span class="sb-date">${p.date}・${BLOG_CATS[p.cat].name}</span></li>`;
@@ -270,10 +277,10 @@ const BLOG_POSTS = [
     });
 
     // カテゴリナビ（すべて / 麻雀攻略 / お知らせ / 雑記）
+    // 一覧ページはHTMLに書いてある（tools/build_post_lists.js）。空のときだけここで描く
     document.querySelectorAll('[data-cat-nav]').forEach(el => {
-      const active = el.getAttribute('data-cat-nav');
-      const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(BLOG_CATS).map(k => [k, BLOG_CATS[k].name, BLOG_CATS[k].url]));
-      el.innerHTML = items.map(([k, label, url]) => `<a class="cat-chip${k === active ? ' on' : ''}" href="${url}">${label}</a>`).join('');
+      if (el.children.length) return;
+      el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
     });
 
     // サイドバー: 今月のおすすめ記事 ＋ 最新のアップデート（/news/の新着）

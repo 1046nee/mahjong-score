@@ -28,12 +28,18 @@ const posts = eval(postsMatch[1]);
 // blog-site.js の cardHtml() と同一のマークアップを出力すること（差があるとJS再描画でちらつく）
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date);
-const cardHtml = p => `<a class="post-card" href="${p.url}">
-      <span class="post-tag${p.tagStyle === 'orange' ? ' orange' : ''}">${escHtml(p.tag || cats[p.cat].name)}</span>
+const cardHtml = p => `<a class="post-card cat-${p.cat}" href="${p.url}">
+      <span class="pc-meta"><span class="pc-cat">${cats[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
       <h2>${escHtml(p.title)}</h2>
       <p class="excerpt">${escHtml(p.desc)}</p>
-      <div class="foot"><span class="date">${p.date}</span><span class="read-more">記事を読む ▶</span></div>
     </a>`;
+// blog-site.js の catNavHtml() と同じ（タブを先にHTMLに書いておくと、ページを移るときに画面が跳ねない）
+const catNavHtml = active => {
+  const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(cats).map(k => [k, cats[k].name, cats[k].url]));
+  const count = k => posts.filter(p => k === 'all' || p.cat === k).length;
+  return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
+    `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
+};
 
 const pages = [
   ['blog.html', 'all'],
@@ -50,6 +56,9 @@ for (const [file, cat] of pages) {
   const re = new RegExp(`(<main class="post-list" data-post-list="${cat}">)[\\s\\S]*?(</main>)`);
   if (!re.test(html)) throw new Error(`アンカーが見つかりません: ${file}`);
   html = html.replace(re, `$1\n    ${cards}\n  $2`);
+  const nre = new RegExp(`(<nav class="cat-nav" data-cat-nav="${cat}">)[\\s\\S]*?(</nav>)`);
+  if (!nre.test(html)) throw new Error(`タブのアンカーが見つかりません: ${file}`);
+  html = html.replace(nre, `$1${catNavHtml(cat)}$2`);
   fs.writeFileSync(fp, html);
   console.log(`${file}: ${list.length} cards written`);
 }
