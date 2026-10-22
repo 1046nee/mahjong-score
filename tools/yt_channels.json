@@ -67,6 +67,12 @@
    "thumb": "https://yt3.ggpht.com/ytc/AIdro_ncrnNmBzn-6pkR2Xrv4f16u6IMn-aGU7nd66qbe-B8Uis=s88-c-k-c0x00ffffff-no-rj",
    "subs": 159000
   },
+  "https://www.youtube.com/@janchubu": {
+   "id": "UCgul0ftGOOY5t0VTZgnwj8Q",
+   "title": "じゃんちゅーぶ〜麻雀格闘倶楽部【公式】〜",
+   "thumb": "https://yt3.ggpht.com/csU81VWPlvn5eWgbP1QZFX0U_zUvLJTIBC26Vt1j3HWUrDfbdvpnn4QGVaZkNc8sObUHuyxqng=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 43900
+  },
   "https://www.youtube.com/@kadokawa_sk": {
    "id": "UCvKXzjSvPSoYDpG-SLqrkdg",
    "title": "KADOKAWAサクラナイツ公式チャンネル",
@@ -139,11 +145,11 @@
    "thumb": "https://yt3.ggpht.com/ytc/AIdro_lLEVeSaB4D47d0JbNGirUGef-YUnkVtpPhoRWXcoz8-w=s88-c-k-c0x00ffffff-no-rj",
    "subs": 34400
   },
-  "https://www.youtube.com/channel/UCcbokYAetPdyS1PVURBopMg": {
-   "id": "UCcbokYAetPdyS1PVURBopMg",
-   "title": "TEAM雷電【公式】",
-   "thumb": "https://yt3.ggpht.com/MhZ213b7C8uUjxvJbV_Ah4buhJyWRVMHWHaU6WBhzZKMACNO2n6S1cLpXooBFMZkUwRa9KHnRQ=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 39100
+  "https://www.youtube.com/channel/UCIXxDdInZsGkYwA1DsHRMOA": {
+   "id": "UCIXxDdInZsGkYwA1DsHRMOA",
+   "title": "その研 -園田賢の麻雀研究所-",
+   "thumb": "https://yt3.ggpht.com/qN_ouPoiGTH4TCinpqbEi-LvQ3GIxj2qVdidTlEekRJd1E74NWnJUXdTywxBLIG_FoEMRO_n7K0=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 76800
   },
   "https://www.youtube.com/channel/UCSpPZV8gKgGtRvUq38zwD4w": {
    "id": "UCSpPZV8gKgGtRvUq38zwD4w",
@@ -151,17 +157,17 @@
    "thumb": "https://yt3.ggpht.com/UUCr1HqiPzH2q7ruN75mEiKcU3pVt7WbkvvetAsZF4r4b0wmMDzuG_H8vl6TBtvOAB_dgYwJAg=s88-c-k-c0x00ffffff-no-rj",
    "subs": 72400
   },
-  "https://www.youtube.com/channel/UCIXxDdInZsGkYwA1DsHRMOA": {
-   "id": "UCIXxDdInZsGkYwA1DsHRMOA",
-   "title": "その研 -園田賢の麻雀研究所-",
-   "thumb": "https://yt3.ggpht.com/qN_ouPoiGTH4TCinpqbEi-LvQ3GIxj2qVdidTlEekRJd1E74NWnJUXdTywxBLIG_FoEMRO_n7K0=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 76800
-  },
   "https://www.youtube.com/channel/UCqHDeUer8bgaqswSuFP7FxQ": {
    "id": "UCqHDeUer8bgaqswSuFP7FxQ",
    "title": "日本プロ麻雀連盟",
    "thumb": "https://yt3.ggpht.com/fQf1_pv_Qs-seOA0gzeVHyNkjNdd8LsKjEZ1n_UeIjsNbVSfDyrnWrp3nnj7BHnm_C16GmI-x20=s88-c-k-c0x00ffffff-no-rj",
    "subs": 211000
+  },
+  "https://www.youtube.com/channel/UCcbokYAetPdyS1PVURBopMg": {
+   "id": "UCcbokYAetPdyS1PVURBopMg",
+   "title": "TEAM雷電【公式】",
+   "thumb": "https://yt3.ggpht.com/MhZ213b7C8uUjxvJbV_Ah4buhJyWRVMHWHaU6WBhzZKMACNO2n6S1cLpXooBFMZkUwRa9KHnRQ=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 39100
   }
  }
 }
