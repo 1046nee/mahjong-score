@@ -68,6 +68,12 @@
 0e. **麻雀情報のページ（2026-10-21〜・ユーザーの依頼）**: blog-mleague-2026.html（今季の全チーム・選手・ルール）／blog-mleague-history.html（歴代優勝・MVP・順位・仕組みの変化）／blog-pro-dantai-rules.html（5団体とルールの比較・まじゃすこでの設定）。blog-mahjong-titles.html（タイトル戦と保持者）／blog-mahjong-pro.html（プロになるには・例題は記事オリジナルで検算済み。受験料など実費の金額は書いてよい＝賭けの連想がないため。賞金は書かない）／blog-meet-mleaguer.html（PV・イベント・雀荘のゲスト。チケット代は書かずリンク）。blog-mahjong-books.html（19冊。書誌は国立国会図書館サーチで確認・楽天ブックスのアフィリエイト（ISBN検索）。表紙は楽天ウェブサービスの書籍APIで取得予定＝アプリIDが要る）／blog-mahjong-youtube.html（未経験・初心者・中級者・上級者のレベル別に勉強動画を埋め込み＋公式・チーム・本人チャンネルの一覧。再生数・登録者数は確認した日付を書く。解説専門のチャンネルは可・無断の切り抜きは載せない）／blog-mahjong-game-apps.html（アイコン・評価はAppleのSearch API＝itunes.apple.com/lookup。画像は mzstatic の公開URL）。
    **画像を載せるときの正規の方法**: 公式YouTubeの埋め込み（youtube-nocookie）、App Storeのアイコン（Search API）、楽天の商品画像（API）。公式サイト・Xの写真の転載はしない
    **動画の埋め込みの書き方**: 埋め込み可（oEmbedで確認）の動画だけ。下に「動画の題名リンク／出典：チャンネル名（YouTube）・長さ・動画URL」を必ず書く（CSSは assets/blog.css の .yt / .cap / .vcard）。Xのポストを埋め込むときは公式の埋め込みコード（blockquote＋widgets.js）を使う。会社のネットワークではXが開けないので、ポストのURLはユーザーにもらう
+   **SNSアカウントとXのポスト（2026-10-22〜）**: アカウントは `assets/blog-site.js` の `SNS_ACCOUNTS` に足し、記事には `<div class="sns-list" data-sns="キー,キー"></div>`（静的にカードを書いてもよい・検索に見せたいときは静的に）。
+   全記事の最後（著者ブロックの前）に「まじゃすこの公式SNS」（X・Instagram）、サイドバーに「公式SNS」を blog-site.js が自動で入れる。
+   Xのポストは公式の埋め込みコード（blockquote.twitter-tweet）をそのまま貼る。widgets.js はポストのあるページだけ、画面に近づいたら読む（ほかの記事にはXのスクリプトを入れない）。
+   Xが開けない環境では blockquote が引用の形で残るので、**blockquote の中にポストの本文と日付を必ず残す**（公式コードのまま）。
+   **アカウント・ポストは公式サイトの記載か、ユーザーにもらったURLで確かめたものだけ載せる**（作業環境からXに届かないため、推測のハンドルは書かない）。
+   初めてポストを埋め込む記事を出すときは privacy.html に「Xの埋め込み（X社がCookieを使うことがある）」を追記する
    **記事の配色（2026-10-22〜）**: 見出しh2は色の帯に白い文字（奇数=緑・偶数=青）＋白い牌の印。h3はオレンジの縦線、太字はオレンジの蛍光ペン、表の見出しは青。CSSは assets/blog.css の「配色 第2版」。よくある質問・まとめの見出しの下に小さなイラスト（.spot。scratchpadのp_color.pyで一括挿入。記事を作り直したら付け直す）
    **チャンネル・団体の紹介**: 動画のそばにチャンネルの紹介カード（.ch-card。頭文字の丸い印＋登録者数＋URLを大きく）。団体はカード（.org-card。公式サイトとYouTubeのURL）。記事の最後にURL一覧の表でまとめる
    **チームの印**: Mリーグのチーム表の丸い印（.tm-badge）はまじゃすこで付けた頭文字と色。公式ロゴ・公式カラーとは書かない

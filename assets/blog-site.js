@@ -133,6 +133,29 @@ const BLOG_POSTS = [
   // 全ブログ/固定ページ共通: LP（トップ）と同じ見た目のヘッダー・フッターに差し替える。
   // 各HTMLに書かれた静的なヘッダー/フッターはJS無効時のフォールバック。
   // デザインを変えるときはこの関数だけ直せば全ページに反映される
+  // ---- SNSアカウント（2026-10-22）: 記事で紹介する公式アカウント。URLは公式サイト・記事で確かめたものだけ足す ----
+  const SNS_ICON = {
+    x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 3h4.6l4.1 5.6L17.4 3H20l-6.1 7.2L21 21h-4.6l-4.5-6.1L6.6 21H4l6.6-7.8z"/></svg>',
+    ig: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>',
+  };
+  const SNS_ACCOUNTS = {
+    majasco_x: { pf: 'x', name: 'まじゃすこ', tag: 'このサイトの公式', handle: '@majasco_jp', url: 'https://x.com/majasco_jp',
+      desc: '新しい機能のお知らせ、集計を楽にする使い方のコツ、ブログの新しい記事', go: 'Xでフォローする' },
+    majasco_ig: { pf: 'ig', name: 'まじゃすこ', tag: 'このサイトの公式', handle: '@majasco_jp', url: 'https://www.instagram.com/majasco_jp/',
+      desc: '画面の画像で見る使い方（入力・共有・成績）、ウマ・オカなどの用語の図解', go: 'Instagramでフォローする' },
+    mleague_x: { pf: 'x', name: 'Mリーグ', tag: 'リーグ公式', handle: '@m_league_', url: 'https://x.com/m_league_',
+      desc: '試合の予定と結果、イベント・チケットの発表。会場の解説者など直前のお知らせもここに出る', go: 'Xでアカウントを見る' },
+  };
+  function snsCardHtml(key) {
+    const a = SNS_ACCOUNTS[key];
+    if (!a) return '';
+    const host = a.url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+    return `<div class="sns-card"><span class="sns-ic ${a.pf}">${SNS_ICON[a.pf]}</span><div class="sns-body">`
+      + `<div class="sns-top"><b>${a.name}</b><span class="sns-tag">${a.tag}</span></div>`
+      + `<span class="sns-handle">${a.pf === 'x' ? 'X' : 'Instagram'}・${a.handle}</span>`
+      + `<p class="sns-desc">${a.desc}</p>`
+      + `<a class="sns-url" href="${a.url}" target="_blank" rel="noopener"><small>${a.go}</small>${host}</a></div></div>`;
+  }
   function renderChrome() {
     const st = document.createElement('style');
     st.textContent = `
@@ -191,6 +214,40 @@ const BLOG_POSTS = [
       if (tb.rows[0] && tb.rows[0].cells.length >= 4) tb.style.minWidth = '520px';
     });
 
+    // 記事の中の <div class="sns-list" data-sns="mleague_x,majasco_x"></div> をアカウントのカードにする
+    document.querySelectorAll('.blog-post [data-sns]').forEach(el => {
+      if (el.children.length) return; // 静的に書いてあるカードはそのまま
+      el.innerHTML = el.getAttribute('data-sns').split(',').map(k => snsCardHtml(k.trim())).join('');
+    });
+
+    // 記事の最後の「まじゃすこの公式SNS」（全記事共通。著者ブロックの前）
+    const ctaBox = document.querySelector('.blog-post .cta-wrap');
+    if (ctaBox && !document.querySelector('.sns-follow')) {
+      const f = document.createElement('div');
+      f.className = 'sns-follow';
+      f.innerHTML = `<p class="sns-follow-title">まじゃすこの公式SNS</p>
+        <p class="sns-follow-lead">新しい記事と、集計が楽になる機能のお知らせを流しています。記事の感想や「こんなことを書いてほしい」もお気軽にどうぞ。</p>
+        <div class="sns-list two">${snsCardHtml('majasco_x')}${snsCardHtml('majasco_ig')}</div>`;
+      ctaBox.parentNode.insertBefore(f, ctaBox);
+    }
+
+    // Xのポストの埋め込み: 公式の埋め込みコード（blockquote.twitter-tweet）があるページだけ、画面に近づいたら widgets.js を読む
+    // （読めない環境では blockquote が引用の形のまま残る。読み込みはポストのあるページだけ＝ほかの記事には X のスクリプトを入れない）
+    const tweets = document.querySelectorAll('.blog-post blockquote.twitter-tweet');
+    if (tweets.length) {
+      let loaded = false;
+      const load = () => {
+        if (loaded) return; loaded = true;
+        const sc = document.createElement('script');
+        sc.src = 'https://platform.twitter.com/widgets.js'; sc.async = true; sc.charset = 'utf-8';
+        document.body.appendChild(sc);
+      };
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); load(); } }, { rootMargin: '600px 0px' });
+        tweets.forEach(t => io.observe(t));
+      } else load();
+    }
+
     // 記事末尾の著者ブロック（E-E-A-T対策: 全記事共通でCTAの直前に自動挿入）
     const cta = document.querySelector('.blog-post .cta-wrap');
     if (cta && !document.querySelector('.author-box')) {
@@ -231,6 +288,10 @@ const BLOG_POSTS = [
       html += `<div class="side-box"><h2>最新のアップデート</h2>`
         + (news.length ? `<ul>${news.map(sideItem).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
         + `<a class="sb-more" href="/news/">お知らせ一覧 ›</a>　<a class="sb-more" href="/news/feed.xml">RSS</a></div>`;
+      html += `<div class="side-box"><h2>公式SNS</h2><ul>`
+        + `<li><a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（@majasco_jp）</a><br><small>新機能・使い方のコツ・新しい記事</small></li>`
+        + `<li><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（@majasco_jp）</a><br><small>画面の画像で見る使い方・用語の図解</small></li>`
+        + `</ul></div>`;
       el.innerHTML = html;
     });
   });

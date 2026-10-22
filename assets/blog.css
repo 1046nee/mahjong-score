@@ -228,3 +228,32 @@ body:not(.bs-list) .side-box:nth-child(even) h2 { border-left-color: #4261AA; co
 .bs-list .post-card:nth-child(3n) { border-top-color: #E75620; }
 .bs-list .post-card:nth-child(3n+2) .post-tag:not(.orange) { background: #EAF0FB; color: #4261AA; }
 .bs-list .cat-chip.on { background: linear-gradient(100deg, #177083, #4261AA); }
+
+/* ---- SNSアカウントの紹介カード（.sns-card）とXのポストの埋め込み（2026-10-22）----
+   アイコンは X・Instagram の形を単純化したもの（各社のロゴ画像は使わない）。フォローの案内はボタンではなくリンクの形（オレンジのボタンはCTAだけ） */
+.blog-post .sns-list { display: grid; gap: 12px; margin: 4px 0 22px; }
+@media (min-width: 640px) { .blog-post .sns-list.two { grid-template-columns: 1fr 1fr; } }
+.blog-post .sns-card { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1.5px solid #D6E7E1; border-radius: 16px; padding: 14px; box-shadow: 0 4px 14px rgba(23,112,131,.07); }
+.blog-post .sns-ic { flex-shrink: 0; width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; }
+.blog-post .sns-ic svg { width: 24px; height: 24px; display: block; }
+.blog-post .sns-ic.x { background: #1F2A28; }
+.blog-post .sns-ic.ig { background: linear-gradient(135deg, #F2A33A, #D9406B 55%, #8A4FC0); }
+.blog-post .sns-body { flex: 1; min-width: 0; }
+.blog-post .sns-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.blog-post .sns-top b { font-size: 15px; color: #1F2A28; line-height: 1.5; }
+.blog-post .sns-tag { font-size: 11px; font-weight: 800; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 0 9px; }
+.blog-post .sns-handle { display: block; font-size: 12px; color: #5F6E6B; margin-top: 1px; }
+.blog-post .sns-desc { font-size: 13px !important; line-height: 1.75; margin: 6px 0 8px !important; color: #333; }
+.blog-post a.sns-url { display: flex; flex-direction: column; background: #E4F3EC; border-radius: 12px; padding: 8px 12px; text-decoration: none; color: #136070 !important; font-weight: 800; font-size: 14px; word-break: break-all; line-height: 1.5; }
+.blog-post a.sns-url small { font-size: 11px; color: #177083; font-weight: 700; }
+.blog-post a.sns-url:hover { background: #D3EBE1; }
+/* 記事の最後の「まじゃすこの公式SNS」（blog-site.js が著者ブロックの前に入れる） */
+.blog-post .sns-follow { margin: 36px 0 0; padding: 18px 16px 4px; border-radius: 18px; background: #F6FAF9; border: 1px solid #E2ECE7; }
+.blog-post .sns-follow-title { font-size: 15px; font-weight: 800; color: #177083; margin: 0 0 4px; }
+.blog-post .sns-follow-lead { font-size: 13px !important; color: #444; margin: 0 0 12px !important; line-height: 1.75; }
+.blog-post .sns-follow + .author-box { margin-top: 16px; }
+/* Xのポスト: 公式の埋め込みコード（blockquote.twitter-tweet）。Xが読み込めない環境（会社のネットワークなど）でも引用の形で読める */
+.blog-post blockquote.twitter-tweet { margin: 4px 0 8px; padding: 14px 16px; background: #fff; border: 1.5px solid #D6E7E1; border-left: 5px solid #1F2A28; border-radius: 14px; font-size: 14px; line-height: 1.8; color: #1F2A28; }
+.blog-post blockquote.twitter-tweet p { margin: 0 0 6px; }
+.blog-post blockquote.twitter-tweet a { font-size: 12px; font-weight: 700; color: #177083; word-break: break-all; }
+.blog-post .twitter-tweet-rendered { margin: 4px auto 8px !important; }
