@@ -72,7 +72,9 @@
    全記事の最後（著者ブロックの前）に「まじゃすこの公式SNS」（X・Instagram）、サイドバーに「公式SNS」を blog-site.js が自動で入れる。
    Xのポストは公式の埋め込みコード（blockquote.twitter-tweet）をそのまま貼る。widgets.js はポストのあるページだけ、画面に近づいたら読む（ほかの記事にはXのスクリプトを入れない）。
    Xが開けない環境では blockquote が引用の形で残るので、**blockquote の中にポストの本文と日付を必ず残す**（公式コードのまま）。
-   **アカウント・ポストは公式サイトの記載か、ユーザーにもらったURLで確かめたものだけ載せる**（作業環境からXに届かないため、推測のハンドルは書かない）。
+   **アカウント・ポストは確かめたものだけ載せる**。ポストは `curl -A "Twitterbot/1.0" https://x.com/{handle}/status/{id}` の meta（og:description=本文・article:published_time=日時・twitter:creator=投稿者・og:image が pbs.twimg.com/media なら画像つき）で本文と日付を確かめてから貼る（scratchpad の xverify.py / xembed.py の形）。探すのは WebSearch の `site:x.com`。
+   アカウントは公式サイトのリンク（saikouisen.com→@saikouisen、npm2001.com→@ClubNPM）か、公式アカウント自身の案内（@m_league_ のプロフィールにある @ML_os_tokyo 等、@JPML_sokuhou の案内にある @JPML0306）で確かめる。RMU・麻将連合は未確認なので載せていない。
+   載せるのは公式（リーグ・団体・チーム・公式ショップ）のポストだけ。非公式の速報アカウントは使わない（賞金の額など金銭の話が入るものも避ける）。埋め込みの前後に「何が分かるポストか」の1文と、下に出典（アカウント名・日付・URL）を必ず書く。2026-10-22時点: Mリーグ2026に5件・Mリーガーに会うに5件・歴史に2件・タイトル戦に3件
    初めてポストを埋め込む記事を出すときは privacy.html に「Xの埋め込み（X社がCookieを使うことがある）」を追記する
    **記事の配色（2026-10-22〜）**: 見出しh2は色の帯に白い文字（奇数=緑・偶数=青）＋白い牌の印。h3はオレンジの縦線、太字はオレンジの蛍光ペン、表の見出しは青。CSSは assets/blog.css の「配色 第2版」。よくある質問・まとめの見出しの下に小さなイラスト（.spot。scratchpadのp_color.pyで一括挿入。記事を作り直したら付け直す）
    **チャンネル・団体の紹介**: 動画のそばにチャンネルの紹介カード（.ch-card。頭文字の丸い印＋登録者数＋URLを大きく）。団体はカード（.org-card。公式サイトとYouTubeのURL）。記事の最後にURL一覧の表でまとめる
