@@ -47,6 +47,11 @@
     ],
     "redirects": [
       {
+        "source": "/changelog.html",
+        "destination": "/news/",
+        "type": 301
+      },
+      {
         "source": "/blog-fu-han.html",
         "destination": "/blog-score-table.html#fu",
         "type": 301

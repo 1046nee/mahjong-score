@@ -252,7 +252,6 @@ body:not(.bs-list) .side-box h2, .bs-list .side-box h2 { border: 0; padding: 0; 
    一覧ページ（ブログ・麻雀攻略・お知らせ・雑記）
    タブはどのページでも同じ位置（ヘッダーのすぐ下・画面の上に残る）。今いるカテゴリはその色の下線
    ========================================================== */
-.bs-list { background: #fff !important; }
 .cat-nav { max-width: none; margin: 0; padding: 0; display: block; position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.96); backdrop-filter: blur(6px); border-bottom: 1px solid #E6ECEA; }
 .cat-nav-inner { max-width: 960px; margin: 0 auto; padding: 0 12px; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .cat-nav-inner::-webkit-scrollbar { display: none; }
@@ -298,3 +297,37 @@ body:not(.bs-list) .side-box h2, .bs-list .side-box h2 { border: 0; padding: 0; 
 .post-card .excerpt { font-size: 13px; }
 .bs-list .app-banner-inner { border-radius: 6px; background: #F2F8F6; }
 @media (max-width: 420px) { .cat-nav-inner { padding: 0 6px; gap: 0; justify-content: space-between; } .cat-tab { padding: 13px 7px 11px; font-size: 13px; gap: 5px; } .cat-tab.on::after { left: 6px; right: 6px; } }
+
+/* ==== 第3版の追補（2026-10-22）: 白すぎないように、マイページと同じ淡い灰緑の地に白い紙を1枚置く。
+   紙は記事の本文と記事の一覧だけ（中の部品は線で区切ったまま）。タブの帯にも色 ==== */
+body:not(.bs-list), body.bs-list { background: #EEF3F1 !important; }
+body:not(.bs-list) .post-layout { padding-top: 16px; }
+body:not(.bs-list) .post-layout > .blog-post { background: #fff; border: 1px solid #DFE8E4; border-radius: 14px; padding: 14px 32px 34px; }
+@media (max-width: 600px) {
+  body:not(.bs-list) .post-layout { padding: 10px 10px 32px; }
+  body:not(.bs-list) .post-layout > .blog-post { padding: 6px 18px 26px; border-radius: 12px; }
+}
+body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
+/* タブ: 灰緑の帯。今いるタブだけ白く浮かせ、下にカテゴリの色の線（マイページの「年・月・日」の切り替えと同じ考え方） */
+.cat-nav { background: #E3ECE8; border-bottom: 0; backdrop-filter: none; }
+.cat-nav-inner { padding-top: 6px; }
+.cat-tab { color: #4F5C5A; border-radius: 8px 8px 0 0; padding: 10px 14px 11px; }
+.cat-tab:hover { background: rgba(255,255,255,.5); }
+.cat-tab.on { background: #fff; color: #1F2A28; }
+.cat-tab.on::after { left: 0; right: 0; bottom: auto; top: 0; height: 3px; border-radius: 8px 8px 0 0; }
+@media (max-width: 420px) { .cat-tab { padding: 9px 8px 10px; } .cat-tab.on::after { left: 0; right: 0; } }
+/* 一覧の見出し: カテゴリの色を少し濃く（地の色と区別する） */
+.bs-list .blog-hero { background: #fff; border-bottom: 0; }
+.bs-list .hero-mahjong { background: #E4F3EC; }
+.bs-list .hero-news { background: #EAF0FB; }
+.bs-list .hero-blog { background: #F4EDE5; }
+/* 記事の一覧は白い紙に行を並べる */
+.bs-list .post-list { background: #fff; border: 1px solid #DFE8E4; border-radius: 14px; padding: 0 18px; border-top: 1px solid #DFE8E4; }
+.bs-list .post-card:last-child { border-bottom: 0; }
+.bs-list .post-card:hover { background: #F7FAF9; }
+.bs-list .side-box, body:not(.bs-list) .side-box { border-top-color: #9FC3BD; }
+/* SNSのアイコンは App Store の公式のアプリのアイコン（Apple の Search API の画像） */
+.blog-post .sns-ic { background: none !important; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; }
+.blog-post .sns-ic img { width: 40px; height: 40px; display: block; border-radius: 10px; border: 1px solid #E6EEEB; }
+.side-box .sns-side { display: flex; gap: 10px; align-items: center; }
+.side-box .sns-side img { width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E6EEEB; flex-shrink: 0; }

@@ -141,9 +141,10 @@ const BLOG_POSTS = [
   // 各HTMLに書かれた静的なヘッダー/フッターはJS無効時のフォールバック。
   // デザインを変えるときはこの関数だけ直せば全ページに反映される
   // ---- SNSアカウント（2026-10-22）: 記事で紹介する公式アカウント。URLは公式サイト・記事で確かめたものだけ足す ----
+  // アイコンは App Store の公式のアプリのアイコン（Apple の Search API の画像。2026-10-22 ユーザーの依頼）
   const SNS_ICON = {
-    x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 3h4.6l4.1 5.6L17.4 3H20l-6.1 7.2L21 21h-4.6l-4.5-6.1L6.6 21H4l6.6-7.8z"/></svg>',
-    ig: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>',
+    x: '<img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg" alt="X" width="40" height="40" loading="lazy">',
+    ig: '<img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg" alt="Instagram" width="40" height="40" loading="lazy">',
   };
   const SNS_ACCOUNTS = {
     majasco_x: { pf: 'x', name: 'まじゃすこ', tag: 'このサイトの公式', handle: '@majasco_jp', url: 'https://x.com/majasco_jp',
@@ -296,8 +297,8 @@ const BLOG_POSTS = [
         + (news.length ? `<ul>${news.map(sideItem).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
         + `<a class="sb-more" href="/news/">お知らせ一覧 ›</a>　<a class="sb-more" href="/news/feed.xml">RSS</a></div>`;
       html += `<div class="side-box"><h2>公式SNS</h2><ul>`
-        + `<li><a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（@majasco_jp）</a><br><small>新機能・使い方のコツ・新しい記事</small></li>`
-        + `<li><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（@majasco_jp）</a><br><small>画面の画像で見る使い方・用語の図解</small></li>`
+        + `<li class="sns-side">${SNS_ICON.x.replace(/40/g, '28')}<span><a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（@majasco_jp）</a><br><small>新機能・使い方のコツ・新しい記事</small></span></li>`
+        + `<li class="sns-side">${SNS_ICON.ig.replace(/40/g, '28')}<span><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（@majasco_jp）</a><br><small>画面の画像で見る使い方・用語の図解</small></span></li>`
         + `</ul></div>`;
       el.innerHTML = html;
     });
