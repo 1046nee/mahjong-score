@@ -227,6 +227,7 @@
   「金銭のやり取りを仲介・助長する機能は含みません」と矛盾し、承知のうえで免責していると読める（2026-08-26に削除）
 
 ## 落とし穴
+- 2026-10-22 自動デプロイが「Permission denied to get service [firebasehosting.googleapis.com]」(403) で失敗。firebase-tools 15.34.1 から、サービスアカウントに serviceusage.services.get（ロール「Service Usage ユーザー」）が要るようになったため。ワークフローで firebaseToolsVersion: 15.34.0 に固定して回避。Google Cloud の IAM でサービスアカウント（github-action-…@mahjong-score-2e8aa.iam.gserviceaccount.com）にそのロールを足せば固定を外せる。デプロイ失敗の原因はジョブのログ（GitHub Actions）で確かめる
 - **firebase.json の ignore は `**/.*` だけでは隠しフォルダの中身（.git/config 等）が公開された**。`**/.*/**` も必須。CIの checkout は `persist-credentials: false`（トークンを .git/config に残さない）。セキュリティのヘッダー（nosniff・frame-ancestors・Permissions-Policy 等）は firebase.json の headers（2026-10-15）
 - 続けてpushすると、前のデプロイ（スモークテストが長い）が後から終わり、新しい版を古い版で上書きした（2026-10-08、「回」の変更が本番に出ていなかった）。デプロイのワークフローに `concurrency`（`cancel-in-progress: true`）を入れて、新しいpushが来たら古い方を止める
 - **AdSense審査は「形式要件OK」でも通らない**（2026-07-17・2026-08-25と2度「有用性の低いコンテンツ」）。

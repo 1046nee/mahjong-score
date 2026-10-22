@@ -35,9 +35,13 @@ jobs:
           test "$(grep -c "'__APP_VERSION__'" index.html)" = 1
           sed -i "s/'__APP_VERSION__'/'$GITHUB_SHA'/" index.html
           echo "$GITHUB_SHA" > version.txt
+      # firebase-tools は版を固定する（2026-10-22 15.34.1 から、デプロイ用のサービスアカウントに
+      # 「Service Usage ユーザー」(serviceusage.services.get) の権限が要るようになり 403 で失敗した。
+      # 権限を足したら latest に戻してよい。docs/site-spec.md の落とし穴を参照）
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAHJONG_SCORE_2E8AA }}
           channelId: live
           projectId: mahjong-score-2e8aa
+          firebaseToolsVersion: 15.34.0
