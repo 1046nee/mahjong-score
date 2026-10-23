@@ -19,6 +19,9 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-yaku-ichiran.html', cat: 'mahjong', date: '2026.10.23', tag: '役一覧',
+    title: '麻雀の役一覧（全38役）｜翻数・鳴いたときの翻数と牌の並びの例つき早見表',
+    desc: '1翻〜役満の全38役を、翻数と鳴いたときの翻数、牌の並びの例つきで。1枚の一覧表（画像・印刷用PDF）つき。' },
   { url: '/blog-mahjong-game-apps.html', cat: 'mahjong', date: '2026.10.21', tag: 'ゲームアプリ',
     title: '麻雀ゲームアプリおすすめ7選｜雀魂・天鳳・MJ・麻雀格闘倶楽部などを比較（2026年版）',
     desc: '雀魂・天鳳・MJ・麻雀格闘倶楽部など7つを、App Storeの評価と特徴で比較。目的別の選び方も。' },

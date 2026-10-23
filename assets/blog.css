@@ -336,3 +336,31 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post a.ch-ic img, .blog-post a.tm-yt img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .blog-post a.tm-yt { display: inline-block; width: 26px; height: 26px; border-radius: 50%; overflow: hidden; vertical-align: middle; margin-right: 8px; background: #E6ECEA; border: 1px solid #E1E8E5; }
 .blog-post img.yt-ico { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; margin-right: 4px; border: 0; }
+
+/* ---- まじゃすこの牌（assets/tiles/）を記事に並べる（2026-10-23）: 手牌・あがり牌（オレンジの下地）・鳴いた面子 ---- */
+.blog-post .hand { display: inline-flex; align-items: flex-end; flex-wrap: wrap; gap: 4px 0; max-width: 100%; }
+.blog-post .hand img { display: block; height: auto; margin-right: 1px; }
+.blog-post .h-in, .blog-post .h-win, .blog-post .h-meld, .blog-post .meld { display: inline-flex; align-items: flex-end; }
+.blog-post .h-win { margin-left: 6px; padding: 2px; background: #FFE2D3; border-radius: 4px; }
+.blog-post .h-meld { margin-left: 8px; gap: 6px; }
+.blog-post .yaku-ex { margin: 2px 0 18px; padding: 10px 10px 8px; background: #F7F9F8; border: 1px solid #E3E9E7; border-radius: 6px; overflow-x: auto; }
+.blog-post .yaku-ex .hand { flex-wrap: nowrap; }
+@media (max-width: 480px) { .blog-post .yaku-ex { padding: 8px 6px 6px; } .blog-post .yaku-ex .hand img { width: 18px; } .blog-post .yaku-ex .hand img[src*="-yoko"] { width: 24px; } .blog-post .h-win { margin-left: 4px; } .blog-post .h-meld { margin-left: 5px; gap: 4px; } }
+.blog-post h3 .han { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 800; color: #136070; background: #E4F3EC; border-radius: 3px; padding: 1px 7px; vertical-align: 2px; }
+.blog-post table.yaku-tbl td small { display: block; font-size: 11px; color: #6B7A77; }
+.blog-post table.yaku-tbl tbody th { white-space: nowrap; vertical-align: middle; }
+.blog-post .sheet { margin: 6px 0 8px; }
+.blog-post .sheet img { width: 100%; height: auto; display: block; border: 1px solid #DFE6E3; border-radius: 6px; }
+.blog-post .sheet figcaption { font-size: 12px; color: #6B7A77; margin-top: 6px; }
+.blog-post .sheet-dl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.blog-post .sheet-dl a { flex: 1 1 160px; text-align: center; font-size: 14px; font-weight: 800; color: #2F56A8; border: 1.5px solid #C9D6EE; border-radius: 6px; padding: 10px 8px; text-decoration: none; background: #F7F9FC; }
+/* 牌の一覧（ルール基本の記事） */
+.blog-post .hai-grid { margin: 4px 0 16px; }
+.blog-post .hai-lbl { font-size: 13px !important; font-weight: 800; margin: 10px 0 4px !important; }
+.blog-post .hai-lbl.m { color: #C2471A; } .blog-post .hai-lbl.p { color: #2F4A86; } .blog-post .hai-lbl.s { color: #136070; } .blog-post .hai-lbl.z { color: #1F2A28; }
+.blog-post .hai-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.blog-post .hai-row figure { margin: 0; text-align: center; }
+.blog-post .hai-row img { width: 100%; max-width: 44px; height: auto; display: block; margin: 0 auto; }
+.blog-post .hai-row figcaption { font-size: 10px; line-height: 1.35; color: #55625F; margin-top: 2px; }
+.blog-post .hai-row figcaption b { display: block; font-size: 11px; color: #1F2A28; }
+@media (max-width: 480px) { .blog-post .hai-row { gap: 2px; } .blog-post .hai-row figcaption { font-size: 7.5px; letter-spacing: -.04em; white-space: nowrap; } .blog-post .hai-row figcaption b { font-size: 10px; } }
