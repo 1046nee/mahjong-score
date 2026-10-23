@@ -1,0 +1,644 @@
+{
+ "rows": [
+  {
+   "fu": 20,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 700,
+     "ko_tsumo": [
+      200,
+      400
+     ],
+     "oya_ron": 1000,
+     "oya_tsumo": 400,
+     "ron_ok": false,
+     "tsumo_ok": false
+    },
+    {
+     "mangan": false,
+     "ko_ron": 1300,
+     "ko_tsumo": [
+      400,
+      700
+     ],
+     "oya_ron": 2000,
+     "oya_tsumo": 700,
+     "ron_ok": false,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 2600,
+     "ko_tsumo": [
+      700,
+      1300
+     ],
+     "oya_ron": 3900,
+     "oya_tsumo": 1300,
+     "ron_ok": false,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 5200,
+     "ko_tsumo": [
+      1300,
+      2600
+     ],
+     "oya_ron": 7700,
+     "oya_tsumo": 2600,
+     "ron_ok": false,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 25,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 800,
+     "ko_tsumo": [
+      200,
+      400
+     ],
+     "oya_ron": 1200,
+     "oya_tsumo": 400,
+     "ron_ok": false,
+     "tsumo_ok": false
+    },
+    {
+     "mangan": false,
+     "ko_ron": 1600,
+     "ko_tsumo": [
+      400,
+      800
+     ],
+     "oya_ron": 2400,
+     "oya_tsumo": 800,
+     "ron_ok": true,
+     "tsumo_ok": false
+    },
+    {
+     "mangan": false,
+     "ko_ron": 3200,
+     "ko_tsumo": [
+      800,
+      1600
+     ],
+     "oya_ron": 4800,
+     "oya_tsumo": 1600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 6400,
+     "ko_tsumo": [
+      1600,
+      3200
+     ],
+     "oya_ron": 9600,
+     "oya_tsumo": 3200,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 30,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 1000,
+     "ko_tsumo": [
+      300,
+      500
+     ],
+     "oya_ron": 1500,
+     "oya_tsumo": 500,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 2000,
+     "ko_tsumo": [
+      500,
+      1000
+     ],
+     "oya_ron": 2900,
+     "oya_tsumo": 1000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 3900,
+     "ko_tsumo": [
+      1000,
+      2000
+     ],
+     "oya_ron": 5800,
+     "oya_tsumo": 2000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 7700,
+     "ko_tsumo": [
+      2000,
+      3900
+     ],
+     "oya_ron": 11600,
+     "oya_tsumo": 3900,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 40,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 1300,
+     "ko_tsumo": [
+      400,
+      700
+     ],
+     "oya_ron": 2000,
+     "oya_tsumo": 700,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 2600,
+     "ko_tsumo": [
+      700,
+      1300
+     ],
+     "oya_ron": 3900,
+     "oya_tsumo": 1300,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 5200,
+     "ko_tsumo": [
+      1300,
+      2600
+     ],
+     "oya_ron": 7700,
+     "oya_tsumo": 2600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 50,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 1600,
+     "ko_tsumo": [
+      400,
+      800
+     ],
+     "oya_ron": 2400,
+     "oya_tsumo": 800,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 3200,
+     "ko_tsumo": [
+      800,
+      1600
+     ],
+     "oya_ron": 4800,
+     "oya_tsumo": 1600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 6400,
+     "ko_tsumo": [
+      1600,
+      3200
+     ],
+     "oya_ron": 9600,
+     "oya_tsumo": 3200,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 60,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 2000,
+     "ko_tsumo": [
+      500,
+      1000
+     ],
+     "oya_ron": 2900,
+     "oya_tsumo": 1000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 3900,
+     "ko_tsumo": [
+      1000,
+      2000
+     ],
+     "oya_ron": 5800,
+     "oya_tsumo": 2000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 7700,
+     "ko_tsumo": [
+      2000,
+      3900
+     ],
+     "oya_ron": 11600,
+     "oya_tsumo": 3900,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 70,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 2300,
+     "ko_tsumo": [
+      600,
+      1200
+     ],
+     "oya_ron": 3400,
+     "oya_tsumo": 1200,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 4500,
+     "ko_tsumo": [
+      1200,
+      2300
+     ],
+     "oya_ron": 6800,
+     "oya_tsumo": 2300,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 80,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 2600,
+     "ko_tsumo": [
+      700,
+      1300
+     ],
+     "oya_ron": 3900,
+     "oya_tsumo": 1300,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 5200,
+     "ko_tsumo": [
+      1300,
+      2600
+     ],
+     "oya_ron": 7700,
+     "oya_tsumo": 2600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 90,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 2900,
+     "ko_tsumo": [
+      800,
+      1500
+     ],
+     "oya_ron": 4400,
+     "oya_tsumo": 1500,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 5800,
+     "ko_tsumo": [
+      1500,
+      2900
+     ],
+     "oya_ron": 8700,
+     "oya_tsumo": 2900,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 100,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 3200,
+     "ko_tsumo": [
+      800,
+      1600
+     ],
+     "oya_ron": 4800,
+     "oya_tsumo": 1600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 6400,
+     "ko_tsumo": [
+      1600,
+      3200
+     ],
+     "oya_ron": 9600,
+     "oya_tsumo": 3200,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  },
+  {
+   "fu": 110,
+   "cells": [
+    {
+     "mangan": false,
+     "ko_ron": 3600,
+     "ko_tsumo": [
+      900,
+      1800
+     ],
+     "oya_ron": 5300,
+     "oya_tsumo": 1800,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": false,
+     "ko_ron": 7100,
+     "ko_tsumo": [
+      1800,
+      3600
+     ],
+     "oya_ron": 10600,
+     "oya_tsumo": 3600,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    },
+    {
+     "mangan": true,
+     "ko_ron": 8000,
+     "ko_tsumo": [
+      2000,
+      4000
+     ],
+     "oya_ron": 12000,
+     "oya_tsumo": 4000,
+     "ron_ok": true,
+     "tsumo_ok": true
+    }
+   ]
+  }
+ ],
+ "limits": [
+  {
+   "name": "満貫",
+   "han": "5翻",
+   "ko_ron": 8000,
+   "ko_tsumo": [
+    2000,
+    4000
+   ],
+   "oya_ron": 12000,
+   "oya_tsumo": 4000
+  },
+  {
+   "name": "跳満",
+   "han": "6〜7翻",
+   "ko_ron": 12000,
+   "ko_tsumo": [
+    3000,
+    6000
+   ],
+   "oya_ron": 18000,
+   "oya_tsumo": 6000
+  },
+  {
+   "name": "倍満",
+   "han": "8〜10翻",
+   "ko_ron": 16000,
+   "ko_tsumo": [
+    4000,
+    8000
+   ],
+   "oya_ron": 24000,
+   "oya_tsumo": 8000
+  },
+  {
+   "name": "三倍満",
+   "han": "11〜12翻",
+   "ko_ron": 24000,
+   "ko_tsumo": [
+    6000,
+    12000
+   ],
+   "oya_ron": 36000,
+   "oya_tsumo": 12000
+  },
+  {
+   "name": "役満",
+   "han": "13翻〜",
+   "ko_ron": 32000,
+   "ko_tsumo": [
+    8000,
+    16000
+   ],
+   "oya_ron": 48000,
+   "oya_tsumo": 16000
+  }
+ ]
+}
