@@ -242,13 +242,13 @@ def table_scene(scene="yama", T="/assets/tiles"):
     order = live_order()
     idx = {sk: n for n, sk in enumerate(order)}
     haitei = order[-1]
-    show_dead = scene in ("yama", "tsumo")
+    show_dead = scene in ("yama", "tsumo", "haipai")
     for side in range(4):
         body = ""
         for k in range(1, 18):
             px, py = stack_xy(side, k)
             dp = dead_pos(side, k)
-            if dp and scene in ("yama", "kaimon", "tsumo"):
+            if dp and scene in ("yama", "kaimon", "tsumo", "haipai"):
                 if show_dead and dp == 3:
                     body += f'<image href="{T}/m8.svg" x="{px + .5:.1f}" y="{py - 1}" width="{W_ - 1}" height="{(W_ - 1) * 89 / 62:.1f}"/>'
                     continue
@@ -270,6 +270,13 @@ def table_scene(scene="yama", T="/assets/tiles"):
         g += (f'<text x="{x}" y="{y}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="#fff" {F}>'
               f'{SEATS[side]}{"（親）" if side == 0 else ""}</text>')
     bx, by = center_of(0, BREAK)
+    if scene in ("yama", "haipai", "tsumo", "kaimon"):
+        # 王牌の範囲（下の山の下に括弧）
+        (xa, ya), (xb, _) = center_of(0, BREAK), center_of(0, BREAK - 6)
+        xa, xb = xa - W_ / 2, xb + W_ / 2
+        yb = WALL_Y + D_ + 4
+        g += (f'<path d="M{xa:.1f} {yb} v5 H{xb:.1f} v-5" fill="none" stroke="#fff" stroke-width="1.4"/>'
+              f'<text x="{(xa + xb) / 2:.1f}" y="{yb + 16}" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" {F}>王牌（7幢）</text>')
     if scene == "yama":
         g += _box([("山（壁牌）と王牌", True), ("1人17幢（2段＝34枚）×4人＝136枚", False), ("王牌＝開門位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)])
         g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 44, -44)
@@ -283,7 +290,8 @@ def table_scene(scene="yama", T="/assets/tiles"):
         g += _callout((bx + 9, by), "右から9幢目で割る", -64, -36, INK)
         g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌", 40, -34)
     elif scene == "haipai":
-        g += _box([("配牌の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False)])
+        g += _box([("配牌の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False), ("王牌の3幢目の上段をめくる＝ドラ表示牌", False)], 142)
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌をめくる", 50, -40)
         for n in range(0, 24, 2):
             (x, y), (x2, y2) = center_of(*order[n]), center_of(*order[n + 1])
             g += (f'<text x="{(x + x2) / 2:.1f}" y="{(y + y2) / 2 + 3.5:.1f}" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>'
@@ -304,38 +312,51 @@ def table_scene(scene="yama", T="/assets/tiles"):
 
 
 def dead_wall_zoom(T="/assets/tiles"):
-    """王牌（7幢×2段）の拡大図。上段と下段をすき間をあけて上下に分けて描く（実際は下段の上に上段が重なっている）。右端が開門位置。
-    開門位置から1〜2幢目（4枚）が嶺上牌、3幢目の上段がドラ表示牌（その下段が裏ドラ表示牌）、カンをすると4幢目の上段が槓ドラ表示牌。
-    出典: Wikipedia「ドラ (麻雀)」の写真の説明（開門位置から3幢目の上段がドラ表示牌、端の嶺上牌）"""
+    """王牌（7幢×2段＝14枚）の拡大図。卓を上から見た図と同じ向き（開門位置が左）。上段と下段をすき間をあけて分けて描く。
+    左の2幢（4枚）が嶺上牌（開門位置に近い方から ①上段→②下段→③上段→④下段 の順に取る＝ツモと逆向き）、
+    左から3幢目の上段がドラ表示牌、その下段が裏ドラ表示牌、カンをすると4幢目から順に槓ドラ表示牌。
+    出典: Wikipedia「槓」（嶺上牌はドラ表示牌の左側の2幢4枚、開門位置に近い方から順に取る）「壁牌」（同じ幢は上段が先）"""
     w = 40
     h = w * 89 / 62
-    y_up, y_lo = 62, 62 + h + 16
-    g = f'<rect width="420" height="290" rx="16" fill="{GREEN}"/>'
-    xs = {pos: 356 - pos * (w + 4) for pos in range(1, 8)}
+    x0 = 58                       # 1幢目（開門位置のすぐ右）の左端
+    y_up, y_lo = 74, 74 + h + 16
+    g = f'<rect width="420" height="300" rx="16" fill="{GREEN}"/>'
+    xs = {pos: x0 + (pos - 1) * (w + 4) for pos in range(1, 8)}
     for pos, x in xs.items():
         g += f'<image href="{T}/{"m8" if pos == 3 else "back"}.svg" x="{x}" y="{y_up}" width="{w}" height="{h:.1f}"/>'
         g += f'<image href="{T}/back.svg" x="{x}" y="{y_lo:.1f}" width="{w}" height="{h:.1f}" opacity=".85"/>'
         g += f'<line x1="{x + w / 2}" y1="{y_up + h + 2:.1f}" x2="{x + w / 2}" y2="{y_lo - 2:.1f}" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 2"/>'
-    # 嶺上牌（開門位置から1〜2幢目の上下4枚）
-    x2 = xs[2] - 4
-    g += f'<rect x="{x2}" y="{y_up - 5}" width="{2 * (w + 4) + 4}" height="{y_lo + h - y_up + 10:.0f}" rx="8" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
+    # 王牌の範囲（7幢・14枚）
+    xl, xr7 = xs[1] - 6, xs[7] + w + 6
+    g += (f'<path d="M{xl} 48 v-8 H{xr7} v8" fill="none" stroke="#fff" stroke-width="1.6"/>'
+          f'<text x="{(xl + xr7) / 2:.0f}" y="32" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>王牌（7幢・14枚）</text>')
+    # 嶺上牌（左の2幢4枚）と取る順
+    g += f'<rect x="{xs[1] - 4}" y="{y_up - 5}" width="{2 * (w + 4) + 4}" height="{y_lo + h - y_up + 10:.0f}" rx="8" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
+    for n, (pos, yy) in enumerate(((1, y_up), (1, y_lo), (2, y_up), (2, y_lo)), 1):
+        cx, cy = xs[pos] + w / 2, yy + h * .45
+        g += (f'<circle cx="{cx}" cy="{cy:.1f}" r="11" fill="{ORANGE}" stroke="#fff" stroke-width="1.6"/>'
+              f'<text x="{cx}" y="{cy + 4.2:.1f}" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>{n}</text>')
     # 裏ドラ表示牌（3幢目の下段）
     g += f'<rect x="{xs[3] - 3}" y="{y_lo - 3:.1f}" width="{w + 6}" height="{h + 6:.1f}" rx="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
+    # 槓ドラ表示牌になる場所（4〜7幢目の上段）
+    for pos in range(4, 8):
+        g += f'<text x="{xs[pos] + w / 2}" y="{y_up + h * .55:.0f}" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" fill-opacity=".9" {F}>{pos - 3}</text>'
 
     def lab(x, y, t, col=ORANGE):
         wd = len(t) * 11 + 14
         return (f'<rect x="{x - wd / 2:.1f}" y="{y - 9}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
                 f'<text x="{x:.1f}" y="{y + 4}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{t}</text>')
-    xd, xk = xs[3] + w / 2, xs[4] + w / 2
-    xr = (xs[2] + xs[1] + w) / 2
-    g += lab(xd + 4, 38, "ドラ表示牌") + f'<line x1="{xd:.1f}" y1="47" x2="{xd:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xk - 60, 16, "カンをすると槓ドラ表示牌", BLUE) + f'<line x1="{xk:.1f}" y1="25" x2="{xk:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xr, 244, "嶺上牌（4枚）") + f'<line x1="{xr:.1f}" y1="{y_lo + h + 5:.0f}" x2="{xr:.1f}" y2="235" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xd - 70, 244, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd:.1f}" y1="{y_lo + h + 3:.0f}" x2="{xd - 30:.1f}" y2="235" stroke="#fff" stroke-width="1.4"/>'
-    xl = xs[7] - 10
-    g += f'<text x="{xl}" y="{y_up + h / 2 + 4:.0f}" text-anchor="end" font-size="12" font-weight="900" fill="#fff" {F}>上段</text>'
-    g += f'<text x="{xl}" y="{y_lo + h / 2 + 4:.0f}" text-anchor="end" font-size="12" font-weight="900" fill="#fff" {F}>下段</text>'
-    g += (f'<line x1="376" y1="{y_up}" x2="376" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
-          f'<text x="398" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" {F} writing-mode="tb">開門位置</text>')
-    g += f'<text x="20" y="{y_lo + h + 86:.0f}" font-size="9" font-weight="700" fill="#fff" fill-opacity=".8" {F}>※ 上段と下段を分けて描いています（実際は下段の上に上段が積まれています）</text>'
-    return svg(420, 290, g, "王牌の拡大図。7幢2段。開門位置から1〜2幢目の4枚が嶺上牌、3幢目の上段がドラ表示牌、その下段が裏ドラ表示牌、カンをすると4幢目の上段が槓ドラ表示牌")
+    xd = xs[3] + w / 2
+    yb = y_lo + h + 30
+    g += lab(xs[1] + w + 2, yb, "嶺上牌 ①→④の順に取る") + f'<line x1="{xs[1] + w + 2}" y1="{y_lo + h + 6:.0f}" x2="{xs[1] + w + 2}" y2="{yb - 9:.0f}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xd + 64, yb + 26, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd}" y1="{y_lo + h + 4:.0f}" x2="{xd + 30}" y2="{yb + 17:.0f}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab((xs[4] + xs[7] + w) / 2, 61, "カンの順に槓ドラ表示牌", BLUE)
+    g += lab(xd, 61, "ドラ表示牌", ORANGE)
+    # 開門位置（左）と段の名前
+    g += (f'<line x1="{xs[1] - 10}" y1="{y_up}" x2="{xs[1] - 10}" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
+          f'<text x="22" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" {F} writing-mode="tb">開門位置</text>')
+    xr = xs[7] + w + 8
+    g += f'<text x="{xr}" y="{y_up + h / 2 + 4:.0f}" font-size="12" font-weight="900" fill="#fff" {F}>上段</text>'
+    g += f'<text x="{xr}" y="{y_lo + h / 2 + 4:.0f}" font-size="12" font-weight="900" fill="#fff" {F}>下段</text>'
+    g += f'<text x="210" y="290" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" fill-opacity=".8" {F}>※ 上段と下段を分けて描いています（実際は下段の上に上段が積まれています）</text>'
+    return svg(420, 300, g, "王牌の拡大図。7幢14枚。左の2幢4枚が嶺上牌で、開門位置に近い方から上段・下段の順に取る。左から3幢目の上段がドラ表示牌、その下段が裏ドラ表示牌。カンをすると4幢目から順に槓ドラ表示牌")
