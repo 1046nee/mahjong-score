@@ -156,7 +156,7 @@ def jidou_taku():
 # ---------------- 卓を上から見た図（場面ごと）----------------
 # 席: 0=東家（下）1=南家（右）2=西家（上）3=北家（左）。手番は反時計回り（東→南→西→北）。
 # 山の幢は、その席の人から見て右から数えて k=1〜17。開門は東家の山を右から BREAK 幢目で割る（サイコロの合計9の例）。
-# 王牌＝開門位置の右の7幢（開門位置から3幢目の上段がドラ表示牌、反対の端の2幢＝嶺上牌）。
+# 王牌＝開門位置の右の7幢（開門位置から1〜2幢目＝嶺上牌、3幢目の上段がドラ表示牌、カンで4幢目から槓ドラ表示牌）。
 # 配牌とツモは開門位置の左から取る（山は時計回りに減る）。最後のツモ（海底牌）は王牌のすぐ手前の幢。
 # 出典: Wikipedia「壁牌」（開門・王牌・幢）「ドラ (麻雀)」「麻雀のルール」（席の呼び方）
 import math
@@ -253,7 +253,7 @@ def table_scene(scene="yama", T="/assets/tiles"):
                     body += f'<image href="{T}/m8.svg" x="{px + .5:.1f}" y="{py - 1}" width="{W_ - 1}" height="{(W_ - 1) * 89 / 62:.1f}"/>'
                     continue
                 body += _stack(px, py, "#8FCAD1", BACK_EDGE)
-                if show_dead and dp >= 6:
+                if show_dead and dp <= 2:
                     body += f'<rect x="{px + .5:.1f}" y="{py}" width="{W_ - 1}" height="{D_}" rx="2" fill="none" stroke="{ORANGE}" stroke-width="1.8"/>'
                 continue
             fill, st = BACK_FACE, BACK_EDGE
@@ -272,9 +272,9 @@ def table_scene(scene="yama", T="/assets/tiles"):
     bx, by = center_of(0, BREAK)
     if scene == "yama":
         g += _box([("山（壁牌）と王牌", True), ("1人17幢（2段＝34枚）×4人＝136枚", False), ("王牌＝開門位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)])
-        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", -24, -46)
-        g += _callout(center_of(0, BREAK - 6), "嶺上牌", 40, -46)
-        g += _callout((bx + 9, by), "開門位置", -70, -30, INK)
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 44, -44)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌", -14, -62)
+        g += _callout((bx + 9, by), "開門位置", -78, -28, INK)
     elif scene == "kaimon":
         g += die(4, 162, 168, 34) + die(5, 204, 168, 34)
         g += f'<text x="200" y="226" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>合計 9 → 東家の山</text>'
@@ -292,42 +292,50 @@ def table_scene(scene="yama", T="/assets/tiles"):
         g += _box([("ツモの順と山の減り方", True), ("手番は反時計回り（東→南→西→北）", False), ("山は開門位置の左から時計回りに減る", False), ("王牌の手前の最後の1枚＝海底牌", False)], 150)
         g += '<path d="M300 250 A100 100 0 0 0 300 150" fill="none" stroke="#fff" stroke-width="3" marker-end="url(#ah)" opacity=".9"/>'
         g += _callout(center_of(*haitei), "海底牌", 40, -44)
-        g += _callout(center_of(0, BREAK - 6), "嶺上牌", -8, -66)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌", -40, -60)
     elif scene == "kaze":
         g += _box([("東場（場風＝東）", True), ("自風は席で決まる（東家＝東・南家＝南…）", False), ("東家から見て右が下家・正面が対面・左が上家", False), ("親は局ごとに反時計回りに移る", False)], 150)
-        g += chiicha(236, 326, "東", 34, 22)
-        g += f'<text x="253" y="361" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>起家マーク</text>'
-        for side, rel in ((1, "下家"), (2, "対面"), (3, "上家")):
-            x, y = pos[side]
-            g += (f'<rect x="{x - 22}" y="{y + 10}" width="44" height="16" rx="8" fill="{ORANGE}"/>'
-                  f'<text x="{x}" y="{y + 21.5}" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" {F}>{rel}</text>')
+        g += chiicha(262, 340, "東", 30, 20)
+        g += f'<text x="306" y="354" text-anchor="start" font-size="9" font-weight="900" fill="#fff" {F}>起家マーク</text>'
+        for side, rel, x, y in ((1, "下家", 358, 222), (2, "対面", 200, 62), (3, "上家", 42, 222)):
+            g += (f'<rect x="{x - 21}" y="{y - 8}" width="42" height="16" rx="8" fill="#fff"/>'
+                  f'<text x="{x}" y="{y + 3.6}" text-anchor="middle" font-size="9.5" font-weight="900" fill="{GREEN}" {F}>{rel}</text>')
     return svg(S, S, g, SCENE_LABEL[scene])
 
 
 def dead_wall_zoom(T="/assets/tiles"):
-    """王牌（7幢×2段）を手前から見た拡大図。右端が開門位置の側。開門位置から3幢目の上段がドラ表示牌、その下が裏ドラ表示牌、
-    カンをすると隣（開門位置から4幢目）の上段が槓ドラ表示牌になる。反対の端の2幢（4枚）が嶺上牌"""
-    w = 38
+    """王牌（7幢×2段）の拡大図。上段と下段をすき間をあけて上下に分けて描く（実際は下段の上に上段が重なっている）。右端が開門位置。
+    開門位置から1〜2幢目（4枚）が嶺上牌、3幢目の上段がドラ表示牌（その下段が裏ドラ表示牌）、カンをすると4幢目の上段が槓ドラ表示牌。
+    出典: Wikipedia「ドラ (麻雀)」の写真の説明（開門位置から3幢目の上段がドラ表示牌、端の嶺上牌）"""
+    w = 40
     h = w * 89 / 62
-    y_up, y_lo = 78, 78 + h - 12
-    g = f'<rect width="400" height="250" rx="16" fill="{GREEN}"/>'
-    xs = {pos: 352 - pos * (w + 3) for pos in range(1, 8)}
-    for pos, x in xs.items():
-        g += f'<image href="{T}/back.svg" x="{x}" y="{y_lo:.1f}" width="{w}" height="{h:.1f}"/>'
+    y_up, y_lo = 62, 62 + h + 16
+    g = f'<rect width="420" height="290" rx="16" fill="{GREEN}"/>'
+    xs = {pos: 356 - pos * (w + 4) for pos in range(1, 8)}
     for pos, x in xs.items():
         g += f'<image href="{T}/{"m8" if pos == 3 else "back"}.svg" x="{x}" y="{y_up}" width="{w}" height="{h:.1f}"/>'
-    xl = xs[7] - 3
-    g += f'<rect x="{xl}" y="{y_up - 4}" width="{2 * (w + 3) + 3}" height="{y_lo + h - y_up + 8:.0f}" rx="7" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
+        g += f'<image href="{T}/back.svg" x="{x}" y="{y_lo:.1f}" width="{w}" height="{h:.1f}" opacity=".85"/>'
+        g += f'<line x1="{x + w / 2}" y1="{y_up + h + 2:.1f}" x2="{x + w / 2}" y2="{y_lo - 2:.1f}" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 2"/>'
+    # 嶺上牌（開門位置から1〜2幢目の上下4枚）
+    x2 = xs[2] - 4
+    g += f'<rect x="{x2}" y="{y_up - 5}" width="{2 * (w + 4) + 4}" height="{y_lo + h - y_up + 10:.0f}" rx="8" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
+    # 裏ドラ表示牌（3幢目の下段）
+    g += f'<rect x="{xs[3] - 3}" y="{y_lo - 3:.1f}" width="{w + 6}" height="{h + 6:.1f}" rx="6" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
 
     def lab(x, y, t, col=ORANGE):
         wd = len(t) * 11 + 14
         return (f'<rect x="{x - wd / 2:.1f}" y="{y - 9}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
                 f'<text x="{x:.1f}" y="{y + 4}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{t}</text>')
     xd, xk = xs[3] + w / 2, xs[4] + w / 2
-    g += lab(xd + 18, 46, "ドラ表示牌") + f'<line x1="{xd:.1f}" y1="55" x2="{xd:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xk - 30, 20, "カンをすると槓ドラ表示牌", BLUE) + f'<line x1="{xk:.1f}" y1="29" x2="{xk:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xs[7] + w + 1, 52, "嶺上牌（4枚）")
-    g += lab(xd, 232, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd:.1f}" y1="{y_lo + h:.0f}" x2="{xd:.1f}" y2="223" stroke="#fff" stroke-width="1.4"/>'
-    g += (f'<line x1="372" y1="{y_up}" x2="372" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
-          f'<text x="386" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" {F} writing-mode="tb">開門位置</text>')
-    return svg(400, 250, g, "王牌の拡大図。開門位置の側から3幢目の上段がドラ表示牌、下段が裏ドラ表示牌、カンをすると隣が槓ドラ表示牌、反対の端の2幢が嶺上牌")
+    xr = (xs[2] + xs[1] + w) / 2
+    g += lab(xd + 4, 38, "ドラ表示牌") + f'<line x1="{xd:.1f}" y1="47" x2="{xd:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xk - 60, 16, "カンをすると槓ドラ表示牌", BLUE) + f'<line x1="{xk:.1f}" y1="25" x2="{xk:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xr, 244, "嶺上牌（4枚）") + f'<line x1="{xr:.1f}" y1="{y_lo + h + 5:.0f}" x2="{xr:.1f}" y2="235" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xd - 70, 244, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd:.1f}" y1="{y_lo + h + 3:.0f}" x2="{xd - 30:.1f}" y2="235" stroke="#fff" stroke-width="1.4"/>'
+    xl = xs[7] - 10
+    g += f'<text x="{xl}" y="{y_up + h / 2 + 4:.0f}" text-anchor="end" font-size="12" font-weight="900" fill="#fff" {F}>上段</text>'
+    g += f'<text x="{xl}" y="{y_lo + h / 2 + 4:.0f}" text-anchor="end" font-size="12" font-weight="900" fill="#fff" {F}>下段</text>'
+    g += (f'<line x1="376" y1="{y_up}" x2="376" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
+          f'<text x="398" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="11" font-weight="900" fill="#fff" {F} writing-mode="tb">開門位置</text>')
+    g += f'<text x="20" y="{y_lo + h + 86:.0f}" font-size="9" font-weight="700" fill="#fff" fill-opacity=".8" {F}>※ 上段と下段を分けて描いています（実際は下段の上に上段が積まれています）</text>'
+    return svg(420, 290, g, "王牌の拡大図。7幢2段。開門位置から1〜2幢目の4枚が嶺上牌、3幢目の上段がドラ表示牌、その下段が裏ドラ表示牌、カンをすると4幢目の上段が槓ドラ表示牌")

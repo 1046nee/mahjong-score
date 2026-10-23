@@ -418,3 +418,18 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .side-box .sns-side a { color: #1F2A28; font-weight: 700; font-size: 13px; text-decoration: none; }
 .side-box .sns-side a:hover { color: #136070; text-decoration: underline; }
 .side-box .sns-side small { color: #8A9A97; font-size: 11px; }
+
+/* ---- 団体の歴史のページ（2026-10-23）: 系譜の年表・団体ごとの年表・代表の移り変わり ---- */
+.blog-post .dl-line { border-left: 3px solid #DCE5E2; margin: 6px 0 8px 40px; }
+.blog-post .dl-row { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 8px 0 8px 14px; border-bottom: 1px solid #EEF2F1; }
+.blog-post .dl-row .yr { position: absolute; left: -46px; top: 9px; width: 36px; text-align: right; font-size: 12px; font-weight: 900; color: #136070; }
+.blog-post .dl-row::before { content: ""; position: absolute; left: -7px; top: 14px; width: 11px; height: 11px; border-radius: 50%; background: #fff; border: 3px solid #9FC3BD; }
+.blog-post .dl-row .tag { font-size: 11px; font-weight: 900; color: #fff; background: var(--c); border-radius: 3px; padding: 1px 7px; }
+.blog-post .dl-row .ev { flex: 1 1 220px; font-size: 14px; line-height: 1.7; }
+.blog-post .dl-row .from { display: inline-block; font-size: 11px; font-weight: 800; color: var(--c); border: 1px solid var(--c); border-radius: 3px; padding: 0 5px; margin-right: 6px; }
+.blog-post table.dl-ev th { white-space: nowrap; width: 7.5em; background: #F3F6F5; color: #136070; border-bottom: 1px solid #E6EAF2; font-size: 13px; }
+.blog-post ol.dl-reps { list-style: none; padding: 0; margin: 4px 0 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+.blog-post ol.dl-reps li { flex: 1 1 150px; margin: 0; border: 1px solid #E3E9F2; border-top: 3px solid var(--c); border-radius: 0 0 6px 6px; padding: 8px 10px; background: #fff; }
+.blog-post ol.dl-reps .no { display: block; font-size: 11px; font-weight: 800; color: var(--c); }
+.blog-post ol.dl-reps b { display: block; font-size: 16px; }
+.blog-post ol.dl-reps small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }

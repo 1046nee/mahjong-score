@@ -15,12 +15,12 @@ OUT = os.path.join(ROOT, "assets", "art")
 def inline_tiles(svg):
     """<image href="/assets/tiles/xx.svg" x y width height/> を、牌のSVGの中身（入れ子の svg）に置きかえる"""
     def rep(m):
-        name, x, y, w, h = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5)
+        name, x, y, w, h, extra = m.group(1), m.group(2), m.group(3), m.group(4), m.group(5), (m.group(6) or "")
         t = io.open(os.path.join(TILES, name), encoding="utf-8").read()
         vb = re.search(r'viewBox="([^"]+)"', t).group(1)
         inner = t[t.index(">") + 1:t.rindex("</svg>")]
-        return f'<svg x="{x}" y="{y}" width="{w}" height="{h}" viewBox="{vb}">{inner}</svg>'
-    return re.sub(r'<image href="/assets/tiles/([\w-]+\.svg)" x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"/>', rep, svg)
+        return f'<svg x="{x}" y="{y}" width="{w}" height="{h}" viewBox="{vb}"{extra}>{inner}</svg>'
+    return re.sub(r'<image href="/assets/tiles/([\w-]+\.svg)" x="([\d.-]+)" y="([\d.-]+)" width="([\d.]+)" height="([\d.]+)"((?: [\w-]+="[^"]*")*)/>', rep, svg)
 
 
 ITEMS = {

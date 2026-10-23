@@ -19,6 +19,9 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-dantai-rekishi.html', cat: 'mahjong', date: '2026.10.23', tag: 'プロ団体',
+    title: '麻雀プロ団体の歴史｜5団体の成り立ちと代表の移り変わり（連盟・最高位戦・協会・RMU・麻将連合）',
+    desc: '5団体の系譜を年表で。各団体の年表・代表の移り変わり（小島武夫→灘麻太郎→森山茂和など）と、公式サイト・X・YouTube。' },
   { url: '/blog-mahjong-yougo.html', cat: 'mahjong', date: '2026.10.23', tag: '正式名称',
     title: '麻雀の正式名称一覧（80語）｜漢字と読み方を図で覚える（プロテスト対策にも）',
     desc: '洗牌・開門・荘家・副露など80語を漢字・読み方・意味と図で。読み方を隠せる暗記モードつき（プロテスト対策にも）。' },
