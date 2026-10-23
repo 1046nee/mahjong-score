@@ -8786,11 +8786,12 @@ function exportCsv(g, opts) {
 //   単体出力  = ブランド帯 ＋ 本体 ＋ フッター
 //   まとめ出力 = 全体ヘッダー ＋［見出し＋本体］×n ＋ フッター
 // で共用する。スマホでは共有シート、PCではダウンロード。
-const IMG_SCALE = 2;    // 実ピクセル = CSS px × 2（高解像度で書き出す）
+// 3倍＝スマホの画面（多くが3倍密度）で拡大しても文字や線がにじまない解像度。2倍だと拡大したとき粗く見えた（2026-10-23）
+const IMG_SCALE = 3;    // 実ピクセル = CSS px × 3（高解像度で書き出す）
 const IMG_PAD = 16;
 const IMG_BAND = 52;    // 上部ブランド帯の高さ
 const IMG_FOOT = 26;
-const COMPOSE_W = 540;  // まとめ画像の内部幅（実ピクセルでは1080px＝SNSの標準幅）
+const COMPOSE_W = 540;  // まとめ画像の内部幅（実ピクセルでは1620px。SNS側で縮められても十分な密度）
 const IMG_SECTIONS = [
   { kind: 'score',  label: '総合順位' },
   { kind: 'team',   label: 'チーム順位' },
@@ -8830,7 +8831,7 @@ function imgWrap(ctx, text, maxW, maxLines = 3) {
 }
 // iOS Safariにはcanvasの1辺（約8000px）と総ピクセル数（約16.7M）の上限がある。
 // 超えるとtoBlobが黙ってnullを返し、保存もプレビューも丸ごと失敗する（真っ白ではなく「失敗しました」になる）。
-// 上限に触れるときだけ解像度を落として必ず収める。通常は等倍2倍（＝まとめ画像で幅1080px）を保つ
+// 上限に触れるときだけ解像度を落として必ず収める。通常は3倍（＝まとめ画像で幅1620px）を保つ
 const IMG_MAX_SIDE = 8000, IMG_MAX_AREA = 16000000;
 // 下限0.7＝本文13pxが約9pxで描かれる限界。これ以上落とすと読めない画像になるので、
 // 収まらない場合は縮め続けずに「作れない」と伝える（IMG_TOO_LARGE）
@@ -8850,7 +8851,7 @@ function imgFitsCanvas(w, h, sc) {
   return Math.max(pw, ph) <= IMG_MAX_SIDE && pw * ph <= IMG_MAX_AREA;
 }
 const IMG_TOO_LARGE = 'too-large';
-// CSS px で指定して、実ピクセルは×2（既定）で持つCanvasを作る。
+// CSS px で指定して、実ピクセルは×3（既定）で持つCanvasを作る。
 // scを省略すると上限に収まる縮尺を自動で選ぶ（長大な表・まとめ画像はここで自動的に縮む）
 function imgCanvas(w, h, sc = null) {
   const s = sc == null ? imgFitScale(w, h) : sc;
@@ -8859,6 +8860,9 @@ function imgCanvas(w, h, sc = null) {
   c.height = Math.max(1, Math.round(h * s));
   const ctx = c.getContext('2d');
   ctx.scale(s, s);
+  // 表・グラフの本体Canvasを帯つきの1枚に貼るとき（drawImage）、縮める場面でも文字がガタつかないよう高品質で補間する
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.textBaseline = 'middle';
   c._sc = s; // 実ピクセル/CSSpx。上限で落ちた場合があるので、CSSサイズを逆算するのに使う
   return { c, ctx };
