@@ -38,6 +38,42 @@ def tenbo(value, x=0, y=0, L=180, H=16):
     return g
 
 
+# カラーの点棒（雀荘に多い色つきの点棒。Wikimedia Commons「Mahjong japan fiches」の左の列と同じ色と模様。原色でよい＝2026-10-23 ユーザーの判断）
+COLOR_TENBO = {100: ("#F2F2EE", "#9EA3A3", "#CFCFC8"), 500: ("#16A05A", "#fff", "#0E7A43"), 1000: ("#1F6FD1", "#fff", "#1555A3"),
+               5000: ("#F5C400", "#fff", "#C99E00"), 10000: ("#E02424", "#fff", "#AC1717"), "tobi": ("#222", "#fff", "#000")}
+
+
+def tenbo_color(value, x=0, y=0, L=180, H=16):
+    """カラーの点棒。100＝白に灰色の点8つ、500＝緑に白い点5つ、1,000＝青に白い点1つ、5,000＝黄に白い点（1つ＋まわりに4つ）、
+    10,000＝赤に白い点（5,000の模様＋左右に1つずつ＋両端寄りに大きな点）、トビ点棒＝黒に10,000と同じ模様（持ち点が0点を下回ったときに使う）"""
+    body, dc, shade = COLOR_TENBO[value]
+    cy, c = y + H / 2, x + L / 2
+    g = f'<rect x="{x}" y="{y + 2}" width="{L}" height="{H}" rx="{H / 2}" fill="{shade}"/>'
+    g += f'<rect x="{x}" y="{y}" width="{L}" height="{H}" rx="{H / 2}" fill="{body}"' + (f' stroke="{EDGE}" stroke-width="1"' if value == 100 else "") + "/>"
+    g += f'<rect x="{x + 8}" y="{y + 2.5}" width="{L - 16}" height="2.4" rx="1.2" fill="#fff" opacity=".22"/>'
+    dot = lambda dx, dy, r: f'<circle cx="{c + dx:.1f}" cy="{cy + dy:.1f}" r="{r}" fill="{dc}"/>'
+    if value == 100:
+        g += "".join(dot(dx, dy, 1.9) for dx in (-7.5, -2.5, 2.5, 7.5) for dy in (-2.6, 2.6))
+    elif value == 500:
+        g += "".join(dot(dx, 0, 1.9) for dx in (-12, -6, 0, 6, 12))
+    elif value == 1000:
+        g += dot(0, 0, 3.6)
+    else:
+        g += dot(0, 0, 3.6) + "".join(dot(dx, dy, 1.9) for dx in (-6.5, 6.5) for dy in (-3.6, 3.6))
+        if value in (10000, "tobi"):
+            g += dot(-12, 0, 1.9) + dot(12, 0, 1.9) + dot(-24, 0, 3.4) + dot(24, 0, 3.4)
+    return g
+
+
+def tenbo_color_set():
+    g = ""
+    for i, (v, label) in enumerate(((100, "100点"), (500, "500点"), (1000, "1,000点"), (5000, "5,000点"), (10000, "10,000点"), ("tobi", "トビ点棒"))):
+        y = 12 + i * 32
+        g += tenbo_color(v, 20, y)
+        g += f'<text x="214" y="{y + 12.5}" font-size="13" font-weight="900" fill="{INK}" {F}>{label}</text>'
+    return svg(310, 206, g, "カラーの点棒（100点・500点・1,000点・5,000点・10,000点・トビ点棒）")
+
+
 def tenbo_set():
     g = ""
     for i, v in enumerate((10000, 5000, 1000, 100)):
@@ -117,57 +153,181 @@ def jidou_taku():
     return svg(W, H, g, "全自動卓を斜め上から見た図")
 
 
-# ---------------- 卓を上から見た図: 山・開門・王牌・ツモの順 ----------------
-def wall_top(break_at=9, show_labels=True):
-    """4人の山（17幢×2段）を上から。下（東家）の山を右から break_at 幢目で開門。
-    王牌＝開門位置の右の7幢（開門位置から3幢目の上段がドラ表示牌、反対の端の2幢が嶺上牌）。
-    配牌とツモは開門位置の左から取っていく（山は時計回りに減る）。手番は反時計回り（東→南→西→北）"""
-    import os
-    T = "/assets/tiles"
+# ---------------- 卓を上から見た図（場面ごと）----------------
+# 席: 0=東家（下）1=南家（右）2=西家（上）3=北家（左）。手番は反時計回り（東→南→西→北）。
+# 山の幢は、その席の人から見て右から数えて k=1〜17。開門は東家の山を右から BREAK 幢目で割る（サイコロの合計9の例）。
+# 王牌＝開門位置の右の7幢（開門位置から3幢目の上段がドラ表示牌、反対の端の2幢＝嶺上牌）。
+# 配牌とツモは開門位置の左から取る（山は時計回りに減る）。最後のツモ（海底牌）は王牌のすぐ手前の幢。
+# 出典: Wikipedia「壁牌」（開門・王牌・幢）「ドラ (麻雀)」「麻雀のルール」（席の呼び方）
+import math
+
+BREAK = 9
+SEATS = ["東家", "南家", "西家", "北家"]
+SEAT_COL = {0: ORANGE, 1: BLUE, 2: "#2E9C8A", 3: "#55625F"}
+ROT = {0: 0, 1: 270, 2: 180, 3: 90}
+W_, D_ = 13, 17          # 1幢の幅と奥行き
+WALL_Y = 313             # 下の山の位置（4辺が重ならない）
+X0 = 200 - 17 * W_ / 2
+
+
+def live_order():
+    """配牌・ツモで取っていく順の (席, k) の並び（開門位置の左から時計回り）"""
+    out = [(0, k) for k in range(BREAK + 1, 18)]
+    for side in (3, 2, 1):
+        out += [(side, k) for k in range(1, 18)]
+    out += [(0, k) for k in range(1, BREAK - 6)]
+    return out
+
+
+def dead_pos(side, k):
+    """王牌なら開門位置から数えた番号（1〜7）、ちがえば None"""
+    if side == 0 and BREAK - 6 <= k <= BREAK:
+        return BREAK - k + 1
+    return None
+
+
+def stack_xy(side, k):
+    """（回す前の）下の山での左上の座標"""
+    x = X0 + (17 - k) * W_
+    if side == 0 and k > BREAK:
+        x -= 6  # 開門のすき間
+    return x, WALL_Y
+
+
+def center_of(side, k):
+    x, y = stack_xy(side, k)
+    cx, cy = x + W_ / 2, y + D_ / 2
+    a = math.radians(ROT[side])
+    dx, dy = cx - 200, cy - 200
+    return 200 + dx * math.cos(a) - dy * math.sin(a), 200 + dx * math.sin(a) + dy * math.cos(a)
+
+
+def _stack(px, py, fill, stroke):
+    return f'<rect x="{px + .5:.1f}" y="{py}" width="{W_ - 1}" height="{D_}" rx="2" fill="{fill}" stroke="{stroke}" stroke-width=".8"/>'
+
+
+def _callout(xy, label, dx, dy, col=ORANGE):
+    x, y = xy
+    tx, ty = x + dx, y + dy
+    wd = len(label) * 11 + 14
+    return (f'<line x1="{x:.1f}" y1="{y:.1f}" x2="{tx:.1f}" y2="{ty:.1f}" stroke="#fff" stroke-width="1.4"/>'
+            f'<rect x="{tx - wd / 2:.1f}" y="{ty - 9:.1f}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
+            f'<text x="{tx:.1f}" y="{ty + 4:.1f}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{label}</text>')
+
+
+def _box(lines, y0=160):
+    h = 18 + 16 * len(lines)
+    out = f'<rect x="94" y="{y0}" width="212" height="{h}" rx="8" fill="#fff" opacity=".96"/>'
+    for n, (t, big) in enumerate(lines):
+        out += (f'<text x="200" y="{y0 + 20 + n * 16}" text-anchor="middle" font-size="{11.5 if big else 8.8}" '
+                f'font-weight="{900 if big else 700}" fill="{INK if big else "#55625F"}" {F}>{t}</text>')
+    return out
+
+
+SCENE_LABEL = {
+    "yama": "麻雀の卓を上から見た図。4人の山（壁牌）と開門位置、王牌・ドラ表示牌・嶺上牌の場所",
+    "kaimon": "サイコロで開門位置を決める図。合計9なら東家の山を右から9幢目で割る",
+    "haipai": "配牌の取り方の図。開門位置の左から東南西北の順に2幢ずつ3回取る",
+    "tsumo": "ツモの順と山の減り方の図。手番は反時計回り、山は時計回りに減り、最後の1枚が海底牌",
+    "kaze": "席と風の図。場風と自風、上家・下家・対面、起家マーク",
+}
+
+
+def table_scene(scene="yama", T="/assets/tiles"):
+    """scene: yama（山と王牌）/ kaimon（サイコロと開門）/ haipai（配牌の取り方）/ tsumo（ツモの順と海底牌）/ kaze（席と風）"""
     S = 400
-    # 卓: オレンジの枠に緑のマット（全自動卓の絵と同じ色）
-    g = f'<rect width="{S}" height="{S}" rx="20" fill="{ORANGE}"/><rect x="3" y="3" width="{S - 6}" height="{S - 6}" rx="18" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>'
+    g = '<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fff"/></marker></defs>'
+    g += f'<rect width="{S}" height="{S}" rx="20" fill="{ORANGE}"/><rect x="3" y="3" width="{S - 6}" height="{S - 6}" rx="18" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>'
     g += f'<rect x="14" y="14" width="{S - 28}" height="{S - 28}" rx="10" fill="{GREEN}"/>'
-    w, d = 13, 17  # 1幢の幅（山に沿った長さ）と奥行き
-    L = 17 * w
-    x0 = 200 - L / 2
-
-    def stack(px, py, mode):
-        # mode: "live"（ふつうの山）/ "dead"（王牌）/ "dora"（ドラ表示牌）/ "rinshan"（嶺上牌）
-        if mode == "dora":
-            return f'<image href="{T}/m8.svg" x="{px + .5}" y="{py - 1}" width="{w - 1}" height="{(w - 1) * 89 / 62:.1f}"/>'
-        fill, st = (BACK_FACE, BACK_EDGE) if mode == "live" else ("#7FC1C9", "#2E8794")
-        s = f'<rect x="{px + .5}" y="{py}" width="{w - 1}" height="{d}" rx="2" fill="{fill}" stroke="{st}" stroke-width=".8"/>'
-        if mode == "rinshan":
-            s += f'<rect x="{px + .5}" y="{py}" width="{w - 1}" height="{d}" rx="2" fill="none" stroke="{ORANGE}" stroke-width="1.6"/>'
-        return s
-
-    walls = ""
-    for side, rot in ((0, 0), (1, 270), (2, 180), (3, 90)):
+    order = live_order()
+    idx = {sk: n for n, sk in enumerate(order)}
+    haitei = order[-1]
+    show_dead = scene in ("yama", "tsumo")
+    for side in range(4):
         body = ""
-        for i in range(17):  # 左から i 番目（自分から見て）
-            px = x0 + i * w
-            py = 313
-            mode = "live"
-            if side == 0:
-                k = 17 - i  # 右から k 幢目
-                if break_at - 7 < k <= break_at:  # 開門位置の右の7幢＝王牌（右から break_at-6 .. break_at）
-                    pos = break_at - k + 1  # 開門位置から数えて pos 幢目（1〜7）
-                    mode = "dora" if pos == 3 else ("rinshan" if pos >= 6 else "dead")
-                if k == break_at + 1:
-                    px -= 6  # 開門位置（すき間）
-            body += stack(px, py, mode)
-        walls += f'<g transform="rotate({rot} 200 200)">{body}</g>'
-    g += walls
-    # 席の名前（手番は反時計回り）
-    for x, y, name in ((200, 362, "東家（親）"), (366, 200, "南家"), (200, 40, "西家"), (34, 200, "北家")):
-        g += f'<text x="{x}" y="{y}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="#fff" {F}>{name}</text>'
-    # 手番の矢印（反時計回り）
-    g += f'<path d="M262 250 A88 88 0 0 0 250 138" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="1 0" marker-end="url(#ah)" opacity=".85"/>'
-    g = f'<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#fff"/></marker></defs>' + g
-    if show_labels:
-        g += f'<rect x="130" y="166" width="140" height="68" rx="8" fill="#fff" opacity=".95"/>'
-        g += f'<text x="200" y="186" text-anchor="middle" font-size="11" font-weight="900" fill="{INK}" {F}>手番は反時計回り</text>'
-        g += f'<text x="200" y="204" text-anchor="middle" font-size="9.5" font-weight="700" fill="#55625F" {F}>山は開門位置の左から取る</text>'
-        g += f'<text x="200" y="220" text-anchor="middle" font-size="9.5" font-weight="700" fill="#55625F" {F}>王牌＝右の7幢（14枚）</text>'
-    return svg(S, S, g, "卓を上から見た図。4人の山と開門位置、王牌・ドラ表示牌・嶺上牌、手番の向き")
+        for k in range(1, 18):
+            px, py = stack_xy(side, k)
+            dp = dead_pos(side, k)
+            if dp and scene in ("yama", "kaimon", "tsumo"):
+                if show_dead and dp == 3:
+                    body += f'<image href="{T}/m8.svg" x="{px + .5:.1f}" y="{py - 1}" width="{W_ - 1}" height="{(W_ - 1) * 89 / 62:.1f}"/>'
+                    continue
+                body += _stack(px, py, "#8FCAD1", BACK_EDGE)
+                if show_dead and dp >= 6:
+                    body += f'<rect x="{px + .5:.1f}" y="{py}" width="{W_ - 1}" height="{D_}" rx="2" fill="none" stroke="{ORANGE}" stroke-width="1.8"/>'
+                continue
+            fill, st = BACK_FACE, BACK_EDGE
+            if scene == "haipai":
+                n = idx.get((side, k))
+                if n is not None and n < 24:
+                    fill, st = SEAT_COL[(n // 2) % 4], "#fff"
+            if scene == "tsumo" and (side, k) == haitei:
+                fill, st = "#FFE2D3", ORANGE
+            body += _stack(px, py, fill, st)
+        g += f'<g transform="rotate({ROT[side]} 200 200)">{body}</g>'
+    pos = {0: (200, 362), 1: (366, 200), 2: (200, 40), 3: (34, 200)}
+    for side, (x, y) in pos.items():
+        g += (f'<text x="{x}" y="{y}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="#fff" {F}>'
+              f'{SEATS[side]}{"（親）" if side == 0 else ""}</text>')
+    bx, by = center_of(0, BREAK)
+    if scene == "yama":
+        g += _box([("山（壁牌）と王牌", True), ("1人17幢（2段＝34枚）×4人＝136枚", False), ("王牌＝開門位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)])
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", -24, -46)
+        g += _callout(center_of(0, BREAK - 6), "嶺上牌", 40, -46)
+        g += _callout((bx + 9, by), "開門位置", -70, -30, INK)
+    elif scene == "kaimon":
+        g += die(4, 162, 168, 34) + die(5, 204, 168, 34)
+        g += f'<text x="200" y="226" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>合計 9 → 東家の山</text>'
+        g += f'<text x="200" y="242" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>東家から反時計回りに数える</text>'
+        g += f'<text x="200" y="256" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>（1・5・9＝東家、2・6・10＝南家…）</text>'
+        g += _callout((bx + 9, by), "右から9幢目で割る", -64, -36, INK)
+        g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌", 40, -34)
+    elif scene == "haipai":
+        g += _box([("配牌の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False)])
+        for n in range(0, 24, 2):
+            (x, y), (x2, y2) = center_of(*order[n]), center_of(*order[n + 1])
+            g += (f'<text x="{(x + x2) / 2:.1f}" y="{(y + y2) / 2 + 3.5:.1f}" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>'
+                  f'{SEATS[(n // 2) % 4][0]}</text>')
+    elif scene == "tsumo":
+        g += _box([("ツモの順と山の減り方", True), ("手番は反時計回り（東→南→西→北）", False), ("山は開門位置の左から時計回りに減る", False), ("王牌の手前の最後の1枚＝海底牌", False)], 150)
+        g += '<path d="M300 250 A100 100 0 0 0 300 150" fill="none" stroke="#fff" stroke-width="3" marker-end="url(#ah)" opacity=".9"/>'
+        g += _callout(center_of(*haitei), "海底牌", 40, -44)
+        g += _callout(center_of(0, BREAK - 6), "嶺上牌", -8, -66)
+    elif scene == "kaze":
+        g += _box([("東場（場風＝東）", True), ("自風は席で決まる（東家＝東・南家＝南…）", False), ("東家から見て右が下家・正面が対面・左が上家", False), ("親は局ごとに反時計回りに移る", False)], 150)
+        g += chiicha(236, 326, "東", 34, 22)
+        g += f'<text x="253" y="361" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>起家マーク</text>'
+        for side, rel in ((1, "下家"), (2, "対面"), (3, "上家")):
+            x, y = pos[side]
+            g += (f'<rect x="{x - 22}" y="{y + 10}" width="44" height="16" rx="8" fill="{ORANGE}"/>'
+                  f'<text x="{x}" y="{y + 21.5}" text-anchor="middle" font-size="9.5" font-weight="900" fill="#fff" {F}>{rel}</text>')
+    return svg(S, S, g, SCENE_LABEL[scene])
+
+
+def dead_wall_zoom(T="/assets/tiles"):
+    """王牌（7幢×2段）を手前から見た拡大図。右端が開門位置の側。開門位置から3幢目の上段がドラ表示牌、その下が裏ドラ表示牌、
+    カンをすると隣（開門位置から4幢目）の上段が槓ドラ表示牌になる。反対の端の2幢（4枚）が嶺上牌"""
+    w = 38
+    h = w * 89 / 62
+    y_up, y_lo = 78, 78 + h - 12
+    g = f'<rect width="400" height="250" rx="16" fill="{GREEN}"/>'
+    xs = {pos: 352 - pos * (w + 3) for pos in range(1, 8)}
+    for pos, x in xs.items():
+        g += f'<image href="{T}/back.svg" x="{x}" y="{y_lo:.1f}" width="{w}" height="{h:.1f}"/>'
+    for pos, x in xs.items():
+        g += f'<image href="{T}/{"m8" if pos == 3 else "back"}.svg" x="{x}" y="{y_up}" width="{w}" height="{h:.1f}"/>'
+    xl = xs[7] - 3
+    g += f'<rect x="{xl}" y="{y_up - 4}" width="{2 * (w + 3) + 3}" height="{y_lo + h - y_up + 8:.0f}" rx="7" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
+
+    def lab(x, y, t, col=ORANGE):
+        wd = len(t) * 11 + 14
+        return (f'<rect x="{x - wd / 2:.1f}" y="{y - 9}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
+                f'<text x="{x:.1f}" y="{y + 4}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{t}</text>')
+    xd, xk = xs[3] + w / 2, xs[4] + w / 2
+    g += lab(xd + 18, 46, "ドラ表示牌") + f'<line x1="{xd:.1f}" y1="55" x2="{xd:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xk - 30, 20, "カンをすると槓ドラ表示牌", BLUE) + f'<line x1="{xk:.1f}" y1="29" x2="{xk:.1f}" y2="{y_up}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xs[7] + w + 1, 52, "嶺上牌（4枚）")
+    g += lab(xd, 232, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd:.1f}" y1="{y_lo + h:.0f}" x2="{xd:.1f}" y2="223" stroke="#fff" stroke-width="1.4"/>'
+    g += (f'<line x1="372" y1="{y_up}" x2="372" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
+          f'<text x="386" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" {F} writing-mode="tb">開門位置</text>')
+    return svg(400, 250, g, "王牌の拡大図。開門位置の側から3幢目の上段がドラ表示牌、下段が裏ドラ表示牌、カンをすると隣が槓ドラ表示牌、反対の端の2幢が嶺上牌")

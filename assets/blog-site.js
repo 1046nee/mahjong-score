@@ -19,6 +19,9 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-mahjong-yougo.html', cat: 'mahjong', date: '2026.10.23', tag: '正式名称',
+    title: '麻雀の正式名称一覧（80語）｜漢字と読み方を図で覚える（プロテスト対策にも）',
+    desc: '洗牌・開門・荘家・副露など80語を漢字・読み方・意味と図で。読み方を隠せる暗記モードつき（プロテスト対策にも）。' },
   { url: '/blog-mleague-kansen.html', cat: 'mahjong', date: '2026.10.23', tag: 'Mリーグ',
     title: 'Mリーグ観戦ガイド｜初めて見る人のための卓の見方・実況でよく聞く言葉・ポイントのしくみ',
     desc: '卓を上から見た図で、見るところを7つにしぼって説明。実況でよく聞く言葉16個と、Mリーグのポイントのしくみも。' },
@@ -275,6 +278,12 @@ const BLOG_POSTS = [
         </div>`;
       cta.parentNode.insertBefore(box, cta);
     }
+
+    // 正式名称のページの暗記モード: 隠した読み方を押すと、その1つだけ見える
+    document.addEventListener('click', e => {
+      const y = e.target.closest('.yg-hide .ym');
+      if (y) y.classList.toggle('show');
+    });
 
     // 記事一覧（カテゴリ別・新しい順）
     document.querySelectorAll('[data-post-list]').forEach(el => {

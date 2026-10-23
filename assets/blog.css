@@ -399,3 +399,22 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post ol.kansen-legend li { padding: 8px 0; border-top: 1px solid #EEF2F1; font-size: 14px; line-height: 1.75; margin: 0; }
 .blog-post ol.kansen-legend li b { display: block; }
 .blog-post ol.kansen-legend .n { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: #E25A1C; color: #fff; font-size: 12px; align-items: center; justify-content: center; margin-right: 8px; }
+
+/* ---- 正式名称のページ（2026-10-23）: 漢字・読み・意味の一覧と暗記モード、まじゃすこの図（assets/art/） ---- */
+.blog-post .art-fig { margin: 8px auto 16px; max-width: 460px; }
+.blog-post .art-fig.small { max-width: 360px; }
+.blog-post .art-fig img { width: 100%; height: auto; display: block; border-radius: 10px; }
+.blog-post .art-fig figcaption { font-size: 12px; color: #6B7A77; margin-top: 6px; text-align: center; }
+.blog-post dl.yg { margin: 4px 0 20px; border-top: 1px solid #E3E9E7; }
+.blog-post .yg-row { display: grid; grid-template-columns: 11em 1fr; gap: 4px 14px; padding: 9px 2px; border-bottom: 1px solid #EEF2F1; }
+.blog-post .yg-row dt { margin: 0; }
+.blog-post .yg-row .kj { display: block; font-size: 18px; font-weight: 900; color: #1F2A28; line-height: 1.35; }
+.blog-post .yg-row .ym { display: inline-block; font-size: 12.5px; font-weight: 800; color: #136070; transition: filter .15s; }
+.blog-post .yg-row dd { margin: 0; font-size: 14px; line-height: 1.75; color: #333; }
+@media (max-width: 520px) { .blog-post .yg-row { grid-template-columns: 1fr; } }
+.blog-post .yg-toggle { display: block; margin: 4px 0 14px; padding: 10px 14px; border: 1.5px solid #9FC3BD; border-radius: 6px; background: #F2F8F6; color: #136070; font-weight: 800; font-size: 14px; cursor: pointer; font-family: inherit; }
+.blog-post.yg-hide .ym { filter: blur(6px); background: #E4F3EC; border-radius: 3px; cursor: pointer; user-select: none; }
+.blog-post.yg-hide .ym.show { filter: none; }
+.side-box .sns-side a { color: #1F2A28; font-weight: 700; font-size: 13px; text-decoration: none; }
+.side-box .sns-side a:hover { color: #136070; text-decoration: underline; }
+.side-box .sns-side small { color: #8A9A97; font-size: 11px; }
