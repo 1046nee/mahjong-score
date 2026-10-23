@@ -153,13 +153,70 @@ def jidou_taku():
     return svg(W, H, g, "全自動卓を斜め上から見た図")
 
 
+# ---------------- ルビつきの文字（図の中の読み方）----------------
+import re
+# 書き方: "開門{カイメン}位置" → 「開門」の上に小さく「カイメン」。読みは字の上に置く（カッコで書かない）
+
+
+def _cw(ch, fs):
+    """1文字の幅のめやす（全角は1em、半角は0.6em）"""
+    return fs if ord(ch) > 0x2E7F else fs * .6
+
+
+def _parse(spec):
+    """[(本文, 読み or None), …] に分ける。読みは直前の漢字のかたまりに付く"""
+    out, i = [], 0
+    for m in re.finditer(r"\{([^{}]+)\}", spec):
+        pre = spec[i:m.start()]
+        k = len(pre)
+        while k > 0 and re.match(r"[\u4e00-\u9fff々]", pre[k - 1]):
+            k -= 1
+        if pre[:k]:
+            out.append((pre[:k], None))
+        out.append((pre[k:], m.group(1)))
+        i = m.end()
+    if spec[i:]:
+        out.append((spec[i:], None))
+    return out
+
+
+def plain(spec):
+    return re.sub(r"\{[^{}]+\}", "", spec)
+
+
+def text_w(spec, fs):
+    return sum(_cw(c, fs) for c in plain(spec))
+
+
+def rtext(x, y, spec, fs=12, weight=900, fill="#fff", anchor="middle", rfill=None, extra=""):
+    """ルビつきの1行。y は本文のベースライン。ルビは本文の上に fs×0.5 の大きさで置く"""
+    parts = _parse(spec)
+    w = text_w(spec, fs)
+    x0 = x - w / 2 if anchor == "middle" else (x - w if anchor == "end" else x)
+    out = f'<text x="{x0:.1f}" y="{y:.1f}" font-size="{fs}" font-weight="{weight}" fill="{fill}" {F}{extra}>{plain(spec)}</text>'
+    cx = x0
+    rs = max(fs * .55, 5.4)
+    for base, yomi in parts:
+        bw = sum(_cw(c, fs) for c in base)
+        if yomi:
+            sq = min(1.0, bw / (len(yomi) * rs)) if len(yomi) * rs > bw else 1.0  # 読みが長いときは字間をつめる
+            out += (f'<text x="{cx + bw / 2:.1f}" y="{y - fs * .92:.1f}" text-anchor="middle" font-size="{rs:.1f}" font-weight="700" '
+                    f'fill="{rfill or fill}" {F}' + (f' textLength="{bw + rs * .6:.1f}" lengthAdjust="spacingAndGlyphs"' if len(yomi) * rs > bw + rs else "") + f'>{yomi}</text>')
+        cx += bw
+    return out
+
+
+def has_ruby(spec):
+    return "{" in spec
+
+
 # ---------------- 卓を上から見た図（場面ごと）----------------
 # 席: 0=東家（下）1=南家（右）2=西家（上）3=北家（左）。手番は反時計回り（東→南→西→北）。
 # 山の幢は、その席の人から見て右から数えて k=1〜17。開門は東家の山を右から BREAK 幢目で割る（サイコロの合計9の例）。
 # 王牌＝開門位置の右の7幢（開門位置から1〜2幢目＝嶺上牌、3幢目の上段がドラ表示牌、カンで4幢目から槓ドラ表示牌）。
 # 配牌とツモは開門位置の左から取る（山は時計回りに減る）。最後のツモ（海底牌）は王牌のすぐ手前の幢。
 # 出典: Wikipedia「壁牌」（開門・王牌・幢）「ドラ (麻雀)」「麻雀のルール」（席の呼び方）
-import math
+import math, re
 
 BREAK = 9
 SEATS = ["東家", "南家", "西家", "北家"]
@@ -207,20 +264,27 @@ def _stack(px, py, fill, stroke):
 
 
 def _callout(xy, label, dx, dy, col=ORANGE):
+    """点 xy から線を引いて、丸いラベルを置く。label はルビの書き方（"開門{カイメン}位置"）が使える"""
     x, y = xy
     tx, ty = x + dx, y + dy
-    wd = len(label) * 11 + 14
+    fs = 10.5
+    wd = text_w(label, fs) + 16
+    hh = 27 if has_ruby(label) else 18
+    top = ty - hh / 2
     return (f'<line x1="{x:.1f}" y1="{y:.1f}" x2="{tx:.1f}" y2="{ty:.1f}" stroke="#fff" stroke-width="1.4"/>'
-            f'<rect x="{tx - wd / 2:.1f}" y="{ty - 9:.1f}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
-            f'<text x="{tx:.1f}" y="{ty + 4:.1f}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{label}</text>')
+            f'<rect x="{tx - wd / 2:.1f}" y="{top:.1f}" width="{wd:.1f}" height="{hh}" rx="9" fill="{col}"/>'
+            + rtext(tx, top + hh - 5.5, label, fs))
 
 
 def _box(lines, y0=160):
-    h = 18 + 16 * len(lines)
+    """白い説明の箱。行はルビの書き方が使える（ルビのある行は行の間を広げる）"""
+    hs = [(20 if has_ruby(t) else 16) + (2 if big else 0) for t, big in lines]
+    h = 12 + sum(hs)
     out = f'<rect x="94" y="{y0}" width="212" height="{h}" rx="8" fill="#fff" opacity=".96"/>'
-    for n, (t, big) in enumerate(lines):
-        out += (f'<text x="200" y="{y0 + 20 + n * 16}" text-anchor="middle" font-size="{11.5 if big else 8.8}" '
-                f'font-weight="{900 if big else 700}" fill="{INK if big else "#55625F"}" {F}>{t}</text>')
+    y = y0 + 6
+    for (t, big), lh in zip(lines, hs):
+        y += lh
+        out += rtext(200, y - 3, t, 11.5 if big else 8.8, 900 if big else 700, INK if big else "#55625F", rfill="#6B7A77")
     return out
 
 
@@ -265,52 +329,52 @@ def table_scene(scene="yama", T="/assets/tiles"):
                 fill, st = "#FFE2D3", ORANGE
             body += _stack(px, py, fill, st)
         g += f'<g transform="rotate({ROT[side]} 200 200)">{body}</g>'
-    pos = {0: (200, 358), 1: (362, 196), 2: (200, 36), 3: (38, 196)}
+    pos = {0: (200, 368), 1: (362, 204), 2: (200, 44), 3: (38, 204)}
     YOMI = ["トンチャ", "ナンチャ", "シャーチャ", "ペーチャ"]
     for side, (x, y) in pos.items():
-        g += (f'<text x="{x}" y="{y}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="900" fill="#fff" {F}>'
-              f'{SEATS[side]}{"（親）" if side == 0 else ""}</text>'
-              f'<text x="{x}" y="{y + 13}" text-anchor="middle" dominant-baseline="middle" font-size="8" font-weight="700" fill="#fff" fill-opacity=".85" {F}>{YOMI[side]}</text>')
+        g += rtext(x, y, f'{SEATS[side]}{{{YOMI[side]}}}' + ("（親）" if side == 0 else ""), 12)
     bx, by = center_of(0, BREAK)
+    gap_x = stack_xy(0, BREAK)[0] - 3  # 開門のすき間（牌と牌の間）
+    if scene in ("yama", "kaimon"):
+        g += f'<line x1="{gap_x}" y1="{WALL_Y - 7}" x2="{gap_x}" y2="{WALL_Y + D_ + 3}" stroke="#fff" stroke-width="1.8" stroke-dasharray="3 2.5"/>'
+    gap = (gap_x, WALL_Y - 8)
     if scene in ("yama", "haipai", "tsumo", "kaimon"):
         # 王牌の範囲（下の山の下に括弧）
         (xa, ya), (xb, _) = center_of(0, BREAK), center_of(0, BREAK - 6)
         xa, xb = xa - W_ / 2, xb + W_ / 2
         yb = WALL_Y + D_ + 4
         g += (f'<path d="M{xa:.1f} {yb} v5 H{xb:.1f} v-5" fill="none" stroke="#fff" stroke-width="1.4"/>'
-              f'<text x="{xb + 4:.1f}" y="{yb + 9}" text-anchor="start" font-size="9" font-weight="900" fill="#fff" {F}>王牌（ワンパイ）</text>')
+              + rtext(xb + 4, yb + 12, "王牌{ワンパイ}", 9.5, anchor="start"))
     if scene == "yama":
-        g += _box([("山（ピーパイ）と王牌（ワンパイ）", True), ("1人17幢（トン・2段＝34枚）×4人＝136枚", False), ("王牌＝開門位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)])
-        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 44, -44)
-        g += _callout(center_of(0, BREAK - 1), "嶺上牌（リンシャンパイ）", -20, -62)
-        g += _callout((bx + 9, by), "開門（カイメン）位置", -70, -28, INK)
+        g += _box([("山（壁牌{ピーパイ}）と王牌{ワンパイ}", True), ("1人17幢{トン}（2段＝34枚）×4人＝136枚", False), ("王牌＝開門{カイメン}位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)], 150)
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 50, -44)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -6, -68)
+        g += _callout(gap, "開門{カイメン}位置", -70, -22, INK)
     elif scene == "kaimon":
         g += die(4, 162, 168, 34) + die(5, 204, 168, 34)
         g += f'<text x="200" y="226" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>合計 9 → 東家の山</text>'
         g += f'<text x="200" y="242" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>東家から反時計回りに数える</text>'
         g += f'<text x="200" y="256" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>（1・5・9＝東家、2・6・10＝南家…）</text>'
-        g += _callout((bx + 9, by), "右から9幢（トン）目で割る", -50, -30, INK)
-        g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌（ワンパイ）", 60, -50)
+        g += _callout(gap, "右から9幢{トン}目で割る", -52, -22, INK)
+        g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌{ワンパイ}", 62, -50)
     elif scene == "haipai":
-        g += _box([("配牌の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False), ("王牌の3幢目の上段をめくる＝ドラ表示牌", False)], 142)
+        g += _box([("配牌{ハイパイ}の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢{トン}（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False), ("王牌の3幢目の上段をめくる＝ドラ表示牌", False)], 128)
         g += _callout(center_of(0, BREAK - 2), "ドラ表示牌をめくる", 50, -40)
         for n in range(0, 24, 2):
             (x, y), (x2, y2) = center_of(*order[n]), center_of(*order[n + 1])
             g += (f'<text x="{(x + x2) / 2:.1f}" y="{(y + y2) / 2 + 3.5:.1f}" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>'
                   f'{SEATS[(n // 2) % 4][0]}</text>')
     elif scene == "tsumo":
-        g += _box([("ツモの順と山の減り方", True), ("手番は反時計回り（東→南→西→北）", False), ("山は開門位置の左から時計回りに減る", False), ("王牌の手前の最後の1枚＝海底牌", False)], 150)
+        g += _box([("ツモの順と山の減り方", True), ("手番は反時計回り（東→南→西→北）", False), ("山は開門{カイメン}位置の左から時計回りに減る", False), ("王牌の手前の最後の1枚＝海底牌{ハイテイハイ}", False)], 140)
         g += '<path d="M300 250 A100 100 0 0 0 300 150" fill="none" stroke="#fff" stroke-width="3" marker-end="url(#ah)" opacity=".9"/>'
-        g += _callout(center_of(*haitei), "海底牌（ハイテイハイ）", 10, -44)
-        g += _callout(center_of(0, BREAK - 1), "嶺上牌（リンシャンパイ）", -40, -66)
+        g += _callout(center_of(*haitei), "海底牌{ハイテイハイ}", 10, -46)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -40, -70)
     elif scene == "kaze":
-        g += _box([("東場（トンバ）＝場風（バカゼ）が東", True), ("自風（ジカゼ）は席で決まる（東家＝東…）", False), ("東家から見て右が下家・正面が対面・左が上家", False), ("親は局ごとに反時計回りに移る", False)], 150)
+        g += _box([("東場{トンバ}＝場風{バカゼ}が東", True), ("自風{ジカゼ}は席で決まる（東家＝東…）", False), ("東家から見て右が下家・正面が対面・左が上家", False), ("親は局ごとに反時計回りに移る", False)], 140)
         g += chiicha(262, 338, "東", 30, 20)
-        g += f'<text x="298" y="347" text-anchor="start" font-size="8.5" font-weight="900" fill="#fff" {F}>起家（チーチャ）</text><text x="298" y="358" text-anchor="start" font-size="8.5" font-weight="900" fill="#fff" {F}>マーク</text>'
+        g += rtext(298, 356, "起家{チーチャ}マーク", 9, anchor="start")
         for side, rel, yomi, x, y in ((1, "下家", "シモチャ", 362, 232), (2, "対面", "トイメン", 200, 68), (3, "上家", "カミチャ", 38, 232)):
-            g += (f'<rect x="{x - 23}" y="{y - 11}" width="46" height="25" rx="7" fill="#fff"/>'
-                  f'<text x="{x}" y="{y + 1}" text-anchor="middle" font-size="10" font-weight="900" fill="{GREEN}" {F}>{rel}</text>'
-                  f'<text x="{x}" y="{y + 10.5}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#55625F" {F}>{yomi}</text>')
+            g += f'<rect x="{x - 23}" y="{y - 11}" width="46" height="25" rx="7" fill="#fff"/>' + rtext(x, y + 10, f"{rel}{{{yomi}}}", 10.5, fill=GREEN, rfill="#55625F")
     return svg(S, S, g, SCENE_LABEL[scene])
 
 
@@ -332,7 +396,7 @@ def dead_wall_zoom(T="/assets/tiles"):
     # 王牌の範囲（7幢・14枚）
     xl, xr7 = xs[1] - 6, xs[7] + w + 6
     g += (f'<path d="M{xl} 48 v-8 H{xr7} v8" fill="none" stroke="#fff" stroke-width="1.6"/>'
-          f'<text x="{(xl + xr7) / 2:.0f}" y="32" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>王牌（ワンパイ）7幢（トン）・14枚</text>')
+          + rtext((xl + xr7) / 2, 32, "王牌{ワンパイ}（7幢{トン}・14枚）", 12))
     # 嶺上牌（左の2幢4枚）と取る順
     g += f'<rect x="{xs[1] - 4}" y="{y_up - 5}" width="{2 * (w + 4) + 4}" height="{y_lo + h - y_up + 10:.0f}" rx="8" fill="none" stroke="{ORANGE}" stroke-width="2.6"/>'
     for n, (pos, yy) in enumerate(((1, y_up), (1, y_lo), (2, y_up), (2, y_lo)), 1):
@@ -346,18 +410,20 @@ def dead_wall_zoom(T="/assets/tiles"):
         g += f'<text x="{xs[pos] + w / 2}" y="{y_up + h * .55:.0f}" text-anchor="middle" font-size="10" font-weight="900" fill="#fff" fill-opacity=".9" {F}>{pos - 3}</text>'
 
     def lab(x, y, t, col=ORANGE):
-        wd = len(t) * 11 + 14
-        return (f'<rect x="{x - wd / 2:.1f}" y="{y - 9}" width="{wd:.1f}" height="18" rx="9" fill="{col}"/>'
-                f'<text x="{x:.1f}" y="{y + 4}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F}>{t}</text>')
+        fs = 10.5
+        wd = text_w(t, fs) + 16
+        hh = 27 if has_ruby(t) else 18
+        top = y - hh / 2
+        return f'<rect x="{x - wd / 2:.1f}" y="{top:.1f}" width="{wd:.1f}" height="{hh}" rx="9" fill="{col}"/>' + rtext(x, top + hh - 5.5, t, fs)
     xd = xs[3] + w / 2
     yb = y_lo + h + 30
-    g += lab(xs[1] + w + 70, yb, "嶺上牌（リンシャンパイ）①→④の順に取る") + f'<line x1="{xs[1] + w + 2}" y1="{y_lo + h + 6:.0f}" x2="{xs[1] + w + 2}" y2="{yb - 9:.0f}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab(xd + 64, yb + 26, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd}" y1="{y_lo + h + 4:.0f}" x2="{xd + 30}" y2="{yb + 17:.0f}" stroke="#fff" stroke-width="1.4"/>'
-    g += lab((xs[4] + xs[7] + w) / 2 + 8, 61, "1〜4＝槓（カン）ドラ表示牌", BLUE)
+    g += lab(xs[1] + w + 34, yb + 2, "嶺上牌{リンシャンパイ} ①→④の順に取る") + f'<line x1="{xs[1] + w + 2}" y1="{y_lo + h + 6:.0f}" x2="{xs[1] + w + 2}" y2="{yb - 9:.0f}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab(xd + 96, yb + 34, "ドラ表示牌の下＝裏ドラ表示牌", INK) + f'<line x1="{xd}" y1="{y_lo + h + 4:.0f}" x2="{xd + 60}" y2="{yb + 25:.0f}" stroke="#fff" stroke-width="1.4"/>'
+    g += lab((xs[4] + xs[7] + w) / 2 + 8, 58, "1〜4＝槓{カン}ドラ表示牌", BLUE)
     g += lab(xd, 61, "ドラ表示牌", ORANGE)
     # 開門位置（左）と段の名前
     g += (f'<line x1="{xs[1] - 10}" y1="{y_up}" x2="{xs[1] - 10}" y2="{y_lo + h:.0f}" stroke="#fff" stroke-width="2" stroke-dasharray="4 3"/>'
-          f'<text x="22" y="{(y_up + y_lo + h) / 2:.0f}" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff" {F} writing-mode="tb">開門（カイメン）位置</text>')
+          + rtext(xs[1] - 10, y_up - 10, "開門{カイメン}位置", 10.5))
     xr = xs[7] + w + 8
     g += f'<text x="{xr}" y="{y_up + h / 2 + 4:.0f}" font-size="12" font-weight="900" fill="#fff" {F}>上段</text>'
     g += f'<text x="{xr}" y="{y_lo + h / 2 + 4:.0f}" font-size="12" font-weight="900" fill="#fff" {F}>下段</text>'
