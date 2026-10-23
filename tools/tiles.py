@@ -25,6 +25,8 @@ STYLES["tokumin"] = dict(STYLES["standard"], glyphs="tokumin", thick=0)     # Ka
 STYLES["boku"] = dict(STYLES["standard"], glyphs="boku", thick=0)           # Yuji Boku（太らせない）
 
 W, H = 60, 80  # 牌の表の大きさ（厚みは下に足す）
+EDGE, EDGE_W = "#A79E87", 1.3            # 牌の枠（少し濃くして見やすく。2026-10-23）
+BACK_FACE, BACK_EDGE = "#4FA3AE", "#2E8794"  # 裏向きの面（下の厚みの緑 #177083 より明るい緑）
 
 
 def _circle(cx, cy, r, col, big=False):
@@ -136,8 +138,8 @@ def face(code, st):
             return _sou8()
         lay = S_LAYOUT[n]
         return "".join(_stick(x, y, h, RED if red else c) for x, y, h, c in lay)
-    if code == "z5":  # 白: 何も描かない牌。青い細い枠だけ（見分けやすく）
-        return f'<rect x="12" y="14" width="36" height="52" rx="4" fill="none" stroke="{BLUE}" stroke-width="2.2" opacity=".75"/>'
+    if code == "z5":  # 白: 何も描かない（2026-10-23 ユーザーの判断。牌の枠を濃くしたので空白でも牌と分かる）
+        return ""
     col = {"z6": GREEN, "z7": RED}.get(code, INK)
     return _text(WIND[code], 30, 40, 40, col, st)
 
@@ -156,14 +158,12 @@ def tile_svg(code, style="tokumin", px=None, yoko=False):
         if st.get("gloss"):
             out += f'<rect x="3" y="{h + bh - 4}" width="{w - 6}" height="2" rx="1" fill="#fff" opacity=".25"/>'
     if code == "back":
-        # 裏向き: 面は緑。上に細い白のつやと、まじゃすこの印（角の丸い四角）を薄く
-        out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="{st["rx"]}" fill="{GREEN}"/>'
-        out += f'<rect x="0" y="{h - 3}" width="{w}" height="3" fill="#0F5866"/>'
-        out += f'<rect x="{w * .22:.1f}" y="{h * .2:.1f}" width="{w * .56:.1f}" height="{h * .6:.1f}" rx="5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".22"/>'
+        # 裏向き: 面には何も描かない。面は明るい緑、下の厚みはいつもの緑（色の違いで面と厚みを見分ける）
+        out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="{st["rx"]}" fill="{BACK_FACE}" stroke="{BACK_EDGE}" stroke-width="{EDGE_W}"/>'
         return out + "</svg>"
     out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="{st["rx"]}" fill="{st["face"]}"' + (f' stroke="{st["edge"]}" stroke-width="{st["stroke"]}"' if st["stroke"] else "") + "/>"
     if st["back"]:
-        out += f'<rect x="0" y="{h - 3}" width="{w}" height="3" fill="{st["edge"]}" opacity=".9"/><rect x="0" y="0" width="{w}" height="{h}" rx="{st["rx"]}" fill="none" stroke="{st["edge"]}" stroke-width=".8"/>'
+        out += f'<rect x="0" y="{h - 3}" width="{w}" height="3" fill="{st["edge"]}" opacity=".9"/><rect x="0" y="0" width="{w}" height="{h}" rx="{st["rx"]}" fill="none" stroke="{EDGE}" stroke-width="{EDGE_W}"/>'
     body = face(code, st)
     if yoko:  # 縦の絵（60×80）を左に90度倒して、横の面（80×60）に入れる。上にあった部分が左に来る
         body = f'<g transform="translate(0 {W}) rotate(-90)">{body}</g>'
