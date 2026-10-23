@@ -433,3 +433,7 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post ol.dl-reps .no { display: block; font-size: 11px; font-weight: 800; color: var(--c); }
 .blog-post ol.dl-reps b { display: block; font-size: 16px; }
 .blog-post ol.dl-reps small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }
+
+/* ふりがな（tools/add_ruby.py が中国語由来の麻雀用語の最初の1回に付ける） */
+.blog-post ruby rt { font-size: .5em; font-weight: 500; color: #6B7A77; letter-spacing: 0; }
+.blog-post p, .blog-post li, .blog-post td { line-height: 2; }
