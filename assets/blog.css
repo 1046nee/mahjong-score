@@ -437,3 +437,20 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 /* ふりがな（tools/add_ruby.py が中国語由来の麻雀用語の最初の1回に付ける） */
 .blog-post ruby rt { font-size: .5em; font-weight: 500; color: #6B7A77; letter-spacing: 0; }
 .blog-post p, .blog-post li, .blog-post td { line-height: 2; }
+
+/* ---- 麻雀用語集（五十音順・2026-10-23）: 読み方つき・正式名称／一般的な言い方／俗語の色分け ---- */
+.blog-post .yk-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.blog-post .yk-nav a { display: inline-block; min-width: 3.2em; text-align: center; padding: 6px 8px; border: 1.5px solid #C9D6EE; border-radius: 6px; color: #2F56A8; font-weight: 800; font-size: 13px; text-decoration: none; background: #F7F9FC; }
+.blog-post .yk-legend { font-size: 13px !important; }
+.blog-post .yk-type { display: inline-block; font-size: 11px; font-weight: 800; border-radius: 3px; padding: 0 6px; margin-right: 8px; vertical-align: 1px; line-height: 1.7; }
+.blog-post .yk-type.t-f { background: #E4F3EC; color: #136070; }
+.blog-post .yk-type.t-c { background: #EAF0FB; color: #2F4A86; }
+.blog-post .yk-type.t-s { background: #FFF0E8; color: #C2471A; }
+.blog-post dl.yk { margin: 4px 0 20px; border-top: 1px solid #E3E9E7; }
+.blog-post .yk-row { display: grid; grid-template-columns: 10em 1fr; gap: 2px 14px; padding: 9px 2px; border-bottom: 1px solid #EEF2F1; }
+.blog-post .yk-row dt { margin: 0; }
+.blog-post .yk-row dt b { display: block; font-size: 17px; font-weight: 900; line-height: 1.35; }
+.blog-post .yk-yomi { font-size: 12.5px; font-weight: 800; color: #136070; }
+.blog-post .yk-row dd { margin: 0; font-size: 14px; line-height: 1.75; }
+.blog-post .yk-alt { display: block; font-size: 12.5px; color: #6B7A77; margin-top: 2px; }
+@media (max-width: 520px) { .blog-post .yk-row { grid-template-columns: 1fr; } }

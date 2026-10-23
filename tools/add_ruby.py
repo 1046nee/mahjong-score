@@ -11,7 +11,7 @@ import glob, io, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 「対面（ふつうの意味の“会って向かい合う”）」「平和（ふつうの意味の“へいわ”）」は記事でふつうの言葉としても使うので自動では付けない
-SKIP_FILES = {"blog-mahjong-yougo.html"}  # 読み方を一覧で見せるページ（暗記モードがあるので付けない）
+SKIP_FILES = {"blog-mahjong-yougo.html", "blog-mahjong-yougoshu.html"}  # 読み方を一覧で見せるページ（暗記モードがあるので付けない）
 
 READ = {
  # 牌
