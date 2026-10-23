@@ -454,3 +454,50 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post .yk-row dd { margin: 0; font-size: 14px; line-height: 1.75; }
 .blog-post .yk-alt { display: block; font-size: 12.5px; color: #6B7A77; margin-top: 2px; }
 @media (max-width: 520px) { .blog-post .yk-row { grid-template-columns: 1fr; } }
+
+/* ---- 待ち当て道場（blog-machi-dojo.html・2026-10-23）: 問題の枠・答えの開閉・分け方の小さな牌 ---- */
+.blog-post .dj-hand { overflow-x: auto; padding: 2px 0 6px; }
+.blog-post .dj-hand .hand { flex-wrap: nowrap; }
+.blog-post .dj-q { border: 1px solid #DCE6E3; border-left: 4px solid #177083; background: #F7F9F8; border-radius: 4px; padding: 10px 12px 8px; margin: 0 0 14px; }
+.blog-post .dj-q .dj-no { font-size: 13px; font-weight: 900; color: #177083; margin: 0 0 4px; }
+.blog-post details.dj-ans { border-top: 1px dashed #CFDAD7; padding-top: 6px; }
+.blog-post details.dj-ans summary { cursor: pointer; font-size: 14px; font-weight: 800; color: #2F56A8; padding: 4px 0; }
+.blog-post details.dj-ans[open] summary { color: #6B7A77; }
+.blog-post details.dj-ans p { margin: 6px 0; font-size: 14px; }
+.blog-post .dj-w { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.blog-post .dj-wt { display: inline-flex; padding: 2px; background: #FFE2D3; border-radius: 4px; }
+.blog-post .dj-wt img { display: block; margin-right: 1px; }
+.blog-post ul.dj-split { list-style: none; padding: 0; margin: 6px 0 4px; display: flex; flex-direction: column; gap: 4px; }
+.blog-post ul.dj-split li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 0; font-size: 12px; }
+.blog-post ul.dj-split li b { min-width: 3.2em; color: #1F2A28; }
+.blog-post .dj-grp { display: inline-flex; align-items: flex-end; padding: 2px 3px; background: #fff; border: 1px solid #DCE6E3; border-radius: 3px; font-size: 12px; }
+.blog-post .dj-grp.pair { border-color: #9fc3bd; }
+.blog-post .dj-grp img { display: block; width: 18px; height: auto; }
+.blog-post .dj-grp .w { display: inline-flex; background: #FFB894; padding: 1px; border-radius: 2px; }
+.blog-post .dj-shape { margin: 0 0 18px; }
+.blog-post h3.dj-lv { border-left: 4px solid #E75620; padding-left: 8px; }
+.blog-post table.dj-tbl td.dj-cell { white-space: nowrap; }
+.blog-post table.dj-tbl td.dj-cell img { display: inline-block; vertical-align: bottom; margin-right: 1px; }
+@media (max-width: 480px) { .blog-post .dj-hand .hand img { width: 20px; } .blog-post .dj-q { padding: 8px 6px 6px 8px; } }
+@media (max-width: 360px) { .blog-post .dj-hand .hand img { width: 18px; } }
+/* ---- 麻雀用語の漢字の意味（blog-mahjong-kanji.html・2026-10-23） ---- */
+.blog-post table.kj-tbl td small, .blog-post table.kj-tbl th small { display: block; font-size: 11px; font-weight: 500; color: #6B7A77; }
+.blog-post table.kj-tbl .kj-big { font-size: 20px; font-weight: 900; color: #1F2A28; }
+.blog-post table.kj-tbl td.kj-c img { display: block; }
+.blog-post table.kj-pair th { white-space: nowrap; }
+.blog-post table.kj-pair td:nth-child(2) { background: #FFF4EE; }
+.blog-post table.kj-pair td:nth-child(3) { background: #EEF5F3; }
+.blog-post .kj-tiles { display: flex; flex-wrap: wrap; gap: 3px 1px; }
+.blog-post .kj-tiles img { display: block; }
+.blog-post table.kj-hayami td:first-child { white-space: nowrap; }
+.blog-post table.kj-num { table-layout: fixed; width: 100%; min-width: 0 !important; }
+.blog-post table.kj-num th:nth-child(1) { width: 40px; } .blog-post table.kj-num th:nth-child(2) { width: 36%; }
+.blog-post table.kj-num .kj-big { font-size: 16px; display: block; }
+.blog-post table.kj-num td { overflow-wrap: anywhere; }
+.blog-post table.kj-pair, .blog-post table.kj-hayami { table-layout: fixed; width: 100%; min-width: 0 !important; }
+.blog-post table.kj-pair th:nth-child(1) { width: 30%; white-space: normal; }
+.blog-post table.kj-hayami th:nth-child(1) { width: 26%; }
+.blog-post table.kj-pair td, .blog-post table.kj-pair th, .blog-post table.kj-hayami td { overflow-wrap: anywhere; }
+.blog-post table.kj-pair rt { font-size: 8px; letter-spacing: -.02em; }
+.blog-post table.kj-num, .blog-post table.kj-pair, .blog-post table.kj-hayami { display: table; }
+.blog-post table.kj-pair ruby { white-space: nowrap; } .blog-post table.kj-pair rt { font-size: 7.5px; }

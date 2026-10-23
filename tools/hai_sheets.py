@@ -147,6 +147,52 @@ def check(ex):
     return "あがりの形になっていない"
 
 
+# ---------------- 待ちを調べる（待ち当て道場の答えを計算で出す・2026-10-23〜）----------------
+ALL34 = [f"{s}{n}" for s in "mps" for n in range(1, 10)] + [f"z{i}" for i in range(1, 8)]
+
+
+def _splits(c, n):
+    """c（数）を n 個の面子に分ける分け方をすべて返す（各面子は牌の並び）"""
+    c = +c
+    if not c:
+        return [[]] if n == 0 else []
+    t = min(c)
+    out = []
+    if c[t] >= 3:
+        d = c.copy(); d[t] -= 3
+        out += [[[t] * 3] + r for r in _splits(d, n - 1)]
+    if t[0] != "z" and int(t[1]) <= 7:
+        a, b = f"{t[0]}{int(t[1]) + 1}", f"{t[0]}{int(t[1]) + 2}"
+        if c[a] and c[b]:
+            d = c.copy(); d[t] -= 1; d[a] -= 1; d[b] -= 1
+            out += [[[t, a, b]] + r for r in _splits(d, n - 1)]
+    return out
+
+
+def splits(tiles14):
+    """14枚（鳴きなし）を「面子4つ＋雀頭」に分ける分け方をすべて返す。七対子の形なら ["七対子"] も足す"""
+    cnt = Counter(base(x) for x in tiles14)
+    out = []
+    for t in sorted(cnt):
+        if cnt[t] >= 2:
+            c = cnt.copy(); c[t] -= 2
+            for r in _splits(c, 4):
+                k = sorted(map(tuple, r)) + [(t, t)]
+                if k not in out:
+                    out.append(k)
+    if len(cnt) == 7 and all(v == 2 for v in cnt.values()):
+        out.append("七対子")
+    return out
+
+
+def waits(hand13):
+    """13枚（鳴きなし・"123m456p..." の書き方）の待ちの牌を返す。手の中に4枚ある牌は待ちに数えない（5枚目は無い）"""
+    tiles = [base(x) for x in parse(hand13)]
+    assert len(tiles) == 13, len(tiles)
+    cnt = Counter(tiles)
+    return [t for t in ALL34 if cnt[t] < 4 and splits(tiles + [t])]
+
+
 # ---------------- 牌の並びのHTML ----------------
 def tile_img(code, url, w, yoko=False, cls=""):
     name = tile_name(code)
