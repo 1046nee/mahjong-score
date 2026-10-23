@@ -269,11 +269,11 @@ def _callout(xy, label, dx, dy, col=ORANGE):
     tx, ty = x + dx, y + dy
     fs = 10.5
     wd = text_w(label, fs) + 16
-    hh = 27 if has_ruby(label) else 18
+    hh = 23 if has_ruby(label) else 18
     top = ty - hh / 2
     return (f'<line x1="{x:.1f}" y1="{y:.1f}" x2="{tx:.1f}" y2="{ty:.1f}" stroke="#fff" stroke-width="1.4"/>'
             f'<rect x="{tx - wd / 2:.1f}" y="{top:.1f}" width="{wd:.1f}" height="{hh}" rx="9" fill="{col}"/>'
-            + rtext(tx, top + hh - 5.5, label, fs))
+            + rtext(tx, top + hh - 5, label, fs))
 
 
 def _box(lines, y0=160):
@@ -347,19 +347,19 @@ def table_scene(scene="yama", T="/assets/tiles"):
               + rtext(xb + 4, yb + 12, "王牌{ワンパイ}", 9.5, anchor="start"))
     if scene == "yama":
         g += _box([("山（壁牌{ピーパイ}）と王牌{ワンパイ}", True), ("1人17幢{トン}（2段＝34枚）×4人＝136枚", False), ("王牌＝開門{カイメン}位置の右の7幢（14枚）", False), ("王牌からはカンのときしか取らない", False)], 150)
-        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 50, -44)
-        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -6, -68)
-        g += _callout(gap, "開門{カイメン}位置", -70, -22, INK)
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌", 34, -24)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -4, -48)
+        g += _callout(gap, "開門{カイメン}位置", -44, -18, INK)
     elif scene == "kaimon":
         g += die(4, 162, 168, 34) + die(5, 204, 168, 34)
         g += f'<text x="200" y="226" text-anchor="middle" font-size="12" font-weight="900" fill="#fff" {F}>合計 9 → 東家の山</text>'
         g += f'<text x="200" y="242" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>東家から反時計回りに数える</text>'
         g += f'<text x="200" y="256" text-anchor="middle" font-size="9" font-weight="700" fill="#fff" {F}>（1・5・9＝東家、2・6・10＝南家…）</text>'
-        g += _callout(gap, "右から9幢{トン}目で割る", -52, -22, INK)
-        g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌{ワンパイ}", 62, -50)
+        g += _callout(gap, "右から9幢{トン}目で割る", -44, -18, INK)
+        g += _callout(center_of(0, BREAK - 3), "右の7幢が王牌{ワンパイ}", 44, -34)
     elif scene == "haipai":
         g += _box([("配牌{ハイパイ}の取り方", True), ("開門位置の左から、東→南→西→北の順に", False), ("2幢{トン}（4枚）ずつを3回まわる", False), ("最後に親は2枚・子は1枚（親14枚・子13枚）", False), ("王牌の3幢目の上段をめくる＝ドラ表示牌", False)], 128)
-        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌をめくる", 50, -40)
+        g += _callout(center_of(0, BREAK - 2), "ドラ表示牌をめくる", 40, -26)
         for n in range(0, 24, 2):
             (x, y), (x2, y2) = center_of(*order[n]), center_of(*order[n + 1])
             g += (f'<text x="{(x + x2) / 2:.1f}" y="{(y + y2) / 2 + 3.5:.1f}" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff" {F}>'
@@ -367,12 +367,12 @@ def table_scene(scene="yama", T="/assets/tiles"):
     elif scene == "tsumo":
         g += _box([("ツモの順と山の減り方", True), ("手番は反時計回り（東→南→西→北）", False), ("山は開門{カイメン}位置の左から時計回りに減る", False), ("王牌の手前の最後の1枚＝海底牌{ハイテイハイ}", False)], 140)
         g += '<path d="M300 250 A100 100 0 0 0 300 150" fill="none" stroke="#fff" stroke-width="3" marker-end="url(#ah)" opacity=".9"/>'
-        g += _callout(center_of(*haitei), "海底牌{ハイテイハイ}", 10, -46)
-        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -40, -70)
+        g += _callout(center_of(*haitei), "海底牌{ハイテイハイ}", 8, -32)
+        g += _callout(center_of(0, BREAK - 1), "嶺上牌{リンシャンパイ}", -24, -46)
     elif scene == "kaze":
         g += _box([("東場{トンバ}＝場風{バカゼ}が東", True), ("自風{ジカゼ}は席で決まる（東家＝東…）", False), ("東家から見て右が下家・正面が対面・左が上家", False), ("親は局ごとに反時計回りに移る", False)], 140)
-        g += chiicha(262, 338, "東", 30, 20)
-        g += rtext(298, 356, "起家{チーチャ}マーク", 9, anchor="start")
+        g += chiicha(340, 340, "東", 30, 20)
+        g += rtext(355, 381, "起家{チーチャ}マーク", 8.5)
         for side, rel, yomi, x, y in ((1, "下家", "シモチャ", 362, 232), (2, "対面", "トイメン", 200, 68), (3, "上家", "カミチャ", 38, 232)):
             g += f'<rect x="{x - 23}" y="{y - 11}" width="46" height="25" rx="7" fill="#fff"/>' + rtext(x, y + 10, f"{rel}{{{yomi}}}", 10.5, fill=GREEN, rfill="#55625F")
     return svg(S, S, g, SCENE_LABEL[scene])
