@@ -159,11 +159,16 @@ def main():
         lid = db.get("users", {}).get(U1, {}).get("listId")
         results.append(("[2e] users/{uid}/listId ができ、端末の履歴がそのリストに入る", True,
                         bool(lid) and g1 in db.get("mylists", {}).get(lid, {}).get("groups", {})))
+        results.append(("[2f] アカウントの一覧に持ち主（owner＝本人）が付く（本人だけが書ける一覧。2026-10-24）", True,
+                        db.get("mylists", {}).get(lid, {}).get("owner") == U1))
+        # 引き継ぎURLの時代の一覧（持ち主なし）を再現: 次のログインで持ち主が付くこと
+        pg.evaluate(f"() => {{ const d = JSON.parse(localStorage.getItem('__smoke_db')); delete d.mylists['{lid}'].owner; localStorage.setItem('__smoke_db', JSON.stringify(d)); }}")
         pg.evaluate("() => { const keep = ['__smoke_db', '__smoke_user']; Object.keys(localStorage).forEach(k => { if (!keep.includes(k)) localStorage.removeItem(k); }); }")
         pg.reload(wait_until="load")
         pg.wait_for_function(SAFE % "currentUser && !accountBusy && (appState.games || []).length", timeout=10000)
         results.append(("[3] 空の端末でログインすると、過去の試合と「自分」の選択が戻る", True,
                         pg.evaluate(f"appState.games.some(g => g.id === '{g1}') && tagOf('{g1}').me === 0")))
+        results.append(("[3a] 持ち主の無い古い一覧には、ログインしたときに持ち主（本人）が付く", True, db_of().get("mylists", {}).get(lid, {}).get("owner") == U1))
         pg.evaluate("signOutAccount()")
         pg.wait_for_timeout(300)
         results.append(("[3b] ログアウトすると、この端末の過去の試合の控えも消える（次に別の人がログインしても混ざらない）", True,
@@ -183,6 +188,7 @@ def main():
         groups = db_of()["mylists"][lid]["groups"]
         results.append(("[4] 別の引き継ぎリストを持っていた端末でログイン→アカウントのリストへまとまる", True,
                         pg.evaluate("myListId") == lid and g1 in groups and g2 in groups))
+        results.append(("[4b] まとめたあともアカウントの一覧の持ち主は本人のまま", True, db_of()["mylists"][lid].get("owner") == U1))
 
         # ---- 5. 仲間ページを作る・試合を追加する ----
         pg.evaluate("showView('history')")

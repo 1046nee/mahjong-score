@@ -456,6 +456,9 @@
 - `attachAccount(user)`（onAuthStateChangedから）: ①アカウントにリストが無い＝初ログイン→この端末の引き継ぎリスト（無ければ`createMyList(true)`で作る）を
   アカウントに付ける ②アカウントのリストと端末のリストが違う→アカウントのリストへ乗り換えて取り込み、
   旧リストの卓・まとめは`mergeOldListInto`でアカウント側へ移す ③同じ→`refreshMyList`。最後に`claimAllTaggedSeats`
+- **一覧の持ち主（2026-10-24）**: `createMyList` は owner（uid）付きで作る（ルールの貼り替え前に拒否されたら owner なしで作り直す）。
+  `attachAccount` の3つの分かれ道すべてで `ensureListOwner(listId, uid)`＝owner が無ければ付ける（引き継ぎURLの時代の一覧向け）。
+  ルール上、一覧の項目は消せない（削除は deleted の印だけ）。**一覧の項目を remove() する処理を足さない**（ルールで拒否される）
 - ログアウト（`confirmSignOut`→`signOutAccount`）: この端末の`myListId`を外すだけ。端末の履歴もアカウントの記録も消さない
 - **認証はリダイレクト方式**（`signInWithRedirect`）。iPhoneのホーム画面アプリではポップアップ方式が動かない。
   **authDomainは本番では`majasco.jp`**（Safariが別ドメインの保存領域を遮るため、firebaseapp.comのままだとリダイレクト後に結果を受け取れない。

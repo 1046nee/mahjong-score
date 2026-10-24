@@ -56,7 +56,7 @@
     "mylists": {
       "$lid": {
         ".read": true,
-        ".write": "$lid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)",
+        ".write": "auth != null && !data.exists() && newData.child('owner').val() === auth.uid && $lid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{14}$/)",
         ".validate": "newData.hasChildren(['id'])",
         "id": {
           ".validate": "newData.isString() && newData.val() === $lid"
@@ -64,8 +64,13 @@
         "createdAt": {
           ".validate": "newData.isString() && newData.val().length <= 40"
         },
+        "owner": {
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid && root.child('users').child(auth.uid).child('listId').val() === $lid",
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
         "groups": {
           "$gid": {
+            ".write": "auth != null && newData.exists() && root.child('mylists').child($lid).child('owner').val() === auth.uid",
             ".validate": "($gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || $gid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/)) && newData.hasChildren(['at'])",
             "at": {
               ".validate": "newData.isString() && newData.val().length <= 40"
