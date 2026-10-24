@@ -15,8 +15,9 @@ OUT = os.path.join(ROOT, "assets", "hai")
 
 NAMES = {"m": "萬", "p": "筒", "s": "索"}
 KANSU = "一二三四五六七八九"
-YOMI_NUM = ["イー", "リャン", "サン", "スー", "ウー", "ロー", "チー", "パー", "チュー"]
-YOMI_SUIT = {"m": "ワン", "p": "ピン", "s": "ソー"}
+# 9は牌の読みが「キュー」、役の名前（九蓮宝燈・么九牌）では「チュー」。6は「ロー」だけ。萬子は「マン」が基本（「ワン」とも）＝2026-10-24 ユーザーの指摘
+YOMI_NUM = ["イー", "リャン", "サン", "スー", "ウー", "ロー", "チー", "パー", "キュー"]
+YOMI_SUIT = {"m": "マン", "p": "ピン", "s": "ソー"}
 Z = {1: ("東", "トン"), 2: ("南", "ナン"), 3: ("西", "シャー"), 4: ("北", "ペー"), 5: ("白", "ハク"), 6: ("發", "ハツ"), 7: ("中", "チュン")}
 
 
@@ -267,7 +268,7 @@ td b {{ font-size: 11.5px; }}
 <section class="zi"><h2><em>字牌（ジハイ）</em><small>数字がない牌・7種が4枚ずつ（28枚）</small></h2><div class="grp"><div><p class="lbl">風牌（カゼハイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 5))}</div></div>
 <div><p class="lbl">三元牌（サンゲンパイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(5, 8))}</div></div></div></section>
 <div class="bottom"><div><h3>数字の読み方</h3><table><tr>{nums}</tr></table>
-<p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝ワン、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーワン、七筒＝チーピン、二索＝リャンソー</p>
+<p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝マン（ワンとも）、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーマン、七筒＝チーピン、二索＝リャンソー<br>9は役の名前では<b>チュー</b>（九蓮宝燈・么九牌）。7索は関西で<b>チャーソー</b>とも</p>
 <h3 style="margin-top:10px">よく出る呼び名</h3><p class="note"><b>么九牌（ヤオチューハイ）</b>：1・9の数牌と字牌。<b>中張牌（チュンチャンパイ）</b>：2〜8の数牌（タンヤオに使う）。<b>役牌</b>：三元牌と、場風・自風の牌</p></div>
 <div><h3>赤ドラ（赤五）</h3><div class="aka">{aka}</div><p class="note" style="margin-top:6px">ふつうの五と差し替えて使う牌。持っているだけで<b>ドラ1枚</b>として数える（使うかどうかはルールで決める）。</p>
 <h3 style="margin-top:10px">三麻（3人麻雀）</h3><p class="note">萬子の2〜8（28枚）を抜いた108枚で打つのが一般的。</p></div></div>

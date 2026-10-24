@@ -357,6 +357,7 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 /* 牌の一覧（ルール基本の記事） */
 .blog-post .hai-grid { margin: 4px 0 16px; }
 .blog-post .hai-lbl { font-size: 13px !important; font-weight: 800; margin: 10px 0 4px !important; }
+.blog-post .hai-lbl small { font-size: 11.5px; font-weight: 600; color: #5F6E6B; margin-left: 8px; }
 .blog-post .hai-lbl.m { color: #C2471A; } .blog-post .hai-lbl.p { color: #2F4A86; } .blog-post .hai-lbl.s { color: #136070; } .blog-post .hai-lbl.z { color: #1F2A28; }
 .blog-post .hai-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
 .blog-post .hai-row figure { margin: 0; text-align: center; }
