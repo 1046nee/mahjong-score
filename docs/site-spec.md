@@ -86,6 +86,17 @@
 - **2026-10-02（3回目）: circles/$cid/roster/$mid/color（#RRGGBB・作成者だけ変えられる）。コンソールへの再適用が必要**（未適用の間は色を選ぶと「変えられませんでした」）。確認: circle_rules_test（**2026-10-02に適用済み**・circle_rules_test 48項目・lock_rules_test ALL PASS。ゲーム名の .write も同日適用済み）
 - 認証なし運用のため完全な防御ではない（本命はApp Check）。目的は「sessions外への書き込み禁止」「ゴミデータの容量攻撃の抑止」
 
+## バックアップ（2026-10-24〜）
+- `.github/workflows/db-backup.yml` が毎日3:17（日本時間）に `tools/db_backup.py` で mylists・users・circles・circleMembers を書き出し、
+  gzip → **openssl（AES-256・pbkdf2）で暗号化**して Actions の成果物（`db-backup-YYYYMMDD`）に**90日**残す。手動実行は Actions の画面の「Run workflow」
+- sessions（試合の中身）は入れない（ルールで誰にも消せない・大きい）
+- **公開リポジトリの成果物はGitHubにログインした人なら誰でもダウンロードできる**ので、暗号化は外さない。ログには中身も件数も出さない
+- 要るもの（ユーザー作業）: ①リポジトリの Settings → Secrets and variables → Actions に `BACKUP_PASSPHRASE`（長いランダムな文字列。**GitHub以外にも控える**＝無くすと復号できない）
+  ②サービスアカウント（`FIREBASE_SERVICE_ACCOUNT_MAHJONG_SCORE_2E8AA`＝firebase-adminsdk）がDBを読めること。読めずに失敗したら Google Cloud の IAM でそのアカウントに「Firebase Realtime Database 閲覧者」を付ける
+- 失敗（鍵が無い・読めない・一覧が空）はジョブが赤くなり、GitHub からメールが来る
+- 戻し方: 成果物をダウンロード→ `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass pass:（鍵） -in backup.json.gz.enc | gunzip > backup.json`
+  →必要な一覧（`nodes.mylists.{リストID}`）だけを取り出し、Firebaseコンソールの Realtime Database でその場所を選んで「JSONをインポート」（その場所だけが置き換わる。ルート全体にはインポートしない）
+
 ## App Check（2026-10-15〜）
 - サイトの画面からの読み書きだけを通す仕組み。プロバイダーは **Fraud Defense（旧 reCAPTCHA Enterprise）**（Firebaseで reCAPTCHA v3 の Classic は非推奨と出たため。キーは Google Cloud の mahjong-score プロジェクト。無料枠は月1万回の判定→トークンの有効期間を長めにして回数を抑える）。サイトキーは index.html の `APP_CHECK_SITE_KEY`（公開してよい値）。秘密鍵はFirebaseコンソールにだけ置く
 - 確認が取れなかった端末は GA4 のイベント `appcheck_fail`（reason に理由）で数える。2026-10-21 時点で Realtime Database の未確認は7%（強制は見送り）
