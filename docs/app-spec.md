@@ -456,6 +456,9 @@
 - `attachAccount(user)`（onAuthStateChangedから）: ①アカウントにリストが無い＝初ログイン→この端末の引き継ぎリスト（無ければ`createMyList(true)`で作る）を
   アカウントに付ける ②アカウントのリストと端末のリストが違う→アカウントのリストへ乗り換えて取り込み、
   旧リストの卓・まとめは`mergeOldListInto`でアカウント側へ移す ③同じ→`refreshMyList`。最後に`claimAllTaggedSeats`
+- **取り込みは軽く（2026-10-24）**: `mergeMyListData` は試合を `fetchSessionLite` で読む＝log 以外（name・createdAt・lockAt・endedAt・settings・rounds）だけ。
+  確定した試合・3日より前の試合は log を読まず `_slim`（結果を開いたとき `reloadDetailFromServer` で読み直す。容量オーバーのときと同じ仕組み）。
+  まだ確定していない新しい試合は「最後の編集」の判定に log を使うので log も読む。成績・一覧は log を使わない。確認: storage_test [7b]
 - **一覧の持ち主（2026-10-24）**: `createMyList` は owner（uid）付きで作る（ルールの貼り替え前に拒否されたら owner なしで作り直す）。
   `attachAccount` の3つの分かれ道すべてで `ensureListOwner(listId, uid)`＝owner が無ければ付ける（引き継ぎURLの時代の一覧向け）。
   ルール上、一覧の項目は消せない（削除は deleted の印だけ）。**一覧の項目を remove() する処理を足さない**（ルールで拒否される）

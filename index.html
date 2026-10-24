@@ -3694,18 +3694,20 @@ async function mergeMyListData(data) {
   // この端末で削除したグループ（墓標あり）は取り込み直さない（オフライン中に印を書けなかった場合の保険）
   const toFetch = entries.filter(([gid]) => !known.has(gid) && !deletedGids[gid]);
   const normArr = v => v ? (Array.isArray(v) ? v : Object.values(v)).filter(Boolean) : [];
-  // 1万件でも読めるように、同時に読むのは100件ずつ
+  // 1万件でも読めるように、同時に読むのは100件ずつ。
+  // 2026-10-24: 新しい端末で1万件を取り込むと全部で数百MBになることがあったので、成績に要る中身だけを読む（fetchSessionLite）。
+  // 「変更の履歴（log）」は、結果を開いたときにサーバーから読み直す（_slim。容量オーバーのときと同じ仕組み）
   const results = [];
   for (let i = 0; i < toFetch.length; i += 100) {
     results.push(...await Promise.all(toFetch.slice(i, i + 100).map(([gid, meta]) =>
-      db.ref('sessions/' + gid).once('value').then(s => ({ gid, meta, val: s.val() })).catch(() => null))));
+      fetchSessionLite(gid).then(val => ({ gid, meta, val })).catch(() => null))));
   }
   let added = 0;
   results.forEach(r => {
     if (!r || !r.val) return; // 見つからないグループ（削除済みなど）は飛ばす
     if ((appState.games || []).some(g => g.id === r.gid)) return; // 読んでいるあいだに別の所から足された（同時に2回取り込むと2つ並んだ）
     appState.games.push({ ...r.val, id: r.gid, rounds: normArr(r.val.rounds), log: normArr(r.val.log),
-      lastAccess: (r.meta && r.meta.at) || r.val.createdAt });
+      lastAccess: (r.meta && r.meta.at) || r.val.createdAt, ...(r.val._slim ? { _slim: true } : {}) });
     // 取り込んだゲームのプレイヤー名を「登録名」にも反映する（この端末で作成した場合と同じ扱い。
     // 引き継ぎ後のセットアップで過去のメンバー名が候補に出るようになる）
     if (r.val.settings && r.val.settings.playerNames) savePlayerNames(r.val.settings.playerNames);
@@ -3725,6 +3727,19 @@ async function mergeMyListData(data) {
     if (meta.role == null && meta.me == null && (t.role === 'watch' || t.me != null)) syncTagToMyList(g.id);
   });
   return added;
+}
+// 取り込み用に試合を軽く読む: log 以外の項目だけを読み、log は読まない（_slim）。
+// ただし、まだ確定していない新しい試合は「最後の編集」の判定に log を使うので、そのときだけ log も読む。試合が無ければ null
+const SESSION_LITE_KEYS = ['name', 'createdAt', 'lockAt', 'endedAt', 'settings', 'rounds'];
+async function fetchSessionLite(gid) {
+  const vals = await Promise.all(SESSION_LITE_KEYS.map(k => db.ref(`sessions/${gid}/${k}`).once('value').then(s => s.val())));
+  const v = { id: gid };
+  SESSION_LITE_KEYS.forEach((k, i) => { if (vals[i] != null) v[k] = vals[i]; });
+  if (v.createdAt == null && v.settings == null && v.rounds == null) return null; // 試合が無い
+  const old = (typeof v.lockAt === 'number' && v.lockAt < serverNow()) || (Date.parse(v.createdAt) || 0) < serverNow() - 3 * 86400000;
+  if (old) { v.log = []; v._slim = true; }
+  else { v.log = (await db.ref(`sessions/${gid}/log`).once('value')).val(); }
+  return v;
 }
 // #my=ID（以前の「引き継ぎURL」）で開いたとき: ログインしてアカウントに移す。
 // 過去の試合はログインした人だけが見られる形にしたので、引き継ぎURLは「アカウントへ移す入り口」としてだけ残している

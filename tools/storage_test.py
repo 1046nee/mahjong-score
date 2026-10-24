@@ -3,6 +3,7 @@
   [1] 古い端末（localStorage に試合）から IndexedDB へ移し替え、localStorage から外れる
   [2] 開き直しても全部ある  [3] 変更が残り、消した試合は戻らない  [4] 起動直後の保存でも減らない
   [5] 1万件を読み込め、成績に全部入る（時間も出す）  [6] 空にすると空のまま  [7] アカウントの1500件を全部取り込む
+  [7b] 取り込みでは確定した試合の変更の履歴（log）を読まない（開いたときに読む）
 実行: python tools/storage_test.py   （保存の仕組み・引き継ぎ・過去の試合の一覧を触ったら通す）
 """
 import functools, http.server, sys, threading, os, time, json
@@ -84,6 +85,20 @@ with sync_playwright() as p:
     t0 = time.time()
     added = pg.evaluate("(async () => { const s = await db.ref('mylists/LLLLLLLLLLLLLL').once('value'); return await mergeMyListData(s.val()); })()")
     ok(f'[7] アカウントの1500件を全部取り込む（{added}件・{time.time() - t0:.1f}秒）・成績にも入る', added == 1500 and pg.evaluate("(setMpPeriod('all'), collectMyStats().modes[4].groups)") == 1500)
+    # 7b) 取り込みは軽く: 確定した古い試合は変更の履歴（log）を読まない（_slim）。まだ確定していない新しい試合は log も読む。結果を開くと log が戻る
+    r7 = pg.evaluate("""async () => { const now = Date.now(), iso = t => new Date(t).toISOString();
+      const base = { settings: { playerNames: ['むにぃ','たろう','じろう','さぶろう'], numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] },
+        rounds: [{ id: 'r1', at: iso(now - 9e8), points: [40000, 30000, 20000, 10000], members: [0,1,2,3], scores: [50, 10, -10, -50] }] };
+      await db.ref('sessions/QQQQQQQQQ2').set({ ...base, id: 'QQQQQQQQQ2', name: '古い試合', createdAt: iso(now - 9e8), lockAt: now - 5e8, log: [{ type: 'add', at: iso(now - 9e8), no: 1 }] });
+      await db.ref('sessions/QQQQQQQQQ3').set({ ...base, id: 'QQQQQQQQQ3', name: '今日の試合', createdAt: iso(now - 3600e3), lockAt: now + 8e7, log: [{ type: 'add', at: iso(now - 3600e3), no: 1 }] });
+      await db.ref('mylists/MMMMMMMMMMMMMM').set({ id: 'MMMMMMMMMMMMMM', groups: { QQQQQQQQQ2: { at: iso(now - 9e8), name: '古い試合' }, QQQQQQQQQ3: { at: iso(now - 3600e3), name: '今日の試合' } } });
+      const added = await mergeMyListData((await db.ref('mylists/MMMMMMMMMMMMMM').once('value')).val());
+      const o = appState.games.find(g => g.id === 'QQQQQQQQQ2'), n = appState.games.find(g => g.id === 'QQQQQQQQQ3');
+      const before = [added, !!o._slim, (o.log || []).length, (o.rounds || []).length, !n._slim, (n.log || []).length];
+      viewDetailById('QQQQQQQQQ2'); await new Promise(r => setTimeout(r, 800));
+      const o2 = appState.games.find(g => g.id === 'QQQQQQQQQ2');
+      return before.concat([!(detailGame || {})._slim, ((detailGame || {}).log || []).length]); }""")
+    ok(f'[7b] 確定した試合は log を読まずに取り込み（成績の中身はある）、新しい試合は log も読む。結果を開くと log が戻る {r7}', r7 == [2, True, 0, 1, True, 1, True, 1])
     ctx.close()
     ok('[8] ページのエラーなし ' + str(errs[:3]), not errs)
     br.close()
