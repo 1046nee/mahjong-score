@@ -108,11 +108,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>そこで、<strong>打っている間は誰でも直せる、終わったら誰も直せない</strong>という線を引きました。</p>
 
   <h2>確定までの流れ</h2>
+    <div class="hflow"><div class="hf-step"><span class="hf-k">STEP 1</span><b>対局中</b><small>入力・修正・削除ができる</small></div><div class="hf-step"><span class="hf-k">STEP 2</span><b>終了後</b><small>入力済みの試合だけ直せる</small></div><div class="hf-step goal"><span class="hf-k">STEP 3</span><b>確定後</b><small>見る・共有・書き出し</small></div></div>
   <table>
-    <tr><th>状態</th><th>できること</th><th>確定するまで</th></tr>
-    <tr><td>対局中</td><td>点数の入力・修正・削除、ルールやメンバーの変更</td><td>最後の入力から24時間</td></tr>
+    <thead><tr><th>状態</th><th>できること</th><th>確定するまで</th></tr></thead>
+    <tbody><tr><td>対局中</td><td>点数の入力・修正・削除、ルールやメンバーの変更</td><td>最後の入力から24時間</td></tr>
     <tr><td>終了後</td><td>入力済みの試合の修正（新しい試合の追加はできない）。再開もできる</td><td>終了から12時間（入力しても延びない）</td></tr>
     <tr><td>確定後</td><td>結果を見る・共有する・画像やCSVで書き出す</td><td>—</td></tr>
+    </tbody>
   </table>
   <p>終了してからの12時間は、帰り道や翌朝に「あの試合、点数を入れ間違えていた」と気づいたときに直すための猶予です。終了したあとの修正では締め切りは延びないので、いつまでも確定しない状態にはなりません。</p>
   <p>確定の時刻はサーバー側の時計で判断し、データベースの決まり（ルール）でも書き込みを拒否しています。アプリの画面を細工しても、確定した記録は変えられません。</p>
@@ -144,11 +146,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>時刻の例</h2>
   <p>金曜の夜に集まった場合で、確定の時刻を追ってみます。</p>
   <table>
-    <tr><th>時刻</th><th>出来事</th><th>確定する時刻</th></tr>
-    <tr><td>20:00</td><td>ゲームを作って打ち始める</td><td>翌日20:00（作ってから24時間）</td></tr>
+    <thead><tr><th>時刻</th><th>出来事</th><th>確定する時刻</th></tr></thead>
+    <tbody><tr><td>20:00</td><td>ゲームを作って打ち始める</td><td>翌日20:00（作ってから24時間）</td></tr>
     <tr><td>23:30</td><td>最後の試合を入力</td><td>翌日23:30（入力のたびに延びる）</td></tr>
     <tr><td>23:40</td><td>「対局を終了する」を押す</td><td>翌朝11:40（終了から12時間）</td></tr>
     <tr><td>翌朝 8:00</td><td>入力ミスに気づいて直す</td><td>翌朝11:40のまま（終了後の修正では延びない）</td></tr>
+    </tbody>
   </table>
   <p>終了を押し忘れて帰った場合は、最後の入力（23:30）から24時間で確定します。</p>
 

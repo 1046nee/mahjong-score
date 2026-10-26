@@ -586,3 +586,82 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post a[href^="https://x.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg"); border-radius: 3px; }
 .blog-post a[href*="instagram.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg"); border-radius: 3px; }
 .blog-post blockquote a::before, .blog-post .twitter-tweet a::before { content: none !important; }
+
+/* ==========================================================
+   表と図のそろえ方（2026-10-26〜・ユーザーの依頼「表の形式や色遣いをそろえて見やすく」「順番・流れはチャートや樹形図で」）
+   - 先頭行（thead）のある表：青の見出し行（これまでどおり）
+   - 先頭行の無い表（左の列が項目名）：上に青の線を1本、左の列は薄い青の地に紺の字、右に細い区切り線。見出し行と同じ下線は付けない
+   - 順番 → ol.steps（番号の丸を線でつなぐ）／段階 → .hflow（横に矢印・スマホは縦）／年表 → ol.vtl（年・丸・線）
+     代表などの移り変わり → ol.dl-reps（矢印でつなぐ）／分類 → ul.tree（樹形図）
+   ========================================================== */
+body:not(.bs-list) .post-layout > .blog-post tbody th { background: #F3F6FB; color: #2F4A86; border: 0; border-bottom: 1px solid #E6EAF2; border-right: 1px solid #DDE5F2; font-weight: 800; font-size: 13px; vertical-align: top; }
+body:not(.bs-list) .post-layout > .blog-post table:not(:has(thead)) tr:first-child > * { border-top: 2px solid #4261AA; }
+body:not(.bs-list) .post-layout > .blog-post table:not(:has(thead)) tbody th { white-space: nowrap; }
+body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical-align: middle; }
+
+/* 手順（順番がある箇条書き） */
+.blog-post ol.steps { list-style: none; counter-reset: st; padding: 0; margin: 10px 0 22px; }
+.blog-post ol.steps > li { counter-increment: st; position: relative; padding: 3px 0 16px 46px; margin: 0; line-height: 1.85; }
+.blog-post ol.steps > li::before { content: counter(st); position: absolute; left: 0; top: 2px; width: 30px; height: 30px; border-radius: 50%; background: #177083; color: #fff; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; font-family: inherit; }
+.blog-post ol.steps > li::after { content: ""; position: absolute; left: 14px; top: 36px; bottom: 2px; width: 2px; background: #CFE0DC; }
+.blog-post ol.steps > li:last-child { padding-bottom: 4px; }
+.blog-post ol.steps > li:last-child::after { display: none; }
+
+/* 段階（横に矢印。スマホは縦に下向き） */
+.blog-post .hflow { display: flex; align-items: stretch; margin: 10px 0 20px; }
+.blog-post .hf-step { flex: 1 1 0; min-width: 0; position: relative; background: #fff; border: 1px solid #CFE0DC; border-top: 4px solid #177083; border-radius: 0 0 6px 6px; padding: 10px 12px; }
+.blog-post .hf-step + .hf-step { margin-left: 26px; }
+.blog-post .hf-step + .hf-step::before { content: ""; position: absolute; left: -20px; top: 50%; width: 0; height: 0; margin-top: -8px; border-left: 12px solid #177083; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+.blog-post .hflow.plus .hf-step + .hf-step::before { content: "+"; border: 0; width: 20px; height: 20px; margin-top: -10px; left: -23px; color: #177083; font-size: 22px; font-weight: 900; line-height: 20px; text-align: center; }
+.blog-post .hf-step.goal { border-top-color: #E75620; background: #FFF8F4; }
+.blog-post .hf-step .hf-k { display: block; font-size: 11px; font-weight: 800; color: #177083; margin-bottom: 2px; }
+.blog-post .hf-step.goal .hf-k { color: #C2471A; }
+.blog-post .hf-step b { display: block; font-size: 15px; line-height: 1.5; color: #1F2A28; }
+.blog-post .hf-step small { display: block; font-size: 12px; line-height: 1.7; color: #55625F; margin-top: 4px; }
+@media (max-width: 560px) {
+  .blog-post .hflow { flex-direction: column; }
+  .blog-post .hf-step + .hf-step { margin: 22px 0 0; }
+  .blog-post .hf-step + .hf-step::before { left: 50%; top: -18px; margin: 0 0 0 -8px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid #177083; border-bottom: 0; }
+  .blog-post .hflow.plus .hf-step + .hf-step::before { top: -22px; left: 50%; margin-left: -10px; border: 0; }
+}
+
+/* 年表（年・丸・線） */
+.blog-post ol.vtl { list-style: none; padding: 0; margin: 8px 0 20px; }
+.blog-post ol.vtl > li { position: relative; margin: 0; padding: 0 0 14px 96px; line-height: 1.8; }
+.blog-post ol.vtl > li::before { content: ""; position: absolute; left: 81px; top: 0; bottom: 0; width: 2px; background: #DCE5E2; }
+.blog-post ol.vtl > li:first-child::before { top: 10px; }
+.blog-post ol.vtl > li:last-child::before { bottom: auto; height: 10px; }
+.blog-post ol.vtl > li::after { content: ""; position: absolute; left: 75px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--c, #177083); }
+.blog-post ol.vtl .yr { position: absolute; left: 0; top: 1px; width: 68px; text-align: right; font-size: 13px; font-weight: 900; color: var(--c, #177083); line-height: 1.5; }
+.blog-post ol.vtl .yr small { display: block; font-size: 10px; font-weight: 700; color: #8A9A97; }
+@media (max-width: 420px) { .blog-post ol.vtl > li { padding-left: 78px; } .blog-post ol.vtl > li::before { left: 63px; } .blog-post ol.vtl > li::after { left: 57px; } .blog-post ol.vtl .yr { width: 52px; font-size: 12px; } }
+
+/* 移り変わり（代表など）を矢印でつなぐ */
+.blog-post ol.dl-reps { gap: 10px 28px; }
+.blog-post ol.dl-reps li { position: relative; }
+.blog-post ol.dl-reps li + li::before { content: ""; position: absolute; left: -21px; top: 50%; margin-top: -7px; border-left: 11px solid var(--c); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+@media (max-width: 560px) {
+  .blog-post ol.dl-reps { flex-direction: column; gap: 22px; }
+  .blog-post ol.dl-reps li { flex: none; }
+  .blog-post ol.dl-reps li + li::before { left: 50%; top: -17px; margin: 0 0 0 -7px; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 11px solid var(--c); border-bottom: 0; }
+}
+
+/* 樹形図（分類） */
+.blog-post ul.tree, .blog-post ul.tree ul { list-style: none; margin: 0; padding: 0; }
+.blog-post ul.tree { margin: 10px 0 20px; }
+.blog-post ul.tree ul { padding-left: 22px; }
+.blog-post ul.tree li { position: relative; margin: 0; padding: 6px 0 0 18px; line-height: 1.6; }
+.blog-post ul.tree > li { padding-left: 0; }
+.blog-post ul.tree ul > li::before { content: ""; position: absolute; left: 0; top: 0; width: 14px; height: 24px; border-left: 2px solid #9FC3BD; border-bottom: 2px solid #9FC3BD; border-bottom-left-radius: 6px; }
+.blog-post ul.tree ul > li::after { content: ""; position: absolute; left: 0; top: 24px; bottom: 0; border-left: 2px solid #9FC3BD; }
+.blog-post ul.tree ul > li:last-child::after { display: none; }
+.blog-post ul.tree .tn { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; border: 1px solid #CFE0DC; background: #fff; border-radius: 6px; padding: 6px 10px; }
+.blog-post ul.tree > li > .tn { background: #177083; border-color: #177083; color: #fff; }
+.blog-post ul.tree .tn b { font-size: 14px; }
+.blog-post ul.tree .tn small { font-size: 12px; color: #55625F; }
+.blog-post ul.tree > li > .tn small { color: #E4F3EC; }
+.blog-post ul.tree .tn.key { border-color: #E75620; background: #FFF4EE; }
+.blog-post ul.tree .tn .tt { display: inline-flex; gap: 1px; }
+.blog-post ul.tree .tn .tt img { display: block; width: 18px; height: auto; }
+.blog-post ul.tree .mark { font-size: 11px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 6px; }
+.blog-post .hflow.plus .hf-step.goal::before { content: "=" !important; }
