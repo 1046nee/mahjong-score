@@ -116,7 +116,7 @@ body { overflow-x: hidden; }
      緑  #177083 … まじゃすこ・記事の骨組み（見出し・箇条書き・今いる場所）／カテゴリ「麻雀攻略」
      青  #4261AA … 調べる・外へ行く（目次・表・出典・チャンネルや団体のURL）／カテゴリ「お知らせ」
      オレンジ #E75620 … 行動と要点（CTAボタン・大事な一文の蛍光ペン・注意の囲み）
-     茶  #8A6A4F … カテゴリ「雑記」
+     オレンジ  #F28C28 … カテゴリ「雑記」（2026-10-26 茶から変更・ユーザーの依頼）
    形: 箱は角丸4〜6pxまで・影なし。区切りは線で。丸い形は小さなラベルと人の印だけ
    ========================================================== */
 
@@ -262,7 +262,7 @@ body:not(.bs-list) .side-box h2, .bs-list .side-box h2 { border: 0; padding: 0; 
 .cat-tab.on { color: #1F2A28; }
 .cat-tab.on::before { opacity: 1; }
 .cat-tab.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; background: var(--cc); }
-.cat-all { --cc: #1F2A28; } .cat-mahjong { --cc: #177083; } .cat-news { --cc: #4261AA; } .cat-blog { --cc: #8A6A4F; }
+.cat-all { --cc: #1F2A28; } .cat-mahjong { --cc: #0E95A3; } .cat-news { --cc: #2F6BFF; } .cat-blog { --cc: #F28C28; }
 
 /* 見出し: 高さをそろえる（タブで行き来しても下の一覧の位置が変わらない）。右にカテゴリのイラスト */
 .bs-list .blog-hero { position: relative; overflow: hidden; min-height: 150px; padding: 22px 20px 18px; text-align: left; background: #F6F8F8; border-bottom: 1px solid #E6ECEA; }
@@ -691,3 +691,16 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
 .blog-post table.snake tr.back td { background: #F7F9F8; }
 .blog-post table.snake tr.sum td { color: #C2471A; font-size: 17px; }
 .blog-post table.rot thead th:not(:first-child), .blog-post table.snake thead th:not(:first-child) { text-align: center; }
+
+/* ---- 一覧のカード：記事ごとの絵（2026-10-26〜・assets/thumbs/）。左に絵、右に文字。カテゴリは名前の色 ---- */
+.post-card.has-thumb { display: grid; grid-template-columns: 124px 1fr; gap: 14px; align-items: start; padding: 16px 6px 16px 0; }
+.post-card.has-thumb::before { display: none; }
+.post-card .pc-thumb { display: block; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; background: #EEF3F1; }
+.post-card .pc-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.post-card.has-thumb:hover .pc-thumb img { transform: scale(1.04); }
+.post-card .pc-body { min-width: 0; }
+.post-card.has-thumb h2 { font-size: 15.5px; line-height: 1.55; }
+.post-card.has-thumb .excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.75; }
+.post-card .pc-cat { display: inline-block; color: #fff; background: var(--cc, #0E95A3); border-radius: 4px; padding: 1px 8px; font-size: 11px; }
+@media (min-width: 700px) { .post-card.has-thumb { grid-template-columns: 184px 1fr; gap: 18px; } .post-card.has-thumb h2 { font-size: 16.5px; } }
+@media (max-width: 380px) { .post-card.has-thumb { grid-template-columns: 104px 1fr; gap: 12px; } .post-card.has-thumb .excerpt { display: none; } }

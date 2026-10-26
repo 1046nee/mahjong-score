@@ -143,11 +143,13 @@ const BLOG_POSTS = [
   const byDateDesc = (a, b) => b.date.localeCompare(a.date);
 
   function cardHtml(p) {
-    // 行の左の色＝カテゴリ（緑=麻雀攻略・青=お知らせ・茶=雑記）。タグは記事の中身の目印
-    return `<a class="post-card cat-${p.cat}" href="${p.url}">
-      <span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
+    // 左の絵＝記事ごとの絵（assets/thumbs/・tools/make_thumbs.py）。カテゴリの色は名前の色で見せる
+    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+    return `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
+      <span class="pc-thumb"><img src="${th}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
+      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
       <h2>${escHtml(p.title)}</h2>
-      <p class="excerpt">${escHtml(p.desc)}</p>
+      <p class="excerpt">${escHtml(p.desc)}</p></div>
     </a>`;
   }
   // カテゴリのタブ（すべて/麻雀攻略/お知らせ/雑記）。記事の数つき。tools/build_post_lists.js と同じマークアップ

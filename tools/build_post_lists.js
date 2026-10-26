@@ -28,11 +28,15 @@ const posts = eval(postsMatch[1]);
 // blog-site.js の cardHtml() と同一のマークアップを出力すること（差があるとJS再描画でちらつく）
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date);
-const cardHtml = p => `<a class="post-card cat-${p.cat}" href="${p.url}">
-      <span class="pc-meta"><span class="pc-cat">${cats[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
+const thumb = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+const cardHtml = p => `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
+      <span class="pc-thumb"><img src="${thumb(p)}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
+      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${cats[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
       <h2>${escHtml(p.title)}</h2>
-      <p class="excerpt">${escHtml(p.desc)}</p>
+      <p class="excerpt">${escHtml(p.desc)}</p></div>
     </a>`;
+// 絵が無い記事があれば止める（新しい記事は tools/make_thumbs.py に1行足す）
+for (const p of posts) if (!fs.existsSync(path.join(root, thumb(p).slice(1)))) throw new Error('記事の絵がありません: ' + thumb(p) + '（python tools/make_thumbs.py に足す）');
 // blog-site.js の catNavHtml() と同じ（タブを先にHTMLに書いておくと、ページを移るときに画面が跳ねない）
 const catNavHtml = active => {
   const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(cats).map(k => [k, cats[k].name, cats[k].url]));
