@@ -20,7 +20,7 @@
 - body { overflow-x: hidden } の保険つき
 
 ## 記事のイラスト（3点構成）
-- 冒頭（.post-illust 340×150）＋中盤（.post-illust.small 340×84）＋締め（トロフィー共通SVG・article_bottom枠の直前）
+- 冒頭は**記事の絵（.eyecatch・一覧と同じ絵・2026-10-26〜）**＋中盤（.post-illust.small 340×84）＋締め（トロフィー共通SVG・article_bottom枠の直前）
 - 絵文字は使わずインラインSVG（フラットトーン: #177083・#9fc3bd・#E4F3EC・差し色#E75620）
 - **イラスト内のスマホに「まじゃすこ」等の文字は入れない**（サイズが合わない）
 
@@ -51,7 +51,7 @@
 - 内部リンクを2本以上（関連記事へ相互に張る）
 
 ## 記事の追加手順
-0. **記事の絵（サムネイル）を作る（2026-10-26〜）**: `tools/make_thumbs.py` の THUMBS に1行（ファイル名・地の色・絵）足して `python tools/make_thumbs.py`（assets/thumbs/{ファイル名}.svg）。一覧のカードの左に出る。絵が無いと build_post_lists.js が止まる。地の色は記事ごとに変えてよい（原色・派手な色も可）。牌は assets/tiles/ をそのまま使う
+0. **記事の絵（サムネイル）を作る（2026-10-26〜）**: `tools/make_thumbs.py` の THUMBS に1行（ファイル名・地の色・絵）足して `python tools/make_thumbs.py`（assets/thumbs/{ファイル名}.svg）。一覧のカードの左に出る。絵が無いと build_post_lists.js が止まる。**記事の中にも同じ絵を出す**＝`python tools/add_eyecatch.py`（タイトルと日付の下に `figure.eyecatch`。すぐ下の大きい飾りの絵 .post-illust は外す。何度実行しても同じ）。地の色は記事ごとに変えてよい（原色・派手な色も可）。牌は assets/tiles/ をそのまま使う
 1. 既存の `blog-*.html`（お知らせは `news/update-2026-07.html`）をコピーして執筆。
    head一式（docs/site-spec.mdのチェックリスト）・パンくず・.post-layout＋sidebar・広告枠（article_top/bottom）・末尾CTA・
    blog.css/blog-site.js/ads.jsの読み込みを維持。**Article JSON-LDを新記事の内容に書き換える**

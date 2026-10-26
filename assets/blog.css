@@ -735,3 +735,6 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
   /* 右の列もスクロールについてくる（長いときは列の中でスクロール） */
   .post-layout > .side:not(.side-l) { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
 }
+/* 記事の最初の絵（一覧のカードと同じ絵・2026-10-26〜・tools/add_eyecatch.py） */
+.blog-post .eyecatch { margin: 4px auto 22px; max-width: 420px; }
+.blog-post .eyecatch img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: 14px; }
