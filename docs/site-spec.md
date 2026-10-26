@@ -97,6 +97,9 @@
 - 戻し方: 成果物をダウンロード→ `openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass pass:（鍵） -in backup.json.gz.enc | gunzip > backup.json`
   →必要な一覧（`nodes.mylists.{リストID}`）だけを取り出し、Firebaseコンソールの Realtime Database でその場所を選んで「JSONをインポート」（その場所だけが置き換わる。ルート全体にはインポートしない）
 
+## フッターの固定ページの絵（2026-10-26〜）
+- score-basics・faq・about・contact・terms・privacy の最初に、記事と同じ形の絵（assets/thumbs/{ファイル名}.svg・tools/make_thumbs.py）を `figure.eyecatch` で入れた（ブログのCSSを読まないページもあるので style は直書き）
+
 ## App Check（2026-10-15〜）
 - サイトの画面からの読み書きだけを通す仕組み。プロバイダーは **Fraud Defense（旧 reCAPTCHA Enterprise）**（Firebaseで reCAPTCHA v3 の Classic は非推奨と出たため。キーは Google Cloud の mahjong-score プロジェクト。無料枠は月1万回の判定→トークンの有効期間を長めにして回数を抑える）。サイトキーは index.html の `APP_CHECK_SITE_KEY`（公開してよい値）。秘密鍵はFirebaseコンソールにだけ置く
 - 確認が取れなかった端末は GA4 のイベント `appcheck_fail`（reason に理由。2026-10-26 にカスタムディメンション `reason` を登録したので、それ以降は理由ごとに見られる）で数える

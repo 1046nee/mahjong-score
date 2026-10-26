@@ -165,6 +165,11 @@ THUMBS = [
  # ブログ以外の読みもの（トップページの「もっと詳しく」）
  T("score-basics", "#0E95A3", lambda: card(48, 54, 224, 132, "#fff", 14) + '<text x="160" y="104" text-anchor="middle" font-size="22" font-weight="900" fill="#1F2A28" ' + F + '>素点＋ウマ＋オカ</text><rect x="74" y="122" width="172" height="4" rx="2" fill="#0E95A3"/><text x="160" y="164" text-anchor="middle" font-size="30" font-weight="900" fill="#E75620" ' + F + '>＝スコア</text>'),
  T("faq", "#2F6BFF", lambda: bubble(40, 44, 110, 84, "Q", 50, "#fff", "#2F6BFF") + bubble(170, 104, 110, 84, "A", 50, "#FFC233", "#1F2A28")),
+ # フッターのページ（2026-10-26〜）
+ T("about", "#0E95A3", lambda: person(160, 138, "#fff", 48) + '<circle cx="160" cy="88" r="30" fill="#FFC233"/><text x="160" y="99" text-anchor="middle" font-size="30" font-weight="900" fill="#1F2A28" ' + F + '>む</text>' + sparkle(240, 60, 14) + sparkle(78, 170, 10)),
+ T("contact", "#2F6BFF", lambda: '<rect x="70" y="62" width="180" height="120" rx="12" fill="#fff"/><path d="M74 70 L160 132 L246 70" stroke="#2F6BFF" stroke-width="7" fill="none" stroke-linejoin="round"/><circle cx="244" cy="66" r="18" fill="#E75620"/><text x="244" y="73" text-anchor="middle" font-size="20" font-weight="900" fill="#fff" ' + F + '>!</text>'),
+ T("terms", "#8A5CF6", lambda: card(92, 30, 136, 180, "#fff", 12) + "".join(check(108, 70 + i * 32, "#8A5CF6", 1) + f'<rect x="136" y="{64 + i * 32}" width="{70 - (i % 2) * 18}" height="8" rx="4" fill="#E3D7FF"/>' for i in range(4)) + '<circle cx="222" cy="186" r="26" fill="#E75620"/><circle cx="222" cy="186" r="18" fill="none" stroke="#fff" stroke-width="3"/>'),
+ T("privacy", "#22B573", lambda: '<path d="M160 36 L226 60 V112 C226 156 196 188 160 204 C124 188 94 156 94 112 V60 Z" fill="#fff"/><rect x="136" y="110" width="48" height="40" rx="7" fill="#22B573"/><path d="M144 110 V98 A16 16 0 0 1 176 98 V110" stroke="#22B573" stroke-width="7" fill="none"/><circle cx="160" cy="128" r="5" fill="#fff"/>'),
 ]
 
 
