@@ -121,24 +121,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-solution { background: #fff; }
 /* 実際の画面（2026-10-13）: 見本のデータで撮った画面を横に並べ、押すとそのお知らせ（機能の説明）へ */
 .lp-screens { background: #EAF0FB; }
-.lp-shots { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 4px 14px; margin: 18px -4px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.lp-shots::-webkit-scrollbar { display: none; }
-.lp-shot { flex: none; width: 74%; max-width: 280px; scroll-snap-align: center; text-decoration: none; color: inherit; background: #fff; border-radius: 16px; padding: 12px 12px 14px; box-shadow: 0 2px 12px rgba(23,112,131,.10); }
-/* 画面は切らずに全部見せる（2026-10-26〜。以前は高さ240pxで下を切っていた）。カードごとに地の色を変える */
-.lp-shots { align-items: flex-start; }
-.lp-shot { width: 78%; max-width: 300px; padding: 0 0 14px; overflow: hidden; }
-.lp-shot-img { display: flex; align-items: center; justify-content: center; height: 400px; padding: 14px 12px; background: var(--sc, #E4F3EC); box-sizing: border-box; }
-.lp-shot img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 6px 18px rgba(16,40,36,.18); }
-.lp-shots { scroll-snap-type: x mandatory; scroll-padding-left: 4px; }
-.lp-shot { scroll-snap-align: start; }
-.lp-shots::after { content: ""; flex: 0 0 calc(100% - 78% - 18px); }
-@media (min-width: 700px) { .lp-shots::after { flex-basis: 1px; } }
-.lp-shot b, .lp-shot > span:not(.lp-shot-img) { padding: 0 14px; }
-.lp-shot:nth-child(5n+1) { --sc: #FFE7A3; } .lp-shot:nth-child(5n+2) { --sc: #FFD3E2; } .lp-shot:nth-child(5n+3) { --sc: #CFE0FF; }
-.lp-shot:nth-child(5n+4) { --sc: #CDEFD9; } .lp-shot:nth-child(5n+5) { --sc: #E3D7FF; }
-.lp-shot b { display: block; margin-top: 10px; font-size: 15px; font-weight: 900; color: #1F2A28; }
-.lp-shot span { display: block; margin-top: 4px; font-size: 13px; line-height: 1.7; color: #4F5C5A; }
-.lp-shot em { display: inline-block; margin-top: 8px; font-style: normal; font-size: 13px; font-weight: 800; color: #177083; }
 .lp-shots-note { margin-top: 6px; font-size: 12px; color: #5f6e6b; text-align: center; }
 .lp-solution h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 32px; }
 /* 特徴カードのカルーセル（横スクロール＋スナップ。常に次のカードが見える幅にする） */
@@ -224,16 +206,44 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home .features-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; overflow: visible; padding: 4px 0 8px; }
   #view-home .features-row::after, #view-home .features-nav, #view-home .features-dots { display: none; }
   #view-home .feature { max-width: none; width: auto; }
-  #view-home .lp-shots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; overflow: visible; margin: 22px 0 0; padding: 4px 0 8px; }
-  #view-home .lp-shots::after { display: none; }
-  #view-home .lp-shot { width: auto; max-width: none; }
-  #view-home .lp-shot-img { height: 360px; }
   #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; padding-left: 32px; padding-right: 32px; }
   #view-home .home-content:not(.lp-howto-wrap) > .ad-slot { grid-column: 1 / -1; }
   .global-header-wrap { max-width: none; }
   .global-header { max-width: 960px; margin: 0 auto; }
   body:has(#view-home.active) .global-header { max-width: 1180px; }
   #view-home .lp-screens h2 { text-align: center; }
+}
+/* 実際の画面：スマホ1台の中で画面を切り替える（2026-10-26〜・並べると縮尺の違いが目立つため。画像はすべて同じ縮尺＝幅720px） */
+.lp-demo { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 18px; }
+.lp-demo-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.lp-tab { border: 1.5px solid #C9D6EE; background: #fff; color: #2F4A86; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
+.lp-tab.on { background: #2F4A86; border-color: #2F4A86; color: #fff; }
+.lp-tab .lp-tab-t, .lp-tab .lp-tab-d { display: none; }
+.lp-phone { width: min(300px, 80vw); padding: 10px; border-radius: 44px; background: #1F2A28; box-shadow: 0 18px 40px rgba(16,40,36,.22); }
+.lp-phone-in { position: relative; border-radius: 34px; overflow: hidden; background: #E6F1EC; }
+.lp-phone-island { position: absolute; z-index: 2; top: 10px; left: 50%; width: 84px; height: 22px; margin-left: -42px; border-radius: 12px; background: #1F2A28; }
+.lp-phone-screen { height: min(540px, 115vw); overflow-y: auto; padding-top: 40px; scrollbar-width: none; overscroll-behavior: contain; }
+.lp-phone-screen::-webkit-scrollbar { display: none; }
+.lp-scr { display: none; width: 100%; height: auto; }
+.lp-scr.on { display: block; animation: lpIn .35s ease; }
+@keyframes lpIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-scr.on { animation: none; } }
+.lp-demo-cap { text-align: center; max-width: 340px; }
+.lp-demo-cap b { display: block; font-size: 17px; font-weight: 900; color: #1F2A28; }
+.lp-demo-cap span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.7; color: #4F5C5A; }
+.lp-demo-cap a { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 800; color: #2F56A8; }
+@media (min-width: 1100px) {
+  #view-home .lp-demo { display: grid; grid-template-columns: 320px minmax(0, 440px); grid-template-areas: "phone tabs"; justify-content: center; column-gap: 56px; align-items: center; }
+  #view-home .lp-phone { grid-area: phone; width: 320px; }
+  #view-home .lp-phone-screen { height: 600px; }
+  #view-home .lp-demo-tabs { grid-area: tabs; flex-direction: column; flex-wrap: nowrap; gap: 10px; }
+  #view-home .lp-tab { text-align: left; border-radius: 12px; padding: 14px 18px; }
+  #view-home .lp-tab b { display: none; }
+  #view-home .lp-tab .lp-tab-t { display: block; font-size: 16px; font-weight: 900; }
+  #view-home .lp-tab .lp-tab-d { display: block; margin-top: 4px; font-size: 13px; font-weight: 500; line-height: 1.65; color: #4F5C5A; }
+  #view-home .lp-tab.on { background: #fff; color: #1F2A28; border-color: #2F6BFF; box-shadow: 0 6px 18px rgba(47,107,255,.14); }
+  #view-home .lp-tab.on .lp-tab-t { color: #2F4A86; }
+  #view-home .lp-demo-cap { display: none; }
 }
 /* 「もっと詳しく」とお知らせ：ブログの一覧と同じ、左に記事の絵・右に題名と説明（2026-10-26〜） */
 .read-list.rl-cards { list-style: none; padding: 0; margin: 0 0 6px; }
@@ -2737,14 +2747,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="lp-inner">
       <h2>実際の画面で見る。</h2>
       <p class="lp-body" style="text-align:center">記録は、打つたびに積み上がります。</p>
-      <div class="lp-shots">
-        <a class="lp-shot" href="/news/nakama-page.html"><span class="lp-shot-img"><img src="/assets/screens/lp-rank.jpg" width="716" height="1148" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコア" loading="lazy"></span><b>仲間の通算順位が、表彰台で</b><span>ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></a>
-        <a class="lp-shot" href="/news/mypage-stats.html"><span class="lp-shot-img"><img src="/assets/screens/lp-month.jpg" width="676" height="646" alt="マイページの、ある月の試合の一覧。ゲームごとの順位とスコア、1着から4着の回数、相手" loading="lazy"></span><b>今月の勝ち、ひと目で</b><span>グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。</span></a>
-        <a class="lp-shot" href="/news/nakama-page.html#h2h"><span class="lp-shot-img"><img src="/assets/screens/lp-h2h.jpg" width="716" height="1066" alt="総当たり表。メンバーどうしの直接対決の勝ち越し・負け越し" loading="lazy"></span><b>あの人には勝ち越してる？</b><span>同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。</span></a>
-        <a class="lp-shot" href="/news/nakama-page.html"><span class="lp-shot-img"><img src="/assets/screens/lp-member.jpg" width="720" height="1403" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy"></span><b>メンバーごとの成績と推移</b><span>平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></a>
-        <a class="lp-shot" href="/news/mypage-stats.html"><span class="lp-shot-img"><img src="/assets/screens/lp-mypage.jpg" width="716" height="984" alt="マイページの成績カード。平均着順・通算スコア・着順の割合と推移のグラフ" loading="lazy"></span><b>自分の成績も、ずっと残る</b><span>Googleでログインすれば、何年分でも自分の成績と推移が残ります。</span></a>
+      <div class="lp-demo" id="lp-demo">
+        <div class="lp-demo-tabs" role="tablist" aria-label="見たい画面を選ぶ"><button type="button" role="tab" class="lp-tab on" aria-selected="true" aria-controls="lp-scr-rank" onclick="lpDemo(0, true)"><b>通算順位</b><span class="lp-tab-t">仲間の通算順位が、表彰台で</span><span class="lp-tab-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-month" onclick="lpDemo(1, true)"><b>今月の試合</b><span class="lp-tab-t">今月の勝ち、ひと目で</span><span class="lp-tab-d">グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-h2h" onclick="lpDemo(2, true)"><b>総当たり</b><span class="lp-tab-t">あの人には勝ち越してる？</span><span class="lp-tab-d">同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-member" onclick="lpDemo(3, true)"><b>メンバーの成績</b><span class="lp-tab-t">メンバーごとの成績と推移</span><span class="lp-tab-d">平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-mypage" onclick="lpDemo(4, true)"><b>自分の成績</b><span class="lp-tab-t">自分の成績も、ずっと残る</span><span class="lp-tab-d">Googleでログインすれば、何年分でも自分の成績と推移が残ります。</span></button></div>
+        <div class="lp-phone" aria-label="スマホの画面"><div class="lp-phone-in"><span class="lp-phone-island" aria-hidden="true"></span><div class="lp-phone-screen" tabindex="0"><img id="lp-scr-rank" class="lp-scr on" role="tabpanel" src="/assets/screens/lp-rank.jpg" width="720" height="1060" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコア" loading="lazy" data-href="/news/nakama-page.html" data-title="仲間の通算順位が、表彰台で" data-desc="ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。"><img id="lp-scr-month" class="lp-scr" role="tabpanel" src="/assets/screens/lp-month.jpg" width="720" height="596" alt="マイページの、ある月の試合の一覧。ゲームごとの順位とスコア、1着から4着の回数、相手" loading="lazy" data-href="/news/mypage-stats.html" data-title="今月の勝ち、ひと目で" data-desc="グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。"><img id="lp-scr-h2h" class="lp-scr" role="tabpanel" src="/assets/screens/lp-h2h.jpg" width="720" height="984" alt="総当たり表。メンバーどうしの直接対決の勝ち越し・負け越し" loading="lazy" data-href="/news/nakama-page.html#h2h" data-title="あの人には勝ち越してる？" data-desc="同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。"><img id="lp-scr-member" class="lp-scr" role="tabpanel" src="/assets/screens/lp-member.jpg" width="720" height="1403" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy" data-href="/news/nakama-page.html" data-title="メンバーごとの成績と推移" data-desc="平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。"><img id="lp-scr-mypage" class="lp-scr" role="tabpanel" src="/assets/screens/lp-mypage.jpg" width="720" height="908" alt="マイページの成績カード。平均着順・通算スコア・着順の割合と推移のグラフ" loading="lazy" data-href="/news/mypage-stats.html" data-title="自分の成績も、ずっと残る" data-desc="Googleでログインすれば、何年分でも自分の成績と推移が残ります。"></div></div></div>
+        <div class="lp-demo-cap"><b id="lp-demo-t">仲間の通算順位が、表彰台で</b><span id="lp-demo-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span><a id="lp-demo-a" href="/news/nakama-page.html">くわしく見る ›</a></div>
       </div>
-      <p class="lp-shots-note">実際の仲間ページの記録です（人の名前とグループ名は置きかえています）。</p>
+      <p class="lp-shots-note">実際の仲間ページの記録です（人の名前とグループ名は置きかえています）。画面の中はスクロールできます。</p>
     </div>
   </section>
 
@@ -7655,6 +7663,34 @@ function goUsage() {
 }
 // ---- LP: 特徴カードのカルーセル ----
 // 横スクロール＋スナップ（ループはしない）。現在位置はドットで示す
+// 実際の画面（スマホ1台の中で切り替え）。押されるまでは5秒ごとに次の画面へ（画面に見えているときだけ・動きを減らす設定なら動かさない）
+let lpDemoIdx = 0, lpDemoUser = false, lpDemoTimer = null;
+function lpDemo(i, user) {
+  const root = document.getElementById('lp-demo');
+  if (!root) return;
+  if (user) { lpDemoUser = true; clearInterval(lpDemoTimer); }
+  const tabs = root.querySelectorAll('.lp-tab'), scrs = root.querySelectorAll('.lp-scr');
+  lpDemoIdx = (i + scrs.length) % scrs.length;
+  tabs.forEach((t, j) => { t.classList.toggle('on', j === lpDemoIdx); t.setAttribute('aria-selected', j === lpDemoIdx ? 'true' : 'false'); });
+  scrs.forEach((el, j) => el.classList.toggle('on', j === lpDemoIdx));
+  const cur = scrs[lpDemoIdx];
+  root.querySelector('.lp-phone-screen').scrollTop = 0;
+  document.getElementById('lp-demo-t').textContent = cur.dataset.title;
+  document.getElementById('lp-demo-d').textContent = cur.dataset.desc;
+  document.getElementById('lp-demo-a').href = cur.dataset.href;
+}
+function initLpDemo() {
+  const root = document.getElementById('lp-demo');
+  if (!root) return;
+  root.querySelectorAll('.lp-scr').forEach(img => { img.loading = 'eager'; });
+  root.querySelector('.lp-phone-screen').addEventListener('pointerdown', () => { lpDemoUser = true; clearInterval(lpDemoTimer); }, { passive: true });
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!('IntersectionObserver' in window)) return;
+  new IntersectionObserver(es => es.forEach(e => {
+    clearInterval(lpDemoTimer);
+    if (e.isIntersecting && !lpDemoUser) lpDemoTimer = setInterval(() => lpDemo(lpDemoIdx + 1), 5000);
+  }), { threshold: 0.5 }).observe(root);
+}
 function initFeaturesCarousel() {
   const row = document.getElementById('features-row');
   if (!row || row.children.length < 2) return;
@@ -14641,7 +14677,7 @@ if (appState.games && appState.games.length) requestPersistentStorage(); // 履�
 renderRecentGames();
 setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
-initFeaturesCarousel();
+initFeaturesCarousel(); initLpDemo();
 const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ #v=（見るだけのリンク）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる

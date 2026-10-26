@@ -97,11 +97,17 @@ with sync_playwright() as p:
     br.close()
 srv.shutdown()
 
-# サイト用（幅720の JPEG）
+# サイト用（幅720の JPEG）。すべて同じ縮尺にする＝画面の幅（390px×2倍＝780）のキャンバスに置いてから720に縮める
+# （撮った要素の幅はまちまちなので、幅を合わせて引き伸ばすと縮尺がそろわない。2026-10-26 ユーザーの指摘）
 from PIL import Image
+W = 780
 for name, path, cut in shots:
     im = Image.open(path).convert("RGB")
-    if im.width > 720:
-        im = im.resize((720, round(im.height * 720 / im.width)), Image.LANCZOS)
+    bg = im.getpixel((2, im.height - 3))
+    if im.width < W:
+        c = Image.new("RGB", (W, im.height), bg); c.paste(im, ((W - im.width) // 2, 0)); im = c
+    elif im.width > W:
+        im = im.crop(((im.width - W) // 2, 0, (im.width - W) // 2 + W, im.height))
+    im = im.resize((720, round(im.height * 720 / W)), Image.LANCZOS)
     im.save(os.path.join(SITE, "lp-" + name + ".jpg"), quality=86, optimize=True, progressive=True)
 print("saved", [s[0] for s in shots])
