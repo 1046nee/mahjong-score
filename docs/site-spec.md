@@ -99,7 +99,10 @@
 
 ## App Check（2026-10-15〜）
 - サイトの画面からの読み書きだけを通す仕組み。プロバイダーは **Fraud Defense（旧 reCAPTCHA Enterprise）**（Firebaseで reCAPTCHA v3 の Classic は非推奨と出たため。キーは Google Cloud の mahjong-score プロジェクト。無料枠は月1万回の判定→トークンの有効期間を長めにして回数を抑える）。サイトキーは index.html の `APP_CHECK_SITE_KEY`（公開してよい値）。秘密鍵はFirebaseコンソールにだけ置く
-- 確認が取れなかった端末は GA4 のイベント `appcheck_fail`（reason に理由）で数える。2026-10-21 時点で Realtime Database の未確認は7%（強制は見送り）
+- 確認が取れなかった端末は GA4 のイベント `appcheck_fail`（reason に理由。2026-10-26 にカスタムディメンション `reason` を登録したので、それ以降は理由ごとに見られる）で数える
+- **2026-10-26 に Realtime Database を強制した**。判断の材料: 10/19〜10/27 の確認済み86%（未確認のうち「無効」12%は10/22の1日だけに集中＝利用者でない自動のアクセスと判断、「古いクライアント」2%は App Check を入れる前のページを開いたままの端末）、GA4 の appcheck_fail は7日で1回。
+  強制後: トークンなしの REST は 401「Missing appcheck token」、デバッグ用トークン付きは通る。本番のテスト（view_rules・lock_rules・sync・lock_app）は ALL PASS、majasco.jp の画面からの読み込みも通る。
+  **戻し方**: Firebaseコンソール → App Check → API →「Realtime Database」で強制を解除（すぐ元に戻る）。強制のあと「保存できない」という声が出たら、まず GA4 の appcheck_fail の reason を見る
 - 強制（通さない）は Firebaseコンソール → App Check → API →「Realtime Database」で切り替える。**入れてから数日は強制せず、指標で「確認済み」の割合を見てから強制する**（古い版を開いたままの端末が弾かれないように）
 - reCAPTCHA のバッジは CSS で隠し、privacy.html に利用を書いてある（Googleが認める書き方）
 - 手元（localhost・127.0.0.1）では動かさない。本番DBのテスト（circle/lock/view/session_delete_rules・lock_app・sync）は、
