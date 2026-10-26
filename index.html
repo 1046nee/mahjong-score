@@ -226,8 +226,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-tab .lp-tab-t, .lp-tab .lp-tab-d { display: none; }
 .lp-phone { width: min(300px, 80vw); padding: 10px; border-radius: 44px; background: #1F2A28; box-shadow: 0 18px 40px rgba(16,40,36,.22); }
 .lp-phone-in { position: relative; border-radius: 34px; overflow: hidden; background: #E6F1EC; }
-.lp-phone-island { position: absolute; z-index: 2; top: 10px; left: 50%; width: 84px; height: 22px; margin-left: -42px; border-radius: 12px; background: #1F2A28; }
-.lp-phone-screen { height: min(540px, 115vw); overflow-y: auto; padding-top: 40px; scrollbar-width: none; overscroll-behavior: contain; }
+.lp-phone-bar { display: flex; justify-content: center; align-items: center; height: 30px; transition: background .3s; }
+.lp-phone-island { width: 84px; height: 20px; border-radius: 12px; background: #1F2A28; }
+.lp-phone-screen { overflow: hidden; }
 .lp-phone-screen::-webkit-scrollbar { display: none; }
 .lp-scr { display: none; width: 100%; height: auto; }
 .lp-scr.on { display: block; animation: lpIn .35s ease; }
@@ -240,7 +241,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 @media (min-width: 1100px) {
   #view-home .lp-demo { display: grid; grid-template-columns: 320px minmax(0, 440px); grid-template-areas: "phone tabs"; justify-content: center; column-gap: 56px; align-items: center; }
   #view-home .lp-phone { grid-area: phone; width: 320px; }
-  #view-home .lp-phone-screen { height: 600px; }
   #view-home .lp-demo-tabs { grid-area: tabs; flex-direction: column; flex-wrap: nowrap; gap: 10px; }
   #view-home .lp-tab { text-align: left; border-radius: 12px; padding: 14px 18px; }
   #view-home .lp-tab b { display: none; }
@@ -272,7 +272,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .feature .feature-icon svg { position: relative; z-index: 1; width: 48px; height: 48px; }
 .feature h3, .feature p { padding: 0 16px; }
 .feature h3 { font-size: 16.5px; color: #1F2A28; font-weight: 900; }
-.feature p { font-size: 14px; color: #4F5C5A; line-height: 1.75; }
+.feature p { font-size: 14px; color: #4F5C5A; line-height: 1.75; text-wrap: pretty; word-break: auto-phrase; }
 .feature:nth-child(6n+1) { --fc: #0E95A3; } .feature:nth-child(6n+2) { --fc: #2F6BFF; } .feature:nth-child(6n+3) { --fc: #22B573; }
 .feature:nth-child(6n+4) { --fc: #8A5CF6; } .feature:nth-child(6n+5) { --fc: #F59E0B; } .feature:nth-child(6n+6) { --fc: #EC4899; }
 @media (min-width: 700px) { .feature { flex: 0 0 240px; } .features-row::after { flex: 0 0 calc(100% - 240px - 16px); } }
@@ -2682,62 +2682,62 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="12" y="6" width="24" height="36" rx="5" fill="#177083"/><rect x="16" y="11" width="16" height="7" rx="2" fill="#E4F3EC"/><g fill="#E4F3EC"><rect x="16" y="22" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="22" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="22" width="4.5" height="4" rx="1.2"/><rect x="16" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="28.5" width="4.5" height="4" rx="1.2" fill="#E75620"/></g></svg></div>
           <h3>スコアを一瞬で計算</h3>
-          <p>目の前の表示点数をそのまま入力するだけで、返し点・ウマ・オカ込みのスコアを自動計算。同点のときのウマ・オカの山分けなど、ややこしい処理もすべて自動です。</p>
+          <p>表示点数を入れるだけ。ウマ・オカまで自動。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="13" y="12" width="17" height="30" rx="4.5" fill="#177083"/><rect x="16" y="16" width="11" height="18" rx="2" fill="#E4F3EC"/><path d="M34 18 a7 7 0 0 1 5 7" stroke="#E75620" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M34 11 a13 13 0 0 1 10 13" stroke="#E75620" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></div>
           <h3>全員のスマホに共有</h3>
-          <p>URLをLINEなどで送るだけで、全員が同じスコア表を見られます。誰かが入力した結果は一瞬で全員のスマホに反映。「いま誰がトップ？」で毎試合盛り上がれます。</p>
+          <p>URLを送るだけ。入力は全員にすぐ反映。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="8" width="32" height="32" rx="6" fill="#ffffff"/><polyline points="14,32 21,25 27,29 34,17" stroke="#177083" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="17" r="3.2" fill="#E75620"/></svg></div>
           <h3>推移グラフも自動</h3>
-          <p>試合ごとの累積スコアを自動でグラフ化。誰がいつ抜け出したのか、最終戦の大逆転まで、その日のドラマをあとから何度でも振り返れます。</p>
+          <p>誰がいつ抜け出したか、グラフでひと目。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="13" cy="18" r="5" fill="#9fc3bd"/><path d="M5 34 Q13 25 21 34 Z" fill="#9fc3bd"/><circle cx="35" cy="18" r="5" fill="#9fc3bd"/><path d="M27 34 Q35 25 43 34 Z" fill="#9fc3bd"/><circle cx="24" cy="21" r="6" fill="#177083"/><path d="M14 39 Q24 28 34 39 Z" fill="#177083"/><path d="M40 7 Q40.9 10.1 44 11 Q40.9 11.9 40 15 Q39.1 11.9 36 11 Q39.1 10.1 40 7 Z" fill="#E75620"/></svg></div>
           <h3>最大40人で回し打ち</h3>
-          <p>メンバーは最大40人まで登録OK。試合ごとに対局する人を選ぶだけで、抜け番がいても一人ひとりの成績を自動で集計し続けます。</p>
+          <p>40人まで登録OK。抜け番も自動で集計。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M16 8 H32 V17 A8 8 0 0 1 16 17 Z" fill="#177083"/><path d="M16 10 H10 A6.5 6.5 0 0 0 17 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><path d="M32 10 H38 A6.5 6.5 0 0 1 31 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><rect x="21.5" y="24" width="5" height="7" fill="#177083"/><rect x="15" y="31" width="18" height="5" rx="2" fill="#9fc3bd"/><circle cx="24" cy="14" r="2.6" fill="#E75620"/></svg></div>
           <h3>チーム戦にも対応</h3>
-          <p>メンバーをチームに分ければ、Mリーグのような団体戦に。チームカラーで色分けされた成績表と推移グラフで、チームの合計スコアを競えます。</p>
+          <p>チームに分けて、合計スコアで勝負。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><g stroke="#9fc3bd" stroke-width="3" stroke-linecap="round"><path d="M10 15 H38"/><path d="M10 24 H38"/><path d="M10 33 H38"/></g><circle cx="18" cy="15" r="4.2" fill="#177083"/><circle cx="31" cy="24" r="4.2" fill="#E75620"/><circle cx="22" cy="33" r="4.2" fill="#177083"/></svg></div>
           <h3>ルールは自由自在</h3>
-          <p>三麻・四麻はもちろん、持ち点・返し点・ウマまで細かく設定OK。いつもの仲間内ルールを、そのまま再現できます。</p>
+          <p>三麻も四麻も。持ち点・ウマも自由に。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><ellipse cx="24" cy="31" rx="13" ry="5.5" fill="#177083"/><ellipse cx="24" cy="24.5" rx="13" ry="5.5" fill="#9fc3bd"/><ellipse cx="24" cy="18" rx="13" ry="5.5" fill="#ffffff" stroke="#9fc3bd" stroke-width="1.6"/><ellipse cx="24" cy="18" rx="6.5" ry="2.6" fill="none" stroke="#E75620" stroke-width="1.6"/></svg></div>
           <h3>焼き鳥やチョンボも記録</h3>
-          <p>1試合もアガれなかった焼き鳥<svg class="ico ico-in" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-yakitori"/></svg>や、チョンボ<svg class="ico ico-in" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-chombo"/></svg>のマークをワンタップで記録。チョンボの罰符は合計スコアに自動で反映されます。</p>
+          <p>ワンタップで記録。罰符もスコアに反映。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="11" y="7" width="26" height="34" rx="4" fill="#ffffff"/><path d="M11 11 a4 4 0 0 1 4 -4 h18 a4 4 0 0 1 4 4 v4 H11 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M16 22 H32"/><path d="M16 28 H32"/><path d="M16 34 H26"/></g><circle cx="33" cy="35" r="6" fill="#E75620"/><text x="33" y="38.2" font-size="8.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">1</text></svg></div>
           <h3>成績表も自動で作成</h3>
-          <p>1着〜ラスの回数、平均着順、ラス回避率まで自動で集計。試合を重ねるほどデータが貯まり、実力がはっきり見えてきます。</p>
+          <p>着順の回数・平均着順・ラス回避率まで。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="15" cy="17" r="6" fill="#177083"/><path d="M5 36 a10 9 0 0 1 20 0 Z" fill="#177083"/><circle cx="33" cy="17" r="6" fill="#9fc3bd"/><path d="M23 36 a10 9 0 0 1 20 0 Z" fill="#9fc3bd"/><circle cx="24" cy="26" r="7" fill="#E75620"/><text x="24" y="29.2" font-size="7.5" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="sans-serif">VS</text></svg></div>
           <h3>相手ごとの対戦成績</h3>
-          <p>同じ試合に出た相手ごとに「何勝何敗か」「平均着順」「スコア差」を自動で集計。相性のいい相手、手ごわい相手がひと目でわかります。</p>
+          <p>相性のいい相手、手ごわい相手がわかる。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="9" y="13" width="24" height="28" rx="4" fill="#9fc3bd"/><rect x="13" y="9" width="24" height="28" rx="4" fill="#ffffff" stroke="#177083" stroke-width="2"/><g stroke="#9fc3bd" stroke-width="2.5" stroke-linecap="round"><path d="M18 17 H32"/><path d="M18 23 H32"/><path d="M18 29 H27"/></g><path d="M31 31 h10 v5 a5 5 0 0 1 -10 0 Z" fill="#E75620"/><rect x="35" y="40" width="2" height="3" fill="#E75620"/><rect x="32.5" y="43" width="7" height="2" rx="1" fill="#E75620"/></svg></div>
           <h3>仲間ページで通算順位</h3>
-          <p>定例会や大会の試合を「仲間ページ」に集めると、自分が入っていない試合も含めた通算順位と対戦成績が出ます。結果のリンクは、ログインなしで誰でも見られます。</p>
+          <p>定例会の試合を集めて、通算の順位に。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="10" y="7" width="28" height="34" rx="4" fill="#ffffff"/><path d="M10 12 a4 4 0 0 1 4 -5 h20 a4 4 0 0 1 4 5 v4 H10 Z" fill="#177083"/><g stroke="#9fc3bd" stroke-width="2.2"><path d="M10 24 H38"/><path d="M10 31 H38"/><path d="M19.5 16 V41"/><path d="M28.5 16 V41"/></g><circle cx="34" cy="34" r="7" fill="#E75620"/><path d="M34 30.4 V36 M31 33.4 L34 36.4 L37 33.4" stroke="#ffffff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <h3>CSVで書き出せる</h3>
-          <p>試合結果はワンタップでCSVファイルをダウンロード。Excelやスプレッドシートに取り込めば、オリジナルの集計表や年間ランキングも作れます。</p>
+          <p>ワンタップでExcelやスプレッドシートへ。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="8" y="10" width="17" height="30" rx="4" fill="#9fc3bd"/><rect x="11" y="14" width="11" height="18" rx="2" fill="#ffffff"/><rect x="24" y="8" width="17" height="30" rx="4" fill="#177083"/><rect x="27" y="12" width="11" height="18" rx="2" fill="#E4F3EC"/><g transform="translate(15 30)"><circle cx="6" cy="6" r="5" fill="none" stroke="#E75620" stroke-width="3.2"/><line x1="9.8" y1="9.8" x2="19" y2="19" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/><line x1="15" y1="15" x2="18" y2="12" stroke="#E75620" stroke-width="3.2" stroke-linecap="round"/></g></svg></div>
           <h3>ログインで記録がずっと残る</h3>
-          <p>Googleでログインすると、過去の試合と自分の成績がアカウントに残ります。機種変更しても、ホーム画面のアプリでも同じ一覧。記録するだけならログインは不要です。</p>
+          <p>機種変更しても、成績はずっと残る。</p>
         </div>
         </div>
         <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
@@ -2753,11 +2753,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>実際の画面で見る。</h2>
       <p class="lp-body" style="text-align:center">記録は、打つたびに積み上がります。</p>
       <div class="lp-demo" id="lp-demo">
-        <div class="lp-demo-tabs" role="tablist" aria-label="見たい画面を選ぶ"><button type="button" role="tab" class="lp-tab on" aria-selected="true" aria-controls="lp-scr-rank" onclick="lpDemo(0, true)"><b>通算順位</b><span class="lp-tab-t">仲間の通算順位が、表彰台で</span><span class="lp-tab-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-month" onclick="lpDemo(1, true)"><b>今月の試合</b><span class="lp-tab-t">今月の勝ち、ひと目で</span><span class="lp-tab-d">グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-h2h" onclick="lpDemo(2, true)"><b>総当たり</b><span class="lp-tab-t">あの人には勝ち越してる？</span><span class="lp-tab-d">同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-member" onclick="lpDemo(3, true)"><b>メンバーの成績</b><span class="lp-tab-t">メンバーごとの成績と推移</span><span class="lp-tab-d">平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-mypage" onclick="lpDemo(4, true)"><b>自分の成績</b><span class="lp-tab-t">自分の成績も、ずっと残る</span><span class="lp-tab-d">Googleでログインすれば、何年分でも自分の成績と推移が残ります。</span></button></div>
-        <div class="lp-phone" aria-label="スマホの画面"><div class="lp-phone-in"><span class="lp-phone-island" aria-hidden="true"></span><div class="lp-phone-screen" tabindex="0"><img id="lp-scr-rank" class="lp-scr on" role="tabpanel" src="/assets/screens/lp-rank.jpg" width="720" height="1060" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコア" loading="lazy" data-href="/news/nakama-page.html" data-title="仲間の通算順位が、表彰台で" data-desc="ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。"><img id="lp-scr-month" class="lp-scr" role="tabpanel" src="/assets/screens/lp-month.jpg" width="720" height="596" alt="マイページの、ある月の試合の一覧。ゲームごとの順位とスコア、1着から4着の回数、相手" loading="lazy" data-href="/news/mypage-stats.html" data-title="今月の勝ち、ひと目で" data-desc="グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。"><img id="lp-scr-h2h" class="lp-scr" role="tabpanel" src="/assets/screens/lp-h2h.jpg" width="720" height="984" alt="総当たり表。メンバーどうしの直接対決の勝ち越し・負け越し" loading="lazy" data-href="/news/nakama-page.html#h2h" data-title="あの人には勝ち越してる？" data-desc="同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。"><img id="lp-scr-member" class="lp-scr" role="tabpanel" src="/assets/screens/lp-member.jpg" width="720" height="1403" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy" data-href="/news/nakama-page.html" data-title="メンバーごとの成績と推移" data-desc="平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。"><img id="lp-scr-mypage" class="lp-scr" role="tabpanel" src="/assets/screens/lp-mypage.jpg" width="720" height="908" alt="マイページの成績カード。平均着順・通算スコア・着順の割合と推移のグラフ" loading="lazy" data-href="/news/mypage-stats.html" data-title="自分の成績も、ずっと残る" data-desc="Googleでログインすれば、何年分でも自分の成績と推移が残ります。"></div></div></div>
+        <div class="lp-demo-tabs" role="tablist" aria-label="見たい画面を選ぶ"><button type="button" role="tab" class="lp-tab on" aria-selected="true" aria-controls="lp-scr-rank" onclick="lpDemo(0, true)"><b>通算順位</b><span class="lp-tab-t">仲間の通算順位が、表彰台で</span><span class="lp-tab-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-games" onclick="lpDemo(1, true)"><b>過去の試合</b><span class="lp-tab-t">何十回分の試合も、ひと目で</span><span class="lp-tab-d">打った日ごとにタイルで並び、押せばその日の結果が開きます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-h2h" onclick="lpDemo(2, true)"><b>総当たり</b><span class="lp-tab-t">あの人には勝ち越してる？</span><span class="lp-tab-d">同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-member" onclick="lpDemo(3, true)"><b>メンバーの成績</b><span class="lp-tab-t">メンバーごとの成績と推移</span><span class="lp-tab-d">平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-mypage" onclick="lpDemo(4, true)"><b>自分の成績</b><span class="lp-tab-t">グラフを押すと、その月の試合</span><span class="lp-tab-d">自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。</span></button></div>
+        <div class="lp-phone" aria-label="スマホの画面"><div class="lp-phone-in"><span class="lp-phone-bar" style="background:#FAF6EB" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="lp-phone-screen"><img id="lp-scr-rank" class="lp-scr on" role="tabpanel" src="/assets/screens/lp-rank.jpg" width="720" height="1558" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコアが並ぶ" loading="lazy" data-href="/news/nakama-page.html" data-title="仲間の通算順位が、表彰台で" data-desc="ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。" data-top="#FAF6EB"><img id="lp-scr-games" class="lp-scr" role="tabpanel" src="/assets/screens/lp-games.jpg" width="720" height="1558" alt="仲間ページの過去の試合の画面。月ごとに試合のタイルが並ぶ" loading="lazy" data-href="/news/nakama-page.html" data-title="何十回分の試合も、ひと目で" data-desc="打った日ごとにタイルで並び、押せばその日の結果が開きます。" data-top="#FAF6EB"><img id="lp-scr-h2h" class="lp-scr" role="tabpanel" src="/assets/screens/lp-h2h.jpg" width="720" height="1558" alt="総当たり表。メンバーどうしの直接対決の勝ち越し・負け越し" loading="lazy" data-href="/news/nakama-page.html#h2h" data-title="あの人には勝ち越してる？" data-desc="同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。" data-top="#FAF6EB"><img id="lp-scr-member" class="lp-scr" role="tabpanel" src="/assets/screens/lp-member.jpg" width="720" height="1558" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy" data-href="/news/nakama-page.html" data-title="メンバーごとの成績と推移" data-desc="平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。" data-top="#7F7F7F"><img id="lp-scr-mypage" class="lp-scr" role="tabpanel" src="/assets/screens/lp-mypage.jpg" width="720" height="1558" alt="マイページの成績。通算スコアの推移のグラフで月を選ぶと、その月のゲームごとの順位とスコアが並ぶ" loading="lazy" data-href="/news/mypage-stats.html" data-title="グラフを押すと、その月の試合" data-desc="自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。" data-top="#E6F1EB"></div></div></div>
         <div class="lp-demo-cap"><b id="lp-demo-t">仲間の通算順位が、表彰台で</b><span id="lp-demo-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span><a id="lp-demo-a" href="/news/nakama-page.html">くわしく見る ›</a></div>
       </div>
-      <p class="lp-shots-note">実際の仲間ページの記録です（人の名前とグループ名は置きかえています）。画面の中はスクロールできます。</p>
+      <p class="lp-shots-note">実際の仲間ページの記録を、スマホの画面のまま撮ったものです（人の名前とグループ名は置きかえています）。</p>
     </div>
   </section>
 
@@ -7679,7 +7679,7 @@ function lpDemo(i, user) {
   tabs.forEach((t, j) => { t.classList.toggle('on', j === lpDemoIdx); t.setAttribute('aria-selected', j === lpDemoIdx ? 'true' : 'false'); });
   scrs.forEach((el, j) => el.classList.toggle('on', j === lpDemoIdx));
   const cur = scrs[lpDemoIdx];
-  root.querySelector('.lp-phone-screen').scrollTop = 0;
+  root.querySelector('.lp-phone-bar').style.background = cur.dataset.top;
   document.getElementById('lp-demo-t').textContent = cur.dataset.title;
   document.getElementById('lp-demo-d').textContent = cur.dataset.desc;
   document.getElementById('lp-demo-a').href = cur.dataset.href;
@@ -7688,7 +7688,7 @@ function initLpDemo() {
   const root = document.getElementById('lp-demo');
   if (!root) return;
   root.querySelectorAll('.lp-scr').forEach(img => { img.loading = 'eager'; });
-  root.querySelector('.lp-phone-screen').addEventListener('pointerdown', () => { lpDemoUser = true; clearInterval(lpDemoTimer); }, { passive: true });
+  root.querySelector('.lp-phone').addEventListener('pointerdown', () => { lpDemoUser = true; clearInterval(lpDemoTimer); }, { passive: true });
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (!('IntersectionObserver' in window)) return;
   new IntersectionObserver(es => es.forEach(e => {

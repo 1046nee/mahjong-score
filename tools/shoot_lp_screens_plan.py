@@ -1,68 +1,49 @@
-# shoot_lp_screens.py から読み込む撮影の段取り（どの画面をどの順に撮るか）。期間は「すべて」・四麻
-def clip(sel, name, maxh):
-    """長い要素は上から maxh（CSS px）だけ撮る"""
-    el = pg.locator(sel).first
-    el.scroll_into_view_if_needed()
-    pg.evaluate("(s) => { const e = document.querySelector(s); window.scrollTo(0, e.getBoundingClientRect().top + scrollY - 8); }", sel)
-    pg.wait_for_timeout(350)
-    b = pg.evaluate("(s) => { const r = document.querySelector(s).getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height}; }", sel)
-    h = min(b["h"], maxh)
-    pg.set_viewport_size({"width": 390, "height": int(max(844, h + 40))})
-    pg.wait_for_timeout(200)
-    b = pg.evaluate("(s) => { const r = document.querySelector(s).getBoundingClientRect(); return {x: r.left, y: r.top, w: r.width, h: r.height}; }", sel)
+# shoot_lp_screens.py から読み込む撮影の段取り（2026-10-26 第2版）。
+# スマホ1画面（390×844）をそのまま撮る＝要素を切り抜かない（切り抜くと周りに色の縁が残る・不自然、というユーザーの指摘）。
+# どの画面も中身で埋まる位置までスクロールしてから撮る。期間は「すべて」・四麻
+def vshot(name, sel, top=56):
+    """sel の要素の上端が画面の上から top px に来るようにスクロールして、画面1枚をそのまま撮る"""
+    pg.evaluate("""([s, t]) => { const e = document.querySelector(s); if (!e) return;
+      const y = e.getBoundingClientRect().top + window.scrollY - t; window.scrollTo(0, Math.max(0, y)); }""", [sel, top])
+    pg.wait_for_timeout(500)
     path = os.path.join(OUT, "lp-" + name + ".png")
-    pg.screenshot(path=path, clip={"x": b["x"], "y": b["y"], "width": b["w"], "height": min(b["h"], maxh)})
-    pg.set_viewport_size({"width": 390, "height": 844})
+    pg.screenshot(path=path)
     shots.append((name, path, pg.evaluate(CUT_JS, sel)))
 
-# 横にスクロールする並び（指標のボタン）は、撮るときだけ折り返して全部見せる（右端で文字が切れないように）
-pg.add_style_tag(content="#circle-body [onclick*=shiftCircleMetricTo] { flex-shrink: 0; } ")
-pg.evaluate("""() => { const b = document.querySelector("#circle-body [onclick*=shiftCircleMetricTo]"); if (b) window.__chipRowCls = b.parentElement.className; }""")
 pg.evaluate("setMpPeriod('all'); mpMode = 4; circleTab = 'rank'; circleMetric = 'score'; renderCircle()")
 pg.wait_for_timeout(900)
-row = pg.evaluate("(() => { const b = document.querySelector('#circle-body [onclick*=shiftCircleMetricTo]'); return b ? b.parentElement.className : ''; })()")
-if row:
-    pg.add_style_tag(content="." + row.split()[0] + " { flex-wrap: wrap !important; overflow: visible !important; }")
-    pg.wait_for_timeout(200)
-# 通算順位：表彰台と4〜7位のカードまで（カードの途中で切らない）
-cut = pg.evaluate("""(() => { const card = document.querySelector('#circle-body .rank-card'); const top = card.getBoundingClientRect().top;
-  const items = [...card.querySelectorAll('[onclick^=openCircleMember]')]; const it = items[5] || items[items.length - 1];
-  return Math.round(it.getBoundingClientRect().bottom - top + 3); })()""")
-clip("#circle-body .rank-card", "rank", cut)
-pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(800)
-# 総当たり表は相手4人ぶんの列だけ見せる（右の列が途中で切れないように）
-pg.add_style_tag(content="#circle-body .card table th:nth-child(n+6), #circle-body .card table td:nth-child(n+6) { display: none !important; } #circle-body .card table { width: 100% !important; min-width: 0 !important; }")
-pg.wait_for_timeout(300)
-cut = pg.evaluate("""(() => { const card = document.querySelector('#circle-body .card'); const top = card.getBoundingClientRect().top;
-  const rows = [...card.querySelectorAll('tbody tr')]; const r = rows[Math.min(6, rows.length - 1)]; return Math.round(r.getBoundingClientRect().bottom - top + 1); })()""")
-clip("#circle-body .card", "h2h", cut)
+# 通算順位：表彰台から下の順位まで
+vshot("rank", "#circle-body .rank-card", 64)
+# 過去の試合：ゲームのタイルがびっしり
+pg.evaluate("circleTab = 'games'; renderCircle()"); pg.wait_for_timeout(1000)
+vshot("games", "#circle-body .card", 64)
+# 総当たり表
+pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
+vshot("h2h", "#circle-body .card", 64)
+# メンバーの成績（シートは画面いっぱいに開くので、そのまま撮る）
 pg.evaluate("circleTab = 'rank'; renderCircle()"); pg.wait_for_timeout(500)
-pg.evaluate("openCircleMember('HjepWbWQ')"); pg.wait_for_timeout(900)
-clip("#form-modal .form-modal-box", "member", 760)
+pg.evaluate("window.scrollTo(0, 0)")
+pg.evaluate("openCircleMember('HjepWbWQ')"); pg.wait_for_timeout(1200)
+path = os.path.join(OUT, "lp-member.png"); pg.screenshot(path=path); shots.append(("member", path, []))
 pg.evaluate("closeFormModal()"); pg.wait_for_timeout(300)
-# マイページ（仲間ページの試合を自分の過去の試合に入れてから）
+# マイページ：月ごとのグラフの点を押して、その下にその月の試合が出ているところ
 pg.evaluate("(async () => { await syncCircleGamesToMine(); })()"); pg.wait_for_timeout(1500)
-pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; renderHistory()"); pg.wait_for_timeout(1200)
-shot("#view-history .mc-card", "mypage")
-# グラフを月ごとにして、点を押すと出る「その月の試合」（勝った月・ゲームが2つ以上の月を選ぶ）
-pg.evaluate("setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1000)
+pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1200)
 n = pg.evaluate("document.querySelectorAll('#view-history .sp-hit').length")
 best = None
 for k in range(n):
     pg.evaluate(f"document.querySelectorAll('#view-history .sp-hit')[{k}].dispatchEvent(new MouseEvent('click', {{ bubbles: true }}))")
-    pg.wait_for_timeout(250)
+    pg.wait_for_timeout(200)
     info = pg.evaluate("""(() => { const p = document.querySelector('#view-history .sp-pop'); if (!p) return null;
-      const t = (p.querySelector('.sp-sum') || {}).innerText || ''; const m = t.replace(/−/g, '-').match(/([+-][0-9,]+\.?[0-9]*)\s*$/);
-      return { sum: m ? parseFloat(m[1].replace(/,/g, '')) : null, games: p.querySelectorAll('.sp-g').length, h: p.offsetHeight, t: t.replace(/\s+/g, ' ') }; })()""")
-    if info and info["sum"] is not None and 2 <= info["games"] <= 3 and info["h"] < 900 and (best is None or info["sum"] > best[1]["sum"]):
+      const t = (p.querySelector('.sp-sum') || {}).innerText || ''; const m = t.replace(/−/g, '-').match(/([+-][0-9,]+\\.?[0-9]*)\\s*$/);
+      return { sum: m ? parseFloat(m[1].replace(/,/g, '')) : null, games: p.querySelectorAll('.sp-g').length }; })()""")
+    if info and info["sum"] is not None and 2 <= info["games"] <= 3 and (best is None or info["sum"] > best[1]["sum"]):
         best = (k, info)
 print("best month", best)
-if best:
-    pg.evaluate(f"document.querySelectorAll('#view-history .sp-hit')[{best[0]}].dispatchEvent(new MouseEvent('click', {{ bubbles: true }}))")
-    pg.wait_for_timeout(400)
-    b = pg.evaluate("(() => { const p = document.querySelector('#view-history .sp-pop'); p.scrollIntoView({block: 'center'}); return 1; })()")
-    pg.wait_for_timeout(300)
-    b = pg.evaluate("(() => { const p = document.querySelector('#view-history .sp-pop'); const tag = p.querySelector('.sp-tag'); const r = p.getBoundingClientRect(); const t = tag.getBoundingClientRect(); const top = Math.min(r.top, t.top) - 4; return {x: r.left - 4, y: top, w: r.width + 8, h: r.bottom - top + 6}; })()")
-    path = os.path.join(OUT, "lp-month.png")
-    pg.screenshot(path=path, clip={"x": b["x"], "y": b["y"], "width": b["w"], "height": b["h"]})
-    shots.append(("month", path, pg.evaluate(CUT_JS, "#view-history .sp-pop")))
+pg.evaluate(f"document.querySelectorAll('#view-history .sp-hit')[{best[0]}].dispatchEvent(new MouseEvent('click', {{ bubbles: true }}))")
+pg.wait_for_timeout(500)
+# グラフの見出しが画面の上の方に来て、その下に選んだ月の試合が並ぶ位置
+pg.evaluate("""(() => { const g = document.querySelector('#view-history .sp-pop'); const card = g.closest('.mc-card') || g.parentElement;
+  const graph = card.querySelector('svg') || g; const y = graph.getBoundingClientRect().top + window.scrollY - 150; window.scrollTo(0, Math.max(0, y)); })()""")
+pg.wait_for_timeout(500)
+path = os.path.join(OUT, "lp-mypage.png"); pg.screenshot(path=path); shots.append(("mypage", path, []))
