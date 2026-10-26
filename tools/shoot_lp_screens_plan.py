@@ -14,9 +14,9 @@ pg.evaluate("setMpPeriod('all'); mpMode = 4; circleTab = 'rank'; circleMetric = 
 pg.wait_for_timeout(900)
 # 通算順位：表彰台から下の順位まで
 vshot("rank", "#circle-body .rank-card", 64)
-# 過去の試合：ゲームのタイルがびっしり
-pg.evaluate("circleTab = 'games'; renderCircle()"); pg.wait_for_timeout(1000)
-vshot("games", "#circle-body .card", 64)
+# 成績表（メンバーごとの試合数・着順の回数・トップ率など）
+pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
+vshot("grid", "#circle-body .card", 64)
 # 総当たり表
 pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
 vshot("h2h", "#circle-body .card", 64)
@@ -47,3 +47,7 @@ pg.evaluate("""(() => { const g = document.querySelector('#view-history .sp-pop'
   const graph = card.querySelector('svg') || g; const y = graph.getBoundingClientRect().top + window.scrollY - 150; window.scrollTo(0, Math.max(0, y)); })()""")
 pg.wait_for_timeout(500)
 path = os.path.join(OUT, "lp-mypage.png"); pg.screenshot(path=path); shots.append(("mypage", path, []))
+# 過去の試合（マイページの一覧＝ゲームごとに自分の順位・スコア・着順の回数が出る。ユーザーの依頼「本当の画面のようにその時の成績を」）
+pg.evaluate("document.querySelectorAll('.sp-pop').forEach(p => p.remove())")
+pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
+vshot("games", "#view-history .gm-list", 168)
