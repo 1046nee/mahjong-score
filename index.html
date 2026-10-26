@@ -199,6 +199,42 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .fi-blue { background: #EAF0FB; }
 .feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
 .feature p { font-size: 14.5px; color: #444; line-height: 1.8; }
+/* ===== トップページのPCの並び（1,100px以上・2026-10-26〜・ユーザーの依頼「PCは画面の幅を使う」）=====
+   色の帯は画面の端まで。最初の画面は文字とイラストを横並び、使い方の4ステップは横1列、特徴はカードを並べて（カルーセルにしない）、
+   実際の画面は5枚を1列、もっと詳しく・お知らせは左右に。1,099px以下（スマホ・タブレット）は今までどおり。アプリの画面（試合・入力・マイページ）は広げない */
+@media (min-width: 1100px) {
+  #view-home { max-width: none; }
+  #view-home .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); grid-template-areas: "h1 ill" "desc ill" "cta ill" "trust ill" "recent ill"; column-gap: 56px; max-width: 1080px; margin: 0 auto; padding: 40px 40px 56px; text-align: left; align-items: start; }
+  #view-home .hero h1 { grid-area: h1; font-size: 42px; margin-top: 30px; }
+  #view-home .hero .hero-illust { grid-area: ill; max-width: 460px; margin: 0; align-self: center; }
+  #view-home .hero .hero-desc { grid-area: desc; max-width: 460px; margin: 0 0 24px; font-size: 16px; }
+  #view-home .hero .cta-btn { grid-area: cta; margin: 0 0 12px; max-width: 380px; }
+  #view-home .hero .cta-trust { grid-area: trust; justify-content: flex-start; }
+  #view-home .hero .recent-games { grid-area: recent; margin: 24px 0 0; }
+  #view-home .lp-howto-wrap { max-width: 1180px; padding-left: 32px; padding-right: 32px; }
+  #view-home .howto { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 22px; align-items: start; }
+  #view-home .howto > h2, #view-home .howto > p { grid-column: 1 / -1; }
+  #view-home .howto-step { margin: 28px 0 8px; }
+  #view-home .howto-step h3 { font-size: 17px; }
+  #view-home .howto-shot svg { width: 100%; max-width: 200px; }
+  #view-home .howto-step p { font-size: 14px; line-height: 1.75; }
+  #view-home .bookmark-howto { max-width: 760px; margin-left: auto; margin-right: auto; }
+  #view-home .lp-section .lp-inner { max-width: 760px; }
+  #view-home .lp-solution .lp-inner, #view-home .lp-screens .lp-inner { max-width: 1180px; }
+  #view-home .features-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; overflow: visible; padding: 4px 0 8px; }
+  #view-home .features-row::after, #view-home .features-nav, #view-home .features-dots { display: none; }
+  #view-home .feature { max-width: none; width: auto; }
+  #view-home .lp-shots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; overflow: visible; margin: 22px 0 0; padding: 4px 0 8px; }
+  #view-home .lp-shots::after { display: none; }
+  #view-home .lp-shot { width: auto; max-width: none; }
+  #view-home .lp-shot-img { height: 360px; }
+  #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; padding-left: 32px; padding-right: 32px; }
+  #view-home .home-content:not(.lp-howto-wrap) > .ad-slot { grid-column: 1 / -1; }
+  .global-header-wrap { max-width: none; }
+  .global-header { max-width: 960px; margin: 0 auto; }
+  body:has(#view-home.active) .global-header { max-width: 1180px; }
+  #view-home .lp-screens h2 { text-align: center; }
+}
 /* 「もっと詳しく」とお知らせ：ブログの一覧と同じ、左に記事の絵・右に題名と説明（2026-10-26〜） */
 .read-list.rl-cards { list-style: none; padding: 0; margin: 0 0 6px; }
 .read-list.rl-cards li { margin: 0; border-bottom: 1px solid #E6ECEA; }
