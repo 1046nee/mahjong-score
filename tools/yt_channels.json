@@ -145,23 +145,17 @@
    "thumb": "https://yt3.ggpht.com/ytc/AIdro_lLEVeSaB4D47d0JbNGirUGef-YUnkVtpPhoRWXcoz8-w=s88-c-k-c0x00ffffff-no-rj",
    "subs": 34400
   },
+  "https://www.youtube.com/channel/UCcbokYAetPdyS1PVURBopMg": {
+   "id": "UCcbokYAetPdyS1PVURBopMg",
+   "title": "TEAM雷電【公式】",
+   "thumb": "https://yt3.ggpht.com/MhZ213b7C8uUjxvJbV_Ah4buhJyWRVMHWHaU6WBhzZKMACNO2n6S1cLpXooBFMZkUwRa9KHnRQ=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 39200
+  },
   "https://www.youtube.com/channel/UCYkOShGDIiVoPNA1ggkfl6A": {
    "id": "UCYkOShGDIiVoPNA1ggkfl6A",
    "title": "麻雀プロ団体LIVEチャンネル",
    "thumb": "https://yt3.ggpht.com/yx6q6s--hlntb8yBo6dIc7vj9sacGqRL2ePoSjgLolT56p1VgXucUAPtTE8amLAAC_rVCyCDyL4=s88-c-k-c0x00ffffff-no-rj",
    "subs": 47000
-  },
-  "https://www.youtube.com/channel/UCIXxDdInZsGkYwA1DsHRMOA": {
-   "id": "UCIXxDdInZsGkYwA1DsHRMOA",
-   "title": "その研 -園田賢の麻雀研究所-",
-   "thumb": "https://yt3.ggpht.com/qN_ouPoiGTH4TCinpqbEi-LvQ3GIxj2qVdidTlEekRJd1E74NWnJUXdTywxBLIG_FoEMRO_n7K0=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 76900
-  },
-  "https://www.youtube.com/channel/UCSpPZV8gKgGtRvUq38zwD4w": {
-   "id": "UCSpPZV8gKgGtRvUq38zwD4w",
-   "title": "松本吉弘-まつもとぐみ",
-   "thumb": "https://yt3.ggpht.com/UUCr1HqiPzH2q7ruN75mEiKcU3pVt7WbkvvetAsZF4r4b0wmMDzuG_H8vl6TBtvOAB_dgYwJAg=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 72400
   },
   "https://www.youtube.com/channel/UCqHDeUer8bgaqswSuFP7FxQ": {
    "id": "UCqHDeUer8bgaqswSuFP7FxQ",
@@ -169,11 +163,17 @@
    "thumb": "https://yt3.ggpht.com/fQf1_pv_Qs-seOA0gzeVHyNkjNdd8LsKjEZ1n_UeIjsNbVSfDyrnWrp3nnj7BHnm_C16GmI-x20=s88-c-k-c0x00ffffff-no-rj",
    "subs": 212000
   },
-  "https://www.youtube.com/channel/UCcbokYAetPdyS1PVURBopMg": {
-   "id": "UCcbokYAetPdyS1PVURBopMg",
-   "title": "TEAM雷電【公式】",
-   "thumb": "https://yt3.ggpht.com/MhZ213b7C8uUjxvJbV_Ah4buhJyWRVMHWHaU6WBhzZKMACNO2n6S1cLpXooBFMZkUwRa9KHnRQ=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 39200
+  "https://www.youtube.com/channel/UCSpPZV8gKgGtRvUq38zwD4w": {
+   "id": "UCSpPZV8gKgGtRvUq38zwD4w",
+   "title": "松本吉弘-まつもとぐみ",
+   "thumb": "https://yt3.ggpht.com/UUCr1HqiPzH2q7ruN75mEiKcU3pVt7WbkvvetAsZF4r4b0wmMDzuG_H8vl6TBtvOAB_dgYwJAg=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 72400
+  },
+  "https://www.youtube.com/channel/UCIXxDdInZsGkYwA1DsHRMOA": {
+   "id": "UCIXxDdInZsGkYwA1DsHRMOA",
+   "title": "その研 -園田賢の麻雀研究所-",
+   "thumb": "https://yt3.ggpht.com/qN_ouPoiGTH4TCinpqbEi-LvQ3GIxj2qVdidTlEekRJd1E74NWnJUXdTywxBLIG_FoEMRO_n7K0=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 76900
   }
  }
 }

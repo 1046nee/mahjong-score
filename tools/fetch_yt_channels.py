@@ -9,7 +9,7 @@ YouTube API の開発者ポリシーで、APIで取ったデータ（アイコ�
   1. チャンネル紹介の行 .ch-card … アイコン（チャンネルへのリンク）・「登録者 ○人（○年○月）」・YouTubeのアイコン
   2. Mリーグのチーム表 a.tm-yt … チームの公式チャンネルのアイコン（チャンネルへのリンク）
   3. 団体カードのYouTubeのリンク … 「公式YouTube（登録者 ○人）」
-  4. 団体カードの見出し .org-ic … 団体の公式チャンネルのアイコン（YouTubeが無い団体は団体の色の丸に頭文字）
+  4. 団体カードの見出し .org-ic … 団体の公式チャンネルのアイコン（YouTubeが無い団体は公式サイトのアイコン＝Googleのfavicon配信。それも無ければ団体の色の丸に頭文字）
 - YouTubeのアイコンは Google が配っている公式の画像（gstatic）をそのまま使う。色や形は変えない（ブランドガイドライン）
 - 取ってきた内容は tools/yt_channels.json にも残す（いつ取ったかの記録）
 実行: python tools/fetch_yt_channels.py
@@ -117,7 +117,12 @@ def rewrite(s, data, month):
             ic = icon(yt.group(1), "org-ic")
         else:
             name = re.sub(r"<[^>]+>", "", re.search(r"<b>(.*?)</b>", head.group(1)).group(1))
-            ic = f'<span class="org-ic" aria-hidden="true">{name[0]}</span>'
+            site = re.search(r'<a class="ch-url" href="(https?://(?!(?:www\.)?(?:youtube\.com|x\.com))([^/"]+)[^"]*)"', card)
+            if site:  # YouTubeが無い団体は、公式サイトのアイコン（ブラウザのタブに出る小さな印）を Google の favicon の配信から表示する（保存して置かない）
+                ic = (f'<a class="org-ic site" href="{site.group(1)}" target="_blank" rel="noopener" title="{html.escape(name)}（公式サイト）">'
+                      f'<img src="https://www.google.com/s2/favicons?domain={site.group(2)}&amp;sz=64" alt="{html.escape(name)}の公式サイトのアイコン" width="40" height="40" loading="lazy" referrerpolicy="no-referrer"></a>')
+            else:
+                ic = f'<span class="org-ic" aria-hidden="true">{name[0]}</span>'
         return card.replace(head.group(0), f'<div class="org-head">{ic}<span class="org-name">{head.group(1)}</span></div>', 1)
     s = re.sub(r'<div class="org-card".*?<div class="org-links">.*?</div>', org_card, s, flags=re.S)
     return s

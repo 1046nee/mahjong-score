@@ -521,3 +521,11 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post .cap a.yt-url[href*="x.com/"]::before,
 .blog-post td a[href^="https://x.com/"]::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg"); }
 .blog-post td a.tm-yt::before { content: none; }
+.blog-post .org-ic.site { background: #fff; padding: 6px; }
+.blog-post .org-ic.site img { object-fit: contain; }
+.blog-post table.kj-num th:nth-child(1) { width: 66px; }
+.blog-post table.kj-num .kj-3 { display: flex; gap: 1px; }
+.blog-post table.kj-num .kj-3 img { display: block; width: 20px; height: auto; }
+/* ローカル役の記事の表（2026-10-26） */
+.blog-post table.lc-tbl td:first-child { white-space: nowrap; font-weight: 700; }
+.blog-post table.kj-num ruby { white-space: nowrap; }
