@@ -124,7 +124,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-shots { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 4px 14px; margin: 18px -4px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .lp-shots::-webkit-scrollbar { display: none; }
 .lp-shot { flex: none; width: 74%; max-width: 280px; scroll-snap-align: center; text-decoration: none; color: inherit; background: #fff; border-radius: 16px; padding: 12px 12px 14px; box-shadow: 0 2px 12px rgba(23,112,131,.10); }
-.lp-shot img { display: block; width: 100%; height: 240px; object-fit: cover; object-position: top; border-radius: 10px; border: 1px solid #e2ece7; }
+/* 画面は切らずに全部見せる（2026-10-26〜。以前は高さ240pxで下を切っていた）。カードごとに地の色を変える */
+.lp-shots { align-items: flex-start; }
+.lp-shot { width: 78%; max-width: 300px; padding: 0 0 14px; overflow: hidden; }
+.lp-shot-img { display: flex; align-items: center; justify-content: center; height: 400px; padding: 14px 12px; background: var(--sc, #E4F3EC); box-sizing: border-box; }
+.lp-shot img { display: block; width: auto; height: auto; max-width: 100%; max-height: 100%; border-radius: 10px; box-shadow: 0 6px 18px rgba(16,40,36,.18); }
+.lp-shots { scroll-snap-type: x mandatory; scroll-padding-left: 4px; }
+.lp-shot { scroll-snap-align: start; }
+.lp-shots::after { content: ""; flex: 0 0 calc(100% - 78% - 18px); }
+@media (min-width: 700px) { .lp-shots::after { flex-basis: 1px; } }
+.lp-shot b, .lp-shot > span:not(.lp-shot-img) { padding: 0 14px; }
+.lp-shot:nth-child(5n+1) { --sc: #FFE7A3; } .lp-shot:nth-child(5n+2) { --sc: #FFD3E2; } .lp-shot:nth-child(5n+3) { --sc: #CFE0FF; }
+.lp-shot:nth-child(5n+4) { --sc: #CDEFD9; } .lp-shot:nth-child(5n+5) { --sc: #E3D7FF; }
 .lp-shot b { display: block; margin-top: 10px; font-size: 15px; font-weight: 900; color: #1F2A28; }
 .lp-shot span { display: block; margin-top: 4px; font-size: 13px; line-height: 1.7; color: #4F5C5A; }
 .lp-shot em { display: inline-block; margin-top: 8px; font-style: normal; font-size: 13px; font-weight: 800; color: #177083; }
@@ -2691,12 +2702,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <h2>実際の画面で見る。</h2>
       <p class="lp-body" style="text-align:center">記録は、打つたびに積み上がります。</p>
       <div class="lp-shots">
-        <a class="lp-shot" href="/news/nakama-page.html"><img src="/assets/screens/circle-rank.jpg" width="716" height="1218" alt="仲間ページの通算順位の画面" loading="lazy"><b>仲間ページの通算順位</b><span>定例会のゲームを集めると、通算スコア・平均着順などの順位が自動で出ます。</span><em>くわしく ›</em></a>
-        <a class="lp-shot" href="/news/mypage-stats.html"><img src="/assets/screens/mypage-card.jpg" width="716" height="900" alt="マイページの成績カードとスコアの推移" loading="lazy"><b>自分の成績とスコアの推移</b><span>平均着順・トップ率・ラス回避と、月ごとの通算スコアのグラフ。</span><em>くわしく ›</em></a>
-        <a class="lp-shot" href="/news/nakama-page.html#h2h"><img src="/assets/screens/circle-h2h.jpg" width="716" height="902" alt="総当たり表。メンバーどうしの直接対決の勝ち負け" loading="lazy"><b>総当たり表で相性がわかる</b><span>同じ試合で上だった回数を、メンバーどうしの勝ち-負けで。</span><em>くわしく ›</em></a>
-        <a class="lp-shot" href="/news/kiroku-kakutei.html"><img src="/assets/screens/result-sheet.jpg" width="720" height="978" alt="結果のシート。試合ごとのスコアと個人成績" loading="lazy"><b>終わった結果は書き換えられない</b><span>対局の終了から12時間で記録が確定。通算成績を安心して積み上げられます。</span><em>くわしく ›</em></a>
+        <a class="lp-shot" href="/news/nakama-page.html"><span class="lp-shot-img"><img src="/assets/screens/lp-rank.jpg" width="716" height="1148" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコア" loading="lazy"></span><b>仲間の通算順位が、表彰台で</b><span>ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></a>
+        <a class="lp-shot" href="/news/mypage-stats.html"><span class="lp-shot-img"><img src="/assets/screens/lp-month.jpg" width="676" height="646" alt="マイページの、ある月の試合の一覧。ゲームごとの順位とスコア、1着から4着の回数、相手" loading="lazy"></span><b>今月の勝ち、ひと目で</b><span>グラフの月を押すと、その月のゲームごとの順位・スコア・着順の回数が並びます。</span></a>
+        <a class="lp-shot" href="/news/nakama-page.html#h2h"><span class="lp-shot-img"><img src="/assets/screens/lp-h2h.jpg" width="716" height="1066" alt="総当たり表。メンバーどうしの直接対決の勝ち越し・負け越し" loading="lazy"></span><b>あの人には勝ち越してる？</b><span>同じ試合で上だった回数を、メンバーどうしの総当たりで。相性が数字で出ます。</span></a>
+        <a class="lp-shot" href="/news/nakama-page.html"><span class="lp-shot-img"><img src="/assets/screens/lp-member.jpg" width="720" height="1403" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy"></span><b>メンバーごとの成績と推移</b><span>平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></a>
+        <a class="lp-shot" href="/news/mypage-stats.html"><span class="lp-shot-img"><img src="/assets/screens/lp-mypage.jpg" width="716" height="984" alt="マイページの成績カード。平均着順・通算スコア・着順の割合と推移のグラフ" loading="lazy"></span><b>自分の成績も、ずっと残る</b><span>Googleでログインすれば、何年分でも自分の成績と推移が残ります。</span></a>
       </div>
-      <p class="lp-shots-note">名前と数字は見本のデータです。</p>
+      <p class="lp-shots-note">実際の仲間ページの記録です（人の名前とグループ名は置きかえています）。</p>
     </div>
   </section>
 

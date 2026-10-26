@@ -32,6 +32,7 @@
 - `tools/make_ig_v2.py` — IGフィードv2 1080×1350（実画面スクショ×カラー背景の濃色デザイン。白基調シリーズがグリッドで沈む対策。要: shoot_app_screens.py を先に実行）。
   先頭は ig-v2-1-quickstart（クイックスタートの2択モーダル）
 - `tools/shoot_feature_screens.py` — 2026-10の新機能（仲間ページ・マイページ・結果のシート・対戦を見る）の実画面を見本のデータで撮る（スタブ。出力: まじゃすこ素材/ig/shots/oct-*.png。サイト用は幅720のJPEGにして assets/screens/）
+- `tools/shoot_lp_screens.py` — LP「実際の画面で見る。」の5枚（2026-10-26〜）。実際の仲間ページのデータ（名前・アカウント・写真・変更の記録を置きかえ／外したJSON）をスタブのDBに入れて撮る。データは本番の画面（ログインしたブラウザ）で読み取り、名前を置きかえてから手元のファイルに書く＝リポジトリに入れない。撮るときだけ横スクロールの並びは折り返し・長いゲーム名は日付だけ・総当たり表は相手4人ぶん（文字が切れないように）。出力 まじゃすこ素材/ig/shots/lp-*.png と assets/screens/lp-*.jpg
 - `tools/make_ig_v2_oct.py` — IG v2 の追加3枚 ig-v2-8-nakama／9-mypage／10-kakutei（要: shoot_feature_screens.py）
 - `tools/record_app_demo.py` — 操作デモ動画の録画（LP→グループ作成→URL共有→点数入力→成績・グラフ。
   ローカル起動＋Firebaseスタブ＋タップ可視化。出力: demo-raw.mp4=素の縦長録画／demo-short-9x16.mp4=1080×1920ショート用合成。要: pip install imageio-ffmpeg）
