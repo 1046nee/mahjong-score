@@ -738,3 +738,28 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
 /* 記事の最初の絵（一覧のカードと同じ絵・2026-10-26〜・tools/add_eyecatch.py） */
 .blog-post .eyecatch { margin: 4px auto 22px; max-width: 420px; }
 .blog-post .eyecatch img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: 14px; }
+
+/* ---- 一覧と左右の列を詰める（2026-10-26〜・ユーザーの依頼「絵が大きすぎる・1画面にもっと記事を」） ---- */
+.post-card.has-thumb { grid-template-columns: 88px 1fr; gap: 12px; padding: 11px 4px 11px 0; align-items: center; }
+.post-card .pc-thumb { border-radius: 9px; }
+.post-card.has-thumb h2 { font-size: 14.5px; line-height: 1.5; margin: 0 0 2px; }
+.post-card.has-thumb .pc-meta { margin-bottom: 3px; gap: 3px 8px; }
+.post-card.has-thumb .excerpt { font-size: 12.5px; line-height: 1.65; -webkit-line-clamp: 1; }
+@media (min-width: 700px) { .post-card.has-thumb { grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 6px 12px 0; } .post-card.has-thumb h2 { font-size: 15.5px; } .post-card.has-thumb .excerpt { -webkit-line-clamp: 2; } }
+@media (max-width: 380px) { .post-card.has-thumb { grid-template-columns: 76px 1fr; gap: 10px; } }
+/* 左の列：絵は小さく、題名の横に */
+.side-l .sl-rel ul { gap: 10px; }
+.side-l .sl-rel a { display: grid; grid-template-columns: 64px 1fr; gap: 8px; align-items: center; }
+.side-l .sl-rel img { width: 64px; margin: 0; border-radius: 6px; }
+.side-l .sl-rel span { font-size: 12px; line-height: 1.5; }
+/* 左右の列の箱と行の間を詰める */
+.side { gap: 12px; }
+.side-box { padding: 12px 14px 10px; }
+.side-box h2 { margin-bottom: 8px; }
+.side-box li { margin-bottom: 9px; }
+.side-box .sb-link { font-size: 12.5px; line-height: 1.55; }
+.side-l .sl-in { gap: 12px; }
+.side-l .sl-toc a { padding-top: 4px; padding-bottom: 4px; font-size: 12px; }
+body:not(.bs-list) .side-box, .bs-list .side-box { padding: 10px 0 2px; }
+.side-box li { padding-bottom: 8px; margin-bottom: 8px; }
+.side-box .sb-date { display: block; margin-top: 1px; line-height: 1.4; }
