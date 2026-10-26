@@ -82,16 +82,16 @@ def sheet_html(d):
                 if c["mangan"]:
                     tds += '<td class="mg"><b>満貫</b></td>'; continue
                 ron = f'<b>{n(c["ko_ron"] if ko else c["oya_ron"])}</b>' if c["ron_ok"] else '<b class="x">—</b>'
-                ts = (f'{n(c["ko_tsumo"][0])}-{n(c["ko_tsumo"][1])}' if ko else f'{n(c["oya_tsumo"])}<i>∀</i>') if c["tsumo_ok"] else "—"
+                ts = (f'{n(c["ko_tsumo"][0])}-{n(c["ko_tsumo"][1])}' if ko else f'{n(c["oya_tsumo"])}<i>ALL</i>') if c["tsumo_ok"] else "—"
                 tds += f'<td>{ron}<span>{ts}</span></td>'
             body += f'<tr><th>{r["fu"]}符</th>{tds}</tr>'
         title = "子" if ko else "親"
-        sub = "ロン ／ ツモ（子の払い-親の払い）" if ko else "ロン ／ ツモ（∀＝全員が同じ額＝オール）"
+        sub = "ロン ／ ツモ（子の払い-親の払い）" if ko else "ロン ／ ツモ（ALL＝オール：子の3人が同じ額）"
         return (f'<section class="blk {side}"><h2><em>{title}</em><small>{sub}</small></h2>'
                 f'<table><thead><tr><th>符＼翻</th>{head}</tr></thead><tbody>{body}</tbody></table></section>')
 
     lim = "".join(f'<tr><th>{l["name"]}</th><td class="h">{l["han"]}</td><td><b>{n(l["ko_ron"])}</b><span>{n(l["ko_tsumo"][0])}-{n(l["ko_tsumo"][1])}</span></td>'
-                  f'<td><b>{n(l["oya_ron"])}</b><span>{n(l["oya_tsumo"])}<i>∀</i></span></td></tr>' for l in d["limits"])
+                  f'<td><b>{n(l["oya_ron"])}</b><span>{n(l["oya_tsumo"])}<i>ALL</i></span></td></tr>' for l in d["limits"])
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">
@@ -141,7 +141,7 @@ footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: fl
 footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><h1>麻雀 点数早見表<small>子・親 × ロン・ツモ ／ 20符〜110符・満貫以上・符の数え方を1枚で</small></h1>
-<div class="legend">上の大きい数字 <b>ロン</b><br>下の小さい数字 <span>ツモ</span>（子：子の払い-親の払い ／ 親：∀＝オール）<br>— は実際には出ない組み合わせ</div></header>
+<div class="legend">上の大きい数字 <b>ロン</b><br>下の小さい数字 <span>ツモ</span>（子：子の払い-親の払い ／ 親：ALL＝オール）<br>— は実際には出ない組み合わせ</div></header>
 <div class="grid">{block("ko")}{block("oya")}</div>
 <div class="bottom">
 <div class="box"><h3>満貫以上（符に関係なく決まる）</h3>
