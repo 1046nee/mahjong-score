@@ -21,7 +21,8 @@ const AD_SLOTS = {
   article_top: '3816971981',    // 記事の導入文直後
   article_bottom: '3942084742', // 記事の末尾（CTAの上）
   list_bottom: '8811268042',    // 一覧ページのリスト下
-  lp_bottom: '4872023032'       // LPの解説セクション間
+  lp_bottom: '4872023032',      // LPの解説セクション間
+  side_left: ''                 // PCの左の列（2026-10-26〜）。承認後に AdSense で縦長のユニットを作って ID を入れる
 };
 
 document.addEventListener('DOMContentLoaded', () => {

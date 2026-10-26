@@ -334,5 +334,51 @@ const BLOG_POSTS = [
         + `</ul></div>`;
       el.innerHTML = html;
     });
+
+    // 左の列（PCの広い画面＝1,200px以上だけ見える。2026-10-26〜・記事を画面の真ん中に置くため）:
+    // 記事ページ＝この記事の目次（読んでいる所に色）＋あわせて読みたい（絵つき3本）＋広告枠／一覧ページ＝人気の記事＋広告枠
+    document.querySelectorAll('.post-layout').forEach(lay => {
+      if (lay.querySelector('.side-l')) return;
+      const art = lay.querySelector('.blog-post, .post-list');
+      if (!art) return;
+      const isList = art.classList.contains('post-list');
+      const here = location.pathname;
+      const cur = BLOG_POSTS.find(p => p.url === here);
+      const thumbOf = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+      let html = '';
+      let heads = [];
+      if (!isList) {
+        heads = [...art.querySelectorAll('h2')].filter(h => h.textContent.trim());
+        heads.forEach((h, i) => { if (!h.id) h.id = 'sec' + (i + 1); });
+        const label = h => { const c = h.cloneNode(true); c.querySelectorAll('rt').forEach(r => r.remove()); return escHtml(c.textContent.trim()); };
+        if (heads.length >= 3) html += `<div class="side-box sl-toc"><h2>この記事の目次</h2><ol>${heads.map(h => `<li><a href="#${h.id}">${label(h)}</a></li>`).join('')}</ol></div>`;
+      }
+      let rel;
+      if (isList) rel = BLOG_POSTS.filter(p => p.recommended).sort(byDateDesc).slice(0, 4);
+      else {
+        const pool = BLOG_POSTS.filter(p => p.url !== here && (!cur || p.cat === cur.cat));
+        const same = cur ? pool.filter(p => p.tag && p.tag === cur.tag) : [];
+        rel = same.concat(pool.filter(p => !same.includes(p)).sort(byDateDesc)).slice(0, 3);
+      }
+      if (rel.length) html += `<div class="side-box sl-rel"><h2>${isList ? '人気の記事' : 'あわせて読みたい'}</h2><ul>`
+        + rel.map(p => `<li><a href="${p.url}"><img src="${thumbOf(p)}" alt="" width="320" height="240" loading="lazy" decoding="async"><span>${escHtml(p.title.split('｜')[0])}</span></a></li>`).join('') + '</ul></div>';
+      html += '<div class="ad-slot" data-ad="side_left"></div>';
+      const aside = document.createElement('aside');
+      aside.className = 'side side-l';
+      aside.setAttribute('aria-label', isList ? '人気の記事' : 'この記事の目次とあわせて読みたい記事');
+      aside.innerHTML = `<div class="sl-in">${html}</div>`;
+      lay.insertBefore(aside, lay.firstChild);
+      // 読んでいる所の目次に色を付ける（画面の上から3割の位置を過ぎた見出し）
+      const links = [...aside.querySelectorAll('.sl-toc a')];
+      if (links.length && 'IntersectionObserver' in window) {
+        const mark = () => {
+          let on = 0;
+          heads.forEach((h, i) => { if (h.getBoundingClientRect().top < window.innerHeight * 0.3) on = i; });
+          links.forEach((a, i) => a.classList.toggle('on', i === on));
+        };
+        window.addEventListener('scroll', mark, { passive: true });
+        mark();
+      }
+    });
   });
 })();

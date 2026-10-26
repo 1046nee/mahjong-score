@@ -66,7 +66,7 @@ body.bs-list * { box-sizing: border-box; }
 .bs-list .site-foot .links { margin-bottom: 10px; }
 
 /* ==== モバイルで右側が切れないための安全策（全ブログページ共通） ==== */
-html, body { max-width: 100%; overflow-x: hidden; }
+html, body { max-width: 100%; overflow-x: hidden; overflow-x: clip; } /* clip＝はみ出しは隠すが、スクロールの箱にしない（hidden だと左の列・タブの sticky が効かない。2026-10-26） */
 .blog-post img, .blog-post svg { max-width: 100%; height: auto; }
 /* 列の多い表は表の中だけ横スクロールさせる（ページ全体は固定） */
 .blog-post table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -81,7 +81,7 @@ html, body { max-width: 100%; overflow-x: hidden; }
 /* モバイル対策: ページ全体は横にはみ出させない。記事内の表は潰して詰め込まず、横スクロールで自然な幅のまま見せる */
 /* グリッドアイテムはmin-width:autoのため、幅広の表があると本文列ごと広がってしまう（右切れの原因）。0にして列幅を固定する */
 .post-layout > * { min-width: 0; }
-body { overflow-x: hidden; }
+body { overflow-x: hidden; overflow-x: clip; }
 .blog-post img, .blog-post svg { max-width: 100%; height: auto; }
 .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 0 18px; }
 .table-scroll > table { margin-bottom: 0; }
@@ -704,3 +704,34 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
 .post-card .pc-cat { display: inline-block; color: #fff; background: var(--cc, #0E95A3); border-radius: 4px; padding: 1px 8px; font-size: 11px; }
 @media (min-width: 700px) { .post-card.has-thumb { grid-template-columns: 184px 1fr; gap: 18px; } .post-card.has-thumb h2 { font-size: 16.5px; } }
 @media (max-width: 380px) { .post-card.has-thumb { grid-template-columns: 104px 1fr; gap: 12px; } .post-card.has-thumb .excerpt { display: none; } }
+
+/* ==========================================================
+   PCの広い画面（1,200px以上）は3列（2026-10-26〜・ユーザーの依頼「記事を画面の真ん中に」）
+   左＝目次・あわせて読みたい・広告／真ん中＝記事（幅は今と同じ約720px＝1行40字前後のまま）／右＝今までの右の列
+   1,199px以下は今までどおり（900〜1,199px＝記事＋右の列、899px以下＝1列）。左の列は出さない
+   ========================================================== */
+.side-l { display: none; }
+.side-l .sl-toc ol { list-style: none; margin: 0; padding: 0; counter-reset: tc; }
+.side-l .sl-toc li { counter-increment: tc; margin: 0; }
+.side-l .sl-toc a { display: block; position: relative; padding: 6px 4px 6px 24px; font-size: 12.5px; line-height: 1.5; color: #4F5C5A; text-decoration: none; border-left: 2px solid #E6ECEA; }
+.side-l .sl-toc a::before { content: counter(tc); position: absolute; left: 7px; top: 6px; font-size: 11px; font-weight: 800; color: #9AA8A4; }
+.side-l .sl-toc a:hover { color: #136070; background: #F5F8F7; }
+.side-l .sl-toc a.on { color: #136070; font-weight: 800; border-left-color: #0E95A3; background: #EEF7F4; }
+.side-l .sl-toc a.on::before { color: #0E95A3; }
+.side-l .sl-rel ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.side-l .sl-rel li { margin: 0; }
+.side-l .sl-rel a { display: block; text-decoration: none; color: #1F2A28; }
+.side-l .sl-rel img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; margin-bottom: 6px; }
+.side-l .sl-rel span { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.55; }
+.side-l .sl-rel a:hover span { color: #136070; text-decoration: underline; text-underline-offset: 3px; }
+@media (min-width: 1200px) {
+  body .post-layout { max-width: 1320px; grid-template-columns: 228px minmax(0, 1fr) 264px; gap: 44px; padding-left: 28px; padding-right: 28px; }
+  body .post-layout > .blog-post, body .post-layout > .post-list { width: 100%; max-width: 740px; justify-self: center; }
+  .side-l { display: block; align-self: stretch; }
+  .side-l .sl-in { position: sticky; top: 64px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
+  /* ヘッダー・タブ・見出しの帯も3列の幅にそろえる */
+  body .site-head .site-head-inner, .cat-nav-inner, .bs-list .crumbs, .bs-list .site-head-inner, .bs-list .blog-hero > .hero-txt { max-width: 1264px; }
+  .bs-list .app-banner { max-width: 1320px; }
+  /* 右の列もスクロールについてくる（長いときは列の中でスクロール） */
+  .post-layout > .side:not(.side-l) { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
+}
