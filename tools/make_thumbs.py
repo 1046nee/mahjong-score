@@ -162,6 +162,9 @@ THUMBS = [
  T("blog-score-table", "#2563EB", lambda: grid(40, 40, 5, 5, 48, 30, "#1E3A8A", [(1, 0, "1翻", "#fff"), (2, 0, "2翻", "#fff"), (3, 0, "3翻", "#fff"), (4, 0, "4翻", "#fff"), (0, 1, "30", "#1E3A8A"), (1, 1, "1,000", "#1F2A28"), (2, 1, "2,000", "#1F2A28"), (3, 1, "3,900", "#1F2A28"), (4, 1, "7,700", "#E75620"), (0, 2, "40", "#1E3A8A"), (1, 2, "1,300", "#1F2A28"), (2, 2, "2,600", "#1F2A28"), (3, 2, "5,200", "#1F2A28"), (4, 2, "満貫", "#E75620")])),
  T("blog-uma-oka", "#EC4899", lambda: podium(160, 196, ("#fff", "#FFD23F", "#FFB4CF")) + '<text x="160" y="108" text-anchor="middle" font-size="40" font-weight="900" fill="#fff" ' + F + '>+30</text><text x="88" y="150" text-anchor="middle" font-size="26" font-weight="900" fill="#fff" ' + F + '>+10</text><text x="236" y="160" text-anchor="middle" font-size="26" font-weight="900" fill="#fff" ' + F + '>−10</text>'),
  T("blog-why-majasco", "#F28C28", lambda: '<circle cx="110" cy="104" r="46" fill="#FFD23F"/><rect x="94" y="148" width="32" height="26" rx="5" fill="#fff"/><path d="M98 104 l10 12 l14 -22" stroke="#E75620" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' + phone(186, 40, 86, 170, '<text x="229" y="130" text-anchor="middle" font-size="40" font-weight="900" fill="#E75620" ' + F + '>M</text>') + sparkle(160, 46, 12)),
+ # ブログ以外の読みもの（トップページの「もっと詳しく」）
+ T("score-basics", "#0E95A3", lambda: card(48, 54, 224, 132, "#fff", 14) + '<text x="160" y="104" text-anchor="middle" font-size="22" font-weight="900" fill="#1F2A28" ' + F + '>素点＋ウマ＋オカ</text><rect x="74" y="122" width="172" height="4" rx="2" fill="#0E95A3"/><text x="160" y="164" text-anchor="middle" font-size="30" font-weight="900" fill="#E75620" ' + F + '>＝スコア</text>'),
+ T("faq", "#2F6BFF", lambda: bubble(40, 44, 110, 84, "Q", 50, "#fff", "#2F6BFF") + bubble(170, 104, 110, 84, "A", 50, "#FFC233", "#1F2A28")),
 ]
 
 

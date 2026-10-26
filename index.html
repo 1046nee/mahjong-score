@@ -188,6 +188,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .fi-blue { background: #EAF0FB; }
 .feature h3 { font-size: 16px; color: #177083; margin-bottom: 8px; }
 .feature p { font-size: 14.5px; color: #444; line-height: 1.8; }
+/* 「もっと詳しく」とお知らせ：ブログの一覧と同じ、左に記事の絵・右に題名と説明（2026-10-26〜） */
+.read-list.rl-cards { list-style: none; padding: 0; margin: 0 0 6px; }
+.read-list.rl-cards li { margin: 0; border-bottom: 1px solid #E6ECEA; }
+.read-list.rl-cards li:last-child { border-bottom: 0; }
+.read-list.rl-cards a { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; padding: 12px 0; text-decoration: none; color: inherit; }
+.read-list.rl-cards .rl-img { display: block; width: 96px; height: 72px; border-radius: 10px; object-fit: cover; background: #EEF3F1; }
+.read-list.rl-cards .rl-txt { min-width: 0; }
+.read-list.rl-cards b { display: block; font-size: 15px; font-weight: 800; color: #1F2A28; line-height: 1.5; }
+.read-list.rl-cards .rl-desc { display: block; margin-top: 3px; font-size: 12.5px; color: #5F6E6B; line-height: 1.6; }
+.read-list.rl-cards a:hover b { color: #136070; text-decoration: underline; text-underline-offset: 3px; }
+/* 特徴カルーセルの見た目（2026-10-26〜・ユーザーの依頼「スクロールの位置によってはきれいに映らない」「カラフルでよい」）:
+   端の白いフェードをやめて文字に被らないように／最後のカードも左にそろって止まるよう後ろに余白／上に色の帯と大きいアイコン（6色を順に） */
+.features-wrap::before, .features-wrap::after { display: none; }
+.features-row { scroll-padding-left: 2px; padding: 4px 2px 12px; }
+.features-row::after { content: ""; flex: 0 0 calc(100% - 80% - 16px); }
+.feature { flex: 0 0 80%; max-width: 300px; padding: 0 0 18px; background: #fff; border: 1px solid #DCE6E3; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 10px rgba(16,40,36,.06); }
+.feature .feature-icon { width: 100%; height: 92px; border-radius: 0; margin: 0 0 14px; background: var(--fc, #177083); position: relative; overflow: hidden; }
+.feature .feature-icon::before { content: ""; position: absolute; width: 74px; height: 74px; border-radius: 50%; background: #fff; }
+.feature .feature-icon::after { content: ""; position: absolute; right: -18px; top: -26px; width: 90px; height: 90px; border-radius: 50%; background: #fff; opacity: .16; }
+.feature .feature-icon svg { position: relative; z-index: 1; width: 48px; height: 48px; }
+.feature h3, .feature p { padding: 0 16px; }
+.feature h3 { font-size: 16.5px; color: #1F2A28; font-weight: 900; }
+.feature p { font-size: 14px; color: #4F5C5A; line-height: 1.75; }
+.feature:nth-child(6n+1) { --fc: #0E95A3; } .feature:nth-child(6n+2) { --fc: #2F6BFF; } .feature:nth-child(6n+3) { --fc: #22B573; }
+.feature:nth-child(6n+4) { --fc: #8A5CF6; } .feature:nth-child(6n+5) { --fc: #F59E0B; } .feature:nth-child(6n+6) { --fc: #EC4899; }
+@media (min-width: 700px) { .feature { flex: 0 0 300px; } .features-row::after { flex: 0 0 calc(100% - 300px - 16px); } }
 
 /* ⑥ Before / After 比較表 */
 .lp-compare { background: #E4F3EC; }
@@ -2713,24 +2739,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="info-card">
       <h2>麻雀のスコア記録を、もっと詳しく</h2>
       <p style="margin-bottom:14px">仲間内のセット麻雀で長く集計係をしてきた運営者むにぃが、ルールの決め方から点数が合わないときの対処まで書いています。</p>
-      <ul class="read-list">
-        <li><a href="score-basics.html">麻雀のスコア計算の基本（初心者向け）<span class="rl-desc">素点・ウマ・オカとは何か。4人分のスコアを実際に計算する手順つき。</span></a></li>
-        <li><a href="blog-score-examples.html">スコア計算 実例12パターン<span class="rl-desc">同点・トビ・三麻・チョンボ罰符まで、途中式を省略せず全部計算しました。</span></a></li>
-        <li><a href="blog-house-rules.html">セット麻雀のルールの決め方<span class="rl-desc">持ち点・返し点・ウマ・同点の扱いなど、打つ前に決める10項目のチェックリスト。</span></a></li>
-        <li><a href="blog-score-mismatch.html">点数が合わないときのチェックリスト<span class="rl-desc">ズレ幅から原因を特定する方法。1,000点足りないなら、まず場の供託を疑います。</span></a></li>
-        <li><a href="blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方<span class="rl-desc">抜け番の回し方と、試合数が違う人同士の成績を公平に比べる方法。</span></a></li>
-        <li><a href="blog-season-ranking.html">麻雀仲間の通算成績と相性のつけ方<span class="rl-desc">何日分かの成績のまとめ方と、相手ごとの「直接対決」と「スコア差」の読み方。</span></a></li>
-        <li><a href="faq.html">よくある質問<span class="rl-desc">使い方・ルール設定・データの保存についての19の質問と答え。</span></a></li>
+      <ul class="read-list rl-cards">
+        <li><a href="score-basics.html"><img class="rl-img" src="/assets/thumbs/score-basics.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>麻雀のスコア計算の基本（初心者向け）</b><span class="rl-desc">素点・ウマ・オカとは何か。4人分のスコアを実際に計算する手順つき。</span></span></a></li>
+        <li><a href="blog-score-examples.html"><img class="rl-img" src="/assets/thumbs/blog-score-examples.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>スコア計算 実例12パターン</b><span class="rl-desc">同点・トビ・三麻・チョンボ罰符まで、途中式を省略せず全部計算しました。</span></span></a></li>
+        <li><a href="blog-house-rules.html"><img class="rl-img" src="/assets/thumbs/blog-house-rules.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>セット麻雀のルールの決め方</b><span class="rl-desc">持ち点・返し点・ウマ・同点の扱いなど、打つ前に決める10項目のチェックリスト。</span></span></a></li>
+        <li><a href="blog-score-mismatch.html"><img class="rl-img" src="/assets/thumbs/blog-score-mismatch.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>点数が合わないときのチェックリスト</b><span class="rl-desc">ズレ幅から原因を特定する方法。1,000点足りないなら、まず場の供託を疑います。</span></span></a></li>
+        <li><a href="blog-mawashi-uchi.html"><img class="rl-img" src="/assets/thumbs/blog-mawashi-uchi.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>5人以上で麻雀を打つときの回し方</b><span class="rl-desc">抜け番の回し方と、試合数が違う人同士の成績を公平に比べる方法。</span></span></a></li>
+        <li><a href="blog-season-ranking.html"><img class="rl-img" src="/assets/thumbs/blog-season-ranking.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>麻雀仲間の通算成績と相性のつけ方</b><span class="rl-desc">何日分かの成績のまとめ方と、相手ごとの「直接対決」と「スコア差」の読み方。</span></span></a></li>
+        <li><a href="faq.html"><img class="rl-img" src="/assets/thumbs/faq.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>よくある質問</b><span class="rl-desc">使い方・ルール設定・データの保存についての19の質問と答え。</span></span></a></li>
       </ul>
       <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
     </div>
 
     <div class="info-card">
       <h2>お知らせ</h2>
-      <ul class="read-list">
-        <li><a href="news/nakama-page.html">仲間ページを追加しました<span class="rl-desc">2026.10.13 ・ 定例会の通算順位・成績表・総当たり表をメンバー全員で。</span></a></li>
-        <li><a href="news/mypage-stats.html">マイページを追加しました<span class="rl-desc">2026.10.13 ・ Googleログインで記録を残し、自分の成績とスコアの推移を見る。</span></a></li>
-        <li><a href="news/kiroku-kakutei.html">記録の確定を追加しました<span class="rl-desc">2026.10.13 ・ 対局の終了から12時間で、試合の結果は書き換えられなくなります。</span></a></li>
+      <ul class="read-list rl-cards">
+        <li><a href="news/nakama-page.html"><img class="rl-img" src="/assets/thumbs/nakama-page.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>仲間ページを追加しました</b><span class="rl-desc">2026.10.13 ・ 定例会の通算順位・成績表・総当たり表をメンバー全員で。</span></span></a></li>
+        <li><a href="news/mypage-stats.html"><img class="rl-img" src="/assets/thumbs/mypage-stats.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>マイページを追加しました</b><span class="rl-desc">2026.10.13 ・ Googleログインで記録を残し、自分の成績とスコアの推移を見る。</span></span></a></li>
+        <li><a href="news/kiroku-kakutei.html"><img class="rl-img" src="/assets/thumbs/kiroku-kakutei.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>記録の確定を追加しました</b><span class="rl-desc">2026.10.13 ・ 対局の終了から12時間で、試合の結果は書き換えられなくなります。</span></span></a></li>
       </ul>
       <a class="read-more-link" href="news/">お知らせをすべて見る ›</a>
     </div>
