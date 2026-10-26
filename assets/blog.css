@@ -579,3 +579,10 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post .fc-warn { margin: 8px 0 0; font-size: 12.5px; color: #C2471A; font-weight: 700; }
 @media (max-width: 420px) { .blog-post .fc-detail { grid-template-columns: 1fr; } .blog-post .fc-l { width: 100%; } }
 .blog-post .ans-box table.ans-tbl tr.ans-ts td { font-size: 12px; line-height: 1.35; }
+
+/* 本文の中のふつうのリンクにも、YouTube・X・Instagramのアイコンを付ける（2026-10-26 ユーザーの依頼）。アイコンをすでに持つリンク（チャンネル・SNSのカード・団体カード）と、Xのポストの埋め込みの中は除く */
+.blog-post a[href*="youtube.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before, .blog-post a[href*="youtu.be/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before,
+.blog-post a[href^="https://x.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before, .blog-post a[href*="instagram.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px; background: url("https://www.gstatic.com/youtube/img/branding/favicon/favicon_144x144.png") center / contain no-repeat; }
+.blog-post a[href^="https://x.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg"); border-radius: 3px; }
+.blog-post a[href*="instagram.com/"]:not(.ch-ic):not(.tm-yt):not(.org-ic):not(.ch-url):not(.sns-url):not(.yt-url):not(:has(img))::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg"); border-radius: 3px; }
+.blog-post blockquote a::before, .blog-post .twitter-tweet a::before { content: none !important; }
