@@ -147,15 +147,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <h2>5人のときの回し方（いちばん多いケース）</h2>
   <p>5人はセット麻雀でいちばんよくある「半端な人数」です。順番を A→B→C→D→E と決めて、1試合ごとに抜ける人をずらします。</p>
-  <table>
-    <thead><tr><th>試合</th><th>抜け番</th><th>対局する4人</th></tr></thead>
-    <tbody>
-      <tr><td>1試合目</td><td>A</td><td>B・C・D・E</td></tr>
-      <tr><td>2試合目</td><td>B</td><td>C・D・E・A</td></tr>
-      <tr><td>3試合目</td><td>C</td><td>D・E・A・B</td></tr>
-      <tr><td>4試合目</td><td>D</td><td>E・A・B・C</td></tr>
-      <tr><td>5試合目</td><td>E</td><td>A・B・C・D</td></tr>
-    </tbody>
+  <table class="rot" aria-label="5人で回すときの抜け番の表。1試合目はA、2試合目はB…と1人ずつずらし、5試合で全員が4試合ずつ打つ">
+    <thead><tr><th>試合</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead>
+    <tbody><tr><th>1試合目</th><td class="out">抜け番</td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td></tr><tr><th>2試合目</th><td class="in"><span>打つ</span></td><td class="out">抜け番</td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td></tr><tr><th>3試合目</th><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="out">抜け番</td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td></tr><tr><th>4試合目</th><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="out">抜け番</td><td class="in"><span>打つ</span></td></tr><tr><th>5試合目</th><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="in"><span>打つ</span></td><td class="out">抜け番</td></tr><tr class="sum"><th>打った数</th><td>4試合</td><td>4試合</td><td>4試合</td><td>4試合</td><td>4試合</td></tr></tbody>
   </table>
   <p>5試合で一巡し、全員が4試合ずつ打った状態になります。あとは6試合目から同じ順番を繰り返すだけ。<strong>この表を紙に書いて卓の横に置いておく</strong>と、毎回「次は誰が抜けるんだっけ」を確認する手間がなくなります。地味ですが、これがあるかないかで進行の速さが変わります。</p>
 

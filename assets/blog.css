@@ -665,3 +665,29 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
 .blog-post ul.tree .tn .tt img { display: block; width: 18px; height: auto; }
 .blog-post ul.tree .mark { font-size: 11px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 6px; }
 .blog-post .hflow.plus .hf-step.goal::before { content: "=" !important; }
+/* 図の2回目（2026-10-26）: 押せる流れ・棒グラフ・抜け番の表・蛇行ドラフト */
+.blog-post a.hf-step { text-decoration: none; color: inherit; }
+.blog-post a.hf-step:hover { background: #F2F8F6; }
+.blog-post a.hf-step b::after { content: " ›"; color: #177083; }
+.blog-post .bars { border: 1px solid #DCE6E3; border-radius: 6px; background: #fff; padding: 12px 14px 10px; margin: 8px 0 18px; }
+.blog-post .bars .bars-h { font-size: 13px !important; font-weight: 800; color: #177083; margin: 0 0 8px !important; }
+.blog-post .bar-row { display: grid; grid-template-columns: 5.2em 1fr 6.6em; align-items: center; gap: 8px; padding: 3px 0; }
+.blog-post .bar-l { font-size: 12px; font-weight: 700; color: #55625F; font-variant-numeric: tabular-nums; }
+.blog-post .bar-t { background: #EEF3F1; border-radius: 3px; height: 16px; overflow: hidden; }
+.blog-post .bar { display: block; height: 100%; background: #177083; border-radius: 3px; }
+.blog-post .bar-row:last-child .bar { background: #E75620; }
+.blog-post .bar-v { font-size: 12px; color: #55625F; white-space: nowrap; }
+.blog-post .bar-v b { font-size: 15px; color: #1F2A28; margin-right: 1px; font-variant-numeric: tabular-nums; }
+.blog-post .bar-v small { margin-left: 6px; font-size: 11px; color: #8A9A97; }
+@media (max-width: 420px) { .blog-post .bar-row { grid-template-columns: 4.6em 1fr 4.4em; } .blog-post .bar-v small { display: block; margin: 0; } }
+.blog-post table.rot, .blog-post table.snake { display: table; width: 100%; min-width: 0 !important; table-layout: fixed; }
+.blog-post table.rot th:first-child, .blog-post table.snake th:first-child { width: 6.2em; }
+.blog-post table.rot td, .blog-post table.snake td { text-align: center; padding: 8px 2px; }
+.blog-post table.rot td.in span { display: inline-block; width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #E4F3EC; color: #136070; font-size: 10px; font-weight: 800; }
+.blog-post table.rot td.out { background: #FFF1E9; color: #C2471A; font-weight: 900; font-size: 12px; }
+.blog-post table.rot tr.sum th, .blog-post table.rot tr.sum td, .blog-post table.snake tr.sum th, .blog-post table.snake tr.sum td { border-top: 2px solid #177083; font-weight: 900; color: #136070; background: #F5F8F7; }
+.blog-post table.snake td { font-size: 16px; font-weight: 800; font-variant-numeric: tabular-nums; color: #1F2A28; }
+.blog-post table.snake tbody th small { margin-left: 6px; font-size: 14px; color: #E75620; }
+.blog-post table.snake tr.back td { background: #F7F9F8; }
+.blog-post table.snake tr.sum td { color: #C2471A; font-size: 17px; }
+.blog-post table.rot thead th:not(:first-child), .blog-post table.snake thead th:not(:first-child) { text-align: center; }
