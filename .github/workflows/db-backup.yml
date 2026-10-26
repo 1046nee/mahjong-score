@@ -1,7 +1,7 @@
 # 毎日、本番DBの「アカウントの試合一覧・仲間ページ」を書き出し、暗号化して Actions の成果物（artifact）に90日残す（2026-10-24〜）
 # - 試合の中身（sessions）は誰にも消せないルールなので入れない
 # - 公開リポジトリの成果物は GitHub にログインした人なら誰でもダウンロードできるので、必ず暗号化してから置く。
-#   鍵はリポジトリの Secrets の BACKUP_PASSPHRASE（GitHub以外の場所にも控えておく。無くすと復号できない）
+#   暗号化は公開鍵（tools/backup-cert.pem）で行う＝Secrets の登録は要らない。開く秘密鍵は非公開の majasco-assets の「バックアップの鍵」だけにある（2026-10-27〜）
 # - 戻し方は docs/site-spec.md「バックアップ」
 name: DB backup (daily)
 on:
@@ -21,13 +21,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: 鍵があるか確かめる
-        env:
-          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
-        run: |
-          if [ -z "$BACKUP_PASSPHRASE" ]; then
-            echo "::error::Secrets に BACKUP_PASSPHRASE がありません（docs/site-spec.md「バックアップ」）"; exit 1
-          fi
       - name: 書き出す
         env:
           FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MAHJONG_SCORE_2E8AA }}
@@ -35,17 +28,15 @@ jobs:
           python3 -m pip install --quiet google-auth requests
           python3 tools/db_backup.py "$RUNNER_TEMP/backup.json"
       - name: 暗号化する（元のファイルは消す）
-        env:
-          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
           gzip -9 "$RUNNER_TEMP/backup.json"
-          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASSPHRASE \
-            -in "$RUNNER_TEMP/backup.json.gz" -out "$RUNNER_TEMP/backup.json.gz.enc"
+          openssl cms -encrypt -binary -aes256 -in "$RUNNER_TEMP/backup.json.gz" \
+            -out "$RUNNER_TEMP/backup.json.gz.cms" -outform DER tools/backup-cert.pem
           rm -f "$RUNNER_TEMP/backup.json.gz"
           echo "STAMP=$(TZ=Asia/Tokyo date +%Y%m%d)" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v4
         with:
           name: db-backup-${{ env.STAMP }}
-          path: ${{ runner.temp }}/backup.json.gz.enc
+          path: ${{ runner.temp }}/backup.json.gz.cms
           retention-days: 90
           if-no-files-found: error
