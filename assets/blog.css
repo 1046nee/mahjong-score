@@ -529,3 +529,13 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 /* ローカル役の記事の表（2026-10-26） */
 .blog-post table.lc-tbl td:first-child { white-space: nowrap; font-weight: 700; }
 .blog-post table.kj-num ruby { white-space: nowrap; }
+/* 団体の歴史：ひと目で比べる表・時系列の図（2026-10-26） */
+.blog-post table.dt-tbl td { vertical-align: top; }
+.blog-post table.dt-tbl a.dt-name { display: inline-block; padding-left: 8px; border-left: 4px solid var(--c); font-weight: 800; color: #1F2A28; text-decoration: none; line-height: 1.5; }
+.blog-post table.dt-tbl td small { display: block; font-size: 11px; color: #6B7A77; }
+.blog-post .dt-chart { overflow-x: auto; margin: 4px 0 6px; border: 1px solid #E3E9E7; border-radius: 6px; background: #fff; }
+.blog-post .dt-chart svg { display: block; width: 100%; min-width: 820px; height: auto; }
+.blog-post table.dt-tbl { min-width: 700px !important; }
+.blog-post table.dt-tbl th { white-space: nowrap; }
+.blog-post table.dt-tbl td:first-child { width: 11em; }
+.blog-post table.dt-tbl td:nth-child(2) { width: 7.5em; }
