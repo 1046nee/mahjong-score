@@ -502,3 +502,22 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post table.kj-pair rt { font-size: 8px; letter-spacing: -.02em; }
 .blog-post table.kj-num, .blog-post table.kj-pair, .blog-post table.kj-hayami { display: table; }
 .blog-post table.kj-pair ruby { white-space: nowrap; } .blog-post table.kj-pair rt { font-size: 7.5px; }
+
+/* ---- リンクの前の小さなアイコン（2026-10-26〜）: YouTube＝YouTubeの公式アイコン（gstatic・色と形は変えない）、X＝App StoreのXのアプリのアイコン、公式サイト＝まじゃすこで描いた地球の印。
+   付けるのは「どこへ行くリンクか」が大事な所だけ（団体カード・動画の題名・出典のURL・表のURL）。本文の中のふつうのリンクには付けない ---- */
+.blog-post .org-head { align-items: center; gap: 12px; padding: 12px 16px 6px; flex-wrap: nowrap; }
+.blog-post .org-name { display: flex; flex-direction: column; min-width: 0; }
+.blog-post .org-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--c, #177083); color: #fff; font-size: 18px; font-weight: 900; border: 1px solid #E1E8E5; }
+.blog-post .org-ic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.blog-post .org-links a.ch-url small::before,
+.blog-post .cap a[href*="youtube.com/watch"]::before,
+.blog-post .cap a.yt-url[href*="x.com/"]::before,
+.blog-post td a[href*="youtube.com/"]::before,
+.blog-post td a[href^="https://x.com/"]::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 5px; vertical-align: -2px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.6' fill='none' stroke='%232F56A8' stroke-width='1.5'/%3E%3Cellipse cx='8' cy='8' rx='2.8' ry='6.6' fill='none' stroke='%232F56A8' stroke-width='1.3'/%3E%3Cpath d='M1.6 8h12.8M2.6 4.8h10.8M2.6 11.2h10.8' stroke='%232F56A8' stroke-width='1.1'/%3E%3C/svg%3E") center / contain no-repeat; border-radius: 3px; }
+.blog-post .org-links a.ch-url[href*="youtube.com/"] small::before,
+.blog-post .cap a[href*="youtube.com/watch"]::before,
+.blog-post td a[href*="youtube.com/"]::before { background-image: url("https://www.gstatic.com/youtube/img/branding/favicon/favicon_144x144.png"); border-radius: 0; }
+.blog-post .org-links a.ch-url[href^="https://x.com/"] small::before,
+.blog-post .cap a.yt-url[href*="x.com/"]::before,
+.blog-post td a[href^="https://x.com/"]::before { background-image: url("https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg"); }
+.blog-post td a.tm-yt::before { content: none; }

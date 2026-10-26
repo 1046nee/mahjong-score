@@ -9,6 +9,7 @@ YouTube API の開発者ポリシーで、APIで取ったデータ（アイコ�
   1. チャンネル紹介の行 .ch-card … アイコン（チャンネルへのリンク）・「登録者 ○人（○年○月）」・YouTubeのアイコン
   2. Mリーグのチーム表 a.tm-yt … チームの公式チャンネルのアイコン（チャンネルへのリンク）
   3. 団体カードのYouTubeのリンク … 「公式YouTube（登録者 ○人）」
+  4. 団体カードの見出し .org-ic … 団体の公式チャンネルのアイコン（YouTubeが無い団体は団体の色の丸に頭文字）
 - YouTubeのアイコンは Google が配っている公式の画像（gstatic）をそのまま使う。色や形は変えない（ブランドガイドライン）
 - 取ってきた内容は tools/yt_channels.json にも残す（いつ取ったかの記録）
 実行: python tools/fetch_yt_channels.py
@@ -104,6 +105,21 @@ def rewrite(s, data, month):
             return m.group(0)
         return m.group(0).replace(m.group(2), fmt_subs(data[u]["subs"]))
     s = re.sub(r'<a class="ch-url" href="(' + URL_RE + r')"[^>]*><small>公式YouTube（登録者 ([^）]+)）</small>', org, s)
+
+    # 4. 団体カードの見出しのアイコン（その団体の公式YouTubeチャンネルのアイコン。YouTubeが無い団体は団体の色の丸に頭文字）
+    def org_card(m):
+        card = m.group(0)
+        yt = re.search(r'<a class="ch-url" href="(' + URL_RE + r')"', card)
+        head = re.search(r'<div class="org-head">(?:<a class="org-ic".*?</a>|<span class="org-ic"[^>]*>.*?</span>)?(?:<span class="org-name">)?(<b>.*?</b>(?:<small>.*?</small>)?)(?:</span>)?</div>', card, re.S)
+        if not head:
+            return card
+        if yt and yt.group(1) in data:
+            ic = icon(yt.group(1), "org-ic")
+        else:
+            name = re.sub(r"<[^>]+>", "", re.search(r"<b>(.*?)</b>", head.group(1)).group(1))
+            ic = f'<span class="org-ic" aria-hidden="true">{name[0]}</span>'
+        return card.replace(head.group(0), f'<div class="org-head">{ic}<span class="org-name">{head.group(1)}</span></div>', 1)
+    s = re.sub(r'<div class="org-card".*?<div class="org-links">.*?</div>', org_card, s, flags=re.S)
     return s
 
 
