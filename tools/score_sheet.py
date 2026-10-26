@@ -159,6 +159,15 @@ footer b {{ color: #177083; font-weight: 900; }}
 </body></html>"""
 
 
+# 表ごとの切り出し（A4の画面の座標・px）。表の並びを変えたらここも直す
+CROPS = {
+    "tensu-ko.png": {"x": 22, "y": 103, "width": 375, "height": 618},          # 子のロン・ツモ
+    "tensu-oya.png": {"x": 395, "y": 103, "width": 376, "height": 618},        # 親のロン・ツモ（ALL）
+    "tensu-mangan.png": {"x": 22, "y": 721, "width": 398, "height": 278},      # 満貫以上
+    "fu-keisan.png": {"x": 420, "y": 721, "width": 351, "height": 286},        # 符の数え方
+}
+
+
 def render(d):
     from playwright.sync_api import sync_playwright
     os.makedirs(OUT, exist_ok=True)
@@ -171,6 +180,9 @@ def render(d):
             pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=scale)
             pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
             pg.screenshot(path=os.path.join(OUT, name), full_page=False)
+            if name == "tensu-hayamihyo.png":  # 画像検索で調べ方ごとに見つかるよう、表ごとにも切り出す（2026-10-26〜）
+                for part, clip in CROPS.items():
+                    pg.screenshot(path=os.path.join(OUT, part), clip=clip)
             pg.close()
         pg = b.new_page()
         pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
@@ -179,7 +191,7 @@ def render(d):
     os.remove(html_path)
     try:  # PNG を最適化（見た目は変えない・可逆）
         from PIL import Image
-        for name in ["tensu-hayamihyo.png", "tensu-hayamihyo-web.png"]:
+        for name in ["tensu-hayamihyo.png", "tensu-hayamihyo-web.png"] + list(CROPS):
             f = os.path.join(OUT, name)
             Image.open(f).save(f, optimize=True)
     except ImportError:

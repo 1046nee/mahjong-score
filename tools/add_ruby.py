@@ -67,7 +67,7 @@ def add_ruby(article):
                         while stack and stack.pop()[0] != tag:
                             pass
                 elif not self_close:
-                    skip = tag in SKIP_TAGS or bool(cls and "post-toc" in cls.group(1))
+                    skip = tag in SKIP_TAGS or bool(cls and re.search(r"(?:^|\s)(?:post-toc|ans-box)(?:\s|$)", cls.group(1)))  # 目次と冒頭の答えの表には付けない
                     stack.append((tag, skip))
             out.append(part)
             continue

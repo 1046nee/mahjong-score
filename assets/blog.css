@@ -539,3 +539,43 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post table.dt-tbl th { white-space: nowrap; }
 .blog-post table.dt-tbl td:first-child { width: 11em; }
 .blog-post table.dt-tbl td:nth-child(2) { width: 7.5em; }
+/* ---- 点数早見表の記事（2026-10-26）: 冒頭の答え・ツモの表・符計算・計算ツール ---- */
+.blog-post .ans-box { border: 1px solid #DCE6E3; border-top: 4px solid #177083; background: #F7F9F8; border-radius: 0 0 6px 6px; padding: 12px 14px 10px; margin: 6px 0 18px; }
+.blog-post .ans-box .ans-h { font-size: 14px !important; font-weight: 900; color: #177083; margin: 0 0 6px !important; }
+.blog-post .ans-box table.ans-tbl { display: table; width: 100%; min-width: 0 !important; margin: 0; font-size: 14px; table-layout: fixed; }
+.blog-post .ans-box table.ans-tbl th, .blog-post .ans-box table.ans-tbl td { padding: 6px 2px; text-align: center; font-variant-numeric: tabular-nums; }
+.blog-post .ans-box table.ans-tbl tbody th { text-align: left; white-space: nowrap; font-size: 12.5px; width: 5.4em; }
+.blog-post .ans-box table.ans-tbl td { font-weight: 800; }
+.blog-post .ans-box table.ans-tbl td small { font-size: 10px; margin-left: 1px; color: #4F6B88; }
+.blog-post .ans-box .ans-note { font-size: 12.5px !important; color: #55625F; margin: 8px 0 0 !important; line-height: 1.7; }
+@media (max-width: 420px) { .blog-post .ans-box table.ans-tbl { font-size: 12px; } .blog-post .ans-box table.ans-tbl tbody th { font-size: 11px; width: 4.6em; } .blog-post .ans-box { padding: 10px 8px 8px; } }
+.blog-post table.score-tbl td b i { font-style: normal; font-size: 10px; margin-left: 1px; }
+.blog-post .sheet.part { max-width: 360px; margin: 6px auto 18px; }
+.blog-post ol.fu-steps li { margin: 4px 0; }
+.blog-post table.fu-tbl td { text-align: center; }
+.blog-post .fu-calc { border: 1px solid #DCE6E3; border-left: 4px solid #E75620; border-radius: 0 6px 6px 0; background: #fff; padding: 12px 14px; margin: 6px 0 10px; }
+.blog-post .fc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 8px; }
+.blog-post .fc-l { width: 5.5em; font-size: 13px; font-weight: 800; color: #55625F; }
+.blog-post .fc-seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #C9D6D3; border-radius: 6px; overflow: hidden; }
+.blog-post .fc-seg label { margin: 0; cursor: pointer; }
+.blog-post .fc-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.blog-post .fc-seg span { display: block; padding: 6px 12px; font-size: 13px; font-weight: 700; color: #1F2A28; border-left: 1px solid #E3E9E7; }
+.blog-post .fc-seg label:first-child span { border-left: 0; }
+.blog-post .fc-seg input:checked + span { background: #177083; color: #fff; }
+.blog-post .fc-seg input:focus-visible + span { outline: 2px solid #2F56A8; outline-offset: -2px; }
+.blog-post .fc-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin: 4px 0 10px; padding: 10px 0; border-top: 1px dashed #DCE6E3; border-bottom: 1px dashed #DCE6E3; }
+.blog-post .fc-sel { display: flex; flex-direction: column; gap: 2px; margin: 0; font-size: 12px; font-weight: 700; color: #55625F; min-width: 0; }
+.blog-post .fc-sel select { font-size: 14px; padding: 6px; border: 1px solid #C9D6D3; border-radius: 6px; background: #fff; color: #1F2A28; max-width: 100%; }
+.blog-post .fc-han { max-width: 14em; margin: 0 0 8px; }
+.blog-post .fc-chk { display: block; font-size: 12.5px; color: #55625F; margin: 0 0 10px; }
+.blog-post .fc-out { background: #F7F9F8; border-radius: 6px; padding: 10px 12px; }
+.blog-post .fc-out .fc-fu { margin: 0 0 4px; font-size: 14px; } .blog-post .fc-out .fc-fu b { font-size: 20px; color: #177083; }
+.blog-post ul.fc-parts { list-style: none; padding: 0; margin: 0 0 8px; font-size: 12.5px; color: #55625F; }
+.blog-post ul.fc-parts li { display: flex; justify-content: space-between; border-bottom: 1px dotted #DCE6E3; padding: 2px 0; margin: 0; }
+.blog-post .fc-pt { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.blog-post .fc-pt span { font-size: 13px; font-weight: 700; color: #55625F; }
+.blog-post .fc-pt b { font-size: 24px; color: #C2471A; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.blog-post .fc-pt b small { display: block; font-size: 12px; color: #55625F; font-weight: 700; }
+.blog-post .fc-warn { margin: 8px 0 0; font-size: 12.5px; color: #C2471A; font-weight: 700; }
+@media (max-width: 420px) { .blog-post .fc-detail { grid-template-columns: 1fr; } .blog-post .fc-l { width: 100%; } }
+.blog-post .ans-box table.ans-tbl tr.ans-ts td { font-size: 12px; line-height: 1.35; }
