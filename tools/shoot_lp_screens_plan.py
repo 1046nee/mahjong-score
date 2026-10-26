@@ -49,5 +49,5 @@ pg.wait_for_timeout(500)
 path = os.path.join(OUT, "lp-mypage.png"); pg.screenshot(path=path); shots.append(("mypage", path, []))
 # 過去の試合（マイページの一覧＝ゲームごとに自分の順位・スコア・着順の回数が出る。ユーザーの依頼「本当の画面のようにその時の成績を」）
 pg.evaluate("document.querySelectorAll('.sp-pop').forEach(p => p.remove())")
-pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
-vshot("games", "#view-history .gm-list", 168)
+pg.evaluate("setMpPane('hist'); histView = 'tile'; renderHistoryList()"); pg.wait_for_timeout(1200)
+vshot("games", "#view-history .mo-sec", 200)
