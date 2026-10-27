@@ -89,7 +89,7 @@ YAKU = [
   ("字一色", "ツーイーソー", 13, 13, "字牌だけ", dict(hand="111z222z333z555z7z", win="7z")),
   ("小四喜", "ショウスーシー", 13, 13, "風牌の刻子3つ＋風牌の雀頭", dict(hand="111z222z333z44z23m", win="1m")),
   ("大四喜", "ダイスーシー", 13, 13, "風牌の刻子を4つ", dict(hand="111z222z333z444z5m", win="5m")),
-  ("緑一色", "リューイーソー", 13, 13, "2・3・4・6・8索と發だけ", dict(hand="223344s666s888s6z", win="6z")),
+  ("緑一色", "リューイーソー", 13, 13, "二・三・四・六・八索と發だけ", dict(hand="223344s666s888s6z", win="6z")),
   ("清老頭", "チンロウトウ", 13, 13, "1と9の数牌だけ", dict(hand="111m999m111p999p1s", win="1s")),
   ("四槓子", "スーカンツ", 13, 13, "カンを4回", dict(hand="5p", win="5p", melds=[("ankan", "1111m"), ("kan", "4444p"), ("kan", "7777s"), ("ankan", "2222z")])),
   ("九蓮宝燈", "チューレンポウトウ", 13, None, "1種類で1112345678999＋同じ種類の1枚", dict(hand="1112345678999p", win="5p")),
@@ -244,7 +244,7 @@ img { display: inline-block; vertical-align: bottom; }"""
 
 def hai_sheet(url):
     def suit_row(s, label, yomi):
-        cells = "".join(f'<div class="c">{tile_img(f"{s}{n}", url, 64)}<b>{KANSU[n - 1] if s == "m" else n}{NAMES[s]}</b><span>{YOMI_NUM[n - 1]}{YOMI_SUIT[s]}</span></div>' for n in range(1, 10))
+        cells = "".join(f'<div class="c">{tile_img(f"{s}{n}", url, 64)}<b>{KANSU[n - 1]}{NAMES[s]}</b><span>{YOMI_NUM[n - 1]}{YOMI_SUIT[s]}</span></div>' for n in range(1, 10))
         return f'<section class="suit {s}"><h2><em>{label}</em><small>{yomi}・1〜9が4枚ずつ（36枚）</small></h2><div class="row">{cells}</div></section>'
     z = "".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 8))
     aka = "".join(f'<div class="c">{tile_img(c, url, 52)}<b>赤{n}</b></div>' for c, n in [("m5r", "五萬"), ("p5r", "五筒"), ("s5r", "五索")])
@@ -264,11 +264,11 @@ td b {{ font-size: 11.5px; }}
 .aka {{ display: flex; gap: 10px; }} .aka .c {{ width: 64px; }} .note {{ font-size: 10.5px; line-height: 1.65; color: #33403D; }} .note b {{ color: #C2471A; }}
 </style></head><body>
 <header><h1>麻雀牌 一覧表<small>34種類・136枚の名前と読み方を1枚で</small></h1><div class="legend">数牌 27種（萬子・筒子・索子）＋字牌 7種（風牌・三元牌）<br>どの牌も4枚ずつ ＝ 34種 × 4枚 ＝ <b>136枚</b></div></header>
-{suit_row("m", "萬子（マンズ）", "漢数字＋萬")}{suit_row("p", "筒子（ピンズ）", "丸の数")}{suit_row("s", "索子（ソーズ）", "竹の棒の数・1索だけ鳥の絵")}
+{suit_row("m", "萬子（マンズ）", "漢数字＋萬")}{suit_row("p", "筒子（ピンズ）", "丸の数")}{suit_row("s", "索子（ソーズ）", "竹の棒の数・一索だけ鳥の絵")}
 <section class="zi"><h2><em>字牌（ジハイ）</em><small>数字がない牌・7種が4枚ずつ（28枚）</small></h2><div class="grp"><div><p class="lbl">風牌（カゼハイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 5))}</div></div>
 <div><p class="lbl">三元牌（サンゲンパイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(5, 8))}</div></div></div></section>
 <div class="bottom"><div><h3>数字の読み方</h3><table><tr>{nums}</tr></table>
-<p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝マン（ワンとも）、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーマン、七筒＝チーピン、二索＝リャンソー<br>9は役の名前では<b>チュー</b>（九蓮宝燈・么九牌）。7索は関西で<b>チャーソー</b>とも</p>
+<p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝マン（ワンとも）、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーマン、七筒＝チーピン、二索＝リャンソー<br>9は役の名前では<b>チュー</b>（九蓮宝燈・么九牌）。七索は関西で<b>チャーソー</b>とも</p>
 <h3 style="margin-top:10px">よく出る呼び名</h3><p class="note"><b>么九牌（ヤオチューハイ）</b>：1・9の数牌と字牌。<b>中張牌（チュンチャンパイ）</b>：2〜8の数牌（タンヤオに使う）。<b>役牌</b>：三元牌と、場風・自風の牌</p></div>
 <div><h3>赤ドラ（赤五）</h3><div class="aka">{aka}</div><p class="note" style="margin-top:6px">ふつうの五と差し替えて使う牌。持っているだけで<b>ドラ1枚</b>として数える（使うかどうかはルールで決める）。</p>
 <h3 style="margin-top:10px">三麻（3人麻雀）</h3><p class="note">萬子の2〜8（28枚）を抜いた108枚で打つのが一般的。</p></div></div>
