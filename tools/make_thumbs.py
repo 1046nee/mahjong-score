@@ -128,6 +128,7 @@ def T(name, color, body):
 
 
 THUMBS = [
+ T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
  T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),
  T("blog-mahjong-manga", "#F28C28", lambda: card(62, 34, 92, 130, "#fff", 8) + card(166, 34, 92, 130, "#fff", 8) + lines(74, 62, 4, 68, 16) + tiles(["z7", "z6"], 180, 66, 30, 8) + bubble(150, 168, 120, 48, "ロン！", 26, "#FFD23F") + sparkle(272, 40, 12)),
  T("blog-mahjong-anime", "#2F6BFF", lambda: card(56, 30, 208, 140, "#1F2A28", 12) + card(66, 40, 188, 120, "#fff", 6) + row_center(["m1", "p1", "z5"], 70, 34, 6) + '<path d="M150 176 L170 176 L160 194 Z" fill="#fff"/>' + '<rect x="110" y="196" width="100" height="8" rx="4" fill="#fff"/>' + sparkle(276, 46, 13)),
