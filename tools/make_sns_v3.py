@@ -8,6 +8,7 @@ PILではなくHTMLをブラウザ（Playwright）で描いて撮る。文字の
   feat-XX-*-story.png  ストーリーズ 1080×1920（同じ中身）
   howto-0..4.png       使い方カルーセル 1080×1350（表紙＋4ステップ）
   intro.png            はじめましての1枚 1080×1350
+  post-sanma-tiles(-story).png  三麻の記事の紹介（花牌・白ぽっち・焼き鳥カードの絵。assets/tiles を使う）
   ogp4.png             OGP 2100×1103（サイトでも使う → assets/ogp4.png にコピー）
   x-header-v3.png      Xヘッダー 1500×500
 使い方: python tools/make_sns_v3.py [名前の一部]   （省略で全部）
@@ -249,7 +250,53 @@ def xheader_html():
   <div style="position:absolute;left:860px;top:70px">{svg}</div>
 </div>"""
 
+# ---- 記事の紹介（牌の絵を大きく見せる。2026-10-27〜） ----
+TILES = os.path.join(MJ, "assets", "tiles")
+
+def tile(code, w):
+    # 牌は 60×87（厚みこみ）、焼き鳥カードは 70×107 の viewBox。幅だけ決めれば高さはSVGの比率どおり
+    return f'<img src="{furl(os.path.join(TILES, code + ".svg"))}" style="width:{w}px;display:block">'
+
+def sanma_tiles_html(H):
+    """三麻の特別な牌（花牌・白ぽっち・焼き鳥カード）→ 記事 blog-sanma-rules.html の紹介"""
+    W = 1080
+    story = H == 1920
+    top = 250 if story else 92
+    tw = 104 if not story else 108          # 花牌1枚の幅（8枚を1列）
+    bw = 124 if not story else 150          # 白・白ぽっちの幅
+    cw = 150 if not story else 180          # 焼き鳥カードの幅
+    py = 470 if not story else 760
+    gap = 40 if not story else 70
+    lab = lambda t, s="": f'<div style="font-size:{36 if story else 32}px;font-weight:900;color:#177083;margin-bottom:14px">{t}<span style="font-size:{26 if story else 24}px;font-weight:700;color:#5B6866;margin-left:14px">{s}</span></div>'
+    flowers = "".join(tile(f"f{i}", tw) for i in range(1, 9))
+    return f"""<div class="cv" style="width:{W}px;height:{H}px">
+  <div class="glow" style="left:{W//2-460}px;top:{py+60}px;width:920px;height:920px"></div>
+  {SPARK.format(st=f"left:{W-130}px;top:{py-70}px;width:56px", c="#E75620")}
+  {SPARK.format(st=f"left:46px;top:{H-300}px;width:40px", c="#177083")}
+  <div style="position:absolute;left:72px;right:72px;top:{top}px">
+    <div class="tag"><b>三麻のルール</b><span>まじゃすこブログ</span></div>
+    <h1 style="font-size:{78 if story else 70}px;margin-top:26px">三麻で見かける、<br>この牌なに？</h1>
+    <p class="sub" style="font-size:{34 if story else 32}px;margin-top:16px">花牌・白ぽっち・焼き鳥カードのルールを解説</p>
+  </div>
+  <div style="position:absolute;left:72px;right:72px;top:{py}px">
+    {lab('<ruby>花牌<rt style="font-size:.5em">ファパイ</rt></ruby>', "春夏秋冬・梅蘭菊竹の8枚。抜きドラにするルールも")}
+    <div style="display:flex;gap:12px">{flowers}</div>
+    <div style="display:flex;gap:{70 if story else 60}px;margin-top:{gap}px;align-items:flex-start">
+      <div>{lab("白ぽっち", "リーチ後のツモで万能に")}<div style="display:flex;gap:14px">{tile("z5", bw)}{tile("z5p", bw)}</div></div>
+      <div>{lab("焼き鳥", "表と裏")}<div style="display:flex;gap:14px">{tile("yakitori", cw)}{tile("yakitori-ura", cw)}</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:72px;bottom:{300 if story else 70}px;display:flex;align-items:center;gap:22px">
+    <img src="{furl(os.path.join(MJ, 'assets', 'favicon.png'))}" style="width:76px;height:76px;border-radius:18px">
+    <div><div style="font-size:38px;font-weight:900">まじゃすこ</div><div style="font-size:28px;font-weight:800;color:#7C8B88">majasco.jp</div></div>
+  </div>
+  <div style="position:absolute;right:72px;bottom:{312 if story else 82}px;background:#E75620;color:#fff;font-weight:900;font-size:34px;border-radius:999px;padding:20px 44px">続きはブログで</div>
+  <div class="dom" style="right:56px;top:{top+8}px;font-size:28px">majasco.jp</div>
+</div>"""
+
 def jobs():
+    yield "post-sanma-tiles", 1080, 1350, sanma_tiles_html(1350)
+    yield "post-sanma-tiles-story", 1080, 1920, sanma_tiles_html(1920)
     for f in FEATS:
         yield f"feat-{f[0]:02d}-{f[1]}", 1080, 1350, feat_html(f, 1350)
         yield f"feat-{f[0]:02d}-{f[1]}-story", 1080, 1920, feat_html(f, 1920)
