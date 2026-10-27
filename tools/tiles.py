@@ -147,11 +147,11 @@ def _flower_pic(n):
 
 
 def _flower(n, st):
-    """花牌: 上に絵、下に字、左上に番号（一〜四。座る席の番号）"""
+    """花牌: 上に絵、下に字、右下の角に番号（1〜4。座る席の番号）。番号は絵と字に重ならない場所に置く（2026-10-27 ユーザーの依頼で算用数字）"""
     ch = "春夏秋冬梅蘭菊竹"[n - 1]
-    num = KANJI[(n - 1) % 4]
+    num = str((n - 1) % 4 + 1)
     col = {1: RED, 2: GREEN, 3: RED, 4: BLUE, 5: RED, 6: GREEN, 7: RED, 8: GREEN}[n]
-    return _flower_pic(n) + _text(ch, 30, 62, 24, col, st) + _text(num, 9, 9, 10, INK, st)
+    return _flower_pic(n) + _text(ch, 30, 62, 24, col, st) + _text(num, 52, 71, 11, INK, st)
 
 
 def _text(ch, x, y, size, col, st):
@@ -199,8 +199,8 @@ def face(code, st):
         return "".join(_stick(x, y, h, RED if red else c) for x, y, h, c in lay)
     if code == "z5":  # 白: 何も描かない（2026-10-23 ユーザーの判断。牌の枠を濃くしたので空白でも牌と分かる）
         return ""
-    if code == "z5p":  # 白ぽっち: 白の真ん中に小さな青い点（2026-10-27・三麻の記事用）
-        return f'<circle cx="30" cy="40" r="5" fill="{BLUE}"/>'
+    if code == "z5p":  # 白ぽっち: 白の真ん中に小さな赤い点（2026-10-27・三麻の記事用。赤はまじゃすこのオレンジ）
+        return f'<circle cx="30" cy="40" r="5" fill="{RED}"/>'
     if suit == "f":
         return _flower(int(num), st)
     col = {"z6": GREEN, "z7": RED}.get(code, INK)
@@ -236,23 +236,23 @@ ALL = ["back"] + [f"m{i}" for i in range(1, 10)] + [f"p{i}" for i in range(1, 10
 
 
 def yakitori_svg(ura=False):
-    """焼き鳥カード（2026-10-27・三麻の記事用）。表＝焼き鳥の絵と字（まだあがっていない人の前に置く）、ura=True は裏（あがったら裏返す）。
+    """焼き鳥カード（2026-10-27・三麻の記事用。ユーザーの依頼で表・裏ともオレンジ）。
+    表＝焼き鳥の絵だけ＋左上の角に小さく「表」（まだあがっていない人の前に置く）。ura=True は何も描かない裏＋左上に小さく「裏」（あがったら裏返す）。
     大きさは牌と同じ考え方で 70×100＋下の厚み。絵はまじゃすこのオリジナル"""
     st = STYLES["tokumin"]
     w, h, bh = 70, 100, 6
     out = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 {w + 2} {h + bh + 2}">'
-    out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="8" fill="#CDBFA3"/>'  # 厚み（紙のカードの色。表・裏どちらでも同じ）
+    out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="8" fill="#B8461A"/>'  # 厚み（濃いオレンジ）
+    out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="#F39A4E" stroke="{RED}" stroke-width="1.8"/>'
+    out += f'<rect x="5" y="5" width="{w - 10}" height="{h - 10}" rx="5" fill="none" stroke="#FFF4E2" stroke-width="1" opacity=".7"/>'
+    out += _text("裏" if ura else "表", 12, 13, 9, "#FFF4E2", st)
     if ura:
-        out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="{GREEN}"/>'
-        out += f'<rect x="6" y="6" width="{w - 12}" height="{h - 12}" rx="5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>'
-        out += f'<circle cx="35" cy="50" r="13" fill="none" stroke="#fff" stroke-width="2.4" opacity=".85"/><path d="M29 50 L33.5 54.5 L42 45" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'
         return out + "</svg>"
-    out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="#FFF4E2" stroke="{RED}" stroke-width="1.8"/>'
-    out += f'<rect x="5" y="5" width="{w - 10}" height="{h - 10}" rx="5" fill="none" stroke="{RED}" stroke-width="1" opacity=".5"/>'
+    out += '<circle cx="35" cy="52" r="29" fill="#FFF4E2"/>'
     # 串（斜め）と、肉・ねぎ・肉・ねぎ・肉
-    g = '<g transform="rotate(-35 35 38)">'
-    g += '<rect x="33.6" y="4" width="2.8" height="66" rx="1.4" fill="#C9A26B"/>'
-    y = 10
+    g = '<g transform="rotate(-35 35 52)">'
+    g += '<rect x="33.6" y="19" width="2.8" height="66" rx="1.4" fill="#C9A26B"/>'
+    y = 24
     for kind in ("niku", "negi", "niku", "negi", "niku"):
         if kind == "niku":
             g += f'<rect x="25" y="{y}" width="20" height="13" rx="6" fill="#B65A22"/>'
@@ -264,5 +264,4 @@ def yakitori_svg(ura=False):
             y += 8.5
     g += '</g>'
     out += g
-    out += _text("焼", 17, 84, 15, RED, st) + _text("き", 35, 85, 13, RED, st) + _text("鳥", 53, 84, 15, RED, st)
     return out + "</svg>"
