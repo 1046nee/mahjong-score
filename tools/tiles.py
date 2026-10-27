@@ -343,15 +343,30 @@ def taku_top_svg():
 
 
 def sidetable_svg():
-    """サイドテーブル（麻雀卓の横に置く小さな台・アイコン用）。木の天板に飲み物のコップ、細い脚"""
-    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
-    out += '<ellipse cx="40" cy="76" rx="22" ry="3" fill="#000" opacity=".1"/>'
-    out += '<rect x="22" y="40" width="4" height="35" rx="1.5" fill="#6B4A2E"/><rect x="54" y="40" width="4" height="35" rx="1.5" fill="#6B4A2E"/>'
-    out += '<rect x="24" y="60" width="32" height="3" rx="1.5" fill="#6B4A2E"/>'
-    out += '<rect x="12" y="34" width="56" height="9" rx="3" fill="#A97142"/><rect x="12" y="34" width="56" height="4" rx="2" fill="#C68B55"/>'
-    # コップ（ウーロン茶）と、おしぼり
-    out += '<path d="M24 14 H38 L36 34 H26 Z" fill="#E8F2F1" stroke="#9FB8B4" stroke-width="1"/><path d="M25.3 20 H36.7 L36 34 H26 Z" fill="#9A5B22"/>'
-    out += '<rect x="44" y="27" width="20" height="7" rx="3.5" fill="#fff" stroke="#B9C6C3" stroke-width="1"/><circle cx="47.5" cy="30.5" r="2.4" fill="none" stroke="#B9C6C3" stroke-width="1"/>'
+    """サイドテーブル（麻雀卓の横に置く扇形の小さな台・アイコン用・2026-10-27 ユーザーの依頼）。
+    全自動卓の図（jidou-taku.svg）と同じ斜め上からの見え方。黒い扇形の天板（直角の角が奥）に、角の灰皿・1本脚と丸い台座"""
+    import math as _m
+    cx, cy, R, T = 50, 18, 46, 6     # 角の位置・半径・天板の厚み
+    ax, ay = 0.866, 0.42             # 平面の (u, v) を画面へ（全自動卓の図と同じくらいの傾き）
+    P = lambda u, v, dz=0: (cx + (u - v) * ax, cy + (u + v) * ay + dz)
+    arc = [P(R * _m.cos(t), R * _m.sin(t)) for t in [k * _m.pi / 2 / 24 for k in range(25)]]
+    pts = lambda ps: " ".join(f"{x:.1f},{y:.1f}" for x, y in ps)
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 92">'
+    out += '<ellipse cx="50" cy="86" rx="22" ry="4" fill="#000" opacity=".12"/>'
+    # 1本脚と丸い台座
+    out += '<ellipse cx="50" cy="83" rx="15" ry="4.5" fill="#1A1E1D"/><ellipse cx="50" cy="81.5" rx="15" ry="4.5" fill="#2E3433"/>'
+    out += '<rect x="46.5" y="44" width="7" height="38" fill="#1F2423"/><rect x="46.5" y="44" width="2.4" height="38" fill="#3A4241"/>'
+    # 天板の厚み（手前の弧の下）と天板
+    front = arc[:]
+    out += f'<polygon points="{pts(front + [(x, y + T) for x, y in reversed(front)])}" fill="#151918"/>'
+    out += f'<polygon points="{pts([P(0, 0)] + arc)}" fill="#2A2F2E"/>'
+    inner = [P(R * 0.9 * _m.cos(t), R * 0.9 * _m.sin(t)) for t in [k * _m.pi / 2 / 24 for k in range(25)]]
+    out += f'<polyline points="{pts(inner)}" fill="none" stroke="#3E4645" stroke-width="1.2"/>'
+    # 角の灰皿（銀色の丸い皿）
+    ax0, ay0 = P(13, 13)
+    out += f'<ellipse cx="{ax0:.1f}" cy="{ay0 + 1.2:.1f}" rx="10" ry="5" fill="#6F7A79"/><ellipse cx="{ax0:.1f}" cy="{ay0:.1f}" rx="10" ry="5" fill="#C9D2D1"/>'
+    out += f'<ellipse cx="{ax0:.1f}" cy="{ay0 + .4:.1f}" rx="6.6" ry="3.2" fill="#8E9998"/>'
+    out += f'<rect x="{ax0 - 11:.1f}" y="{ay0 - 1:.1f}" width="4" height="1.8" rx=".9" fill="#E3E9E8"/><rect x="{ax0 + 7:.1f}" y="{ay0 - 1:.1f}" width="4" height="1.8" rx=".9" fill="#E3E9E8"/>'
     return out + "</svg>"
 
 
