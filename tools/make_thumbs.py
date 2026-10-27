@@ -128,6 +128,7 @@ def T(name, color, body):
 
 
 THUMBS = [
+ T("blog-rule-wakareme", "#7C5CFF", lambda: row_center(["z1", "z1"], 44, 54, 6) + bubble(54, 150, 92, 52, "2符", 30) + bubble(174, 150, 92, 52, "4符", 30) + '<text x="160" y="186" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" ' + F + '>?</text>' + sparkle(262, 48, 13) + sparkle(56, 52, 9)),
  T("blog-local-yaku", "#FF5C8A", lambda: row_center(["p2", "p3", "p4", "p5", "p6"], 70, 46, 3) + sparkle(250, 50, 14) + sparkle(64, 196, 9) + '<text x="160" y="214" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" ' + F + '>ローカル役満</text>'),
  T("blog-mahjong-kanji", "#FFC233", lambda: bubble(40, 46, 104, 96, "混", 64) + bubble(176, 46, 104, 96, "清", 64, "#1F2A28", "#fff") + '<text x="160" y="206" text-anchor="middle" font-size="22" font-weight="900" fill="#1F2A28" ' + F + '>字でつながる</text>'),
  T("blog-machi-dojo", "#22B573", lambda: row_center(["s2", "s3", "s4", "s5"], 92, 46, 3) + bubble(214, 18, 72, 62, "?", 44, "#fff", "#E75620")),
