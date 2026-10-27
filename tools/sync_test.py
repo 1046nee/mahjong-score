@@ -72,7 +72,7 @@ def wait_game(page):
 
 
 def enter_round(page, pts):
-    """点数入力シートから1試合を入れる（3人ぶん＋残り1人は自動入力）"""
+    """点数入力シートから1試合を入れる（3人分＋残り1人は自動入力）"""
     page.click(".fab")
     page.wait_for_selector("#si-0", state="visible", timeout=10000)
     for i, v in enumerate(pts):

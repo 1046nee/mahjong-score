@@ -117,7 +117,7 @@ class Rec:
 
 # ---------------- 台本（操作） ----------------
 def play_quick(pg):
-    """LP →「はじめる」→ 4人 → 点数を3人ぶん入れて最後の1人は自動 → 総合順位 → 共有"""
+    """LP →「はじめる」→ 4人 → 点数を3人分入れて最後の1人は自動 → 総合順位 → 共有"""
     r = Rec(pg, "play-quick")
     r.idle(0.8)
     r.mark("lp")
@@ -193,7 +193,102 @@ def explore(pg):
         print("== history", pane); [print(x) for x in pg.evaluate(J, "#view-history")[-25:]]
     print("sp-hit", pg.evaluate("document.querySelectorAll('#view-history .sp-hit').length"))
 
-PLAYS = {"play-quick": play_quick, "play-rounds": play_rounds}
+def setup_from_lp(r, name, members, typing_gap=0.06):
+    """LP →「はじめる」→「メンバー名やルールを先に決める」→ ゲーム名とメンバーを入れる（Enterで次々に追加）"""
+    pg = r.pg
+    r.idle(0.6)
+    r.tap("#view-home .hero .cta-btn", after=0.6)
+    r.mark("qs")
+    r.tap(".qs-detail", after=0.8)
+    r.mark("setup")
+    r.tap("#s-name", after=0.15)
+    pg.keyboard.press("Control+A")  # 入っている日付を消してから入れる
+    r.cap()
+    for ch in name:
+        pg.keyboard.type(ch)
+        r.idle(typing_gap)
+    r.mark("members")
+    r.tap("#member-input", after=0.1)
+    for m in members:
+        for ch in m:
+            pg.keyboard.type(ch)
+            r.cap()
+        pg.keyboard.press("Enter")
+        r.idle(0.18)
+    r.idle(0.4)
+
+def round_sheet(r, who, pts, gap=0.1):
+    """＋点数入力 → 対局した4人を選ぶ → 3人の点数 → 最後の1人は自動 → 入力完了"""
+    r.tap(".fab", after=0.5)
+    r.mark("pick%d" % len(r.taps))
+    for i in who:
+        r.tap(f"button[onclick='toggleSheetMember({i})']", dur=0.3, after=0.15)
+    r.idle(0.3)
+    ids = r.pg.evaluate("[...document.querySelectorAll('[id^=\"si-\"]')].filter(e => e.offsetParent).map(e => e.id)")
+    for el, v in zip(ids[:3], pts):
+        r.type("#" + el, v, gap=gap)
+    r.tap("#auto-btn", after=0.4)
+    r.tap("#confirm-btn", after=0.3)
+
+def play_team(pg):
+    """チーム戦：8人を4チームに → 1試合入れるとチーム順位も出る → 何試合か入れたあとのチーム順位"""
+    r = Rec(pg, "play-team")
+    setup_from_lp(r, "チーム対抗戦", ["健太", "美咲", "翔", "陽菜", "大輝", "結衣", "蓮", "葵"])
+    r.mark("team")
+    r.tap("#vs-team", after=1.4)
+    r.mark("teams")
+    r.swipe(260, dur=0.8)
+    r.idle(0.8)
+    r.mark("start")
+    r.tap("#setup-submit", after=0.4)
+    pg.wait_for_function("() => document.querySelector('#view-share').classList.contains('active')", timeout=10000)
+    r.idle(0.6)
+    r.tap(".go-game-btn", after=0.8)
+    r.mark("input")
+    round_sheet(r, [0, 1, 2, 3], ["452", "281", "173"])
+    r.mark("done")
+    r.idle(1.2)
+    # 何試合か打ったあと（残りの試合は入れておく。字幕「何試合打っても」と合わせる）
+    for who, pts in [([4, 5, 6, 7], [198, 336, 245, 221]), ([0, 5, 2, 7], [377, 122, 289, 212]), ([4, 1, 6, 3], [264, 301, 158, 277])]:
+        pg.evaluate("""async ([who, pts]) => { openSheet(-1); await new Promise(r => setTimeout(r, 120));
+          who.forEach(i => toggleSheetMember(i)); await new Promise(r => setTimeout(r, 120));
+          const ids = [...document.querySelectorAll('[id^="si-"]')].filter(e => e.offsetParent).map(e => e.id);
+          ids.forEach((id, k) => { if (k < 3) document.getElementById(id).value = String(pts[k]); }); autoFill();
+          await new Promise(r => setTimeout(r, 80)); submitRound(); await new Promise(r => setTimeout(r, 250)); }""", [who, pts])
+    pg.evaluate("window.scrollTo(0, 0)")
+    r.mark("later")
+    r.idle(1.4)
+    r.scroll_to("#team-card", 70)
+    r.mark("teamcard")
+    r.idle(2.2)
+    r.swipe(420, dur=1.0)
+    r.idle(1.4)
+    r.save()
+
+def play_mawashi(pg):
+    """5人以上：6人で回し打ち。試合ごとに入る4人を選ぶ → 抜け番がいても通算が出る"""
+    r = Rec(pg, "play-mawashi")
+    setup_from_lp(r, "金曜の麻雀", ["健太", "美咲", "翔", "陽菜", "大輝", "結衣"])
+    r.mark("start")
+    r.tap("#setup-submit", after=0.4)
+    pg.wait_for_function("() => document.querySelector('#view-share').classList.contains('active')", timeout=10000)
+    r.idle(0.5)
+    r.tap(".go-game-btn", after=0.8)
+    r.mark("r1")
+    round_sheet(r, [0, 1, 2, 3], ["452", "281", "173"])
+    r.idle(1.0)
+    r.mark("r2")
+    round_sheet(r, [4, 5, 0, 1], ["336", "245", "198"])
+    r.mark("done")
+    r.idle(1.8)
+    r.mark("stats")
+    r.scroll_to("#rank-card", 70)
+    r.idle(2.4)
+    r.swipe(360, dur=1.0)
+    r.idle(1.4)
+    r.save()
+
+PLAYS = {"play-quick": play_quick, "play-rounds": play_rounds, "play-team": play_team, "play-mawashi": play_mawashi}
 def ctab(k):
     return f"#view-circle button[onclick^=\"circleTab='{k}'\"]"
 

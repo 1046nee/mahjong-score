@@ -25,7 +25,7 @@ rnd = random.Random(7)
 
 
 def deal(n):
-    # n人ぶんの持ち点（合計 25,000×4 = 100,000。先頭 n-1 人ぶんを返す。最後は自動）
+    # n人分の持ち点（合計 25,000×4 = 100,000。先頭 n-1 人分を返す。最後は自動）
     while True:
         a = [rnd.randrange(60, 520) * 100 for _ in range(n - 1)]
         last = 100000 - sum(a)
