@@ -33,6 +33,7 @@
 - 冒頭は**記事の絵（.eyecatch・一覧と同じ絵・2026-10-26〜）**＋中盤（.post-illust.small 340×84）＋締め（トロフィー共通SVG・article_bottom枠の直前）
 - 絵文字は使わずインラインSVG（フラットトーン: #177083・#9fc3bd・#E4F3EC・差し色#E75620）
 - **イラスト内のスマホに「まじゃすこ」等の文字は入れない**（サイズが合わない）
+- **絵（サムネイル・記事の中のSVG）に文字・数字を入れたら `python tools/svg_text_check.py` を0件にする**（iPhoneの書体でマス・札からはみ出していないか。詳しくは docs/image-tools.md）
 
 ## CTA
 - 記事末尾 `.cta-link`・一覧 `.app-btn` はLPのCTAと同形（影なし・ピルradius50px・max-width380px・blog.cssの!importantで統一済み）

@@ -142,7 +142,7 @@ def jidou_taku():
     g += f'<ellipse cx="{x0}" cy="{y0}" rx="18" ry="7.5" fill="#cfe3e6" opacity=".55"/><ellipse cx="{x0 - 4}" cy="{y0 - 2}" rx="6" ry="2.4" fill="#fff" opacity=".6"/>'
     for u, v in ((0, .3), (.3, 0), (0, -.3), (-.3, 0)):
         x, y = P(u, v)
-        g += f'<rect x="{x - 10}" y="{y - 4}" width="20" height="8" rx="1.5" fill="{INK}"/><text x="{x}" y="{y + 2.6}" text-anchor="middle" font-size="5.6" font-weight="900" fill="{ORANGE}" font-family="monospace">25000</text>'
+        g += f'<rect x="{x - 10}" y="{y - 4}" width="20" height="8" rx="1.5" fill="{INK}"/><text x="{x}" y="{y + 2.4}" text-anchor="middle" font-size="4.6" font-weight="900" fill="{ORANGE}" font-family="monospace">25000</text>'
     # 山（4辺に並んだ牌の背）
     for side in range(4):
         for i in range(17):
@@ -159,8 +159,9 @@ import re
 
 
 def _cw(ch, fs):
-    """1文字の幅のめやす（全角は1em、半角は0.6em）"""
-    return fs if ord(ch) > 0x2E7F else fs * .6
+    """1文字の幅のめやす（全角は1em、半角は0.6em）。矢印・丸数字・記号（→ ① ★ など）も日本語の書体では全角"""
+    o = ord(ch)
+    return fs if o > 0x2E7F or 0x2190 <= o <= 0x27BF else fs * .6
 
 
 def _parse(spec):
