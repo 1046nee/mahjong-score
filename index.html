@@ -187,9 +187,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
    実際の画面は5枚を1列、もっと詳しく・お知らせは左右に。1,099px以下（スマホ・タブレット）は今までどおり。アプリの画面（試合・入力・マイページ）は広げない */
 @media (min-width: 1100px) {
   #view-home { max-width: none; }
-  #view-home .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 460px); grid-template-areas: "h1 ill" "desc ill" "cta ill" "trust ill" "recent ill"; column-gap: 56px; max-width: 1080px; margin: 0 auto; padding: 40px 40px 56px; text-align: left; align-items: start; }
+  #view-home .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); grid-template-areas: "h1 ill" "desc ill" "cta ill" "trust ill" "recent ill"; column-gap: 48px; max-width: 1180px; margin: 0 auto; padding: 40px 40px 56px; text-align: left; align-items: start; }
   #view-home .hero h1 { grid-area: h1; font-size: 42px; margin-top: 30px; }
-  #view-home .hero .hero-illust { grid-area: ill; max-width: 460px; margin: 0; align-self: center; }
+  #view-home .hero .hero-illust { grid-area: ill; max-width: 560px; width: 100%; margin: 0; align-self: center; }
   #view-home .hero .hero-desc { grid-area: desc; max-width: 460px; margin: 0 0 24px; font-size: 16px; }
   #view-home .hero .cta-btn { grid-area: cta; margin: 0 0 12px; max-width: 380px; }
   #view-home .hero .cta-trust { grid-area: trust; justify-content: flex-start; }
@@ -316,22 +316,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
 /* 最初の画面のイラスト：本物の画面のスマホ2台（手前＝試合の総合順位、奥＝マイページの成績）＋飛び出す数字のカード（2026-10-27） */
-.hero-mix { position: relative; aspect-ratio: 380 / 250; }
+.hero-mix { position: relative; aspect-ratio: 380 / 252; }
 .hero-mix .hm-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hm-ph { position: absolute; display: flex; flex-direction: column; padding: 4px; border-radius: 17px; background: #1F2A28; box-shadow: 0 10px 22px rgba(16,40,36,.22); overflow: hidden; }
+.hm-ph { position: absolute; display: flex; flex-direction: column; padding: 4px 4px 9px; border-radius: 17px; background: #1F2A28; box-shadow: 0 10px 22px rgba(16,40,36,.22); overflow: hidden; }
 .hm-bar { height: 12px; display: flex; justify-content: center; align-items: center; background: #E6F1EB; border-radius: 13px 13px 0 0; flex: none; }
 .hm-bar i { width: 30%; height: 6px; border-radius: 4px; background: #1F2A28; }
-.hm-ph img { display: block; width: 100%; height: auto; border-radius: 0 0 13px 13px; }
-.hm-front { left: 21%; top: 1%; width: 28%; aspect-ratio: 1 / 2.05; z-index: 2; transform: rotate(-4deg); }
-.hm-back { left: 51%; top: 5%; width: 26%; aspect-ratio: 1 / 2.05; transform: rotate(5deg); z-index: 1; }
+.hm-ph img { display: block; width: 100%; height: auto; border-radius: 0 0 12px 12px; }
+.hm-front { left: 21%; top: 1.5%; width: 28%; z-index: 2; transform: rotate(-4deg); }
+.hm-back { left: 51%; top: 5%; width: 26%; transform: rotate(5deg); z-index: 1; }
 .hm-chip { position: absolute; z-index: 3; display: flex; align-items: center; gap: 5px; padding: 6px 10px; background: #fff; border-radius: 12px;
   box-shadow: 0 6px 16px rgba(16,40,36,.16); font-size: 11px; font-weight: 800; color: #4F5C5A; white-space: nowrap; }
 .hm-chip b { font-size: 15px; font-weight: 900; color: #1F2A28; } .hm-chip b.pos { color: #1A237E; }
 .hero-mix .hm-chip svg { display: block; flex: none; width: auto; height: 18px; }
 .hero-mix .hm-chip svg.hm-line { height: 22px; }
 .hc-1 { left: 0; top: 20%; }
-.hc-2 { right: 0; top: 72%; }
-.hc-3 { left: 2%; top: 64%; }
+.hc-2 { right: 0; top: 70%; }
+.hc-3 { left: 2%; top: 62%; }
 .hc-4 { right: 1%; top: 47%; }
 @media (min-width: 1100px) { .hm-chip { font-size: 13px; padding: 8px 13px; } .hm-chip b { font-size: 18px; } }
 
@@ -2554,7 +2554,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h1>麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？</h1>
 
   <div class="hero-illust hero-mix" aria-hidden="true">
-    <svg class="hm-bg" viewBox="0 0 380 250" aria-hidden="true"><circle cx="190" cy="118" r="112" fill="#E4F3EC" opacity="0.8"/><path transform="translate(330 22) scale(.9)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#E75620"/><path transform="translate(40 200) scale(.65)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#177083"/><path transform="translate(96 14) scale(.55)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#9fc3bd"/></svg>
+    <svg class="hm-bg" viewBox="0 0 380 252" aria-hidden="true"><circle cx="190" cy="122" r="116" fill="#E4F3EC" opacity="0.8"/><path transform="translate(330 22) scale(.9)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#E75620"/><path transform="translate(40 206) scale(.65)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#177083"/><path transform="translate(96 14) scale(.55)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#9fc3bd"/></svg>
     <span class="hm-ph hm-back"><span class="hm-bar"><i></i></span><img src="/assets/screens/lp-mypage.jpg" alt="" width="720" height="1558"></span><span class="hm-ph hm-front"><span class="hm-bar" style="background:#FFFFFF"><i></i></span><img src="/assets/screens/howto-4.jpg" alt="" width="720" height="1558"></span>
     <span class="hm-chip hc-1"><svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="10" fill="#D4A017"/><path d="M10.9 5.2V15H9.1V7.4L7.2 8.1V6.6L10.7 5.2Z" fill="#3B2C00"/></svg><span>1位</span><b class="pos">+69.1</b></span><span class="hm-chip hc-2"><span>通算スコア</span><b class="pos">+347.0</b></span><span class="hm-chip hc-3"><span>推移</span><svg class="hm-line" viewBox="0 0 64 24" width="64" height="24"><polyline points="2,19 13,15 23,17 35,9 46,11 59,4" fill="none" stroke="#177083" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="59" cy="4" r="3.2" fill="#E75620"/></svg></span><span class="hm-chip hc-4"><span>トップ率</span><b>26%</b></span>
   </div>
