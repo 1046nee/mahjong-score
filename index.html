@@ -420,19 +420,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .uav svg { color: #fff; }
 .av-ill { height: 74%; width: auto; display: block; pointer-events: none; }
 .av-ill.w { width: 82%; height: auto; }
-.mp-av-btn { position: relative; border: 0; background: none; padding: 0; margin: 0 6px 0 0; cursor: pointer; display: inline-flex; vertical-align: middle; }
-.mp-av-pen { position: absolute; right: -3px; bottom: -3px; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: var(--pc); display: grid; place-items: center; box-shadow: 0 0 0 1.5px var(--pc); }
+.mp-av-btn { position: relative; border: 0; background: none; padding: 0 0 1px; margin: 0 8px 0 0; flex: none; cursor: pointer; display: inline-flex; vertical-align: middle; }
+.mp-av-pen { position: absolute; right: -4px; bottom: 0; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: var(--pc); display: grid; place-items: center; box-shadow: 0 0 0 1.5px var(--pc); }
 .av-prev { display: flex; align-items: center; gap: 12px; margin: 2px 0 14px; } .av-prev b { display: block; font-size: 16px; } .av-prev small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }
 .mp-name-btn { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-width: 0; text-align: left; }
 .mp-name-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mp-name-pen { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #F4F7F6; color: #8A9AA5; flex: none; }
-.av-picks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.av-picks { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; } /* 1行6つ（2026-10-27） */
 .av-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 0 8px; padding-bottom: 2px; }
 .av-tabs::-webkit-scrollbar { display: none; }
 .av-tabs button { flex: none; border: 1.5px solid #E2E8E6; background: #fff; color: #4F5C5A; border-radius: 999px; padding: 5px 9px; font-size: 11.5px; font-weight: 800; font-family: inherit; cursor: pointer; }
 .av-tabs button.on { background: var(--pc); border-color: var(--pc); color: #fff; }
-.av-pick { border: 1.5px solid #E2E8E6; background: #fff; border-radius: 10px; padding: 6px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
-.av-pick small { font-size: 9.5px; color: #4F5C5A; line-height: 1.2; text-align: center; }
+.av-pick { border: 1.5px solid #E2E8E6; background: #fff; border-radius: 9px; padding: 4px 0 3px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; min-width: 0; }
+.av-pick.nolab { padding: 4px 0; }
+.av-pick small { font-size: 9.5px; color: #4F5C5A; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; padding: 0 1px; }
+/* アイコンと名前のシート: 高さは決まっていて、タブを切り替えても変わらない。中（.av-body）だけが動く */
+#form-modal:has(.av-sheet) .form-modal-box { height: min(86vh, 700px); display: flex; flex-direction: column; }
+#form-modal:has(.av-sheet) .form-modal-box > #form-modal-body { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.av-sheet { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.av-sheet .av-prev { margin: 0 0 10px; align-items: flex-start; }
+.av-name { flex: 1; min-width: 0; } .av-name label { display: block; font-size: 12px; font-weight: 800; color: #4F5C5A; margin: 0 0 3px; } .av-name input { width: 100%; box-sizing: border-box; } .av-name small { display: block; font-size: 11px; color: #6B7A77; line-height: 1.45; margin-top: 4px; }
+.av-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: #EEF2F1; border-radius: 10px; padding: 3px; margin: 0 0 8px; flex: none; }
+.av-seg button { border: 0; background: none; border-radius: 8px; padding: 7px 0; font: inherit; font-size: 13px; font-weight: 800; color: #4F5C5A; cursor: pointer; }
+.av-seg button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.av-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -4px 10px; padding: 0 4px 4px; }
+.av-sec + .av-sec { margin-top: 8px; } .av-sec h4 { font-size: 11.5px; font-weight: 800; color: #6B7A77; margin: 0 0 4px; }
+.av-sheet > .sheet-close { margin-top: 8px; }
 .av-pick.on { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc-a15, rgba(23,112,131,.15)); }
 .hdr-av .av-ill { height: 72%; width: auto; } .hdr-av .av-ill.w { width: 82%; height: auto; }
 .lc-av .av-ill, .pd-av .av-ill, .who-av .av-ill, .pp-av .av-ill, .pf-av .av-ill, .rv-av .av-ill, .mu-av .av-ill, .cs-av .av-ill, .gr-op i .av-ill, i > .av-ill { height: 70%; }
@@ -11956,25 +11969,9 @@ function myAutoName() {
   return best ? best[0] : '';
 }
 function myLabel() { return myNameSet() || myAutoName() || '個人'; }
-function openMyNameEdit() {
-  document.getElementById('form-modal-title').textContent = 'マイページの名前';
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="field"><label>名前</label><input type="text" id="my-name" maxlength="${MAX_NAME_LEN}" value="${esc(myNameSet())}" placeholder="${esc(myAutoName() || '例: むにぃ')}"></div>
-    <div class="mp-note" style="margin:0 2px 10px">マイページ（個人）に出す名前です。空のままなら、試合で自分として選んだ名前のうちいちばん多いもの${myAutoName() ? `（いまは「${esc(myAutoName())}」）` : ''}を使います。<br>仲間ページでは名簿の名前、試合の中では試合の名前のまま変わりません</div>
-    <button class="confirm-btn" onclick="saveMyName()">保存する</button>
-    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
-  document.getElementById('form-modal').classList.add('open');
-}
-async function saveMyName() {
-  const v = clampName(document.getElementById('my-name').value, MAX_NAME_LEN);
-  try { if (v) localStorage.setItem(MY_NAME_KEY, v); else localStorage.removeItem(MY_NAME_KEY); } catch (e) { /* 保存できなくても困らない */ }
-  closeFormModal();
-  rerenderMyAvatar(); // 名前は見出し・切り替え・ヘッダーの頭文字に出る
-  if (currentUser) {
-    try { await db.ref(`users/${myUid()}/myName`).set(v || null); showToast('名前を変えました'); }
-    catch (e) { showToast('この端末では変えました（ほかの端末への反映はルールの貼り替えのあと）', 5000); }
-  } else showToast('名前を変えました');
-  track('my_name_set', { custom: !!v });
+function openMyNameEdit() { // 名前はアイコンと同じシートで変える（2026-10-27）
+  openMyAvatarEdit();
+  setTimeout(() => { const el = document.getElementById('my-name'); if (el) { el.focus(); el.select(); } }, 60);
 }
 // ログインしたら、アカウントの名前を正にする（アカウントに無ければ、この端末の控えを上げる）
 async function loadMyName() {
@@ -11991,23 +11988,29 @@ async function loadMyName() {
 // 本人確認済みの人のアイコンになる。作成者・管理者は変えられない）。この端末にも控える（ルールを貼る前・通信できないときも自分の画面では使える）。
 // 決めていなければ今までどおり主色の丸に人のマーク
 const MY_AV_KEY = 'mahjong-my-avatar';
-// 選べる絵はすべての牌（萬子・筒子・索子の一〜九と赤五・字牌・花牌）と麻雀グッズ（2026-10-27 ユーザーの依頼で広げた）。種類ごとのタブで選ぶ
+// 選べる絵はすべての牌（萬子・筒子・索子の一〜九と赤五・字牌・花牌）と麻雀グッズ（2026-10-27 ユーザーの依頼で広げた）。
+// シートのタブは「アイテム」「牌」「地の色」の3つ。アイテムと牌は、種類ごとの見出しの下に1行6つで並べる（2026-10-27 ユーザーの依頼）
+// 1つ＝[名前（保存する値）, 読み上げの名前, 絵の下に出す短い名前（無ければ出さない＝牌）]
 const AV_KAN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
-const AV_GROUPS = [
-  ['goods', '頭文字・道具', [['ini', '頭文字'], ['chicha', '起家札（表）'], ['chicha-ura', '起家札（裏）'], ['yakitori', '焼き鳥（表）'], ['yakitori-ura', '焼き鳥（裏）'], ['haiyose', '牌寄せ']]],
-  // 点棒: 白い点棒（tenbo＝1,000点。最初からある名前）・100点棒5本の束、カラーの点棒は別のタブ（2026-10-27 ユーザーの依頼）
-  ['tenbo', '点棒', [['tb100', '100点'], ['tenbo', '1,000点'], ['tb5000', '5,000点'], ['tb10000', '10,000点'], ['tb100x5', '100点×5本']]],
-  ['ctenbo', 'カラー点棒', [['ct100', '100点'], ['ct500', '500点'], ['ct1000', '1,000点'], ['ct5000', '5,000点'], ['ct10000', '10,000点'], ['cttobi', 'トビ点棒']]],
-  // サイコロ（dice＝5の目。最初からある名前）とチップ
-  ['dice', 'サイコロ・チップ', [['d1', 'サイコロ1'], ['d2', 'サイコロ2'], ['d3', 'サイコロ3'], ['d4', 'サイコロ4'], ['dice', 'サイコロ5'], ['d6', 'サイコロ6'],
-    ['chip-r', '赤チップ'], ['chip-b', '青チップ'], ['chip-g', '緑チップ'], ['chip-o', 'オレンジチップ'], ['chip-k', '黒チップ']]],
-  ['m', '萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬']).concat([['m5r', '赤五萬']])],
-  ['p', '筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒']).concat([['p5r', '赤五筒']])],
-  ['s', '索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索']).concat([['s5r', '赤五索']])],
-  ['z', '字牌', [['z1', '東'], ['z2', '南'], ['z3', '西'], ['z4', '北'], ['z5', '白'], ['z5p', '白ぽっち'], ['z6', '發'], ['z7', '中']]],
-  ['f', '花牌', [['f1', '春'], ['f2', '夏'], ['f3', '秋'], ['f4', '冬'], ['f5', '梅'], ['f6', '蘭'], ['f7', '菊'], ['f8', '竹']]],
+const AV_TABS = [
+  ['item', 'アイテム', [
+    ['頭文字・札', [['ini', '頭文字', '頭文字'], ['chicha', '起家札（表）', '起家 表'], ['chicha-ura', '起家札（裏）', '起家 裏'], ['yakitori', '焼鳥（表）', '焼鳥 表'], ['yakitori-ura', '焼鳥（裏）', '焼鳥 裏']]],
+    // 白い点棒（tenbo＝1,000点・最初からある名前）と100点棒5本の束
+    ['点棒', [['tb100', '100点棒', '100'], ['tenbo', '1,000点棒', '1,000'], ['tb5000', '5,000点棒', '5,000'], ['tb10000', '10,000点棒', '10,000'], ['tb100x5', '100点棒5本の束', '100×5']]],
+    ['カラー点棒', [['ct100', 'カラーの100点棒', '100'], ['ct500', 'カラーの500点棒', '500'], ['ct1000', 'カラーの1,000点棒', '1,000'], ['ct5000', 'カラーの5,000点棒', '5,000'], ['ct10000', 'カラーの10,000点棒', '10,000'], ['cttobi', 'トビ点棒', 'トビ']]],
+    // サイコロ（dice＝5の目・最初からある名前）
+    ['サイコロ', [['d1', 'サイコロ1', '1'], ['d2', 'サイコロ2', '2'], ['d3', 'サイコロ3', '3'], ['d4', 'サイコロ4', '4'], ['dice', 'サイコロ5', '5'], ['d6', 'サイコロ6', '6']]],
+    ['チップ・牌寄せ', [['chip-r', '赤のチップ', '赤'], ['chip-b', '青のチップ', '青'], ['chip-g', '緑のチップ', '緑'], ['chip-o', 'オレンジのチップ', 'オレンジ'], ['chip-k', '黒のチップ', '黒'], ['haiyose', '牌寄せ', '牌寄せ']]],
+  ]],
+  ['hai', '牌', [
+    ['萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬']).concat([['m5r', '赤五萬']])],
+    ['筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒']).concat([['p5r', '赤五筒']])],
+    ['索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索']).concat([['s5r', '赤五索']])],
+    ['字牌', [['z1', '東'], ['z2', '南'], ['z3', '西'], ['z4', '北'], ['z5', '白'], ['z5p', '白ぽっち'], ['z6', '發'], ['z7', '中']]],
+    ['花牌', [['f1', '春'], ['f2', '夏'], ['f3', '秋'], ['f4', '冬'], ['f5', '梅'], ['f6', '蘭'], ['f7', '菊'], ['f8', '竹']]],
+  ]],
 ];
-const AV_ICONS = AV_GROUPS.flatMap(g => g[2]);
+const AV_ICONS = AV_TABS.flatMap(t => t[2].flatMap(sec => sec[1]));
 const AV_WIDE = { chicha: 1, 'chicha-ura': 1, yakitori: 1, 'yakitori-ura': 1, tb100x5: 1, haiyose: 1 }; // 横長の絵（幅で合わせる）。点棒は斜めの正方形の絵
 let myAv = null;
 try { myAv = JSON.parse(localStorage.getItem(MY_AV_KEY)) || null; } catch (e) { myAv = null; }
@@ -12034,44 +12037,72 @@ function rerenderMyAvatar() {
   else if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
 }
-let avDraft = null, avGroup = 'goods';
+// アイコンと名前のシート（2026-10-27 作り直し）: 上に見本と名前の欄、下に「アイテム」「牌」「地の色」のタブ。
+// シートの高さは決まっていて（タブを切り替えても変わらない）、中だけが動く。絵を押しても、そのタブの位置のまま（描き直しても戻る）
+let avDraft = null, avTab = 'item';
+const avScroll = {}; // タブごとのスクロール位置
+function avTabOf(k) { return (AV_TABS.find(t => t[2].some(sec => sec[1].some(x => x[0] === k))) || AV_TABS[0])[0]; }
 function openMyAvatarEdit() {
-  avDraft = validAv(myAv) ? { ...myAv } : { k: 'ini', c: AV_HUES[6][1] };
-  avGroup = (AV_GROUPS.find(g => g[2].some(x => x[0] === avDraft.k)) || AV_GROUPS[0])[0];
+  avDraft = validAv(myAv) ? { ...myAv } : { k: '', c: AV_HUES[6][1] }; // k が空＝人のマーク（決めていない）
+  avDraft.name = myNameSet();
+  avTab = avDraft.k ? avTabOf(avDraft.k) : 'item';
+  Object.keys(avScroll).forEach(t => delete avScroll[t]);
   renderMyAvatarEdit();
   document.getElementById('form-modal').classList.add('open');
+  // 選んでいる絵が見えるところまで動かす（はじめて開いたとき）
+  requestAnimationFrame(() => { const on = document.querySelector('.av-body .av-pick.on'), box = document.querySelector('.av-body'); if (on && box) box.scrollTop = Math.max(0, on.offsetTop - box.offsetTop - 40); });
 }
+function avPick(k) { avDraft.k = k; renderMyAvatarEdit(); }
+function avColor(c) { avDraft.c = c; renderMyAvatarEdit(); }
+function avSetTab(t) { avTab = t; renderMyAvatarEdit(); }
+function avDraftFace(size) { return avDraft.k ? avFaceHtml({ k: avDraft.k, c: avDraft.c }, avDraft.name || myAutoName() || '個人', size) : `<span class="uav" style="--s:${size}px;background:${avDraft.c}" aria-hidden="true">${ico('person', Math.round(size * 0.62))}</span>`; }
 function renderMyAvatarEdit() {
+  const box0 = document.querySelector('.av-body');
+  if (box0 && box0.dataset.tab) avScroll[box0.dataset.tab] = box0.scrollTop;
   const okc = c => whiteContrast(c) >= 3;
-  const grp = AV_GROUPS.find(g => g[0] === avGroup) || AV_GROUPS[0];
-  const tabs = `<div class="av-tabs" role="tablist" aria-label="絵の種類">${AV_GROUPS.map(([g, label]) => `<button type="button" role="tab" class="${g === avGroup ? 'on' : ''}" aria-selected="${g === avGroup}" onclick="avGroup='${g}';renderMyAvatarEdit()">${label}</button>`).join('')}</div>`;
-  const icons = grp[2].map(([k, label]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}" aria-label="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avDraft.k='${k}';renderMyAvatarEdit()">${avFaceHtml({ k, c: avDraft.c }, myLabel(), 40)}<small>${esc(label)}</small></button>`).join('');
-  const sw = c => okc(c) ? `<button type="button" class="av-sw${avDraft.c === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="avDraft.c='${c}';renderMyAvatarEdit()"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
-  const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
-  document.getElementById('form-modal-title').textContent = 'マイページのアイコン';
-  requestAnimationFrame(() => { const on = document.querySelector('.av-tabs .on'); if (on) on.scrollIntoView({ inline: 'nearest', block: 'nearest' }); });
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
-    <div class="av-prev">${avFaceHtml(avDraft, myLabel(), 72)}<span><b>${esc(myLabel())}</b><small>仲間ページで本人確認済みの席にも、このアイコンが出ます。変えられるのは自分だけです</small></span></div>
-    <div class="field"><label>絵</label>${tabs}<div class="av-picks">${icons}</div></div>
-    <div class="field"><label>地の色</label><div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div><div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div></div>
+  const nm = avDraft.name || myAutoName() || '個人';
+  const pick = ([k, label, short]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}${short ? '' : ' nolab'}" aria-label="${esc(label)}" title="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avPick('${k}')">${avFaceHtml({ k, c: avDraft.c }, nm, 38)}${short ? `<small>${esc(short)}</small>` : ''}</button>`;
+  const tabs = [...AV_TABS.map(t => [t[0], t[1]]), ['color', '地の色']];
+  let inner;
+  if (avTab === 'color') {
+    const sw = c => okc(c) ? `<button type="button" class="av-sw${avDraft.c === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="avColor('${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
+    const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
+    inner = `<div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div><div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div>`;
+  } else {
+    const secs = AV_TABS.find(t => t[0] === avTab)[2];
+    // アイテムの先頭に「人のマーク」（アイコンを決めない）
+    inner = secs.map(([title, items], i) => `<div class="av-sec"><h4>${title}</h4><div class="av-picks">${avTab === 'item' && i === 0 ? `<button type="button" class="av-pick${!avDraft.k ? ' on' : ''}" aria-label="人のマーク（決めない）" aria-pressed="${!avDraft.k}" onclick="avPick('')"><span class="uav" style="--s:38px;background:${avDraft.c}" aria-hidden="true">${ico('person', 24)}</span><small>なし</small></button>` : ''}${items.map(pick).join('')}</div></div>`).join('');
+  }
+  document.getElementById('form-modal-title').textContent = 'アイコンと名前';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body av-sheet">
+    <div class="av-prev">${avDraftFace(60)}<div class="av-name"><label for="my-name">名前</label><input type="text" id="my-name" maxlength="${MAX_NAME_LEN}" value="${esc(avDraft.name)}" placeholder="${esc(myAutoName() || '例: むにぃ')}" oninput="avDraft.name=this.value"><small>アイコンは仲間ページの本人確認済みの席にも出ます</small></div></div>
+    <div class="av-seg" role="tablist" aria-label="選ぶもの">${tabs.map(([t, label]) => `<button type="button" role="tab" class="${t === avTab ? 'on' : ''}" aria-selected="${t === avTab}" onclick="avSetTab('${t}')">${label}</button>`).join('')}</div>
+    <div class="av-body" data-tab="${avTab}">${inner}</div>
     <button class="confirm-btn" onclick="saveMyAvatar()">保存する</button>
-    ${validAv(myAv) ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="saveMyAvatar(true)">人のマークに戻す</button>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  const box = document.querySelector('.av-body');
+  if (box) box.scrollTop = avScroll[avTab] || 0;
 }
-async function saveMyAvatar(reset) {
-  myAv = reset ? null : { k: avDraft.k, c: avDraft.c };
-  try { if (myAv) localStorage.setItem(MY_AV_KEY, JSON.stringify(myAv)); else localStorage.removeItem(MY_AV_KEY); } catch (e) {}
+async function saveMyAvatar() {
+  const nameNew = clampName(avDraft.name || '', MAX_NAME_LEN), nameChanged = nameNew !== myNameSet();
+  const avNew = avDraft.k ? { k: avDraft.k, c: avDraft.c } : null;
+  const avChanged = JSON.stringify(avNew) !== JSON.stringify(validAv(myAv) ? { k: myAv.k, c: myAv.c } : null);
   closeFormModal();
+  if (!nameChanged && !avChanged) return;
+  myAv = avNew;
+  try { if (myAv) localStorage.setItem(MY_AV_KEY, JSON.stringify(myAv)); else localStorage.removeItem(MY_AV_KEY); } catch (e) {}
+  try { if (nameNew) localStorage.setItem(MY_NAME_KEY, nameNew); else localStorage.removeItem(MY_NAME_KEY); } catch (e) {}
   rerenderMyAvatar();
+  let ok = true;
   if (currentUser) {
     try {
-      const ref = db.ref(`avatars/${myUid()}`);
-      if (myAv) await ref.set({ k: myAv.k, c: myAv.c }); else await ref.remove();
-      avatarCache[myUid()] = myAv;
-      showToast('アイコンを変えました');
-    } catch (e) { showToast('この端末では変えました（仲間ページへの反映はルールの貼り替えのあと）', 5000); }
-  } else showToast('アイコンを変えました');
-  track('avatar_set', { k: myAv ? myAv.k : 'none' });
+      if (avChanged) { const ref = db.ref(`avatars/${myUid()}`); if (myAv) await ref.set({ k: myAv.k, c: myAv.c }); else await ref.remove(); avatarCache[myUid()] = myAv; }
+      if (nameChanged) await db.ref(`users/${myUid()}/myName`).set(nameNew || null);
+    } catch (e) { ok = false; }
+  }
+  showToast(ok ? (avChanged && nameChanged ? 'アイコンと名前を変えました' : avChanged ? 'アイコンを変えました' : '名前を変えました') : 'この端末では変えました（ほかの端末・仲間ページへの反映はルールの貼り替えのあと）', ok ? 2500 : 5000);
+  if (avChanged) track('avatar_set', { k: myAv ? myAv.k : 'none' });
+  if (nameChanged) track('my_name_set', { custom: !!nameNew });
 }
 // 仲間ページ: 名簿の本人確認済みの人（roster/$mid/uid）のアイコンを読む（1人1回）。読めたら描き直す
 const avatarAsked = new Set();
@@ -14511,8 +14542,7 @@ function openMpMenu() {
   document.getElementById('form-modal-title').textContent = 'アカウント';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${who ? `<div class="acct-who"><b>${esc(who)}</b>${mail ? `<small>${esc(mail)}</small>` : ''}<small>Googleでログイン中</small></div>` : ''}<div class="mn-group">${
     menuBtnHtml('phoneAdd', 'ホーム画面に追加', 'アプリのように1タップで開けます', 'closeFormModal();showInstallHelp()')}
-    ${menuBtnHtml('pencil', 'マイページの名前', esc(myLabel()), 'openMyNameEdit()')}
-    ${menuBtnHtml('person', 'マイページのアイコン', '頭文字・牌・麻雀グッズの絵と色', 'openMyAvatarEdit()')}</div>
+    ${menuBtnHtml('person', 'アイコンと名前', esc(myLabel()) + '・牌や麻雀グッズの絵と色', 'openMyAvatarEdit()')}</div>
     <div class="mn-group">${menuBtnHtml('person', 'ログアウト', '記録はアカウントに残ります', 'closeFormModal();confirmSignOut()', 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
