@@ -8,7 +8,7 @@ PILではなくHTMLをブラウザ（Playwright）で描いて撮る。文字の
   feat-XX-*-story.png  ストーリーズ 1080×1920（同じ中身）
   howto-0..4.png       使い方カルーセル 1080×1350（表紙＋4ステップ）
   intro.png            はじめましての1枚 1080×1350
-  post-sanma-tiles(-story).png  三麻の記事の紹介（花牌・白ぽっち・焼き鳥カードの絵。assets/tiles を使う）
+  post-sanma-tiles(-story).png  三麻の記事の紹介（花牌・白ポッチ・焼き鳥カードの絵。assets/tiles を使う）
   ogp4.png             OGP 2100×1103（サイトでも使う → assets/ogp4.png にコピー）
   x-header-v3.png      Xヘッダー 1500×500
 使い方: python tools/make_sns_v3.py [名前の一部]   （省略で全部）
@@ -258,12 +258,12 @@ def tile(code, w):
     return f'<img src="{furl(os.path.join(TILES, code + ".svg"))}" style="width:{w}px;display:block">'
 
 def sanma_tiles_html(H):
-    """三麻の特別な牌（花牌・白ぽっち・焼き鳥カード）→ 記事 blog-sanma-rules.html の紹介"""
+    """三麻の特別な牌（花牌・白ポッチ・焼き鳥カード）→ 記事 blog-sanma-rules.html の紹介"""
     W = 1080
     story = H == 1920
     top = 250 if story else 92
     tw = 104 if not story else 108          # 花牌1枚の幅（8枚を1列）
-    bw = 124 if not story else 150          # 白・白ぽっちの幅
+    bw = 124 if not story else 150          # 白・白ポッチの幅
     cw = round(bw * 100 / 60)               # 焼き鳥カードの幅（横長の札。牌と同じ縮尺）
     py = 470 if not story else 760
     gap = 40 if not story else 70
@@ -276,13 +276,13 @@ def sanma_tiles_html(H):
   <div style="position:absolute;left:72px;right:72px;top:{top}px">
     <div class="tag"><b>三麻のルール</b><span>まじゃすこブログ</span></div>
     <h1 style="font-size:{78 if story else 70}px;margin-top:26px">三麻で見かける、<br>この牌なに？</h1>
-    <p class="sub" style="font-size:{34 if story else 32}px;margin-top:16px">花牌・白ぽっち・焼き鳥カードのルールを解説</p>
+    <p class="sub" style="font-size:{34 if story else 32}px;margin-top:16px">花牌・白ポッチ・焼き鳥カードのルールを解説</p>
   </div>
   <div style="position:absolute;left:72px;right:72px;top:{py}px">
     {lab('<ruby>花牌<rt style="font-size:.5em">ファパイ</rt></ruby>', "春夏秋冬・梅蘭菊竹の8枚。抜きドラにするルールも")}
     <div style="display:flex;gap:12px">{flowers}</div>
     <div style="display:flex;gap:{70 if story else 60}px;margin-top:{gap}px;align-items:flex-start">
-      <div>{lab("白ぽっち", "リーチ後のツモで万能に")}<div style="display:flex;gap:14px">{tile("z5", bw)}{tile("z5p", bw)}</div></div>
+      <div>{lab("白ポッチ", "リーチ後のツモで万能に")}<div style="display:flex;gap:14px">{tile("z5", bw)}{tile("z5p", bw)}</div></div>
       <div>{lab("焼き鳥", "表と裏")}<div style="display:flex;gap:14px">{tile("yakitori", cw)}{tile("yakitori-ura", cw)}</div></div>
     </div>
   </div>

@@ -199,7 +199,7 @@ def face(code, st):
         return "".join(_stick(x, y, h, RED if red else c) for x, y, h, c in lay)
     if code == "z5":  # 白: 何も描かない（2026-10-23 ユーザーの判断。牌の枠を濃くしたので空白でも牌と分かる）
         return ""
-    if code == "z5p":  # 白ぽっち: 白の真ん中に小さな赤い点（2026-10-27・三麻の記事用。赤はまじゃすこのオレンジ）
+    if code == "z5p":  # 白ポッチ: 白の真ん中に小さな赤い点（2026-10-27・三麻の記事用。赤はまじゃすこのオレンジ）
         return f'<circle cx="30" cy="40" r="5" fill="{RED}"/>'
     if suit == "f":
         return _flower(int(num), st)
@@ -279,20 +279,20 @@ def tenbo_bundle_svg():
     return out + "</svg>"
 
 
-# サイコロの目（-1・0・1 の位置）。1は大きな赤、4は赤（日本のサイコロ）、ほかは黒
+# サイコロの目（-1・0・1 の位置）。1は大きな赤、ほかは黒（4も黒。2026-10-27 ユーザーの依頼）
 PIPS = {1: [(0, 0)], 2: [(-1, -1), (1, 1)], 3: [(-1, -1), (0, 0), (1, 1)], 4: [(-1, -1), (1, -1), (-1, 1), (1, 1)],
         5: [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)], 6: [(-1, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (1, 1)]}
 
 
 def dice_svg(n=5):
-    """サイコロ（マイページのアイコン用）。n＝上の面の目（1〜6）。1は大きな赤、4は4つとも赤、ほかは黒"""
+    """サイコロ（マイページのアイコン用）。n＝上の面の目（1〜6）。1は大きな赤、ほかは黒"""
     out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 62 68">'
     out += f'<rect x="0" y="6" width="60" height="60" rx="12" fill="{GREEN}"/><rect x="0" y="0" width="60" height="60" rx="12" fill="#fff" stroke="#A79E87" stroke-width="1.6"/>'
     for dx, dy in PIPS[n]:
         if n == 1:
             out += f'<circle cx="30" cy="30" r="11" fill="{RED}"/>'
         else:
-            out += f'<circle cx="{30 + dx * 14}" cy="{30 + dy * 14}" r="5.5" fill="{RED if n == 4 else INK}"/>'
+            out += f'<circle cx="{30 + dx * 14}" cy="{30 + dy * 14}" r="5.5" fill="{INK}"/>'
     return out + "</svg>"
 
 
@@ -328,6 +328,54 @@ def haiyose_svg():
     out += f'<rect x="38" y="40" width="34" height="9" rx="4.5" fill="{RED}"/>'
     # 押している動き（板の下の線）
     out += f'<g stroke="{INK}" stroke-width="3" stroke-linecap="round" opacity=".55"><path d="M30 60 V68"/><path d="M55 60 V70"/><path d="M80 60 V68"/></g>'
+    return out + "</svg>"
+
+
+def taku_top_svg():
+    """全自動卓を上から見た形（マイページのアイコン用・2026-10-27）。オレンジの枠・緑のマット・4辺の山・真ん中のサイコロの窓"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+    out += f'<rect x="2" y="2" width="76" height="76" rx="8" fill="#E25A1C"/><rect x="9" y="9" width="62" height="62" rx="4" fill="{GREEN}"/>'
+    for i in range(6):  # 山（上下は横に、左右は縦に並ぶ牌の背）
+        out += f'<rect x="{19 + i * 7}" y="15" width="6" height="5" rx="1" fill="{BACK_FACE}"/><rect x="{19 + i * 7}" y="60" width="6" height="5" rx="1" fill="{BACK_FACE}"/>'
+        out += f'<rect x="15" y="{19 + i * 7}" width="5" height="6" rx="1" fill="{BACK_FACE}"/><rect x="60" y="{19 + i * 7}" width="5" height="6" rx="1" fill="{BACK_FACE}"/>'
+    out += '<path d="M40 30 L50 40 L40 50 L30 40 Z" fill="#0F4F5C"/><circle cx="40" cy="40" r="5" fill="#9FC3BD"/>'
+    return out + "</svg>"
+
+
+def sidetable_svg():
+    """サイドテーブル（麻雀卓の横に置く小さな台・アイコン用）。木の天板に飲み物のコップ、細い脚"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">'
+    out += '<ellipse cx="40" cy="76" rx="22" ry="3" fill="#000" opacity=".1"/>'
+    out += '<rect x="22" y="40" width="4" height="35" rx="1.5" fill="#6B4A2E"/><rect x="54" y="40" width="4" height="35" rx="1.5" fill="#6B4A2E"/>'
+    out += '<rect x="24" y="60" width="32" height="3" rx="1.5" fill="#6B4A2E"/>'
+    out += '<rect x="12" y="34" width="56" height="9" rx="3" fill="#A97142"/><rect x="12" y="34" width="56" height="4" rx="2" fill="#C68B55"/>'
+    # コップ（ウーロン茶）と、おしぼり
+    out += '<path d="M24 14 H38 L36 34 H26 Z" fill="#E8F2F1" stroke="#9FB8B4" stroke-width="1"/><path d="M25.3 20 H36.7 L36 34 H26 Z" fill="#9A5B22"/>'
+    out += '<rect x="44" y="27" width="20" height="7" rx="3.5" fill="#fff" stroke="#B9C6C3" stroke-width="1"/><circle cx="47.5" cy="30.5" r="2.4" fill="none" stroke="#B9C6C3" stroke-width="1"/>'
+    return out + "</svg>"
+
+
+def oshibori_svg():
+    """おしぼり（アイコン用）。細長いお盆に、丸めた白いタオル（端のうず巻きが見える）"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60">'
+    out += '<rect x="4" y="34" width="92" height="16" rx="8" fill="#7FA9B5"/><rect x="4" y="30" width="92" height="14" rx="7" fill="#A8CBD4"/>'
+    out += '<rect x="12" y="14" width="72" height="24" rx="12" fill="#fff" stroke="#B9C6C3" stroke-width="1.4"/>'
+    out += '<path d="M24 20 H74 M22 32 H76" stroke="#E3EAE8" stroke-width="2" stroke-linecap="round"/>'
+    out += '<ellipse cx="78" cy="26" rx="8" ry="12" fill="#F4F7F6" stroke="#B9C6C3" stroke-width="1.4"/>'
+    out += '<path d="M78 26 m-1.5 0 a1.5 2.5 0 1 1 3 0 a3.5 5.5 0 1 1 -6 0 a5.5 8.5 0 1 1 9.5 -2" fill="none" stroke="#B9C6C3" stroke-width="1.3"/>'
+    return out + "</svg>"
+
+
+def oolong_svg():
+    """ウーロン茶（コップに入った状態・アイコン用）。透明なコップに茶色のお茶と氷、ストロー"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 84">'
+    out += '<ellipse cx="35" cy="80" rx="17" ry="3" fill="#000" opacity=".1"/>'
+    out += '<path d="M46 2 L40 30" stroke="#E25A1C" stroke-width="4" stroke-linecap="round"/>'
+    out += '<path d="M12 12 H58 L53 78 H17 Z" fill="#EEF6F5" stroke="#9FB8B4" stroke-width="1.6" stroke-linejoin="round"/>'
+    out += '<path d="M13.7 30 H56.3 L53 78 H17 Z" fill="#9A5B22"/><path d="M13.7 30 H56.3 L55.9 35 H14.1 Z" fill="#B97436"/>'
+    out += '<rect x="20" y="36" width="12" height="11" rx="2.5" fill="#fff" opacity=".55" transform="rotate(-12 26 41)"/><rect x="34" y="44" width="12" height="11" rx="2.5" fill="#fff" opacity=".5" transform="rotate(10 40 49)"/>'
+    out += '<path d="M43 30 L38 52" stroke="#E25A1C" stroke-width="4" stroke-linecap="round" opacity=".8"/>'
+    out += '<path d="M18 16 L21 70" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>'
     return out + "</svg>"
 
 
