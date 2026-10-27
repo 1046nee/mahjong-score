@@ -150,7 +150,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 <table><tr><th>あがりの基本（副底）</th><td>20符</td></tr><tr><th>門前でロン</th><td>+10符</td></tr><tr><th>ツモ（ピンフのツモは除く）</th><td>+2符</td></tr>
 <tr><th>待ち（カンチャン・ペンチャン・単騎）</th><td>+2符</td></tr><tr><th>雀頭が役牌</th><td>+2符</td></tr></table>
 <table style="margin-top:5px"><tr><th>刻子・槓子</th><th>明刻</th><th>暗刻</th><th>明槓</th><th>暗槓</th></tr>
-<tr><th>2〜8の数牌</th><td>2</td><td>4</td><td>8</td><td>16</td></tr><tr><th>1・9・字牌</th><td>4</td><td>8</td><td>16</td><td>32</td></tr></table>
+<tr><th>二〜八の数牌</th><td>2</td><td>4</td><td>8</td><td>16</td></tr><tr><th>一・九・字牌</th><td>4</td><td>8</td><td>16</td><td>32</td></tr></table>
 <ul><li><b>ピンフのツモは20符</b>、<b>七対子は25符</b>（切り上げない）</li><li>鳴いて符が20符のままのロンは30符にする</li></ul></div>
 </div>
 <p class="notes">本場（積み棒）：1本につきロンは+300点、ツモは1人あたり+100点。　黄色の行（30符）は実戦でいちばんよく出る符。<br>

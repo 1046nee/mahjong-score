@@ -75,7 +75,7 @@ S_LAYOUT = {
 
 
 def _sou8():
-    # 8索: 上はM字・下はW字（本物の並びに近い形）
+    # 八索: 上はM字・下はW字（本物の並びに近い形）
     s = ""
     for y, sign in ((8, 1), (44, -1)):
         s += _stick(10, y, 28, GREEN) + _stick(50, y, 28, GREEN)
@@ -84,7 +84,7 @@ def _sou8():
 
 
 def _bird():
-    # 1索: まじゃすこのオリジナルの鳥（丸い体・羽・尾羽）
+    # 一索: まじゃすこのオリジナルの鳥（丸い体・羽・尾羽）
     return (f'<path d="M44 58 Q56 66 50 76 Q44 70 40 64 Z" fill="{BLUE}"/>'
             f'<path d="M40 60 Q54 58 56 70 Q48 68 38 66 Z" fill="{RED}"/>'
             f'<ellipse cx="30" cy="46" rx="17" ry="15" fill="{GREEN}"/>'

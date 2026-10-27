@@ -52,7 +52,7 @@ YAKU = [
   ("立直", "リーチ", 1, None, "門前でテンパイしたら宣言する。1,000点を供託", dict(hand="123m456m789p23s55s", win="4s")),
   ("一発", "イッパツ", 1, None, "リーチから1巡以内（間に鳴きが入らない）にあがる", None),
   ("門前清自摸和", "メンゼンツモ", 1, None, "門前（鳴いていない）でツモあがり", None),
-  ("断么九", "タンヤオ", 1, 1, "2〜8の数牌だけで作る", dict(hand="234m567m345p66s78s", win="6s")),
+  ("断么九", "タンヤオ", 1, 1, "二〜八の数牌だけで作る", dict(hand="234m567m345p66s78s", win="6s")),
   ("平和", "ピンフ", 1, None, "順子4つ＋役牌でない雀頭＋両面待ち", dict(hand="123m456p789p23s99m", win="4s")),
   ("一盃口", "イーペーコー", 1, None, "同じ順子を2つ", dict(hand="112233m456p78s55p", win="9s")),
   ("役牌", "ヤクハイ", 1, 1, "三元牌・場風・自風の刻子（1つにつき1翻）", dict(hand="123m456p33s45s", win="6s", melds=[("pon", "777z")])),
@@ -66,31 +66,31 @@ YAKU = [
   ("七対子", "チートイツ", 2, None, "対子を7つ（同じ牌4枚は2対子にしない）", dict(hand="1199m3355p77s22z6z", win="6z")),
   ("三色同順", "サンショク", 2, 1, "萬・筒・索で同じ数の順子", dict(hand="123m123p123s789m5z", win="5z")),
   ("一気通貫", "イッツー", 2, 1, "同じ種類で123・456・789", dict(hand="123456789p234s5m", win="5m")),
-  ("混全帯么九", "チャンタ", 2, 1, "全部の面子と雀頭に1・9か字牌", dict(hand="123m789p789s111z9m", win="9m")),
+  ("混全帯么九", "チャンタ", 2, 1, "全部の面子と雀頭に一・九か字牌", dict(hand="123m789p789s111z9m", win="9m")),
   ("対々和", "トイトイ", 2, 2, "刻子4つ＋雀頭", dict(hand="222m999s3z", win="3z", melds=[("pon", "555p"), ("pon", "777s")])),
   ("三暗刻", "サンアンコー", 2, 2, "鳴いていない刻子を3つ", dict(hand="222m555p888s34m66s", win="5m")),
   ("三色同刻", "サンショクドウコー", 2, 2, "萬・筒・索で同じ数の刻子", dict(hand="222m222p222s567m8s", win="8s")),
   ("三槓子", "サンカンツ", 2, 2, "カンを3回", dict(hand="456m9p", win="9p", melds=[("ankan", "3333m"), ("kan", "5555p"), ("kan", "7777s")])),
   ("小三元", "ショウサンゲン", 2, 2, "三元牌の刻子2つ＋三元牌の雀頭（役牌2つで実質4翻）", dict(hand="555z666z77z123m45p", win="3p")),
-  ("混老頭", "ホンロウトウ", 2, 2, "1・9と字牌だけ（対々和か七対子と重なる）", dict(hand="111m999p999s111z2z", win="2z")),
+  ("混老頭", "ホンロウトウ", 2, 2, "一・九と字牌だけ（対々和か七対子と重なる）", dict(hand="111m999p999s111z2z", win="2z")),
  ]),
  ("3翻", [
   ("混一色", "ホンイツ", 3, 2, "1種類の数牌と字牌だけ", dict(hand="234m567m888m11z22z", win="2z")),
-  ("純全帯么九", "ジュンチャン", 3, 2, "全部の面子と雀頭に1・9（字牌なし）", dict(hand="123m789m123p789s1p", win="1p")),
+  ("純全帯么九", "ジュンチャン", 3, 2, "全部の面子と雀頭に一・九（字牌なし）", dict(hand="123m789m123p789s1p", win="1p")),
   ("二盃口", "リャンペーコー", 3, None, "一盃口を2つ", dict(hand="112233m445566p7s", win="7s")),
  ]),
  ("6翻", [
   ("清一色", "チンイツ", 6, 5, "1種類の数牌だけ", dict(hand="2233445566778s", win="8s")),
  ]),
  ("役満", [
-  ("国士無双", "コクシムソウ", 13, None, "1・9と字牌の13種を1枚ずつ＋どれか1枚", dict(hand="119m19p19s123456z", win="7z")),
+  ("国士無双", "コクシムソウ", 13, None, "一・九と字牌の13種を1枚ずつ＋どれか1枚", dict(hand="119m19p19s123456z", win="7z")),
   ("四暗刻", "スーアンコー", 13, None, "鳴いていない刻子を4つ", dict(hand="111m333p555s777s9p", win="9p")),
   ("大三元", "ダイサンゲン", 13, 13, "白・發・中の刻子を3つ", dict(hand="555z666z777z12m33p", win="3m")),
   ("字一色", "ツーイーソー", 13, 13, "字牌だけ", dict(hand="111z222z333z555z7z", win="7z")),
   ("小四喜", "ショウスーシー", 13, 13, "風牌の刻子3つ＋風牌の雀頭", dict(hand="111z222z333z44z23m", win="1m")),
   ("大四喜", "ダイスーシー", 13, 13, "風牌の刻子を4つ", dict(hand="111z222z333z444z5m", win="5m")),
   ("緑一色", "リューイーソー", 13, 13, "二・三・四・六・八索と發だけ", dict(hand="223344s666s888s6z", win="6z")),
-  ("清老頭", "チンロウトウ", 13, 13, "1と9の数牌だけ", dict(hand="111m999m111p999p1s", win="1s")),
+  ("清老頭", "チンロウトウ", 13, 13, "一と九の数牌だけ", dict(hand="111m999m111p999p1s", win="1s")),
   ("四槓子", "スーカンツ", 13, 13, "カンを4回", dict(hand="5p", win="5p", melds=[("ankan", "1111m"), ("kan", "4444p"), ("kan", "7777s"), ("ankan", "2222z")])),
   ("九蓮宝燈", "チューレンポウトウ", 13, None, "1種類で1112345678999＋同じ種類の1枚", dict(hand="1112345678999p", win="5p")),
   ("天和", "テンホー", 13, None, "親が配牌の時点であがっている", None),
@@ -245,7 +245,7 @@ img { display: inline-block; vertical-align: bottom; }"""
 def hai_sheet(url):
     def suit_row(s, label, yomi):
         cells = "".join(f'<div class="c">{tile_img(f"{s}{n}", url, 64)}<b>{KANSU[n - 1]}{NAMES[s]}</b><span>{YOMI_NUM[n - 1]}{YOMI_SUIT[s]}</span></div>' for n in range(1, 10))
-        return f'<section class="suit {s}"><h2><em>{label}</em><small>{yomi}・1〜9が4枚ずつ（36枚）</small></h2><div class="row">{cells}</div></section>'
+        return f'<section class="suit {s}"><h2><em>{label}</em><small>{yomi}・一〜九が4枚ずつ（36枚）</small></h2><div class="row">{cells}</div></section>'
     z = "".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 8))
     aka = "".join(f'<div class="c">{tile_img(c, url, 52)}<b>赤{n}</b></div>' for c, n in [("m5r", "五萬"), ("p5r", "五筒"), ("s5r", "五索")])
     nums = "".join(f"<td>{n}<br><b>{y}</b></td>" for n, y in zip(range(1, 10), YOMI_NUM))
@@ -269,9 +269,9 @@ td b {{ font-size: 11.5px; }}
 <div><p class="lbl">三元牌（サンゲンパイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(5, 8))}</div></div></div></section>
 <div class="bottom"><div><h3>数字の読み方</h3><table><tr>{nums}</tr></table>
 <p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝マン（ワンとも）、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーマン、七筒＝チーピン、二索＝リャンソー<br>9は役の名前では<b>チュー</b>（九蓮宝燈・么九牌）。七索は関西で<b>チャーソー</b>とも</p>
-<h3 style="margin-top:10px">よく出る呼び名</h3><p class="note"><b>么九牌（ヤオチューハイ）</b>：1・9の数牌と字牌。<b>中張牌（チュンチャンパイ）</b>：2〜8の数牌（タンヤオに使う）。<b>役牌</b>：三元牌と、場風・自風の牌</p></div>
+<h3 style="margin-top:10px">よく出る呼び名</h3><p class="note"><b>么九牌（ヤオチューハイ）</b>：一・九の数牌と字牌。<b>中張牌（チュンチャンパイ）</b>：二〜八の数牌（タンヤオに使う）。<b>役牌</b>：三元牌と、場風・自風の牌</p></div>
 <div><h3>赤ドラ（赤五）</h3><div class="aka">{aka}</div><p class="note" style="margin-top:6px">ふつうの五と差し替えて使う牌。持っているだけで<b>ドラ1枚</b>として数える（使うかどうかはルールで決める）。</p>
-<h3 style="margin-top:10px">三麻（3人麻雀）</h3><p class="note">萬子の2〜8（28枚）を抜いた108枚で打つのが一般的。</p></div></div>
+<h3 style="margin-top:10px">三麻（3人麻雀）</h3><p class="note">二萬〜八萬（28枚）を抜いた108枚で打つのが一般的。</p></div></div>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 
