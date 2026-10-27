@@ -103,7 +103,7 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['k', 'c'])",
         "k": {
-          ".validate": "newData.isString() && newData.val().matches(/^(ini|z1|z5p|z6|z7|m1|p1|s1|p5r|f1|f5|chicha|yakitori|tenbo|dice)$/)"
+          ".validate": "newData.isString() && newData.val().matches(/^(ini|[mps][1-9]|[mps]5r|z[1-7]|z5p|f[1-8]|chicha|yakitori|tenbo|dice)$/)"
         },
         "c": {
           ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/)"
@@ -122,6 +122,9 @@
         },
         "createdAt": {
           ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "myName": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 16"
         },
         "$other": {
           ".validate": false

@@ -423,13 +423,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .mp-av-btn { position: relative; border: 0; background: none; padding: 0; margin: 0 6px 0 0; cursor: pointer; display: inline-flex; vertical-align: middle; }
 .mp-av-pen { position: absolute; right: -3px; bottom: -3px; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: var(--pc); display: grid; place-items: center; box-shadow: 0 0 0 1.5px var(--pc); }
 .av-prev { display: flex; align-items: center; gap: 12px; margin: 2px 0 14px; } .av-prev b { display: block; font-size: 16px; } .av-prev small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }
+.mp-name-btn { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-width: 0; text-align: left; }
+.mp-name-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mp-name-pen { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #F4F7F6; color: #8A9AA5; flex: none; }
 .av-picks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.av-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 0 8px; padding-bottom: 2px; }
+.av-tabs::-webkit-scrollbar { display: none; }
+.av-tabs button { flex: none; border: 1.5px solid #E2E8E6; background: #fff; color: #4F5C5A; border-radius: 999px; padding: 5px 9px; font-size: 11.5px; font-weight: 800; font-family: inherit; cursor: pointer; }
+.av-tabs button.on { background: var(--pc); border-color: var(--pc); color: #fff; }
 .av-pick { border: 1.5px solid #E2E8E6; background: #fff; border-radius: 10px; padding: 6px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
 .av-pick small { font-size: 9.5px; color: #4F5C5A; line-height: 1.2; text-align: center; }
 .av-pick.on { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc-a15, rgba(23,112,131,.15)); }
 .hdr-av .av-ill { height: 72%; width: auto; } .hdr-av .av-ill.w { width: 82%; height: auto; }
-.lc-av .av-ill, .pd-av .av-ill, .who-av .av-ill, .pp-av .av-ill, .pf-av .av-ill { height: 70%; }
-.lc-av .av-ill.w, .pd-av .av-ill.w, .who-av .av-ill.w, .pp-av .av-ill.w, .pf-av .av-ill.w { width: 80%; height: auto; }
+.lc-av .av-ill, .pd-av .av-ill, .who-av .av-ill, .pp-av .av-ill, .pf-av .av-ill, .rv-av .av-ill, .mu-av .av-ill, .cs-av .av-ill, .gr-op i .av-ill, i > .av-ill { height: 70%; }
+.lc-av .av-ill.w, .pd-av .av-ill.w, .who-av .av-ill.w, .pp-av .av-ill.w, .pf-av .av-ill.w, .rv-av .av-ill.w, .mu-av .av-ill.w, .cs-av .av-ill.w, i > .av-ill.w { width: 80%; height: auto; }
 
 /* フッター（濃い緑背景・リンクは2列で揃える） */
 .site-footer { background: #177083; text-align: center; padding: 34px 20px 44px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }
@@ -4040,7 +4047,8 @@ async function signOutAccount() {
   appState.games = []; saveStorage(); idbClearGames();
   gameTags = {}; saveTags();
   myCircles = {}; circleSeen = {}; saveCircleSeen();
-  try { [CIRCLE_HIDDEN_KEY, CIRCLE_ORDER_KEY, CIRCLE_PREFS_SYNCED].forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  try { [CIRCLE_HIDDEN_KEY, CIRCLE_ORDER_KEY, CIRCLE_PREFS_SYNCED, MY_NAME_KEY, MY_AV_KEY].forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  myAv = null; // 名前とアイコンもアカウントに残っている（次にログインすれば戻る）
   currentUser = null;
   renderHeaderAccount(); renderRecentGames();
   showView('home');
@@ -4145,7 +4153,7 @@ function initAuth() {
     else if (!user && (act === 'view-history' || act === 'view-mystats')) showView('login', true);
     renderAccountCard();
     renderMyListCard();
-    if (user) { attachAccount(user); resumePendingJoin(); loadMyAvatar(); }
+    if (user) { attachAccount(user); resumePendingJoin(); loadMyAvatar(); loadMyName(); }
     // 招待リンクを開いた時点ではログイン状態がまだ分からない。分かった時点で参加の続きをする
     if (document.getElementById('view-join').classList.contains('active')) { renderJoin(); if (user) doJoin(); }
     // 仲間のリンクで結果を開いている途中にログインが分かった → そのまま参加
@@ -4896,7 +4904,7 @@ function rankEmptyBodyHtml() {
 function h2hEmptyGridHtml(keys, nameOf, avOf) {
   if (!keys.length) return '';
   return `<div class="hg-grid hg-empty">${keys.map(k => `<div class="hg-card">
-      <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${esc(avInitial(nameOf(k)))}</span><span class="hg-name">${esc(nameOf(k))}</span></div>
+      <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${keyAvInner(k, nameOf(k))}</span><span class="hg-name">${esc(nameOf(k))}</span></div>
       <div class="hg-rec"><b>—</b><span>勝</span><b>—</b><span>敗</span></div><div class="hg-bar"><i style="width:50%;background:#DCE4E2"></i></div>
       <div class="hg-pct"><span>勝率 <b>—</b></span></div><div class="hg-meta"><span>0試合</span><span>差 <b>—</b></span></div><div class="hg-meta"><span>着順</span><span><b>—</b></span></div></div>`).join('')}</div>`;
 }
@@ -6127,7 +6135,7 @@ function openCircleMember(mid) {
     const d = new Date(b.ms), played = playedFlags(g), tot = gameTotals(g), names = g.settings.playerNames || [];
     const opp = memberDisplayOrder(g.settings).filter(i => i !== b.seat && played[i] && !isPlaceholderName(names[i])).sort((x, y) => (tot[y] || 0) - (tot[x] || 0));
     const MAXO = 6;
-    const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
+    const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
     return `<div class="hg-card cg-card k${g.settings.numPlayers === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''} ${b.score == null ? '' : scoreCls(b.score)}" onclick="openResultSheet('${jsq(b.sid)}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${jsq(mid)}'})">
       ${gameKindHtml(g)}
       <div class="cg-main"><div class="cg-l1"><span class="hg-name">${esc(b.gname)}</span><span class="cg-date">${d.getMonth() + 1}/${d.getDate()}</span></div>
@@ -6250,7 +6258,7 @@ function mupCompute(P) {
 }
 function mupName(p) { return mup.kind === 'circle' ? rosterName(p) : p === '@me' ? 'あなた' : ((myPairCtx && myPairCtx.disp[p]) || ''); }
 function mupAv(p) { return mup.kind === 'circle' ? avColor(p) : p === '@me' ? 'var(--pc)' : avColor(mupName(p)); }
-function mupAvHtml(p, cls = '') { return `<i class="mu-av${cls}" style="background:${mupAv(p)}">${esc(avInitial(mupName(p)))}</i>`; }
+function mupAvHtml(p, cls = '') { return `<i class="mu-av${cls}" style="background:${mupAv(p)}">${mup.kind === 'circle' ? avInner(p, mupName(p)) : esc(avInitial(mupName(p)))}</i>`; }
 function openCircleMatchup(P, fromMember = null) {
   if (!circleData) return;
   const my = myCircleMid();
@@ -6495,7 +6503,7 @@ async function openCircleSettings() {
     const ctl = canManage && m.role !== 'owner' && !me
       ? `<select class="cs-role" aria-label="${esc(nm)}の権限" onchange="setCircleRole('${jsq(uid)}',this.value)"><option value="editor"${m.role === 'editor' ? ' selected' : ''}>編集メンバー</option><option value="admin"${m.role === 'admin' ? ' selected' : ''}>管理者</option><option value="remove">外す…</option></select>`
       : `<span class="cs-pill ${m.role}">${ROLE_LABEL[m.role] || ''}</span>`;
-    return `<div class="cs-row"><span class="cs-av" style="background:${av}">${esc(avInitial(nm))}</span>
+    return `<div class="cs-row"><span class="cs-av" style="background:${av}">${m.mid && rosterOf()[m.mid] ? avInner(m.mid, nm) : esc(avInitial(nm))}</span>
       <span class="cs-who"><b><span>${esc(nm)}</span>${me ? '<em>あなた</em>' : ''}${rn ? '' : '<em class="un">未連携</em>'}</b><small>Google：${gacct}</small></span>${ctl}</div>`;
   }).join('');
   const can = canManage
@@ -6824,7 +6832,7 @@ function renderMpHead() {
     c[np].g++; c[np].r += n;
   });
   const row = np => `<span class="cc-row${c[np].g ? '' : ' none'}"><span class="gk k${np} cc-k">${kindSvg(np, 16)}</span><b>${np === 3 ? '三麻' : '四麻'}</b>${c[np].g ? gamesRoundsText(c[np].g, c[np].r) : 'まだありません'}</span>`;
-  el.innerHTML = `<div class="pg-top"><h1><button type="button" class="mp-av-btn" aria-label="アイコンを変える" onclick="openMyAvatarEdit()">${myAvatarHtml(28)}<i class="mp-av-pen">${ico('pencil', 9)}</i></button><span class="ci-name">${esc(myLabel())}</span></h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
+  el.innerHTML = `<div class="pg-top"><h1><button type="button" class="mp-av-btn" aria-label="アイコンを変える" onclick="openMyAvatarEdit()">${myAvatarHtml(28)}<i class="mp-av-pen">${ico('pencil', 9)}</i></button><button type="button" class="ci-name mp-name-btn" aria-label="名前を変える" onclick="openMyNameEdit()"><span class="mp-name-t">${esc(myLabel())}</span><i class="mp-name-pen">${ico('pencil', 11)}</i></button></h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
 }
 function openCircleEntryMenu() {
   document.getElementById('form-modal-title').textContent = '仲間ページ';
@@ -8085,7 +8093,7 @@ function recentRowHtml(g) {
   const played = playedFlags(g), tot = gameTotals(g);
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
   const MAXO = 6;
-  const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
+  const avs = opp.slice(0, MAXO).map(i => `<i title="${esc(names[i])}" style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</i>`).join('') + (opp.length > MAXO ? `<i class="more">+${opp.length - MAXO}</i>` : '');
   const sc = me != null && played[me] ? tot[me] : null;
   return `<button type="button" class="rg-row rg-row2 k${np}" onclick="joinSession('${jsq(g.id)}')">${gameKindHtml(g)}
     <span class="rg-main"><span class="rg-l1"><span class="rg-name">${esc(g.name)}</span><span class="rg-date">${esc(fmtGameDays(g))}</span></span>
@@ -10485,13 +10493,13 @@ function h2hCardBodyHtml(g) {
   const played = playedFlags(g);
   // 仲間ページの対戦成績と同じ形: だれから見る？（顔アイコン）→ 合計 → 相手ごとのカード → 総当たり表
   const who = memberDisplayOrder(s).filter(i => played[i]).map(i =>
-    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${jsq(g.id)}',${i})"><span class="who-av" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
+    `<button type="button" class="who${i === f ? ' on' : ''}" aria-pressed="${i === f}" onclick="setH2HFocus('${jsq(g.id)}',${i})"><span class="who-av" style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</span><span class="who-nm">${esc(names[i])}</span></button>`).join('');
   const acc = h2hAdd({}, g, m => (m < names.length ? m : null));
   const row = acc[f] || {};
   const keys = h2hSortedKeys(row);
   // 総当たり表は別のカード（h2hMatrixBodyHtml。仲間ページと同じ2枚。2026-10-09）。こちらは「だれから見る？」と相手ごとのカード
   return `<div class="who-lb" style="margin-top:0">だれから見る？</div><div class="who-row">${who}</div>
-    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${jsq(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
+    ${keys.length ? `${h2hTotalHtml(row, names[f])}${h2hSortSegHtml(`setH2HFocus('${jsq(g.id)}',${f})`)}${h2hGridHtml(row, h2hSortKeys(row, keys), k => names[k], k => seatAvColor(g, k), null, 1, k => seatAvInner(g, k))}` : '<div style="font-size:12px;color:#999">まだ同じ試合に出た相手がいません</div>'}
     <div class="h2h-note">勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div>`;
 }
 function renderH2HCard() {
@@ -11936,7 +11944,9 @@ let gameTags = {};
 try { gameTags = JSON.parse(localStorage.getItem(TAGS_KEY)) || {}; } catch (e) { gameTags = {}; }
 function saveTags() { try { localStorage.setItem(TAGS_KEY, JSON.stringify(gameTags)); } catch (e) {} }
 // ---- マイページの自分の名前（2026-10-09）: 「個人」の代わりに出す。試合で自分として選んだ名前のうちいちばん多いもの。
-// アカウントのメニューで決めた名前があればそれ（この端末に保存）。まだ自分を選んだ試合が無ければ「個人」
+// 自分で決めた名前があればそれ。まだ自分を選んだ試合が無ければ「個人」。
+// 2026-10-27〜 決めた名前はアカウントにも保存する（users/{uid}/myName・本人だけが読める）＝どの端末でも同じ名前。この端末にも控える。
+// マイページ（個人）だけの名前で、仲間ページでは名簿の名前、試合の中では試合の名前のまま（どちらも変わらない）
 const MY_NAME_KEY = 'mahjong-my-name';
 function myNameSet() { try { return localStorage.getItem(MY_NAME_KEY) || ''; } catch (e) { return ''; } }
 function myAutoName() {
@@ -11950,25 +11960,48 @@ function openMyNameEdit() {
   document.getElementById('form-modal-title').textContent = 'マイページの名前';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="field"><label>名前</label><input type="text" id="my-name" maxlength="${MAX_NAME_LEN}" value="${esc(myNameSet())}" placeholder="${esc(myAutoName() || '例: むにぃ')}"></div>
-    <div class="mp-note" style="margin:0 2px 10px">空のままなら、試合で自分として選んだ名前を使います</div>
+    <div class="mp-note" style="margin:0 2px 10px">マイページ（個人）に出す名前です。空のままなら、試合で自分として選んだ名前のうちいちばん多いもの${myAutoName() ? `（いまは「${esc(myAutoName())}」）` : ''}を使います。<br>仲間ページでは名簿の名前、試合の中では試合の名前のまま変わりません</div>
     <button class="confirm-btn" onclick="saveMyName()">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
-function saveMyName() {
+async function saveMyName() {
   const v = clampName(document.getElementById('my-name').value, MAX_NAME_LEN);
   try { if (v) localStorage.setItem(MY_NAME_KEY, v); else localStorage.removeItem(MY_NAME_KEY); } catch (e) { /* 保存できなくても困らない */ }
   closeFormModal();
-  if (document.getElementById('view-history').classList.contains('active')) renderHistory();
-  showToast('名前を変えました');
+  rerenderMyAvatar(); // 名前は見出し・切り替え・ヘッダーの頭文字に出る
+  if (currentUser) {
+    try { await db.ref(`users/${myUid()}/myName`).set(v || null); showToast('名前を変えました'); }
+    catch (e) { showToast('この端末では変えました（ほかの端末への反映はルールの貼り替えのあと）', 5000); }
+  } else showToast('名前を変えました');
+  track('my_name_set', { custom: !!v });
+}
+// ログインしたら、アカウントの名前を正にする（アカウントに無ければ、この端末の控えを上げる）
+async function loadMyName() {
+  if (!currentUser) return;
+  try {
+    const v = (await db.ref(`users/${myUid()}/myName`).once('value')).val();
+    if (typeof v === 'string' && v.trim()) {
+      if (v !== myNameSet()) { try { localStorage.setItem(MY_NAME_KEY, v); } catch (e) {} rerenderMyAvatar(); }
+    } else if (myNameSet()) db.ref(`users/${myUid()}/myName`).set(myNameSet()).catch(() => {});
+  } catch (e) { /* ルールを貼る前は読めない。この端末の控えで表示する */ }
 }
 // ---- マイページの自分のアイコン（2026-10-27〜・ユーザーの依頼）----
 // 頭文字か、牌・麻雀グッズの絵を選び、地の色も選ぶ。保存は avatars/{uid} = { k, c }（本人だけが書ける・だれでも読める＝仲間ページで
 // 本人確認済みの人のアイコンになる。作成者・管理者は変えられない）。この端末にも控える（ルールを貼る前・通信できないときも自分の画面では使える）。
 // 決めていなければ今までどおり主色の丸に人のマーク
 const MY_AV_KEY = 'mahjong-my-avatar';
-const AV_ICONS = [['ini', '頭文字'], ['z1', '東'], ['z7', '中'], ['z6', '發'], ['z5p', '白ぽっち'], ['m1', '一萬'], ['p1', '一筒'], ['s1', '一索'],
-  ['p5r', '赤五筒'], ['f1', '花牌（春）'], ['f5', '花牌（梅）'], ['chicha', '起家札'], ['yakitori', '焼き鳥'], ['tenbo', '点棒'], ['dice', 'サイコロ']];
+// 選べる絵はすべての牌（萬子・筒子・索子の1〜9と赤五・字牌・花牌）と麻雀グッズ（2026-10-27 ユーザーの依頼で広げた）。種類ごとのタブで選ぶ
+const AV_KAN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+const AV_GROUPS = [
+  ['goods', '頭文字・道具', [['ini', '頭文字'], ['chicha', '起家札'], ['yakitori', '焼き鳥'], ['tenbo', '点棒'], ['dice', 'サイコロ']]],
+  ['m', '萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬']).concat([['m5r', '赤五萬']])],
+  ['p', '筒子', AV_KAN.map((k, i) => ['p' + (i + 1), (i + 1) + '筒']).concat([['p5r', '赤5筒']])],
+  ['s', '索子', AV_KAN.map((k, i) => ['s' + (i + 1), (i + 1) + '索']).concat([['s5r', '赤5索']])],
+  ['z', '字牌', [['z1', '東'], ['z2', '南'], ['z3', '西'], ['z4', '北'], ['z5', '白'], ['z5p', '白ぽっち'], ['z6', '發'], ['z7', '中']]],
+  ['f', '花牌', [['f1', '春'], ['f2', '夏'], ['f3', '秋'], ['f4', '冬'], ['f5', '梅'], ['f6', '蘭'], ['f7', '菊'], ['f8', '竹']]],
+];
+const AV_ICONS = AV_GROUPS.flatMap(g => g[2]);
 const AV_WIDE = { chicha: 1, yakitori: 1, tenbo: 1 }; // 横長の絵（幅で合わせる）
 let myAv = null;
 try { myAv = JSON.parse(localStorage.getItem(MY_AV_KEY)) || null; } catch (e) { myAv = null; }
@@ -11995,21 +12028,25 @@ function rerenderMyAvatar() {
   else if (document.getElementById('view-mystats').classList.contains('active')) renderMyStats();
   else if (document.getElementById('view-circle').classList.contains('active')) renderCircle();
 }
-let avDraft = null;
+let avDraft = null, avGroup = 'goods';
 function openMyAvatarEdit() {
   avDraft = validAv(myAv) ? { ...myAv } : { k: 'ini', c: AV_HUES[6][1] };
+  avGroup = (AV_GROUPS.find(g => g[2].some(x => x[0] === avDraft.k)) || AV_GROUPS[0])[0];
   renderMyAvatarEdit();
   document.getElementById('form-modal').classList.add('open');
 }
 function renderMyAvatarEdit() {
   const okc = c => whiteContrast(c) >= 3;
-  const icons = AV_ICONS.map(([k, label]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}" aria-label="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avDraft.k='${k}';renderMyAvatarEdit()">${avFaceHtml({ k, c: avDraft.c }, myLabel(), 40)}<small>${esc(label)}</small></button>`).join('');
+  const grp = AV_GROUPS.find(g => g[0] === avGroup) || AV_GROUPS[0];
+  const tabs = `<div class="av-tabs" role="tablist" aria-label="絵の種類">${AV_GROUPS.map(([g, label]) => `<button type="button" role="tab" class="${g === avGroup ? 'on' : ''}" aria-selected="${g === avGroup}" onclick="avGroup='${g}';renderMyAvatarEdit()">${label}</button>`).join('')}</div>`;
+  const icons = grp[2].map(([k, label]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}" aria-label="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avDraft.k='${k}';renderMyAvatarEdit()">${avFaceHtml({ k, c: avDraft.c }, myLabel(), 40)}<small>${esc(label)}</small></button>`).join('');
   const sw = c => okc(c) ? `<button type="button" class="av-sw${avDraft.c === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="avDraft.c='${c}';renderMyAvatarEdit()"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
   const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
   document.getElementById('form-modal-title').textContent = 'マイページのアイコン';
+  requestAnimationFrame(() => { const on = document.querySelector('.av-tabs .on'); if (on) on.scrollIntoView({ inline: 'nearest', block: 'nearest' }); });
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">
     <div class="av-prev">${avFaceHtml(avDraft, myLabel(), 72)}<span><b>${esc(myLabel())}</b><small>仲間ページで本人確認済みの席にも、このアイコンが出ます。変えられるのは自分だけです</small></span></div>
-    <div class="field"><label>絵</label><div class="av-picks">${icons}</div></div>
+    <div class="field"><label>絵</label>${tabs}<div class="av-picks">${icons}</div></div>
     <div class="field"><label>地の色</label><div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div><div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div></div>
     <button class="confirm-btn" onclick="saveMyAvatar()">保存する</button>
     ${validAv(myAv) ? `<button type="button" class="btn-tint" style="margin-top:8px" onclick="saveMyAvatar(true)">人のマークに戻す</button>` : ''}
@@ -12328,7 +12365,7 @@ function h2hPairCardsHtml(row, nameOf, avOf) {
   const worst = ks.reduce((a, b) => (h2hWinPct(row[b]) < h2hWinPct(row[a]) ? b : a));
   const card = (k, cls, label) => {
     const e = row[k], nm = nameOf(k);
-    return `<div class="pc ${cls}"><div class="pc-l">${label}</div><div class="pc-who"><span class="rv-av" style="background:${avOf(k)}">${esc(avInitial(nm))}</span><b>${esc(nm)}</b></div>
+    return `<div class="pc ${cls}"><div class="pc-l">${label}</div><div class="pc-who"><span class="rv-av" style="background:${avOf(k)}">${keyAvInner(k, nm)}</span><b>${esc(nm)}</b></div>
       <div class="pc-s">${h2hRecordText(e)} ・ 勝率${h2hWinPct(e)}%</div></div>`;
   };
   const cards = [];
@@ -12359,7 +12396,7 @@ function h2hLvBase(rowOf) {
   try { return withKindAll(() => Math.max(h2hLvOf(rowOf('4')), h2hLvOf(rowOf('3')))); }
   finally { mpPeriod = p; periodCutMemo = null; }
 }
-function h2hGridHtml(row, keys, nameOf, avOf, clickOf = null, lvBase = 1) {
+function h2hGridHtml(row, keys, nameOf, avOf, clickOf = null, lvBase = 1, innerOf = null) {
   // 文字の大きさは全部のカードでそろえる（いちばん桁の多いカードに合わせる。lvBase＝合計で数えたときの段より小さくしない）
   const lv = Math.max(lvBase, h2hLvOf(row, keys));
   const sz = lv === 3 ? ' sz3' : lv === 2 ? ' sz2' : '';
@@ -12370,7 +12407,7 @@ function h2hGridHtml(row, keys, nameOf, avOf, clickOf = null, lvBase = 1) {
     const diff = e.scoreA - e.scoreB;
     // 数字の桁で文字の大きさを変える（4桁勝4桁敗でも1行に収める）
     return `<div class="hg-card ${cls}${sz}${clickOf ? ' tap' : ''}"${clickOf ? ` role="button" tabindex="0" onclick="${clickOf(k)}"` : ''}>
-      <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${esc(avInitial(nm))}</span><span class="hg-name">${esc(nm)}</span></div>
+      <div class="hg-top"><span class="rv-av" style="background:${avOf(k)};width:28px;height:28px;font-size:13px">${innerOf ? innerOf(k) : keyAvInner(k, nm)}</span><span class="hg-name">${esc(nm)}</span></div>
       <div class="hg-rec"><b class="w">${e.w}</b><span>勝</span><b class="l">${e.l}</b><span>敗</span></div>
       <div class="hg-bar"><i style="width:${pct == null ? 50 : pct}%"></i></div>
       <div class="hg-pct"><span>勝率 <b class="${cls}">${pct == null ? '—' : pct + '%'}</b></span>${e.d ? `<span>${e.d}分</span>` : ''}</div>
@@ -12410,7 +12447,7 @@ function h2hListHtml(row, keys, nameOf, avOf) {
     const pc = pct == null || pct === 50 ? '' : pct > 50 ? 'pos' : 'neg';
     const diff = e.scoreA - e.scoreB;
     return `<details class="h2-row"><summary><div class="h2-sum">
-        <span class="rv-av" style="background:${avOf(k)}">${esc(avInitial(nm))}</span><span class="rv-name">${esc(nm)}</span>
+        <span class="rv-av" style="background:${avOf(k)}">${keyAvInner(k, nm)}</span><span class="rv-name">${esc(nm)}</span>
         <span class="rv-pct ${pc}">${pct == null ? '—' : pct + '%'}<small>勝率</small></span>
         ${wlBarHtml(e)}<span class="rv-sub">${e.d ? `${e.d}分 ・ ` : ''}${e.n}試合 ・ 差 <b class="${scoreCls(diff)}">${fmtScore(diff)}</b></span>
         <span class="h2-chev">${ico('chevron', 12)}</span></div></summary>
@@ -12675,16 +12712,61 @@ function autoAvColor(s) { let h = 0; for (const ch of String(s || '')) h = (h * 
 function avColor(s) { const rc = circleData && circleData.roster && circleData.roster[s]; const a = rc && rc.uid ? rosterAv(s) : null; if (a) return a.c; if (rc && rc.color) return rc.color; return autoAvColor(s); }
 // 試合の席の頭文字の色: 仲間ページで名簿の人に連携済みの席は、その人の名簿の色（仲間ページの頭文字と同じ）。未連携の席は名前から。
 // 開いている仲間ページを先に、次に開いた・先読みした仲間ページ（circleStore）、最後に色だけ読んだ仲間ページ（circleLite）を見る
-function seatAvColor(g, i) {
-  const names = (g && g.settings && g.settings.playerNames) || [];
+// 2026-10-27〜 本人確認済みの人の席は、その人がマイページで決めたアイコン（色も絵も）。頭文字のアイコンなら名簿の名前の頭文字。
+// 未連携の席は今までどおり試合の名前の頭文字（試合の中の名前は変えない）
+function seatRoster(g, i) {
   const sid = g && g.id;
   if (sid) for (const d of [circleData, ...Object.values(circleStore).map(c => c && c.data), ...Object.values(circleLite)]) {
     const st = d && d.games && d.games[sid] && d.games[sid].seats && d.games[sid].seats[i];
     const r = st && st.mid && d.roster && d.roster[st.mid];
-    if (r) return r.color || autoAvColor(st.mid);
+    if (r) return { mid: st.mid, r };
   }
+  return null;
+}
+// 名簿の人（どの仲間ページでも）の本人のアイコン。まだ読んでいなければ読みに行き、読めたら描き直す
+function uidAv(uid) {
+  if (!uid) return null;
+  if (uid === myUid() && validAv(myAv)) return myAv;
+  if (!avatarAsked.has(uid)) queueAvatarLoad(uid);
+  return validAv(avatarCache[uid]) ? avatarCache[uid] : null;
+}
+let avQueue = new Set(), avQueueTimer = null;
+function queueAvatarLoad(uid) {
+  avatarAsked.add(uid); avQueue.add(uid);
+  clearTimeout(avQueueTimer);
+  avQueueTimer = setTimeout(() => {
+    const uids = [...avQueue]; avQueue = new Set();
+    Promise.all(uids.map(u => db.ref(`avatars/${u}`).once('value').then(x => { const v = x.val(); avatarCache[u] = validAv(v) ? { k: v.k, c: v.c } : null; return validAv(v); }).catch(() => false)))
+      .then(got => { if (got.some(Boolean)) rerenderAvatars(); });
+  }, 30);
+}
+// アイコンが読めたあとに、いま見ている画面を描き直す
+function rerenderAvatars() {
+  try {
+    const act = (document.querySelector('.view.active') || {}).id || '';
+    if (act === 'view-circle') renderCircle();
+    else if (act === 'view-history') renderHistory();
+    else if (act === 'view-mystats') renderMyStats();
+    else if (act === 'view-game' && activeGame) renderGame();
+    else if (act === 'view-detail' && detailGame) viewDetail(detailGame);
+  } catch (e) { /* 次に描くときに出る */ }
+}
+function seatAv(g, i) { const x = seatRoster(g, i); return x && x.r.uid ? uidAv(x.r.uid) : null; }
+function seatAvColor(g, i) {
+  const names = (g && g.settings && g.settings.playerNames) || [];
+  const x = seatRoster(g, i);
+  if (x) { const a = x.r.uid ? uidAv(x.r.uid) : null; return a ? a.c : (x.r.color || autoAvColor(x.mid)); }
   return avColor(names[i]);
 }
+// 席のアイコンの中身（絵か頭文字）
+function seatAvInner(g, i) {
+  const names = (g && g.settings && g.settings.playerNames) || [];
+  const x = seatRoster(g, i), a = x && x.r.uid ? uidAv(x.r.uid) : null;
+  if (a && a.k !== 'ini') return avIllHtml(a.k);
+  return esc(avInitial(a ? x.r.name : names[i]));
+}
+// 対戦成績などの相手の顔: 仲間ページの名簿の人（キー＝名簿のid）なら名簿のアイコン、それ以外（個人の相手・名前）は頭文字
+function keyAvInner(k, nm) { return rosterOf()[k] ? avInner(k, nm) : esc(avInitial(nm)); }
 // ---- 仲間ページのアイコン（2026-10-09）----
 // 頭文字は SVG で描く。かな・漢字は字の箱の真ん中、英字・数字は大文字の高さの真ん中に置く（CSS の文字の箱では、かな・漢字と英字で
 // 上下のずれ方が違い、どちらかが中心から外れた）。色は仲間ページの id から決める（緑系・青系＝四麻・三麻の色は使わない）。
@@ -13954,7 +14036,7 @@ function oppLineHtml(g, me) {
   const opp = memberDisplayOrder(s).filter(i => i !== me && played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
   if (!opp.length) return '';
   // 全員を並べ、1行に入る分だけ見せる（入らない人は「ほかn人」。2行にしない＝fitOppLine が描いたあとで幅を測って詰める）
-  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${opp.map(i => `<span class="gr-op"><i style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i><b>${esc(names[i])}</b></span>`).join('')}<span class="gr-more" hidden></span></div>`;
+  return `<div class="gr-opp"><span class="gr-vs">${me != null ? '相手' : '対戦'}</span>${opp.map(i => `<span class="gr-op"><i style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</i><b>${esc(names[i])}</b></span>`).join('')}<span class="gr-more" hidden></span></div>`;
 }
 // 相手の行を1行に収める: 後ろの人から隠して「ほかn人」にする。1人目も入らなければ名前を「…」で切る。
 // 幅が決まってから測る（ResizeObserver＝描いた直後・表示されたとき・画面の幅が変わったとき）
@@ -14270,7 +14352,7 @@ function histTilesHtml(items) {
     const st = !n ? ' empty' : n <= HIST_FEW ? ' few' : '';
     const d = new Date(gameDayMs(g));
     const MAXAV = who.length > 4 ? 3 : 4; // 5人以上は3人＋「+n」（幅104pxのタイルでも欠けない数。2026-10-08）
-    const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${seatAvColor(g, i)}">${esc(avInitial(names[i]))}</i>`).join('')
+    const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</i>`).join('')
       + (who.length > MAXAV ? `<i class="more">+${who.length - MAXAV}</i>` : '');
     // rank があれば「参加」の代わりに自分の順位（メダルの色）。マイページの過去の試合（2026-10-26 ユーザーの依頼「タイルの中にスコアや順位を」）
     const mark = typeof rank === 'number' ? `<em class="ht-rk r${rank <= 3 ? rank : 0}">${rank}位</em>` : hideMark ? '' : me == null ? (me === null ? '<em class="ht-out">不参加</em>' : '') : '<em class="ht-me">参加</em>';

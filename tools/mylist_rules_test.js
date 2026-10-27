@@ -83,6 +83,20 @@ const at = () => new Date().toISOString();
   await t('知らない項目は書けない', assertFails(A.ref(`mylists/${OLD}/groups/${GID}`).update({ foo: 1 })));
   await t('一覧の直下に知らない項目は書けない', assertFails(A.ref(`mylists/${OLD}/foo`).set(1)));
 
+  // マイページの名前（users/{uid}/myName・本人だけ）とアイコン（avatars/{uid}・すべての牌から選べる）。2026-10-27
+  await t('自分の名前を保存できる', assertSucceeds(A.ref('users/userA/myName').set('むにぃ')));
+  await t('名前を消せる（自動の名前に戻す）', assertSucceeds(A.ref('users/userA/myName').remove()));
+  await t('空の名前は入れられない', assertFails(A.ref('users/userA/myName').set('')));
+  await t('長すぎる名前は入れられない', assertFails(A.ref('users/userA/myName').set('あ'.repeat(17))));
+  await t('他人の名前は書けない', assertFails(B.ref('users/userA/myName').set('いたずら')));
+  await t('他人の名前は読めない', assertFails(B.ref('users/userA/myName').once('value')));
+  for (const k of ['m9', 'p5r', 's7', 'z2', 'z5', 'f8', 'ini', 'dice'])
+    await t(`アイコンに ${k} を選べる`, assertSucceeds(A.ref('avatars/userA').set({ k, c: '#177083' })));
+  for (const k of ['m0', 'm10', 'z8', 'f9', 'x1', 'evil'])
+    await t(`決まっていない絵 ${k} は選べない`, assertFails(A.ref('avatars/userA').set({ k, c: '#177083' })));
+  await t('他人のアイコンは書けない', assertFails(B.ref('avatars/userA').set({ k: 'm1', c: '#177083' })));
+  await t('アイコンはだれでも読める', assertSucceeds(U.ref('avatars/userA').once('value')));
+
   console.log(`\n${n - ng}/${n} ${ng ? 'FAILED' : 'ALL PASS'}`);
   await env.cleanup();
   process.exit(ng ? 1 : 0);
