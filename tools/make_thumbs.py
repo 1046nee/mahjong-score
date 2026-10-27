@@ -128,6 +128,9 @@ def T(name, color, body):
 
 
 THUMBS = [
+ T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),
+ T("blog-mahjong-manga", "#F28C28", lambda: card(62, 34, 92, 130, "#fff", 8) + card(166, 34, 92, 130, "#fff", 8) + lines(74, 62, 4, 68, 16) + tiles(["z7", "z6"], 180, 66, 30, 8) + bubble(150, 168, 120, 48, "ロン！", 26, "#FFD23F") + sparkle(272, 40, 12)),
+ T("blog-mahjong-anime", "#2F6BFF", lambda: card(56, 30, 208, 140, "#1F2A28", 12) + card(66, 40, 188, 120, "#fff", 6) + row_center(["m1", "p1", "z5"], 70, 34, 6) + '<path d="M150 176 L170 176 L160 194 Z" fill="#fff"/>' + '<rect x="110" y="196" width="100" height="8" rx="4" fill="#fff"/>' + sparkle(276, 46, 13)),
  T("blog-rule-wakareme", "#7C5CFF", lambda: row_center(["z1", "z1"], 44, 54, 6) + bubble(54, 150, 92, 52, "2符", 30) + bubble(174, 150, 92, 52, "4符", 30) + '<text x="160" y="186" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" ' + F + '>?</text>' + sparkle(262, 48, 13) + sparkle(56, 52, 9)),
  T("blog-local-yaku", "#FF5C8A", lambda: row_center(["p2", "p3", "p4", "p5", "p6"], 70, 46, 3) + sparkle(250, 50, 14) + sparkle(64, 196, 9) + '<text x="160" y="214" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" ' + F + '>ローカル役満</text>'),
  T("blog-mahjong-kanji", "#FFC233", lambda: bubble(40, 46, 104, 96, "混", 64) + bubble(176, 46, 104, 96, "清", 64, "#1F2A28", "#fff") + '<text x="160" y="206" text-anchor="middle" font-size="22" font-weight="900" fill="#1F2A28" ' + F + '>字でつながる</text>'),
