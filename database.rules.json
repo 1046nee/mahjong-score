@@ -103,7 +103,7 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['k', 'c'])",
         "k": {
-          ".validate": "newData.isString() && newData.val().matches(/^(ini|[mps][1-9]|[mps]5r|z[1-7]|z5p|f[1-8]|chicha|yakitori|tenbo|dice)$/)"
+          ".validate": "newData.isString() && newData.val().matches(/^(ini|[mps][1-9]|[mps]5r|z[1-7]|z5p|f[1-8]|chicha|yakitori|chicha-ura|yakitori-ura|tenbo|dice|tb100|tb5000|tb10000|tb100x5|ct100|ct500|ct1000|ct5000|ct10000|cttobi|d1|d2|d3|d4|d6|chip-r|chip-b|chip-g|chip-o|chip-k|haiyose|back|taku|taku-top|sidetable|oshibori|oolong)$/)"
         },
         "c": {
           ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/)"
