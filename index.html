@@ -2492,6 +2492,7 @@ button.ios-row:active { background: #F2F6F5; }
 .toggle-btn.active, .sanma .toggle-btn.active { background: #fff; color: var(--pc); font-weight: 800; box-shadow: var(--sh-thumb); }
 .grecaptcha-badge { visibility: hidden; } /* reCAPTCHA のバッジは隠し、プライバシーポリシーに書く（Googleが認める方法） */
 </style>
+  <link rel="stylesheet" href="/assets/site-foot.css">
 </head>
 <body>
 <!-- アプリ内アイコンのスプライト（LPの特徴カードと同じ描き方: 48×48・フラットトーン）。
@@ -2857,21 +2858,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 
   <footer class="site-footer">
-    <div class="footer-links">
-      <a href="score-basics.html">スコア計算の基本</a>
-      <a href="faq.html">よくある質問</a>
-      <a href="blog.html">ブログ</a>
-      <a href="news/">お知らせ</a>
-      <a href="news/feed.xml">お知らせRSS</a>
-      <a href="terms.html">利用規約</a>
-      <a href="privacy.html">プライバシーポリシー</a>
-      <a href="about.html">運営者について</a>
-      <a href="contact.html">お問い合わせ</a>
-      <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
-      <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
-    </div>
-    <div>© 2026 まじゃすこ</div>
-  </footer>
+  <div class="ft"><a class="ft-brand" href="/"><img src="/assets/favicon.png" alt="" width="40" height="40"><span><b>まじゃすこ</b><small>麻雀のスコア記録を、スマホでかんたんに</small></span></a><div class="ft-sns"><a href="https://x.com/majasco_jp" target="_blank" rel="noopener" aria-label="まじゃすこ公式X（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg" alt="X" width="40" height="40" loading="lazy"></a><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener" aria-label="まじゃすこ公式Instagram（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg" alt="Instagram" width="40" height="40" loading="lazy"></a></div><nav class="ft-cols" aria-label="サイトのリンク"><div><b>使う</b><a href="/">トップ</a><a href="/score-basics.html">スコア計算の基本</a><a href="/faq.html">よくある質問</a></div><div><b>読む</b><a href="/blog.html">ブログ</a><a href="/news/">お知らせ</a><a href="/news/feed.xml">お知らせRSS</a></div><div><b>このサイトについて</b><a href="/about.html">運営者について</a><a href="/contact.html">お問い合わせ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a></div></nav><div class="ft-copy">© 2026 まじゃすこ</div></div>
+</footer>
 </div>
 
 <!-- SETUP -->
@@ -13332,8 +13320,7 @@ function mountMpFooters() {
     const v = document.getElementById(id);
     if (!v || v.querySelector(':scope > .site-footer')) return;
     const sp = document.createElement('div'); sp.className = 'mp-foot-sp';
-    const f = src.cloneNode(true); f.classList.add('mp-sitefoot');
-    const ln = f.querySelector('.footer-links'); if (ln) ln.insertAdjacentHTML('afterbegin', '<a href="/">トップ</a>'); // ほかのページのフッターと同じ12リンク（LPは自分のページなので「トップ」が無い）
+    const f = src.cloneNode(true); f.classList.add('mp-sitefoot');   // 中身は全ページ共通（tools/site_footer.py。「トップ」も入っている）
     v.appendChild(sp); v.appendChild(f);
   });
 }

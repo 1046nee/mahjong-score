@@ -81,7 +81,7 @@
    **画像を載せるときの正規の方法**: 公式YouTubeの埋め込み（youtube-nocookie）、App Storeのアイコン（Search API）、楽天の商品画像（API）。公式サイト・Xの写真の転載はしない
    **動画の埋め込みの書き方**: 埋め込み可（oEmbedで確認）の動画だけ。下に「動画の題名リンク／出典：チャンネル名（YouTube）・長さ・動画URL」を必ず書く（CSSは assets/blog.css の .yt / .cap / .vcard）。Xのポストを埋め込むときは公式の埋め込みコード（blockquote＋widgets.js）を使う。会社のネットワークではXが開けないので、ポストのURLはユーザーにもらう
    **SNSアカウントとXのポスト（2026-10-22〜）**: アカウントは `assets/blog-site.js` の `SNS_ACCOUNTS` に足し、記事には `<div class="sns-list" data-sns="キー,キー"></div>`（静的にカードを書いてもよい・検索に見せたいときは静的に）。
-   全記事の最後（著者ブロックの前）に「まじゃすこの公式SNS」（X・Instagram）、サイドバーに「公式SNS」を blog-site.js が自動で入れる。
+   全記事の最後（著者ブロックの前）に「まじゃすこの公式SNS」（X・Instagram）、サイドバーに「公式SNS」を blog-site.js が自動で入れる。**どちらもアイコンだけ**（説明文・ハンドル・カードは出さない。2026-10-27 ユーザーの依頼。`SNS_ICONS_HTML`）。著者ブロックのアイコンは **assets/munii.svg**（牌のキャラクターが1000点棒を持った、むにぃのオリジナルの絵。about.html のプロフィールも同じ）
    Xのポストは公式の埋め込みコード（blockquote.twitter-tweet）をそのまま貼る。widgets.js はポストのあるページだけ、画面に近づいたら読む（ほかの記事にはXのスクリプトを入れない）。
    Xが開けない環境では blockquote が引用の形で残るので、**blockquote の中にポストの本文と日付を必ず残す**（公式コードのまま）。
    **アカウント・ポストは確かめたものだけ載せる**。ポストは `curl -A "Twitterbot/1.0" https://x.com/{handle}/status/{id}` の meta（og:description=本文・article:published_time=日時・twitter:creator=投稿者・og:image が pbs.twimg.com/media なら画像つき）で本文と日付を確かめてから貼る（scratchpad の xverify.py / xembed.py の形）。探すのは WebSearch の `site:x.com`。

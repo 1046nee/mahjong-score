@@ -212,12 +212,13 @@
 - GA4はGTM経由で配信する構成を推奨（GTM管理画面でGA4タグを追加。コード変更不要）
 
 ## ブログ系ページの共通ヘッダー/フッター
-- `/assets/blog-site.js` の `renderChrome()` が一元描画（LPと同じ見た目=中央ロゴ48px・右上「マイページ」＝`/#mypage`・緑2列フッター）。ブログはログイン状態を知らないので、文言は「マイページ」で固定（開くとログイン中はマイページ、未ログインはログイン画面）
+- `/assets/blog-site.js` の `renderChrome()` が一元描画（中央ロゴ48px・右上「マイページ」＝`/#mypage`・**左上は戻るボタン用に空ける**（padding 56px））。ブログはログイン状態を知らないので、文言は「マイページ」で固定（開くとログイン中はマイページ、未ログインはログイン画面）
+- **ヘッダーは上に残る（sticky）**。40px以上スクロールしたら `.compact`（ロゴ36px・上下の余白を詰める）。記事（`.blog-post`）では、読んだところまでヘッダーの下にオレンジの線（`.read-bar`）（2026-10-27）
 - 各HTMLの静的.site-head/.site-footはJS無効時のフォールバック。デザイン変更はrenderChromeを直す
-- **フッターは全ページ標準12リンク・同一順序**: トップ/スコア計算の基本/よくある質問/ブログ/お知らせ/お知らせRSS/
-  利用規約/プライバシーポリシー/運営者について/お問い合わせ/X（公式）/Instagram（公式）。
-  **renderChromeと静的HTML（.site-foot・index.htmlの.footer-links）の両方を同じ内容に保つ**。見た目も全ページLPと同じ緑・2列（faq・privacy・terms・score-basics の灰色の .footer は2026-10-08に .site-foot へ統一。マイページ（個人・自分の成績・仲間ページ）にもLPのフッターを写して「トップ」を足して置く＝`mountMpFooters`）
-  （静的側はAdSense/クローラー対策の本体。リンクを増減するときは全部直す）
+- **フッター（2026-10-27〜）**: ロゴと一言 → 公式SNSはアイコンだけ（X・Instagram）→ リンクを3つのまとまりに分ける（**使う**＝トップ・スコア計算の基本・よくある質問／**読む**＝ブログ・お知らせ・お知らせRSS／**このサイトについて**＝運営者について・お問い合わせ・利用規約・プライバシーポリシー）→ ©。
+  見た目は `/assets/site-foot.css`（全ページ共通・スマホは2列＋「このサイトについて」を下に）。中身は **`python tools/site_footer.py`** が静的HTML（`<footer class="site-foot">`・LPの `<footer class="site-footer">`）を全部同じに書きかえ、`<head>` に site-foot.css を入れる。blog-site.js の `FOOT_HTML` と1文字も違わないこと（違えばスクリプトが止まる）。
+  マイページ（個人・自分の成績・仲間ページ）はLPのフッターを写して置く＝`mountMpFooters`。404は © だけの簡単なフッターのまま
+  （静的側はAdSense/クローラー対策の本体。リンクを増減するときは FOOT と FOOT_HTML を直してスクリプトを実行）
 - **一覧4ページ（blog.html・/mahjong/・/news/・/blog/）の記事カードは静的HTML**。
   新記事公開時は BLOG_POSTS 追加後に `node tools/build_post_lists.js` を実行して再生成（→ docs/blog-spec.md）。
   各一覧の冒頭には200字以上のカテゴリ説明文（.cat-intro）を置く（空のJSシェルに戻さない）

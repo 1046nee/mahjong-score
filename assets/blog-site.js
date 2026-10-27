@@ -238,17 +238,33 @@ const BLOG_POSTS = [
       + `<p class="sns-desc">${a.desc}</p>`
       + `<a class="sns-url" href="${a.url}" target="_blank" rel="noopener"><small>${a.go}</small>${host}</a></div></div>`;
   }
+  // フッターの中身（2026-10-27〜）。tools/site_footer.py の FOOT と1文字も違わないこと（あちらが assert で確かめる）。見た目は /assets/site-foot.css
+  const FOOT_HTML = '<div class="ft"><a class="ft-brand" href="/"><img src="/assets/favicon.png" alt="" width="40" height="40"><span><b>まじゃすこ</b><small>麻雀のスコア記録を、スマホでかんたんに</small></span></a><div class="ft-sns"><a href="https://x.com/majasco_jp" target="_blank" rel="noopener" aria-label="まじゃすこ公式X（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg" alt="X" width="40" height="40" loading="lazy"></a><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener" aria-label="まじゃすこ公式Instagram（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg" alt="Instagram" width="40" height="40" loading="lazy"></a></div><nav class="ft-cols" aria-label="サイトのリンク"><div><b>使う</b><a href="/">トップ</a><a href="/score-basics.html">スコア計算の基本</a><a href="/faq.html">よくある質問</a></div><div><b>読む</b><a href="/blog.html">ブログ</a><a href="/news/">お知らせ</a><a href="/news/feed.xml">お知らせRSS</a></div><div><b>このサイトについて</b><a href="/about.html">運営者について</a><a href="/contact.html">お問い合わせ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a></div></nav><div class="ft-copy">© 2026 まじゃすこ</div></div>';
+  // 公式SNS（記事の最後・右の列）: アイコンだけ（2026-10-27 ユーザーの依頼「説明文はいらない」）
+  const SNS_ICONS_HTML = (size) => `<div class="sns-icons">`
+    + `<a href="https://x.com/majasco_jp" target="_blank" rel="noopener" aria-label="まじゃすこ公式X（@majasco_jp）">${SNS_ICON.x.replace(/40/g, size)}</a>`
+    + `<a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener" aria-label="まじゃすこ公式Instagram（@majasco_jp）">${SNS_ICON.ig.replace(/40/g, size)}</a></div>`;
   function renderChrome() {
+    if (!document.querySelector('link[href="/assets/site-foot.css"]')) {
+      const ln = document.createElement('link'); ln.rel = 'stylesheet'; ln.href = '/assets/site-foot.css'; document.head.appendChild(ln);
+    }
     const st = document.createElement('style');
     st.textContent = `
-      .site-head { background: #fff; border-bottom: 1px solid #eef3f2; }
-      .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; }
+      .site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: sticky; top: 0; z-index: 50; }
+      .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; transition: padding .2s; }
+      .site-head .brand img { height: 48px; vertical-align: middle; transition: height .2s; }
+      .site-head.compact .site-head-inner { padding: 4px 56px; }
+      .site-head.compact .brand img { height: 36px; }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
-      .site-foot { background: #177083 !important; border-top: none !important; text-align: center; padding: 34px 20px 44px !important; color: rgba(255,255,255,0.85) !important; font-size: 12px; }
-      .site-foot a { color: #fff !important; text-decoration: underline; margin: 0 !important; font-size: 13px; line-height: 1.6; }
-      .site-foot .links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; max-width: 440px; margin: 0 auto 18px; text-align: left; }
+      .site-head .read-bar { position: absolute; left: 0; bottom: -1px; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
+      .sns-icons { display: flex; gap: 12px; }
+      .sns-icons a { display: block; border-radius: 12px; overflow: hidden; line-height: 0; box-shadow: 0 0 0 1px #E2E8E6; transition: transform .15s; }
+      .sns-icons a:hover { transform: translateY(-2px); }
+      .sns-follow.mini { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .sns-follow.mini .sns-follow-title { margin: 0; }
       .author-box { display: flex; gap: 14px; margin: 36px 0 0; padding: 18px; background: #f4faf7; border: 1px solid #e2ece7; border-radius: 12px; }
-      .author-box .a-icon { width: 56px; height: 56px; flex-shrink: 0; border-radius: 50%; background: #177083; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 24px; }
+      .author-box .a-icon { width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%; background: #E4F3EC; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+      .author-box .a-icon img { width: 100%; height: 100%; display: block; }
       .author-box .a-body { min-width: 0; }
       .author-box .a-name { font-weight: 800; font-size: 14px; color: #177083; margin-bottom: 6px; }
       .author-box p { font-size: 13px; color: #444; margin: 0 0 8px; line-height: 1.8; }
@@ -256,30 +272,31 @@ const BLOG_POSTS = [
     document.head.appendChild(st);
     const head = document.querySelector('.site-head');
     if (head) {
+      // 左上は戻るボタン用に空けておく（padding 56px）。右上はマイページ。ロゴは真ん中
       head.innerHTML = `<div class="site-head-inner">
-        <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco" style="height:48px;vertical-align:middle"></a>
+        <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco"></a>
         <a class="head-app-link" href="/#mypage">マイページ</a>
       </div>`;
+      // ヘッダーは上に残し、下へ読み進めたら少し細くする（2026-10-27）。記事では読んだところまでオレンジの線
+      const art = document.querySelector('.blog-post');
+      if (art) head.insertAdjacentHTML('beforeend', '<div class="read-bar" aria-hidden="true"></div>');
+      const bar = head.querySelector('.read-bar');
+      let ticking = false;
+      const onScroll = () => {
+        ticking = false;
+        head.classList.toggle('compact', window.scrollY > 40);
+        if (bar && art) {
+          const r = art.getBoundingClientRect();
+          const total = r.height - window.innerHeight * 0.6;
+          const p = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
+          bar.style.width = (p * 100).toFixed(1) + '%';
+        }
+      };
+      window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+      onScroll();
     }
     const foot = document.querySelector('.site-foot');
-    if (foot) {
-      // 静的HTMLのフッターと同じ12リンク・同じ順序に保つこと（正はこの並び。変えるときは両方直す）
-      foot.innerHTML = `<div class="links">
-        <a href="/">トップ</a>
-        <a href="/score-basics.html">スコア計算の基本</a>
-        <a href="/faq.html">よくある質問</a>
-        <a href="/blog.html">ブログ</a>
-        <a href="/news/">お知らせ</a>
-        <a href="/news/feed.xml">お知らせRSS</a>
-        <a href="/terms.html">利用規約</a>
-        <a href="/privacy.html">プライバシーポリシー</a>
-        <a href="/about.html">運営者について</a>
-        <a href="/contact.html">お問い合わせ</a>
-        <a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（公式）</a>
-        <a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（公式）</a>
-      </div>
-      <div>© 2026 まじゃすこ</div>`;
-    }
+    if (foot) foot.innerHTML = FOOT_HTML;   // 静的HTMLのフッターも同じ中身（tools/site_footer.py）
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -306,10 +323,8 @@ const BLOG_POSTS = [
     const ctaBox = document.querySelector('.blog-post .cta-wrap');
     if (ctaBox && !document.querySelector('.sns-follow')) {
       const f = document.createElement('div');
-      f.className = 'sns-follow';
-      f.innerHTML = `<p class="sns-follow-title">まじゃすこの公式SNS</p>
-        <p class="sns-follow-lead">新しい記事と、集計が楽になる機能のお知らせを流しています。記事の感想や「こんなことを書いてほしい」もお気軽にどうぞ。</p>
-        <div class="sns-list two">${snsCardHtml('majasco_x')}${snsCardHtml('majasco_ig')}</div>`;
+      f.className = 'sns-follow mini';
+      f.innerHTML = `<p class="sns-follow-title">まじゃすこの公式SNS</p>${SNS_ICONS_HTML(44)}`;
       ctaBox.parentNode.insertBefore(f, ctaBox);
     }
 
@@ -335,7 +350,7 @@ const BLOG_POSTS = [
     if (cta && !document.querySelector('.author-box')) {
       const box = document.createElement('div');
       box.className = 'author-box';
-      box.innerHTML = `<div class="a-icon" aria-hidden="true">む</div>
+      box.innerHTML = `<div class="a-icon" aria-hidden="true"><img src="/assets/munii.svg" alt="" width="60" height="60"></div>
         <div class="a-body">
           <div class="a-name">この記事を書いた人：むにぃ</div>
           <p>麻雀スコア記録アプリ「まじゃすこ」の開発・運営者。仲間内のセット麻雀で長らく「集計係」を担当してきた経験から、点数を打つだけで集計が終わる無料アプリを個人開発しました。当ブログでは、初心者向けのルール解説とスコア計算の話を書いています。</p>
@@ -376,10 +391,7 @@ const BLOG_POSTS = [
       html += `<div class="side-box"><h2>最新のアップデート</h2>`
         + (news.length ? `<ul>${news.map(sideItem).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
         + `<a class="sb-more" href="/news/">お知らせ一覧 ›</a>　<a class="sb-more" href="/news/feed.xml">RSS</a></div>`;
-      html += `<div class="side-box"><h2>公式SNS</h2><ul>`
-        + `<li class="sns-side">${SNS_ICON.x.replace(/40/g, '28')}<span><a href="https://x.com/majasco_jp" target="_blank" rel="noopener">X（@majasco_jp）</a><br><small>新機能・使い方のコツ・新しい記事</small></span></li>`
-        + `<li class="sns-side">${SNS_ICON.ig.replace(/40/g, '28')}<span><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener">Instagram（@majasco_jp）</a><br><small>画面の画像で見る使い方・用語の図解</small></span></li>`
-        + `</ul></div>`;
+      html += `<div class="side-box"><h2>公式SNS</h2>${SNS_ICONS_HTML(40)}</div>`;
       el.innerHTML = html;
     });
 

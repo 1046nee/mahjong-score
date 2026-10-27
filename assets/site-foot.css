@@ -1,0 +1,28 @@
+/* 全ページ共通のフッター（2026-10-27〜・ユーザーの依頼「フッターをもっと最適な配置に」）
+   中身は tools/site_footer.py が静的HTML（.site-foot・LPの .site-footer）に書き、記事などは blog-site.js の renderChrome が同じ中身を描く。
+   ロゴと一言 → SNSはアイコンだけ → リンクを「使う／読む／このサイトについて」の3つに分ける → コピーライト */
+.site-foot, .site-footer { background: #177083 !important; color: rgba(255,255,255,0.85) !important; padding: 30px 20px 36px !important; text-align: left !important; font-size: 12px; border-top: none !important; }
+.ft { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 18px; align-items: center; }
+.ft a { color: #fff !important; text-decoration: none !important; margin: 0 !important; }
+.ft-brand { display: inline-flex; align-items: center; gap: 12px; justify-self: start; }
+.ft-brand img { width: 40px; height: 40px; border-radius: 10px; background: #fff; flex: none; }
+.ft-brand b { display: block; font-size: 16px; font-weight: 900; line-height: 1.3; }
+.ft-brand small { display: block; font-size: 11.5px; color: rgba(255,255,255,0.8); line-height: 1.4; }
+.ft-sns { display: flex; gap: 10px; }
+.ft-sns a { width: 40px; height: 40px; border-radius: 11px; overflow: hidden; display: block; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); transition: transform .15s; }
+.ft-sns a:hover { transform: translateY(-2px); }
+.ft-sns img { width: 40px; height: 40px; display: block; }
+.ft-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 16px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.18); }
+.ft-cols b { display: block; font-size: 11px; color: rgba(255,255,255,0.62); font-weight: 800; margin-bottom: 6px; letter-spacing: .04em; }
+.ft-cols a { display: block; font-size: 13px; line-height: 1.4; padding: 5px 0; }
+.ft-cols a:hover { text-decoration: underline !important; }
+.ft-copy { font-size: 11px; color: rgba(255,255,255,0.62); text-align: center; }
+@media (min-width: 720px) {
+  .ft { grid-template-columns: 1fr auto; }
+  .ft-cols, .ft-copy { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .ft-cols { grid-template-columns: 1fr 1fr; }
+  .ft-cols > div:last-child { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+  .ft-cols > div:last-child b { grid-column: 1 / -1; }
+}

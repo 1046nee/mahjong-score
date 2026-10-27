@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="むにぃ">
+  <!-- むにぃのアイコン（2026-10-27・まじゃすこのオリジナル）: 牌のキャラクターが1000点棒を持って、にこっとしている -->
+  <rect width="120" height="120" fill="#E4F3EC"/>
+  <circle cx="98" cy="20" r="26" fill="#fff" opacity=".55"/>
+  <path d="M93 13 q1.4 5.6 7 7 q-5.6 1.4 -7 7 q-1.4 -5.6 -7 -7 q5.6 -1.4 7 -7Z" fill="#E75620"/>
+  <!-- 牌の体（緑の厚み＋クリームの面） -->
+  <rect x="30" y="30" width="60" height="78" rx="12" fill="#177083"/>
+  <rect x="30" y="24" width="60" height="76" rx="12" fill="#FFFDF6" stroke="#A79E87" stroke-width="2"/>
+  <rect x="30" y="94" width="60" height="4" fill="#E3DCCB"/>
+  <!-- 顔 -->
+  <ellipse cx="48" cy="56" rx="4.2" ry="5.2" fill="#1F2A28"/>
+  <ellipse cx="72" cy="56" rx="4.2" ry="5.2" fill="#1F2A28"/>
+  <circle cx="49.4" cy="54.2" r="1.5" fill="#fff"/><circle cx="73.4" cy="54.2" r="1.5" fill="#fff"/>
+  <ellipse cx="41" cy="67" rx="5.5" ry="3.4" fill="#F7A9A0" opacity=".85"/>
+  <ellipse cx="79" cy="67" rx="5.5" ry="3.4" fill="#F7A9A0" opacity=".85"/>
+  <path d="M53 66 q7 7 14 0" fill="none" stroke="#1F2A28" stroke-width="3" stroke-linecap="round"/>
+  <!-- 頭の上の、ぴょこんと出た芽（むにぃのしるし） -->
+  <path d="M60 24 q-2 -10 -10 -12 q4 8 10 12Z" fill="#2BB673"/>
+  <path d="M60 24 q3 -11 12 -11 q-5 7 -12 11Z" fill="#2BB673"/>
+  <!-- 1000点棒を持つ手 -->
+  <g transform="rotate(-24 92 82)">
+    <rect x="70" y="78" width="46" height="8" rx="4" fill="#fff" stroke="#C9D6D3" stroke-width="1.4"/>
+    <circle cx="93" cy="82" r="2.6" fill="#E75620"/>
+  </g>
+  <circle cx="86" cy="84" r="6" fill="#FFFDF6" stroke="#A79E87" stroke-width="2"/>
+</svg>
