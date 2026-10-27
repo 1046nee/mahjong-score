@@ -249,30 +249,85 @@ def _plate(face, edge, back, inner):
 
 
 def chicha_svg(ura=False):
-    """起家札（2026-10-27）。表＝東、裏＝南（南場に入ったら裏返す）。牌と同じクリームの面・緑の厚み"""
+    """起家札（2026-10-27）。表＝東、裏＝南（南場に入ったら裏返す）。
+    焼き鳥カードと同じオレンジの札に、黒い字と丸（表・裏とも同じ色。2026-10-27 ユーザーの依頼「オレンジ色ベースで文字が黒で統一」）"""
     st = STYLES["tokumin"]
-    out = _plate(STYLES["tokumin"]["face"], EDGE, GREEN, EDGE)
-    col = BLUE if ura else RED
-    out += f'<circle cx="50" cy="25" r="17" fill="none" stroke="{col}" stroke-width="2"/>'
-    out += _text("南" if ura else "東", 50, 25, 24, col, st)
+    out = _plate("#F39A4E", RED, "#B8461A", "#FFF4E2")
+    out += f'<circle cx="50" cy="25" r="17" fill="#FFF4E2" stroke="{INK}" stroke-width="2"/>'
+    out += _text("南" if ura else "東", 50, 25, 24, INK, st)
     return out + "</svg>"
 
 
-def tenbo_svg():
-    """1000点棒（2026-10-27・マイページのアイコン用）。白い棒の真ん中に赤い点、両端に小さな点"""
-    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 102 22">'
-    out += '<rect x="0" y="3" width="100" height="16" rx="8" fill="#C9D6D3"/><rect x="0" y="0" width="100" height="16" rx="8" fill="#fff" stroke="#A79E87" stroke-width="1.4"/>'
-    out += f'<circle cx="50" cy="8" r="4" fill="{RED}"/>'
+def tenbo_svg(value=1000, color=False):
+    """点棒1本（マイページのアイコン用）。白い点棒は 100・1,000・5,000・10,000、カラーの点棒は 100・500・1,000・5,000・10,000・トビ（"tobi"）。
+    模様は記事の図（tools/table_art.py の tenbo / tenbo_color）と同じ。
+    丸いアイコンの中で細く小さくならないよう、斜め（右上がり）に置く（2026-10-27）"""
+    import table_art
+    g = (table_art.tenbo_color if color else table_art.tenbo)(value, 0, 0, L=100, H=16)
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 84"><g transform="translate(42 42) rotate(-40) translate(-50 -9)">' + g + "</g></svg>"
+
+
+def tenbo_bundle_svg():
+    """100点棒5本を輪ゴムでまとめたもの（2026-10-27）。5本を少しずつずらして重ね、真ん中を輪ゴムで縛る"""
+    import table_art
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 106 60">'
+    for i in range(5):
+        dx = (2, 0, 4, 1, 3)[i]
+        out += f'<g transform="translate({dx} {i * 9})">' + table_art.tenbo(100, 0, 0, L=100, H=14) + "</g>"
+    # 輪ゴム（棒をまたいで巻く茶色の帯。上下に少しはみ出す）
+    out += '<rect x="22" y="-1" width="7" height="57" rx="3.5" fill="#B8642A"/><rect x="23.5" y="0" width="2" height="55" rx="1" fill="#E3A15F" opacity=".8"/>'
     return out + "</svg>"
 
 
-def dice_svg():
-    """サイコロ（2026-10-27・マイページのアイコン用）。5の目、真ん中だけ赤"""
+# サイコロの目（-1・0・1 の位置）。1は大きな赤、4は赤（日本のサイコロ）、ほかは黒
+PIPS = {1: [(0, 0)], 2: [(-1, -1), (1, 1)], 3: [(-1, -1), (0, 0), (1, 1)], 4: [(-1, -1), (1, -1), (-1, 1), (1, 1)],
+        5: [(-1, -1), (1, -1), (0, 0), (-1, 1), (1, 1)], 6: [(-1, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (1, 1)]}
+
+
+def dice_svg(n=5):
+    """サイコロ（マイページのアイコン用）。n＝上の面の目（1〜6）。1は大きな赤、4は4つとも赤、ほかは黒"""
     out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 62 68">'
     out += f'<rect x="0" y="6" width="60" height="60" rx="12" fill="{GREEN}"/><rect x="0" y="0" width="60" height="60" rx="12" fill="#fff" stroke="#A79E87" stroke-width="1.6"/>'
-    for x, y in ((16, 16), (44, 16), (16, 44), (44, 44)):
-        out += f'<circle cx="{x}" cy="{y}" r="5.5" fill="{INK}"/>'
-    out += f'<circle cx="30" cy="30" r="7.5" fill="{RED}"/>'
+    for dx, dy in PIPS[n]:
+        if n == 1:
+            out += f'<circle cx="30" cy="30" r="11" fill="{RED}"/>'
+        else:
+            out += f'<circle cx="{30 + dx * 14}" cy="{30 + dy * 14}" r="5.5" fill="{RED if n == 4 else INK}"/>'
+    return out + "</svg>"
+
+
+# チップ（色・縁の白い模様の色）。2026-10-27 ユーザーの依頼「赤・青・緑・オレンジ・黒」
+CHIPS = {"r": "#E02424", "b": "#1F6FD1", "g": "#16A05A", "o": "#F07A1E", "k": "#2A2F2E"}
+
+
+def chip_svg(c):
+    """チップ1枚（マイページのアイコン用）。丸い札を少し上から見た形: 下に厚み、縁に白い切れ込み6つ、内側に白い輪"""
+    col = CHIPS[c]
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 62 66">'
+    out += f'<circle cx="30" cy="35" r="29" fill="{col}"/><circle cx="30" cy="35" r="29" fill="#000" opacity=".28"/>'  # 厚み
+    out += f'<circle cx="30" cy="30" r="29" fill="{col}"/>'
+    for i in range(6):
+        a = math.radians(i * 60 + 30)
+        x, y = 30 + math.cos(a) * 24.5, 30 + math.sin(a) * 24.5
+        out += f'<rect x="{x - 4:.1f}" y="{y - 7:.1f}" width="8" height="14" rx="2" fill="#fff" transform="rotate({i * 60 + 120} {x:.1f} {y:.1f})"/>'
+    out += f'<circle cx="30" cy="30" r="15.5" fill="none" stroke="#fff" stroke-width="2.4"/>'
+    out += f'<circle cx="30" cy="30" r="10" fill="#fff" opacity=".22"/>'
+    return out + "</svg>"
+
+
+def haiyose_svg():
+    """牌寄せ（山を押してまっすぐにそろえる長い板。市販の「牌プッシュPRO」をもとにデフォルメ。2026-10-27）。
+    上から見た形: 奥に裏向きの山（4幢）、手前に取っ手つきの長い板が山にぴったり当たり、下の線で押している動きを出す"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 112 74">'
+    for i in range(4):  # 山（裏向きの牌。上の面と手前の厚み）
+        x = 9 + i * 23
+        out += f'<rect x="{x}" y="10" width="22" height="26" rx="3" fill="{GREEN}"/><rect x="{x}" y="4" width="22" height="26" rx="3" fill="{BACK_FACE}" stroke="{BACK_EDGE}" stroke-width="1.2"/>'
+    # 押す板（山の手前にぴったり当てた長い板）と、真ん中のつまみ
+    out += '<rect x="2" y="37" width="106" height="14" rx="5" fill="#F4F7F8" stroke="#6F7D82" stroke-width="1.6"/>'
+    out += '<rect x="2" y="46" width="106" height="6" rx="3" fill="#C2CCD0"/>'
+    out += f'<rect x="38" y="40" width="34" height="9" rx="4.5" fill="{RED}"/>'
+    # 押している動き（板の下の線）
+    out += f'<g stroke="{INK}" stroke-width="3" stroke-linecap="round" opacity=".55"><path d="M30 60 V68"/><path d="M55 60 V70"/><path d="M80 60 V68"/></g>'
     return out + "</svg>"
 
 
