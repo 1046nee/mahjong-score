@@ -6,6 +6,7 @@
 import io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from make_art import inline_tiles
+from flags import flag_g
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "assets", "thumbs")
@@ -122,6 +123,29 @@ def bg(c, c2="#ffffff"):
             f'<circle cx="286" cy="28" r="70" fill="{c2}" opacity=".14"/><circle cx="24" cy="226" r="56" fill="{c2}" opacity=".12"/>')
 
 
+def route_flags():
+    """世界の麻雀: 国旗4枚を点線のルートでつなぐ（麻雀で世界一周）"""
+    out = '<path d="M52 92 Q100 40 140 78 T232 70 T278 92" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 6" opacity=".7"/>'
+    for code, x, y in (("jp", 22, 72), ("cn", 104, 44), ("us", 186, 62), ("vn", 252, 82)):
+        out += flag_g(code, x, y, 54)
+    return out
+
+
+def halving():
+    """Mリーグのポイント持ち越し: 棒が ÷2 で2回、半分になる（消えた分は点線）"""
+    base, bw = 196, 54
+    out = ""
+    hs = [132, 66, 33]
+    for i, h in enumerate(hs):
+        x = 34 + i * 96
+        if i:
+            ph = hs[i - 1]
+            out += f'<rect x="{x}" y="{base - ph}" width="{bw}" height="{ph - h}" rx="6" fill="none" stroke="#fff" stroke-width="2.5" stroke-dasharray="6 5" opacity=".85"/>'
+            out += f'<rect x="{x - 30}" y="{base - ph - 34}" width="54" height="30" rx="15" fill="#FFD23F"/><text x="{x - 3}" y="{base - ph - 13}" text-anchor="middle" font-size="19" font-weight="900" fill="{INK}" {F}>÷2</text>'
+        out += f'<rect x="{x}" y="{base - h}" width="{bw}" height="{h}" rx="6" fill="#fff"/>'
+    return out + f'<rect x="20" y="{base}" width="280" height="4" rx="2" fill="#fff" opacity=".6"/>'
+
+
 # ---------------- 記事ごと ----------------
 def T(name, color, body):
     return name, color, body
@@ -133,11 +157,11 @@ THUMBS = [
  T("blog-kuikae", "#F59E0B", lambda: row_center(["m3", "m4", "m5"], 44, 48, 6) + bubble(40, 140, 110, 52, "チー", 28) + bubble(170, 140, 110, 52, "三萬×", 26, "#FFD23F") + sparkle(268, 46, 12)),
  T("blog-riichi-ankan", "#EF4444", lambda: row_center(["m1", "m1", "m1", "m1"], 44, 44, 4) + bubble(40, 140, 110, 52, "リーチ", 26) + bubble(170, 140, 110, 52, "カン？", 26, "#FFD23F") + sparkle(270, 44, 13)),
  T("blog-ronjutsu", "#0EA5E9", lambda: card(70, 34, 180, 130, "#fff", 10) + lines(90, 64, 5, 140, 18) + bubble(150, 160, 120, 48, "論述", 26, "#FFD23F") + sparkle(272, 40, 12) + sparkle(50, 180, 9)),
- T("blog-mleague-points", "#6366F1", lambda: bars(70, 170, [100, 70, 50], 46, 18, 110, "#fff", "#FFD23F") + bubble(196, 60, 96, 52, "×1/2", 26) + sparkle(54, 46, 11)),
+ T("blog-mleague-points", "#6366F1", lambda: halving() + sparkle(286, 40, 11) + sparkle(40, 46, 8)),
  T("blog-league-taikai", "#10B981", lambda: trophy(160, 92, 1.1) + bubble(40, 150, 110, 48, "予選", 26) + bubble(170, 150, 110, 48, "決勝", 26, "#FFD23F") + sparkle(270, 46, 13)),
- T("blog-sanma-rules", "#4261AA", lambda: row_center(["z4", "z4", "z4"], 44, 48, 6) + bubble(40, 140, 110, 52, "三麻", 28) + bubble(170, 140, 110, 52, "ツモ損", 24, "#FFD23F") + sparkle(270, 44, 13)),
+ T("blog-sanma-rules", "#4261AA", lambda: row_center(["z4", "f1", "z5p", "f7"], 40, 46, 8) + bubble(40, 140, 110, 52, "三麻", 28) + bubble(170, 140, 110, 52, "北抜き", 24, "#FFD23F") + sparkle(286, 40, 11)),
  T("blog-nichijougo", "#F59E0B", lambda: bubble(30, 40, 150, 56, "テンパる", 28) + bubble(140, 120, 150, 56, "安パイ", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
- T("blog-sekai-mahjong", "#0F766E", lambda: bubble(36, 40, 120, 56, "中国", 28) + bubble(164, 40, 120, 56, "台湾", 28) + bubble(100, 130, 120, 56, "16枚", 28, "#FFD23F") + sparkle(272, 160, 12) + sparkle(50, 170, 9)),
+ T("blog-sekai-mahjong", "#0F766E", lambda: route_flags() + bubble(70, 146, 180, 54, "世界の麻雀", 28, "#FFD23F") + sparkle(282, 168, 11) + sparkle(36, 176, 8)),
  T("blog-mahjong-suuji", "#DB2777", lambda: bubble(36, 40, 130, 56, "136枚", 28) + bubble(154, 120, 130, 56, "なぜ？", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
  T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
  T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),
