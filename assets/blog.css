@@ -787,27 +787,35 @@ body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td + td,
 body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th + td,
 body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td + th,
 body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th + th { border-left: 1px solid #E6EAF2; }
-/* 少し小さく */
-.blog-post .table-scroll > table.tb-compact { font-size: 12.5px; }
-.blog-post .table-scroll > table.tb-compact th, .blog-post .table-scroll > table.tb-compact td { padding: 6px 5px !important; }
+/* 表は詰めて小さめに（2026-10-27 ユーザーの依頼「隙間を詰めて文字を小さく。表で見せたいものは表のまま」）。
+   記事ごとの <style> の 14px・8px 10px・行間2 より強い指定で上書きする。入りきらないときは小さく → もっと小さく → 横にずらす（カードの形にはしない） */
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table { font-size: 13.5px; }
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th, body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td { padding: 5px 7px; line-height: 1.55; }
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th { font-size: 12.5px; }
+@media (max-width: 700px) {
+  body:not(.bs-list) .post-layout > .blog-post .table-scroll > table { font-size: 12.5px; }
+  body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th, body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td { padding: 4px 5px; line-height: 1.5; }
+  body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th { font-size: 11.5px; }
+}
+/* 少し小さく → もっと小さく */
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table.tb-compact { font-size: 11.5px; }
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table.tb-compact th, body:not(.bs-list) .post-layout > .blog-post .table-scroll > table.tb-compact td { padding: 3px 4px !important; line-height: 1.45; font-size: 11.5px; }
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table.tb-tight th, body:not(.bs-list) .post-layout > .blog-post .table-scroll > table.tb-tight td { padding: 3px 3px !important; line-height: 1.4; font-size: 10.5px; letter-spacing: -.01em; }
+/* セルの中の補足（後ろに付いていた「（…）」）は改行して小さく。tools/table_breaks.py が付ける */
+.blog-post .table-scroll > table .tp { display: block; font-size: .86em; font-weight: 500; color: #6B7A77; line-height: 1.4; }
+.blog-post .table-scroll > table thead .tp { color: inherit; opacity: .8; }
+.blog-post .table-scroll > table .tm, .blog-post .table-scroll > table .tp.nw { white-space: nowrap; }
+.blog-post .table-scroll > table .tp:not(.nw) { white-space: normal !important; } /* 長い補足は、本体が短くて折り返さないセルの中でも折り返す */
+/* いちばん小さい段階では、短い列（tb-nw）も折り返してよい（1列目の項目名は折り返さない） */
+.blog-post .table-scroll > table.tb-tight tr > .tb-nw:not(:first-child), .blog-post .table-scroll > table.tb-tight tr > .tb-nw2:not(:first-child) { white-space: normal !important; }
+.blog-post .table-scroll > table.tb-tight .tm, .blog-post .table-scroll > table.tb-tight .tp.nw { white-space: normal; }
+.blog-post .table-scroll > table tr > .tb-nw5, .blog-post .table-scroll > table.tb-tight tr > .tb-nw5.tb-nw5:not(:first-child) { white-space: nowrap !important; } /* 5字以内のセルは1字だけ次の行に落ちないように */
 /* 数字の表で収まらないとき: 左の列を固定して横にずらす */
-.blog-post .table-scroll > table.tb-sticky { width: max-content; min-width: 100% !important; }
+.blog-post .table-scroll > table.tb-sticky { min-width: 100% !important; } /* 幅は fitTables が「列の数×決まった幅」で決める。長い文はその中で折り返す（2026-10-27） */
 .blog-post .table-scroll > table.tb-sticky tr > :first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 #DCE3F1; }
 .blog-post .table-scroll > table.tb-sticky thead tr > :first-child, .blog-post .table-scroll > table.tb-sticky .tb-headrow > :first-child { background: #F3F6FB; }
 .blog-post .table-scroll.tb-scrolls { position: relative; }
 .blog-post .table-scroll.tb-scrolls::after { content: '横にずらして見られます →'; display: block; margin-top: 4px; font-size: 11px; color: #8A9AA5; text-align: right; position: sticky; left: 0; }
-/* スマホで文の表が収まらないとき: 1行＝1枚の縦並び（行の1列目が見出し、ほかは「見出し｜中身」） */
-.blog-post table.tb-cards, .blog-post table.tb-cards tbody, .blog-post table.tb-cards tr { display: block; width: 100%; }
-.blog-post table.tb-cards thead, .blog-post table.tb-cards .tb-headrow { display: none; }
-.blog-post table.tb-cards tr { padding: 10px 2px 9px; border-bottom: 1px solid #DCE3F1; }
-.blog-post table.tb-cards tbody tr:first-child, .blog-post table.tb-cards tbody .tb-headrow + tr { border-top: 2px solid #4261AA; }
-body:not(.bs-list) .post-layout > .blog-post table.tb-cards td, body:not(.bs-list) .post-layout > .blog-post table.tb-cards th,
-.blog-post table.tb-cards td, .blog-post table.tb-cards th { display: block; border: 0 !important; padding: 2px 0 !important; text-align: left !important; background: none !important; white-space: normal !important; width: auto !important; }
-.blog-post table.tb-cards tr > :first-child { font-weight: 800; font-size: 15px; color: #1F2A28; padding-bottom: 5px !important; }
-body:not(.bs-list) .post-layout > .blog-post table.tb-cards tr > :not(:first-child)[data-label], .blog-post table.tb-cards tr > :not(:first-child)[data-label] { display: flow-root !important; padding: 3px 0 3px 7.4em !important; font-size: 14px; line-height: 1.7; }
-.blog-post table.tb-cards tr > :not(:first-child)[data-label]::before { content: attr(data-label); float: left; margin-left: -7.4em; width: 6.6em; font-size: 12px; font-weight: 700; color: #4261AA; line-height: 1.95; }
-body:not(.bs-list) .post-layout > .blog-post table.tb-cards tr > :not(:first-child)[data-label=""], .blog-post table.tb-cards tr > :not(:first-child)[data-label=""] { padding-left: 0 !important; }
-.blog-post table.tb-cards tr > :not(:first-child)[data-label=""]::before { display: none; }
 
 /* ---- サイドバーの「今月のおすすめ記事」「最新のアップデート」「公式SNS」（2026-10-27 作り直し）----
    見出しは色の丸のアイコン＋題名＋ひとこと。1行＝記事の絵（おすすめは角に順番）・カテゴリの色の札・新着・日付・題名（｜の後ろは小さく） */

@@ -106,8 +106,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="hflow plus"><div class="hf-step"><span class="hf-k">①</span><b>素点</b><small>持ち点の増減÷1,000</small></div><div class="hf-step"><span class="hf-k">②</span><b>ウマ</b><small>順位で足し引き</small></div><div class="hf-step"><span class="hf-k">③</span><b>オカ</b><small>1位がまとめて受け取る</small></div><div class="hf-step goal"><span class="hf-k">合計</span><b>スコア</b><small>3つを足した数</small></div></div>
   <table>
     <tbody>
-      <tr><th>① 素点</th><td>（終了時の持ち点 − 開始時の持ち点）÷ 1,000。配られた点から増えた・減った分</td></tr>
-      <tr><th>② ウマ</th><td>順位に応じた加減点を足す（例：10-30なら 1位+30／2位+10／3位−10／4位−30）</td></tr>
+      <tr><th>① 素点</th><td>（終了時の持ち点 − 開始時の持ち点）÷ 1,000。<br>配られた点から増えた・減った分</td></tr>
+      <tr><th>② ウマ</th><td>順位に応じた加減点を足す<span class="tp">（例：10-30なら 1位+30／2位+10／3位−10／4位−30）</span></td></tr>
       <tr><th>③ オカ</th><td>全員が（返し点 − 持ち点）÷ 1,000 ずつ出し、1位がまとめて受け取る</td></tr>
     </tbody>
   </table>
@@ -177,7 +177,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン5｜1位が同点2人</h3>
   <p>A 35,000／B 35,000／C 20,000／D 10,000。AとBは1位と2位を分け合うので、ウマは（+30 + 10）÷ 2 = +20 ずつ。オカは4人から集めた20.0を2人で割って +10.0 ずつ受け取り、自分が出した5.0を引いて <strong>+5.0 ずつ</strong>です。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ（分配後）</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th><span class="tm">オカ</span><span class="tp nw">（分配後）</span></th><th>スコア</th></tr></thead>
     <tbody>
       <tr><td>1位 A</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
       <tr><td>1位 B</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
@@ -190,7 +190,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン6｜2位と3位が同点</h3>
   <p>A 40,000／B 25,000／C 25,000／D 10,000。BとCで（+10 −10）÷ 2 = 0 ずつ。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
       <tr><td>1位 A</td><td>40,000</td><td>+15.0</td><td>+30</td><td>+15.0</td><td><strong>+60.0</strong></td></tr>
       <tr><td>2位 B</td><td>25,000</td><td>0.0</td><td>0.0</td><td>−5.0</td><td><strong>−5.0</strong></td></tr>
@@ -234,7 +234,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン10｜三麻で2位・3位が同点</h3>
   <p>パターン9と同じ設定（35,000点持ち・35,000点返し・ウマ10-0-10）で、A 57,000／B 24,000／C 24,000。BとCでウマを山分けして（0 − 10）÷ 2 = −5.0 ずつ。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ（分配後）</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th>オカ</th><th>スコア</th></tr></thead>
     <tbody>
       <tr><td>1位 A</td><td>57,000</td><td>+22.0</td><td>+10</td><td>—</td><td><strong>+32.0</strong></td></tr>
       <tr><td>2位 B</td><td>24,000</td><td>−11.0</td><td>−5.0</td><td>—</td><td><strong>−16.0</strong></td></tr>
@@ -246,7 +246,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン11｜チョンボ罰符あり（ここだけ合計が0にならない）</h3>
   <p>パターン1と同じ持ち点で、Dがチョンボ（罰符 −20pts）した場合。</p>
   <table>
-    <thead><tr><th>順位</th><th>スコア（罰符前）</th><th>罰符</th><th>最終スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th><span class="tm">スコア</span><span class="tp nw">（罰符前）</span></th><th>罰符</th><th>最終スコア</th></tr></thead>
     <tbody>
       <tr><td>1位 A</td><td>+61.3</td><td>—</td><td><strong>+61.3</strong></td></tr>
       <tr><td>2位 B</td><td>+8.2</td><td>—</td><td><strong>+8.2</strong></td></tr>
@@ -259,7 +259,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン12｜3試合を通した累計と平均着順</h3>
   <p>最後は、半荘を重ねたときの見え方です。同じ4人で3試合打った場合を、1試合ずつ計算して積み上げてみます。</p>
   <table>
-    <thead><tr><th>試合</th><th>持ち点（A／B／C／D）</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+    <thead><tr><th>試合</th><th><span class="tm">持ち点</span><span class="tp nw">（A／B／C／D）</span></th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
     <tbody>
       <tr><td>1試合目</td><td>41,300／28,200／22,500／8,000</td><td>+61.3</td><td>+8.2</td><td>−17.5</td><td>−52.0</td></tr>
       <tr><td>2試合目</td><td>22,000／35,600／30,400／12,000</td><td>−18.0</td><td>+55.6</td><td>+10.4</td><td>−48.0</td></tr>
@@ -285,11 +285,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <table>
     <thead><tr><th>症状</th><th>まず疑うところ</th></tr></thead>
     <tbody>
-      <tr><td>合計が0にならない</td><td>持ち点の合計が「持ち点 × 人数」になっているか。供託のリーチ棒を場に残したまま数えていないか</td></tr>
-      <tr><td>合計が0にならない（同点あり）</td><td>同点で空席になった順位に、誰かのウマを渡していないか（パターン5参照）</td></tr>
+      <tr><td>合計が0にならない</td><td>持ち点の合計が「持ち点 × 人数」になっているか。<br>供託のリーチ棒を場に残したまま数えていないか</td></tr>
+      <tr><td><span class="tm">合計が0にならない</span><span class="tp nw">（同点あり）</span></td><td>同点で空席になった順位に、誰かのウマを渡していないか<span class="tp nw">（パターン5参照）</span></td></tr>
       <tr><td>1位だけ数字が大きすぎる／小さすぎる</td><td>オカを二重に足していないか、逆に足し忘れていないか</td></tr>
-      <tr><td>4位の数字がおかしい</td><td>マイナスの持ち点の引き算で符号を取り違えていないか（パターン8参照）</td></tr>
-      <tr><td>三麻で合計が合わない</td><td>四麻用のウマ（10-30など）をそのまま使っていないか（パターン9参照）</td></tr>
+      <tr><td>4位の数字がおかしい</td><td>マイナスの持ち点の引き算で符号を取り違えていないか<span class="tp nw">（パターン8参照）</span></td></tr>
+      <tr><td>三麻で合計が合わない</td><td>四麻用のウマ（10-30など）をそのまま使っていないか<span class="tp nw">（パターン9参照）</span></td></tr>
     </tbody>
   </table>
   <p>原因の切り分けをもっと詳しくたどりたい場合は、<a href="/blog-score-mismatch.html">麻雀の点数が合わないときのチェックリスト</a>に、卓の上で使える順番でまとめてあります。</p>
