@@ -316,9 +316,8 @@ const BLOG_POSTS = [
 
   // ---- 記事の表を読みやすく（2026-10-27 ユーザーの指摘: 列の幅が文字数に合わず変な所で折り返す・セルが縦に長い・横スクロールが多い）----
   // 1. 列ごとに一番長い文字数を数え、短い列（7字以内）は折り返さない・長い文の列（16字以上）は左寄せ。各セルに見出しの名前（data-label）を控える
-  // 2. 画面に収まり、どのセルも5行半より低ければそのまま。収まらなければ文字を少し小さく（tb-compact）
-  // 3. それでも収まらない・縦に長いなら、文の表はスマホで「1行＝1枚」の縦並び（tb-cards：行の1列目が見出し、ほかは「見出し｜中身」）
-  //    見出しの無い表・結合したセルのある表は並べ替えると読めないので、左の列を固定して横にずらす（tb-sticky）
+  // 2. 画面に収まり、どのセルも5行半より低ければそのまま。収まらなければ文字を小さく（tb-compact）→ もっと小さく（tb-tight）
+  // 3. それでも収まらなければ、左の列を固定して横にずらす（tb-sticky）。表は表のまま見せる（2026-10-27〜 「1行＝1枚」のカードの形はやめた）
   const TB_NUM = /^[\s\d０-９,.+\-−–—%％:：\/／〜~()（）×位着点符翻本場pts枚回人試合年月日期第万千百]*$/;
   function prepTable(tb) {
     if (tb._tb) return tb._tb;
@@ -329,12 +328,15 @@ const BLOG_POSTS = [
     const ncol = Math.max(0, ...rows.map(r => r.cells.length));
     const len = Array(ncol).fill(0);
     let num = 0, cells = 0;
-    body.forEach(r => [...r.cells].forEach((c, i) => { const t = c.textContent.replace(/\s+/g, ' ').trim(); len[i] = Math.max(len[i], [...t].length); if (t) { cells++; if (TB_NUM.test(t)) num++; } }));
+    // 文字数は本体だけで数える（改行して小さく出す補足 .tp・ふりがな rt は数えない）
+    const mainText = c => { const k = c.cloneNode(true); k.querySelectorAll('.tp, rt').forEach(e => e.remove()); return k.textContent.replace(/\s+/g, ' ').trim(); };
+    body.forEach(r => [...r.cells].forEach((c, i) => { const t = mainText(c); len[i] = Math.max(len[i], [...t].length); if (t) { cells++; if (TB_NUM.test(t)) num++; } }));
     const hlen = head ? [...head.cells].map(c => [...c.textContent.trim()].length) : [];
     if (head && head.parentElement && head.parentElement.tagName !== 'THEAD') head.classList.add('tb-headrow');
     if (!spans) rows.forEach(r => [...r.cells].forEach((c, i) => {
+      if ([...mainText(c)].length <= 5) c.classList.add('tb-nw5'); // 5字以内のセル（名前・「基本無料」など）は、どれだけ小さくしても折り返さない
       if (len[i] <= 7 && (hlen[i] || 0) <= 8) c.classList.add('tb-nw'); // 短い列は折り返さない
-      else if ([...c.textContent.trim()].length <= 8) c.classList.add('tb-nw2'); // 8字以内のセルも、表が入りきるなら折り返さない（入らなければ tb-loose で折り返す）
+      else if ([...mainText(c)].length <= 8) c.classList.add('tb-nw2'); // 8字以内のセルも、表が入りきるなら折り返さない（入らなければ tb-loose で折り返す）
       else if (len[i] >= 16) c.classList.add('tb-tl');
       if (head && r !== head && head.cells[i]) c.setAttribute('data-label', head.cells[i].textContent.replace(/\s+/g, ' ').trim());
     }));
@@ -344,18 +346,30 @@ const BLOG_POSTS = [
   function fitTables() {
     document.querySelectorAll('.blog-post .table-scroll > table').forEach(tb => {
       const m = prepTable(tb), wrap = tb.parentElement;
-      tb.classList.remove('tb-cards', 'tb-compact', 'tb-sticky', 'tb-loose');
+      tb.classList.remove('tb-cards', 'tb-compact', 'tb-tight', 'tb-sticky', 'tb-loose');
+      tb.style.width = '';
       wrap.classList.remove('tb-scrolls');
       const fits = () => tb.scrollWidth <= wrap.clientWidth + 1;
       const narrow = window.innerWidth < 700; // 縦に長いとみなす行数: スマホ5行半・パソコン8行
       const tall = () => [...tb.querySelectorAll('td')].some(td => { const lh = parseFloat(getComputedStyle(td).lineHeight) || 22; return td.getBoundingClientRect().height > lh * (narrow ? 5.5 : 8) + 16; });
-      if (fits() && !(m.ncol >= 2 && tall())) return;
+      const ok = () => fits() && !(m.ncol >= 2 && tall());
+      // 表は表のまま（2026-10-27〜 カードの形はやめた）: 折り返しを許す → 小さく → もっと小さく → それでも入らなければ左の列を固定して横にずらす
+      if (ok()) return;
       tb.classList.add('tb-loose');
-      if (fits() && !(m.ncol >= 2 && tall())) return;
+      if (ok()) return;
       tb.classList.add('tb-compact');
-      if (fits() && !(m.ncol >= 2 && tall())) return;
-      if (m.head && !m.spans && m.ncol >= 2 && !tb.classList.contains('tb-keep')) { tb.classList.remove('tb-compact'); tb.classList.add('tb-cards'); return; }
-      if (!fits()) { tb.classList.add('tb-sticky'); wrap.classList.add('tb-scrolls'); }
+      if (ok()) return;
+      tb.classList.add('tb-tight');
+      if (!fits()) {
+        // 横にずらす表の幅: 列ごとに「中身を1行にした幅（16字ぶんまで）」を足したもの。長い文の列が細く押しつぶされて縦に伸びないように
+        tb.classList.add('tb-sticky'); wrap.classList.add('tb-scrolls');
+        const em = parseFloat(getComputedStyle(tb).fontSize) || 11;
+        tb.style.width = 'max-content';
+        const row = [...tb.rows].find(r => r.cells.length === m.ncol);
+        const full = row ? [...row.cells].map(c => c.getBoundingClientRect().width) : [];
+        const want = full.reduce((a, w) => a + Math.min(w, em * 16 + 12), 0);
+        tb.style.width = Math.max(wrap.clientWidth, Math.round(want)) + 'px';
+      }
     });
   }
 
