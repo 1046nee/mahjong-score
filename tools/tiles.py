@@ -240,7 +240,7 @@ def yakitori_svg(ura=False):
     表＝焼き鳥の絵だけ＋左上の角に小さく「表」（まだあがっていない人の前に置く）。ura=True は何も描かない裏＋左上に小さく「裏」（あがったら裏返す）。
     大きさは牌と同じ考え方で 70×100＋下の厚み。絵はまじゃすこのオリジナル"""
     st = STYLES["tokumin"]
-    w, h, bh = 70, 100, 6
+    w, h, bh = 70, 100, STYLES["tokumin"]["back_h"]  # 下の厚みは牌と同じ高さ（2026-10-27 ユーザーの依頼）
     out = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 {w + 2} {h + bh + 2}">'
     out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="8" fill="#B8461A"/>'  # 厚み（濃いオレンジ）
     out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="#F39A4E" stroke="{RED}" stroke-width="1.8"/>'
