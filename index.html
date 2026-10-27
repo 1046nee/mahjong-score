@@ -218,13 +218,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* 実際の画面：スマホ1台の中で画面を切り替える（2026-10-26〜・並べると縮尺の違いが目立つため。画像はすべて同じ縮尺＝幅720px） */
 .lp-demo { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 18px; }
 .lp-demo-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+/* スマホ: タブは1行（横にずらして見る）。2行になるとスマホの絵の下の説明が画面に入りきらなかった（2026-10-27 ユーザーの指摘） */
+@media (max-width: 1099px) {
+  .lp-demo-tabs { position: relative; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; align-self: stretch; width: 100%; min-width: 0; max-width: 100%; gap: 6px; padding: 2px 2px 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .lp-demo-tabs::-webkit-scrollbar { display: none; }
+  .lp-demo-tabs > .lp-tab:first-child { margin-left: auto; } .lp-demo-tabs > .lp-tab:last-child { margin-right: auto; } /* 入りきるときは真ん中 */
+  .lp-demo-tabs > .lp-tab { flex: none; white-space: nowrap; padding: 6px 12px; }
+}
 .lp-tab { border: 1.5px solid #C9D6EE; background: #fff; color: #2F4A86; border-radius: 20px; padding: 7px 14px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: inherit; }
 .lp-tab.on { background: #2F4A86; border-color: #2F4A86; color: #fff; }
 .lp-tab .lp-tab-t, .lp-tab .lp-tab-d { display: none; }
 /* スマホの枠の決まり（サイト・SNS画像・動画・サムネで共通。docs/image-tools.md「スマホの枠」）：
    高さ＝幅×2.06／枠3.5%（上下左右同じ）／外の角15%・画面の角11.5%／画面の上の帯10%の中央にノッチ（幅30%・高さ7%）。
    スクショは帯の下に幅いっぱいで置き、下ははみ出た分だけ隠れる */
-.lp-phone { --pw: min(300px, 80vw); width: var(--pw); padding: calc(var(--pw) * .035); border-radius: calc(var(--pw) * .15); background: #1F2A28; box-shadow: 0 18px 40px rgba(16,40,36,.22); }
+.lp-phone { --pw: min(300px, 80vw); --pw: clamp(170px, min(250px, 64vw, calc((100svh - 220px) / 2.06)), 300px); /* タブ・スマホ・説明が1画面に入る大きさ（絵の高さ＝幅×2.06） */ width: var(--pw); padding: calc(var(--pw) * .035); border-radius: calc(var(--pw) * .15); background: #1F2A28; box-shadow: 0 18px 40px rgba(16,40,36,.22); }
 .lp-phone-in { position: relative; border-radius: calc(var(--pw) * .115); overflow: hidden; background: #E6F1EC; height: calc(var(--pw) * 1.99); }
 .lp-phone-bar { display: flex; justify-content: center; align-items: center; height: calc(var(--pw) * .10); transition: background .3s; }
 .lp-phone-island { width: calc(var(--pw) * .30); height: calc(var(--pw) * .07); border-radius: 999px; background: #1F2A28; }
@@ -388,6 +395,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .bm-phone { --pw: min(200px, 25vw); }
 .bm-cap { margin-top: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 12px; line-height: 1.55; font-weight: 700; color: #1F2A28; }
 .bm-cap span { word-break: keep-all; } /* 「ブック/マーク」のような語の途中で折り返さない（<wbr>の所だけで折る） */
+@media (max-width: 359px) { .bm-cap span { word-break: normal; } } /* 幅320pxでは語の途中でも折る（折らないと横にはみ出した） */
 .bm-cap b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #177083; color: #fff; font-size: 12px; font-weight: 900; }
 /* スマホ幅：3枚を縦に並べ、左にスマホ・右に説明（横に3台だと字が小さく、説明が単語の途中で折り返す） */
 @media (max-width: 699px) {
@@ -7720,6 +7728,9 @@ function lpDemo(i, user) {
   scrs.forEach((el, j) => el.classList.toggle('on', j === lpDemoIdx));
   const cur = scrs[lpDemoIdx];
   root.querySelector('.lp-phone-bar').style.background = cur.dataset.top;
+  // スマホでタブが横にはみ出しているときは、選んだタブを帯の真ん中へ（ページは動かさない）
+  const bar = root.querySelector('.lp-demo-tabs'), t = tabs[lpDemoIdx];
+  if (bar && t && bar.scrollWidth > bar.clientWidth + 1) bar.scrollTo({ left: t.offsetLeft - (bar.clientWidth - t.offsetWidth) / 2, behavior: user ? 'smooth' : 'auto' });
   document.getElementById('lp-demo-t').textContent = cur.dataset.title;
   document.getElementById('lp-demo-d').textContent = cur.dataset.desc;
   document.getElementById('lp-demo-a').href = cur.dataset.href;

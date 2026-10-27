@@ -14,7 +14,9 @@ OUT = os.path.join(MJ, "assets", "screens")
 TMP = os.path.join(MJ, "まじゃすこ素材", "ig", "shots")
 PORT = 8823
 H = 793  # 枠の画面（帯の下）の縦横比 1.89/0.93 × 390
-FONT = "file:///C:/Windows/Fonts/NotoSansJP-VF.ttf"
+_WINFONT = "C:/Windows/Fonts/NotoSansJP-VF.ttf"
+FONT = "file:///" + _WINFONT if os.path.exists(_WINFONT) else ""  # Windows 以外は Google Fonts の Noto Sans JP（GFONT）
+GFONT = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=block" rel="stylesheet">'
 FAV = "file:///" + os.path.join(MJ, "assets", "favicon.png").replace("\\", "/")
 ORANGE = "#E75620"
 
@@ -38,10 +40,10 @@ IC = {
 CSS_T = """
 @font-face {{ font-family: NJP; src: url('{FONT}'); font-weight: 100 900; }}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ width: 390px; height: {H}px; overflow: hidden; font-family: NJP, -apple-system, sans-serif; color: #1C1C1E; position: relative; background: #F2F2F7; }}
+body {{ width: 390px; height: {H}px; overflow: hidden; font-family: NJP, 'Noto Sans JP', -apple-system, sans-serif; color: #1C1C1E; position: relative; background: #F2F2F7; }}
 .badge {{ position: absolute; z-index: 9; width: 30px; height: 30px; border-radius: 50%; background: {ORANGE}; color: #fff; font-weight: 900; font-size: 17px;
   display: grid; place-items: center; border: 2.5px solid #fff; box-shadow: 0 3px 8px rgba(0,0,0,.25); }}
-.ring {{ position: absolute; z-index: 8; border: 3.5px solid {ORANGE}; border-radius: 16px; box-shadow: 0 0 0 4px rgba(231,86,32,.18); }}
+.ring {{ position: absolute; z-index: 8; box-sizing: border-box; border: 3.5px solid {ORANGE}; border-radius: 16px; box-shadow: 0 0 0 4px rgba(231,86,32,.18); }}
 /* Safari の下のバー */
 .sbar {{ position: absolute; left: 0; right: 0; bottom: 0; height: 96px; padding: 10px 14px 0; display: flex; gap: 10px; align-items: flex-start;
   background: rgba(249,249,251,.94); border-top: 0.5px solid rgba(0,0,0,.12); }}
@@ -72,42 +74,57 @@ body {{ width: 390px; height: {H}px; overflow: hidden; font-family: NJP, -apple-
 """
 CSS = CSS_T.format(FONT=FONT, ORANGE=ORANGE, H=H)
 
-def badge(n, x, y):
-    return f'<div class="badge" style="left:{x}px;top:{y}px">{n}</div>'
+# 枠と番号: 押すところに data-ring="番号" を付けておき、描いたあとに部品の実際の位置から作る（2026-10-27 手で書いた座標がずれていた）。
+# 枠は部品の上下左右に同じ余白（PAD）。角の丸みは部品の丸み＋余白（丸いボタンは丸い枠）。
+# 番号は枠の右上の角。画面の右端からはみ出すときは左上、上端からはみ出すときは下の角へ
+PAD = 7
+RING_JS = """(pad) => {
+  const W = innerWidth, H = innerHeight;
+  document.querySelectorAll('[data-ring]').forEach(el => {
+    const r = el.getBoundingClientRect();
+    const x = r.left - pad, y = r.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+    const cs = getComputedStyle(el), br = cs.borderTopLeftRadius;
+    const round = br.endsWith('%') ? parseFloat(br) >= 50 : parseFloat(br) >= Math.min(r.width, r.height) / 2 - 0.5;
+    const rad = round ? Math.min(w, h) / 2 : (parseFloat(br) || 10) + pad;
+    const ring = document.createElement('div');
+    ring.className = 'ring';
+    Object.assign(ring.style, { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: rad + 'px' });
+    document.body.appendChild(ring);
+    const b = document.createElement('div');
+    b.className = 'badge'; b.textContent = el.dataset.ring;
+    const s = 30, cut = round ? (1 - Math.SQRT1_2) * rad : Math.min(rad, 14) * 0.3;
+    let bx = x + w - cut - s / 2, by = y + cut - s / 2;
+    if (bx + s > W - 2) bx = x + cut - s / 2;
+    if (by < 2) by = y + h - cut - s / 2;
+    Object.assign(b.style, { left: Math.max(2, Math.min(W - s - 2, bx)) + 'px', top: Math.max(2, Math.min(H - s - 2, by)) + 'px' });
+    document.body.appendChild(b);
+  });
+}"""
 
-def ring(x, y, w, h, r=16):
-    return f'<div class="ring" style="left:{x}px;top:{y}px;width:{w}px;height:{h}px;border-radius:{r}px"></div>'
-
-def bar(more_ring=False):
+def bar(more_ring=None):
     return ('<div class="sbar"><div class="sbtn">' + IC["back"] + '</div>'
             '<div class="addr">majasco.jp<span class="rl">' + IC["reload"] + '</span></div>'
-            '<div class="sbtn">' + IC["more"] + '</div></div>')
+            '<div class="sbtn"' + (f' data-ring="{more_ring}"' if more_ring else '') + '>' + IC["more"] + '</div></div>')
 
 def step1(lp_png):
     menu = ('<div class="menu">'
             f'<div class="it">共有<span>{IC["share"]}</span></div>'
-            f'<div class="it" style="font-weight:700">ブックマークに追加<span>{IC["book"]}</span></div>'
+            f'<div class="it" data-ring="2" style="font-weight:700">ブックマークに追加<span>{IC["book"]}</span></div>'
             f'<div class="it">リーディングリストに追加<span>{IC["list"]}</span></div>'
             f'<div class="it">新規タブ<span>{IC["plus"]}</span></div></div>')
     return (f'<img src="{lp_png}" style="position:absolute;left:0;top:0;width:390px">'
-            '<div class="dim"></div>' + menu + bar()
-            # ① 「…」 ② 「ブックマークに追加」
-            + ring(326, H - 90, 54, 54, 27) + badge(1, 356, H - 106)
-            + ring(116, H - 260, 270, 52, 14) + badge(2, 360, H - 274))
+            '<div class="dim"></div>' + menu + bar(more_ring=1))  # ① 「…」 ② 「ブックマークに追加」
 
 def step2():
     return ('<div style="position:absolute;inset:0;background:#F2F2F7">'
-            f'<div class="nav"><div class="circ">{IC["close"]}</div><h1>ブックマークを追加</h1><div class="save">{IC["check"]}</div></div>'
+            f'<div class="nav"><div class="circ">{IC["close"]}</div><h1>ブックマークを追加</h1><div class="save" data-ring="4">{IC["check"]}</div></div>'
             f'<div class="grp"><div class="row" style="padding:14px 16px;align-items:flex-start"><img class="fav" src="{FAV}">'
             '<div style="flex:1"><div style="font-size:16px;padding:6px 0 10px;border-bottom:0.5px solid rgba(60,60,67,.18)">まじゃすこ</div>'
             '<div style="font-size:15px;color:#6C6C70;padding-top:10px">https://majasco.jp/</div></div></div></div>'
             '<div class="lab">場所</div>'
-            f'<div class="grp"><div class="row" style="font-weight:700"><span style="color:#0A84FF;display:grid">{IC["star"]}</span><span style="flex:1">お気に入り</span><span style="color:#0A84FF;display:grid">{IC["check"]}</span></div>'
+            f'<div class="grp"><div class="row" data-ring="3" style="font-weight:700"><span style="color:#0A84FF;display:grid">{IC["star"]}</span><span style="flex:1">お気に入り</span><span style="color:#0A84FF;display:grid">{IC["check"]}</span></div>'
             f'<div class="row"><span style="color:#0A84FF;display:grid">{IC["folder"]}</span><span style="flex:1">ブックマーク</span></div></div>'
-            '</div>'
-            # ③ お気に入り ④ 保存
-            + ring(12, 210, 366, 56, 14) + badge(3, 352, 196)
-            + ring(334, 8, 48, 48, 24) + badge(4, 360, -2))
+            '</div>')  # ③ お気に入り ④ 保存
 
 def step3():
     tiles = [("FAV", "まじゃすこ"), ("#5E8BD6", "天気", "天"), ("#7A8A99", "ニュース", "N"), ("#4FA06B", "地図", "地"),
@@ -115,7 +132,7 @@ def step3():
     g = ""
     for t in tiles:
         if t[0] == "FAV":
-            g += f'<div class="tile"><img src="{FAV}">{t[1]}</div>'
+            g += f'<div class="tile" data-ring="5"><img src="{FAV}">{t[1]}</div>'
         elif t[1]:
             g += f'<div class="tile"><div class="ic" style="background:{t[0]}">{t[2]}</div>{t[1]}</div>'
         else:
@@ -128,9 +145,7 @@ def step3():
             + "".join('<div style="height:64px;border-radius:14px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)"></div>' for _ in range(4)) + '</div>'
             '</div>'
             + '<div class="sbar"><div class="sbtn">' + IC["back"] + '</div><div class="addr" style="color:#8E8E93;font-weight:500"><span style="display:grid">'
-            + IC["search"] + '</span>検索／サイト名を入力</div><div class="sbtn">' + IC["more"] + '</div></div>'
-            # ⑤ まじゃすこ
-            + ring(29, 78, 80, 98, 18) + badge(5, 92, 66))
+            + IC["search"] + '</span>検索／サイト名を入力</div><div class="sbtn">' + IC["more"] + '</div></div>')  # ⑤ まじゃすこ
 
 class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
@@ -144,7 +159,7 @@ def main():
         b = p.chromium.launch()
         # 1枚目の背景：本物のLPの最初の画面（外の通信は止める）
         ctx = b.new_context(viewport={"width": 390, "height": H}, device_scale_factor=2, locale="ja-JP")
-        ctx.route(lambda u: not u.startswith(f"http://127.0.0.1:{PORT}"), lambda r: r.abort())
+        ctx.route(lambda u: not u.startswith(f"http://127.0.0.1:{PORT}") and "fonts.g" not in u, lambda r: r.abort())  # 文字（Google Fonts）だけは通す
         pg = ctx.new_page()
         pg.goto(f"http://127.0.0.1:{PORT}/"); pg.wait_for_timeout(1500)
         pg.add_style_tag(content="#toast, .toast { display: none !important; }")
@@ -155,8 +170,9 @@ def main():
         lp_url = "file:///" + lp.replace("\\", "/")
         for i, body in enumerate([step1(lp_url), step2(), step3()], 1):
             hp = os.path.join(TMP, f"_bm{i}.html")
-            io.open(hp, "w", encoding="utf-8").write(f"<!doctype html><html><head><meta charset='utf-8'><style>{CSS}</style></head><body>{body}</body></html>")
-            pg.goto("file:///" + hp.replace("\\", "/")); pg.wait_for_timeout(500)
+            io.open(hp, "w", encoding="utf-8").write(f"<!doctype html><html><head><meta charset='utf-8'>{'' if FONT else GFONT}<style>{CSS}</style></head><body>{body}</body></html>")
+            pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
+            pg.evaluate(RING_JS, PAD)
             png = os.path.join(TMP, f"bm-{i}.png")
             pg.screenshot(path=png)
             os.remove(hp)
