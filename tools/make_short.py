@@ -49,6 +49,16 @@ table.ex td.l { color: #4F5C5A; font-size: 44px; text-align: left; }
 table.ex td.p { color: #1A237E; text-align: right; } table.ex td.n { color: #C62828; text-align: right; }
 .eq { font-size: 52px; font-weight: 900; color: #1F2A28; text-align: center; line-height: 1.7; }
 .eq b { color: #1A237E; } .eq .o { color: #E75620; }
+.race-h { position: absolute; top: 250px; font-size: 46px; font-weight: 900; text-align: center; width: 480px; }
+.race-h .tm { display: block; font-size: 76px; color: #1A237E; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.race-h.l .tm { color: #C62828; }
+.memo { position: absolute; left: 40px; top: 470px; width: 480px; height: 1080px; background: #FFFDF5; border-radius: 30px; box-shadow: 0 20px 50px rgba(16,40,36,.16);
+  padding: 40px 34px; background-image: repeating-linear-gradient(#FFFDF5 0 64px, #E9E2CC 64px 66px); background-position: 0 30px; }
+.memo .ln { font-size: 33px; font-weight: 700; color: #3A3A3A; height: 66px; line-height: 66px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.memo .ln.r { font-weight: 900; color: #1A237E; } .memo .ln.n { color: #C62828; font-weight: 900; }
+.memo .ln.nm { color: #177083; font-weight: 900; }
+.done { position: absolute; z-index: 6; background: #177083; color: #fff; font-size: 44px; font-weight: 900; border-radius: 999px; padding: 18px 40px; box-shadow: 0 14px 30px rgba(16,40,36,.25); }
+.done.l { background: #C62828; }
 .fing, .rip { position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
 .fing { background: rgba(255,255,255,.6); border: 3px solid rgba(31,42,40,.45); box-shadow: 0 6px 16px rgba(16,40,36,.35); z-index: 5; }
 .rip { border: 5px solid #E75620; z-index: 4; }
@@ -84,6 +94,11 @@ window.render = (t) => {
     const p = Math.min(1, Math.max(0, (t - a) / (b - a))), s = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
     e.style.transform = `translateY(${-(y0 + (y1 - y0) * s)}px)`;
   });
+  document.querySelectorAll('[data-timer]').forEach(e => {
+    const [a, b] = e.dataset.timer.split(',').map(Number);
+    const v = Math.max(0, Math.min(t, b) - a);
+    e.textContent = v.toFixed(1) + '秒';
+  });
   document.querySelectorAll('[data-shake]').forEach(e => {
     const [a, b] = e.dataset.shake.split(',').map(Number);
     e.style.rotate = (t > a && t < b) ? `${Math.sin(t * 40) * 4}deg` : '0deg';
@@ -114,23 +129,25 @@ from PIL import Image
 CLIPS = os.path.join(OUT, "clips")
 LIVE = []  # build() のたびに作り直す
 
-def live_at(a, b, clip, y=520, w=560, start=0.0):
+def live_at(a, b, clip, y=520, w=560, start=0.0, x=None):
     """録画 clip の start 秒からを、動画の a〜b 秒に出す。指とタップの波紋はここで30コマ/秒で描く"""
     d = os.path.join(CLIPS, clip)
     tl = json.load(io.open(os.path.join(d, "timeline.json"), encoding="utf-8"))
     n = len(LIVE)
-    inner = w - 26
-    k = inner / 390
-    scr_h = round(844 * k)
     im = Image.open(os.path.join(d, tl["frames"][0][1])).convert("RGB")
     r, g, bb = im.getpixel((im.width // 2, 2))
-    LIVE.append({"n": n, "a": a, "b": b, "start": start, "tl": tl, "dir": d, "k": k, "ts": [f[0] for f in tl["frames"]], "cur": None})
+    LIVE.append({"n": n, "a": a, "b": b, "start": start, "tl": tl, "dir": d, "k": 1, "ts": [f[0] for f in tl["frames"]], "cur": None})
     first = v3.furl(os.path.join(d, tl["frames"][0][1]))
-    ph = (f'<div class="ph" style="left:{(W - w) // 2}px;top:{y}px;width:{w}px"><div class="bar" style="background:#{r:02X}{g:02X}{bb:02X}"><i></i></div>'
-          f'<div class="scr" style="height:{scr_h}px;position:relative"><img id="lv{n}" src="{first}">'
-          f'<div class="rip" id="rp{n}" style="width:{round(70*k)}px;height:{round(70*k)}px"></div>'
-          f'<div class="fing" id="fg{n}" style="width:{round(50*k)}px;height:{round(50*k)}px"></div></div></div>')
-    return at(a, b, ph, style="position:absolute;inset:0"), 13 + 40 + scr_h + 22, tl["marks"]
+    inner = w - 2 * round(w * v3.PH_BEZEL)
+    k = inner / 390
+    LIVE[-1]["k"] = k
+    body, h, strip, inner, bz = v3.phone_frame(w, f"#{r:02X}{g:02X}{bb:02X}",
+        f'<img id="lv{n}" src="{first}">'
+        f'<div class="rip" id="rp{n}" style="width:{round(70*k)}px;height:{round(70*k)}px"></div>'
+        f'<div class="fing" id="fg{n}" style="width:{round(50*k)}px;height:{round(50*k)}px"></div>')
+    ph = (f'<div class="ph" style="left:{(W - w) // 2 if x is None else x}px;top:{y}px;width:{w}px;height:{h}px;padding:{bz}px;border-radius:{round(w * v3.PH_R)}px">'
+          + body + '</div>')
+    return at(a, b, ph, style="position:absolute;inset:0"), h, tl["marks"]
 
 def live_state(L, t):
     """動画の時刻 t のときの、録画のコマ・指・波紋"""
@@ -257,8 +274,72 @@ def v_play_rounds():
     els.append(end_card(T0 + 20.4))
     return T0 + 24.4, els
 
+def play_video(clip, badge, hook, steps, x=None, w=540):
+    """操作の録画1本を見せる動画。steps = [(録画の目印 or 0, 見出し)]。見出しは目印の時刻から次の目印まで"""
+    T0 = 2.6
+    els = [at(0, T0, f'<div class="badge g">{badge}</div><h1>{esc(hook)}</h1>', cls="cap hook", style="top:660px", anim="pop")]
+    tl = json.load(io.open(os.path.join(CLIPS, clip, "timeline.json"), encoding="utf-8"))
+    end = tl["end"]
+    e, hh, m = live_at(T0, T0 + end, clip, y=560, w=w, x=x)
+    els.append(e)
+    ts = [0 if k == 0 else m[k] for k, _ in steps] + [end]
+    els += caps([(T0 + ts[i], T0 + ts[i + 1], h, "") for i, (_, h) in enumerate(steps)])
+    els.append(end_card(T0 + end))
+    return T0 + end + 4.0, els
+
+PAGE_VIDEOS = {
+ "nakama-rank": ("仲間ページ", "仲間の通算順位、\n表彰台で決まる。",
+   [(0, "いつものメンバーの\n通算順位が表彰台に"), ("avg", "平均着順で\n並べかえ"), ("top", "トップ率でも"), ("las", "ラス回避でも"), ("list", "全員の順位が\nずらり")]),
+ "nakama-grid": ("仲間ページ", "全員の成績を、\n1枚の表に。",
+   [(0, "「成績表」を押すと"), ("grid", "試合数・着順の回数・\nトップ率まで"), ("side", "横にすべらせて\n全員ぶん")]),
+ "nakama-h2h": ("仲間ページ", "あの人とあの人、\nどっちが強い？",
+   [(0, "「対戦」を押すと"), ("h2h", "メンバーどうしの\n直接対決が表に"), ("side", "左の人から見た\n勝ち-負け")]),
+ "nakama-member": ("仲間ページ", "名前を押すと、\nその人の成績が開く。",
+   [(0, "表彰台の1位を押すと"), ("sheet", "平均着順・トップ率・\n推移まで"), ("h2h", "相手ごとの\n勝ち負けも"), ("vs", "2人の直接対決を\nくらべる")]),
+ "nakama-games": ("仲間ページ", "あの日の結果、\nすぐ出せる？",
+   [(0, "「過去の試合」を押すと"), ("list", "打った日が\nずらりと並ぶ"), ("open", "1つ押すと"), ("result", "その日の結果が\n全部わかる")]),
+ "mypage-stats": ("マイページ", "自分の成績、\n数字で見たことある？",
+   [(0, "「マイページ」を押すと"), ("top", "平均着順・トップ率・\nラス回避"), ("graph", "通算スコアの推移も\nグラフで")]),
+ "mypage-graph": ("マイページ", "先月、\n勝ってた？",
+   [(0, "マイページを開いて"), ("month", "通算スコアの\n推移のグラフ"), ("pick", "月を押すと"), ("pop", "その月の試合が\n並ぶ")]),
+ "mypage-h2h": ("マイページ", "あの人には、\n勝ち越してる？",
+   [(0, "マイページを開いて"), ("tab", "「対戦成績」を押すと"), ("h2h", "相手ごとの\n勝ち-負け"), ("pct", "勝率順にも\n並べかえ"), ("vs", "1人押すと\nくわしく")]),
+ "mypage-hist": ("マイページ", "打った日の結果、\nぜんぶ残る。",
+   [(0, "マイページを開いて"), ("tab", "「過去の試合」を押すと"), ("list", "順位とスコアが\n日ごとに"), ("open", "1つ押すと"), ("result", "その日の結果が\n開く")]),
+ "mypage-sanma": ("マイページ", "三麻と四麻、\n成績は分けたい派？",
+   [(0, "マイページを開いて"), ("yonma", "四麻の成績"), ("tap3", "「三麻」を押すと"), ("sanma", "三麻の成績に\n切りかわる"), ("back", "四麻にも\nすぐ戻せる")]),
+}
+
+def v_calc_vs():
+    """電卓 vs まじゃすこ：左は電卓の計算メモ、右は実際の操作。上にタイマー"""
+    tl = json.load(io.open(os.path.join(CLIPS, "play-quick", "timeline.json"), encoding="utf-8"))
+    m = tl["marks"]
+    RS = 2.8                      # よーいドン
+    s0 = m["game"] - 0.2          # 録画の「点数入力」の少し前から
+    fin = RS + (m["done"] + 0.3 - s0)  # まじゃすこが終わる時刻
+    END = fin + 5.5
+    els = [at(0, RS, '<div class="badge">どっちが速い？</div><h1>電卓 vs<br>まじゃすこ</h1><p>4人ぶんのスコアの集計</p>', cls="cap hook", style="top:640px", anim="pop")]
+    els.append(at(RS, END, f'<div class="race-h l" style="left:40px">電卓<span class="tm" data-timer="{RS},999">0.0秒</span></div>', style="position:absolute;inset:0", anim="fade"))
+    els.append(at(RS, END, f'<div class="race-h" style="left:560px">まじゃすこ<span class="tm" data-timer="{RS},{fin}">0.0秒</span></div>', style="position:absolute;inset:0", anim="fade"))
+    lines = [("nm", "健太 45,200点"), ("", "45,200 − 30,000"), ("", "＝ +15.2"), ("", "＋ウマ30 ＋オカ20"), ("r", "＝ +65.2"),
+             ("nm", "美咲 28,100点"), ("", "28,100 − 30,000"), ("", "＝ −1.9"), ("", "＋ウマ10"), ("r", "＝ +8.1"),
+             ("nm", "翔 17,300点"), ("", "17,300 − 30,000"), ("", "＝ −12.7"), ("", "−ウマ10"), ("n", "＝ −22.7")]
+    memo = ""
+    for i, (c, tx) in enumerate(lines):
+        memo += f'<div class="ln {c}" data-in="{RS + 0.3 + i * 0.95:.2f}" data-out="{END}" data-a="fade">{html.escape(tx)}</div>'
+    els.append(at(RS, END, f'<div class="memo">{memo}</div>', style="position:absolute;inset:0", anim="fade"))
+    e, hh, mm = live_at(RS, END, "play-quick", y=470, w=480, start=s0, x=560)
+    els.append(e)
+    els.append(at(fin, END, f'<div class="done" style="left:690px;top:1590px">完了！</div>', style="position:absolute;inset:0", anim="pop"))
+    els.append(at(fin + 0.8, END, f'<div class="done l" style="left:120px;top:1590px">まだ3人目…</div>', style="position:absolute;inset:0", anim="pop"))
+    els.append(at(fin + 2.4, END, '<h1>この差、毎回。</h1>', cls="cap", style="top:130px", anim="pop"))
+    els.append(end_card(END))
+    return END + 4.0, els
+
 VIDEOS = {"kinou": v_kinou, "aruaru-shukei": v_aruaru, "kabe-umaoka": v_umaoka,
-          "play-quick": v_play_quick, "play-rounds": v_play_rounds}
+          "play-quick": v_play_quick, "play-rounds": v_play_rounds, "calc-vs": v_calc_vs}
+for _k, (_b, _h, _st) in PAGE_VIDEOS.items():
+    VIDEOS[_k] = (lambda k=_k, b=_b, h=_h, st=_st: play_video(k, b, h, st))
 
 def build(name, fn):
     LIVE.clear()

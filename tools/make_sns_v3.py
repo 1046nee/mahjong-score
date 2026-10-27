@@ -56,11 +56,12 @@ body { font-family: NJP, sans-serif; color: #1F2A28; }
 h1 { font-weight: 900; color: #177083; letter-spacing: .01em; line-height: 1.28; }
 .sub { font-weight: 600; color: #4F5C5A; line-height: 1.6; }
 .dom { position: absolute; font-weight: 800; color: #7C8B88; letter-spacing: .04em; }
-.ph { position: absolute; background: #1F2A28; border-radius: 58px; padding: 13px 13px 22px; box-shadow: 0 30px 60px rgba(16,40,36,.25); }
-.ph .bar { height: 40px; border-radius: 46px 46px 0 0; display: flex; justify-content: center; align-items: center; }
-.ph .bar i { width: 30%%; height: 22px; border-radius: 14px; background: #1F2A28; }
-.ph .scr { overflow: hidden; border-radius: 0 0 44px 44px; background: #fff; }
-.ph .scr img { display: block; width: 100%%; }
+.ph { position: absolute; background: #1F2A28; box-shadow: 0 30px 60px rgba(16,40,36,.25); }
+.ph .scr { overflow: hidden; display: flex; flex-direction: column; }
+.ph .bar { flex: none; display: flex; justify-content: center; align-items: center; }
+.ph .bar i { display: block; border-radius: 999px; background: #1F2A28; }
+.ph .shot { flex: none; overflow: hidden; position: relative; }
+.ph .shot img { display: block; width: 100%%; }
 .chip { position: absolute; z-index: 3; display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 26px; padding: 18px 28px;
   box-shadow: 0 14px 34px rgba(16,40,36,.18); white-space: nowrap; }
 .chip .l { font-size: 28px; font-weight: 800; color: #4F5C5A; }
@@ -70,15 +71,29 @@ h1 { font-weight: 900; color: #177083; letter-spacing: .01em; line-height: 1.28;
 .chip svg { display: block; }
 """ % FONT
 
+# ---- スマホの枠の決まり（サイト・SNS画像・動画・サムネで共通。docs/image-tools.md「スマホの枠」） ----
+# 幅 w に対して：高さ 2.06w（iPhoneの縦横比）／枠の太さ 3.5%（上下左右同じ）／外の角 15%・画面の角 11.5%
+# 画面の上に、アプリの上の色の帯（10%）を置き、その中央にノッチ（幅30%・高さ7%）。スクショは帯の下に幅いっぱいで置き、下ははみ出た分だけ隠れる
+PH_RATIO, PH_BEZEL, PH_R, PH_SR, PH_STRIP, PH_IW, PH_IH = 2.06, 0.035, 0.15, 0.115, 0.10, 0.30, 0.07
+
+def phone_frame(w, top, inner_html, bg="#fff", shot_extra=""):
+    """決まりどおりのスマホの枠。inner_html はスクショの場所（帯の下）に入る。戻り値は (html, 高さ, 帯の高さ, 画面の幅)"""
+    b = round(w * PH_BEZEL)
+    h = round(w * PH_RATIO)
+    strip = round(w * PH_STRIP)
+    inner = w - 2 * b
+    html_ = (f'<div class="scr" style="height:{h - 2 * b}px;border-radius:{round(w * PH_SR)}px;background:{bg}">'
+             f'<div class="bar" style="height:{strip}px;background:{top}"><i style="width:{round(w * PH_IW)}px;height:{round(w * PH_IH)}px"></i></div>'
+             f'<div class="shot" style="height:{h - 2 * b - strip}px{shot_extra}">{inner_html}</div></div>')
+    return html_, h, strip, inner, b
+
 def phone(img, x, y, w, rot=0):
-    """本物の画面（720×1558）をそのまま入れたスマホ。短い画面は下をアプリの地の色で埋めてiPhoneの縦横比にする"""
+    """本物の画面（720×1558）を入れたスマホ（決まりどおりの枠）"""
     im = Image.open(os.path.join(SCR, img))
-    inner = w - 26
-    scr_h = round(inner * 1558 / 720)  # いつもiPhoneの縦横比
     bg = "#F4F7F6" if im.height / im.width < 2 else "#fff"
-    return (f'<div class="ph" style="left:{x}px;top:{y}px;width:{w}px;transform:rotate({rot}deg)">'
-            f'<div class="bar" style="background:{topcolor(img)}"><i></i></div>'
-            f'<div class="scr" style="height:{scr_h}px;background:{bg}"><img src="{furl(os.path.join(SCR, img))}"></div></div>'), 13 + 40 + scr_h + 22
+    body, h, strip, inner, b = phone_frame(w, topcolor(img), f'<img src="{furl(os.path.join(SCR, img))}">', bg)
+    return (f'<div class="ph" style="left:{x}px;top:{y}px;width:{w}px;height:{h}px;padding:{b}px;border-radius:{round(w * PH_R)}px;transform:rotate({rot}deg)">'
+            + body + '</div>'), h
 
 def chip(c, x, y):
     """c = (ラベル, 数字, 種類)。種類: pos/neg/'' か、('medal', 順位) か ('line',)"""
@@ -128,7 +143,7 @@ def feat_html(f, H):
     W = 1080
     story = H == 1920
     top = 250 if story else 92
-    pw = 470 if story else 380
+    pw = 500 if story else 410
     py = 600 if story else 440
     px = (W - pw) // 2
     ph, phh = phone(img, px, py, pw)
@@ -166,7 +181,7 @@ HOWTO = [
 def howto_html(h):
     n, title, sub, img = h
     W, H = 1080, 1350
-    pw, py = 380, 440
+    pw, py = 410, 440
     px = (W - pw) // 2
     ph, phh = phone(img, px, py, pw)
     t = html.escape(title).replace("\n", "<br>")

@@ -35,7 +35,11 @@ import re as _re
 def _short(n):
     # 一覧ではゲーム名の右に日付が出るので、名前は曜日だけの短い名前に（「2026.10.10（土）」→「土曜の麻雀」）
     m = _re.match(r"^\d{4}\.\d{2}\.\d{2}（(.)）", n or "")
-    return (m.group(1) + "曜の麻雀") if m else n
+    if m: return m.group(1) + "曜の麻雀"
+    # 大会の名前には元の仲間の名前が入っているので、一般的な名前にする（2026-10-27）
+    if n and "リーグ" in n: return "夏のリーグ戦"
+    if n and ("トーナメント" in n or "大会" in n): return "秋の大会"
+    return n
 for _v in d["sessions"].values():
     if _v.get("name"): _v["name"] = _short(_v["name"])
 for _g in circle.get("games", {}).values():

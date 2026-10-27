@@ -36,9 +36,14 @@ def sparkle(x, y, r=10, c="#fff"):
 
 
 def phone(x, y, w, h, screen):
-    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="18" fill="{INK}"/>'
-            f'<rect x="{x + 6}" y="{y + 6}" width="{w - 12}" height="{h - 12}" rx="13" fill="#fff"/>'
-            f'<rect x="{x + w / 2 - 14}" y="{y + 10}" width="28" height="6" rx="3" fill="{INK}"/>' + screen)
+    """スマホの枠（docs/image-tools.md「スマホの枠」の決まり：高さ＝幅×2.06・枠3.5%・角15%/11.5%・ノッチ幅30%×高さ7%）。
+    高さ h と中心はそのままにして、幅を決まりに合わせる"""
+    w2 = round(h / 2.06, 1)
+    x2 = round(x + (w - w2) / 2, 1)
+    b = round(w2 * 0.035, 1)
+    return (f'<rect x="{x2}" y="{y}" width="{w2}" height="{h}" rx="{round(w2 * .15, 1)}" fill="{INK}"/>'
+            f'<rect x="{x2 + b}" y="{y + b}" width="{round(w2 - 2 * b, 1)}" height="{round(h - 2 * b, 1)}" rx="{round(w2 * .115, 1)}" fill="#fff"/>'
+            f'<rect x="{round(x2 + w2 * .35, 1)}" y="{round(y + b + w2 * .015, 1)}" width="{round(w2 * .3, 1)}" height="{round(w2 * .07, 1)}" rx="{round(w2 * .035, 1)}" fill="{INK}"/>' + screen)
 
 
 def bars(x, y, vals, bw=20, gap=10, maxh=90, c="#fff", last=None):
@@ -141,7 +146,7 @@ THUMBS = [
  T("blog-mleague-history", "#F43F5E", lambda: bars(64, 200, [80, 90, 90, 90, 94, 96, 96, 120], 20, 6, 150, "#fff", "#FFD23F")),
  T("blog-pro-dantai-rules", "#8B5CF6", lambda: "".join(f'<rect x="{46 + i * 48}" y="{70}" width="40" height="110" rx="8" fill="#fff"/><rect x="{46 + i * 48}" y="70" width="40" height="22" rx="8" fill="{c}"/>' + check(56 + i * 48, 128 + (0 if i % 2 else 20), c, 1) for i, c in enumerate(["#177083", "#4261AA", "#E25A1C", "#6B46C1", "#B7791F"]))),
  T("blog-mahjong-ai", "#06B6D4", lambda: '<rect x="96" y="60" width="128" height="104" rx="22" fill="#fff"/><circle cx="134" cy="106" r="13" fill="#1F2A28"/><circle cx="186" cy="106" r="13" fill="#1F2A28"/><circle cx="138" cy="102" r="4" fill="#fff"/><circle cx="190" cy="102" r="4" fill="#fff"/><rect x="138" y="136" width="44" height="8" rx="4" fill="#E75620"/><line x1="160" y1="60" x2="160" y2="36" stroke="#fff" stroke-width="6"/><circle cx="160" cy="30" r="9" fill="#FFC233"/>' + tiles(["p1", "p9"], 238, 150, 28, 4)),
- T("nakama-page", "#2F6BFF", lambda: phone(100, 14, 120, 212, podium(160, 160) + lines(118, 176, 3, 84, 12) + '<text x="160" y="66" text-anchor="middle" font-size="16" font-weight="900" fill="#1F2A28" ' + F + '>通算順位</text>') + sparkle(258, 60, 14)),
+ T("nakama-page", "#2F6BFF", lambda: phone(100, 14, 120, 212, '<g transform="translate(160 160) scale(.62) translate(-160 -160)">' + podium(160, 160) + '</g>' +lines(118, 176, 3, 84, 12) + '<text x="160" y="66" text-anchor="middle" font-size="16" font-weight="900" fill="#1F2A28" ' + F + '>通算順位</text>') + sparkle(258, 60, 14)),
  T("mypage-stats", "#3B82F6", lambda: phone(100, 14, 120, 212, '<path d="M116 150 L140 130 L162 140 L184 104 L204 92" stroke="#2F6BFF" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="204" cy="92" r="6" fill="#E75620"/>' + card(116, 160, 88, 40, "#EAF0FB", 8) + '<text x="160" y="188" text-anchor="middle" font-size="18" font-weight="900" fill="#2F4A86" ' + F + '>+124.4</text>' + '<circle cx="160" cy="58" r="14" fill="#C9D6EE"/>')),
  T("kiroku-kakutei", "#6366F1", lambda: '<rect x="108" y="96" width="104" height="92" rx="14" fill="#fff"/><path d="M128 96 V72 A32 32 0 0 1 192 72 V96" stroke="#fff" stroke-width="14" fill="none"/>' + check(144, 140, "#22B573", 1.4) + '<circle cx="246" cy="68" r="24" fill="#FFC233"/><path d="M246 54 V68 L256 74" stroke="#1F2A28" stroke-width="4" fill="none" stroke-linecap="round"/>'),
  T("blog-season-ranking", "#10B981", lambda: card(40, 40, 240, 150, "#fff", 12) + '<path d="M60 160 L100 140 L140 150 L180 104 L220 92 L256 62" stroke="#10B981" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M60 170 L100 160 L140 130 L180 140 L220 128 L256 112" stroke="#FFC233" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="62" r="8" fill="#E75620"/>'),
