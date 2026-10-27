@@ -10,6 +10,7 @@ iPhone のヒラギノに近い Noto Sans JP（Google Fonts）を読み込んだ
 調べるもの: assets/thumbs・assets/art・assets 直下の SVG ファイルと、記事・LP・固定ページの中に直接書いた SVG。
 使い方: python tools/svg_text_check.py   （1件でも見つかれば終了コード1）
         python tools/svg_text_check.py --pad 3 assets/thumbs/blog-score-table.svg   （ファイルを指定）
+        python tools/svg_text_check.py score-basics.html   （ページの中の絵だけ）
 """
 import functools
 import glob
@@ -104,9 +105,12 @@ def main():
     pad = 3.0
     if '--pad' in args:
         i = args.index('--pad'); pad = float(args[i + 1]); del args[i:i + 2]
-    files = args or sorted(glob.glob(os.path.join(ROOT, 'assets', 'thumbs', '*.svg')) + glob.glob(os.path.join(ROOT, 'assets', 'art', '*.svg'))
+    # 引数に .html を渡すと、そのページの中の SVG だけを調べる
+    pages_arg = [os.path.relpath(os.path.abspath(f), ROOT) for f in args if f.endswith('.html')]
+    args = [f for f in args if not f.endswith('.html')]
+    files = args if (args or pages_arg) else sorted(glob.glob(os.path.join(ROOT, 'assets', 'thumbs', '*.svg')) + glob.glob(os.path.join(ROOT, 'assets', 'art', '*.svg'))
                            + [f for f in glob.glob(os.path.join(ROOT, 'assets', '*.svg'))])
-    pages = [] if args else sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, '*.html'))) + sorted('news/' + os.path.basename(f) for f in glob.glob(os.path.join(ROOT, 'news', '*.html')))
+    pages = pages_arg if (args or pages_arg) else sorted(os.path.basename(f) for f in glob.glob(os.path.join(ROOT, '*.html'))) + sorted('news/' + os.path.basename(f) for f in glob.glob(os.path.join(ROOT, 'news', '*.html')))
     srv = http.server.ThreadingHTTPServer(('127.0.0.1', PORT), functools.partial(Q, directory=ROOT))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     found = []

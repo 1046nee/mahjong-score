@@ -4,8 +4,11 @@
 - `index.html` — アプリ本体（SPA・全画面が1ファイル → docs/app-spec.md / docs/lp-spec.md）
 - `blog.html` / `blog-*.html` / `mahjong/` `news/` `blog/` — ブログ（→ docs/blog-spec.md）
 - `about.html` — 運営者情報（むにぃ名義・ProfilePage JSON-LD。著者ブロック/フッターからリンク。広告枠は置かない）
-- `score-basics.html` — スコア計算の基本（Article JSON-LD・関連記事への内部リンク・lp_bottom枠）
-- `faq.html` — よくある質問**21問**（**FAQPage JSON-LDはここ。問数・文言とも本文と一致させる**。増やしたら両方直す）
+- `score-basics.html` — スコア計算の基本（Article JSON-LD・関連記事への内部リンク・lp_bottom枠）。
+  式の帯（素点＋ウマ＋オカ＝スコア）と、素点・ウマ・オカ・チップ・同点の図（インラインSVG）・実例の計算表（合計0の行つき）・三麻と四麻のくらべ・よくあるミス3つ・まとめ（2026-10-27〜）
+- `faq.html` — よくある質問**22問**（**FAQPage JSON-LDはここ。問数・文言・順番とも本文と一致させる**。増やしたら両方直す）。
+  5つの分類（はじめに・ルール・スコアの計算・記録・入力・共有・書き出し・成績・データの保存）に分け、質問は開閉式（details。`#q番号` で来たらその質問を開く）。
+  冒頭に使い方3ステップの絵と分類へのリンク、共有の分類に「共有URLと見るだけのリンク」の絵（2026-10-27〜）
 - `contact.html` — お問い合わせ（Googleフォームをiframeでサイト内に埋め込み＋受付内容・返信目安・運営者情報。広告枠は置かない）
 - `terms.html` / `privacy.html` — 規約・PP（AdSense必須文言含む。広告枠は置かない）
 - `404.html` — カスタム404（noindex。blog-site.jsは読み込む）
