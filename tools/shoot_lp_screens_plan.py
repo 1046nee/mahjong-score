@@ -51,3 +51,7 @@ path = os.path.join(OUT, "lp-mypage.png"); pg.screenshot(path=path); shots.appen
 pg.evaluate("document.querySelectorAll('.sp-pop').forEach(p => p.remove())")
 pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
 vshot("games", "#view-history .gm-list", 168)
+# 自分の対戦成績（相手ごとの勝ち-負け）。画面いっぱいに相手が並ぶ位置で撮る（SNS画像の機能紹介4。
+# 前はカードだけ撮った短い画像で、スマホの下に空白が出ていた＝ユーザーの指摘 2026-10-27）
+pg.evaluate("setMpPane('h2h')"); pg.wait_for_timeout(900)
+vshot("myh2h", "#mp-pane-h2h .card", 64)
