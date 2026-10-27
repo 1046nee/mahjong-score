@@ -124,6 +124,16 @@ def bg(c, c2="#ffffff"):
             f'<circle cx="286" cy="28" r="70" fill="{c2}" opacity=".14"/><circle cx="24" cy="226" r="56" fill="{c2}" opacity=".12"/>')
 
 
+def robot(cx, cy, s=1.0):
+    """麻雀AIの記事: 牌譜を読むロボット（2026-10-28）"""
+    return (f'<g transform="translate({cx} {cy}) scale({s})">'
+            '<line x1="0" y1="-62" x2="0" y2="-48" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="-64" r="7" fill="#FFD23F"/>'
+            '<rect x="-44" y="-48" width="88" height="66" rx="18" fill="#fff"/><rect x="-32" y="-36" width="64" height="38" rx="10" fill="#E4F3EC"/>'
+            '<circle cx="-13" cy="-18" r="6" fill="#1F2A28"/><circle cx="13" cy="-18" r="6" fill="#1F2A28"/>'
+            '<path d="M-10 -6 q10 8 20 0" fill="none" stroke="#1F2A28" stroke-width="3.5" stroke-linecap="round"/>'
+            '<rect x="-30" y="24" width="60" height="22" rx="8" fill="#FFD23F"/></g>')
+
+
 def route_flags():
     """世界の麻雀: 国旗4枚を点線のルートでつなぐ（麻雀で世界一周）"""
     out = '<path d="M52 92 Q100 40 140 78 T232 70 T278 92" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="6 6" opacity=".7"/>'
@@ -164,6 +174,7 @@ THUMBS = [
  T("blog-nichijougo", "#F59E0B", lambda: bubble(30, 40, 150, 56, "テンパる", 28) + bubble(140, 120, 150, 56, "安パイ", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
  T("blog-sekai-mahjong", "#0F766E", lambda: route_flags() + bubble(70, 146, 180, 54, "世界の麻雀", 28, "#FFD23F") + sparkle(282, 168, 11) + sparkle(36, 176, 8)),
  T("blog-mahjong-suuji", "#DB2777", lambda: bubble(36, 40, 130, 56, "136枚", 28) + bubble(154, 120, 130, 56, "なぜ？", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
+ T("blog-ai-haifu", "#0EA5E9", lambda: robot(110, 120, 1.15) + card(196, 64, 96, 116, "#fff", 10) + lines(208, 82, 6, 72, 15) + sparkle(276, 34, 12) + sparkle(42, 186, 9)),
  T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
  T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),
  T("blog-mahjong-manga", "#F28C28", lambda: card(62, 34, 92, 130, "#fff", 8) + card(166, 34, 92, 130, "#fff", 8) + lines(74, 62, 4, 68, 16) + tiles(["z7", "z6"], 180, 66, 30, 8) + bubble(150, 168, 120, 48, "ロン！", 26, "#FFD23F") + sparkle(272, 40, 12)),

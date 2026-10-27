@@ -19,6 +19,9 @@ const BLOG_CATS = {
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-ai-haifu.html', cat: 'mahjong', date: '2026.10.28', tag: '麻雀AI',
+    title: '麻雀AIで自分の牌譜を分析する方法｜雀魂のMAKA・Mortal・NAGAの使い方',
+    desc: '雀魂・天鳳・麻雀一番街の牌譜をAIで分析する手順。無料のMAKA・Mortal、有料のNAGAの違いと、AIの答えの読み方。' },
   { url: '/blog-mahjong-suuji.html', cat: 'mahjong', date: '2026.10.27', tag: 'ルール解説',
     title: '麻雀の数字の理由｜136枚・王牌14枚・満貫8,000点…なぜその数字？',
     desc: '牌136枚、王牌14枚、翻＋2の場ゾロ、親1.5倍、満貫8,000点、積み棒300点、30,000点返し。数字の理由を計算で確かめます。' },
