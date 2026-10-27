@@ -315,6 +315,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hero h1 { font-size: 33px; line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
+/* 最初の画面のイラスト：昔の道具→矢印→本物の画面のスマホ2台（手前＝試合の総合順位、奥＝マイページの成績。2026-10-27） */
+.hero-mix { position: relative; aspect-ratio: 380 / 232; }
+.hero-mix > svg { position: absolute; left: 0; top: 14px; width: 100%; height: auto; }
+.hm-ph { position: absolute; display: flex; flex-direction: column; padding: 4px; border-radius: 17px; background: #1F2A28; box-shadow: 0 10px 22px rgba(16,40,36,.22); overflow: hidden; }
+.hm-bar { height: 12px; display: flex; justify-content: center; align-items: center; background: #E6F1EB; border-radius: 13px 13px 0 0; flex: none; }
+.hm-bar i { width: 30%; height: 6px; border-radius: 4px; background: #1F2A28; }
+.hm-ph img { display: block; width: 100%; height: auto; border-radius: 0 0 13px 13px; }
+.hm-front { left: 46%; top: 2%; width: 27%; aspect-ratio: 1 / 2.05; z-index: 2; }
+.hm-back { left: 74.5%; top: 7%; width: 24%; aspect-ratio: 1 / 2.05; transform: rotate(5deg); z-index: 1; }
+
 .hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
 /* ヒーローのCTA周り: ボタンを唯一の主役にする（マイクロコピー → 大きめCTA → 控えめな信頼テキスト）。
    ピル型バッジはボタンに見えてCTAと競合するため、ヒーローでは使わない（クロージングのみ） */
@@ -2533,7 +2543,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="hero">
   <h1>麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？</h1>
 
-  <div class="hero-illust" aria-hidden="true">
+  <div class="hero-illust hero-mix" aria-hidden="true">
     <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img">
       <!-- 過去: 電卓・くしゃくしゃの紙・鉛筆はゴミ箱へ（薄く描いて「もう使わない」感を出す） -->
       <g opacity="0.55">
@@ -2563,27 +2573,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <path d="M138 62 Q134 74 134 86" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
       </g>
       <!-- 現在: まじゃすこのスコア画面。淡い光と輝きで「これからはこっち」を演出 -->
-      <circle cx="270" cy="100" r="90" fill="#E4F3EC" opacity="0.75"/>
+      <circle cx="290" cy="104" r="96" fill="#E4F3EC" opacity="0.75"/>
       <!-- 乗り換えの矢印（過去 → スマホ）: 点線の軌跡＋進行方向に沿った矢じり -->
       <path d="M148 86 Q176 62 202 74" stroke="#9fbcb7" stroke-width="3.5" fill="none" stroke-dasharray="1 7" stroke-linecap="round"/>
       <path d="M212 79 L199.9 78.5 L204.1 69.5 Z" fill="#9fbcb7"/>
-      <!-- 輝き（4方向に尖ったキラキラ） -->
       <path d="M332 22 Q334 30 342 32 Q334 34 332 42 Q330 34 322 32 Q330 30 332 22 Z" fill="#E75620"/>
       <path d="M206 27 Q207.5 32.5 213 34 Q207.5 35.5 206 41 Q204.5 35.5 199 34 Q204.5 32.5 206 27 Z" fill="#177083"/>
       <path d="M338 149 Q339.5 154.5 345 156 Q339.5 157.5 338 163 Q336.5 157.5 331 156 Q336.5 154.5 338 149 Z" fill="#177083"/>
-      <g>
-        <rect x="220" y="4" width="100" height="192" rx="17" fill="#1f2a28"/>
-        <rect x="224" y="8" width="92" height="184" rx="12" fill="#ffffff"/>
-        <rect x="256" y="13" width="28" height="6" rx="3" fill="#1f2a28"/>
-        <text x="270" y="34" font-size="9.5" font-weight="bold" fill="#177083" text-anchor="middle" font-family="sans-serif">総合順位</text>
-        <g><rect x="230" y="42" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="53" r="4" fill="#d4a017"/><text x="238" y="54.8" font-size="5" font-weight="bold" fill="#3B2C00" text-anchor="middle" font-family="sans-serif">1</text><text x="248" y="56" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">太郎</text><text x="306" y="56" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+55.0</text></g>
-        <g><rect x="230" y="68" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="79" r="4" fill="#9aa5ad"/><text x="238" y="80.8" font-size="5" font-weight="bold" fill="#1F2A28" text-anchor="middle" font-family="sans-serif">2</text><text x="248" y="82" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">次郎</text><text x="306" y="82" font-size="8" font-weight="bold" fill="#1a237e" text-anchor="end" font-family="sans-serif">+8.0</text></g>
-        <g><rect x="230" y="94" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><circle cx="238" cy="105" r="4" fill="#c97b3f"/><text x="238" y="106.8" font-size="5" font-weight="bold" fill="#2E1A0A" text-anchor="middle" font-family="sans-serif">3</text><text x="248" y="108" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">三郎</text><text x="306" y="108" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-18.0</text></g>
-        <g><rect x="230" y="120" width="80" height="20" rx="5" fill="#ffffff" stroke="#e2ece7" stroke-width="1.2"/><text x="248" y="134" font-size="8" font-weight="bold" fill="#1a1a1a" font-family="sans-serif">四郎</text><text x="306" y="134" font-size="8" font-weight="bold" fill="#c62828" text-anchor="end" font-family="sans-serif">-45.0</text></g>
-        <rect x="230" y="146" width="80" height="40" rx="5" fill="#f6faf9" stroke="#e2ece7" stroke-width="1.2"/>
-        <polyline points="236,178 250,168 264,173 278,160 292,168 304,156" fill="none" stroke="#177083" stroke-width="2" stroke-linecap="round"/>
-      </g>
     </svg>
+    <span class="hm-ph hm-back"><span class="hm-bar"><i></i></span><img src="/assets/screens/lp-mypage.jpg" alt="" width="720" height="1558"></span><span class="hm-ph hm-front"><span class="hm-bar" style="background:#FFFFFF"><i></i></span><img src="/assets/screens/howto-4.jpg" alt="" width="720" height="1558"></span>
   </div>
 
   <p class="hero-desc">まじゃすこは、麻雀のスコア計算と共有のわずらわしさを、シンプルに解決する無料のサービスです。</p>
