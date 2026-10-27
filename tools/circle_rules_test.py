@@ -166,6 +166,13 @@ def main():
         check("B: 他人のアイコンは書き換えられない", False, op(B, "PUT", f"avatars/{A['uid']}", {"k": "ini", "c": "#000000"}))
         check("A: 決まっていない絵の名前は入れられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "evil", "c": "#E82F2F"}))
         check("A: 色でない値は入れられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "red"}))
+        # 2026-10-27: 絵はすべての牌から選べる・マイページの名前は users/{uid}/myName（本人だけ）
+        check("A: 九萬・白・花牌（竹）のアイコンも保存できる", True, all(op(A, "PUT", f"avatars/{A['uid']}", {"k": k, "c": "#177083"}) for k in ("m9", "z5", "f8")))
+        check("A: ない牌（十萬）は入れられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "m10", "c": "#177083"}))
+        check("A: マイページの名前を保存できる", True, op(A, "PUT", f"users/{A['uid']}/myName", "テストの名前"))
+        check("B: 他人のマイページの名前は読めない", False, op(B, "GET", f"users/{A['uid']}/myName"))
+        check("A: 17字の名前は入れられない", False, op(A, "PUT", f"users/{A['uid']}/myName", "あ" * 17))
+        check("A: マイページの名前を消せる", True, op(A, "DELETE", f"users/{A['uid']}/myName"))
         check("A: 決まっていない項目は付けられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "#E82F2F", "x": 1}))
         check("ログインなし: アイコンは読める（仲間ページに出す）", True, op(None, "GET", f"avatars/{A['uid']}"))
         check("ログインなし: アイコンは書けない", False, op(None, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "#E82F2F"}))
