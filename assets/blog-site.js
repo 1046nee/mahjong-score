@@ -299,19 +299,66 @@ const BLOG_POSTS = [
     if (foot) foot.innerHTML = FOOT_HTML;   // 静的HTMLのフッターも同じ中身（tools/site_footer.py）
   }
 
+  // ---- 記事の表を読みやすく（2026-10-27 ユーザーの指摘: 列の幅が文字数に合わず変な所で折り返す・セルが縦に長い・横スクロールが多い）----
+  // 1. 列ごとに一番長い文字数を数え、短い列（7字以内）は折り返さない・長い文の列（16字以上）は左寄せ。各セルに見出しの名前（data-label）を控える
+  // 2. 画面に収まり、どのセルも5行半より低ければそのまま。収まらなければ文字を少し小さく（tb-compact）
+  // 3. それでも収まらない・縦に長いなら、文の表はスマホで「1行＝1枚」の縦並び（tb-cards：行の1列目が見出し、ほかは「見出し｜中身」）
+  //    見出しの無い表・結合したセルのある表は並べ替えると読めないので、左の列を固定して横にずらす（tb-sticky）
+  const TB_NUM = /^[\s\d０-９,.+\-−–—%％:：\/／〜~()（）×位着点符翻本場pts枚回人試合年月日期第万千百]*$/;
+  function prepTable(tb) {
+    if (tb._tb) return tb._tb;
+    const rows = [...tb.rows];
+    const spans = !!tb.querySelector('[rowspan],[colspan]');
+    const head = tb.tHead && tb.tHead.rows[0] ? tb.tHead.rows[0] : (rows[0] && rows[0].cells.length > 1 && [...rows[0].cells].every(c => c.tagName === 'TH') ? rows[0] : null);
+    const body = rows.filter(r => r !== head && (!r.parentElement || r.parentElement.tagName !== 'THEAD'));
+    const ncol = Math.max(0, ...rows.map(r => r.cells.length));
+    const len = Array(ncol).fill(0);
+    let num = 0, cells = 0;
+    body.forEach(r => [...r.cells].forEach((c, i) => { const t = c.textContent.replace(/\s+/g, ' ').trim(); len[i] = Math.max(len[i], [...t].length); if (t) { cells++; if (TB_NUM.test(t)) num++; } }));
+    const hlen = head ? [...head.cells].map(c => [...c.textContent.trim()].length) : [];
+    if (head && head.parentElement && head.parentElement.tagName !== 'THEAD') head.classList.add('tb-headrow');
+    if (!spans) rows.forEach(r => [...r.cells].forEach((c, i) => {
+      if (len[i] <= 7 && (hlen[i] || 0) <= 8) c.classList.add('tb-nw'); // 短い列は折り返さない
+      else if ([...c.textContent.trim()].length <= 8) c.classList.add('tb-nw2'); // 8字以内のセルも、表が入りきるなら折り返さない（入らなければ tb-loose で折り返す）
+      else if (len[i] >= 16) c.classList.add('tb-tl');
+      if (head && r !== head && head.cells[i]) c.setAttribute('data-label', head.cells[i].textContent.replace(/\s+/g, ' ').trim());
+    }));
+    tb._tb = { spans, head: !!head, ncol, numeric: cells > 0 && num / cells >= 0.6 };
+    return tb._tb;
+  }
+  function fitTables() {
+    document.querySelectorAll('.blog-post .table-scroll > table').forEach(tb => {
+      const m = prepTable(tb), wrap = tb.parentElement;
+      tb.classList.remove('tb-cards', 'tb-compact', 'tb-sticky', 'tb-loose');
+      wrap.classList.remove('tb-scrolls');
+      const fits = () => tb.scrollWidth <= wrap.clientWidth + 1;
+      const narrow = window.innerWidth < 700; // 縦に長いとみなす行数: スマホ5行半・パソコン8行
+      const tall = () => [...tb.querySelectorAll('td')].some(td => { const lh = parseFloat(getComputedStyle(td).lineHeight) || 22; return td.getBoundingClientRect().height > lh * (narrow ? 5.5 : 8) + 16; });
+      if (fits() && !(m.ncol >= 2 && tall())) return;
+      tb.classList.add('tb-loose');
+      if (fits() && !(m.ncol >= 2 && tall())) return;
+      tb.classList.add('tb-compact');
+      if (fits() && !(m.ncol >= 2 && tall())) return;
+      if (m.head && !m.spans && m.ncol >= 2 && !tb.classList.contains('tb-keep')) { tb.classList.remove('tb-compact'); tb.classList.add('tb-cards'); return; }
+      if (!fits()) { tb.classList.add('tb-sticky'); wrap.classList.add('tb-scrolls'); }
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     renderChrome();
 
-    // 記事内の表: モバイルで列が潰れて読みにくくならないよう、横スクロールの入れ物に包む
-    // （列が多い表は最低幅を確保して、画面外はスクロールで見る）
+    // 記事内の表: 入れ物（.table-scroll）に包み、画面の幅に合わせて読みやすい形にする（fitTables）
     document.querySelectorAll('.blog-post table').forEach(tb => {
       if (tb.parentElement.classList.contains('table-scroll')) return;
       const wrap = document.createElement('div');
       wrap.className = 'table-scroll';
       tb.parentNode.insertBefore(wrap, tb);
       wrap.appendChild(tb);
-      if (tb.rows[0] && tb.rows[0].cells.length >= 4) tb.style.minWidth = '520px';
     });
+    fitTables();
+    window.addEventListener('load', fitTables);
+    let tbW = window.innerWidth, tbT = null;
+    window.addEventListener('resize', () => { if (window.innerWidth === tbW) return; tbW = window.innerWidth; clearTimeout(tbT); tbT = setTimeout(fitTables, 150); });
 
     // 記事の中の <div class="sns-list" data-sns="mleague_x,majasco_x"></div> をアカウントのカードにする
     document.querySelectorAll('.blog-post [data-sns]').forEach(el => {

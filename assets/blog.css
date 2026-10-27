@@ -773,3 +773,38 @@ body:not(.bs-list) .side-box, .bs-list .side-box { padding: 10px 0 2px; }
 .blog-post ul.org-pie-leg span { flex: 1; min-width: 0; color: #1F2A28; font-weight: 700; }
 .blog-post ul.org-pie-leg b { font-size: 15px; font-weight: 900; color: #1F2A28; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .blog-post ul.org-pie-leg b small { margin-left: 6px; font-size: 11.5px; font-weight: 700; color: #6B7A77; }
+
+/* ---- 表を読みやすく（2026-10-27）: 振る舞いは blog-site.js の fitTables ----
+   表は入れ物（.table-scroll）の中で画面の幅いっぱい。記事ごとに付けていた最低幅（520px・760px・700px）は使わない */
+.blog-post .table-scroll > table { display: table; width: 100%; min-width: 0 !important; table-layout: auto; }
+.blog-post .table-scroll > table th, .blog-post .table-scroll > table td { overflow-wrap: break-word; line-break: strict; }
+.blog-post .table-scroll > table th:not(.tb-nw):not(.tb-nw2), .blog-post .table-scroll > table td:not(.tb-nw):not(.tb-nw2), .blog-post .table-scroll > table.tb-loose .tb-nw2:not(:first-child) { white-space: normal !important; } /* 記事ごとの「見出し・1列目は折り返さない」は使わない（長い名前の列が広がりすぎた） */
+.blog-post .table-scroll > table .tb-nw { white-space: nowrap; }
+.blog-post .table-scroll > table:not(.tb-loose) .tb-nw2, .blog-post .table-scroll > table.tb-loose tr > .tb-nw2:first-child { white-space: nowrap !important; } /* 入りきらないときも、行の見出し（1列目）は折り返さない */
+.blog-post .table-scroll > table .tb-tl { text-align: left; }
+/* セルの縦の仕切り（隣のセルとの境目が分かるように） */
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td + td,
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th + td,
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table td + th,
+body:not(.bs-list) .post-layout > .blog-post .table-scroll > table th + th { border-left: 1px solid #E6EAF2; }
+/* 少し小さく */
+.blog-post .table-scroll > table.tb-compact { font-size: 12.5px; }
+.blog-post .table-scroll > table.tb-compact th, .blog-post .table-scroll > table.tb-compact td { padding: 6px 5px !important; }
+/* 数字の表で収まらないとき: 左の列を固定して横にずらす */
+.blog-post .table-scroll > table.tb-sticky { width: max-content; min-width: 100% !important; }
+.blog-post .table-scroll > table.tb-sticky tr > :first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 #DCE3F1; }
+.blog-post .table-scroll > table.tb-sticky thead tr > :first-child, .blog-post .table-scroll > table.tb-sticky .tb-headrow > :first-child { background: #F3F6FB; }
+.blog-post .table-scroll.tb-scrolls { position: relative; }
+.blog-post .table-scroll.tb-scrolls::after { content: '横にずらして見られます →'; display: block; margin-top: 4px; font-size: 11px; color: #8A9AA5; text-align: right; position: sticky; left: 0; }
+/* スマホで文の表が収まらないとき: 1行＝1枚の縦並び（行の1列目が見出し、ほかは「見出し｜中身」） */
+.blog-post table.tb-cards, .blog-post table.tb-cards tbody, .blog-post table.tb-cards tr { display: block; width: 100%; }
+.blog-post table.tb-cards thead, .blog-post table.tb-cards .tb-headrow { display: none; }
+.blog-post table.tb-cards tr { padding: 10px 2px 9px; border-bottom: 1px solid #DCE3F1; }
+.blog-post table.tb-cards tbody tr:first-child, .blog-post table.tb-cards tbody .tb-headrow + tr { border-top: 2px solid #4261AA; }
+body:not(.bs-list) .post-layout > .blog-post table.tb-cards td, body:not(.bs-list) .post-layout > .blog-post table.tb-cards th,
+.blog-post table.tb-cards td, .blog-post table.tb-cards th { display: block; border: 0 !important; padding: 2px 0 !important; text-align: left !important; background: none !important; white-space: normal !important; width: auto !important; }
+.blog-post table.tb-cards tr > :first-child { font-weight: 800; font-size: 15px; color: #1F2A28; padding-bottom: 5px !important; }
+body:not(.bs-list) .post-layout > .blog-post table.tb-cards tr > :not(:first-child)[data-label], .blog-post table.tb-cards tr > :not(:first-child)[data-label] { display: flow-root !important; padding: 3px 0 3px 7.4em !important; font-size: 14px; line-height: 1.7; }
+.blog-post table.tb-cards tr > :not(:first-child)[data-label]::before { content: attr(data-label); float: left; margin-left: -7.4em; width: 6.6em; font-size: 12px; font-weight: 700; color: #4261AA; line-height: 1.95; }
+body:not(.bs-list) .post-layout > .blog-post table.tb-cards tr > :not(:first-child)[data-label=""], .blog-post table.tb-cards tr > :not(:first-child)[data-label=""] { padding-left: 0 !important; }
+.blog-post table.tb-cards tr > :not(:first-child)[data-label=""]::before { display: none; }
