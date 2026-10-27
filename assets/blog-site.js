@@ -207,9 +207,24 @@ const BLOG_POSTS = [
     return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
       `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
   }
-  function sideItem(p) {
-    return `<li><a class="sb-link" href="${p.url}">${escHtml(p.title)}</a><span class="sb-date">${p.date}・${BLOG_CATS[p.cat].name}</span></li>`;
+  // サイドバーの1行（2026-10-27 作り直し）: 記事の絵・題名（｜の前を太く、後ろを小さく）・カテゴリの色の札・日付。
+  // rank＝おすすめの順番（絵の角に番号）、isNew＝30日以内の記事に「新着」
+  function sideItem(p, rank = 0) {
+    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+    const [main, ...rest] = p.title.split('｜');
+    const ms = Date.parse(p.date.replace(/\./g, '-'));
+    const isNew = ms && Date.now() - ms < 30 * 864e5;
+    return `<li><a class="sb-it cat-${p.cat}" href="${p.url}">
+      <span class="sb-th"><img src="${th}" alt="" width="320" height="240" loading="lazy" decoding="async">${rank ? `<b class="sb-rk">${rank}</b>` : ''}</span>
+      <span class="sb-tx"><span class="sb-meta"><i class="sb-cat">${BLOG_CATS[p.cat].name}</i>${isNew ? '<i class="sb-new">新着</i>' : ''}<time>${p.date}</time></span>
+        <b class="sb-tt">${escHtml(main)}</b>${rest.length ? `<small class="sb-sub">${escHtml(rest.join('｜'))}</small>` : ''}</span></a></li>`;
   }
+  const SB_ICON = {
+    star: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m12 3.2 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8Z" fill="currentColor"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.6L4.4 15.4A1 1 0 0 0 5.3 17h13.4a1 1 0 0 0 .9-1.6L18 12.6V9a6 6 0 0 0-6-6Zm-2.4 15.5a2.5 2.5 0 0 0 4.8 0Z" fill="currentColor"/></svg>',
+    share: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="6" cy="12" r="2.6" fill="currentColor"/><circle cx="17.5" cy="6" r="2.6" fill="currentColor"/><circle cx="17.5" cy="18" r="2.6" fill="currentColor"/><path d="m8 11 7.5-4M8 13l7.5 4" stroke="currentColor" stroke-width="1.8"/></svg>',
+  };
+  const sbHead = (ic, title, sub) => `<div class="sb-head sb-${ic}"><span class="sb-ic">${SB_ICON[ic]}</span><h2>${title}</h2>${sub ? `<small>${sub}</small>` : ''}</div>`;
 
   // 全ブログ/固定ページ共通: LP（トップ）と同じ見た目のヘッダー・フッターに差し替える。
   // 各HTMLに書かれた静的なヘッダー/フッターはJS無効時のフォールバック。
@@ -433,12 +448,12 @@ const BLOG_POSTS = [
       const news = BLOG_POSTS.filter(p => p.cat === 'news' && p.url !== here).sort(byDateDesc).slice(0, 3);
       let html = '';
       if (rec.length) {
-        html += `<div class="side-box"><h2>今月のおすすめ記事</h2><ul>${rec.map(sideItem).join('')}</ul></div>`;
+        html += `<div class="side-box sb-box">${sbHead('star', '今月のおすすめ記事', '集計係がまず読んでほしい記事')}<ul class="sb-list">${rec.map((p, i) => sideItem(p, i + 1)).join('')}</ul></div>`;
       }
-      html += `<div class="side-box"><h2>最新のアップデート</h2>`
-        + (news.length ? `<ul>${news.map(sideItem).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
-        + `<a class="sb-more" href="/news/">お知らせ一覧 ›</a>　<a class="sb-more" href="/news/feed.xml">RSS</a></div>`;
-      html += `<div class="side-box"><h2>公式SNS</h2>${SNS_ICONS_HTML(40)}</div>`;
+      html += `<div class="side-box sb-box">${sbHead('bell', '最新のアップデート', 'まじゃすこの新しい機能')}`
+        + (news.length ? `<ul class="sb-list">${news.map(p => sideItem(p)).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
+        + `<a class="sb-all" href="/news/">お知らせをすべて見る<span aria-hidden="true">›</span></a></div>`;
+      html += `<div class="side-box sb-box">${sbHead('share', '公式SNS', '新しい記事と機能のお知らせ')}${SNS_ICONS_HTML(40)}</div>`;
       el.innerHTML = html;
     });
 
