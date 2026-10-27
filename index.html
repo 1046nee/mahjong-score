@@ -439,10 +439,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .av-sheet { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .av-sheet .av-prev { margin: 0 0 10px; align-items: flex-start; }
 .av-name { flex: 1; min-width: 0; } .av-name label { display: block; font-size: 12px; font-weight: 800; color: #4F5C5A; margin: 0 0 3px; } .av-name input { width: 100%; box-sizing: border-box; } .av-name small { display: block; font-size: 11px; color: #6B7A77; line-height: 1.45; margin-top: 4px; }
-.av-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; background: #EEF2F1; border-radius: 10px; padding: 3px; margin: 0 0 8px; flex: none; }
+.av-seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; background: #EEF2F1; border-radius: 10px; padding: 3px; margin: 0 0 8px; flex: none; }
 .av-seg button { border: 0; background: none; border-radius: 8px; padding: 7px 0; font: inherit; font-size: 13px; font-weight: 800; color: #4F5C5A; cursor: pointer; }
 .av-seg button.on { background: #fff; color: var(--pc); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-.av-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -4px 10px; padding: 0 4px 4px; }
+.av-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-left: 6px; vertical-align: -1px; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px rgba(0,0,0,.12); }
+/* 絵柄の中の「アイテム｜牌」（下線のタブ）。背景色のときも同じ高さをとって、下の中身の位置を変えない */
+.av-sub { display: flex; gap: 18px; height: 30px; margin: -2px 2px 6px; flex: none; border-bottom: 1px solid #E6ECEA; }
+.av-sub button { border: 0; background: none; padding: 0 2px; font: inherit; font-size: 13px; font-weight: 800; color: #8A9896; cursor: pointer; position: relative; }
+.av-sub button.on { color: var(--pc); } .av-sub button.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--pc); }
+.av-sub-ph { border-bottom-color: transparent; }
+.av-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 -4px 10px; padding: 5px 5px 4px; } /* 上と左右は選んだ色の枠（4px）が切れない分 */
 .av-sec + .av-sec { margin-top: 8px; } .av-sec h4 { font-size: 11.5px; font-weight: 800; color: #6B7A77; margin: 0 0 4px; } .av-sec h5 { font-size: 10.5px; font-weight: 700; color: #8A9896; margin: 6px 0 3px 2px; }
 .av-sheet > .sheet-close { margin-top: 8px; }
 .av-pick.on { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc-a15, rgba(23,112,131,.15)); }
@@ -11991,29 +11997,40 @@ const MY_AV_KEY = 'mahjong-my-avatar';
 // シートのタブは「アイテム」「牌」「地の色」の3つ。アイテムと牌は、種類ごとの見出しの下に1行6つで並べる（2026-10-27 ユーザーの依頼）
 // 1つ＝[名前（保存する値）, 読み上げの名前, 絵の下に出す短い名前（無ければ出さない＝牌）]
 const AV_KAN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+// シートは「絵柄」と「背景色」の2つのタブで、それぞれ1つずつ選ぶ（2026-10-27 ユーザーの依頼）。絵柄の中は「アイテム｜牌」に分かれる。
+// AV_TABS＝[id, 名前, まとまり…]。まとまり＝[見出し, 絵…, 中の小見出しごとの絵（あれば）]。絵＝[名前（保存する値）, 読み上げの名前, 絵の下の短い名前]
+// 名前が空（''）の絵は「なし」＝人のマーク（保存しない）
 const AV_TABS = [
   ['item', 'アイテム', [
-    ['頭文字・札', [['ini', '頭文字', '頭文字'], ['chicha', '起家札（表）', '起家 表'], ['chicha-ura', '起家札（裏）', '起家 裏'], ['yakitori', '焼鳥（表）', '焼鳥 表'], ['yakitori-ura', '焼鳥（裏）', '焼鳥 裏']]],
-    // 白い点棒（tenbo＝1,000点・最初からある名前）と100点棒5本の束
-    ['点棒', [['tb100', '100点棒', '100'], ['tenbo', '1,000点棒', '1,000'], ['tb5000', '5,000点棒', '5,000'], ['tb10000', '10,000点棒', '10,000'], ['tb100x5', '100点棒5本の束', '100×5']]],
-    ['カラー点棒', [['ct100', 'カラーの100点棒', '100'], ['ct500', 'カラーの500点棒', '500'], ['ct1000', 'カラーの1,000点棒', '1,000'], ['ct5000', 'カラーの5,000点棒', '5,000'], ['ct10000', 'カラーの10,000点棒', '10,000'], ['cttobi', 'トビ点棒', 'トビ']]],
+    ['基本', [['', 'なし（人のマーク）', 'なし'], ['ini', '頭文字', '頭文字']]],
+    ['札', [['chicha', '起家札（表）', '起家 表'], ['chicha-ura', '起家札（裏）', '起家 裏'], ['yakitori', '焼鳥（表）', '焼鳥 表'], ['yakitori-ura', '焼鳥（裏）', '焼鳥 裏']]],
+    // 点棒: ノーマル（tenbo＝1,000点・最初からある名前）と100点棒5本の束、カラー
+    ['点棒', [], [
+      ['ノーマル', [['tb100', '100点棒', '100'], ['tenbo', '1,000点棒', '1,000'], ['tb5000', '5,000点棒', '5,000'], ['tb10000', '10,000点棒', '10,000'], ['tb100x5', '100点棒5本の束', '100×5']]],
+      ['カラー', [['ct100', 'カラーの100点棒', '100'], ['ct500', 'カラーの500点棒', '500'], ['ct1000', 'カラーの1,000点棒', '1,000'], ['ct5000', 'カラーの5,000点棒', '5,000'], ['ct10000', 'カラーの10,000点棒', '10,000'], ['cttobi', 'トビ点棒', 'トビ']]]]],
     // サイコロ（dice＝5の目・最初からある名前）
     ['サイコロ', [['d1', 'サイコロ1', '1'], ['d2', 'サイコロ2', '2'], ['d3', 'サイコロ3', '3'], ['d4', 'サイコロ4', '4'], ['dice', 'サイコロ5', '5'], ['d6', 'サイコロ6', '6']]],
     ['チップ', [['chip-r', '赤のチップ', '赤'], ['chip-b', '青のチップ', '青'], ['chip-g', '緑のチップ', '緑'], ['chip-o', 'オレンジのチップ', 'オレンジ'], ['chip-k', '黒のチップ', '黒']]],
-    // 卓まわり（2026-10-27）: 全自動卓は斜め横（記事の図）と上から
+    // 卓まわり: 全自動卓は斜め横（記事の図）と上から
     ['卓まわり', [['taku', '全自動卓（横から）', '自動卓 横'], ['taku-top', '全自動卓（上から）', '自動卓 上'], ['sidetable', 'サイドテーブル', 'サイド台'], ['oshibori', 'おしぼり', 'おしぼり'], ['oolong', 'ウーロン茶', 'ウーロン'], ['haiyose', '牌寄せ', '牌寄せ']]],
   ]],
   ['hai', '牌', [
-    // 牌の下には名前（漢数字の「二萬」「九筒」など。2026-10-27 ユーザーの依頼）
-    ['萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬', k + '萬']).concat([['m5r', '赤五萬', '赤五萬']])],
-    ['筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒', k + '筒']).concat([['p5r', '赤五筒', '赤五筒']])],
-    ['索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索', k + '索']).concat([['s5r', '赤五索', '赤五索']])],
-    ['字牌', [['z1', '東', '東'], ['z2', '南', '南'], ['z3', '西', '西'], ['z4', '北', '北'], ['z5', '白', '白'], ['z6', '發', '發'], ['z7', '中', '中']]],
-    // 特別牌: 白ポッチ・牌の裏と、花牌（季節牌＝春夏秋冬・草木牌＝梅蘭菊竹）。3つ目＝中の小見出しごとのまとまり
-    ['特別牌', [['z5p', '白ポッチ', '白ポッチ'], ['back', '牌の裏', '牌の裏']], [['季節牌', [['f1', '春', '春'], ['f2', '夏', '夏'], ['f3', '秋', '秋'], ['f4', '冬', '冬']]], ['草木牌', [['f5', '梅', '梅'], ['f6', '蘭', '蘭'], ['f7', '菊', '菊'], ['f8', '竹', '竹']]]]],
+    // 牌の下には漢字の名前（「二萬」「九筒」など）
+    ['数牌', [], [
+      ['萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬', k + '萬']).concat([['m5r', '赤五萬', '赤五萬']])],
+      ['筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒', k + '筒']).concat([['p5r', '赤五筒', '赤五筒']])],
+      ['索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索', k + '索']).concat([['s5r', '赤五索', '赤五索']])]]],
+    ['字牌', [], [
+      ['風牌', [['z1', '東', '東'], ['z2', '南', '南'], ['z3', '西', '西'], ['z4', '北', '北']]],
+      ['三元牌', [['z5', '白', '白'], ['z6', '發', '發'], ['z7', '中', '中']]]]],
+    ['花牌', [], [
+      ['季節牌', [['f1', '春', '春'], ['f2', '夏', '夏'], ['f3', '秋', '秋'], ['f4', '冬', '冬']]],
+      ['草木牌', [['f5', '梅', '梅'], ['f6', '蘭', '蘭'], ['f7', '菊', '菊'], ['f8', '竹', '竹']]]]],
+    ['その他', [['z5p', '白ポッチ', '白ポッチ'], ['back', '牌の裏', '牌の裏']]],
   ]],
 ];
-const AV_ICONS = AV_TABS.flatMap(t => t[2].flatMap(sec => sec[1].concat(...(sec[2] || []).map(sub => sub[1]))));
+const avSecItems = sec => sec[1].concat(...(sec[2] || []).map(sub => sub[1]));
+const AV_ICONS = AV_TABS.flatMap(t => t[2].flatMap(avSecItems)).filter(x => x[0]); // 「なし」は保存する絵ではない
 const AV_WIDE = { chicha: 1, 'chicha-ura': 1, yakitori: 1, 'yakitori-ura': 1, tb100x5: 1, haiyose: 1, taku: 1, oshibori: 1 }; // 横長の絵（幅で合わせる）。点棒は斜めの正方形の絵
 let myAv = null;
 try { myAv = JSON.parse(localStorage.getItem(MY_AV_KEY)) || null; } catch (e) { myAv = null; }
@@ -12042,49 +12059,54 @@ function rerenderMyAvatar() {
 }
 // アイコンと名前のシート（2026-10-27 作り直し）: 上に見本と名前の欄、下に「アイテム」「牌」「地の色」のタブ。
 // シートの高さは決まっていて（タブを切り替えても変わらない）、中だけが動く。絵を押しても、そのタブの位置のまま（描き直しても戻る）
-let avDraft = null, avTab = 'item';
+// avTab＝'pic'（絵柄）か 'color'（背景色）。avPicTab＝絵柄の中の 'item'（アイテム）か 'hai'（牌）。絵柄と背景色は別々に1つずつ選ぶ
+let avDraft = null, avTab = 'pic', avPicTab = 'item';
 const avScroll = {}; // タブごとのスクロール位置
-function avTabOf(k) { return (AV_TABS.find(t => t[2].some(sec => sec[1].concat(...(sec[2] || []).map(sub => sub[1])).some(x => x[0] === k))) || AV_TABS[0])[0]; }
+function avTabOf(k) { return (AV_TABS.find(t => t[2].some(sec => avSecItems(sec).some(x => x[0] === k))) || AV_TABS[0])[0]; }
 function openMyAvatarEdit() {
   avDraft = validAv(myAv) ? { ...myAv } : { k: '', c: AV_HUES[6][1] }; // k が空＝人のマーク（決めていない）
   avDraft.name = myNameSet();
-  avTab = avDraft.k ? avTabOf(avDraft.k) : 'item';
+  avTab = 'pic'; avPicTab = avDraft.k ? avTabOf(avDraft.k) : 'item';
   Object.keys(avScroll).forEach(t => delete avScroll[t]);
   renderMyAvatarEdit();
   document.getElementById('form-modal').classList.add('open');
   // 選んでいる絵が見えるところまで動かす（はじめて開いたとき）
   requestAnimationFrame(() => { const on = document.querySelector('.av-body .av-pick.on'), box = document.querySelector('.av-body'); if (on && box) box.scrollTop = Math.max(0, on.offsetTop - box.offsetTop - 40); });
 }
-function avPick(k) { avDraft.k = k; renderMyAvatarEdit(); }
-function avColor(c) { avDraft.c = c; renderMyAvatarEdit(); }
-function avSetTab(t) { avTab = t; renderMyAvatarEdit(); }
-function avDraftFace(size) { return avDraft.k ? avFaceHtml({ k: avDraft.k, c: avDraft.c }, avDraft.name || myAutoName() || '個人', size) : `<span class="uav" style="--s:${size}px;background:${avDraft.c}" aria-hidden="true">${ico('person', Math.round(size * 0.62))}</span>`; }
+// 名前に注意: avColor は仲間ページの人の色を返す別の関数（同じ名前にすると上書きされて背景色が選べなくなった）
+function avPickArt(k) { avDraft.k = k; renderMyAvatarEdit(); }
+function avPickColor(c) { avDraft.c = c; renderMyAvatarEdit(); }
+function avSetTab(t) { if (t === 'item' || t === 'hai') { avTab = 'pic'; avPicTab = t; } else avTab = t; renderMyAvatarEdit(); }
+function avPersonFace(size, c) { return `<span class="uav" style="--s:${size}px;background:${c}" aria-hidden="true">${ico('person', Math.round(size * 0.62))}</span>`; }
+function avDraftFace(size) { return avDraft.k ? avFaceHtml({ k: avDraft.k, c: avDraft.c }, avDraft.name || myAutoName() || '個人', size) : avPersonFace(size, avDraft.c); }
 function renderMyAvatarEdit() {
   const box0 = document.querySelector('.av-body');
   if (box0 && box0.dataset.tab) avScroll[box0.dataset.tab] = box0.scrollTop;
   const okc = c => whiteContrast(c) >= 3;
   const nm = avDraft.name || myAutoName() || '個人';
-  const pick = ([k, label, short]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}${short ? '' : ' nolab'}" aria-label="${esc(label)}" title="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avPick('${k}')">${avFaceHtml({ k, c: avDraft.c }, nm, 38)}${short ? `<small>${esc(short)}</small>` : ''}</button>`;
-  const tabs = [...AV_TABS.map(t => [t[0], t[1]]), ['color', '背景色']];
+  const pick = ([k, label, short]) => `<button type="button" class="av-pick${avDraft.k === k ? ' on' : ''}${short ? '' : ' nolab'}" aria-label="${esc(label)}" title="${esc(label)}" aria-pressed="${avDraft.k === k}" onclick="avPickArt('${k}')">${k ? avFaceHtml({ k, c: avDraft.c }, nm, 38) : avPersonFace(38, avDraft.c)}${short ? `<small>${esc(short)}</small>` : ''}</button>`;
+  const key = avTab === 'color' ? 'color' : avPicTab;
   let inner;
   if (avTab === 'color') {
-    const sw = c => okc(c) ? `<button type="button" class="av-sw${avDraft.c === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" onclick="avColor('${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
+    const sw = c => okc(c) ? `<button type="button" class="av-sw${avDraft.c === c ? ' on' : ''}" style="background:${c}" aria-label="${c}" aria-pressed="${avDraft.c === c}" onclick="avPickColor('${c}')"></button>` : '<span class="av-sw none" aria-hidden="true"></span>';
     const rows = [0, 1, 2].filter(k => AV_HUES.some(h => okc(h[k])));
     inner = `<div class="av-pal">${rows.map(k => AV_HUES.map(h => sw(h[k])).join('')).join('')}</div><div class="av-mono">${AV_MONO.filter(okc).map(sw).join('')}</div>`;
   } else {
-    const secs = AV_TABS.find(t => t[0] === avTab)[2];
-    // アイテムの先頭に「人のマーク」（アイコンを決めない）
-    inner = secs.map(([title, items, subs], i) => `<div class="av-sec"><h4>${title}</h4><div class="av-picks">${avTab === 'item' && i === 0 ? `<button type="button" class="av-pick${!avDraft.k ? ' on' : ''}" aria-label="人のマーク（決めない）" aria-pressed="${!avDraft.k}" onclick="avPick('')"><span class="uav" style="--s:38px;background:${avDraft.c}" aria-hidden="true">${ico('person', 24)}</span><small>なし</small></button>` : ''}${items.map(pick).join('')}</div>${(subs || []).map(([st, its]) => `<h5>${st}</h5><div class="av-picks">${its.map(pick).join('')}</div>`).join('')}</div>`).join('');
+    const secs = AV_TABS.find(t => t[0] === avPicTab)[2];
+    inner = secs.map(([title, items, subs]) => `<div class="av-sec"><h4>${title}</h4>${items.length ? `<div class="av-picks">${items.map(pick).join('')}</div>` : ''}${(subs || []).map(([st, its]) => `<h5>${st}</h5><div class="av-picks">${its.map(pick).join('')}</div>`).join('')}</div>`).join('');
   }
+  const top = [['pic', '絵柄'], ['color', '背景色']];
+  const sub = avTab === 'pic' ? `<div class="av-sub" role="tablist" aria-label="絵柄の種類">${AV_TABS.map(([t, label]) => `<button type="button" role="tab" class="${t === avPicTab ? 'on' : ''}" aria-selected="${t === avPicTab}" onclick="avSetTab('${t}')">${label}</button>`).join('')}</div>` : '<div class="av-sub av-sub-ph" aria-hidden="true"></div>';
   document.getElementById('form-modal-title').textContent = 'アイコンと名前';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body av-sheet">
     <div class="av-prev">${avDraftFace(60)}<div class="av-name"><label for="my-name">名前</label><input type="text" id="my-name" maxlength="${MAX_NAME_LEN}" value="${esc(avDraft.name)}" placeholder="${esc(myAutoName() || '例: むにぃ')}" oninput="avDraft.name=this.value"><small>アイコンは仲間ページの本人確認済みの席にも出ます</small></div></div>
-    <div class="av-seg" role="tablist" aria-label="選ぶもの">${tabs.map(([t, label]) => `<button type="button" role="tab" class="${t === avTab ? 'on' : ''}" aria-selected="${t === avTab}" onclick="avSetTab('${t}')">${label}</button>`).join('')}</div>
-    <div class="av-body" data-tab="${avTab}">${inner}</div>
+    <div class="av-seg" role="tablist" aria-label="選ぶもの">${top.map(([t, label]) => `<button type="button" role="tab" class="${t === avTab ? 'on' : ''}" aria-selected="${t === avTab}" onclick="avSetTab('${t}')">${label}${t === 'color' ? `<i class="av-dot" style="background:${avDraft.c}"></i>` : ''}</button>`).join('')}</div>
+    ${sub}
+    <div class="av-body" data-tab="${key}">${inner}</div>
     <button class="confirm-btn" onclick="saveMyAvatar()">保存する</button>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   const box = document.querySelector('.av-body');
-  if (box) box.scrollTop = avScroll[avTab] || 0;
+  if (box) box.scrollTop = avScroll[key] || 0;
 }
 async function saveMyAvatar() {
   const nameNew = clampName(avDraft.name || '', MAX_NAME_LEN), nameChanged = nameNew !== myNameSet();
