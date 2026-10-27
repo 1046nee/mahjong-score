@@ -157,6 +157,19 @@ def main():
         check("A（作成者）: 名簿の人のアイコンの色を決められる", True, op(A, "PUT", f"circles/{cid}/roster/{m2}/color", "#1565C0"))
         check("B（管理者）: アイコンの色は変えられない（作成者だけ）", False, op(B, "PUT", f"circles/{cid}/roster/{m2}/color", "#C62828"))
         check("A（作成者）: 色でない値は入れられない", False, op(A, "PUT", f"circles/{cid}/roster/{m2}/color", "red"))
+        # 本人確認済みの人のアイコンは本人が決める（avatars/{uid}）。作成者でもその人の名簿の色は変えられない（2026-10-27）
+        m3 = rnd(8, ID_CHARS)
+        check("B: 名簿の自分を本人として登録できる", True, op(B, "PUT", f"circles/{cid}/roster/{m3}", {"name": "びーさん", "at": now, "uid": B["uid"]}))
+        check("A（作成者）: 本人確認済みの他人（B）の色は変えられない", False, op(A, "PUT", f"circles/{cid}/roster/{m3}/color", "#1565C0"))
+        check("A（作成者）: 本人確認済みの自分の色は変えられる", True, op(A, "PUT", f"circles/{cid}/roster/{m1}/color", "#1565C0"))
+        check("A: 自分のアイコンを保存できる", True, op(A, "PUT", f"avatars/{A['uid']}", {"k": "p5r", "c": "#E82F2F"}))
+        check("B: 他人のアイコンは書き換えられない", False, op(B, "PUT", f"avatars/{A['uid']}", {"k": "ini", "c": "#000000"}))
+        check("A: 決まっていない絵の名前は入れられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "evil", "c": "#E82F2F"}))
+        check("A: 色でない値は入れられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "red"}))
+        check("A: 決まっていない項目は付けられない", False, op(A, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "#E82F2F", "x": 1}))
+        check("ログインなし: アイコンは読める（仲間ページに出す）", True, op(None, "GET", f"avatars/{A['uid']}"))
+        check("ログインなし: アイコンは書けない", False, op(None, "PUT", f"avatars/{A['uid']}", {"k": "z1", "c": "#E82F2F"}))
+        check("A: 自分のアイコンを消せる", True, op(A, "DELETE", f"avatars/{A['uid']}"))
         check("B（管理者）: 他人の役割は変えられない（作成者だけ）", False, op(B, "PUT", f"circleMembers/{cid}/{A['uid']}/role", "editor"))
         check("B: 自分の名前で履歴を残せる", True, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "byName": "びー", "kind": "bind", "text": "テスト"}))
         check("B: 他人の名前で履歴を残せない", False, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": A["uid"], "byName": "えー", "kind": "bind", "text": "なりすまし"}))
@@ -189,7 +202,7 @@ def main():
     finally:
         # 後片付け（作成者Aが、メンバー→参加コード→仲間ページの順に消す）
         for path in [f"circleMembers/{cid}/{B['uid']}", f"circleMembers/{cid}/{C['uid']}", f"circleMembers/{cid}/{A['uid']}",
-                     f"circleInvites/{code}", f"circleSecrets/{cid}", f"circles/{cid}", f"users/{A['uid']}"]:
+                     f"circleInvites/{code}", f"circleSecrets/{cid}", f"circles/{cid}", f"users/{A['uid']}", f"avatars/{A['uid']}"]:
             op(A, "DELETE", path)
         left = http("GET", f"{DB}/circles/{cid}.json")[1]
         for u in (A, B, C):
