@@ -225,10 +225,9 @@ def ogp_html():
 def xheader_html():
     W, H = 1500, 500
     svg = hero_svg().replace('<svg ', '<svg style="width:620px;height:auto;display:block" ', 1)
-    # 左にアイコン（ユーザーの依頼）。Xのプロフィール画像が左下に重なるので、アイコンは上寄せにする
+    # アイコンは入れない（2026-10-27 一度入れたが、ユーザーの判断で外した。プロフィール画像がすでにアイコン）
     return f"""<div class="cv" style="width:{W}px;height:{H}px">
-  <img src="{furl(os.path.join(MJ, 'assets', 'favicon.png'))}" style="position:absolute;left:236px;top:122px;width:150px;height:150px;border-radius:34px;box-shadow:0 14px 34px rgba(16,40,36,.18)">
-  <div style="position:absolute;left:420px;top:130px;width:560px;white-space:nowrap">
+  <div style="position:absolute;left:400px;top:130px;width:560px;white-space:nowrap">
     <h1 style="font-size:50px;line-height:1.3">麻雀のスコア記録を、<br>スマホでかんたんに。</h1>
     <p class="sub" style="font-size:23px;margin-top:14px">無料・アプリDL不要・会員登録不要</p><p class="sub" style="font-size:23px;font-weight:800;color:#7C8B88">majasco.jp</p>
   </div>
