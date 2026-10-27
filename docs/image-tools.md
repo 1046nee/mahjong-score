@@ -17,7 +17,11 @@
 - majasco.jp 表記（薄グレー・隅）
 
 ## スクリプト（tools/。出力先はすべて「まじゃすこ素材/」）
-- `tools/make_ogp.py` — OGP画像 2100×1103
+- **`tools/make_sns_v3.py`（2026-10-27〜の標準）** — PILではなく、HTMLをブラウザ（Playwright）で描いて撮る。LPと同じ世界観（淡い緑の地・本物の画面のスマホ・飛び出す数字のカード・✨）。
+  機能を1つずつ紹介するシリーズ feat-01〜10（IGフィード 1080×1350 と ストーリーズ 1080×1920 を両方）、使い方カルーセル howto-0〜4、intro、ogp4、x-header-v3。出力 まじゃすこ素材/v3/。
+  画面は assets/screens/ の本物の画面（スクショ）。スマホはいつも画像の縦横比のまま**下の縁まで全部入れる**（切らない）。カードの数字は画面に写っている値と合わせる。
+  はみ出し（カード・見出し・スマホがキャンバスの外）を撮るときに自動で調べて表示する。機能を足すときは FEATS に1行足す
+- `tools/make_ogp.py` — OGP画像 2100×1103（旧。v3以前）
 - `tools/make_xheader.py` — Xヘッダー 1500×500
 - `tools/make_ig1.py` — Instagram初投稿 1080×1350（縦5:横4）
 - `tools/make_ig_series.py` — IG使い方カルーセル6枚＋機能紹介6枚（共通ヘルパー: phone_frame/screen_*/sparkle/slide）
@@ -43,7 +47,7 @@
 
 ## サイト画像のルール
 - favicon: `/favicon.ico`（16/32/48。favicon.pngからPIL生成）＋ `/assets/favicon.png`（512）
-- OGP: 現行 `/assets/ogp3.png`（2026-09-17差し替え。見出しは据え置きで、スマホ内のカード名を「総合順位」に）。
+- OGP: 現行 `/assets/ogp4.png`（2026-10-27差し替え。tools/make_sns_v3.py で作る。LPの最初の画面のイラストをそのまま使う）。旧 ogp3.png（2026-09-17）。
   **差し替えるときはファイル名を変えて全ページのog:image/twitter:imageを書き換える**（Xが画像URL単位でキャッシュするため同名上書きは反映されない）。旧ogp.png/ogp2.pngは残置
 - ロゴ: `/assets/logo.png`（800×250透過・全ページヘッダー）
 
