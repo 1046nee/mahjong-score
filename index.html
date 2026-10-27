@@ -417,11 +417,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* マイページの自分のアイコン（2026-10-27）: 丸い地の色＋頭文字か牌・麻雀グッズの絵 */
 .uav { width: var(--s); height: var(--s); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; color: #fff; font-weight: 900; font-size: calc(var(--s) * 0.5); line-height: 1; overflow: hidden; vertical-align: middle; }
-.uav svg { color: #fff; }
+.uav svg { color: #fff; } .uav .ico { --i1: #fff; --i2: rgba(255,255,255,.6); } /* 人のマークは白（背景色が主色と同じでも見える） */
 .av-ill { height: 74%; width: auto; display: block; pointer-events: none; }
 .av-ill.w { width: 82%; height: auto; }
 .mp-av-btn { position: relative; border: 0; background: none; padding: 0 0 1px; margin: 0 8px 0 0; flex: none; cursor: pointer; display: inline-flex; vertical-align: middle; }
-.mp-av-pen { position: absolute; right: -4px; bottom: 0; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: var(--pc); display: grid; place-items: center; box-shadow: 0 0 0 1.5px var(--pc); }
 .av-prev { display: flex; align-items: center; gap: 12px; margin: 2px 0 14px; } .av-prev b { display: block; font-size: 16px; } .av-prev small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }
 .mp-name-btn { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-width: 0; text-align: left; }
 .mp-name-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -6845,7 +6844,7 @@ function renderMpHead() {
     c[np].g++; c[np].r += n;
   });
   const row = np => `<span class="cc-row${c[np].g ? '' : ' none'}"><span class="gk k${np} cc-k">${kindSvg(np, 16)}</span><b>${np === 3 ? '三麻' : '四麻'}</b>${c[np].g ? gamesRoundsText(c[np].g, c[np].r) : 'まだありません'}</span>`;
-  el.innerHTML = `<div class="pg-top"><h1><button type="button" class="mp-av-btn" aria-label="アイコンを変える" onclick="openMyAvatarEdit()">${myAvatarHtml(28)}<i class="mp-av-pen">${ico('pencil', 9)}</i></button><button type="button" class="ci-name mp-name-btn" aria-label="名前を変える" onclick="openMyNameEdit()"><span class="mp-name-t">${esc(myLabel())}</span><i class="mp-name-pen">${ico('pencil', 11)}</i></button></h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
+  el.innerHTML = `<div class="pg-top"><h1><button type="button" class="mp-av-btn" aria-label="アイコンと名前を変える" onclick="openMyAvatarEdit()">${myAvatarHtml(28)}</button><button type="button" class="ci-name mp-name-btn" aria-label="名前を変える" onclick="openMyNameEdit()"><span class="mp-name-t">${esc(myLabel())}</span><i class="mp-name-pen">${ico('pencil', 11)}</i></button></h1></div><span class="cc-rows">${row(4)}${row(3)}</span>`;
 }
 function openCircleEntryMenu() {
   document.getElementById('form-modal-title').textContent = '仲間ページ';
@@ -12005,12 +12004,13 @@ const AV_TABS = [
     ['卓まわり', [['taku', '全自動卓（横から）', '自動卓 横'], ['taku-top', '全自動卓（上から）', '自動卓 上'], ['sidetable', 'サイドテーブル', 'サイド台'], ['oshibori', 'おしぼり', 'おしぼり'], ['oolong', 'ウーロン茶', 'ウーロン'], ['haiyose', '牌寄せ', '牌寄せ']]],
   ]],
   ['hai', '牌', [
-    ['萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬']).concat([['m5r', '赤五萬']])],
-    ['筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒']).concat([['p5r', '赤五筒']])],
-    ['索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索']).concat([['s5r', '赤五索']])],
-    ['字牌', [['z1', '東'], ['z2', '南'], ['z3', '西'], ['z4', '北'], ['z5', '白'], ['z6', '發'], ['z7', '中']]],
+    // 牌の下には名前（漢数字の「二萬」「九筒」など。2026-10-27 ユーザーの依頼）
+    ['萬子', AV_KAN.map((k, i) => ['m' + (i + 1), k + '萬', k + '萬']).concat([['m5r', '赤五萬', '赤五萬']])],
+    ['筒子', AV_KAN.map((k, i) => ['p' + (i + 1), k + '筒', k + '筒']).concat([['p5r', '赤五筒', '赤五筒']])],
+    ['索子', AV_KAN.map((k, i) => ['s' + (i + 1), k + '索', k + '索']).concat([['s5r', '赤五索', '赤五索']])],
+    ['字牌', [['z1', '東', '東'], ['z2', '南', '南'], ['z3', '西', '西'], ['z4', '北', '北'], ['z5', '白', '白'], ['z6', '發', '發'], ['z7', '中', '中']]],
     // 特別牌: 白ポッチ・牌の裏と、花牌（季節牌＝春夏秋冬・草木牌＝梅蘭菊竹）。3つ目＝中の小見出しごとのまとまり
-    ['特別牌', [['z5p', '白ポッチ'], ['back', '牌の裏']], [['季節牌', [['f1', '春'], ['f2', '夏'], ['f3', '秋'], ['f4', '冬']]], ['草木牌', [['f5', '梅'], ['f6', '蘭'], ['f7', '菊'], ['f8', '竹']]]]],
+    ['特別牌', [['z5p', '白ポッチ', '白ポッチ'], ['back', '牌の裏', '牌の裏']], [['季節牌', [['f1', '春', '春'], ['f2', '夏', '夏'], ['f3', '秋', '秋'], ['f4', '冬', '冬']]], ['草木牌', [['f5', '梅', '梅'], ['f6', '蘭', '蘭'], ['f7', '菊', '菊'], ['f8', '竹', '竹']]]]],
   ]],
 ];
 const AV_ICONS = AV_TABS.flatMap(t => t[2].flatMap(sec => sec[1].concat(...(sec[2] || []).map(sub => sub[1]))));

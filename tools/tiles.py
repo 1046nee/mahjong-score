@@ -250,11 +250,10 @@ def _plate(face, edge, back, inner):
 
 def chicha_svg(ura=False):
     """起家札（2026-10-27）。表＝東、裏＝南（南場に入ったら裏返す）。
-    焼き鳥カードと同じオレンジの札に、黒い字と丸（表・裏とも同じ色。2026-10-27 ユーザーの依頼「オレンジ色ベースで文字が黒で統一」）"""
+    焼き鳥カードと同じオレンジの札に、黒い字だけ（表・裏とも同じ色。2026-10-27 ユーザーの依頼）"""
     st = STYLES["tokumin"]
     out = _plate("#F39A4E", RED, "#B8461A", "#FFF4E2")
-    out += f'<circle cx="50" cy="25" r="17" fill="#FFF4E2" stroke="{INK}" stroke-width="2"/>'
-    out += _text("南" if ura else "東", 50, 25, 24, INK, st)
+    out += _text("南" if ura else "東", 50, 25, 28, INK, st)  # 丸の枠は付けない（2026-10-27 ユーザーの依頼「オレンジの札にただ東と南」）
     return out + "</svg>"
 
 
