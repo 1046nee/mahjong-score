@@ -26,4 +26,8 @@ for ura in (False, True):
     io.open(os.path.join(d, "yakitori" + ("-ura" if ura else "") + ".svg"), "w", encoding="utf-8", newline="\n").write(tiles.yakitori_svg(ura))
     io.open(os.path.join(d, "chicha" + ("-ura" if ura else "") + ".svg"), "w", encoding="utf-8", newline="\n").write(tiles.chicha_svg(ura))
     n += 1
+# 麻雀グッズ（マイページのアイコンに使う）: 1000点棒・サイコロ（2026-10-27）
+for name, fn in (("tenbo", tiles.tenbo_svg), ("dice", tiles.dice_svg)):
+    io.open(os.path.join(d, name + ".svg"), "w", encoding="utf-8", newline="\n").write(fn())
+    n += 1
 print(n, "枚 →", d)

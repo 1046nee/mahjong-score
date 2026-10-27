@@ -258,6 +258,24 @@ def chicha_svg(ura=False):
     return out + "</svg>"
 
 
+def tenbo_svg():
+    """1000点棒（2026-10-27・マイページのアイコン用）。白い棒の真ん中に赤い点、両端に小さな点"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 102 22">'
+    out += '<rect x="0" y="3" width="100" height="16" rx="8" fill="#C9D6D3"/><rect x="0" y="0" width="100" height="16" rx="8" fill="#fff" stroke="#A79E87" stroke-width="1.4"/>'
+    out += f'<circle cx="50" cy="8" r="4" fill="{RED}"/>'
+    return out + "</svg>"
+
+
+def dice_svg():
+    """サイコロ（2026-10-27・マイページのアイコン用）。5の目、真ん中だけ赤"""
+    out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 62 68">'
+    out += f'<rect x="0" y="6" width="60" height="60" rx="12" fill="{GREEN}"/><rect x="0" y="0" width="60" height="60" rx="12" fill="#fff" stroke="#A79E87" stroke-width="1.6"/>'
+    for x, y in ((16, 16), (44, 16), (16, 44), (44, 44)):
+        out += f'<circle cx="{x}" cy="{y}" r="5.5" fill="{INK}"/>'
+    out += f'<circle cx="30" cy="30" r="7.5" fill="{RED}"/>'
+    return out + "</svg>"
+
+
 def yakitori_svg(ura=False):
     """焼き鳥カード（2026-10-27・三麻の記事用）。起家札と同じ大きさ・同じ横向きの札。表・裏ともオレンジ。
     表＝焼き鳥の絵だけ＋左上の角に小さく「表」（まだあがっていない人の前に置く）。ura=True は何も描かない裏＋左上に小さく「裏」（あがったら裏返す）。

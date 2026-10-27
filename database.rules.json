@@ -97,6 +97,22 @@
         }
       }
     },
+    "avatars": {
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['k', 'c'])",
+        "k": {
+          ".validate": "newData.isString() && newData.val().matches(/^(ini|z1|z5p|z6|z7|m1|p1|s1|p5r|f1|f5|chicha|yakitori|tenbo|dice)$/)"
+        },
+        "c": {
+          ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/)"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
@@ -177,7 +193,7 @@
               ".validate": "newData.isString() && newData.val().length <= 40 && newData.parent().child('uid').val() === auth.uid"
             },
             "color": {
-              ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/) && (newData.val() === data.val() || root.child('circles').child($cid).child('owner').val() === auth.uid)"
+              ".validate": "newData.isString() && newData.val().matches(/^#[0-9A-Fa-f]{6}$/) && (newData.val() === data.val() || (root.child('circles').child($cid).child('owner').val() === auth.uid && (!data.parent().child('uid').exists() || data.parent().child('uid').val() === auth.uid)))"
             },
             "$other": {
               ".validate": false
