@@ -235,22 +235,41 @@ def tile_svg(code, style="tokumin", px=None, yoko=False):
 ALL = ["back"] + [f"m{i}" for i in range(1, 10)] + [f"p{i}" for i in range(1, 10)] + [f"s{i}" for i in range(1, 10)] + [f"z{i}" for i in range(1, 8)] + ["m5r", "p5r", "s5r"] + ["z5p"] + [f"f{i}" for i in range(1, 9)]
 
 
-def yakitori_svg(ura=False):
-    """焼き鳥カード（2026-10-27・三麻の記事用。ユーザーの依頼で表・裏ともオレンジ）。
-    表＝焼き鳥の絵だけ＋左上の角に小さく「表」（まだあがっていない人の前に置く）。ura=True は何も描かない裏＋左上に小さく「裏」（あがったら裏返す）。
-    大きさは牌と同じ考え方で 70×100＋下の厚み。絵はまじゃすこのオリジナル"""
-    st = STYLES["tokumin"]
-    w, h, bh = 70, 100, STYLES["tokumin"]["back_h"]  # 下の厚みは牌と同じ高さ（2026-10-27 ユーザーの依頼）
+PLATE_W, PLATE_H = 100, 50   # 卓に置く札（起家札・焼き鳥カード）の表の大きさ。横長で置く（2026-10-27 ユーザーの依頼「起家札と同じサイズ感・同じ向き」）
+
+
+def _plate(face, edge, back, inner):
+    """横長の札の土台（表の面・枠・内側の細い線・下の厚み）。厚みの高さは牌と同じ"""
+    w, h, bh = PLATE_W, PLATE_H, STYLES["tokumin"]["back_h"]
     out = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 {w + 2} {h + bh + 2}">'
-    out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="8" fill="#B8461A"/>'  # 厚み（濃いオレンジ）
-    out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="#F39A4E" stroke="{RED}" stroke-width="1.8"/>'
-    out += f'<rect x="5" y="5" width="{w - 10}" height="{h - 10}" rx="5" fill="none" stroke="#FFF4E2" stroke-width="1" opacity=".7"/>'
-    out += _text("裏" if ura else "表", 12, 13, 9, "#FFF4E2", st)
+    out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="6" fill="{back}"/>'
+    out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="6" fill="{face}" stroke="{edge}" stroke-width="1.6"/>'
+    out += f'<rect x="4" y="4" width="{w - 8}" height="{h - 8}" rx="4" fill="none" stroke="{inner}" stroke-width="1" opacity=".75"/>'
+    return out
+
+
+def chicha_svg(ura=False):
+    """起家札（2026-10-27）。表＝東、裏＝南（南場に入ったら裏返す）。牌と同じクリームの面・緑の厚み"""
+    st = STYLES["tokumin"]
+    out = _plate(STYLES["tokumin"]["face"], EDGE, GREEN, EDGE)
+    col = BLUE if ura else RED
+    out += f'<circle cx="50" cy="25" r="17" fill="none" stroke="{col}" stroke-width="2"/>'
+    out += _text("南" if ura else "東", 50, 25, 24, col, st)
+    return out + "</svg>"
+
+
+def yakitori_svg(ura=False):
+    """焼き鳥カード（2026-10-27・三麻の記事用）。起家札と同じ大きさ・同じ横向きの札。表・裏ともオレンジ。
+    表＝焼き鳥の絵だけ＋左上の角に小さく「表」（まだあがっていない人の前に置く）。ura=True は何も描かない裏＋左上に小さく「裏」（あがったら裏返す）。
+    絵はまじゃすこのオリジナル"""
+    st = STYLES["tokumin"]
+    out = _plate("#F39A4E", RED, "#B8461A", "#FFF4E2")
+    out += _text("裏" if ura else "表", 10, 11, 8, "#FFF4E2", st)
     if ura:
         return out + "</svg>"
-    out += '<circle cx="35" cy="52" r="29" fill="#FFF4E2"/>'
-    # 串（斜め）と、肉・ねぎ・肉・ねぎ・肉
-    g = '<g transform="rotate(-35 35 52)">'
+    out += '<ellipse cx="52" cy="25" rx="36" ry="17" fill="#FFF4E2"/>'
+    # 串（ほぼ横向き）と、肉・ねぎ・肉・ねぎ・肉。縦に描いた串を倒して札の真ん中に置く
+    g = '<g transform="translate(52 25) rotate(-78) translate(-35 -52)">'
     g += '<rect x="33.6" y="19" width="2.8" height="66" rx="1.4" fill="#C9A26B"/>'
     y = 24
     for kind in ("niku", "negi", "niku", "negi", "niku"):

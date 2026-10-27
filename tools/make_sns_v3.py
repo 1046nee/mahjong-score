@@ -264,7 +264,7 @@ def sanma_tiles_html(H):
     top = 250 if story else 92
     tw = 104 if not story else 108          # 花牌1枚の幅（8枚を1列）
     bw = 124 if not story else 150          # 白・白ぽっちの幅
-    cw = 150 if not story else 180          # 焼き鳥カードの幅
+    cw = round(bw * 100 / 60)               # 焼き鳥カードの幅（横長の札。牌と同じ縮尺）
     py = 470 if not story else 760
     gap = 40 if not story else 70
     lab = lambda t, s="": f'<div style="font-size:{36 if story else 32}px;font-weight:900;color:#177083;margin-bottom:14px">{t}<span style="font-size:{26 if story else 24}px;font-weight:700;color:#5B6866;margin-left:14px">{s}</span></div>'
