@@ -315,15 +315,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hero h1 { font-size: 33px; line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
-/* 最初の画面のイラスト：昔の道具→矢印→本物の画面のスマホ2台（手前＝試合の総合順位、奥＝マイページの成績。2026-10-27） */
-.hero-mix { position: relative; aspect-ratio: 380 / 232; }
-.hero-mix > svg { position: absolute; left: 0; top: 14px; width: 100%; height: auto; }
+/* 最初の画面のイラスト：本物の画面のスマホ2台（手前＝試合の総合順位、奥＝マイページの成績）＋飛び出す数字のカード（2026-10-27） */
+.hero-mix { position: relative; aspect-ratio: 380 / 250; }
+.hero-mix .hm-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hm-ph { position: absolute; display: flex; flex-direction: column; padding: 4px; border-radius: 17px; background: #1F2A28; box-shadow: 0 10px 22px rgba(16,40,36,.22); overflow: hidden; }
 .hm-bar { height: 12px; display: flex; justify-content: center; align-items: center; background: #E6F1EB; border-radius: 13px 13px 0 0; flex: none; }
 .hm-bar i { width: 30%; height: 6px; border-radius: 4px; background: #1F2A28; }
 .hm-ph img { display: block; width: 100%; height: auto; border-radius: 0 0 13px 13px; }
-.hm-front { left: 46%; top: 2%; width: 27%; aspect-ratio: 1 / 2.05; z-index: 2; }
-.hm-back { left: 74.5%; top: 7%; width: 24%; aspect-ratio: 1 / 2.05; transform: rotate(5deg); z-index: 1; }
+.hm-front { left: 21%; top: 1%; width: 28%; aspect-ratio: 1 / 2.05; z-index: 2; transform: rotate(-4deg); }
+.hm-back { left: 51%; top: 5%; width: 26%; aspect-ratio: 1 / 2.05; transform: rotate(5deg); z-index: 1; }
+.hm-chip { position: absolute; z-index: 3; display: flex; align-items: center; gap: 5px; padding: 6px 10px; background: #fff; border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(16,40,36,.16); font-size: 11px; font-weight: 800; color: #4F5C5A; white-space: nowrap; }
+.hm-chip b { font-size: 15px; font-weight: 900; color: #1F2A28; } .hm-chip b.pos { color: #1A237E; }
+.hero-mix .hm-chip svg { display: block; flex: none; width: auto; height: 18px; }
+.hero-mix .hm-chip svg.hm-line { height: 22px; }
+.hc-1 { left: 0; top: 20%; }
+.hc-2 { right: 0; top: 72%; }
+.hc-3 { left: 2%; top: 64%; }
+.hc-4 { right: 1%; top: 47%; }
+@media (min-width: 1100px) { .hm-chip { font-size: 13px; padding: 8px 13px; } .hm-chip b { font-size: 18px; } }
 
 .hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
 /* ヒーローのCTA周り: ボタンを唯一の主役にする（マイクロコピー → 大きめCTA → 控えめな信頼テキスト）。
@@ -2544,44 +2554,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h1>麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？</h1>
 
   <div class="hero-illust hero-mix" aria-hidden="true">
-    <svg viewBox="0 0 380 200" xmlns="http://www.w3.org/2000/svg" role="img">
-      <!-- 過去: 電卓・くしゃくしゃの紙・鉛筆はゴミ箱へ（薄く描いて「もう使わない」感を出す） -->
-      <g opacity="0.55">
-        <path d="M70 128 L138 128 L130 186 L78 186 Z" fill="#c9d6d4"/>
-        <rect x="64" y="120" width="80" height="10" rx="5" fill="#b3c4c1"/>
-        <!-- 電卓（傾いて落ちていく） -->
-        <g transform="rotate(-22 78 84)">
-          <rect x="58" y="60" width="40" height="52" rx="6" fill="#8fa6a3"/>
-          <rect x="63" y="66" width="30" height="10" rx="2" fill="#e8f0ee"/>
-          <g fill="#e8f0ee">
-            <rect x="63" y="81" width="8" height="7" rx="2"/><rect x="74" y="81" width="8" height="7" rx="2"/><rect x="85" y="81" width="8" height="7" rx="2"/>
-            <rect x="63" y="92" width="8" height="7" rx="2"/><rect x="74" y="92" width="8" height="7" rx="2"/><rect x="85" y="92" width="8" height="7" rx="2"/>
-          </g>
-        </g>
-        <!-- くしゃくしゃの紙 -->
-        <path d="M118 96 L131 88 L142 95 L146 108 L138 119 L123 117 L114 106 Z" fill="#eef2f1" stroke="#c9d6d4" stroke-width="2" transform="rotate(14 130 104)"/>
-        <path d="M124 100 L136 104 M121 110 L134 112 M130 94 L133 103" stroke="#c9d6d4" stroke-width="1.6" fill="none" transform="rotate(14 130 104)"/>
-        <!-- 鉛筆（消しゴムなし・くしゃくしゃの紙に重なる位置。紙より後に描いて前面に重ねる） -->
-        <g transform="translate(62 4) rotate(38 50 92)">
-          <rect x="31" y="86" width="34" height="10" fill="#8fa6a3"/>
-          <path d="M31 89.3 L65 89.3 M31 92.6 L65 92.6" stroke="#7d9491" stroke-width="1" fill="none"/>
-          <path d="M65 86 L76 91 L65 96 Z" fill="#d9d2c5"/>
-          <path d="M72 89.2 L76 91 L72 92.8 Z" fill="#5f7370"/>
-        </g>
-        <!-- ポイっと落ちる動き -->
-        <path d="M116 52 Q102 66 96 80" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
-        <path d="M138 62 Q134 74 134 86" stroke="#c9d6d4" stroke-width="2.5" fill="none" stroke-dasharray="4 5" stroke-linecap="round"/>
-      </g>
-      <!-- 現在: まじゃすこのスコア画面。淡い光と輝きで「これからはこっち」を演出 -->
-      <circle cx="290" cy="104" r="96" fill="#E4F3EC" opacity="0.75"/>
-      <!-- 乗り換えの矢印（過去 → スマホ）: 点線の軌跡＋進行方向に沿った矢じり -->
-      <path d="M148 86 Q176 62 202 74" stroke="#9fbcb7" stroke-width="3.5" fill="none" stroke-dasharray="1 7" stroke-linecap="round"/>
-      <path d="M212 79 L199.9 78.5 L204.1 69.5 Z" fill="#9fbcb7"/>
-      <path d="M332 22 Q334 30 342 32 Q334 34 332 42 Q330 34 322 32 Q330 30 332 22 Z" fill="#E75620"/>
-      <path d="M206 27 Q207.5 32.5 213 34 Q207.5 35.5 206 41 Q204.5 35.5 199 34 Q204.5 32.5 206 27 Z" fill="#177083"/>
-      <path d="M338 149 Q339.5 154.5 345 156 Q339.5 157.5 338 163 Q336.5 157.5 331 156 Q336.5 154.5 338 149 Z" fill="#177083"/>
-    </svg>
+    <svg class="hm-bg" viewBox="0 0 380 250" aria-hidden="true"><circle cx="190" cy="118" r="112" fill="#E4F3EC" opacity="0.8"/><path transform="translate(330 22) scale(.9)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#E75620"/><path transform="translate(40 200) scale(.65)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#177083"/><path transform="translate(96 14) scale(.55)" d="M10 0 Q11.8 8.2 20 10 Q11.8 11.8 10 20 Q8.2 11.8 0 10 Q8.2 8.2 10 0Z" fill="#9fc3bd"/></svg>
     <span class="hm-ph hm-back"><span class="hm-bar"><i></i></span><img src="/assets/screens/lp-mypage.jpg" alt="" width="720" height="1558"></span><span class="hm-ph hm-front"><span class="hm-bar" style="background:#FFFFFF"><i></i></span><img src="/assets/screens/howto-4.jpg" alt="" width="720" height="1558"></span>
+    <span class="hm-chip hc-1"><svg viewBox="0 0 20 20" width="18" height="18"><circle cx="10" cy="10" r="10" fill="#D4A017"/><path d="M10.9 5.2V15H9.1V7.4L7.2 8.1V6.6L10.7 5.2Z" fill="#3B2C00"/></svg><span>1位</span><b class="pos">+69.1</b></span><span class="hm-chip hc-2"><span>通算スコア</span><b class="pos">+347.0</b></span><span class="hm-chip hc-3"><span>推移</span><svg class="hm-line" viewBox="0 0 64 24" width="64" height="24"><polyline points="2,19 13,15 23,17 35,9 46,11 59,4" fill="none" stroke="#177083" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="59" cy="4" r="3.2" fill="#E75620"/></svg></span><span class="hm-chip hc-4"><span>トップ率</span><b>26%</b></span>
   </div>
 
   <p class="hero-desc">まじゃすこは、麻雀のスコア計算と共有のわずらわしさを、シンプルに解決する無料のサービスです。</p>
