@@ -95,6 +95,65 @@ def _bird():
             f'<path d="M26 18 Q30 10 36 14 Q32 16 30 20 Z" fill="{RED}"/>')
 
 
+def _petals(cx, cy, n, r, pr, col, center):
+    # 丸い花びら n 枚＋花の中心
+    s = "".join(f'<circle cx="{cx + r * math.sin(2 * math.pi * i / n):.2f}" cy="{cy - r * math.cos(2 * math.pi * i / n):.2f}" r="{pr}" fill="{col}"/>' for i in range(n))
+    return s + f'<circle cx="{cx}" cy="{cy}" r="{pr * 0.7:.2f}" fill="{center}"/>'
+
+
+def _flower_pic(n):
+    """花牌の絵（牌の上半分・中心 (30, 26)）。1〜4＝春夏秋冬、5〜8＝梅蘭菊竹。まじゃすこのオリジナルの絵"""
+    cx, cy = 30, 26
+    if n == 1:  # 春: 桜（5枚の花びら）
+        return _petals(cx, cy, 5, 9, 7, RED, "#FFD23F")
+    if n == 2:  # 夏: ひまわり（光のような花びら＋大きな中心）
+        rays = "".join(f'<ellipse cx="{cx}" cy="{cy - 12}" rx="3.2" ry="6" fill="#F2B21C" transform="rotate({i * 30} {cx} {cy})"/>' for i in range(12))
+        return rays + f'<circle cx="{cx}" cy="{cy}" r="8" fill="{GREEN}"/>'
+    if n == 3:  # 秋: もみじ（5つの裂片＋ぎざぎざ＋葉脈＋柄）
+        pts = []
+        for ang, ln in ((0, 18), (52, 16), (-52, 16), (112, 11), (-112, 11)):
+            for da, rr in ((-14, ln * 0.45), (-6, ln * 0.8), (0, ln), (6, ln * 0.8), (14, ln * 0.45)):
+                a = math.radians(ang + da)
+                pts.append((a, rr))
+        pts.sort(key=lambda t: t[0])
+        cy2 = cy + 2
+        poly = " ".join(f"{cx + r * math.sin(a):.1f},{cy2 - r * math.cos(a):.1f}" for a, r in pts)
+        veins = "".join(f'<line x1="{cx}" y1="{cy2}" x2="{cx + ln * 0.8 * math.sin(math.radians(ang)):.1f}" y2="{cy2 - ln * 0.8 * math.cos(math.radians(ang)):.1f}" stroke="#fff" stroke-width="1" opacity=".55"/>'
+                        for ang, ln in ((0, 18), (52, 16), (-52, 16), (112, 11), (-112, 11)))
+        return (f'<polygon points="{poly}" fill="{RED}" stroke="{RED}" stroke-width="1.5" stroke-linejoin="round"/>' + veins
+                + f'<line x1="{cx}" y1="{cy2}" x2="{cx + 2}" y2="{cy2 + 18}" stroke="{RED}" stroke-width="2.2" stroke-linecap="round"/>')
+    if n == 4:  # 冬: 雪の結晶
+        s = ""
+        for i in range(6):
+            t = f'transform="rotate({i * 60} {cx} {cy})"'
+            s += (f'<line x1="{cx}" y1="{cy}" x2="{cx}" y2="{cy - 17}" stroke="{BLUE}" stroke-width="2.6" stroke-linecap="round" {t}/>'
+                  f'<path d="M{cx - 5} {cy - 14} L{cx} {cy - 9} L{cx + 5} {cy - 14}" fill="none" stroke="{BLUE}" stroke-width="2" stroke-linecap="round" {t}/>')
+        return s
+    if n == 5:  # 梅: 丸い5枚の花びら＋枝
+        return (f'<path d="M8 44 Q22 36 30 28" fill="none" stroke="#8A5A2B" stroke-width="3" stroke-linecap="round"/>'
+                + _petals(cx + 2, cy - 2, 5, 8, 7.5, "#E75A8C", "#FFD23F"))
+    if n == 6:  # 蘭: 細長い葉と小さな花
+        return (f'<path d="M30 46 Q18 28 10 10" fill="none" stroke="{GREEN}" stroke-width="3" stroke-linecap="round"/>'
+                f'<path d="M30 46 Q40 26 50 12" fill="none" stroke="{GREEN}" stroke-width="3" stroke-linecap="round"/>'
+                f'<path d="M30 46 Q30 30 32 8" fill="none" stroke="{GREEN}" stroke-width="2.4" stroke-linecap="round"/>'
+                + _petals(40, 22, 3, 4.5, 4, "#9B6AD6", "#FFD23F"))
+    if n == 7:  # 菊: 細い花びらがたくさん
+        p = "".join(f'<ellipse cx="{cx}" cy="{cy - 10}" rx="2.6" ry="8" fill="#F2B21C" transform="rotate({i * 22.5} {cx} {cy})"/>' for i in range(16))
+        return p + f'<circle cx="{cx}" cy="{cy}" r="5" fill="{RED}"/>'
+    # 8 竹: 節のある幹と葉
+    return (f'<rect x="24" y="4" width="8" height="44" rx="3" fill="{GREEN}"/>'
+            + "".join(f'<rect x="23" y="{y}" width="10" height="2.4" rx="1" fill="#0F5563"/>' for y in (16, 30))
+            + f'<path d="M32 18 Q44 10 52 14 Q42 20 32 20 Z" fill="{GREEN}"/><path d="M24 32 Q12 26 6 30 Q16 36 24 34 Z" fill="{GREEN}"/>')
+
+
+def _flower(n, st):
+    """花牌: 上に絵、下に字、左上に番号（一〜四。座る席の番号）"""
+    ch = "春夏秋冬梅蘭菊竹"[n - 1]
+    num = KANJI[(n - 1) % 4]
+    col = {1: RED, 2: GREEN, 3: RED, 4: BLUE, 5: RED, 6: GREEN, 7: RED, 8: GREEN}[n]
+    return _flower_pic(n) + _text(ch, 30, 62, 24, col, st) + _text(num, 9, 9, 10, INK, st)
+
+
 def _text(ch, x, y, size, col, st):
     if st.get("glyphs"):
         return _glyph(ch, x, y, size, col, st)
@@ -140,6 +199,10 @@ def face(code, st):
         return "".join(_stick(x, y, h, RED if red else c) for x, y, h, c in lay)
     if code == "z5":  # 白: 何も描かない（2026-10-23 ユーザーの判断。牌の枠を濃くしたので空白でも牌と分かる）
         return ""
+    if code == "z5p":  # 白ぽっち: 白の真ん中に小さな青い点（2026-10-27・三麻の記事用）
+        return f'<circle cx="30" cy="40" r="5" fill="{BLUE}"/>'
+    if suit == "f":
+        return _flower(int(num), st)
     col = {"z6": GREEN, "z7": RED}.get(code, INK)
     return _text(WIND[code], 30, 40, 40, col, st)
 
@@ -169,4 +232,37 @@ def tile_svg(code, style="tokumin", px=None, yoko=False):
         body = f'<g transform="translate(0 {W}) rotate(-90)">{body}</g>'
     return out + body + "</svg>"
 
-ALL = ["back"] + [f"m{i}" for i in range(1, 10)] + [f"p{i}" for i in range(1, 10)] + [f"s{i}" for i in range(1, 10)] + [f"z{i}" for i in range(1, 8)] + ["m5r", "p5r", "s5r"]
+ALL = ["back"] + [f"m{i}" for i in range(1, 10)] + [f"p{i}" for i in range(1, 10)] + [f"s{i}" for i in range(1, 10)] + [f"z{i}" for i in range(1, 8)] + ["m5r", "p5r", "s5r"] + ["z5p"] + [f"f{i}" for i in range(1, 9)]
+
+
+def yakitori_svg(ura=False):
+    """焼き鳥カード（2026-10-27・三麻の記事用）。表＝焼き鳥の絵と字（まだあがっていない人の前に置く）、ura=True は裏（あがったら裏返す）。
+    大きさは牌と同じ考え方で 70×100＋下の厚み。絵はまじゃすこのオリジナル"""
+    st = STYLES["tokumin"]
+    w, h, bh = 70, 100, 6
+    out = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 {w + 2} {h + bh + 2}">'
+    out += f'<rect x="0" y="{bh}" width="{w}" height="{h}" rx="8" fill="#CDBFA3"/>'  # 厚み（紙のカードの色。表・裏どちらでも同じ）
+    if ura:
+        out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="{GREEN}"/>'
+        out += f'<rect x="6" y="6" width="{w - 12}" height="{h - 12}" rx="5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>'
+        out += f'<circle cx="35" cy="50" r="13" fill="none" stroke="#fff" stroke-width="2.4" opacity=".85"/><path d="M29 50 L33.5 54.5 L42 45" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'
+        return out + "</svg>"
+    out += f'<rect x="0" y="0" width="{w}" height="{h}" rx="8" fill="#FFF4E2" stroke="{RED}" stroke-width="1.8"/>'
+    out += f'<rect x="5" y="5" width="{w - 10}" height="{h - 10}" rx="5" fill="none" stroke="{RED}" stroke-width="1" opacity=".5"/>'
+    # 串（斜め）と、肉・ねぎ・肉・ねぎ・肉
+    g = '<g transform="rotate(-35 35 38)">'
+    g += '<rect x="33.6" y="4" width="2.8" height="66" rx="1.4" fill="#C9A26B"/>'
+    y = 10
+    for kind in ("niku", "negi", "niku", "negi", "niku"):
+        if kind == "niku":
+            g += f'<rect x="25" y="{y}" width="20" height="13" rx="6" fill="#B65A22"/>'
+            g += f'<path d="M28 {y + 4} L42 {y + 4} M28 {y + 8.5} L42 {y + 8.5}" stroke="#7A3510" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>'
+            g += f'<rect x="28" y="{y + 1.5}" width="7" height="2" rx="1" fill="#fff" opacity=".3"/>'
+            y += 13.5
+        else:
+            g += f'<rect x="27" y="{y}" width="16" height="8" rx="3" fill="#EFF3D6"/><rect x="27" y="{y}" width="16" height="3" rx="1.5" fill="#7DB346"/>'
+            y += 8.5
+    g += '</g>'
+    out += g
+    out += _text("焼", 17, 84, 15, RED, st) + _text("き", 35, 85, 13, RED, st) + _text("鳥", 53, 84, 15, RED, st)
+    return out + "</svg>"

@@ -10,7 +10,7 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.boundsPen import BoundsPen
 
-CHARS = "一二三四五六七八九萬東南西北發中"
+CHARS = "一二三四五六七八九萬東南西北發中春夏秋冬梅蘭菊竹焼き鳥"  # 花牌と焼き鳥カードの字を足した（2026-10-27）
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "tile_glyphs.json")
 
