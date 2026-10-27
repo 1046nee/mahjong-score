@@ -230,12 +230,12 @@ def v_umaoka():
     """初心者の壁：ウマ・オカ。例はアプリの使い方の画面と同じ数字（健太 45,200点 → +65.2）"""
     els = [at(0, 2.8, '<div class="badge g">初心者の壁</div><h1>ウマ・オカって、<br>結局なに？</h1><p>20秒でわかる</p>', cls="cap hook", style="top:620px", anim="pop")]
     els.append(at(2.8, 8.4, '<div class="badge g">オカ</div><h1>トップへの<br>ごほうび</h1>', cls="cap", style="top:300px"))
-    els.append(at(3.6, 8.4, '<div class="eq">25,000点持ち・30,000点返し<br>4人とも 5,000点ずつ出して<br>トップに <b>+20</b></div>', cls="cap", style="top:820px"))
+    els.append(at(3.6, 8.4, '<div class="eq">25,000点持ち・30,000点返し<br>4人とも 5,000点ずつ出して<br>トップがまとめて受け取る<br>トップ <b>+15</b>／ほか <span style="color:#C62828">−5</span></div>', cls="cap", style="top:820px"))
     els.append(at(8.4, 14.0, '<div class="badge g">ウマ</div><h1>順位で動く<br>ポイント</h1><p>よくある「10-30」なら</p>', cls="cap", style="top:300px"))
     els.append(at(9.2, 14.0, '<table class="ex"><tr><td class="l">1位</td><td class="p">+30</td></tr><tr><td class="l">2位</td><td class="p">+10</td></tr>'
                   '<tr><td class="l">3位</td><td class="n">−10</td></tr><tr><td class="l">4位</td><td class="n">−30</td></tr></table>', cls="cap", style="top:900px"))
     els.append(at(14.0, 20.0, '<h1>たとえば、<br>45,200点でトップなら</h1>', cls="cap", style="top:300px"))
-    els.append(at(14.8, 20.0, '<div class="eq">素点 <b>+15.2</b><br>ウマ <b>+30</b><br>オカ <b>+20</b><br>＝ <span class="o">+65.2</span></div>', cls="cap", style="top:760px"))
+    els.append(at(14.8, 20.0, '<div class="eq">素点 <b>+20.2</b><small style="font-size:.6em;color:#5B6866">（45,200−25,000）</small><br>ウマ <b>+30</b><br>オカ <b>+15</b><br>＝ <span class="o">+65.2</span></div>', cls="cap", style="top:760px"))
     els.append(at(20.0, 24.2, '<h1>この計算、<br>まじゃすこなら自動。</h1>', cls="cap", style="top:230px", anim="pop"))
     e, hh = phone_at(20.3, 24.2, "howto-4.jpg", y=600); els.append(e)
     els.append(end_card(24.2))
