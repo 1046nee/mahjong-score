@@ -128,6 +128,10 @@ def T(name, color, body):
 
 
 THUMBS = [
+ T("blog-haitei", "#3B82F6", lambda: row_center(["p9", "p9", "p9"], 40, 46, 6) + bubble(40, 140, 110, 52, "海底", 28) + bubble(170, 140, 110, 52, "カン×", 26, "#FFD23F") + sparkle(270, 44, 13)),
+ T("blog-keishiki-tenpai", "#8B5CF6", lambda: row_center(["m1", "m2", "m3", "s2", "s3"], 44, 40, 3) + bubble(40, 140, 120, 52, "テンパイ", 24) + bubble(180, 140, 100, 52, "？", 30, "#FFD23F") + sparkle(272, 40, 12)),
+ T("blog-kuikae", "#F59E0B", lambda: row_center(["m3", "m4", "m5"], 44, 48, 6) + bubble(40, 140, 110, 52, "チー", 28) + bubble(170, 140, 110, 52, "三萬×", 26, "#FFD23F") + sparkle(268, 46, 12)),
+ T("blog-riichi-ankan", "#EF4444", lambda: row_center(["m1", "m1", "m1", "m1"], 44, 44, 4) + bubble(40, 140, 110, 52, "リーチ", 26) + bubble(170, 140, 110, 52, "カン？", 26, "#FFD23F") + sparkle(270, 44, 13)),
  T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
  T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),
  T("blog-mahjong-manga", "#F28C28", lambda: card(62, 34, 92, 130, "#fff", 8) + card(166, 34, 92, 130, "#fff", 8) + lines(74, 62, 4, 68, 16) + tiles(["z7", "z6"], 180, 66, 30, 8) + bubble(150, 168, 120, 48, "ロン！", 26, "#FFD23F") + sparkle(272, 40, 12)),
