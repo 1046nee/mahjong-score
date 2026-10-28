@@ -66,7 +66,15 @@
 - Article JSON-LDのauthorは `{"@type": "Person", "name": "むにぃ", "url": "https://majasco.jp/about.html"}` で統一
 - 内部リンクを2本以上（関連記事へ相互に張る）
 
+## カテゴリー（2026-10-28〜・ユーザーの依頼「体系的に分けて見やすく」）
+- 麻雀の記事は **6つのテーマ**: はじめての麻雀（`beginner`・/beginner/）／ルールの深掘り（`rules`・/rules/。練習問題もここ）／スコア・集計（`score`・/score/）／Mリーグ・プロ（`pro`・/pro/。放送対局）／AI・ゲーム（`ai`・/ai/）／作品・カルチャー（`culture`・/culture/）。ほかに お知らせ（news）・雑記（blog）。
+- 正は `assets/blog-site.js` の BLOG_CATS（名前・URL・`group: 'mahjong'`）と BLOG_POSTS の `cat`。**/mahjong/ は6テーマをまとめた入口として残す**（検索から来る人のため。タブには出さない。`cat === 'mahjong'` の一覧＝6テーマすべて）。
+- `python tools/blog_cats.py` が、テーマの一覧ページ（/mahjong/ をひな形に）・記事のパンくず（トップ ＞ ブログ ＞ テーマ ＞ 記事）・sitemap・ブログのトップの「テーマから探す」（`.theme-grid`。テーマごとの本数と、いちばん新しい記事の絵）を作る。テーマの説明文はこのスクリプトの THEMES。色は assets/blog.css（`.cat-キー`・`.hero-キー`）
+- **増えそうなテーマの候補**: 「上達・戦術」（何切る・押し引き・牌効率。待ち当て道場・論述問題もここへ移す）は記事が3本ほどになったら足す。AI・ゲームは記事が少ないが、これから増える見込みで独立させた
+- 一覧ページのカテゴリのタブ（`.cat-nav`・sticky）は、上に残るヘッダーのすぐ下に止まる（blog-site.js が `--hh` にヘッダーの高さを入れる）
+
 ## 記事の追加手順
+- **カテゴリー**: BLOG_POSTS の `cat` は6テーマのどれか（`mahjong` は使わない）。足したら `python tools/blog_cats.py` → `node tools/build_post_lists.js`
 0. **記事の絵（サムネイル）を作る（2026-10-26〜。一覧では小さめ＝スマホ88px・PC128px、説明は1〜2行で切る。左の列は64pxの絵＋題名の横並び）**: `tools/make_thumbs.py` の THUMBS に1行（ファイル名・地の色・絵）足して `python tools/make_thumbs.py`（assets/thumbs/{ファイル名}.svg）。一覧のカードの左に出る。絵が無いと build_post_lists.js が止まる。**記事の中にも同じ絵を出す**＝`python tools/add_eyecatch.py`（タイトルと日付の下に `figure.eyecatch`。すぐ下の大きい飾りの絵 .post-illust は外す。何度実行しても同じ）。地の色は記事ごとに変えてよい（原色・派手な色も可）。牌は assets/tiles/ をそのまま使う
 1. 既存の `blog-*.html`（お知らせは `news/update-2026-07.html`）をコピーして執筆。
    head一式（docs/site-spec.mdのチェックリスト）・パンくず・.post-layout＋sidebar・広告枠（article_top/bottom）・末尾CTA・

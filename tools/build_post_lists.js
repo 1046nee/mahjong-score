@@ -45,17 +45,15 @@ const catNavHtml = active => {
     `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
 };
 
-const pages = [
-  ['blog.html', 'all'],
-  [path.join('mahjong', 'index.html'), 'mahjong'],
-  [path.join('news', 'index.html'), 'news'],
-  [path.join('blog', 'index.html'), 'blog'],
-];
+// 一覧ページ: すべて・麻雀の記事の入口（/mahjong/＝6テーマをまとめて）・カテゴリごと（2026-10-28〜。テーマのページは tools/blog_cats.py が作る）
+const pages = [['blog.html', 'all'], [path.join('mahjong', 'index.html'), 'mahjong']]
+  .concat(Object.keys(cats).map(k => [path.join(cats[k].url.replace(/^\/|\/$/g, ''), 'index.html'), k]));
+const inCat = (p, cat) => cat === 'all' || p.cat === cat || (cat === 'mahjong' && cats[p.cat] && cats[p.cat].group === 'mahjong');
 
 for (const [file, cat] of pages) {
   const fp = path.join(root, file);
   let html = fs.readFileSync(fp, 'utf8');
-  const list = posts.filter(p => cat === 'all' || p.cat === cat).sort(byDateDesc);
+  const list = posts.filter(p => inCat(p, cat)).sort(byDateDesc);
   const cards = list.map(cardHtml).join('\n    ');
   const re = new RegExp(`(<main class="post-list" data-post-list="${cat}">)[\\s\\S]*?(</main>)`);
   if (!re.test(html)) throw new Error(`アンカーが見つかりません: ${file}`);
