@@ -901,3 +901,4 @@ body:not(.bs-list) .side-box.sb-box, .bs-list .side-box.sb-box { border-top: 0; 
   .blog-post .fg-flow .ff-st small { margin: 0; font-size: 11.5px; }
   .blog-post .fg-flow .ff-ar { transform: rotate(90deg); line-height: 1; font-size: 12px; }
 }
+.blog-post .fg-card:has(.fg-stamp) small { padding-right: 40px; }
