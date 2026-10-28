@@ -902,3 +902,15 @@ body:not(.bs-list) .side-box.sb-box, .bs-list .side-box.sb-box { border-top: 0; 
   .blog-post .fg-flow .ff-ar { transform: rotate(90deg); line-height: 1; font-size: 12px; }
 }
 .blog-post .fg-card:has(.fg-stamp) small { padding-right: 40px; }
+/* 点数早見表（2026-10-28）: 表を画面の幅に収める決まり（上の .table-scroll）のままだと、ツモの払い（1,300-2,600・1,300オール）が途中で折れて、
+   数字の位置が列ごとにばらばらになった。点数とツモの払いは折らずに1行、字と余白を少し小さくして幅に収める */
+.blog-post .table-scroll > table.score-tbl td b, .blog-post .table-scroll > table.score-tbl td small { white-space: nowrap !important; }
+.blog-post .table-scroll > table.score-tbl td { padding: 6px 2px; vertical-align: middle; }
+.blog-post .table-scroll > table.score-tbl tbody th { padding: 6px 4px; white-space: nowrap !important; }
+.blog-post table.score-tbl td small { font-size: 10.5px; letter-spacing: -0.02em; }
+@media (max-width: 400px) {
+  .blog-post table.score-tbl td b { font-size: 14px; }
+  .blog-post table.score-tbl td small { font-size: 9.5px; }
+  .blog-post .table-scroll > table.score-tbl th, .blog-post .table-scroll > table.score-tbl td { font-size: 12px; }
+}
+.blog-post .table-scroll > table.score-tbl td, .blog-post .table-scroll > table.score-tbl th { text-align: center !important; } /* 列ごとに左寄せ・右寄せが混ざらないように */

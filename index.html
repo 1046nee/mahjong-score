@@ -418,8 +418,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* マイページの自分のアイコン（2026-10-27）: 丸い地の色＋頭文字か牌・麻雀グッズの絵 */
 .uav { width: var(--s); height: var(--s); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; color: #fff; font-weight: 900; font-size: calc(var(--s) * 0.5); line-height: 1; overflow: hidden; vertical-align: middle; }
 .uav svg { color: #fff; } .uav .ico { --i1: #fff; --i2: rgba(255,255,255,.6); } /* 人のマークは白（背景色が主色と同じでも見える） */
-.av-ill { height: 74%; width: auto; display: block; pointer-events: none; }
-.av-ill.w { width: 82%; height: auto; }
+/* 絵は丸の幅の72%の正方形の枠に収める（縦長の牌・正方形・横長の札のどれでも）。高さの割合は入れ物の高さが決まっていないと効かず、はみ出した（2026-10-28） */
+.av-ill { width: 72%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; display: block; pointer-events: none; flex: none; }
+.av-ill.w { width: 84%; }
 .mp-av-btn { position: relative; border: 0; background: none; padding: 0 0 1px; margin: 0 8px 0 0; flex: none; cursor: pointer; display: inline-flex; vertical-align: middle; }
 .av-prev { display: flex; align-items: center; gap: 12px; margin: 2px 0 14px; } .av-prev b { display: block; font-size: 16px; } .av-prev small { display: block; font-size: 12px; color: #6B7A77; line-height: 1.5; }
 .mp-name-btn { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; min-width: 0; text-align: left; }
@@ -452,9 +453,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .av-sec + .av-sec { margin-top: 8px; } .av-sec h4 { font-size: 11.5px; font-weight: 800; color: #6B7A77; margin: 0 0 4px; } .av-sec h5 { font-size: 10.5px; font-weight: 700; color: #8A9896; margin: 6px 0 3px 2px; }
 .av-sheet > .sheet-close { margin-top: 8px; }
 .av-pick.on { border-color: var(--pc); box-shadow: 0 0 0 2px var(--pc-a15, rgba(23,112,131,.15)); }
-.hdr-av .av-ill { height: 72%; width: auto; } .hdr-av .av-ill.w { width: 82%; height: auto; }
-.lc-av .av-ill, .pd-av .av-ill, .who-av .av-ill, .pp-av .av-ill, .pf-av .av-ill, .rv-av .av-ill, .mu-av .av-ill, .cs-av .av-ill, .gr-op i .av-ill, i > .av-ill { height: 70%; }
-.lc-av .av-ill.w, .pd-av .av-ill.w, .who-av .av-ill.w, .pp-av .av-ill.w, .pf-av .av-ill.w, .rv-av .av-ill.w, .mu-av .av-ill.w, .cs-av .av-ill.w, i > .av-ill.w { width: 80%; height: auto; }
+
 
 /* フッター（濃い緑背景・リンクは2列で揃える） */
 .site-footer { background: #177083; text-align: center; padding: 34px 20px 44px; color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 40px; border-top: none; }

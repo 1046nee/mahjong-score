@@ -312,7 +312,10 @@ const BLOG_POSTS = [
       let ticking = false;
       const onScroll = () => {
         ticking = false;
-        head.classList.toggle('compact', window.scrollY > 40);
+        // 細くするのは64pxより下、戻すのは8pxより上に来たとき（2026-10-28）。同じしきい値（40px）だと、細くなる→ページが
+        // 上にずれてしきい値を下回る→戻る…を繰り返し、しきい値の近くで画面が小刻みに揺れた（ブログのタブを移るときに目立った）
+        if (window.scrollY > 64) head.classList.add('compact');
+        else if (window.scrollY < 8) head.classList.remove('compact');
         // 一覧ページのカテゴリのタブ（これも上に残る）は、ヘッダーのすぐ下に止める（2026-10-28）
         document.documentElement.style.setProperty('--hh', head.offsetHeight + 'px');
         if (bar && art) {
@@ -466,8 +469,12 @@ const BLOG_POSTS = [
     // カテゴリナビ（すべて / 麻雀攻略 / お知らせ / 雑記）
     // 一覧ページはHTMLに書いてある（tools/build_post_lists.js）。空のときだけここで描く
     document.querySelectorAll('[data-cat-nav]').forEach(el => {
-      if (el.children.length) return;
-      el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
+      if (!el.children.length) el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
+      // 選んでいるタブが画面の外（右のほう）にあると、どこにいるか分からない。真ん中あたりまで横に送る（2026-10-28）
+      const inner = el.querySelector('.cat-nav-inner'), on = el.querySelector('.cat-tab.on');
+      if (inner && on && inner.scrollWidth > inner.clientWidth) {
+        inner.scrollLeft = Math.max(0, on.offsetLeft - inner.offsetLeft - (inner.clientWidth - on.offsetWidth) / 2);
+      }
     });
 
     // サイドバー: 今月のおすすめ記事 ＋ 最新のアップデート（/news/の新着）
