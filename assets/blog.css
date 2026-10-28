@@ -864,3 +864,32 @@ body:not(.bs-list) .side-box.sb-box, .bs-list .side-box.sb-box { border-top: 0; 
 .sb-all { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 8px; padding: 9px 0; border: 1px solid #DCE3F1; border-radius: 999px; font-size: 12.5px; font-weight: 800; color: #2F56A8; text-decoration: none; }
 .sb-all span { font-size: 15px; line-height: 1; }
 .sb-all:hover { background: #F3F6FB; }
+
+/* ---- 記事の図の共通の部品（2026-10-28〜・ユーザーの依頼「どの記事にも遊び心のある図」）----
+   .fg＝図の入れ物／.fg-cards＝判定スタンプつきのカード／.fg-bars＝横棒／.fg-flow＝手順の流れ／.fg-vs＝どっち派？の対決／.fg-check＝チェックリスト */
+.blog-post .fg { margin: 12px 0 18px; padding: 10px; background: #F4F7F6; border-radius: 10px; }
+.blog-post .fg > figcaption, .blog-post .fg .fg-cap { font-size: 12px; color: #6B7A77; line-height: 1.6; margin-top: 8px; }
+.blog-post .fg-ttl { font-size: 13px; font-weight: 900; color: #177083; margin: 0 0 8px; }
+.blog-post .fg-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.blog-post .fg-card { position: relative; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 10px; padding: 10px 10px 12px; }
+.blog-post .fg-card b { display: block; font-size: 14px; font-weight: 900; margin-bottom: 4px; padding-right: 44px; }
+.blog-post .fg-card small { display: block; font-size: 12px; color: #4F5C5A; line-height: 1.55; }
+.blog-post .fg-card .fg-tiles { display: flex; gap: 1px; margin: 4px 0 6px; flex-wrap: wrap; } .blog-post .fg-card .fg-tiles img { width: 18px; height: auto; }
+.blog-post .fg-stamp { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid currentColor; display: grid; place-items: center; font-size: 11px; font-weight: 900; transform: rotate(-12deg); line-height: 1.1; text-align: center; }
+.blog-post .fg-stamp.ok { color: #2BB673; } .blog-post .fg-stamp.ng { color: #C92F42; } .blog-post .fg-stamp.mid { color: #D97706; }
+.blog-post .fg-bars .fb-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; }
+.blog-post .fb-l { flex: none; width: 96px; font-weight: 800; line-height: 1.3; } .blog-post .fb-bar { flex: 1; height: 14px; background: #fff; border-radius: 7px; overflow: hidden; display: flex; }
+.blog-post .fb-bar i { display: block; height: 100%; } .blog-post .fb-v { flex: none; min-width: 52px; text-align: right; font-weight: 800; }
+.blog-post .fg-flow { display: flex; align-items: stretch; gap: 3px; } .blog-post .ff-st { flex: 1; min-width: 0; background: #fff; border-radius: 8px; padding: 8px 4px; text-align: center; }
+.blog-post .ff-st b { display: block; font-size: 12px; color: #177083; } .blog-post .ff-st small { display: block; font-size: 10.5px; color: #6B7A77; line-height: 1.4; margin-top: 2px; }
+.blog-post .ff-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #177083; color: #fff; font-size: 11px; font-weight: 900; margin-bottom: 3px; }
+.blog-post .ff-ar { align-self: center; color: #E75620; font-weight: 900; }
+.blog-post .fg-vs .vs-row { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: stretch; gap: 4px; margin: 6px 0; }
+.blog-post .vs-q { grid-column: 1 / -1; font-size: 12px; font-weight: 800; color: #177083; margin-top: 4px; }
+.blog-post .vs-a, .blog-post .vs-b { background: #fff; border-radius: 8px; padding: 7px 8px; font-size: 12.5px; font-weight: 800; text-align: center; line-height: 1.4; }
+.blog-post .vs-a { border: 1.5px solid #9FC3BD; } .blog-post .vs-b { border: 1.5px solid #F2B79A; }
+.blog-post .vs-a small, .blog-post .vs-b small { display: block; font-size: 10.5px; font-weight: 600; color: #6B7A77; margin-top: 2px; }
+.blog-post .vs-x { display: grid; place-items: center; font-size: 11px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 50%; width: 30px; height: 30px; align-self: center; justify-self: center; }
+.blog-post .fg-check { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+.blog-post .fg-check span { display: flex; align-items: center; gap: 6px; background: #fff; border-radius: 8px; padding: 7px 8px; font-size: 12.5px; font-weight: 700; }
+.blog-post .fg-check span::before { content: ''; flex: none; width: 16px; height: 16px; border-radius: 4px; background: #2BB673 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/100% no-repeat; }
