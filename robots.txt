@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# Firebase が自動で用意するログイン用の部品（/__/auth/iframe など）。ページではないので検索に載せない
+Disallow: /__/
 
 Sitemap: https://majasco.jp/sitemap.xml

@@ -14,6 +14,7 @@
 - `404.html` — カスタム404（noindex。blog-site.jsは読み込む）
 - `tests.html` — 計算ロジックの単体テスト（noindex・**本番には配信しない**＝firebase.json の ignore。手元のサーバーで開く → docs/app-spec.md）
 - `sitemap.xml` / `robots.txt` — **新ページを追加したらsitemap.xmlに`<url>`を1件追加**（`<lastmod>`付き。既存ページも大きく更新したらlastmodを更新）
+- robots.txt は `Disallow: /__/`（2026-10-30〜）。`/__/auth/iframe?apiKey=…` は Firebase がログイン用に自動で出す部品で、検索に載ってしまったため。このパスは Firebase が直接返すので firebase.json の headers（noindex など）は効かない。中の apiKey は公開してよい値（index.html にも書いてある。守りはDBのルールと App Check）
 - `assets/` — favicon.png(512) / logo.png(800×250透過) / ogp2.png(現行OGP) / ogp.png(旧・残置) / blog.css / blog-site.js / ads.js
 - `favicon.ico` — ルート直下16/32/48px（→ docs/image-tools.md）
 - `manifest.json` — PWA最小構成
