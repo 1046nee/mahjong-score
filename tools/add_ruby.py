@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """記事の中の中国語由来の麻雀用語に、ふりがな（<ruby>）を付ける（2026-10-23〜・ユーザーの依頼「中国語由来のものには基本フリガナ」）。
 - 1つの記事の中で、それぞれの言葉の**最初の1回だけ**に付ける（何度も付けると読みにくい）
-- 本文（<article class="blog-post"> の中）だけ。見出し（h1・h2）、目次、図（svg）、script、すでに ruby の中、タグの属性は対象外
+- 本文（<article class="blog-post"> の中）だけ。見出し（h1・h2・h3。2026-10-30〜h3も。見出しで毎回読みを見せたい語は手で <ruby class="r">）、目次、図（svg）、script、すでに ruby の中、タグの属性は対象外
 - 長い言葉を先に探す（「四家立直」の中の「立直」には付けない）。すぐ後ろに「（…）」で読みが書いてある所には付けない
 - 読みは Wikipedia の各項目と、正式名称のページ（blog-mahjong-yougo.html）で確かめたもの
 実行: python tools/add_ruby.py            （blog-*.html をまとめて。何度実行しても同じ結果）
@@ -47,7 +47,7 @@ READ = {
 }
 TERMS = sorted(READ, key=len, reverse=True)
 PAT = re.compile("|".join(map(re.escape, TERMS)))
-SKIP_TAGS = {"h1", "h2", "script", "style", "svg", "ruby", "title", "button", "textarea"}
+SKIP_TAGS = {"h1", "h2", "h3", "script", "style", "svg", "ruby", "title", "button", "textarea"}
 TOKEN = re.compile(r"(<!--.*?-->|<[^>]+>)", re.S)
 
 
