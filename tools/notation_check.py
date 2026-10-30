@@ -18,6 +18,7 @@ K = "|".join(sorted(map(re.escape, READ), key=len, reverse=True))
 RUBY = r"<ruby>(%s)<rt>([^<]+)</rt></ruby>" % K
 
 def norm(x):
+    x = "".join(chr(ord(c) + 0x60) if "ぁ" <= c <= "ゖ" else c for c in x)   # ひらがなの読みもカタカナにそろえて比べる
     return x.replace("・", "").replace(" ", "")
 
 def fix_text(s):
@@ -44,9 +45,9 @@ def fix_text(s):
         nonlocal n
         kan, yomi = m.group(1), m.group(2)
         if norm(READ[kan]) == norm(yomi):
-            n += 1; return f'<ruby class="r">{kan}<rt>{yomi}</rt></ruby>'  # その場のルビ（add_ruby は外さない）
+            n += 1; return f'<ruby class="r">{kan}<rt>{READ[kan]}</rt></ruby>'  # その場のルビ（add_ruby は外さない）
         return m.group(0)
-    s = re.sub(r"(?<![ァ-ヶー一-龥])(%s)（([ァ-ヶー・]+)）" % K, c1, s)
+    s = re.sub(r"(?<![ァ-ヶー一-龥])(%s)（([ァ-ヶーぁ-ん・]+)）" % K, c1, s)
     def c2(m):
         nonlocal n
         yomi, kan = m.group(1), m.group(2)
