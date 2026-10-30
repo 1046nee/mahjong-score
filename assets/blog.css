@@ -616,6 +616,11 @@ body:not(.bs-list) .post-layout > .blog-post tbody th { background: #F3F6FB; col
 body:not(.bs-list) .post-layout > .blog-post table:not(:has(thead)) tr:first-child > * { border-top: 2px solid #4261AA; }
 body:not(.bs-list) .post-layout > .blog-post table:not(:has(thead)) tbody th { white-space: nowrap; }
 body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical-align: middle; }
+/* セルの寄せと太さ（2026-10-30〜・全記事で統一）: 文字は左寄せ、数字・点数・記号だけの列は中央（tools/table_align.py が .c-n を付ける）。見出しのセルの太さは800。
+   形が決まっている表（点数表・符・答え・回し方・指名の順・漢字）は、それぞれのCSSの寄せのまま */
+body:not(.bs-list) .post-layout > .blog-post table:not(.score-tbl):not(.fu-tbl):not(.ans-tbl):not(.rot):not(.snake):not(.kj-tbl) :is(th, td) { text-align: left; }
+body:not(.bs-list) .post-layout > .blog-post table :is(th, td).c-n { text-align: center; font-variant-numeric: tabular-nums; }
+body:not(.bs-list) .post-layout > .blog-post th { font-weight: 800; }
 
 /* 手順（順番がある箇条書き） */
 .blog-post ol.steps { list-style: none; counter-reset: st; padding: 0; margin: 10px 0 22px; }

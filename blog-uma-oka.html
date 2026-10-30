@@ -141,12 +141,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>出した分と受け取った分は同じなので、<strong>オカも全員分を足すとちょうど0</strong>になります。素点・ウマ・オカのどれも合計0なので、全員のスコアの合計も必ず0になる、という仕組みなんです。</p>
   <p>ここから分かるとおり、<strong>オカは持ち点と返し点の差から自動的に決まります</strong>。自分で数字を決めるものではありません。</p>
   <table>
-  <thead><tr><th>持ち点／返し点</th><th>人数</th><th><span class="tm">オカ</span><span class="tp nw">（1位／2位以下）</span></th></tr></thead>
+  <thead><tr><th>持ち点／返し点</th><th class="c-n">人数</th><th><span class="tm">オカ</span><span class="tp nw">（1位／2位以下）</span></th></tr></thead>
   <tbody>
-  <tr><td>25,000／30,000<span class="tp nw">（四麻の定番）</span></td><td>4人</td><td>+15.0pts／−5.0pts</td></tr>
-  <tr><td>30,000／30,000</td><td>4人</td><td>なし（0）</td></tr>
-  <tr><td>30,000／35,000</td><td>3人</td><td>+10.0pts／−5.0pts</td></tr>
-  <tr><td>35,000／35,000<span class="tp nw">（三麻でオカなし）</span></td><td>3人</td><td>なし（0）</td></tr>
+  <tr><td>25,000／30,000<span class="tp nw">（四麻の定番）</span></td><td class="c-n">4人</td><td>+15.0pts／−5.0pts</td></tr>
+  <tr><td>30,000／30,000</td><td class="c-n">4人</td><td>なし（0）</td></tr>
+  <tr><td>30,000／35,000</td><td class="c-n">3人</td><td>+10.0pts／−5.0pts</td></tr>
+  <tr><td>35,000／35,000<span class="tp nw">（三麻でオカなし）</span></td><td class="c-n">3人</td><td>なし（0）</td></tr>
   </tbody>
   </table>
   <p><strong>持ち点と返し点を同じにすれば、オカは0</strong>です。「オカなし」と呼ばれるのはこの設定のことで、素点とウマだけで順位表がつくられます。トップの価値が軽くなるので、初参加の人が多い会では扱いやすい形です。</p>
@@ -154,22 +154,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>具体例で計算してみる</h2>
   <p>4人麻雀、持ち点25,000・返し点30,000・ウマ10-30として、次の結果で計算してみましょう。</p>
   <table>
-    <thead><tr><th>プレイヤー</th><th>持ち点</th><th>順位</th></tr></thead>
+    <thead><tr><th>プレイヤー</th><th class="c-n">持ち点</th><th class="c-n">順位</th></tr></thead>
     <tbody>
-      <tr><td>A</td><td>45,000</td><td>1位</td></tr>
-      <tr><td>B</td><td>28,000</td><td>2位</td></tr>
-      <tr><td>C</td><td>15,000</td><td>3位</td></tr>
-      <tr><td>D</td><td>12,000</td><td>4位</td></tr>
+      <tr><td>A</td><td class="c-n">45,000</td><td class="c-n">1位</td></tr>
+      <tr><td>B</td><td class="c-n">28,000</td><td class="c-n">2位</td></tr>
+      <tr><td>C</td><td class="c-n">15,000</td><td class="c-n">3位</td></tr>
+      <tr><td>D</td><td class="c-n">12,000</td><td class="c-n">4位</td></tr>
     </tbody>
   </table>
   <p>これを、素点・ウマ・オカの順に足していきます。</p>
   <table>
-    <thead><tr><th></th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th></th><th class="c-n">素点</th><th class="c-n">ウマ</th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>A</td><td>+20</td><td>+30</td><td>+15</td><td><span class="hl">+65</span></td></tr>
-      <tr><td>B</td><td>+3</td><td>+10</td><td>−5</td><td><span class="hl">+8</span></td></tr>
-      <tr><td>C</td><td>−10</td><td>−10</td><td>−5</td><td><span class="hl">−25</span></td></tr>
-      <tr><td>D</td><td>−13</td><td>−30</td><td>−5</td><td><span class="hl">−48</span></td></tr>
+      <tr><td>A</td><td class="c-n">+20</td><td class="c-n">+30</td><td class="c-n">+15</td><td class="c-n"><span class="hl">+65</span></td></tr>
+      <tr><td>B</td><td class="c-n">+3</td><td class="c-n">+10</td><td class="c-n">−5</td><td class="c-n"><span class="hl">+8</span></td></tr>
+      <tr><td>C</td><td class="c-n">−10</td><td class="c-n">−10</td><td class="c-n">−5</td><td class="c-n"><span class="hl">−25</span></td></tr>
+      <tr><td>D</td><td class="c-n">−13</td><td class="c-n">−30</td><td class="c-n">−5</td><td class="c-n"><span class="hl">−48</span></td></tr>
     </tbody>
   </table>
   <p>合計は +65 +8 −25 −48 = <strong>0</strong>。きちんとゼロになりました。素点の列（+20 +3 −10 −13）もオカの列（+15 −5 −5 −5）も、それぞれ0です。麻雀のスコアは、こうして全員の合計が0になるように作られています。</p>
@@ -182,12 +182,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>よくあるウマの設定と選び方</h2>
   <p>ウマの設定はグループの自由ですが、実際によく使われるのは次の4パターンです。呼び方も合わせて覚えておくと、<ruby>雀荘<rt>ジャンソウ</rt></ruby>やほかのグループと打つときに話が早くなります。</p>
   <table>
-    <thead><tr><th>設定</th><th>通称</th><th>1位/2位/3位/4位</th><th>特徴</th></tr></thead>
+    <thead><tr><th class="c-n">設定</th><th>通称</th><th>1位/2位/3位/4位</th><th>特徴</th></tr></thead>
     <tbody>
-      <tr><td>10-30</td><td>ワンスリー</td><td>+30 / +10 / −10 / −30</td><td>順位の重みが大きい。競技寄り</td></tr>
-      <tr><td>10-20</td><td>ワンツー</td><td>+20 / +10 / −10 / −20</td><td>バランス型。迷ったらこれ</td></tr>
-      <tr><td>5-15</td><td>ゴーイチゴ</td><td>+15 / +5 / −5 / −15</td><td>順位より素点重視</td></tr>
-      <tr><td>5-10</td><td>ゴットー</td><td>+10 / +5 / −5 / −10</td><td>ウマの影響が小さく初心者向き</td></tr>
+      <tr><td class="c-n">10-30</td><td>ワンスリー</td><td>+30 / +10 / −10 / −30</td><td>順位の重みが大きい。競技寄り</td></tr>
+      <tr><td class="c-n">10-20</td><td>ワンツー</td><td>+20 / +10 / −10 / −20</td><td>バランス型。迷ったらこれ</td></tr>
+      <tr><td class="c-n">5-15</td><td>ゴーイチゴ</td><td>+15 / +5 / −5 / −15</td><td>順位より素点重視</td></tr>
+      <tr><td class="c-n">5-10</td><td>ゴットー</td><td>+10 / +5 / −5 / −10</td><td>ウマの影響が小さく初心者向き</td></tr>
     </tbody>
   </table>
   <p>私のグループでは長らく10-30を使っていますが、初心者が混ざる会では5-10に下げることもあります。ウマが大きいほど「オーラスの順位争い」が熱くなる一方、1回のミスも重くなるので、<strong>メンバーの経験値に合わせて決める</strong>のがおすすめです。</p>
@@ -231,12 +231,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>四麻のウマを三麻に流用すると、毎試合ズレる</h3>
   <p>合計0が一番くずれやすいのが、四麻のウマを三麻に持ち込んだときです。10-30は +30 / +10 / −10 / −30 で合計0ですが、三麻には4位の席がない。どこを削るかで結果が変わります。</p>
   <table>
-    <thead><tr><th>三麻で使ったウマ</th><th>1位</th><th>2位</th><th>3位</th><th>1試合のズレ</th></tr></thead>
+    <thead><tr><th>三麻で使ったウマ</th><th class="c-n">1位</th><th class="c-n">2位</th><th class="c-n">3位</th><th class="c-n">1試合のズレ</th></tr></thead>
     <tbody>
-      <tr><td>10-30の4位を削る</td><td>+30</td><td>+10</td><td>−10</td><td><span class="hl">+30</span></td></tr>
-      <tr><td>10-30の3位を削る</td><td>+30</td><td>+10</td><td>−30</td><td><span class="hl">+10</span></td></tr>
-      <tr><td>三麻用 10-0-10</td><td>+10</td><td>0</td><td>−10</td><td>0</td></tr>
-      <tr><td>三麻用 15-0-15</td><td>+15</td><td>0</td><td>−15</td><td>0</td></tr>
+      <tr><td>10-30の4位を削る</td><td class="c-n">+30</td><td class="c-n">+10</td><td class="c-n">−10</td><td class="c-n"><span class="hl">+30</span></td></tr>
+      <tr><td>10-30の3位を削る</td><td class="c-n">+30</td><td class="c-n">+10</td><td class="c-n">−30</td><td class="c-n"><span class="hl">+10</span></td></tr>
+      <tr><td>三麻用 10-0-10</td><td class="c-n">+10</td><td class="c-n">0</td><td class="c-n">−10</td><td class="c-n">0</td></tr>
+      <tr><td>三麻用 15-0-15</td><td class="c-n">+15</td><td class="c-n">0</td><td class="c-n">−15</td><td class="c-n">0</td></tr>
     </tbody>
   </table>
   <p>上2行は出席ボーナス付きのウマです。10半荘打てば300ptsや100ptsが宙に浮きます。三麻のウマは<span class="hl">1位+X・2位0・3位−X</span>と対称にするか、非対称にしたいなら3位の値を「1位と2位を足して符号を裏返した数」にする。この2択で覚えておけば事故りません。</p>
@@ -245,11 +245,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h2>ウマの重さは、順位表の「性格」を決める</h2>
   <p>ウマの数字は好みの問題と片づけられがちですが、基準はあります。<strong>1位と最下位のウマの差</strong>を、素点の振れ幅と比べることです。私の感覚では、四麻・25,000点持ちなら素点は大勝ちで+25pts前後、沈んで−15pts前後。この幅よりウマの差が大きいか小さいかで性格が決まります。</p>
   <table>
-    <thead><tr><th>ウマ</th><th>1位と最下位の差</th><th>順位表に出る性格</th><th>向く場面</th></tr></thead>
+    <thead><tr><th class="c-n">ウマ</th><th class="c-n">1位と最下位の差</th><th>順位表に出る性格</th><th>向く場面</th></tr></thead>
     <tbody>
-      <tr><td>10-30</td><td>60pts</td><td>素点の差がウマに埋もれ、着順の回数がそのまま順位表になる</td><td>半荘数が少ない会</td></tr>
-      <tr><td>10-20</td><td>40pts</td><td>着順が主、素点が味付け</td><td>迷ったときの標準</td></tr>
-      <tr><td>5-10</td><td>20pts</td><td>大トップと僅差のトップがはっきり区別される</td><td>長時間打つ会</td></tr>
+      <tr><td class="c-n">10-30</td><td class="c-n">60pts</td><td>素点の差がウマに埋もれ、着順の回数がそのまま順位表になる</td><td>半荘数が少ない会</td></tr>
+      <tr><td class="c-n">10-20</td><td class="c-n">40pts</td><td>着順が主、素点が味付け</td><td>迷ったときの標準</td></tr>
+      <tr><td class="c-n">5-10</td><td class="c-n">20pts</td><td>大トップと僅差のトップがはっきり区別される</td><td>長時間打つ会</td></tr>
     </tbody>
   </table>
   <p>どちらが正しいかではなく、<strong>参加者の打ち方が変わる</strong>のが要点です。ウマが重いほど、オーラスは「あと何pts積むか」ではなく「今の着順を守れるか」の勝負になります。軽くすれば、トップ目でも点差を広げにいく意味が出ます。なお途中でウマを変えると、物差しが変わって前半と比べられなくなります。事前に決めたい項目は<a href="/blog-house-rules.html">打つ前に決める10項目チェックリスト</a>に整理しました。まじゃすこはウマもオカも自由に設定できます。</p>

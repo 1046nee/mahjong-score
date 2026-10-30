@@ -124,12 +124,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン1｜ごく普通の四麻</h3>
   <p>終了時の持ち点が A 41,300／B 28,200／C 22,500／D 8,000 だったとします。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>① 素点</th><th>② ウマ</th><th>③ オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">① 素点</th><th class="c-n">② ウマ</th><th class="c-n">③ オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>41,300</td><td>+16.3</td><td>+30</td><td>+15.0</td><td><strong>+61.3</strong></td></tr>
-      <tr><td>2位 B</td><td>28,200</td><td>+3.2</td><td>+10</td><td>−5.0</td><td><strong>+8.2</strong></td></tr>
-      <tr><td>3位 C</td><td>22,500</td><td>−2.5</td><td>−10</td><td>−5.0</td><td><strong>−17.5</strong></td></tr>
-      <tr><td>4位 D</td><td>8,000</td><td>−17.0</td><td>−30</td><td>−5.0</td><td><strong>−52.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">41,300</td><td class="c-n">+16.3</td><td class="c-n">+30</td><td class="c-n">+15.0</td><td class="c-n"><strong>+61.3</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">28,200</td><td class="c-n">+3.2</td><td class="c-n">+10</td><td class="c-n">−5.0</td><td class="c-n"><strong>+8.2</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">22,500</td><td class="c-n">−2.5</td><td class="c-n">−10</td><td class="c-n">−5.0</td><td class="c-n"><strong>−17.5</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">8,000</td><td class="c-n">−17.0</td><td class="c-n">−30</td><td class="c-n">−5.0</td><td class="c-n"><strong>−52.0</strong></td></tr>
     </tbody>
   </table>
   <p>61.3 + 8.2 − 17.5 − 52.0 = <strong>0.0</strong>。合計が0なので、この計算は正しいと確認できました。持ち点の合計も 100,000点＝25,000×4人 でぴったり合っていて、素点の列（16.3 + 3.2 − 2.5 − 17.0）もオカの列（15.0 − 5.0 × 3）も、それぞれ0です。</p>
@@ -137,24 +137,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン2｜ウマを軽くする（5-10）</h3>
   <p>同じ持ち点のまま、ウマだけ「5-10」（1位+10／2位+5／3位−5／4位−10）に変えると、こうなります。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>ウマ10-30</th><th>ウマ5-10</th><th>差</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">ウマ10-30</th><th class="c-n">ウマ5-10</th><th class="c-n">差</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>41,300</td><td>+61.3</td><td><strong>+41.3</strong></td><td>−20.0</td></tr>
-      <tr><td>2位 B</td><td>28,200</td><td>+8.2</td><td><strong>+3.2</strong></td><td>−5.0</td></tr>
-      <tr><td>3位 C</td><td>22,500</td><td>−17.5</td><td><strong>−12.5</strong></td><td>+5.0</td></tr>
-      <tr><td>4位 D</td><td>8,000</td><td>−52.0</td><td><strong>−32.0</strong></td><td>+20.0</td></tr>
+      <tr><td>1位 A</td><td class="c-n">41,300</td><td class="c-n">+61.3</td><td class="c-n"><strong>+41.3</strong></td><td class="c-n">−20.0</td></tr>
+      <tr><td>2位 B</td><td class="c-n">28,200</td><td class="c-n">+8.2</td><td class="c-n"><strong>+3.2</strong></td><td class="c-n">−5.0</td></tr>
+      <tr><td>3位 C</td><td class="c-n">22,500</td><td class="c-n">−17.5</td><td class="c-n"><strong>−12.5</strong></td><td class="c-n">+5.0</td></tr>
+      <tr><td>4位 D</td><td class="c-n">8,000</td><td class="c-n">−52.0</td><td class="c-n"><strong>−32.0</strong></td><td class="c-n">+20.0</td></tr>
     </tbody>
   </table>
   <p>ここが「ウマをどうするか」を決めるときの判断材料になります。ウマが重いほど<strong>素点の差より順位そのものが効く</strong>ゲームになり、ラス回避の価値が跳ね上がります。逆にウマを軽くすると、たくさんあがって点を稼いだ人が報われやすくなります。初心者が混ざる会で「4位でも大惨事にならない」空気を作りたいなら、5-10や5-15は現実的な選択肢です。</p>
 
   <h3>パターン3｜ウマなし（オカだけ）</h3>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>41,300</td><td>+16.3</td><td>+15.0</td><td><strong>+31.3</strong></td></tr>
-      <tr><td>2位 B</td><td>28,200</td><td>+3.2</td><td>−5.0</td><td><strong>−1.8</strong></td></tr>
-      <tr><td>3位 C</td><td>22,500</td><td>−2.5</td><td>−5.0</td><td><strong>−7.5</strong></td></tr>
-      <tr><td>4位 D</td><td>8,000</td><td>−17.0</td><td>−5.0</td><td><strong>−22.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">41,300</td><td class="c-n">+16.3</td><td class="c-n">+15.0</td><td class="c-n"><strong>+31.3</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">28,200</td><td class="c-n">+3.2</td><td class="c-n">−5.0</td><td class="c-n"><strong>−1.8</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">22,500</td><td class="c-n">−2.5</td><td class="c-n">−5.0</td><td class="c-n"><strong>−7.5</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">8,000</td><td class="c-n">−17.0</td><td class="c-n">−5.0</td><td class="c-n"><strong>−22.0</strong></td></tr>
     </tbody>
   </table>
   <p>ウマがないと、2位以下は素点からオカの5.0を引いた値がそのままスコアになります。「トップだけ少し得をする」くらいの、いちばん素朴なルールです。</p>
@@ -162,12 +162,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン4｜オカなし（30,000点持ちの30,000点返し）</h3>
   <p>持ち点と返し点を同じにすると、全員が出すオカは（30,000 − 30,000）÷ 1,000 = 0 になり、消えます。持ち点が A 46,300／B 33,200／C 27,500／D 13,000 の場合：</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n">ウマ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>46,300</td><td>+16.3</td><td>+30</td><td><strong>+46.3</strong></td></tr>
-      <tr><td>2位 B</td><td>33,200</td><td>+3.2</td><td>+10</td><td><strong>+13.2</strong></td></tr>
-      <tr><td>3位 C</td><td>27,500</td><td>−2.5</td><td>−10</td><td><strong>−12.5</strong></td></tr>
-      <tr><td>4位 D</td><td>13,000</td><td>−17.0</td><td>−30</td><td><strong>−47.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">46,300</td><td class="c-n">+16.3</td><td class="c-n">+30</td><td class="c-n"><strong>+46.3</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">33,200</td><td class="c-n">+3.2</td><td class="c-n">+10</td><td class="c-n"><strong>+13.2</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">27,500</td><td class="c-n">−2.5</td><td class="c-n">−10</td><td class="c-n"><strong>−12.5</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">13,000</td><td class="c-n">−17.0</td><td class="c-n">−30</td><td class="c-n"><strong>−47.0</strong></td></tr>
     </tbody>
   </table>
   <p>「オカって結局なに？」という質問には、この2パターンを見比べてもらうのが一番早いと思っています。<strong>オカは、持ち点と返し点の差を全員から集めて、トップに丸ごと渡す仕組み</strong>（トップ自身の分も含めて集めるので、トップの差し引きは人数−1人分）。だから持ち点＝返し点にすると、集める原資がなくなって存在ごと消えます。</p>
@@ -180,12 +180,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <figure class="fg" id="fg-ys"><p class="fg-ttl">1位が同点2人なら、ウマは山分け（ウマ10-30）</p><div class="ys"><div class="ys-box"><span class="ys-u">1位のウマ +30</span><span class="ys-u">2位のウマ +10</span></div><span class="ys-ar">→ 足して2で割る →</span><div class="ys-two"><span>Aさん <b>+20</b></span><span>Bさん <b>+20</b></span></div></div><figcaption>次の人は3位（2位は空席）。オカも2人で山分けします</figcaption><style>.ys{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}.ys-box,.ys-two{display:flex;flex-direction:column;gap:4px}.ys-u{background:#4261AA;color:#fff;font-size:12px;font-weight:800;border-radius:6px;padding:5px 10px}.ys-ar{font-size:11.5px;font-weight:800;color:#E75620}.ys-two span{background:#fff;border:1.5px solid #9FC3BD;border-radius:6px;padding:5px 10px;font-size:12px;font-weight:800}.ys-two b{color:#1A237E}</style></figure>
   <p>A 35,000／B 35,000／C 20,000／D 10,000。AとBは1位と2位を分け合うので、ウマは（+30 + 10）÷ 2 = +20 ずつ。オカは4人から集めた20.0を2人で割って +10.0 ずつ受け取り、自分が出した5.0を引いて <strong>+5.0 ずつ</strong>です。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th><span class="tm">オカ</span><span class="tp nw">（分配後）</span></th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n"><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th class="c-n"><span class="tm">オカ</span><span class="tp nw">（分配後）</span></th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
-      <tr><td>1位 B</td><td>35,000</td><td>+10.0</td><td>+20.0</td><td>+5.0</td><td><strong>+35.0</strong></td></tr>
-      <tr><td>3位 C</td><td>20,000</td><td>−5.0</td><td>−10</td><td>−5.0</td><td><strong>−20.0</strong></td></tr>
-      <tr><td>4位 D</td><td>10,000</td><td>−15.0</td><td>−30</td><td>−5.0</td><td><strong>−50.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">35,000</td><td class="c-n">+10.0</td><td class="c-n">+20.0</td><td class="c-n">+5.0</td><td class="c-n"><strong>+35.0</strong></td></tr>
+      <tr><td>1位 B</td><td class="c-n">35,000</td><td class="c-n">+10.0</td><td class="c-n">+20.0</td><td class="c-n">+5.0</td><td class="c-n"><strong>+35.0</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">20,000</td><td class="c-n">−5.0</td><td class="c-n">−10</td><td class="c-n">−5.0</td><td class="c-n"><strong>−20.0</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">10,000</td><td class="c-n">−15.0</td><td class="c-n">−30</td><td class="c-n">−5.0</td><td class="c-n"><strong>−50.0</strong></td></tr>
     </tbody>
   </table>
   <p>合計は 35.0 + 35.0 − 20.0 − 50.0 = <strong>0.0</strong>。同点でもゼロサムは崩れません。<strong>3位のCが「2位」ではなく3位扱いになる</strong>点に注意してください（1位が2人いるので2位が空席になる）。ここを2位として+10を渡すと、合計が0からずれて破綻します。</p>
@@ -193,12 +193,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン6｜2位と3位が同点</h3>
   <p>A 40,000／B 25,000／C 25,000／D 10,000。BとCで（+10 −10）÷ 2 = 0 ずつ。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n"><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>40,000</td><td>+15.0</td><td>+30</td><td>+15.0</td><td><strong>+60.0</strong></td></tr>
-      <tr><td>2位 B</td><td>25,000</td><td>0.0</td><td>0.0</td><td>−5.0</td><td><strong>−5.0</strong></td></tr>
-      <tr><td>2位 C</td><td>25,000</td><td>0.0</td><td>0.0</td><td>−5.0</td><td><strong>−5.0</strong></td></tr>
-      <tr><td>4位 D</td><td>10,000</td><td>−15.0</td><td>−30</td><td>−5.0</td><td><strong>−50.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">40,000</td><td class="c-n">+15.0</td><td class="c-n">+30</td><td class="c-n">+15.0</td><td class="c-n"><strong>+60.0</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">25,000</td><td class="c-n">0.0</td><td class="c-n">0.0</td><td class="c-n">−5.0</td><td class="c-n"><strong>−5.0</strong></td></tr>
+      <tr><td>2位 C</td><td class="c-n">25,000</td><td class="c-n">0.0</td><td class="c-n">0.0</td><td class="c-n">−5.0</td><td class="c-n"><strong>−5.0</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">10,000</td><td class="c-n">−15.0</td><td class="c-n">−30</td><td class="c-n">−5.0</td><td class="c-n"><strong>−50.0</strong></td></tr>
     </tbody>
   </table>
   <p>ちょうど打ち消し合って、2人ともウマ0になりました。</p>
@@ -212,12 +212,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン8｜トビ（持ち点がマイナス）</h3>
   <p>A 52,400／B 30,600／C 21,500／D −4,500。マイナスの持ち点でも、式はまったく変わりません。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n">ウマ</th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>52,400</td><td>+27.4</td><td>+30</td><td>+15.0</td><td><strong>+72.4</strong></td></tr>
-      <tr><td>2位 B</td><td>30,600</td><td>+5.6</td><td>+10</td><td>−5.0</td><td><strong>+10.6</strong></td></tr>
-      <tr><td>3位 C</td><td>21,500</td><td>−3.5</td><td>−10</td><td>−5.0</td><td><strong>−18.5</strong></td></tr>
-      <tr><td>4位 D</td><td>−4,500</td><td>−29.5</td><td>−30</td><td>−5.0</td><td><strong>−64.5</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">52,400</td><td class="c-n">+27.4</td><td class="c-n">+30</td><td class="c-n">+15.0</td><td class="c-n"><strong>+72.4</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">30,600</td><td class="c-n">+5.6</td><td class="c-n">+10</td><td class="c-n">−5.0</td><td class="c-n"><strong>+10.6</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">21,500</td><td class="c-n">−3.5</td><td class="c-n">−10</td><td class="c-n">−5.0</td><td class="c-n"><strong>−18.5</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">−4,500</td><td class="c-n">−29.5</td><td class="c-n">−30</td><td class="c-n">−5.0</td><td class="c-n"><strong>−64.5</strong></td></tr>
     </tbody>
   </table>
   <p>手計算でここを間違える人が多いのは、<strong>「−4,500 − 25,000」を「−4,500 + 25,000」と打ち間違える</strong>からです。マイナスの持ち点が出た<ruby>半荘<rt>ハンチャン</rt></ruby>は、素点の符号だけ声に出して確認するくらいでちょうどいいと思います。なお、トビ賞（飛ばした人にボーナス）を採用しているグループは、ここまで計算した<em>あと</em>に別枠で足し引きします。素点・ウマ・オカの式には混ぜないでください。</p>
@@ -226,11 +226,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン9｜三麻（35,000点持ち・35,000点返し・ウマ10-0-10）</h3>
   <p>三麻はオカを出す人数が3人になります。ここは持ち点と返し点が同じなので、出すオカは（35,000 − 35,000）÷ 1,000 = <strong>0pts</strong>、つまり<strong>オカなし</strong>です。順位による上乗せはウマだけになります。持ち点は A 58,000／B 34,000／C 13,000（合計105,000点＝35,000×3人）。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th>ウマ</th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n">ウマ</th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>58,000</td><td>+23.0</td><td>+10</td><td>—</td><td><strong>+33.0</strong></td></tr>
-      <tr><td>2位 B</td><td>34,000</td><td>−1.0</td><td>0</td><td>—</td><td><strong>−1.0</strong></td></tr>
-      <tr><td>3位 C</td><td>13,000</td><td>−22.0</td><td>−10</td><td>—</td><td><strong>−32.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">58,000</td><td class="c-n">+23.0</td><td class="c-n">+10</td><td class="c-n">—</td><td class="c-n"><strong>+33.0</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">34,000</td><td class="c-n">−1.0</td><td class="c-n">0</td><td class="c-n">—</td><td class="c-n"><strong>−1.0</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">13,000</td><td class="c-n">−22.0</td><td class="c-n">−10</td><td class="c-n">—</td><td class="c-n"><strong>−32.0</strong></td></tr>
     </tbody>
   </table>
   <p>三麻のウマが「10-0-10」のように<strong>2位を0にして1位と3位を対称にする</strong>のは、こうすればウマの合計がきれいに0になるからです。四麻の10-30をそのまま3人に流用すると（30 + 10 − 10 = +30）合計が0にならず、集計が壊れます。三麻と四麻の違いは<a href="/blog-sanma-yonma.html">3人麻雀と4人麻雀の違い</a>にまとめています。</p>
@@ -238,11 +238,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン10｜三麻で2位・3位が同点</h3>
   <p>パターン9と同じ設定（35,000点持ち・35,000点返し・ウマ10-0-10）で、A 57,000／B 24,000／C 24,000。BとCでウマを山分けして（0 − 10）÷ 2 = −5.0 ずつ。</p>
   <table>
-    <thead><tr><th>順位</th><th>持ち点</th><th>素点</th><th><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th>オカ</th><th>スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n">持ち点</th><th class="c-n">素点</th><th class="c-n"><span class="tm">ウマ</span><span class="tp nw">（分配後）</span></th><th class="c-n">オカ</th><th class="c-n">スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>57,000</td><td>+22.0</td><td>+10</td><td>—</td><td><strong>+32.0</strong></td></tr>
-      <tr><td>2位 B</td><td>24,000</td><td>−11.0</td><td>−5.0</td><td>—</td><td><strong>−16.0</strong></td></tr>
-      <tr><td>2位 C</td><td>24,000</td><td>−11.0</td><td>−5.0</td><td>—</td><td><strong>−16.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">57,000</td><td class="c-n">+22.0</td><td class="c-n">+10</td><td class="c-n">—</td><td class="c-n"><strong>+32.0</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">24,000</td><td class="c-n">−11.0</td><td class="c-n">−5.0</td><td class="c-n">—</td><td class="c-n"><strong>−16.0</strong></td></tr>
+      <tr><td>2位 C</td><td class="c-n">24,000</td><td class="c-n">−11.0</td><td class="c-n">−5.0</td><td class="c-n">—</td><td class="c-n"><strong>−16.0</strong></td></tr>
     </tbody>
   </table>
   <p>合計 32.0 − 16.0 − 16.0 = <strong>0.0</strong>。ウマの数字が奇数のとき（15-0-15で2位・3位が同点なら −7.5 ずつ）は0.5刻みの端数が出ますが、これは正しい姿です。「半端な数字が出た＝間違い」ではないので、無理に丸めないでください。</p>
@@ -250,12 +250,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン11｜チョンボ罰符あり（ここだけ合計が0にならない）</h3>
   <p>パターン1と同じ持ち点で、Dがチョンボ（罰符 −20pts）した場合。</p>
   <table>
-    <thead><tr><th>順位</th><th><span class="tm">スコア</span><span class="tp nw">（罰符前）</span></th><th>罰符</th><th>最終スコア</th></tr></thead>
+    <thead><tr><th>順位</th><th class="c-n"><span class="tm">スコア</span><span class="tp nw">（罰符前）</span></th><th class="c-n">罰符</th><th class="c-n">最終スコア</th></tr></thead>
     <tbody>
-      <tr><td>1位 A</td><td>+61.3</td><td>—</td><td><strong>+61.3</strong></td></tr>
-      <tr><td>2位 B</td><td>+8.2</td><td>—</td><td><strong>+8.2</strong></td></tr>
-      <tr><td>3位 C</td><td>−17.5</td><td>—</td><td><strong>−17.5</strong></td></tr>
-      <tr><td>4位 D</td><td>−52.0</td><td>−20.0</td><td><strong>−72.0</strong></td></tr>
+      <tr><td>1位 A</td><td class="c-n">+61.3</td><td class="c-n">—</td><td class="c-n"><strong>+61.3</strong></td></tr>
+      <tr><td>2位 B</td><td class="c-n">+8.2</td><td class="c-n">—</td><td class="c-n"><strong>+8.2</strong></td></tr>
+      <tr><td>3位 C</td><td class="c-n">−17.5</td><td class="c-n">—</td><td class="c-n"><strong>−17.5</strong></td></tr>
+      <tr><td>4位 D</td><td class="c-n">−52.0</td><td class="c-n">−20.0</td><td class="c-n"><strong>−72.0</strong></td></tr>
     </tbody>
   </table>
   <p>合計は <strong>−20.0</strong>。<span class="hl">この記事で唯一、合計が0にならないパターン</span>です。罰符を「他の3人に配る」のではなく「場から消す」方式だからで、ゼロサムをどうしても保ちたいグループは、罰符を3等分して<ruby>他家<rt>ターチャ</rt></ruby>に配るルールにしてください（−20を3人に配るなら各 +6.67 で端数が出るので、−30を3人に+10ずつ、のように<strong>人数で割り切れる額</strong>にしておくと後がラクです）。チョンボの扱いそのものは<a href="/blog-manner.html">麻雀のマナーとチョンボ</a>で解説しています。</p>
@@ -264,23 +264,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>パターン12｜3試合を通した累計と平均着順</h3>
   <p>最後は、半荘を重ねたときの見え方です。同じ4人で3試合打った場合を、1試合ずつ計算して積み上げてみます。</p>
   <table>
-    <thead><tr><th>試合</th><th><span class="tm">持ち点</span><span class="tp nw">（A／B／C／D）</span></th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+    <thead><tr><th>試合</th><th><span class="tm">持ち点</span><span class="tp nw">（A／B／C／D）</span></th><th class="c-n">A</th><th class="c-n">B</th><th class="c-n">C</th><th class="c-n">D</th></tr></thead>
     <tbody>
-      <tr><td>1試合目</td><td>41,300／28,200／22,500／8,000</td><td>+61.3</td><td>+8.2</td><td>−17.5</td><td>−52.0</td></tr>
-      <tr><td>2試合目</td><td>22,000／35,600／30,400／12,000</td><td>−18.0</td><td>+55.6</td><td>+10.4</td><td>−48.0</td></tr>
-      <tr><td>3試合目</td><td>28,900／19,100／44,000／8,000</td><td>+8.9</td><td>−20.9</td><td>+64.0</td><td>−52.0</td></tr>
-      <tr><td><strong>累計</strong></td><td>—</td><td><strong>+52.2</strong></td><td><strong>+42.9</strong></td><td><strong>+56.9</strong></td><td><strong>−152.0</strong></td></tr>
+      <tr><td>1試合目</td><td>41,300／28,200／22,500／8,000</td><td class="c-n">+61.3</td><td class="c-n">+8.2</td><td class="c-n">−17.5</td><td class="c-n">−52.0</td></tr>
+      <tr><td>2試合目</td><td>22,000／35,600／30,400／12,000</td><td class="c-n">−18.0</td><td class="c-n">+55.6</td><td class="c-n">+10.4</td><td class="c-n">−48.0</td></tr>
+      <tr><td>3試合目</td><td>28,900／19,100／44,000／8,000</td><td class="c-n">+8.9</td><td class="c-n">−20.9</td><td class="c-n">+64.0</td><td class="c-n">−52.0</td></tr>
+      <tr><td><strong>累計</strong></td><td>—</td><td class="c-n"><strong>+52.2</strong></td><td class="c-n"><strong>+42.9</strong></td><td class="c-n"><strong>+56.9</strong></td><td class="c-n"><strong>−152.0</strong></td></tr>
     </tbody>
   </table>
   <p>各試合の合計はどれも0で、<strong>累計もやはり0</strong>（52.2 + 42.9 + 56.9 − 152.0 = 0.0）です。1試合ごとにゼロサムなら、何試合積んでもゼロサムのままになります。ここが崩れたら、足し算ではなくどれか1試合の計算が間違っています。</p>
   <p>おもしろいのは着順のほうです。A・B・Cはそれぞれ1位・2位・3位を1回ずつ取っているので、<span class="hl">3人とも平均着順は2.00でまったく同じ</span>です。それでも累計は +42.9 から +56.9 まで14ptsの差がつきました。</p>
   <table>
-    <thead><tr><th>プレイヤー</th><th>着順の内訳</th><th>平均着順</th><th>累計スコア</th></tr></thead>
+    <thead><tr><th>プレイヤー</th><th class="c-n">着順の内訳</th><th class="c-n">平均着順</th><th class="c-n">累計スコア</th></tr></thead>
     <tbody>
-      <tr><td>A</td><td>1位・3位・2位</td><td>2.00</td><td>+52.2</td></tr>
-      <tr><td>B</td><td>2位・1位・3位</td><td>2.00</td><td>+42.9</td></tr>
-      <tr><td>C</td><td>3位・2位・1位</td><td>2.00</td><td>+56.9</td></tr>
-      <tr><td>D</td><td>4位・4位・4位</td><td>4.00</td><td>−152.0</td></tr>
+      <tr><td>A</td><td class="c-n">1位・3位・2位</td><td class="c-n">2.00</td><td class="c-n">+52.2</td></tr>
+      <tr><td>B</td><td class="c-n">2位・1位・3位</td><td class="c-n">2.00</td><td class="c-n">+42.9</td></tr>
+      <tr><td>C</td><td class="c-n">3位・2位・1位</td><td class="c-n">2.00</td><td class="c-n">+56.9</td></tr>
+      <tr><td>D</td><td class="c-n">4位・4位・4位</td><td class="c-n">4.00</td><td class="c-n">−152.0</td></tr>
     </tbody>
   </table>
   <figure class="fg" id="fg-avg"><p class="fg-ttl">着順は同じでも、累計スコアは14ptsの差</p><div class="a2-r"><b class="a2-n">A</b><span class="a2-ms"><span class="a2-m" style="background:#D4A017">1</span><span class="a2-m" style="background:#B4C0BD">3</span><span class="a2-m" style="background:#6E8CA8">2</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:92%"></i></span><b class="a2-t">+52.2</b></div><div class="a2-r"><b class="a2-n">B</b><span class="a2-ms"><span class="a2-m" style="background:#6E8CA8">2</span><span class="a2-m" style="background:#D4A017">1</span><span class="a2-m" style="background:#B4C0BD">3</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:75%"></i></span><b class="a2-t">+42.9</b></div><div class="a2-r"><b class="a2-n">C</b><span class="a2-ms"><span class="a2-m" style="background:#B4C0BD">3</span><span class="a2-m" style="background:#6E8CA8">2</span><span class="a2-m" style="background:#D4A017">1</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:100%"></i></span><b class="a2-t">+56.9</b></div><figcaption>差を作るのは素点。同じ1位でも、何点持って終わったかで持ち帰るptsが違う（Dは3回とも4位で −152.0）</figcaption><style>.a2-r{display:flex;align-items:center;gap:6px;margin:7px 0}.a2-n{flex:none;width:14px;font-size:14px}.a2-ms{flex:none;display:flex;gap:2px}.a2-m{width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}.a2-av{flex:none;font-size:10.5px;font-weight:700;color:#6B7A77}.a2-bar{flex:1;height:14px;background:#fff;border-radius:4px;overflow:hidden}.a2-bar i{display:block;height:100%;background:#177083}.a2-r:last-of-type .a2-bar i{background:#E75620}.a2-t{flex:none;width:44px;text-align:right;font-size:13px;color:#1A237E}</style></figure>
