@@ -142,7 +142,7 @@ def jidou_taku():
     g += f'<ellipse cx="{x0}" cy="{y0}" rx="18" ry="7.5" fill="#cfe3e6" opacity=".55"/><ellipse cx="{x0 - 4}" cy="{y0 - 2}" rx="6" ry="2.4" fill="#fff" opacity=".6"/>'
     for u, v in ((0, .3), (.3, 0), (0, -.3), (-.3, 0)):
         x, y = P(u, v)
-        g += f'<rect x="{x - 10}" y="{y - 4}" width="20" height="8" rx="1.5" fill="{INK}"/><text x="{x}" y="{y + 2.4}" text-anchor="middle" font-size="4.6" font-weight="900" fill="{ORANGE}" font-family="monospace">25000</text>'
+        g += f'<rect x="{x - 11.5}" y="{y - 4}" width="23" height="8" rx="1.5" fill="{INK}"/><text x="{x}" y="{y + 2.3}" text-anchor="middle" font-size="4.3" font-weight="900" fill="{ORANGE}" font-family="monospace">25000</text>'
     # 山（4辺に並んだ牌の背）
     for side in range(4):
         for i in range(17):

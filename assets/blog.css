@@ -544,6 +544,9 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post table.kj-num th:nth-child(1) { width: 66px; }
 .blog-post table.kj-num .kj-3 { display: flex; gap: 1px; }
 .blog-post table.kj-num .kj-3 img { display: block; width: 20px; height: auto; }
+/* 表の中の牌の絵は縮めない（2026-10-30 狭い画面で列が21pxに縮み、牌がセルからはみ出して罫線と重なっていた）。牌の入ったセルは牌の幅より細くしない */
+.blog-post table img[src*="/assets/tiles/"] { flex: none; max-width: none; }
+.blog-post table td:has(> .kj-3), .blog-post table td.kj-c { min-width: max-content; white-space: nowrap; }
 /* ローカル役の記事の表（2026-10-26） */
 .blog-post table.lc-tbl td:first-child { white-space: nowrap; font-weight: 700; }
 .blog-post table.kj-num ruby { white-space: nowrap; }
