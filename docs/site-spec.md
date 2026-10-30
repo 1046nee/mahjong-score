@@ -39,6 +39,11 @@
   新規作成は id・name・settings 必須（updateによる部分書き込みでの新規作成も`.write`側で拒否）／
   name≤120字・playerNames≤60字・rounds/logは最大10,000件（インデックス4桁まで）／**未知のトップレベルキーは拒否（$other: false）**
 - **セッションに新しいトップレベルキーを追加するときは、必ずdatabase.rules.jsonにも追加してコンソールに再適用する**（忘れると保存が全部失敗する）
+- **2026-10-30: 仲間ページの履歴（circles/$cid/log）の `kind` と `undo` を、アプリが書く形だけに。コンソールへの再適用が必要**
+  （それまで undo は「中身がある」ことしか見ておらず、メンバーなら何でも詰め込めた）
+  - kind は create・join・add_game・remove_game・bind・claim・confirm・undo・rename・merge・rename_circle・role・code・leave のどれか。**履歴の種類を増やすときはルールにも足す**（足し忘れると、その履歴だけ黙って残らない）
+  - undo に入れられるのは ref（プッシュID）・sid（試合ID）・mid（名簿のID）・before/after（60字以内。bind の after は席→mid）・seats（席→{mid}）・entry（外した試合の控え: at・name・addedByName・addedAt・open・seats）だけ
+  - 貼る順番は気にしなくてよい（アプリはもとからこの形しか書かない）。確認: `python tools/circle_rules_test.py`
 - **2026-10-27（2回目）: マイページの名前（users/$uid/myName・1〜16字・本人だけ）と、アイコンの絵をすべての牌に（avatars/$uid/k＝ini・[mps]1〜9・[mps]5r・z1〜7・z5p・f1〜8・道具4つ）。コンソールへの再適用が必要**
   （未適用の間は、名前と新しい絵は「この端末では変えました」になり、その端末にだけ残る）。確認: `node tools/mylist_rules_test.js`（エミュレーター・55項目）
 - **2026-10-24: アカウントの試合一覧（mylists）を「持ち主だけが書ける・項目は消せない」に。コンソールへの再適用が必要（アプリの公開のあとに貼る）**

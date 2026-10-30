@@ -184,6 +184,17 @@ def main():
         # 2026-10-15 セキュリティ点検: 履歴のキー・項目、メンバーのキー、Googleの写真のURLを絞った
         check("B: 履歴に決まっていない項目は付けられない", False, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": "bind", "text": "x", "evil": "x"}))
         check("B（メンバー）: 履歴に元に戻す情報を付けられる", True, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": "bind", "text": "x", "undo": {"sid": sid}}))
+        # 2026-10-30 セキュリティ点検: 元に戻す情報（undo）の中身と、履歴の種類（kind）をアプリが書く形だけに絞った
+        log = lambda kind, undo: op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": kind, "text": "x", "undo": undo})
+        check("B: 連携の元に戻す情報（席→mid）を付けられる", True, log("bind", {"sid": sid, "seats": {"0": {"mid": m1}}, "after": {"0": m2}}))
+        check("B: 名前変更の元に戻す情報を付けられる", True, log("rename", {"mid": m2, "before": "びー", "after": "びー2"}))
+        check("B: 外した試合の元に戻す情報を付けられる", True, log("remove_game", {"sid": sid, "entry": {"at": now, "name": "試合", "addedByName": "びー", "addedAt": now, "open": True, "seats": {"1": {"mid": m1}}}}))
+        check("B: 取り消しの元に戻す情報（ref）を付けられる", True, log("undo", {"ref": "-" + rnd(19, ID_CHARS)}))
+        check("B: 元に戻す情報に決まっていない項目は付けられない", False, log("bind", {"sid": sid, "evil": "x"}))
+        check("B: 元に戻す情報に大きな中身は詰められない", False, log("bind", {"sid": sid, "seats": {"0": {"mid": m1, "junk": "x" * 1000}}}))
+        check("B: 元に戻す情報の試合IDは決まった形だけ", False, log("add_game", {"sid": "x" * 500}))
+        check("B: 外した試合の控えに決まっていない項目は付けられない", False, log("remove_game", {"sid": sid, "entry": {"at": now, "junk": {"a": "x"}}}))
+        check("B: 決まっていない種類の履歴は残せない", False, op(B, "POST", f"circles/{cid}/log", {"at": now, "by": B["uid"], "kind": "evil", "text": "x"}))
         check("B: 履歴のキーにプッシュID以外（' や ) を含む）は使えない", False, op(B, "PUT", f"circles/{cid}/log/bad%27key%29", {"at": now, "by": B["uid"], "kind": "bind", "text": "x"}))
         check("A（作成者）: メンバーのキーに uid の形以外は使えない", False, op(A, "PUT", f"circleMembers/{cid}/bad%27uid", {"role": "editor", "name": "x", "joinedAt": now}))
         check("A: Googleの写真に Google 以外のURLは入れられない", False, op(A, "PUT", f"circles/{cid}/roster/{m1}/gphoto", "https://evil.example/p.png"))

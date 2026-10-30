@@ -265,7 +265,7 @@
               ".validate": "newData.isString() && newData.val().length <= 60"
             },
             "kind": {
-              ".validate": "newData.isString() && newData.val().length <= 20"
+              ".validate": "newData.isString() && newData.val().matches(/^(create|join|add_game|remove_game|bind|claim|confirm|undo|rename|merge|rename_circle|role|code|leave)$/)"
             },
             "text": {
               ".validate": "newData.isString() && newData.val().length <= 300"
@@ -274,7 +274,71 @@
               ".validate": "newData.isString()"
             },
             "undo": {
-              ".validate": "newData.hasChildren() && root.child('circleMembers').child($cid).child(auth.uid).exists()"
+              ".validate": "newData.hasChildren() && root.child('circleMembers').child($cid).child(auth.uid).exists()",
+              "ref": {
+                ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{20}$/)"
+              },
+              "sid": {
+                ".validate": "newData.isString() && (newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) || newData.val().matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{22}$/))"
+              },
+              "mid": {
+                ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
+              },
+              "before": {
+                ".validate": "newData.isString() && newData.val().length <= 60"
+              },
+              "after": {
+                ".validate": "(newData.isString() && newData.val().length <= 60) || newData.hasChildren()",
+                "$seat": {
+                  ".validate": "$seat.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
+                }
+              },
+              "seats": {
+                "$seat": {
+                  ".validate": "$seat.matches(/^[0-9]{1,2}$/) && newData.hasChildren(['mid'])",
+                  "mid": {
+                    ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
+                  },
+                  "$other": {
+                    ".validate": false
+                  }
+                }
+              },
+              "entry": {
+                ".validate": "newData.hasChildren()",
+                "at": {
+                  ".validate": "newData.isString() && newData.val().length <= 40"
+                },
+                "name": {
+                  ".validate": "newData.isString() && newData.val().length <= 120"
+                },
+                "addedByName": {
+                  ".validate": "newData.isString() && newData.val().length <= 60"
+                },
+                "addedAt": {
+                  ".validate": "newData.isString() && newData.val().length <= 40"
+                },
+                "open": {
+                  ".validate": "newData.isBoolean()"
+                },
+                "seats": {
+                  "$seat": {
+                    ".validate": "$seat.matches(/^[0-9]{1,2}$/) && newData.hasChildren(['mid'])",
+                    "mid": {
+                      ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{8}$/)"
+                    },
+                    "$other": {
+                      ".validate": false
+                    }
+                  }
+                },
+                "$other": {
+                  ".validate": false
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
             },
             "$other": {
               ".validate": false
