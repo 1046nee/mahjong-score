@@ -210,3 +210,5 @@
 - 記事の表は blog.css で `display: block`（横スクロール用）になっている。列の幅を % で決めたい表は `display: table; table-layout: fixed` を自分のクラスで指定する（.kj-tbl。しないとセルが表の外にはみ出す）
 - グリッドのmin-width:auto問題（上記）。過去に右切れの原因になった
 - blog-site.js/blog.cssはキャッシュされやすい（検証はcache:'reload'）
+
+- 役名の見出しなど、毎回読みを見せたい所のルビは `<ruby class="r">`（add_ruby.py は class の無い `<ruby>` だけを外して付け直すので、これは残る）。`notation_check.py --fix` も「漢字（読み）」をこの形に直す（2026-10-30 見出しのルビが、先に表で同じ語が出たために外れていた）

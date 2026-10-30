@@ -3,7 +3,7 @@
 決まり2「読みを（）や・で重ねて書かない」の、機械で確かに判断できる形だけを扱う:
   a) ルビのあとに同じ読み: <ruby>刻子<rt>コーツ</rt></ruby>（コーツ） / ・コーツ / ＝コーツ  → 読みを消す
   b) 読みの（）の中にルビの漢字: コーツ（<ruby>刻子<rt>コーツ</rt></ruby>）            → ルビの漢字だけに
-  c) ルビのない 漢字（読み）・読み（漢字）で、読みが add_ruby の読みと同じ                → 漢字だけにして、ルビは add_ruby に任せる
+  c) ルビのない 漢字（読み）・読み（漢字）で、読みが add_ruby の読みと同じ                → その場で漢字＋ルビ（<ruby class="r">。add_ruby は外さない）
 読みが違うもの（別の読み＝決まり3）は残す。
 実行: python tools/notation_check.py          （数えるだけ）
       python tools/notation_check.py --fix    （直して、直した記事に add_ruby をかける）
@@ -44,14 +44,14 @@ def fix_text(s):
         nonlocal n
         kan, yomi = m.group(1), m.group(2)
         if norm(READ[kan]) == norm(yomi):
-            n += 1; return kan
+            n += 1; return f'<ruby class="r">{kan}<rt>{yomi}</rt></ruby>'  # その場のルビ（add_ruby は外さない）
         return m.group(0)
-    s = re.sub(r"(?<![>ァ-ヶー一-龥])(%s)（([ァ-ヶー・]+)）" % K, c1, s)
+    s = re.sub(r"(?<![ァ-ヶー一-龥])(%s)（([ァ-ヶー・]+)）" % K, c1, s)
     def c2(m):
         nonlocal n
         yomi, kan = m.group(1), m.group(2)
         if norm(READ[kan]) == norm(yomi):
-            n += 1; return kan
+            n += 1; return f'<ruby class="r">{kan}<rt>{yomi}</rt></ruby>'
         return m.group(0)
     s = re.sub(r"(?<![ァ-ヶー])([ァ-ヶー]+)（(%s)）" % K, c2, s)
     return s, n
