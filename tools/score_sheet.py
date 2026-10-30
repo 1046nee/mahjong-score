@@ -86,7 +86,7 @@ def sheet_html(d):
                 tds += f'<td>{ron}<span>{ts}</span></td>'
             body += f'<tr><th>{r["fu"]}符</th>{tds}</tr>'
         title = "子" if ko else "親"
-        sub = "ロン ／ ツモ（子の払い-親の払い）" if ko else "ロン ／ ツモ（ALL＝オール：子の3人が同じ額）"
+        sub = "ツモは 子の払い-親の払い" if ko else "ツモは ALL（3人が同じ額）"
         return (f'<section class="blk {side}"><h2><em>{title}</em><small>{sub}</small></h2>'
                 f'<table><thead><tr><th>符＼翻</th>{head}</tr></thead><tbody>{body}</tbody></table></section>')
 
@@ -100,48 +100,48 @@ def sheet_html(d):
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 html, body {{ width: 794px; height: 1123px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #fff; padding: 30px 34px 22px; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-feature-settings: "palt"; }}
-header {{ display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 3px solid #1F2A28; padding-bottom: 8px; margin-bottom: 12px; }}
-header h1 {{ font-size: 30px; font-weight: 900; letter-spacing: .02em; line-height: 1.1; }}
-header h1 small {{ display: block; font-size: 12.5px; font-weight: 500; color: #55625F; letter-spacing: 0; margin-top: 5px; }}
-.legend {{ text-align: right; font-size: 10.5px; color: #55625F; line-height: 1.6; }}
-.legend b {{ font-size: 13px; color: #1F2A28; }}
-.legend span {{ color: #4F6B88; font-weight: 700; }}
+header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 10px 16px; margin-bottom: 12px; }}
+header h1 {{ font-size: 32px; font-weight: 900; letter-spacing: .04em; line-height: 1.1; }}
+header h1 small {{ display: block; font-size: 13px; font-weight: 700; color: #DDF0EC; letter-spacing: 0; margin-top: 4px; }}
+.legend {{ text-align: right; font-size: 12px; font-weight: 700; color: #fff; line-height: 1.7; background: rgba(255,255,255,.14); border-radius: 6px; padding: 5px 10px; }}
+.legend b {{ font-size: 15px; color: #fff; }}
+.legend span {{ color: #FFE68A; font-weight: 900; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }}
-.blk h2 {{ display: flex; align-items: baseline; gap: 8px; font-size: 11px; font-weight: 500; color: #55625F; margin-bottom: 5px; }}
-.blk h2 em {{ font-style: normal; font-size: 19px; font-weight: 900; color: #fff; border-radius: 4px; padding: 0 10px; line-height: 28px; }}
+.blk h2 {{ display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: #1F2A28; margin-bottom: 5px; }}
+.blk h2 em {{ font-style: normal; font-size: 20px; font-weight: 900; color: #fff; border-radius: 4px; padding: 0 12px; line-height: 30px; }}
 .ko h2 em {{ background: #177083; }} .oya h2 em {{ background: #4261AA; }}
-table {{ width: 100%; border-collapse: collapse; table-layout: fixed; }}
-thead th {{ font-size: 12px; font-weight: 900; color: #fff; padding: 4px 0; }}
+table {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid #1F2A28; }}
+thead th {{ font-size: 14px; font-weight: 900; color: #fff; padding: 5px 0; border-left: 1px solid rgba(255,255,255,.35); }}
 .ko thead th {{ background: #177083; }} .oya thead th {{ background: #4261AA; }}
-thead th:first-child {{ width: 52px; font-size: 10px; }}
-tbody th {{ font-size: 13px; font-weight: 900; text-align: center; background: #F3F6F5; border-bottom: 1px solid #DFE6E3; }}
-.ko tbody th {{ color: #136070; }} .oya tbody th {{ color: #2F4A86; }}
-td {{ text-align: center; border-bottom: 1px solid #DFE6E3; border-left: 1px solid #EDF1EF; height: 50px; padding: 2px 0; line-height: 1.15; }}
-td b {{ display: block; font-size: 16px; font-weight: 900; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }}
-td span {{ display: block; font-size: 10.5px; font-weight: 700; color: #4F6B88; margin-top: 2px; font-variant-numeric: tabular-nums; }}
+thead th:first-child {{ width: 54px; font-size: 11px; border-left: 0; }}
+tbody th {{ font-size: 14px; font-weight: 900; text-align: center; background: #E3ECE9; border-bottom: 1px solid #8FA29D; border-right: 1.5px solid #1F2A28; }}
+.ko tbody th {{ color: #0B4D5A; }} .oya tbody th {{ color: #22397A; }}
+td {{ text-align: center; border-bottom: 1px solid #8FA29D; border-left: 1px solid #8FA29D; height: 50px; padding: 2px 0; line-height: 1.15; }}
+td b {{ display: block; font-size: 18px; font-weight: 900; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: #111; }}
+td span {{ display: block; font-size: 11.5px; font-weight: 800; color: #1E3F7A; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }}
 td i {{ font-style: normal; font-size: 9px; margin-left: 1px; }}
-td b.x {{ color: #C9D2CF; font-weight: 400; font-size: 13px; }}
-td.na {{ color: #B4C0BD; font-size: 13px; background: #FAFBFB; }}
-td.mg {{ background: #FFF3EC; }} td.mg b {{ color: #C2471A; font-size: 14px; }}
-.blk tbody tr:nth-child(3) td, .blk tbody tr:nth-child(3) th {{ background-image: linear-gradient(#FFFBEA, #FFFBEA); }}
+td b.x {{ color: #9AA8A4; font-weight: 400; font-size: 13px; }}
+td.na {{ color: #9AA8A4; font-size: 13px; background: #EEF2F1; }}
+td.mg {{ background: #FFE2D2; }} td.mg b {{ color: #B23A0E; font-size: 16px; }}
+.blk tbody tr:nth-child(3) td, .blk tbody tr:nth-child(3) th {{ background-image: linear-gradient(#FFF2B8, #FFF2B8); }}
 .bottom {{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; margin-top: 14px; }}
-.box h3 {{ font-size: 13px; font-weight: 900; border-left: 4px solid #1F2A28; padding-left: 7px; margin-bottom: 6px; line-height: 1.3; }}
+.box h3 {{ font-size: 14px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 4px; padding: 4px 9px; margin-bottom: 6px; line-height: 1.3; }}
 .lim thead th {{ background: #1F2A28; font-size: 11px; }}
-.lim tbody th {{ font-size: 12.5px; color: #C2471A; background: #FFF3EC; }}
-.lim td {{ height: 43px; }} .lim td b {{ font-size: 14.5px; }} .lim td.h {{ font-size: 11px; font-weight: 700; color: #55625F; }}
+.lim tbody th {{ font-size: 13.5px; color: #B23A0E; background: #FFE2D2; }}
+.lim td {{ height: 43px; }} .lim td b {{ font-size: 16px; }} .lim td.h {{ font-size: 12px; font-weight: 800; color: #1F2A28; }}
 .fu {{ font-size: 10.5px; line-height: 1.55; }}
-.fu table td, .fu table th {{ height: auto; font-size: 10.5px; padding: 3px 4px; border: 1px solid #DFE6E3; background: none; }}
-.fu table th {{ background: #F3F6F5; color: #1F2A28; font-weight: 700; }}
+.fu table {{ border-width: 1.5px; }} .fu table td, .fu table th {{ height: auto; font-size: 11px; font-weight: 700; padding: 3px 4px; border: 1px solid #8FA29D; background: none; }}
+.fu table th {{ background: #E3ECE9; color: #1F2A28; font-weight: 800; }}
 .fu ul {{ list-style: none; margin-top: 5px; }}
 .fu li {{ padding-left: 10px; text-indent: -10px; }}
 .fu li::before {{ content: "・"; }}
 .fu b {{ color: #C2471A; }}
-.notes {{ margin-top: 10px; font-size: 10px; color: #55625F; line-height: 1.6; border-top: 1px solid #DFE6E3; padding-top: 6px; }}
+.notes {{ margin-top: 10px; font-size: 11px; font-weight: 700; color: #1F2A28; line-height: 1.6; border-top: 2px solid #1F2A28; padding-top: 6px; }}
 footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
-<header><h1>麻雀 点数早見表<small>子・親 × ロン・ツモ ／ 20符〜110符・満貫以上・符の数え方を1枚で</small></h1>
-<div class="legend">上の大きい数字 <b>ロン</b><br>下の小さい数字 <span>ツモ</span>（子：子の払い-親の払い ／ 親：ALL＝オール）<br>— は実際には出ない組み合わせ</div></header>
+<header><h1>麻雀 点数早見表<small>子・親のロン・ツモ ／ 満貫以上 ／ 符の数え方</small></h1>
+<div class="legend">上 <b>ロン</b>　下 <span>ツモ</span><br>— は出ない組み合わせ</div></header>
 <div class="grid">{block("ko")}{block("oya")}</div>
 <div class="bottom">
 <div class="box"><h3>満貫以上（符に関係なく決まる）</h3>
@@ -153,8 +153,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 <tr><th>二〜八の数牌</th><td>2</td><td>4</td><td>8</td><td>16</td></tr><tr><th>一・九・字牌</th><td>4</td><td>8</td><td>16</td><td>32</td></tr></table>
 <ul><li><b>ピンフのツモは20符</b>、<b>七対子は25符</b>（切り上げない）</li><li>鳴いて符が20符のままのロンは30符にする</li></ul></div>
 </div>
-<p class="notes">本場（積み棒）：1本につきロンは+300点、ツモは1人あたり+100点。　黄色の行（30符）は実戦でいちばんよく出る符。<br>
-「切り上げ満貫」ありのルールでは、子の7,700（4翻30符・3翻60符）を8,000、親の11,600を12,000にする。点数は 符×2の(翻+2)乗×4（親は×6）を100点未満切り上げで計算。</p>
+<p class="notes">黄色の行（30符）がいちばんよく出る。　本場1本：ロン+300点・ツモ1人+100点。　切り上げ満貫ありなら 7,700→8,000・11,600→12,000。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>対局後のスコア（ウマ・オカ）の計算は、まじゃすこで自動に</span></footer>
 </body></html>"""
 
@@ -166,6 +165,28 @@ CROPS = {
     "tensu-mangan.png": {"x": 22, "y": 721, "width": 398, "height": 278},      # 満貫以上
     "fu-keisan.png": {"x": 420, "y": 721, "width": 351, "height": 286},        # 符の数え方
 }
+
+
+PARTS = {  # ファイル名: (タイトル, 帯の色, 中身の関数)
+    "tensu-ko.png": ("麻雀 点数早見表｜子", "#177083", lambda d, h: h.split('<div class="grid">')[1].split('<section class="blk oya">')[0]),
+    "tensu-oya.png": ("麻雀 点数早見表｜親", "#4261AA", lambda d, h: '<section class="blk oya">' + h.split('<section class="blk oya">')[1].split('</section>')[0] + '</section>'),
+    "tensu-mangan.png": ("麻雀 点数早見表｜満貫以上", "#B23A0E", lambda d, h: h.split('<div class="bottom">')[1].split('<div class="box fu">')[0]),
+    "fu-keisan.png": ("麻雀 符の数え方", "#1F2A28", lambda d, h: '<div class="box fu">' + h.split('<div class="box fu">')[1].split('</div>\n</div>')[0] + '</div>'),
+}
+
+
+def part_html(full, title, color, inner):
+    """表ごとの1枚（幅420px・4倍で書き出す）。A4の早見表と同じ見た目のCSSを使い、上にタイトルの帯・下にサイト名"""
+    css = full.split("<style>")[1].split("</style>")[0].replace("html, body {{ width: 794px; height: 1123px; }}", "")
+    css = css.replace("html, body { width: 794px; height: 1123px; }", "")
+    return (f'<!doctype html><html lang="ja"><head><meta charset="utf-8">'
+            f'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">'
+            f'<style>{css} body {{ width: 420px; height: auto; padding: 0; }} .wrap {{ padding: 0 10px 8px; }}'
+            f'.band {{ background: {color}; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .03em; padding: 10px 14px; margin-bottom: 8px; }}'
+            f'.band small {{ display: block; font-size: 12px; font-weight: 800; opacity: .9; margin-top: 2px; }}'
+            f'.wrap .blk h2 em {{ display: none; }} .site {{ text-align: right; font-size: 11px; font-weight: 800; color: #177083; margin-top: 6px; }}</style></head>'
+            f'<body><div id="cap"><div class="band">{title}<small>上：ロン　下：ツモ</small></div><div class="wrap">{inner}'
+            f'<div class="site">まじゃすこ majasco.jp</div></div></div></body></html>')
 
 
 def render(d):
@@ -180,10 +201,17 @@ def render(d):
             pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=scale)
             pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
             pg.screenshot(path=os.path.join(OUT, name), full_page=False)
-            if name == "tensu-hayamihyo.png":  # 画像検索で調べ方ごとに見つかるよう、表ごとにも切り出す（2026-10-26〜）
-                for part, clip in CROPS.items():
-                    pg.screenshot(path=os.path.join(OUT, part), clip=clip)
             pg.close()
+        # 表ごとの1枚（2026-10-30〜。切り抜きではなく、タイトルの帯つきで1枚ずつ作る）
+        full = sheet_html(d)
+        for part, (title, color, inner) in PARTS.items():
+            hp = os.path.join(OUT, "_part.html")
+            sub = "上：ロン　下：ツモ" if part in ("tensu-ko.png", "tensu-oya.png", "tensu-mangan.png") else "足して、10の位で切り上げ"
+            io.open(hp, "w", encoding="utf-8").write(part_html(full, title, color, inner(d, full)).replace("上：ロン　下：ツモ", sub))
+            pg = b.new_page(viewport={"width": 420, "height": 900}, device_scale_factor=3)
+            pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
+            pg.locator("#cap").screenshot(path=os.path.join(OUT, part))
+            pg.close(); os.remove(hp)
         pg = b.new_page()
         pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
         pg.pdf(path=os.path.join(OUT, "tensu-hayamihyo.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
