@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """マイページのアイコンが、どこに出してもはみ出さないかを確かめる（2026-10-28〜。スタブ・本番DBには触らない）。
 仮のログインで試合2つ・仲間ページ（自分は本人確認済み）を作り、用意している絵（AV_ICONS）を1つずつ自分のアイコンにして、
-マイページ・仲間ページの各タブ・メンバーのシート・ヘッダーを開き、アイコンの絵（img.av-ill）が入れ物の丸からはみ出していないかを測る。
+マイページ・仲間ページの各タブ・メンバーのシート・ヘッダーを開き、アイコンの絵（img.av-ill）が入れ物の丸からはみ出していないか・丸の真ん中にあるか・
+丸いっぱいに広がっていないか（Googleの写真用の指定が効いていないか）を測る。
 実行: python tools/avatar_fit_test.py   （ALL PASS と出ればよい。--shot で崩れた所を撮る）
 """
 import os, sys, json, functools, http.server, threading
@@ -27,7 +28,9 @@ MEASURE = """() => {
     if (!p) return;
     const r = p.getBoundingClientRect();
     const over = Math.max(r.left - b.left, b.right - r.right, r.top - b.top, b.bottom - r.bottom);
-    if (over > %s) out.push({ cls: p.className || p.tagName, w: Math.round(r.width), h: Math.round(r.height), over: Math.round(over * 10) / 10, src: im.src.split('/').pop() });
+    const off = Math.max(Math.abs((b.left + b.right) / 2 - (r.left + r.right) / 2), Math.abs((b.top + b.bottom) / 2 - (r.top + r.bottom) / 2));
+    const big = b.width > r.width * 0.9 && b.height > r.height * 0.9;   // 丸いっぱいに広がっている＝写真用の指定が効いている
+    if (over > %s || off > 2 || big) out.push({ cls: p.className || p.tagName, w: Math.round(r.width), h: Math.round(r.height), over: Math.round(Math.max(over, off) * 10) / 10, src: im.src.split('/').pop(), why: big ? '丸いっぱい' : off > 2 ? '真ん中からずれ' : 'はみ出し' });
   });
   return out;
 }""" % TOL
@@ -96,6 +99,7 @@ def main():
         for k in icons:
             pg.evaluate("(k) => { myAv = { k, c: '#E82F2F' }; localStorage.setItem('mahjong-my-avatar', JSON.stringify(myAv)); renderHeaderAccount(); }", k)
             pg.evaluate("showView('history')"); check("マイページ", k)
+            check("右上のマイページ", k)
             for t in ["rank", "grid", "h2h", "games", "people"]:
                 pg.evaluate(f"openCircle('{cid}')"); pg.wait_for_timeout(200)
                 pg.evaluate(f"circleTab = '{t}'; renderCircle()"); check(f"仲間ページ:{t}", k)
@@ -108,7 +112,7 @@ def main():
     seen = {}
     for b in bad:
         key = (b["where"], b["cls"])
-        seen.setdefault(key, []).append(f'{b["icon"]}(+{b["over"]}px in {b["w"]}x{b["h"]})')
+        seen.setdefault(key, []).append(f'{b["icon"]}({b["why"]} {b["over"]}px in {b["w"]}x{b["h"]})')
     for (w, c), v in seen.items():
         print(f"FAIL {w} .{c}: " + ", ".join(v[:6]) + (" …" if len(v) > 6 else ""))
     if errors:
