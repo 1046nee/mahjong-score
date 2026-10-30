@@ -382,7 +382,8 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post .hai-row img { width: 100%; max-width: 44px; height: auto; display: block; margin: 0 auto; }
 .blog-post .hai-row figcaption { font-size: 10px; line-height: 1.35; color: #55625F; margin-top: 2px; }
 .blog-post .hai-row figcaption b { display: block; font-size: 11px; color: #1F2A28; }
-@media (max-width: 480px) { .blog-post .hai-row { gap: 2px; } .blog-post .hai-row figcaption { font-size: 7.5px; letter-spacing: -.04em; white-space: nowrap; } .blog-post .hai-row figcaption b { font-size: 10px; } }
+/* スマホでは1行5枚（9枚だと読みが7.5pxまで小さくなり読めなかった・2026-10-30） */
+@media (max-width: 480px) { .blog-post .hai-row { grid-template-columns: repeat(5, 1fr); gap: 6px 4px; } .blog-post .hai-row figcaption { white-space: nowrap; } }
 
 /* ---- Mリーグの図（2026-10-23）: 年表・所属団体・卓を上から見た図 ---- */
 .blog-post .ml-tl { border-left: 3px solid #DCE5E2; margin: 6px 0 8px 46px; }
@@ -624,6 +625,10 @@ body:not(.bs-list) .post-layout > .blog-post table.score-tbl tbody th { vertical
 body:not(.bs-list) .post-layout > .blog-post table:not(.score-tbl):not(.fu-tbl):not(.ans-tbl):not(.rot):not(.snake):not(.kj-tbl) :is(th, td) { text-align: left; }
 body:not(.bs-list) .post-layout > .blog-post table :is(th, td).c-n { text-align: center; font-variant-numeric: tabular-nums; }
 body:not(.bs-list) .post-layout > .blog-post th { font-weight: 800; }
+/* 図の見出しと説明文（2026-10-30〜・全記事で統一）: 見出し＝上・左寄せ・13px・太さ900・緑／説明＝下・12px・灰。
+   寄せは場面で分ける: 図（.fg など）の説明は左、写真・1枚の絵の説明は中央（それぞれの図のCSSのまま）。牌の一覧（.hai-row）の牌の名前は対象外 */
+body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row > figure) > figcaption:first-child, body:not(.bs-list) .post-layout > .blog-post figure > .fg-ttl { font-size: 13px; font-weight: 900; color: #177083; }
+body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row > figure) > figcaption:not(:first-child) { font-size: 12px; font-weight: 400; color: #6B7A77; line-height: 1.6; }
 
 /* 手順（順番がある箇条書き） */
 .blog-post ol.steps { list-style: none; counter-reset: st; padding: 0; margin: 10px 0 22px; }

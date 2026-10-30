@@ -55,6 +55,18 @@ def fix_text(s):
             n += 1; return f'<ruby class="r">{kan}<rt>{yomi}</rt></ruby>'
         return m.group(0)
     s = re.sub(r"(?<![ァ-ヶー])([ァ-ヶー]+)（(%s)）" % K, c2, s)
+    # d) 表のセルで言葉と（ ）を分けた形 <span class="tm">言葉</span><span class="tp">（読み）</span>（2026-10-30 追加。a〜c はタグをまたぐと見えなかった）
+    #    言葉にルビがあって同じ読み → （ ）を消す／漢字だけの言葉に読み → 漢字＋ルビ（class="r"）
+    def d(m):
+        nonlocal n
+        tm, yomi = m.group(1), m.group(2)
+        rt = re.search(r"<rt>(.*?)</rt>", tm)
+        if rt and norm(rt.group(1)) == norm(yomi):
+            n += 1; return f'<span class="tm">{tm}</span>'
+        if not rt and re.fullmatch(r"[一-龥々]+", tm):
+            n += 1; return f'<span class="tm"><ruby class="r">{tm}<rt>{norm(yomi)}</rt></ruby></span>'
+        return m.group(0)
+    s = re.sub(r'<span class="tm">(.*?)</span><span class="tp[^"]*">（([ァ-ヶーぁ-ん・]+)）</span>', d, s)
     return s, n
 
 def main():
