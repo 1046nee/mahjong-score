@@ -191,7 +191,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); grid-template-areas: "h1 ill" "desc ill" "cta ill" "trust ill" "recent ill"; column-gap: 48px; max-width: 1180px; margin: 0 auto; padding: 40px 40px 56px; text-align: left; align-items: start; }
   #view-home .hero h1 { grid-area: h1; font-size: 42px; margin-top: 30px; }
   #view-home .hero .hero-illust { grid-area: ill; max-width: 560px; width: 100%; margin: 0; align-self: center; }
-  #view-home .hero .hero-desc { grid-area: desc; max-width: 460px; margin: 0 0 24px; font-size: 16px; }
+  #view-home .hero .hero-desc { grid-area: desc; max-width: 520px; margin: 0 0 24px; font-size: 16px; }
   #view-home .hero .cta-btn { grid-area: cta; margin: 0 0 12px; max-width: 380px; }
   #view-home .hero .cta-trust { grid-area: trust; justify-content: flex-start; }
   #view-home .hero .recent-games { grid-area: recent; margin: 24px 0 0; }
@@ -323,11 +323,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ヒーロー */
 .hero { text-align: center; padding: 16px 20px 40px; background: transparent; }
-.hero h1 { font-size: 33px; line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
+.hero h1 { font-size: min(33px, 8vw); line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
 
 .hero-desc { max-width: 340px; margin: 0 auto 22px; line-height: 1.8; color: #555; font-size: 15px; }
+.hero-desc b { color: #136070; font-weight: 800; }
+.hero-desc span { display: inline-block; } /* 言葉の途中で折り返さない（「アプ／リ」「スマホ／に」になった。2026-10-31） */
 /* ヒーローのCTA周り: ボタンを唯一の主役にする（マイクロコピー → 大きめCTA → 控えめな信頼テキスト）。
    ピル型バッジはボタンに見えてCTAと競合するため、ヒーローでは使わない（クロージングのみ） */
 /* CTAはWalica風にシンプルな静的ボタン（アニメなし。付けたくなってもtransformで動かすと
@@ -538,10 +540,11 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 
 /* Game */
 #view-game { background: #DBF4F9; }
-.game-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 100px; }
-.score-cards { display: flex; flex-direction: column; gap: 10px; }
-.score-card { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
-.rank-badge { font-size: 20px; font-weight: 800; color: var(--pc); min-width: 48px; text-align: center; flex-shrink: 0; }
+.game-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
+.score-cards { display: flex; flex-direction: column; gap: 6px; }
+#view-game .card, #view-detail .card { padding: 14px; } /* ゲーム画面は縦を詰める（2026-10-31 ユーザーの依頼「縦のスペースをぎゅっと」） */
+.score-card { background: #fff; border-radius: 12px; padding: 7px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
+.rank-badge { font-size: 20px; font-weight: 800; color: var(--pc); min-width: 48px; text-align: center; flex-shrink: 0; line-height: 1.25; }
 .score-info { flex: 1; min-width: 0; }
 .score-name { font-size: 14px; font-weight: 700; overflow-wrap: break-word; overflow-wrap: anywhere; }
 /* チーム名は最大40文字。スマホでは名前欄が126px前後しかなく、そのままだと5行に伸びて
@@ -719,7 +722,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rank-badge.rank-2 { color: #8e9aa5; }
 .rank-badge.rank-3 { color: #b46a3c; }
 .rank-badge.rank-last { color: #546e7a; }
-.rank-medal { display: block; line-height: 0; margin: 0 auto 3px; }
+.rank-medal { display: block; line-height: 0; margin: 0 auto 1px; }
 .rank-badge .rank-medal + .rank-num, .sanma .rank-badge .rank-medal + .rank-num { color: #4F5C5A; }
 .rank-num { font-size: 11px; font-weight: 800; display: block; white-space: nowrap; }
 
@@ -2663,7 +2666,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </svg>
   </div>
 
-  <p class="hero-desc">まじゃすこは、麻雀のスコア計算と共有のわずらわしさを、シンプルに解決する無料のサービスです。</p>
+  <p class="hero-desc"><span>まじゃすこは、</span><span>麻雀のスコア記録アプリ。</span><br><span>点数を入れるだけで、</span><span><b>ウマ・オカ込みのスコア</b>が</span><span>全員のスマホに。</span><br><span>電卓も、</span><span>紙とペンも、</span><span>もういりません。</span></p>
 
   <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
   <p class="cta-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
@@ -8698,7 +8701,7 @@ function scoreMainHtml(g) {
   const s = g.settings;
   const hasRounds = (g.rounds || []).length > 0;
   const collapsed = collapsedCards.score;
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : '12px'}">
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : '10px'}">
     <div class="card-title" style="margin-bottom:0">総合順位</div>
     <div style="display:flex;align-items:center;gap:6px">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
