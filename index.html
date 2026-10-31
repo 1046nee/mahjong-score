@@ -281,6 +281,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .feature h3, .feature p { padding: 0 16px; }
 .feature h3 { font-size: 16.5px; color: #1F2A28; font-weight: 900; }
 .feature p { font-size: 14px; color: #4F5C5A; line-height: 1.75; text-wrap: pretty; word-break: auto-phrase; }
+@media (min-width: 1280px) { #view-home .features-row { grid-template-columns: repeat(6, 184px); } }
 /* カードはどの画面の幅でも同じ184px（2026-10-26 ユーザーの依頼「拡大しても縮小しても同じ横幅」） */
 .feature .feature-icon { height: 76px; }
 .feature .feature-icon::before { width: 60px; height: 60px; }
@@ -289,23 +290,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .feature p { font-size: 13px; line-height: 1.7; padding: 0 10px; }
 .feature:nth-child(6n+1) { --fc: #0E95A3; } .feature:nth-child(6n+2) { --fc: #2F6BFF; } .feature:nth-child(6n+3) { --fc: #22B573; }
 .feature:nth-child(6n+4) { --fc: #8A5CF6; } .feature:nth-child(6n+5) { --fc: #F59E0B; } .feature:nth-child(6n+6) { --fc: #EC4899; }
-/* 特徴はカードをやめてリストにする（2026-10-31 ユーザーの依頼「カードの形式は使わない」）: 枠・影・色の帯なし。
-   左に色の丸のアイコン、右に見出しと説明。行の間は細い線だけ。スマホ1列・700px〜2列・1000px〜3列。横スクロールの矢印と点も使わない */
-#view-home .features-wrap { max-width: 1040px; }
-#view-home .features-row { display: grid; grid-template-columns: 1fr; gap: 0 32px; overflow: visible; padding: 0; scroll-snap-type: none; }
-#view-home .features-row::after, #view-home .features-nav, #view-home .features-dots { display: none; }
-#view-home .feature { flex: none; width: auto; max-width: none; display: grid; grid-template-columns: 52px 1fr; column-gap: 14px; align-items: start;
-  background: none; border: 0; border-top: 1px solid #E6ECEA; border-radius: 0; box-shadow: none; overflow: visible; padding: 14px 2px; }
-#view-home .feature .feature-icon { grid-row: span 2; width: 52px; height: 52px; border-radius: 50%; margin: 0; background: var(--fc, #177083); }
-#view-home .feature .feature-icon::before { width: 40px; height: 40px; }
-#view-home .feature .feature-icon::after { display: none; }
-#view-home .feature .feature-icon svg { width: 30px; height: 30px; }
-#view-home .feature h3, #view-home .feature p { padding: 0; text-align: left; }
-#view-home .feature h3 { font-size: 15.5px; margin: 2px 0 2px; text-wrap: initial; }
-#view-home .feature p { font-size: 13.5px; line-height: 1.65; }
-@media (max-width: 699px) { #view-home .feature:first-child { border-top: 0; } }
-@media (min-width: 700px) { #view-home .features-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } #view-home .feature:nth-child(-n+2) { border-top: 0; } }
-@media (min-width: 1000px) { #view-home .features-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } #view-home .feature:nth-child(-n+3) { border-top: 0; } }
 
 
 /* ⑥ Before / After 比較表 */
