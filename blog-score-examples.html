@@ -97,12 +97,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <figure class="eyecatch"><img src="/assets/thumbs/blog-score-examples.svg" alt="麻雀のスコア計算 実例12パターンのイメージ" width="320" height="240" fetchpriority="high"></figure>
 
+  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>スコアは<strong>素点＋ウマ＋オカ</strong>の3つを足すだけ</li><li><strong>同点・トビ・三麻・チョンボ</strong>も含めた12パターンを途中式つきで</li><li>素点は<strong>小数のまま</strong>持つ（丸めると合計が0からずれる）</li></ul></div>
+  <div class="post-toc"><b>この記事でわかること</b><a href="#s1">計算の型</a><a href="#s2">基本編</a><a href="#s3">同点編</a><a href="#s4">トビ・三麻・チョンボ</a><a href="#s5">つまずきどころ</a><a href="#s6">よくある質問</a></div>
+
   <p>「ウマとオカの計算は、記事を読めば理屈はわかる。でも自分の卓の数字を当てはめると、とたんに自信がなくなる」——集計係をやっていると、これが一番よく聞く声です。理屈の説明はどこにでもありますが、<strong>実際の数字を最後まで計算しきった例</strong>はあまり見かけません。</p>
   <p>そこでこの記事では、セット麻雀で実際に起きる場面を12パターン用意して、<strong>持ち点からスコアが出るまでの途中式を全部そのまま載せます</strong>。同点・トビ・三麻・チョンボ罰符といった「例外っぽい場面」も省略しません。掲載している数字はすべて、まじゃすこの計算ロジック（自動テストで検証しているもの）と同じ式で別途プログラムを書いて再計算し、1件ずつ突き合わせて確認しています。</p>
 
   <div class="ad-slot" data-ad="article_top" style="margin:6px 0 10px"></div>
 
-  <h2>計算の型：3ステップだけ覚えれば全部同じ</h2>
+  <h2 id="s1">計算の型：3ステップだけ覚えれば全部同じ</h2>
   <p>どのパターンも、やることは変わりません。</p>
     <ol class="steps flow plus"><li><b>素点</b><small>持ち点の増減÷1,000</small></li><li><b>ウマ</b><small>順位で足し引き</small></li><li><b>オカ</b><small>1位がまとめて受け取る</small></li><li class="goal"><b>スコア</b><small>3つを足した数</small></li></ol>
   <table>
@@ -119,7 +122,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <p>特に断りがなければ <strong>四麻・25,000点持ち・30,000点返し・ウマ10-30</strong> です。この場合のオカは、全員が（30,000 − 25,000）÷ 1,000 = 5.0 ずつ出して、1位が4人分の20.0を受け取ります。差し引きで<strong>1位は +15.0、2位以下は −5.0</strong> で固定です。</p>
   </div>
 
-  <h2>基本編：まずは標準的な1半荘</h2>
+  <h2 id="s2">基本編：まずは標準的な1半荘</h2>
 
   <h3>パターン1｜ごく普通の四麻</h3>
   <p>終了時の持ち点が A 41,300／B 28,200／C 22,500／D 8,000 だったとします。</p>
@@ -172,7 +175,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p>「オカって結局なに？」という質問には、この2パターンを見比べてもらうのが一番早いと思っています。<strong>オカは、持ち点と返し点の差を全員から集めて、トップに丸ごと渡す仕組み</strong>（トップ自身の分も含めて集めるので、トップの差し引きは人数−1人分）。だから持ち点＝返し点にすると、集める原資がなくなって存在ごと消えます。</p>
 
-  <h2>同点編：ここで手が止まる人が一番多い</h2>
+  <h2 id="s3">同点編：ここで手が止まる人が一番多い</h2>
   <p>集計係として断言しますが、<strong>手計算が止まるのはだいたい同点のとき</strong>です。「順位はどっちが上？」「ウマはどう分ける？」でその場の空気が止まります。公平で説明しやすいのは、<span class="hl">同点は同順位とし、その順位帯のウマとオカを人数で均等に分ける</span>やり方です。以下はすべてその方式で計算しています。</p>
 
   
@@ -207,7 +210,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>A〜D全員 25,000点。素点は全員 0.0。ウマは（30 + 10 − 10 − 30）÷ 4 = 0、オカは集めた20.0を4人で割って +5.0 ずつ受け取り、出した5.0と相殺して0。</p>
   <p>結果は <strong>全員 0.0</strong> です。0.0 + 0 + 0.0 = 0.0。誰も得も損もしない、理屈どおりの答えになります。実戦ではまず起きませんが、「同点処理の式が正しいか」を確かめるにはいい検算になります。</p>
 
-  <h2>例外編：トビ・三麻・チョンボ</h2>
+  <h2 id="s4">例外編：トビ・三麻・チョンボ</h2>
 
   <h3>パターン8｜トビ（持ち点がマイナス）</h3>
   <p>A 52,400／B 30,600／C 21,500／D −4,500。マイナスの持ち点でも、式はまったく変わりません。</p>
@@ -286,7 +289,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <figure class="fg" id="fg-avg"><p class="fg-ttl">着順は同じでも、累計スコアは14ptsの差</p><div class="a2-r"><b class="a2-n">A</b><span class="a2-ms"><span class="a2-m" style="background:#D4A017">1</span><span class="a2-m" style="background:#B4C0BD">3</span><span class="a2-m" style="background:#6E8CA8">2</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:92%"></i></span><b class="a2-t">+52.2</b></div><div class="a2-r"><b class="a2-n">B</b><span class="a2-ms"><span class="a2-m" style="background:#6E8CA8">2</span><span class="a2-m" style="background:#D4A017">1</span><span class="a2-m" style="background:#B4C0BD">3</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:75%"></i></span><b class="a2-t">+42.9</b></div><div class="a2-r"><b class="a2-n">C</b><span class="a2-ms"><span class="a2-m" style="background:#B4C0BD">3</span><span class="a2-m" style="background:#6E8CA8">2</span><span class="a2-m" style="background:#D4A017">1</span></span><span class="a2-av">平均2.00</span><span class="a2-bar"><i style="width:100%"></i></span><b class="a2-t">+56.9</b></div><figcaption>差を作るのは素点。同じ1位でも、何点持って終わったかで持ち帰るptsが違う（Dは3回とも4位で −152.0）</figcaption><style>.a2-r{display:flex;align-items:center;gap:6px;margin:7px 0}.a2-n{flex:none;width:14px;font-size:14px}.a2-ms{flex:none;display:flex;gap:2px}.a2-m{width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center}.a2-av{flex:none;font-size:10.5px;font-weight:700;color:#6B7A77}.a2-bar{flex:1;height:14px;background:#fff;border-radius:4px;overflow:hidden}.a2-bar i{display:block;height:100%;background:#177083}.a2-r:last-of-type .a2-bar i{background:#E75620}.a2-t{flex:none;width:44px;text-align:right;font-size:13px;color:#1A237E}</style></figure>
   <p>差を作っているのは<strong>素点</strong>です。同じ1位でも、41,300点のトップと44,000点のトップでは持ち帰る点が違います。<span class="hl">平均着順は「どれだけ安定して上位にいたか」、累計スコアは「どれだけ大きく勝ったか」</span>を表す別の指標だということが、この3試合だけでもはっきり出ます。成績を見るときは片方だけでなく、両方並べて見てください。試合数が違う人が混ざる会での比べ方は<a href="/blog-mawashi-uchi.html">5人以上で麻雀を打つときの回し方</a>にまとめています。</p>
 
-  <h2>手計算でつまずいたときの見どころ</h2>
+  <h2 id="s5">手計算でつまずいたときの見どころ</h2>
   <p>12パターンを並べてみると、間違いが起きる場所はかなり限られているとわかります。</p>
   <table>
     <thead><tr><th>症状</th><th>まず疑うところ</th></tr></thead>
@@ -300,7 +303,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p>原因の切り分けをもっと詳しくたどりたい場合は、<a href="/blog-score-mismatch.html">麻雀の点数が合わないときのチェックリスト</a>に、卓の上で使える順番でまとめてあります。</p>
 
-  <h2>よくある質問</h2>
+  <h2 id="s6">よくある質問</h2>
   <div class="spot" aria-hidden="true"><svg viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="86" height="52" rx="18" fill="#4261AA"/><path d="M38 58 L30 80 L58 61 Z" fill="#4261AA"/><text x="59" y="46" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">Q</text><rect x="118" y="30" width="86" height="52" rx="18" fill="#E75620"/><path d="M182 78 L192 90 L170 80 Z" fill="#E75620"/><text x="161" y="66" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">A</text><path d="M112 6 Q113.5 11.5 119 13 Q113.5 14.5 112 20 Q110.5 14.5 105 13 Q110.5 11.5 112 6 Z" fill="#177083"/><circle cx="8" cy="70" r="4" fill="#9fc3bd"/><circle cx="212" cy="16" r="4" fill="#C9D6EE"/></svg></div>
 
   <h3>Q. 素点の端数（100点単位）はどう扱う？</h3>

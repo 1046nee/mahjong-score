@@ -647,7 +647,7 @@ body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row 
 .blog-post ol.steps.flow > li.goal::before { background: #E75620; }
 .blog-post ol.steps.flow > li.goal .st-k { color: #C2471A; }
 .blog-post ol.steps.flow.plus > li.goal::before { content: "="; }
-.blog-post ol.steps.flow > li > a { display: block; text-decoration: none; color: inherit; border-radius: 6px; margin: -2px -8px; padding: 2px 8px; }
+.blog-post ol.steps.flow > li > a { display: block; text-decoration: none; color: inherit; border-radius: 6px; margin: -2px 0 -2px -8px; padding: 2px 0 2px 8px; }
 .blog-post ol.steps.flow > li > a:hover { background: #F2F8F6; }
 .blog-post ol.steps.flow > li > a > b::after { content: " ›"; color: #177083; }
 
@@ -926,4 +926,28 @@ body:not(.bs-list) .side-box.sb-box, .bs-list .side-box.sb-box { border-top: 0; 
 @media (max-width: 600px) {
   .post-card h2 { font-size: 15px; line-height: 1.5; }
   .post-card h2 .pc-sub { font-size: 12px; }
+}
+
+/* 記事の冒頭の型（2026-10-31〜）: 絵 → この記事の結論（.post-ans・2〜3行）→ 目次（.post-toc）→ 導入の文。最初の画面で答えと、どこに何があるかが分かるように */
+body:not(.bs-list) .post-layout > .blog-post .post-ans { border: 1px solid #DCE6E3; border-top: 4px solid #177083; background: #F7F9F8; border-radius: 0 0 6px 6px; padding: 12px 16px 10px; margin: 0 0 14px; }
+body:not(.bs-list) .post-layout > .blog-post .post-ans .pa-h { font-size: 13px; font-weight: 900; color: #177083; letter-spacing: .04em; margin: 0 0 6px; line-height: 1.4; }
+body:not(.bs-list) .post-layout > .blog-post .post-ans ul { list-style: none; margin: 0; padding: 0; }
+body:not(.bs-list) .post-layout > .blog-post .post-ans li { position: relative; margin: 0; padding: 3px 0 3px 18px; font-size: 15px; line-height: 1.7; color: #1F2A28; }
+body:not(.bs-list) .post-layout > .blog-post .post-ans li::before { content: ""; position: absolute; left: 3px; top: calc(3px + .85em - 4px); width: 8px; height: 8px; border-radius: 50%; background: #177083; }
+body:not(.bs-list) .post-layout > .blog-post .post-ans + .post-toc, body:not(.bs-list) .post-layout > .blog-post .ans-box + .post-toc { margin-top: 0; }
+@media (max-width: 600px) {
+  .blog-post .eyecatch { max-width: 220px; margin: 0 auto 14px; }
+  .blog-post .eyecatch img { border-radius: 10px; }
+  body:not(.bs-list) .post-layout > .blog-post .post-ans { padding: 10px 12px 8px; }
+  body:not(.bs-list) .post-layout > .blog-post .post-ans li { font-size: 14.5px; line-height: 1.65; }
+}
+/* 目次はマス目に並べる（見出しは上に1行。言葉の頭がそろうので、数秒で探せる） */
+body:not(.bs-list) .post-layout > .blog-post .post-toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 14px; margin: 0 0 18px; }
+body:not(.bs-list) .post-layout > .blog-post .post-toc b { grid-column: 1 / -1; display: block; }
+body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margin: 0; white-space: normal; padding: 4px 0 4px 1.15em; text-indent: -1.15em; line-height: 1.45; }
+.blog-post .eyecatch { max-width: 300px; }
+@media (max-width: 600px) {
+  body:not(.bs-list) .post-layout > .blog-post .post-toc { grid-template-columns: 1fr 1fr; padding: 10px 12px; }
+  body:not(.bs-list) .post-layout > .blog-post .post-toc a { font-size: 13.5px; }
+  .blog-post .eyecatch { max-width: 220px; }
 }

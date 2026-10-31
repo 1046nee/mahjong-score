@@ -91,13 +91,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <figure class="eyecatch"><img src="/assets/thumbs/blog-why-majasco.svg" alt="麻雀のスコア計算がめんどうで『まじゃすこ』を作った話のイメージ" width="320" height="240" fetchpriority="high"></figure>
 
+  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>対局後の<strong>電卓の時間</strong>をなくしたくて作った</li><li><strong>表示点数を入れるだけ</strong>。インストールも会員登録もいらない</li><li>URLを共有すれば<strong>全員のスマホに同じスコア</strong></li></ul></div>
+  <div class="post-toc"><b>この記事でわかること</b><a href="#s2">面倒だったこと</a><a href="#s3">なぜ作ったか</a><a href="#s5">使い方3ステップ</a><a href="#s6">増えた機能</a><a href="#s7">技術のこだわり</a><a href="#s8">開発タイムライン</a><a href="#s10">作らないと決めたこと</a><a href="#s12">よくある質問</a></div>
 
   <div class="ad-slot" data-ad="article_top" style="margin:6px 0 10px"></div>
   <h2>はじめに</h2>
   <p>麻雀のスコア記録アプリ「まじゃすこ」を作っている、開発者の<strong>むにぃ</strong>です。</p>
   <p>僕は、対面で卓を囲む麻雀が本当に好きです。牌を握る感触も、相手の一瞬の間も、あの場でしか味わえません。<strong>だからこそ</strong>、<ruby>半荘<rt>ハンチャン</rt></ruby>が終わったあとのスコア計算だけは、どうしても好きになれませんでした。この記事では、そんな僕がなぜこのアプリを作ったのかを、正直に書いてみます。</p>
 
-  <h2>対局後のスコア計算、こんなところが面倒でした</h2>
+  <h2 id="s2">対局後のスコア計算、こんなところが面倒でした</h2>
   <p>楽しく打った直後、全員がふっと黙って電卓を触りだす。あの時間が、昔からどうも苦手でした。何が嫌だったのか並べてみると、だいたいこの4つに行き着きます。</p>
   <ol>
     <li><strong>とにかく計算がめんどう。</strong>持ち点の増減を出して、ウマ・オカを足して、順位をつけて……。1半荘ならまだしも、何回も続くと地味に効いてきます。</li>
@@ -106,7 +108,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <li><strong><ruby>雀荘<rt>ジャンソウ</rt></ruby>の時間を、計算に使いたくない。</strong>集まれる時間は限られています。その貴重な時間を、麻雀じゃない"作業"に取られるのが、ずっともったいなかった。</li>
   </ol>
 
-  <h2>なぜ作ったか</h2>
+  <h2 id="s3">なぜ作ったか</h2>
   <p>ある日ふと思いました。<span class="hl">「この計算、スマホが全部やってくれたらいいのに」</span>と。</p>
   <p>ネット麻雀なら当たり前にやってくれることを、目の前のリアルな卓でもやりたい。ただそれだけの気持ちで作り始めました。麻雀の楽しさは1ミリも削らずに、計算の面倒くささだけをゼロにする。その両方を叶えるのが目標でした。</p>
 
@@ -124,7 +126,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>4. 麻雀らしい見た目にすること</h3>
   <p>見た目にもこだわりました。雀卓を思わせる<strong>落ち着いた緑</strong>を基本に、ボタンには差し色の<strong>オレンジ</strong>を。派手にはせず、でも開いた瞬間に「麻雀のアプリだ」と伝わる。そんなトーンを目指しています。</p>
 
-  <h2>使い方は3ステップ</h2>
+  <h2 id="s5">使い方は3ステップ</h2>
   <ol class="steps">
     <li>メンバーの名前を入れる</li>
     <li>出てきたURLを、LINEなどでメンバーに送る</li>
@@ -132,7 +134,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ol>
   <p>URLを共有すれば、全員のスマホに同じスコアが同期されます。アプリのインストールも、会員登録もいりません。</p>
 
-  <h2>リリースしてから増えた機能</h2>
+  <h2 id="s6">リリースしてから増えた機能</h2>
   <p>まじゃすこは公開して終わりではなく、実際に使ってくれている仲間の「ここが欲しい」を聞きながら育てています。リリース後に増えた主な機能はこんなところです。</p>
   <ul>
     <li><strong>チーム戦モード</strong> — 「Mリーグみたいに団体戦がやりたい」の声から。チームカラーつきでチーム合計と個人成績を同時に集計します。</li>
@@ -142,10 +144,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ul>
   <p>詳しい機能の変遷は<a href="/news/">お知らせ一覧</a>にまとめています。</p>
 
-  <h2>技術的なこだわり</h2>
+  <h2 id="s7">技術的なこだわり</h2>
   <p>仕組みの面でこだわったのは「<strong>インストールさせない</strong>」ことです。まじゃすこはブラウザだけで動くWebアプリで、URLを開けばその瞬間から使えます。スコアはクラウド上で同期されるので、誰かが入力すれば全員の画面に即座に反映されます。逆に言うと、アカウントもパスワードも作らせない設計なので、対局グループのURLだけがスコアへの入り口です。<strong>URLは対局メンバーのLINEグループなどに残しておく</strong>のがおすすめの使い方です。計算ロジックには自動テストを組んであり、ウマ・オカ・同点処理のような間違えやすい部分は、毎回機械的に検証してから公開しています。</p>
 
-  <h2>数字で振り返る、開発タイムライン</h2>
+  <h2 id="s8">数字で振り返る、開発タイムライン</h2>
   <p>「アプリを作った」と言うと大ごとに聞こえますが、実際の開発期間は<strong>合計2週間ほど</strong>です。時系列で振り返るとこうなります。</p>
   <ul>
     <li><strong>2025年下半期</strong> — AIツール（Manus）を使って、HTMLとCSSの設計に<strong>2日</strong>。CSVの読み書きや手元のサーバーで動かすところまでは簡単にできたのですが、一般公開にはドメインの取得が必要で、そこは有料。当時はそこまでする気がなく、完全に自分専用のスコア記録ツールとして使っていました。それでも効果は絶大で、集計の手間が消えたぶん、純粋に麻雀をする時間が増えたのを覚えています。</li>
@@ -161,7 +163,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- ADDED-DEPTH -->
     <figure class="fg" id="fg-wm"><p class="fg-ttl">あえて「作らない」と決めた4つ</p><div class="fg-cards"><div class="fg-card"><span class="fg-stamp ng">作ら<br>ない</span><b>会員登録</b><small>URLを開くだけで使える</small></div><div class="fg-card"><span class="fg-stamp ng">作ら<br>ない</span><b>インストール</b><small>ブラウザで動く</small></div><div class="fg-card"><span class="fg-stamp ng">作ら<br>ない</span><b>だれでも見られる公開</b><small>URLを知っている人だけ</small></div><div class="fg-card"><span class="fg-stamp ng">作ら<br>ない</span><b>1台だけの記録</b><small>全員のスマホで同じ表</small></div></div><figcaption>作らないことで、初めての人でもその場で使えるようにしました</figcaption></figure>
-  <h2>「作らない」と決めた4つのこと</h2>
+  <h2 id="s10">「作らない」と決めた4つのこと</h2>
   <p>公開してから、同じ質問を何度も受け取りました。「なぜ会員登録がないのか」「なぜアプリストアに出さないのか」。せっかくなので、開発時にどういう判断でこの形にしたのかを、開発者本人として書き残しておきます。まじゃすこには、機能を足すのと同じだけ時間をかけて<span class="hl">「作らない」と決めたもの</span>が4つあります。どれも出発点は、仲間内の卓で集計係をしていたときに実際に困ったことです。そして、どの判断にも捨てたものがあります。そこも正直に書きます。</p>
 
   <table>
@@ -198,7 +200,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ul>
   <p>この4つの方針は、公開から今まで一度も変えていません。使ってみて足りないところが見つかったら、遠慮なく教えてください。</p>
 
-  <h2>よくある質問</h2>
+  <h2 id="s12">よくある質問</h2>
   <div class="spot" aria-hidden="true"><svg viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="86" height="52" rx="18" fill="#4261AA"/><path d="M38 58 L30 80 L58 61 Z" fill="#4261AA"/><text x="59" y="46" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">Q</text><rect x="118" y="30" width="86" height="52" rx="18" fill="#E75620"/><path d="M182 78 L192 90 L170 80 Z" fill="#E75620"/><text x="161" y="66" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">A</text><path d="M112 6 Q113.5 11.5 119 13 Q113.5 14.5 112 20 Q110.5 14.5 105 13 Q110.5 11.5 112 6 Z" fill="#177083"/><circle cx="8" cy="70" r="4" fill="#9fc3bd"/><circle cx="212" cy="16" r="4" fill="#C9D6EE"/></svg></div>
 
   <h3>Q. 会員登録がないと、記録はどこに紐づいているのですか？</h3>

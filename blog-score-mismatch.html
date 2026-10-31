@@ -97,12 +97,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <figure class="eyecatch"><img src="/assets/thumbs/blog-score-mismatch.svg" alt="麻雀の点数が合わないときのチェックリストのイメージ" width="320" height="240" fetchpriority="high"></figure>
 
+  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>全員のスコアの合計は<strong>必ず0</strong>。持ち点の合計は<strong>持ち点×人数</strong></li><li>原因は<strong>ズレ幅</strong>でほぼ分かる</li><li><strong>点棒編→計算編</strong>の順に確かめれば、たいてい5分で見つかる</li></ul></div>
+  <div class="post-toc"><b>この記事でわかること</b><a href="#s1">合計は必ず0</a><a href="#s2">点棒が合わない</a><a href="#s3">スコアが0にならない</a><a href="#s4">直し方の順番</a><a href="#s5">予防</a><a href="#s6">よくある質問</a></div>
+
   <p><ruby>半荘<rt>ハンチャン</rt></ruby>が終わって点棒を数えたら、合計が合わない。あるいは、その日の全員のスコアを足したら0にならない。麻雀会の終盤、時計は深夜1時、みんな眠い——集計係にとって、これがいちばん胃が痛くなる瞬間です。</p>
   <p>この記事は、そういうときに<strong>上から順に潰していけば必ず原因にたどり着く</strong>チェックリストです。「よく確認しましょう」で終わらせず、どこを何の順番で見るかまで書きます。<span class="hl">探す順番を間違えなければ、たいていの原因は5分で見つかります</span>。</p>
 
   <div class="ad-slot" data-ad="article_top" style="margin:6px 0 10px"></div>
 
-  <h2>大前提：合計は必ず0になる</h2>
+  <h2 id="s1">大前提：合計は必ず0になる</h2>
   <p>麻雀のスコアは、誰かのプラスが必ず誰かのマイナスから来ています。だから<strong>全員のスコアを足すと0</strong>になります。同じように、<strong>終了時の持ち点の合計は「持ち点 × 人数」になります</strong>。</p>
   <table>
     <thead><tr><th>ルール</th><th class="c-n">持ち点合計はこうなるはず</th></tr></thead>
@@ -124,7 +127,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 
     <figure class="fg" id="fg-zr"><p class="fg-ttl">ズレ幅でわかる「犯人」</p><div class="fg-cards"><div class="fg-card zr"><span class="zr-amt">−1,000点</span><div class=fg-tiles><img src="/assets/tiles/tenbo.svg" alt="" style="width:54px" loading="lazy"></div><small><b class="zr-who">犯人：場に残ったリーチ棒</b>（いちばん多い）</small></div><div class="fg-card zr"><span class="zr-amt">−300・−600点</span><small><b class="zr-who">犯人：積み棒の払い漏れ・二重払い</b></small></div><div class="fg-card zr"><span class="zr-amt">ちょうど10,000点</span><small><b class="zr-who">犯人：万点棒の数え間違い</b></small></div><div class="fg-card zr"><span class="zr-amt">スコア ±20.0</span><small><b class="zr-who">犯人：オカの足し忘れ・二重</b></small></div><div class="fg-card zr"><span class="zr-amt">スコア ±30 など</span><small><b class="zr-who">犯人：同点なのに順位を詰めた</b>（ウマの値と同じ）</small></div><div class="fg-card zr"><span class="zr-amt">1人だけ符号が逆</span><small><b class="zr-who">犯人：マイナスの引き算ミス</b></small></div></div><figcaption>上の3つは卓の上の点棒、下の3つはスコアの計算のズレ。くわしくは下の表と説明で</figcaption><style>.blog-post .zr .zr-amt{display:block;font-size:17px;font-weight:900;color:#C92F42;margin-bottom:4px}.blog-post .zr .zr-who{display:inline;font-size:12.5px;padding:0;color:#1F2A28}</style></figure>
-  <h2>点棒編：卓の上の合計が合わないとき</h2>
+  <h2 id="s2">点棒編：卓の上の合計が合わないとき</h2>
   <p>ズレ幅を見れば、原因はほぼ絞り込めます。ここが実務でいちばん役に立つところです。</p>
 
   <table>
@@ -160,7 +163,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <p>10分探して出てこないなら、<strong>その半荘だけ「差額をトップの持ち点に寄せる」か「全員で按分する」かをその場で決めて、記録に一言残す</strong>のが実務的です。完璧に追跡することより、全員が納得して次の半荘を始められることのほうが大事。ただし<span class="hl">決め方をその日のうちに統一する</span>のは忘れずに。半荘ごとに扱いが変わると、あとから見返したときに何が正しいのかわからなくなります。</p>
   </div>
 
-  <h2>計算編：点棒は合うのにスコアが0にならないとき</h2>
+  <h2 id="s3">計算編：点棒は合うのにスコアが0にならないとき</h2>
   <p>点棒の合計が正しいなら、残るは計算と転記です。ここもズレ方でほぼ特定できます。</p>
 
   <table>
@@ -184,7 +187,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>素点を整数に丸めていないか</h3>
   <p>25,000点持ちで41,300点なら、素点は +16.3 です。これを +16 に丸めると、丸めた誤差の分だけ合計が0からずれます。<strong>途中では丸めず、表示だけ小数第1位にする</strong>のが鉄則です。</p>
 
-  <h2>ズレを見つけたあと：直し方の順番</h2>
+  <h2 id="s4">ズレを見つけたあと：直し方の順番</h2>
   <ol class="steps">
     <li><strong>どの半荘でズレたかを特定する</strong> — 半荘ごとの合計を上から順に足していき、初めて0でなくなったところが原因の半荘です。全部を一度に見直してはいけません。</li>
     <li><strong>その半荘の持ち点合計を確認する</strong> — 「持ち点 × 人数」になっていなければ点棒編、なっていれば計算編。</li>
@@ -198,7 +201,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <div class="post-illust small" aria-hidden="true"><svg viewBox="0 0 340 84" xmlns="http://www.w3.org/2000/svg" role="img"><line x1="24" y1="42" x2="124" y2="42" stroke="#e2ece7" stroke-width="2"/><line x1="216" y1="42" x2="316" y2="42" stroke="#e2ece7" stroke-width="2"/><path d="M136 13 Q137.5 18.5 143 20 Q137.5 21.5 136 27 Q134.5 21.5 129 20 Q134.5 18.5 136 13 Z" fill="#E75620"/><path d="M206 58 Q207.3 62.7 212 64 Q207.3 65.3 206 70 Q204.7 65.3 200 64 Q204.7 62.7 206 58 Z" fill="#177083"/><g><rect x="152" y="8" width="36" height="68" rx="8" fill="#1f2a28"/><rect x="154.5" y="10.5" width="31" height="63" rx="6" fill="#ffffff"/><rect x="164" y="13" width="12" height="3" rx="1.5" fill="#1f2a28"/><circle cx="170" cy="52" r="11" fill="#E75620"/><path d="M165 52 l4 4 7 -8" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></svg></div>
 
-  <h2>そもそもズレを起こさないための予防</h2>
+  <h2 id="s5">そもそもズレを起こさないための予防</h2>
   <ul>
     <li><strong>半荘が終わったらすぐ入力・記録する</strong> — 「あとでまとめて」が最大の敵です。次の半荘が始まると、前の半荘の記憶は驚くほど早く消えます。</li>
     <li><strong>点棒を数える前に、場の供託を回収する</strong> — 順番を固定するだけで、1,000点ズレの大半が消えます。</li>
@@ -207,7 +210,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ul>
   <p>最後の項目が、私がまじゃすこを作った理由そのものです。<a href="/">まじゃすこ</a>は表示点数を入れた時点で<strong>持ち点の合計チェックが自動で走り</strong>、「持ち点 × 人数」になっていなければその場で気づけます。共有URLを配れば全員のスマホに同じスコア表が出るので、間違いが集計係の手元に閉じません。深夜に10半荘さかのぼる作業から解放されたのは、正直これが一番大きかったです。集計係を8年やってきた話は<a href="/blog-shukei-gakari.html">集計係8年の記事</a>に書いています。</p>
 
-  <h2>よくある質問</h2>
+  <h2 id="s6">よくある質問</h2>
   <div class="spot" aria-hidden="true"><svg viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="86" height="52" rx="18" fill="#4261AA"/><path d="M38 58 L30 80 L58 61 Z" fill="#4261AA"/><text x="59" y="46" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">Q</text><rect x="118" y="30" width="86" height="52" rx="18" fill="#E75620"/><path d="M182 78 L192 90 L170 80 Z" fill="#E75620"/><text x="161" y="66" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">A</text><path d="M112 6 Q113.5 11.5 119 13 Q113.5 14.5 112 20 Q110.5 14.5 105 13 Q110.5 11.5 112 6 Z" fill="#177083"/><circle cx="8" cy="70" r="4" fill="#9fc3bd"/><circle cx="212" cy="16" r="4" fill="#C9D6EE"/></svg></div>
 
   <h3>Q. 合計が0にならないまま記録してしまいました。あとから直せますか？</h3>

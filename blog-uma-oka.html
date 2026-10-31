@@ -94,6 +94,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <figure class="eyecatch"><img src="/assets/thumbs/blog-uma-oka.svg" alt="麻雀のウマ・オカとは？初心者向けスコア計算入門のイメージ" width="320" height="240" fetchpriority="high"></figure>
 
+  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>スコアは<strong>素点＋ウマ＋オカ</strong>。持ち点そのままではない</li><li>ウマは<strong>順位で足し引きする点</strong>、オカは<strong>トップがまとめて受け取る点</strong></li><li>よく使う形：<strong>25,000点持ち・30,000点返し・ウマ10-30</strong></li></ul></div>
+  <div class="post-toc"><b>この記事でわかること</b><a href="#s2">素点と返し点</a><a href="#s3">ウマ</a><a href="#s4">オカ</a><a href="#s5">計算の例</a><a href="#s6">同点のとき</a><a href="#s7">よくあるウマ</a><a href="#s8">三麻のとき</a><a href="#s9">よくあるミス</a><a href="#s10">よくある質問</a></div>
+
   <p>麻雀を打ち始めると、必ずぶつかるのが「ウマ」「オカ」「返し点」といった言葉です。名前は知っていても、いざ自分で計算しようとすると、意外とつまずくところ。この記事では、対局が終わったあとスコアがどう決まるのかを、実際の数字を使いながら、ひとつずつ一緒に見ていきます。</p>
 
 
@@ -114,7 +117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p><strong>スコア ＝ 素点 ＋ ウマ ＋ オカ</strong>（オカは1位ならプラス、2位以下はマイナス）</p>
   <p>そして<span class="hl">全員のスコアを合計すると必ず0になります</span>。これがこの仕組みのいちばん大事なところで、合計が0にならなければどこかが間違っている、という検算にそのまま使えます。</p>
 
-  <h2>素点と返し点</h2>
+  <h2 id="s2">素点と返し点</h2>
   <p><strong>素点</strong>は、対局が終わったときの持ち点から、最初に配られた持ち点（開始時の持ち点）を引いて、1,000点を1ポイントとして数えたものです。25,000点持ちならこうなります。</p>
   <ul>
     <li>終了時に35,000点なら、35,000 − 25,000 = 10,000 → <span class="hl">+10.0pt</span></li>
@@ -125,7 +128,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>点棒は卓の中で移動するだけなので、<span class="hl">全員の素点を足すと必ず0</span>になります。三麻の35,000点持ちでも同じ式で、48,000点で終われば +13.0pts、35,000点ちょうどなら ±0です。</p>
   <p>一方の<strong>返し点</strong>は、オカの大きさを決める点数です。四麻なら30,000点がいちばん多く使われます。持ち点との差（25,000点持ち・30,000点返しなら5,000点）が、次に説明するオカとして1人ずつ出す分になります。<strong>返し点を変えるとオカの大きさが変わる</strong>ので、途中で変えないでください。</p>
 
-  <h2>ウマ（順位点）とは</h2>
+  <h2 id="s3">ウマ（順位点）とは</h2>
   <p><strong>ウマ</strong>は、最終順位に応じて加えたり引いたりするポイントです。順位点とも呼ばれます。「10-30」のように書き、これは次の意味になります。</p>
   <table>
     <thead><tr><th>順位</th><th>1位</th><th>2位</th><th>3位</th><th>4位</th></tr></thead>
@@ -134,7 +137,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>「5-10」や「5-15」など、グループによって設定はさまざまです。順位が1つ違うだけでスコアが大きく変わるので、4位を避ける<strong>ラス回避</strong>が大事だと言われるのは、このウマがあるからなんです。</p>
   <figure class="fg" id="fg-uma"><p class="fg-ttl">ウマは順位で上下する階段</p><div class="ul-w"><div class="ul"><p>ウマ 10-30</p><div class="ul-cs"><div class="ul-c"><div class="ul-up"><i class="p" style="height:48px"></i></div><div class="ul-dn"></div><b class="p">+30</b><small>1位</small></div><div class="ul-c"><div class="ul-up"><i class="p" style="height:16px"></i></div><div class="ul-dn"></div><b class="p">+10</b><small>2位</small></div><div class="ul-c"><div class="ul-up"></div><div class="ul-dn"><i class="m" style="height:16px"></i></div><b class="m">-10</b><small>3位</small></div><div class="ul-c"><div class="ul-up"></div><div class="ul-dn"><i class="m" style="height:48px"></i></div><b class="m">-30</b><small>4位</small></div></div></div><div class="ul"><p>ウマ 5-10</p><div class="ul-cs"><div class="ul-c"><div class="ul-up"><i class="p" style="height:16px"></i></div><div class="ul-dn"></div><b class="p">+10</b><small>1位</small></div><div class="ul-c"><div class="ul-up"><i class="p" style="height:8px"></i></div><div class="ul-dn"></div><b class="p">+5</b><small>2位</small></div><div class="ul-c"><div class="ul-up"></div><div class="ul-dn"><i class="m" style="height:8px"></i></div><b class="m">-5</b><small>3位</small></div><div class="ul-c"><div class="ul-up"></div><div class="ul-dn"><i class="m" style="height:16px"></i></div><b class="m">-10</b><small>4位</small></div></div></div></div><figcaption>どちらも上と下が同じ大きさなので、足すと0。10-30は1位と4位の差が60ptsもあり、ラスを避ける打ち方が大事になる</figcaption><style>.ul-w{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ul{background:#fff;border-radius:10px;padding:8px}.blog-post .ul p{margin:0 0 4px!important;font-size:13px;font-weight:900}.ul-cs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.ul-c{text-align:center}.ul-up,.ul-dn{height:48px;display:flex;justify-content:center}.ul-up{align-items:flex-end;border-bottom:2px solid #1F2A28}.ul-dn{align-items:flex-start}.ul-c i{display:block;width:70%;border-radius:3px}.ul-c i.p{background:#177083}.ul-c i.m{background:#C92F42}.ul-c b{display:block;font-size:13px}.ul-c b.p{color:#1A237E}.ul-c b.m{color:#C62828}.ul-c small{font-size:11px;color:#6B7A77}</style></figure>
 
-  <h2>オカとは</h2>
+  <h2 id="s4">オカとは</h2>
   <p><strong>オカ</strong>は、1位の人が受け取るボーナスのようなものです。全員が「返し点 − 持ち点」の分を出し合い、それをトップが総取りします。</p>
   <p>たとえば25,000点持ち・30,000点返しの4人麻雀なら、1人5,000点（5pt）ずつ出して、4人分の20ptを1位が受け取ります。1位も自分の5ptを出しているので、差し引きは<span class="hl">1位 +15pt／2位以下 −5pt</span>です。</p>
   <figure class="fg" id="fg-oka"><p class="fg-ttl">オカ：みんなで出して、1位がまとめて受け取る（25,000点持ち・30,000点返し）</p><div class="ok-r"><span class="ok-lb">①1人5ptsずつ出す</span><div class="ok-ps"><div class="ok-p"><b>1位</b><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><small>−5</small></div><div class="ok-p"><b>2位</b><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><small>−5</small></div><div class="ok-p"><b>3位</b><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><small>−5</small></div><div class="ok-p"><b>4位</b><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><small>−5</small></div></div></div><div class="ok-r"><span class="ok-lb">②1位が4人分の20ptsを受け取る</span><div class="ok-pot"><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><img src="/assets/tiles/tb5000.svg" alt="" class="ok-st"><b>＋20 → 1位へ</b></div></div><div class="ok-r"><span class="ok-lb">③差し引き</span><div class="ok-ps"><div class="ok-p res p"><b>1位</b><strong>+15</strong></div><div class="ok-p res m"><b>2位</b><strong>-5</strong></div><div class="ok-p res m"><b>3位</b><strong>-5</strong></div><div class="ok-p res m"><b>4位</b><strong>-5</strong></div></div></div><figcaption>出した分と受け取った分が同じなので、オカも足すと0。持ち点と返し点が同じ（オカなし）なら何も出さない</figcaption><style>.ok-r{margin:6px 0}.ok-lb{display:block;font-size:12px;font-weight:900;color:#E75620;margin-bottom:3px}.ok-ps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.ok-p{background:#fff;border:1.5px solid #DCE6E3;border-radius:8px;text-align:center;padding:4px 2px}.ok-p b{display:block;font-size:12px}.ok-p small{font-size:12px;font-weight:900;color:#C62828}.blog-post .ok-st{width:30px!important;height:30px;display:block;margin:0 auto}.ok-pot{display:flex;align-items:center;justify-content:center;background:#FFF4EC;border:1.5px dashed #E75620;border-radius:8px;padding:4px}.blog-post .ok-pot .ok-st{display:inline-block;margin:0 -6px}.ok-pot b{margin-left:14px;font-size:13px;color:#E75620}.ok-p.res strong{font-size:16px}.ok-p.res.p{border-color:#1A237E;color:#1A237E}.ok-p.res.m{color:#C62828}</style></figure>
@@ -151,7 +154,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p><strong>持ち点と返し点を同じにすれば、オカは0</strong>です。「オカなし」と呼ばれるのはこの設定のことで、素点とウマだけで順位表がつくられます。トップの価値が軽くなるので、初参加の人が多い会では扱いやすい形です。</p>
 
-  <h2>具体例で計算してみる</h2>
+  <h2 id="s5">具体例で計算してみる</h2>
   <p>4人麻雀、持ち点25,000・返し点30,000・ウマ10-30として、次の結果で計算してみましょう。</p>
   <table>
     <thead><tr><th>プレイヤー</th><th class="c-n">持ち点</th><th class="c-n">順位</th></tr></thead>
@@ -175,11 +178,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>合計は +65 +8 −25 −48 = <strong>0</strong>。きちんとゼロになりました。素点の列（+20 +3 −10 −13）もオカの列（+15 −5 −5 −5）も、それぞれ0です。麻雀のスコアは、こうして全員の合計が0になるように作られています。</p>
   <figure class="fg" id="fg-uo"><p class="fg-ttl">スコアは3つの層の足し算（25,000点持ち・30,000点返し・ウマ10-30）</p><div class="uo-row"><span class="uo-n">A<small>1位</small></span><span class="uo-bar"><span class="uo-neg"></span><span class="uo-pos"><i style="width:15.4%;background:#177083" title="素点 +20"></i><i style="width:23.1%;background:#4261AA" title="ウマ +30"></i><i style="width:11.5%;background:#E75620" title="オカ +15"></i></span></span><b class="p">+65</b></div><div class="uo-row"><span class="uo-n">B<small>2位</small></span><span class="uo-bar"><span class="uo-neg"><i style="width:3.8%;background:#E75620" title="オカ -5"></i></span><span class="uo-pos"><i style="width:2.3%;background:#177083" title="素点 +3"></i><i style="width:7.7%;background:#4261AA" title="ウマ +10"></i></span></span><b class="p">+8</b></div><div class="uo-row"><span class="uo-n">C<small>3位</small></span><span class="uo-bar"><span class="uo-neg"><i style="width:3.8%;background:#E75620" title="オカ -5"></i><i style="width:7.7%;background:#4261AA" title="ウマ -10"></i><i style="width:7.7%;background:#177083" title="素点 -10"></i></span><span class="uo-pos"></span></span><b class="m">-25</b></div><div class="uo-row"><span class="uo-n">D<small>4位</small></span><span class="uo-bar"><span class="uo-neg"><i style="width:3.8%;background:#E75620" title="オカ -5"></i><i style="width:23.1%;background:#4261AA" title="ウマ -30"></i><i style="width:10.0%;background:#177083" title="素点 -13"></i></span><span class="uo-pos"></span></span><b class="m">-48</b></div><div class="uo-leg"><span><i style="background:#177083"></i>素点</span><span><i style="background:#4261AA"></i>ウマ</span><span><i style="background:#E75620"></i>オカ</span></div><figcaption>真ん中の線より右がプラス、左がマイナス。4人の合計はちょうど0になります</figcaption><style>.uo-row{display:flex;align-items:center;gap:6px;margin:7px 0}.uo-n{flex:none;width:30px;font-weight:900;font-size:14px;line-height:1}.uo-n small{display:block;font-size:10px;color:#6B7A77;font-weight:700}.uo-bar{flex:1;display:flex;height:18px;background:#fff;border-radius:4px;position:relative}.uo-bar::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;border-left:2px solid #1F2A28}.uo-neg{width:50%;display:flex;justify-content:flex-end}.uo-pos{width:50%;display:flex}.uo-neg i,.uo-pos i{display:block;height:100%}.uo-row b{flex:none;width:40px;text-align:right;font-size:13px}.uo-row b.p{color:#1A237E}.uo-row b.m{color:#C62828}.uo-leg{display:flex;gap:12px;font-size:12px;font-weight:700;margin-top:6px}.uo-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}</style></figure>
 
-  <h2>同点のときはどうする？</h2>
+  <h2 id="s6">同点のときはどうする？</h2>
   <p>持ち点が同じで順位が並んだ場合は、同じ順位として扱い、その順位帯のウマやオカを人数で均等に分けるのが公平な方法です。たとえば1位が2人いるなら、1位と2位のウマ（+30と+10）を足して2で割り、それぞれ+20ずつ、といった具合ですね。</p>
   <figure class="fg" id="fg-tie"><p class="fg-ttl">同点の1位が2人いるとき（ウマ10-30）</p><div class="ti"><span class="ti-c">1位 <b>+30</b></span><span class="ti-op">＋</span><span class="ti-c">2位 <b>+10</b></span><span class="ti-op">＝ 40 ÷ 2 →</span><span class="ti-c res">Aさん <b>+20</b></span><span class="ti-c res">Bさん <b>+20</b></span></div><figcaption>オカがあるときも同じ考え方で、1位の分を2人で分ける</figcaption><style>.ti{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.ti-c{background:#fff;border:1.5px solid #DCE6E3;border-radius:8px;padding:5px 9px;font-size:12.5px;font-weight:700}.ti-c b{color:#1A237E;font-size:14px}.ti-c.res{border-color:#177083;background:#E4F3EC}.ti-op{font-size:12.5px;font-weight:900;color:#E75620}</style></figure>
 
-  <h2>よくあるウマの設定と選び方</h2>
+  <h2 id="s7">よくあるウマの設定と選び方</h2>
   <p>ウマの設定はグループの自由ですが、実際によく使われるのは次の4パターンです。呼び方も合わせて覚えておくと、<ruby>雀荘<rt>ジャンソウ</rt></ruby>やほかのグループと打つときに話が早くなります。</p>
   <table>
     <thead><tr><th class="c-n">設定</th><th>通称</th><th>1位/2位/3位/4位</th><th>特徴</th></tr></thead>
@@ -192,11 +195,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </table>
   <p>私のグループでは長らく10-30を使っていますが、初心者が混ざる会では5-10に下げることもあります。ウマが大きいほど「オーラスの順位争い」が熱くなる一方、1回のミスも重くなるので、<strong>メンバーの経験値に合わせて決める</strong>のがおすすめです。</p>
 
-  <h2>3人麻雀（サンマ）の場合</h2>
+  <h2 id="s8">3人麻雀（サンマ）の場合</h2>
   <p>3人麻雀では、持ち点35,000・返し点35,000のように、4人麻雀とは違う設定がよく使われます。持ち点と返し点が同じなので<strong>オカは0</strong>になり、順位による上乗せはウマだけです。ウマも3人用になり、「10-0-10」のように、2位を0として1位と3位が対称になる書き方をします。考え方そのものは、4人麻雀と同じです。</p>
   <p>三麻のルール全般は<a href="/blog-sanma-yonma.html">3人麻雀と4人麻雀の違いの記事</a>で詳しく解説しています。</p>
 
-  <h2>集計係がよくやるミスと、防ぎ方</h2>
+  <h2 id="s9">集計係がよくやるミスと、防ぎ方</h2>
   <p>私は仲間内の麻雀会で長いこと集計係をやってきましたが、手計算の時代に実際にやらかしたミスは、だいたい次の3つに集約されます。</p>
   <figure style="margin:0 0 18px"><img src="/assets/photo-score-sheets.jpg" alt="修正跡だらけの手書き麻雀スコアシート" loading="lazy" style="width:100%;height:auto;border-radius:12px"><figcaption style="font-size:12px;color:#6B7A77;text-align:center;margin-top:6px">手計算時代の実物スコアシート。修正の二重線がミスの多さを物語っています（名前は伏せています）</figcaption></figure>
   <ul>
@@ -206,7 +209,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </ul>
   <p>対策はシンプルで、<strong>「全員の持ち点合計＝配給原点×人数（25,000点持ちの四麻なら100,000点）」と「スコア合計＝0」の2つを毎回確認する</strong>こと。これだけでほとんどのミスは拾えます。まじゃすこでは、点数入力の時点で合計チェックが自動で走り、合わないと完了できない仕組みにしてあるので、この検算を意識する必要すらなくなります。8年分の失敗談の全貌は<a href="blog-shukei-gakari.html">集計係を8年やってわかった、手書きスコア記録の限界</a>にまとめました。</p>
 
-  <h2>よくある質問</h2>
+  <h2 id="s10">よくある質問</h2>
   <div class="spot" aria-hidden="true"><svg viewBox="0 0 220 92" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="10" width="86" height="52" rx="18" fill="#4261AA"/><path d="M38 58 L30 80 L58 61 Z" fill="#4261AA"/><text x="59" y="46" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">Q</text><rect x="118" y="30" width="86" height="52" rx="18" fill="#E75620"/><path d="M182 78 L192 90 L170 80 Z" fill="#E75620"/><text x="161" y="66" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="Arial, sans-serif">A</text><path d="M112 6 Q113.5 11.5 119 13 Q113.5 14.5 112 20 Q110.5 14.5 105 13 Q110.5 11.5 112 6 Z" fill="#177083"/><circle cx="8" cy="70" r="4" fill="#9fc3bd"/><circle cx="212" cy="16" r="4" fill="#C9D6EE"/></svg></div>
   <h3>Q. ウマ・オカは必ず入れないとダメ？</h3>
   <p>ルール上の決まりはありません。ウマなし（素点とオカだけ）で遊ぶグループもあります。ただ、ウマがないと「2位も4位もあまり変わらない」ことになり、オーラスの順位争いが淡白になりがちです。順位を競う楽しさを出したいなら、小さめのウマ（5-10）だけでも入れるのがおすすめです。</p>
