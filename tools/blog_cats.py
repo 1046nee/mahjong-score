@@ -121,21 +121,9 @@ def main():
             sm = sm.replace("</urlset>", f"  <url>\n    <loc>https://majasco.jp/{d}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n</urlset>")
     wr("sitemap.xml", sm)
 
-    # 6) ブログのトップ（blog.html）の「テーマから探す」: 名前・本数・短い説明・いちばん新しい記事の絵
-    order = [u for u, c in posts]
-    tiles = ""
-    for k, (name, d, _desc, _hero, _intro, short) in THEMES.items():
-        mine = [u for u, c in posts if c == k]
-        latest = sorted(mine, key=lambda u: order.index(u))[0]
-        th = "/assets/thumbs/" + latest.split("/")[-1].replace(".html", ".svg")
-        tiles += (f'<a class="th-card cat-{k}" href="/{d}/"><span class="th-img"><img src="{th}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>'
-                  f'<span class="th-tx"><b>{name}<i>{len(mine)}</i></b><small>{short}</small></span></a>')
-    block = f'<!--themes--><section class="theme-grid" aria-label="テーマから探す"><h2>テーマから探す</h2><div class="th-list">{tiles}</div></section><!--/themes-->'
+    # 6) ブログのトップ（blog.html）の「テーマから探す」は2026-10-31に消した（上のテーマのタブと重なるため。カードの格子は使わない）。残っていたら消す
     b = rd("blog.html")
-    if "<!--themes-->" in b:
-        b2 = re.sub(r"<!--themes-->.*?<!--/themes-->", lambda _: block, b, flags=re.S)
-    else:
-        b2 = b.replace('<div class="post-layout">', block + '\n\n<div class="post-layout">', 1)
+    b2 = re.sub(r"<!--themes-->.*?<!--/themes-->\n*", "", b, flags=re.S)
     # 紹介文の「3カテゴリ」の言い方
     b2 = re.sub(r"記事は<a href=\"/mahjong/\">麻雀攻略</a>・<a href=\"/news/\">お知らせ</a>・<a href=\"/blog/\">雑記</a>の3カテゴリに分かれています。",
                 "麻雀の記事は6つのテーマ（下の「テーマから探す」）と、お知らせ・雑記に分かれています。", b2)
