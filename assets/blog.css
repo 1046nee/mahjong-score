@@ -613,7 +613,7 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
    表と図のそろえ方（2026-10-26〜・ユーザーの依頼「表の形式や色遣いをそろえて見やすく」「順番・流れはチャートや樹形図で」）
    - 先頭行（thead）のある表：青の見出し行（これまでどおり）
    - 先頭行の無い表（左の列が項目名）：上に青の線を1本、左の列は薄い青の地に紺の字、右に細い区切り線。見出し行と同じ下線は付けない
-   - 順番 → ol.steps（番号の丸を線でつなぐ）／段階 → .hflow（横に矢印・スマホは縦）／年表 → ol.vtl（年・丸・線）
+   - 順番 → ol.steps（番号の丸を線でつなぐ）／段階 → ol.steps.flow（同じ形で見出し＋説明）／年表 → ol.vtl（年・丸・線）
      代表などの移り変わり → ol.dl-reps（矢印でつなぐ）／分類 → ul.tree（樹形図）
    ========================================================== */
 body:not(.bs-list) .post-layout > .blog-post tbody th { background: #F3F6FB; color: #2F4A86; border: 0; border-bottom: 1px solid #E6EAF2; border-right: 1px solid #DDE5F2; font-weight: 800; font-size: 13px; vertical-align: top; }
@@ -638,23 +638,18 @@ body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row 
 .blog-post ol.steps > li:last-child { padding-bottom: 4px; }
 .blog-post ol.steps > li:last-child::after { display: none; }
 
-/* 段階（横に矢印。スマホは縦に下向き） */
-.blog-post .hflow { display: flex; align-items: stretch; margin: 10px 0 20px; }
-.blog-post .hf-step { flex: 1 1 0; min-width: 0; position: relative; background: #fff; border: 1px solid #CFE0DC; border-top: 4px solid #177083; border-radius: 0 0 6px 6px; padding: 10px 12px; }
-.blog-post .hf-step + .hf-step { margin-left: 26px; }
-.blog-post .hf-step + .hf-step::before { content: ""; position: absolute; left: -20px; top: 50%; width: 0; height: 0; margin-top: -8px; border-left: 12px solid #177083; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
-.blog-post .hflow.plus .hf-step + .hf-step::before { content: "+"; border: 0; width: 20px; height: 20px; margin-top: -10px; left: -23px; color: #177083; font-size: 22px; font-weight: 900; line-height: 20px; text-align: center; }
-.blog-post .hf-step.goal { border-top-color: #E75620; background: #FFF8F4; }
-.blog-post .hf-step .hf-k { display: block; font-size: 11px; font-weight: 800; color: #177083; margin-bottom: 2px; }
-.blog-post .hf-step.goal .hf-k { color: #C2471A; }
-.blog-post .hf-step b { display: block; font-size: 15px; line-height: 1.5; color: #1F2A28; }
-.blog-post .hf-step small { display: block; font-size: 12px; line-height: 1.7; color: #55625F; margin-top: 4px; }
-@media (max-width: 560px) {
-  .blog-post .hflow { flex-direction: column; }
-  .blog-post .hf-step + .hf-step { margin: 22px 0 0; }
-  .blog-post .hf-step + .hf-step::before { left: 50%; top: -18px; margin: 0 0 0 -8px; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid #177083; border-bottom: 0; }
-  .blog-post .hflow.plus .hf-step + .hf-step::before { top: -22px; left: 50%; margin-left: -10px; border: 0; }
-}
+/* 段階・流れ（手順と同じ縦のステッパー。見出し＋短い説明。最後の段＝.goal はオレンジ） */
+.blog-post ol.steps.flow > li { padding-bottom: 14px; line-height: 1.6; }
+.blog-post ol.steps.flow > li > b, .blog-post ol.steps.flow > li > a > b { display: block; font-size: 15px; line-height: 1.5; color: #1F2A28; padding-top: 4px; }
+.blog-post ol.steps.flow small { display: block; font-size: 13px; line-height: 1.7; color: #55625F; margin-top: 2px; }
+.blog-post ol.steps.flow .st-k { display: block; font-size: 11.5px; font-weight: 800; color: #177083; line-height: 1.4; padding-top: 1px; }
+.blog-post ol.steps.flow .st-k + b { padding-top: 0; }
+.blog-post ol.steps.flow > li.goal::before { background: #E75620; }
+.blog-post ol.steps.flow > li.goal .st-k { color: #C2471A; }
+.blog-post ol.steps.flow.plus > li.goal::before { content: "="; }
+.blog-post ol.steps.flow > li > a { display: block; text-decoration: none; color: inherit; border-radius: 6px; margin: -2px -8px; padding: 2px 8px; }
+.blog-post ol.steps.flow > li > a:hover { background: #F2F8F6; }
+.blog-post ol.steps.flow > li > a > b::after { content: " ›"; color: #177083; }
 
 /* 年表（年・丸・線） */
 .blog-post ol.vtl { list-style: none; padding: 0; margin: 8px 0 20px; }
@@ -695,11 +690,7 @@ body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row 
 .blog-post ul.tree .tn .tt { display: inline-flex; gap: 1px; }
 .blog-post ul.tree .tn .tt img { display: block; width: 18px; height: auto; }
 .blog-post ul.tree .mark { font-size: 11px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 6px; }
-.blog-post .hflow.plus .hf-step.goal::before { content: "=" !important; }
 /* 図の2回目（2026-10-26）: 押せる流れ・棒グラフ・抜け番の表・蛇行ドラフト */
-.blog-post a.hf-step { text-decoration: none; color: inherit; }
-.blog-post a.hf-step:hover { background: #F2F8F6; }
-.blog-post a.hf-step b::after { content: " ›"; color: #177083; }
 .blog-post .bars { border: 1px solid #DCE6E3; border-radius: 6px; background: #fff; padding: 12px 14px 10px; margin: 8px 0 18px; }
 .blog-post .bars .bars-h { font-size: 13px !important; font-weight: 800; color: #177083; margin: 0 0 8px !important; }
 .blog-post .bar-row { display: grid; grid-template-columns: 5.2em 1fr 6.6em; align-items: center; gap: 8px; padding: 3px 0; }
