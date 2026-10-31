@@ -201,14 +201,15 @@ const BLOG_POSTS = [
   const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const byDateDesc = (a, b) => b.date.localeCompare(a.date);
 
+  // 題名は「｜」の前を太字の見出し、後ろを次の行に細く小さく（2026-10-31 一覧は題名と絵だけ・引き算）
+  const titleHtml = t => { const [m, ...r] = t.split('｜'); return escHtml(m) + (r.length ? `<span class="pc-sub">${escHtml(r.join('｜'))}</span>` : ''); };
   function cardHtml(p) {
     // 左の絵＝記事ごとの絵（assets/thumbs/・tools/make_thumbs.py）。カテゴリの色は名前の色で見せる
     const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
     return `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
       <span class="pc-thumb"><img src="${th}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
-      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
-      <h2>${escHtml(p.title)}</h2>
-      <p class="excerpt">${escHtml(p.desc)}</p></div>
+      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span><span class="date">${p.date}</span></span>
+      <h2>${titleHtml(p.title)}</h2></div>
     </a>`;
   }
   // カテゴリのタブ（すべて/麻雀攻略/お知らせ/雑記）。記事の数つき。tools/build_post_lists.js と同じマークアップ
@@ -222,13 +223,13 @@ const BLOG_POSTS = [
   // rank＝おすすめの順番（絵の角に番号）、isNew＝30日以内の記事に「新着」
   function sideItem(p, rank = 0) {
     const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
-    const [main, ...rest] = p.title.split('｜');
+    const main = p.title.split('｜')[0]; // 横の列は題名の前半だけ（後半の補足は出さない＝引き算。2026-10-31）
     const ms = Date.parse(p.date.replace(/\./g, '-'));
     const isNew = ms && Date.now() - ms < 30 * 864e5;
     return `<li><a class="sb-it cat-${p.cat}" href="${p.url}">
       <span class="sb-th"><img src="${th}" alt="" width="320" height="240" loading="lazy" decoding="async">${rank ? `<b class="sb-rk">${rank}</b>` : ''}</span>
       <span class="sb-tx"><span class="sb-meta"><i class="sb-cat">${BLOG_CATS[p.cat].name}</i>${isNew ? '<i class="sb-new">新着</i>' : ''}<time>${p.date}</time></span>
-        <b class="sb-tt">${escHtml(main)}</b>${rest.length ? `<small class="sb-sub">${escHtml(rest.join('｜'))}</small>` : ''}</span></a></li>`;
+        <b class="sb-tt">${escHtml(main)}</b></span></a></li>`;
   }
   const SB_ICON = {
     star: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m12 3.2 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8Z" fill="currentColor"/></svg>',

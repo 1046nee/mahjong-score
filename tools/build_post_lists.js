@@ -29,11 +29,12 @@ const posts = eval(postsMatch[1]);
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date);
 const thumb = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+// 題名は「｜」の前を太字の見出し、後ろを次の行に細く小さく（blog-site.js の titleHtml と同じ）
+const titleHtml = t => { const [m, ...r] = t.split('｜'); return escHtml(m) + (r.length ? `<span class="pc-sub">${escHtml(r.join('｜'))}</span>` : ''); };
 const cardHtml = p => `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
       <span class="pc-thumb"><img src="${thumb(p)}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
-      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${cats[p.cat].name}</span>${p.tag ? `<span class="post-tag">${escHtml(p.tag)}</span>` : ''}<span class="date">${p.date}</span></span>
-      <h2>${escHtml(p.title)}</h2>
-      <p class="excerpt">${escHtml(p.desc)}</p></div>
+      <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${cats[p.cat].name}</span><span class="date">${p.date}</span></span>
+      <h2>${titleHtml(p.title)}</h2></div>
     </a>`;
 // 絵が無い記事があれば止める（新しい記事は tools/make_thumbs.py に1行足す）
 for (const p of posts) if (!fs.existsSync(path.join(root, thumb(p).slice(1)))) throw new Error('記事の絵がありません: ' + thumb(p) + '（python tools/make_thumbs.py に足す）');
@@ -58,6 +59,13 @@ for (const [file, cat] of pages) {
   const re = new RegExp(`(<main class="post-list" data-post-list="${cat}">)[\\s\\S]*?(</main>)`);
   if (!re.test(html)) throw new Error(`アンカーが見つかりません: ${file}`);
   html = html.replace(re, `$1\n    ${cards}\n  $2`);
+  // 紹介文（.cat-intro）は一覧の上に置かない＝最初の画面は題名と絵だけ（2026-10-31 ユーザーの依頼「引き算で」）。
+  // 検索のために文は残し、ページの下（アプリの案内の前）に小さく置く。何度実行しても同じ
+  const introM = html.match(/\n?<p class="cat-intro"[^>]*>[\s\S]*?<\/p>\n?/);
+  if (introM && html.indexOf(introM[0]) < html.indexOf('<div class="post-layout">')) {
+    const foot = introM[0].trim().replace(/ style="[^"]*"/, ' style="max-width:960px;margin:4px auto 26px;padding:0 20px;font-size:12.5px;line-height:1.8;color:#6B7A77"');
+    html = html.replace(introM[0], '\n').replace('<div class="app-banner">', foot + '\n<div class="app-banner">');
+  }
   const nre = new RegExp(`(<nav class="cat-nav" data-cat-nav="${cat}">)[\\s\\S]*?(</nav>)`);
   if (!nre.test(html)) throw new Error(`タブのアンカーが見つかりません: ${file}`);
   html = html.replace(nre, `$1${catNavHtml(cat)}$2`);
