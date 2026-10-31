@@ -410,6 +410,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 }
 .bm-arrow { color: #9fbcb7; flex-shrink: 0; }
 .bm-arrow svg { width: 14px; height: auto; display: block; }
+/* マイページの一番下の案内（.bm-tip）。閉じているときは1行だけ */
+.bm-tip { margin: 22px 0 6px; background: #F3F6F5; border-radius: 12px; }
+.bm-tip summary { list-style: none; display: flex; align-items: center; gap: 12px; padding: 10px 12px; cursor: pointer; }
+.bm-tip summary::-webkit-details-marker { display: none; }
+.bm-tip-ico { width: 36px; height: 36px; border-radius: 9px; flex: none; }
+.bm-tip-tx { flex: 1; min-width: 0; line-height: 1.4; }
+.bm-tip-tx b { display: block; font-size: 14px; font-weight: 900; color: #1F2A28; }
+.bm-tip-tx small { display: block; font-size: 12px; color: #6B7A77; }
+.bm-tip-tx::after { content: "見る ›"; font-size: 12px; font-weight: 800; color: #177083; }
+.bm-tip[open] .bm-tip-tx::after { content: "閉じる"; }
+.bm-tip-x { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 0; background: transparent; color: #8A9A97; font-size: 18px; line-height: 1; cursor: pointer; }
+.bm-tip .bm-wrap { margin: 0 10px; background: #E4F3EC; }
+.bm-tip .bm-note { font-size: 11px; color: #9aa8a4; margin: 8px 12px 0; padding-bottom: 12px; }
 .bookmark-howto .bm-note { font-size: 11px; color: #9aa8a4; text-align: left; margin-top: 12px; }
 @media (min-width: 700px) {
   .bm-wrap { padding: 24px 14px; gap: 8px; align-items: flex-start; }
@@ -2719,19 +2732,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </section>
 
-    <!-- Safariお気に入り登録の案内（1〜5の番号順にタップするだけ） -->
-    <section class="bookmark-howto">
-      <h2>番外編：Safariからすぐ開く方法</h2>
-      <p>Safariの“お気に入り”に一度登録しておけば、<br>次の対局からはワンタップで「まじゃすこ」へ。<br>ホーム画面のアプリのような使い心地になります。</p>
-      <div class="bm-wrap">
-        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#D1D1D1" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-1.jpg" width="720" height="1558" alt="Safariの下の「…」から、ブックマークに追加を選んでいるところ" loading="lazy"></div><p class="bm-cap"><b>1</b><span>「…」を押して<wbr>「ブックマークに追加」</span></p></div>
-        <div class="bm-arrow" aria-hidden="true"><svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5 L17 15 L5 25"/><path d="M13 5 L25 15 L13 25" opacity="0.55"/></g></svg></div>
-        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#F3F2F7" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-2.jpg" width="720" height="1558" alt="ブックマークを追加の画面。場所をお気に入りにして保存する" loading="lazy"></div><p class="bm-cap"><b>2</b><span>場所を「お気に入り」にして<wbr>右上で保存</span></p></div>
-        <div class="bm-arrow" aria-hidden="true"><svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5 L17 15 L5 25"/><path d="M13 5 L25 15 L13 25" opacity="0.55"/></g></svg></div>
-        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#F3F2F7" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-3.jpg" width="720" height="1558" alt="新しいタブのお気に入りに、まじゃすこのアイコンが並んでいるところ" loading="lazy"></div><p class="bm-cap"><b>3</b><span>新しいタブの<wbr>「お気に入り」から<wbr>ワンタップで開く</span></p></div>
-      </div>
-      <p class="bm-note">※iPhone（Safari）の場合。Androidはブラウザのメニュー →「ブックマーク」から追加できます。</p>
-    </section>
   </div>
 
 <!-- ここから下がLP本体（逆ピラミッド型） -->
@@ -3192,6 +3192,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <div id="mp-circle"></div>
   </div>
+  <!-- よく使う人向け：Safariのお気に入りから1タップで開く方法（2026-10-31 LPから移した。×で消すと二度と出さない） -->
+  <details class="bm-tip" id="bm-tip">
+    <summary><img class="bm-tip-ico" src="/assets/favicon.png" alt="" width="36" height="36"><span class="bm-tip-tx"><b>次から1タップで開く</b><small>Safariの「お気に入り」に入れておく方法</small></span><button type="button" class="bm-tip-x" onclick="hideBmTip(event)" aria-label="この案内を消す">×</button></summary>
+      <div class="bm-wrap">
+        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#D1D1D1" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-1.jpg" width="720" height="1558" alt="Safariの下の「…」から、ブックマークに追加を選んでいるところ" loading="lazy"></div><p class="bm-cap"><b>1</b><span>「…」を押して<wbr>「ブックマークに追加」</span></p></div>
+        <div class="bm-arrow" aria-hidden="true"><svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5 L17 15 L5 25"/><path d="M13 5 L25 15 L13 25" opacity="0.55"/></g></svg></div>
+        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#F3F2F7" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-2.jpg" width="720" height="1558" alt="ブックマークを追加の画面。場所をお気に入りにして保存する" loading="lazy"></div><p class="bm-cap"><b>2</b><span>場所を「お気に入り」にして<wbr>右上で保存</span></p></div>
+        <div class="bm-arrow" aria-hidden="true"><svg viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5 L17 15 L5 25"/><path d="M13 5 L25 15 L13 25" opacity="0.55"/></g></svg></div>
+        <div class="bm-step"><div class="howto-phone bm-phone"><span class="lp-phone-bar" style="background:#F3F2F7" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/bm-3.jpg" width="720" height="1558" alt="新しいタブのお気に入りに、まじゃすこのアイコンが並んでいるところ" loading="lazy"></div><p class="bm-cap"><b>3</b><span>新しいタブの<wbr>「お気に入り」から<wbr>ワンタップで開く</span></p></div>
+      </div>
+      <p class="bm-note">※iPhone（Safari）の場合。Androidはブラウザのメニュー →「ブックマーク」から追加できます。</p>
+  </details>
 </div>
 
 <!-- MYSTATS（自分の成績シート） -->
@@ -7794,6 +7806,13 @@ function initFeaturesCarousel() {
   updateDots();
   row.addEventListener('scroll', updateDots, { passive: true });
 }
+// マイページの「次から1タップで開く」案内。×で消したら、その端末では二度と出さない
+function hideBmTip(e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  try { localStorage.setItem('bmTipHidden', '1'); } catch (err) {}
+  const el = document.getElementById('bm-tip'); if (el) el.remove();
+}
+(function () { try { if (localStorage.getItem('bmTipHidden') === '1') { const el = document.getElementById('bm-tip'); if (el) el.remove(); } } catch (err) {} })();
 // PC用の矢印: カード1枚分だけスクロール
 function featuresScroll(dir) {
   const row = document.getElementById('features-row');
