@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://majasco.jp/</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog.html</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -32,7 +32,7 @@
   </url>
   <url>
     <loc>https://majasco.jp/mahjong/</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -50,25 +50,25 @@
   </url>
   <url>
     <loc>https://majasco.jp/blog-shukei-gakari.html</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-team-tournament.html</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-why-majasco.html</loc>
-    <lastmod>2026-08-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-uma-oka.html</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -79,62 +79,62 @@
     <image:image><image:loc>https://majasco.jp/assets/score/tensu-oya.png</image:loc></image:image>
     <image:image><image:loc>https://majasco.jp/assets/score/tensu-mangan.png</image:loc></image:image>
     <image:image><image:loc>https://majasco.jp/assets/score/fu-keisan.png</image:loc></image:image>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-yaku-list.html</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-sanma-yonma.html</loc>
-    <lastmod>2026-09-18</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-app-guide.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-rule-basics.html</loc>
     <image:image><image:loc>https://majasco.jp/assets/hai/hai-ichiran.png</image:loc></image:image>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-manner.html</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-score-examples.html</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-house-rules.html</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-score-mismatch.html</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mawashi-uchi.html</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -158,7 +158,7 @@
   </url>
   <url>
     <loc>https://majasco.jp/blog-season-ranking.html</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
     <loc>https://majasco.jp/news/nakama-page.html</loc>
@@ -170,246 +170,252 @@
   </url>
   <url>
     <loc>https://majasco.jp/news/kiroku-kakutei.html</loc>
-    <lastmod>2026-10-13</lastmod>
+    <lastmod>2026-10-31</lastmod>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-ai.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-pro-dantai-rules.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mleague-history.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mleague-2026.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-titles.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-pro.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-meet-mleaguer.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-books.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-youtube.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-game-apps.html</loc>
-    <lastmod>2026-10-21</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-yaku-ichiran.html</loc>
     <image:image><image:loc>https://majasco.jp/assets/hai/yaku-ichiran.png</image:loc></image:image>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mleague-kansen.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-yougo.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-dantai-rekishi.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-yougoshu.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-machi-dojo.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-kanji.html</loc>
-    <lastmod>2026-10-23</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-local-yaku.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-rule-wakareme.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-yakuman-rules.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-anime.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-manga.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-pao.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-haitei.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-keishiki-tenpai.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-kuikae.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-riichi-ankan.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-ronjutsu.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mleague-points.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-league-taikai.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-sanma-rules.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-nichijougo.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-sekai-mahjong.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-mahjong-suuji.html</loc>
-    <lastmod>2026-10-27</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/blog-ai-haifu.html</loc>
-    <lastmod>2026-10-28</lastmod>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://majasco.jp/beginner/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/rules/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/score/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/pro/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/ai/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://majasco.jp/culture/</loc>
+    <lastmod>2026-10-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -58,6 +58,9 @@
 - favicon: `/favicon.ico`（16/32/48。favicon.pngからPIL生成）＋ `/assets/favicon.png`（512）
 - OGP: 現行 `/assets/ogp4.png`（2026-10-27差し替え。tools/make_sns_v3.py で作る。LPの最初の画面のイラストをそのまま使う）。旧 ogp3.png（2026-09-17）。
   **差し替えるときはファイル名を変えて全ページのog:image/twitter:imageを書き換える**（Xが画像URL単位でキャッシュするため同名上書きは反映されない）。旧ogp.png/ogp2.pngは残置
+- 記事の共有用の画像（2026-10-31〜）: 記事ごとに `/assets/og/blog-xxx.png`（1200×630）。記事の絵（assets/thumbs/blog-xxx.svg）を真ん中に大きく、左右は地の色、右下にロゴ。
+  `node tools/make_og_images.js [blog-xxx]`（http.server 8765 を起こしてから）。記事の og:image・twitter:image・JSON-LD の image をこれに。ブログの一覧・テーマのページ・LP は ogp4.png のまま。
+  **絵を描き直したら、PNGのファイル名も変えて（例 blog-xxx-2.png）記事の指定を書き換える**（Xは画像のURLごとに覚えている）
 - ロゴ: `/assets/logo.png`（800×250透過・全ページヘッダー）
 - **サイトのSVG（assets/thumbs・assets/art・ページの中の絵）を作ったり直したりしたら `python tools/svg_text_check.py` を通す**（0件になるまで）。
   SVGの文字は見る人の端末の書体で描かれるので、作った環境で収まっていてもiPhoneではマスや札からはみ出すことがある。
