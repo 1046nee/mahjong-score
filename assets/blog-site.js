@@ -472,10 +472,19 @@ const BLOG_POSTS = [
     document.querySelectorAll('[data-cat-nav]').forEach(el => {
       if (!el.children.length) el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
       // 選んでいるタブが画面の外（右のほう）にあると、どこにいるか分からない。真ん中あたりまで横に送る（2026-10-28）
+      // ページを移るたびに帯が真ん中へ送り直されて、タブが動いて見えた（2026-10-31）。前のページの横の位置をそのまま引き継ぎ、
+      // 選んだタブが画面からはみ出すときだけ、見える所まで少し送る
       const inner = el.querySelector('.cat-nav-inner'), on = el.querySelector('.cat-tab.on');
       if (inner && on && inner.scrollWidth > inner.clientWidth) {
-        inner.scrollLeft = Math.max(0, on.offsetLeft - inner.offsetLeft - (inner.clientWidth - on.offsetWidth) / 2);
+        let x = null;
+        try { const v = sessionStorage.getItem('catNavX'); if (v !== null) x = +v; } catch (e) {}
+        if (x === null) x = Math.max(0, on.offsetLeft - inner.offsetLeft - (inner.clientWidth - on.offsetWidth) / 2);
+        const l = on.offsetLeft - inner.offsetLeft, r = l + on.offsetWidth;
+        if (l < x + 8) x = Math.max(0, l - 24);
+        else if (r > x + inner.clientWidth - 8) x = r - inner.clientWidth + 24;
+        inner.scrollLeft = x;
       }
+      if (inner) inner.addEventListener('click', () => { try { sessionStorage.setItem('catNavX', String(inner.scrollLeft)); } catch (e) {} });
     });
 
     // サイドバー: 今月のおすすめ記事 ＋ 最新のアップデート（/news/の新着）

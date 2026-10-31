@@ -3,9 +3,10 @@
 iPhoneのSafariの画面を、スマホと同じ大きさ（390×844）のHTMLで描いてブラウザで撮る。
 1枚目の背景は本物のLPの画面、まじゃすこのアイコンは本物（assets/favicon.png）。ほかのお気に入りは実在のアプリに似せない一般的なアイコン。
 出力: assets/screens/bm-1.jpg 〜 bm-3.jpg（幅720）。高さは決まりどおりのスマホの枠の画面（帯の下）にちょうど入る 390×793＝下が切れない
-使い方: python tools/make_bookmark_steps.py
+使い方: python tools/make_bookmark_steps.py [iPhoneで撮ったLPの画面.png]
+  画面の写真を渡すと、1枚目の背景をそれにする（上の時計の帯を切り、下の「最近の試合」はぼかす＝個人の記録を見せない）。渡さなければ手元のLPを撮る
 """
-import os, io, functools, threading, http.server
+import os, io, sys, functools, threading, http.server
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
@@ -166,6 +167,17 @@ def main():
         lp = os.path.join(TMP, "bm-lp.png")
         pg.screenshot(path=lp)
         ctx.close()
+        if len(sys.argv) > 1:  # iPhoneの本物の画面を背景にする（2026-10-31〜）
+            from PIL import ImageFilter
+            src = Image.open(sys.argv[1]).convert("RGB")
+            top = round(src.height * 0.074)  # 時計・電池の帯（画面の高さの約7.4%）を切る
+            im = src.crop((0, top, src.width, src.height))
+            im = im.resize((780, round(im.height * 780 / src.width)), Image.LANCZOS)
+            cut = round(im.height * 0.86)  # 「最近の試合」から下（自分の記録）はぼかす
+            im.paste(im.crop((0, cut, 780, im.height)).filter(ImageFilter.GaussianBlur(14)), (0, cut))
+            can = Image.new("RGB", (780, H * 2), im.getpixel((5, im.height - 5)))
+            can.paste(im, (0, 0))
+            can.save(lp)
         pg = b.new_page(viewport={"width": 390, "height": H}, device_scale_factor=2)
         lp_url = "file:///" + lp.replace("\\", "/")
         for i, body in enumerate([step1(lp_url), step2(), step3()], 1):

@@ -7,7 +7,9 @@
 新しいテーマを足すときは: BLOG_CATS に1行（group: 'mahjong'）・THEMES に説明・assets/blog.css に色（.cat-キー と .hero-キー）
 実行: python tools/blog_cats.py
 """
-import io, os, re
+import io, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from hero_ill import ILL  # テーマごとの見出しの絵（2026-10-31〜）
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def rd(p): return io.open(os.path.join(ROOT, p), encoding="utf-8").read()
@@ -87,6 +89,7 @@ def main():
         s = s.replace(f"<h1>麻雀攻略</h1>", f"<h1>{name}</h1>").replace(f"<p>{hero_p}</p>", f"<p>{hero}</p>", 1)
         s = s.replace('data-cat-nav="mahjong"', f'data-cat-nav="{k}"').replace('data-post-list="mahjong"', f'data-post-list="{k}"')
         s = s.replace("hero-mahjong", f"hero-{k}").replace("麻雀攻略", name)
+        s = re.sub(r'<div class="hero-ill" aria-hidden="true">.*?</svg></div>', lambda _: f'<div class="hero-ill" aria-hidden="true">{ILL[k]}</div>', s, count=1, flags=re.S)
         os.makedirs(os.path.join(ROOT, d), exist_ok=True)
         wr(f"{d}/index.html", s)
 

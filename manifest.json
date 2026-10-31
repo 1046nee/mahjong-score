@@ -1,7 +1,7 @@
 {
   "name": "まじゃすこ / majasco",
   "short_name": "まじゃすこ",
-  "description": "麻雀のスコア記録アプリ。点数を入れるだけで、ウマ・オカ込みのスコアが全員のスマホに。",
+  "description": "麻雀のスコア記録アプリ。点数を入れるだけで、ウマ・オカ込みのスコアが全員のスマホに自動で反映されます。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

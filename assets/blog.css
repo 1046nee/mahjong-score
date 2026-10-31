@@ -971,3 +971,29 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 /* チェックリストの1項目は block にする（flex だと、ルビの付いた語だけが別の列に分かれて「半荘」が離れて見えた） */
 .blog-post .fg-check span { display: block; position: relative; padding: 4px 2px 4px 24px; }
 .blog-post .fg-check span::before { position: absolute; left: 2px; top: 7px; margin: 0; }
+
+/* ヘッダーは読み込みの前から、JSで描くものと同じ形・高さにする（2026-10-31）。
+   前は静的なHTMLが小さいロゴ＋「ブログ」で、JSが描き直すとヘッダーが高くなり、カテゴリのタブが下にずれて見えた */
+.site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: sticky; top: 0; z-index: 50; }
+.bs-list .site-head .site-head-inner, .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; gap: 0; }
+.site-head .brand img { height: 48px; width: auto; vertical-align: middle; }
+.site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
+:root { --hh: 65px; }
+.bs-list .cat-nav { top: var(--hh, 65px); }
+
+/* 一覧ページの見出し（2026-10-31〜 ルール）: どのページも同じ高さ・同じ並び。地の色はそのカテゴリの薄い色、題名はそのカテゴリの濃い色。
+   右の絵はカテゴリごとに違う（tools/hero_ill.py）。「すべて」はまじゃすこの緑 */
+.bs-list .blog-hero { height: 150px; min-height: 0; border-bottom: 0; }
+.bs-list .blog-hero .crumbs { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bs-list .blog-hero p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 560px) { .bs-list .blog-hero { height: 140px; padding-top: 14px; padding-bottom: 14px; } .bs-list .hero-ill { width: 100px; } }
+.bs-list .hero-all { background: #E4F3EC; } .bs-list .hero-all h1 { color: #136070; }
+.bs-list .hero-mahjong { background: #E4F3EC; } .bs-list .hero-mahjong h1 { color: #136070; }
+.bs-list .hero-beginner { background: #EAF7EE; } .bs-list .hero-beginner h1 { color: #15803D; }
+.bs-list .hero-rules { background: #E4F3F4; } .bs-list .hero-rules h1 { color: #0B7A86; }
+.bs-list .hero-score { background: #FCEFE6; } .bs-list .hero-score h1 { color: #B13C0B; }
+.bs-list .hero-pro { background: #F1EBFD; } .bs-list .hero-pro h1 { color: #6D28D9; }
+.bs-list .hero-ai { background: #E6F3FB; } .bs-list .hero-ai h1 { color: #0369A1; }
+.bs-list .hero-culture { background: #FCE9F2; } .bs-list .hero-culture h1 { color: #BE185D; }
+.bs-list .hero-news { background: #EAF0FB; } .bs-list .hero-news h1 { color: #2F4A86; }
+.bs-list .hero-blog { background: #F4EDE5; } .bs-list .hero-blog h1 { color: #6E523B; }
