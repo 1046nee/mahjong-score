@@ -302,22 +302,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 44%; }
 .compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 56%; }
 .compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; word-break: keep-all; } /* 折り返しは <wbr> の所だけ（語の途中で切らない） */
-.compare-table td.before { position: relative; color: #7A8785; background: #F5F7F7; }
-.compare-table td.after { color: #fff; font-size: 14px; font-weight: 800; background: linear-gradient(#177083, #177083) right / 100% 100% no-repeat; border-top-color: rgba(255,255,255,.2); }
-/* 比較の動き（2026-11-04・参考サイトの slideIn / sheen / shout）: 見えたら上の行から順に、左に斜線が引かれて文字が沈み、右は緑が塗られて文字が右から入り、チェックが弾み、光が走る。.pre はJSが付ける（無ければ完成形） */
-.compare-table td.before::after { content: ''; position: absolute; inset: 7px 8px; pointer-events: none; background: linear-gradient(to bottom right, transparent calc(50% - 1.6px), #E75620 calc(50% - 1px), #E75620 calc(50% + 1px), transparent calc(50% + 1.6px)); clip-path: inset(0); }
+.compare-table td.before { color: #7A8785; background: #F5F7F7; }
+.compare-table td.after { position: relative; overflow: hidden; color: #1F2A28; font-size: 14px; font-weight: 800; background: #fff; }
+.compare-table td.before span { background: linear-gradient(#9AA6A4, #9AA6A4) left 56% / 100% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .compare-table td.after span { display: flex; align-items: center; gap: 7px; }
-.compare-table td.after span::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.6 9.4l3 3 5.8-6.4' fill='none' stroke='%23177083' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
-.compare-table.go td.before { transition: color .3s ease calc(var(--d, 0s) + .15s); }
-.compare-table.go td.before::after { transition: clip-path .3s ease-out var(--d, 0s); }
-.compare-table.go td.after { transition: background-size .32s ease-out calc(var(--d, 0s) + .22s); }
-.compare-table.go td.after span { animation: lp-slide .38s cubic-bezier(.2,.8,.2,1) calc(var(--d, 0s) + .3s) both; }
-.compare-table.go td.after span::before { animation: lp-pop .42s ease calc(var(--d, 0s) + .55s) both; }
-.compare-table.go td.after::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.5) 50%, transparent 58%) 250% 0 / 250% 100% no-repeat; animation: lp-sheen .7s ease calc(var(--d, 0s) + .6s) both; }
-.compare-table td.after { position: relative; overflow: hidden; }
-.compare-table tbody tr:nth-child(2) { --d: .45s; } .compare-table tbody tr:nth-child(3) { --d: .9s; } .compare-table tbody tr:nth-child(4) { --d: 1.35s; }
-.compare-table.pre td.before { color: #3F4C4A; } .compare-table.pre td.before::after { clip-path: inset(0 100% 0 0); }
-.compare-table.pre td.after { background-size: 0 100%; } .compare-table.pre td.after span { opacity: 0; }
+.compare-table td.after span::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #177083 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.6 9.4l3 3 5.8-6.4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
+/* 比較の動き（2026-11-04）: 見えたら上の行から順に、左に取り消し線が引かれて文字が沈み、右は文字が右から入り、チェックが弾み、光が走る。
+   全部 transition なので .pre を付け外しするだけで進む・戻る（戻るときは下の行から速く）。.js .pre はJSが付ける（無ければ完成形） */
+.compare-table tbody tr:nth-child(1) { --d: 0s; --r: .3s; } .compare-table tbody tr:nth-child(2) { --d: .45s; --r: .2s; } .compare-table tbody tr:nth-child(3) { --d: .9s; --r: .1s; } .compare-table tbody tr:nth-child(4) { --d: 1.35s; --r: 0s; }
+.compare-table.js thead th { transition: opacity .35s; }
+.compare-table.js td.before { transition: color .3s ease calc(var(--d) + .15s); }
+.compare-table.js td.before span { transition: background-size .35s ease-out var(--d); }
+.compare-table.js td.after span { transition: opacity .38s ease calc(var(--d) + .3s), transform .38s cubic-bezier(.2,.8,.2,1) calc(var(--d) + .3s); }
+.compare-table.js td.after span::before { transition: transform .35s cubic-bezier(.34,1.8,.5,1) calc(var(--d) + .55s); }
+.compare-table.js td.after::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 42%, rgba(23,112,131,.18) 50%, transparent 58%) -150% 0 / 250% 100% no-repeat; transition: background-position .7s ease calc(var(--d) + .6s); }
+.compare-table.pre thead th { opacity: 0; }
+.compare-table.pre td.before { color: #3F4C4A; transition: color .2s ease var(--r); }
+.compare-table.pre td.before span { background-size: 0 1.5px; transition: background-size .2s ease var(--r); }
+.compare-table.pre td.after span { opacity: 0; transform: translateX(40%); transition: opacity .2s ease var(--r), transform .2s ease var(--r); }
+.compare-table.pre td.after span::before { transform: scale(.3); transition: transform .15s ease var(--r); }
+.compare-table.pre td.after::after { background-position: 250% 0; transition: none; }
 /* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
 .lp-mini { max-width: 340px; margin: 0 auto 24px; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 12px 14px 10px; }
 .lp-mini-t { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #177083; text-align: center; }
@@ -331,26 +335,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-mini-svg { display: block; width: 100%; height: auto; }
 .lp-mini-lg { margin-top: 2px; }
 .lp-mini-c { margin: 4px 0 0; font-size: 11px; color: #6B7A77; text-align: center; }
-/* スマホの下に固定する「はじめる」（2026-11-04）: ヒーローのボタンが見えなくなってから、締めのボタンが見えるまで。ボタンは動かさない（透明度だけ） */
-.lp-fix { position: fixed; left: 0; right: 0; bottom: 0; z-index: 150; padding: 0 16px calc(14px + env(safe-area-inset-bottom)); text-align: center; pointer-events: none; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
-.lp-fix.on { opacity: 1; visibility: visible; } .lp-fix .cta-btn { pointer-events: auto; padding: 14px 20px; font-size: 16px; box-shadow: 0 0 0 2.5px #fff, 0 8px 20px rgba(31,42,40,.38); }
-@media (min-width: 1100px) { .lp-fix { display: none; } }
 /* 文字の動き（2026-11-04・参考サイトの動き）: 見出しは下からせり上がる、文は線に合わせて入る、強調の語は大きいところから決まる。.pre は JS が付ける（無ければ完成形） */
 @keyframes lp-pop { 0% { transform: scale(.4); } 65% { transform: scale(1.18); } 100% { transform: scale(1); } }
-@keyframes lp-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-@keyframes lp-shout { 0% { opacity: 0; transform: scale(2.2); } 60% { opacity: 1; transform: scale(.92); } 100% { opacity: 1; transform: scale(1); } }
-@keyframes lp-slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }
-@keyframes lp-sheen { to { background-position: -150% 0; } }
 @keyframes lp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .lp-m { display: block; overflow: hidden; padding-bottom: .1em; } .lp-r { display: block; }
-h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r { transform: translateY(115%); transition-duration: .3s; }
 .steps.js .step-text { transition: opacity .35s, transform .35s; } .steps.js .step:not(.on) .step-text { opacity: .22; transform: translateX(14px); }
 .steps.js .step.on .step-num { animation: lp-pop .42s ease both; }
-.steps.js:not(.done) ~ .start-note { opacity: 0; } .steps.done ~ .start-note { animation: lp-up .45s ease both; }
-.steps.done ~ .start-note strong { display: inline-block; animation: lp-shout .55s ease .25s both; }
-.compare-table.pre thead th { opacity: 0; } .compare-table.go thead th { transition: opacity .35s; }
-.compare-table.pre ~ .start-note { opacity: 0; } .compare-table.go ~ .start-note { animation: lp-up .45s ease 2.3s both; }
-.compare-table ~ .start-note strong { color: #E75620; } .compare-table.go ~ .start-note strong { display: inline-block; animation: lp-shout .55s ease 2.6s both; }
+.steps.js ~ .start-note, .compare-table.js ~ .start-note { transition: opacity .45s ease var(--nd, 0s), transform .45s ease var(--nd, 0s); } .compare-table.js ~ .start-note { --nd: 2.2s; }
+.steps.js ~ .start-note strong, .compare-table.js ~ .start-note strong { display: inline-block; transition: opacity .2s ease calc(var(--nd, 0s) + .25s), transform .5s cubic-bezier(.34,1.6,.5,1) calc(var(--nd, 0s) + .25s); }
+.steps.js:not(.done) ~ .start-note, .compare-table.pre ~ .start-note { opacity: 0; transform: translateY(14px); transition: opacity .2s, transform .2s; }
+.steps.js:not(.done) ~ .start-note strong, .compare-table.pre ~ .start-note strong { opacity: 0; transform: scale(2.2); transition: opacity .15s, transform .15s; }
+.compare-table ~ .start-note strong { color: #E75620; }
 /* 機能のカード: 真ん中のカードを大きく、アイコンをゆらす（1099px以下。1100px以上は格子） */
 @media (max-width: 1099px) {
   .features-row.js { padding: 14px calc(50% - 92px) 20px; scroll-padding-left: 0; }
@@ -359,7 +355,7 @@ h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transfor
   .features-row.js .feature.is-on { transform: scale(1.06); opacity: 1; box-shadow: 0 10px 22px rgba(23,112,131,.2); }
   .features-row.js .feature.is-on .feature-icon svg { animation: lp-bob 2s ease-in-out infinite; }
 }
-@media (prefers-reduced-motion: reduce) { .compare-table td, .compare-table td::after, .lp-mini-g .s, .lp-fix, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-mini-g .s, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
 
 /* ⑦ 始めやすさ: 3ステップ */
 .lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
@@ -386,7 +382,7 @@ h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transfor
 /* ヒーロー */
 .hero { text-align: center; padding: 16px 20px 40px; background: transparent; }
 .hero h1 { font-size: min(33px, 8vw); line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
-.hero h1 .h1-em { font-size: 1.14em; letter-spacing: -1px; background: linear-gradient(transparent 66%, #FFDCCB 66%); }
+.hero h1 .h1-em { font-size: 1.14em; letter-spacing: -1px; background: linear-gradient(transparent 58%, #FFB48C 58%); }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
 
@@ -2977,7 +2973,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <footer class="site-footer">
   <div class="ft"><a class="ft-brand" href="/"><img src="/assets/favicon.png" alt="" width="40" height="40"><span><b>まじゃすこ</b><small>麻雀のスコア記録を、スマホでかんたんに</small></span></a><div class="ft-sns"><a href="https://x.com/majasco_jp" target="_blank" rel="noopener" aria-label="まじゃすこ公式X（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg" alt="X" width="40" height="40" loading="lazy"></a><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener" aria-label="まじゃすこ公式Instagram（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg" alt="Instagram" width="40" height="40" loading="lazy"></a></div><nav class="ft-cols" aria-label="サイトのリンク"><div><b>使う</b><a href="/">トップ</a><a href="/score-basics.html">スコア計算の基本</a><a href="/faq.html">よくある質問</a></div><div><b>読む</b><a href="/blog.html">ブログ</a><a href="/news/">お知らせ</a><a href="/news/feed.xml">お知らせRSS</a></div><div><b>このサイトについて</b><a href="/about.html">運営者について</a><a href="/contact.html">お問い合わせ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a></div></nav><div class="ft-copy">© 2026 まじゃすこ</div></div>
 </footer>
-<div class="lp-fix" id="lp-fix"><button class="cta-btn" onclick="openQuickStart()">はじめる</button></div>
 </div>
 
 <!-- SETUP -->
@@ -7857,25 +7852,24 @@ function initLpDemo() {
 // LPの動き（2026-11-04）。HTMLは完成形で、動きを減らす設定の端末やJSが無いときはそのまま見える
 function initLpMotion() {
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // スマホの下の「はじめる」: ヒーローのボタンが見えなくなってから、締めのボタンが見えるまで
-  const fix = document.getElementById('lp-fix'), heroBtn = document.querySelector('.hero .cta-btn'), closeBtn = document.querySelector('.lp-close .cta-btn');
-  if (fix && heroBtn && closeBtn && 'IntersectionObserver' in window) {
-    const st = { hero: true, close: false };
-    const io = new IntersectionObserver(es => {
-      es.forEach(e => { if (e.target === heroBtn) st.hero = e.isIntersecting || e.boundingClientRect.top > 0; else st.close = e.isIntersecting || e.boundingClientRect.top < 0; });
-      fix.classList.toggle('on', !st.hero && !st.close);
-    });
-    io.observe(heroBtn); io.observe(closeBtn);
-  }
   if (still || !('IntersectionObserver' in window)) return;
-  const once = (el, fn, threshold) => { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); fn(); } }, { threshold }); io.observe(el); };
-  // 比較: 見えたら上の行から順に
+  // 見えたら play。下へ戻って（要素が画面の下へ出て）見えなくなったら back でさかのぼる。また見えれば何度でも（2026-11-04）
+  const replay = (el, threshold, play, back) => {
+    let on = false;
+    new IntersectionObserver(es => {
+      const e = es[es.length - 1];
+      if (e.isIntersecting && e.intersectionRatio >= threshold - 0.01) { if (!on) { on = true; play(); } }
+      else if (on && e.boundingClientRect.top > 0) { on = false; back(); }
+    }, { threshold }).observe(el);
+  };
+  // 比較・見出し: .pre の付け外しで進む・戻る。.js（動きの指定）は完成形から .pre にしたあとで付ける（最初の準備を動かさない）
   const cmp = document.getElementById('lp-compare');
-  if (cmp) { cmp.classList.add('pre'); once(cmp, () => { cmp.classList.add('go'); cmp.classList.remove('pre'); }, 0.35); }
-  document.querySelectorAll('.lp-start h2, .lp-compare h2').forEach(h => {
-    h.innerHTML = '<span class="lp-m"><span class="lp-r">' + h.innerHTML + '</span></span>'; h.classList.add('pre');
-    once(h, () => { h.classList.add('go'); h.classList.remove('pre'); }, 0.1);
-  });
+  const heads = [...document.querySelectorAll('.lp-start h2, .lp-compare h2')];
+  heads.forEach(h => { h.innerHTML = '<span class="lp-m"><span class="lp-r">' + h.innerHTML + '</span></span>'; h.classList.add('pre'); });
+  if (cmp) cmp.classList.add('pre');
+  void document.body.offsetHeight;
+  heads.forEach(h => { h.classList.add('js'); replay(h, 0.1, () => h.classList.remove('pre'), () => h.classList.add('pre')); });
+  if (cmp) { cmp.classList.add('js'); replay(cmp, 0.35, () => cmp.classList.remove('pre'), () => cmp.classList.add('pre')); }
   // 小窓: 見えたら3試合分、表示点数を入れる → スコアが出る → 合計とグラフが進む。最後はHTMLの完成形と同じになる
   const mini = document.getElementById('lp-mini');
   if (mini) {
@@ -7883,11 +7877,14 @@ function initLpMotion() {
     const vs = [...mini.querySelectorAll('.v')], ss = [...mini.querySelectorAll('.s')], ts = [...mini.querySelectorAll('.t')], label = document.getElementById('lp-mini-k');
     const lines = [...mini.querySelectorAll('polyline')], base = lines.map(l => l.getAttribute('points').split(' ').map(p => p.split(',').map(Number)));
     const fmt = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1), tot = [0, 0, 0, 0];
+    let timers = [], raf = 0;
     const tone = (el, v) => { el.classList.toggle('p', v >= 0); el.classList.toggle('m', v < 0); };
     const drawTo = (i, k, f) => { const b = base[i], a = b[k], c = b[k + 1], pts = b.slice(0, k + 1).concat([[a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f]]); lines[i].setAttribute('points', pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')); };
     const blank = () => { vs.forEach(v => { v.textContent = ''; }); ss.forEach(x => x.classList.add('off')); };
-    blank(); ts.forEach(t => { t.textContent = '±0.0'; t.classList.remove('p', 'm'); }); lines.forEach(l => l.setAttribute('points', l.getAttribute('points').split(' ')[0])); label.textContent = '1試合目';
-    const later = (ms, f) => setTimeout(f, ms);
+    const start = () => { tot.fill(0); blank(); ts.forEach(t => { t.textContent = '±0.0'; t.classList.remove('p', 'm'); }); lines.forEach((l, i) => l.setAttribute('points', base[i][0].join(','))); label.textContent = '1試合目'; };
+    const stop = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); };
+    start();
+    const later = (ms, f) => timers.push(setTimeout(f, ms));
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
       G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US'); }));
@@ -7895,12 +7892,23 @@ function initLpMotion() {
       later(1750, () => {
         S[g].forEach((v, i) => { tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]); });
         const t0 = performance.now();
-        const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) requestAnimationFrame(step); };
-        requestAnimationFrame(step);
+        const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
+        raf = requestAnimationFrame(step);
       });
       if (g < 2) later(3300, () => game(g + 1));
     };
-    once(mini, () => later(250, () => game(0)), 0.5);
+    // 戻るときは線を最初の点へ縮めて、空に戻す
+    const rewind = () => {
+      stop(); blank();
+      const from = lines.map(l => l.getAttribute('points').split(' ').map(p => p.split(',').map(Number))), t0 = performance.now();
+      const step = t => {
+        const f = Math.min(1, (t - t0) / 350);
+        lines.forEach((l, i) => { const o = base[i][0]; l.setAttribute('points', from[i].map(p => (p[0] + (o[0] - p[0]) * f).toFixed(1) + ',' + (p[1] + (o[1] - p[1]) * f).toFixed(1)).join(' ')); });
+        if (f < 1) raf = requestAnimationFrame(step); else start();
+      };
+      raf = requestAnimationFrame(step);
+    };
+    replay(mini, 0.5, () => { stop(); start(); later(250, () => game(0)); }, rewind);
   }
   // 始めやすさ: スクロールに合わせて線を伸ばす（見えている間だけ動かす）
   const steps = document.getElementById('lp-steps');
@@ -7914,7 +7922,7 @@ function initLpMotion() {
       const p = Math.max(0, Math.min(1, (window.innerHeight * 0.72 - r.top) / r.height));
       line.style.setProperty('--p', p.toFixed(3));
       items.forEach((el, i) => el.classList.toggle('on', p > 0 && p >= i / (items.length - 1) - 0.02));
-      if (p >= 0.98) steps.classList.add('done');
+      steps.classList.toggle('done', p >= 0.98);
     };
     const onScroll = () => { if (!wait) { wait = true; requestAnimationFrame(draw); } };
     draw();
