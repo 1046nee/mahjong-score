@@ -318,11 +318,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-mini { max-width: 340px; margin: 0 auto 24px; background: #E4F3EC; border-radius: 14px; padding: 0 12px 10px; overflow: hidden; }
 .lp-mini-t { margin: 0 -12px 8px; padding: 9px 12px; background: #177083; font-size: 14px; font-weight: 800; color: #fff; text-align: center; }
 .lp-mini-k { margin: 0 0 6px; font-size: 12px; font-weight: 800; color: #177083; text-align: center; font-variant-numeric: tabular-nums; }
-.lp-mini-g { display: grid; grid-template-columns: 18px minmax(0, 1fr) 54px 60px; gap: 5px 7px; align-items: center; font-size: 14px; font-variant-numeric: tabular-nums; }
-.lp-mini-g .h { font-size: 11px; font-weight: 700; color: #4F6B66; text-align: center; } .lp-mini-g .h.r { text-align: right; }
-.lp-mini-g .n { font-weight: 900; text-align: center; } .lp-mini-g .v { min-height: 29px; background: #C7E6D9; border-radius: 6px; padding: 4px 7px; text-align: right; box-sizing: border-box; }
-.lp-mini-g .s, .lp-mini-g .t { font-weight: 900; text-align: right; transition: opacity .25s; } .lp-mini-g .s { font-weight: 700; font-size: 13px; }
-.lp-mini-g .p { color: #1A237E; } .lp-mini-g .m { color: #C62828; } .lp-mini-g .off { opacity: 0; }
+.lp-mini-body { display: flex; align-items: flex-start; gap: 8px; }
+/* 左: 順位（合計スコアの多い順に並べかえる。点数を入れるたびに入れかわる） */
+.lp-mini-rank { flex: 0 0 96px; display: flex; flex-direction: column; gap: 4px; }
+.lp-mini-rk { display: flex; align-items: center; gap: 4px; min-height: 29px; background: #C7E6D9; border-radius: 6px; padding: 4px 6px; box-sizing: border-box; transition: transform .5s cubic-bezier(.3,.8,.3,1); }
+.lp-mini-rn { flex: none; width: 11px; font-size: 10.5px; font-weight: 900; color: #4F6B66; }
+.lp-mini-rc { flex: none; display: flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 900; }
+.lp-mini-rt { margin-left: auto; font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; transition: opacity .25s; }
+/* 右: 表示点数を入れるとスコア・合計が出る（横幅を詰めて右半分に収める） */
+.lp-mini-g { flex: 1; min-width: 0; display: grid; grid-template-columns: 14px minmax(0, 1fr) 40px 46px; gap: 5px 4px; align-items: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+.lp-mini-g .h { font-size: 9.5px; font-weight: 700; color: #4F6B66; text-align: center; } .lp-mini-g .h.r { text-align: right; }
+.lp-mini-g .n { font-weight: 900; text-align: center; } .lp-mini-g .v { min-height: 29px; background: #C7E6D9; border-radius: 6px; padding: 4px 5px; text-align: right; box-sizing: border-box; }
+.lp-mini-g .s, .lp-mini-g .t { font-weight: 900; text-align: right; transition: opacity .25s; } .lp-mini-g .s { font-weight: 700; font-size: 11.5px; }
+.lp-mini-g .p, .lp-mini-rt.p { color: #1A237E; } .lp-mini-g .m, .lp-mini-rt.m { color: #C62828; } .lp-mini-g .off, .lp-mini-rt.off { opacity: 0; }
 .lp-mini-cw { margin-top: 10px; padding: 8px 8px 6px; background: #fff; border-radius: 10px; }
 .lp-mini-ct { margin: 0 0 2px; font-size: 12px; font-weight: 800; color: #1F2A28; }
 .lp-mini-svg { display: block; width: 100%; height: auto; }
@@ -348,7 +356,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
   .features-row.js .feature.is-on { transform: scale(1.06); opacity: 1; box-shadow: 0 10px 22px rgba(23,112,131,.2); }
   .features-row.js .feature.is-on .feature-icon svg { animation: lp-bob 2s ease-in-out infinite; }
 }
-@media (prefers-reduced-motion: reduce) { .lp-mini-g .s, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-mini-g .s, .lp-mini-rk, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
 
 /* ⑦ 始めやすさ: 3ステップ */
 .lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
@@ -3468,7 +3476,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn">1</span><span class="lp-mini-rc" style="background:#e60012">A</span><span class="lp-mini-rt p">+71.3</span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn">2</span><span class="lp-mini-rc" style="background:#00a040">C</span><span class="lp-mini-rt p">+6.9</span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn">3</span><span class="lp-mini-rc" style="background:#0075c2">B</span><span class="lp-mini-rt m">−36.2</span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn">4</span><span class="lp-mini-rc" style="background:#f39800">D</span><span class="lp-mini-rt m">−42.0</span></div></div><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
 <div class="features-wrap">
                 <div class="features-row" id="features-row">
         <div class="feature">
@@ -8498,7 +8506,29 @@ function initLpMotion() {
     const tone = (el, v) => { el.classList.toggle('p', v >= 0); el.classList.toggle('m', v < 0); };
     const drawTo = (i, k, f) => { const b = base[i], a = b[k], c = b[k + 1], pts = b.slice(0, k + 1).concat([[a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f]]); lines[i].setAttribute('points', pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')); };
     const blank = () => { vs.forEach(v => { v.textContent = ''; }); ss.forEach(x => x.classList.add('off')); };
-    const start = () => { tot.fill(0); blank(); ts.forEach(t => { t.textContent = '±0.0'; t.classList.remove('p', 'm'); }); lines.forEach((l, i) => l.setAttribute('points', base[i][0].join(','))); label.textContent = '1試合目'; };
+    // 左の順位: 点数を入れるたびに、合計の多い順へ入れかわる（FLIP＝動く前の位置から現在地へ縮めて見せる）
+    const rank = document.getElementById('lp-mini-rank');
+    const rankRow = i => rank && rank.querySelector(`[data-p="${i}"]`);
+    const reorderRank = () => {
+      if (!rank) return;
+      const rows = [...rank.children], before = new Map(rows.map(el => [el, el.getBoundingClientRect()]));
+      [0, 1, 2, 3].slice().sort((a, b) => tot[b] - tot[a]).forEach((pi, i) => {
+        const el = rankRow(pi); rank.appendChild(el); el.querySelector('.lp-mini-rn').textContent = i + 1;
+      });
+      rows.forEach(el => {
+        const b = before.get(el), a = el.getBoundingClientRect(), dy = b.top - a.top;
+        if (!dy) return;
+        el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => { el.style.transition = ''; el.style.transform = ''; });
+      });
+    };
+    const start = () => {
+      tot.fill(0); blank(); ts.forEach(t => { t.textContent = '±0.0'; t.classList.remove('p', 'm'); });
+      lines.forEach((l, i) => l.setAttribute('points', base[i][0].join(',')));
+      label.textContent = '1試合目';
+      [0, 1, 2, 3].forEach(i => { const el = rankRow(i); if (el) { el.querySelector('.lp-mini-rt').textContent = '±0.0'; el.querySelector('.lp-mini-rt').classList.remove('p', 'm'); } });
+      reorderRank();
+    };
     const stop = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); };
     start();
     const later = (ms, f) => timers.push(setTimeout(f, ms));
@@ -8507,7 +8537,11 @@ function initLpMotion() {
       G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
       S[g].forEach((v, i) => later(1100 + i * 120, () => { ss[i].textContent = fmt(v); tone(ss[i], v); ss[i].classList.remove('off'); }));
       later(1750, () => {
-        S[g].forEach((v, i) => { tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]); });
+        S[g].forEach((v, i) => {
+          tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]);
+          const rt = rankRow(i)?.querySelector('.lp-mini-rt'); if (rt) { rt.textContent = fmt(tot[i]); tone(rt, tot[i]); }
+        });
+        reorderRank();
         const t0 = performance.now();
         const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
         raf = requestAnimationFrame(step);
