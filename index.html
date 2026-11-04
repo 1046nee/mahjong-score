@@ -1131,6 +1131,17 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 /* チェックボックス付きオプション行 */
 .opt-check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; font-weight: 600; color: #333; }
 .opt-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--pc); }
+/* まとめ画像のセット選び（2026-11-04） */
+.cp-list { display: flex; flex-direction: column; border-top: 1px solid #E6ECEA; }
+.cp-row { display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-bottom: 1px solid #E6ECEA; cursor: pointer; }
+.cp-row input { width: 20px; height: 20px; flex: none; accent-color: var(--pc); margin: 0; }
+.cp-tx { min-width: 0; line-height: 1.45; }
+.cp-tx b { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: #1F2A28; }
+.cp-tx small { display: block; font-size: 12px; color: #6B7A77; margin-top: 1px; }
+.cp-rec { font-style: normal; font-size: 10.5px; font-weight: 800; color: var(--pc); background: var(--pc-tint); border-radius: 999px; padding: 1px 8px; }
+.cp-row.on .cp-tx b { color: var(--pc); }
+.cp-picks { padding: 6px 4px 0 36px; }
+.cp-picks[hidden] { display: none; }
 .auto-btn { background: #fdeee7; color: #E75620; border: 1.5px solid #E75620; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 10px; }
 .auto-btn:disabled { background: #f0f0f0; color: #bbb; border-color: #ddd; cursor: not-allowed; }
 /* 副次アクション（CSV書き出し）。「結果をまとめて画像にする」と並ぶ副ボタン。控えめな配色にする
@@ -3446,7 +3457,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="edit-tab" onclick="closeComposeModal()">キャンセル</button>
     </div>
     <div style="font-size:12px;color:#8a9aa5;line-height:1.7;margin-bottom:10px">
-      入れたい項目を選ぶと、縦長の1枚の画像にまとめます。できた画像を見て、保存・共有やPDFにできます（カードごとの画像は、各カードの右上の「画像」から）。
+      選んだ組み合わせを、縦長の1枚の画像にまとめます。送るなら「順位と成績」と「試合の流れ」の2枚がおすすめです（カードごとの画像は、各カードの右上の「画像」から）。
     </div>
     <div id="compose-list"></div>
     <button class="confirm-btn" id="compose-run" onclick="runCompose()" style="margin-top:14px">1枚の画像にする</button>
@@ -9982,16 +9993,44 @@ function printPreviewImage() {
 
 // ---- まとめ画像の選択モーダル ----
 let composeTarget = null;
+// まとめ画像は「セット」をすすめる（2026-11-04 ユーザーの依頼）: 順位と成績（総合順位＋個人成績）／試合の流れ（試合結果＋スコア推移）。
+// ほかに「全部」と「自分で選ぶ」（1つでも複数でも）。前に選んだものを端末に覚えて、次も同じ所から始める
+function composePresets(g) {
+  const team = !!(g.settings.teamMode && g.settings.teams);
+  return [
+    { key: 'rank', name: '順位と成績', rec: true, kinds: team ? ['team', 'score', 'stats'] : ['score', 'stats'] },
+    { key: 'flow', name: '試合の流れ', rec: true, kinds: team ? ['rounds', 'chart', 'ichart'] : ['rounds', 'chart'] },
+    { key: 'all', name: '全部を1枚に', kinds: imgAvailableSections(g).map(x => x.kind) },
+    { key: 'custom', name: '自分で選ぶ', kinds: null },
+  ];
+}
 function openComposeModal(g) {
   if (!g || !(g.rounds || []).length) return;
   composeTarget = g;
-  const list = imgAvailableSections(g).map(x => `
-    <label class="opt-check" style="padding:9px 2px">
-      <input type="checkbox" class="compose-pick" value="${x.kind}" checked>
-      <span>${x.kind === 'chart' ? imgSectionLabel('chart', g.settings) : x.label}</span>
+  const secs = imgAvailableSections(g);
+  const lab = k => k === 'chart' ? imgSectionLabel('chart', g.settings) : (secs.find(x => x.kind === k) || {}).label || k;
+  let last = 'rank'; try { last = localStorage.getItem('composePreset') || 'rank'; } catch (e) {}
+  let lastPicks = null; try { lastPicks = JSON.parse(localStorage.getItem('composePicks') || 'null'); } catch (e) {}
+  const presets = composePresets(g);
+  if (!presets.some(p => p.key === last)) last = 'rank';
+  const rows = presets.map(p => `
+    <label class="cp-row${p.key === last ? ' on' : ''}">
+      <input type="radio" name="compose-preset" value="${p.key}"${p.key === last ? ' checked' : ''} onchange="composePresetChanged()">
+      <span class="cp-tx"><b>${p.name}${p.rec ? '<i class="cp-rec">おすすめ</i>' : ''}</b>
+      <small>${p.kinds ? p.kinds.map(lab).join('・') : '入れる項目を1つ・複数から選ぶ'}</small></span>
     </label>`).join('');
-  document.getElementById('compose-list').innerHTML = list;
+  const picks = secs.map(x => `
+    <label class="opt-check" style="padding:8px 2px">
+      <input type="checkbox" class="compose-pick" value="${x.kind}"${!lastPicks || lastPicks.includes(x.kind) ? ' checked' : ''}>
+      <span>${lab(x.kind)}</span>
+    </label>`).join('');
+  document.getElementById('compose-list').innerHTML = `<div class="cp-list">${rows}</div><div class="cp-picks" id="compose-picks"${last === 'custom' ? '' : ' hidden'}>${picks}</div>`;
   document.getElementById('compose-modal').classList.add('open');
+}
+function composePresetChanged() {
+  const v = (document.querySelector('input[name="compose-preset"]:checked') || {}).value;
+  document.querySelectorAll('.cp-row').forEach(r => r.classList.toggle('on', r.querySelector('input').value === v));
+  const pk = document.getElementById('compose-picks'); if (pk) pk.hidden = v !== 'custom';
 }
 function closeComposeModal() {
   document.getElementById('compose-modal').classList.remove('open');
@@ -9999,8 +10038,11 @@ function closeComposeModal() {
 async function runCompose() {
   const g = composeTarget;
   if (!g) return;
-  const kinds = [...document.querySelectorAll('.compose-pick:checked')].map(el => el.value);
+  const preset = (document.querySelector('input[name="compose-preset"]:checked') || {}).value || 'custom';
+  const p = composePresets(g).find(x => x.key === preset);
+  const kinds = p && p.kinds ? p.kinds : [...document.querySelectorAll('.compose-pick:checked')].map(el => el.value);
   if (!kinds.length) { showToast('1つ以上選んでください'); return; }
+  try { localStorage.setItem('composePreset', preset); if (preset === 'custom') localStorage.setItem('composePicks', JSON.stringify(kinds)); } catch (e) {}
   const btn = document.getElementById('compose-run');
   btn.disabled = true; btn.textContent = '作成中…';
   try {
@@ -10009,9 +10051,9 @@ async function runCompose() {
     const canvas = buildComposedCanvas(g, kinds);
     if (canvas === IMG_TOO_LARGE) { showToast('試合数が多すぎて1枚の画像に収まりません。項目を減らすかCSVをお使いください'); return; }
     if (!canvas) { showToast('画像の作成に失敗しました'); return; }
-    track('image_preview', { kind: 'compose', sections: kinds.length, rounds: g.rounds.length });
+    track('image_preview', { kind: 'compose', preset, sections: kinds.length, rounds: g.rounds.length });
     closeComposeModal();
-    await openImagePreview(canvas, g, '結果まとめ');
+    await openImagePreview(canvas, g, p && p.kinds && preset !== 'all' ? p.name : '結果まとめ');
   } finally {
     btn.disabled = false; btn.textContent = '1枚の画像にする';
   }
