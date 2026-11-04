@@ -97,14 +97,39 @@ with sync_playwright() as p:
         pg.wait_for_timeout(250)
         el.screenshot(path=os.path.join(OUT, "oct-" + name + ".png"))
 
+    # お知らせ「マイページを追加しました」の画像（2026-11-04〜）: カードの縁でぴったり切ると、角の外に別の色が残ったり
+    # 枠の線が欠けたりした。上のタブ・期間の行も入れて、周りに地の色を少し残して切る＝ cshot
+    def cshot(sels, name, pad=12, own=False, pad_b=None):
+        sel0 = sels[0]
+        pg.evaluate("(s) => { const e = document.querySelector(s); window.scrollTo(0, Math.max(0, e.getBoundingClientRect().top + scrollY - 80)); }", sel0)
+        pg.wait_for_timeout(300)
+        r = pg.evaluate("""(ss) => { let L = 1e9, T = 1e9, R = -1e9, B = -1e9;
+          ss[0].forEach(s => document.querySelectorAll(s).forEach(e => (ss[1] ? [e] : [e, ...e.querySelectorAll('*')]).forEach(x => {
+            const b = x.getBoundingClientRect(); if (!b.width || !b.height || getComputedStyle(x).visibility === 'hidden') return;
+            L = Math.min(L, b.left); T = Math.min(T, b.top); R = Math.max(R, b.right); B = Math.max(B, b.bottom); })));
+          return [L, T, R, B]; }""", [sels, own])
+        L, T, R, B = max(0, r[0] - pad), max(0, r[1] - pad), min(W, r[2] + pad), r[3] + (pad if pad_b is None else pad_b)
+        vp = pg.viewport_size
+        if B > vp["height"]: pg.set_viewport_size({"width": W, "height": int(B) + 20}); pg.wait_for_timeout(300)
+        path = os.path.join(OUT, "news-" + name + ".png")
+        pg.screenshot(path=path, clip={"x": L, "y": T, "width": R - L, "height": B - T})
+        pg.set_viewport_size(vp)
+        from PIL import Image
+        im = Image.open(path).convert("RGB")
+        if im.width > 720: im = im.resize((720, round(im.height * 720 / im.width)), Image.LANCZOS)
+        im.save(os.path.join(MJ, "assets", "screens", name + ".jpg"), quality=86, optimize=True, progressive=True)
+        print("news", name, im.size)
+
     pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; sparkUnit = 'm'; renderHistory()")
     pg.wait_for_timeout(500)
-    shot("#mp-stats .mc-card", "mypage-card")
+    cshot(["#mp-stats .mp-filters", "#mp-stats .mc-card"], "mypage-card", own=True)
     pg.evaluate("document.querySelector('#mp-stats .sp-hit[data-i=\"1\"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))")
     pg.wait_for_timeout(300)
-    shot("#mp-stats .sp-pop", "spark-pop")
+    pg.evaluate("document.querySelector('#mp-stats .sp-pop').scrollIntoView({block: 'center'})")
+    cshot(["#mp-stats .mc-card", "#mp-stats .sp-pop"], "spark-pop", pad=8, pad_b=10)
+    pg.evaluate("document.querySelectorAll('.sp-pop').forEach(p => p.remove())")
     pg.evaluate("setMpPane('h2h')"); pg.wait_for_timeout(300)
-    shot("#mp-pane-h2h .card", "my-h2h")
+    cshot(["#mp-pane-filt", "#mp-pane-tabs", "#mp-pane-h2h .card"], "my-h2h")
     # 仲間ページ
     pg.evaluate("openCreateCircle(); document.getElementById('cc-name').value = '金曜定例会'; document.getElementById('cc-me').value = '太郎';")
     pg.evaluate("runCreateCircle()")
@@ -132,9 +157,18 @@ with sync_playwright() as p:
     shot("#form-modal .mu-vs", "matchup-vs")
     shot("#form-modal .mu-card", "matchup-table")
     pg.evaluate("closeFormModal()")
+    pg.set_viewport_size({"width": W, "height": 2600})  # シートの中を全部見せる（縦にスクロールさせない）
+    pg.wait_for_timeout(300)
     pg.evaluate(f"openResultSheet('{made[3][0]}', {{ from: 'circle', me: 0 }})")
     pg.wait_for_timeout(500)
-    pg.locator("#form-modal .form-modal-box").screenshot(path=os.path.join(OUT, "oct-result-sheet.png"))
+    # 結果のシートは暗い幕の上に出るので、幕を地の色にしてから周りを少し残して切る
+    pg.add_style_tag(content="#form-modal { background: #E9F1EF !important; backdrop-filter: none !important; }")
+    pg.wait_for_timeout(300)
+    pg.evaluate("document.querySelectorAll('#form-modal *').forEach(e => { if (e.scrollTop) e.scrollTop = 0; })")
+    # 個人成績・スコア推移は閉じて、試合ごとのスコアまでを見せる（記事の説明と同じ所）
+    print("folded", pg.evaluate("""() => { let n = 0; document.querySelectorAll('#form-modal details').forEach(d => { const t = (d.querySelector('summary') || d).textContent; if (/個人成績|スコア推移/.test(t)) { d.open = false; n++; } }); return n; }"""))
+    pg.wait_for_timeout(300)
+    cshot(["#form-modal .form-modal-box"], "result-sheet", pad=14, own=True)
     print("errors", errs)
     br.close()
 srv.shutdown()
