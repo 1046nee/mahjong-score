@@ -112,16 +112,16 @@ def v_kinou():
         return [ms.at(a, b, '<h1>点数を入れるだけ。</h1>', cls="cap", style="top:250px"), ms.phone_at(a, b, "howto-3.jpg", y=400, w=460)[0],
                 ms.chip_at(a + 1.0, b, ("合計", "100,000点", "pos"), "r", 860)]
     def s2(a, b):
-        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-4.jpg", y=430, w=460)[0]]
+        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-4.jpg", y=445, w=460)[0]]
         for i, (c, s) in enumerate([(("", "+69.1", ("medal", 1)), "l"), (("", "+64.0", ("medal", 2)), "r"), (("", "−53.5", ("medal", 3)), "l")]):
             e.append(ms.chip_at(a + .4 + i * .3, b, c, s, 640 + i * 135))
         return e
     def s3(a, b):
-        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-2.jpg", y=430, w=460)[0],
+        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-2.jpg", y=445, w=460)[0],
                 ms.chip_at(a + .7, b, ("見る人は", "登録いらず", ""), "r", 720)]
     def s4(a, b):
         return [ms.at(a, b, '<h1>通算の成績も、<br>自動でたまる。</h1>', cls="cap", style="top:200px"),
-                ms.phone_at(a, b, "lp-mypage.jpg", y=430, w=460, scroll=f"{a + .6},{b - .3},0,210")[0],
+                ms.phone_at(a, b, "lp-mypage.jpg", y=445, w=460, scroll=f"{a + .6},{b - .3},0,110")[0],
                 ms.chip_at(a + .5, b, ("通算スコア", "+347.0", "pos"), "r", 680), ms.chip_at(a + .9, b, ("トップ率", "26%", ""), "l", 860)]
     def s5(a, b):
         return [ms.end_card(a)]
