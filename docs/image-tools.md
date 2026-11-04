@@ -126,6 +126,11 @@
   ログインする固定UID（`uidSHOT01`）に合わせる（合わせないと過去の試合が0件になる）
 - 本番DBをREST（urllib）で読むとApp Check強制で401になることがある。tools/appcheck.py の `install()` を使い、
   `tools/.appcheck-debug-token`（.gitignore済み）にFirebaseコンソールで発行したデバッグトークンを置く
+- **総当たり表（`.mx-scroll`）は `max-height: min(70vh, 560px)` の縦スクロール枠**なので、`wshot()` で
+  `overflow:visible` にしただけでは枠の高さが広がらず、メンバーが多いと下のほうの行が切れて撮れていた
+  （2026-11-04・24人で約11行しか写っていなかった）。`max-height` も `none` に外すこと（tools/shoot_lp_big_plan.py の `wshot`）。
+  切れて撮れると「止める列」の高さ比（--ch）が1を超える・`--ihn` が小さすぎる値になるので、meta の `ch`/`ihn` が1前後やそれ以上なのに
+  表の行数的に明らかに高さが足りなそうなときはこのズレを疑う
 - **アプリのUIを変えたら画像スクリプトも探す**。2026-09-17に、カード名の変更（2026-08）と用語の中立化（2026-08-26）が
   tools/の画像スクリプトに反映されておらず、OGP・Xヘッダー・IG全シリーズが「スコア収支」のままだった。
   `grep -rn "<旧UI語>" tools/*.py` を変更のたびに回すこと

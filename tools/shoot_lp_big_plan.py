@@ -44,7 +44,7 @@ def wshot(js_parts, name, maxw=3000, col=False):
       b.style.cssText = `position:absolute;left:0;top:0;z-index:2147483000;background:${bg};padding:${pad}px;width:${w + pad * 2}px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px`;
       els.forEach(e => b.appendChild(e.cloneNode(true))); document.body.appendChild(b);
       [...b.children].forEach(x => { x.style.width = w + 'px'; x.style.margin = '0'; x.style.boxSizing = 'border-box'; x.style.flex = 'none'; });
-      b.querySelectorAll('*').forEach(x => { const cs = getComputedStyle(x); if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') x.style.overflow = 'visible'; if (cs.position === 'sticky') x.style.position = 'relative'; });
+      b.querySelectorAll('*').forEach(x => { const cs = getComputedStyle(x); if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') x.style.overflow = 'visible'; if (cs.maxHeight !== 'none') x.style.maxHeight = 'none'; if (cs.position === 'sticky') x.style.position = 'relative'; });
       const card = [...b.children].filter(e => e.querySelector('table')).pop(), th = card.querySelector('table tr > *:first-child'), bl = b.getBoundingClientRect().left;
       const bt = b.getBoundingClientRect().top, tt = card.querySelector('table').getBoundingClientRect();
       return { colRight: th ? th.getBoundingClientRect().right - bl : 0, boxW: b.getBoundingClientRect().width, boxH: b.getBoundingClientRect().height, tTop: tt.top - bt, tBot: tt.bottom - bt }; }""", [js_parts, APP_PAD])
