@@ -8,6 +8,7 @@ import io, os, re, json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TITLES = {
+ "blog-naga-guide.html": "【実演】麻雀AI NAGAの使い方｜雀魂の牌譜を解析する手順・料金・解析画面の見方と7タイプ",
  "blog-ai-haifu.html": "【2026年】【10分でわかる】麻雀AIで牌譜を分析する方法｜雀魂MAKA・Mortal・NAGAの使い方と無料・有料",
  "blog-mahjong-suuji.html": "【マニアック】【図解】麻雀の「なぜこの数字？」に全部答える｜136枚・王牌14枚・満貫8,000点の理由",
  "blog-sekai-mahjong.html": "【マニアック】【世界一周】麻雀は国でこんなに違う｜手牌16枚の台湾・ジョーカーのアメリカ・中国の公式ルール",

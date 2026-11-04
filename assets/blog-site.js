@@ -27,7 +27,10 @@ const inCat = (p, cat) => cat === 'all' || p.cat === cat || (cat === 'mahjong' &
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
-  { url: '/blog-ai-haifu.html', cat: 'ai', date: '2026.10.28', tag: '麻雀AI',
+  { url: '/blog-naga-guide.html', cat: 'ai', date: '2026.11.04', tag: '麻雀AI',
+title: '【実演】麻雀AI NAGAの使い方｜雀魂の牌譜を解析する手順・料金・解析画面の見方と7タイプ',
+desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜の読み込み、プランとNP、解析画面の見方、7タイプとモデルの人。' },
+{ url: '/blog-ai-haifu.html', cat: 'ai', date: '2026.10.28', tag: '麻雀AI',
     title: '【2026年】【10分でわかる】麻雀AIで牌譜を分析する方法｜雀魂MAKA・Mortal・NAGAの使い方と無料・有料',
     desc: '雀魂・天鳳・麻雀一番街の牌譜をAIで分析する手順。無料のMAKA・Mortal、有料のNAGAの違いと、AIの答えの読み方。' },
   { url: '/blog-mahjong-suuji.html', cat: 'rules', date: '2026.10.27', tag: 'ルール解説',
