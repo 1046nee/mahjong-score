@@ -130,14 +130,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .features-row { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .features-row::-webkit-scrollbar { display: none; }
 .feature { flex: 0 0 62%; max-width: 300px; scroll-snap-align: start; background: #f6faf9; border: 1px solid #e2ece7; border-radius: 16px; padding: 20px 16px; margin-bottom: 0; }
-.features-nav { display: none; position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e2ece7; background: #fff; color: #177083; font-size: 22px; font-weight: 700; line-height: 1; cursor: pointer; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.features-nav.prev { left: -14px; }
-.features-nav.next { right: -14px; }
+.features-ctl { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 14px; }
+.features-nav { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #177083; background: #fff; color: #177083; display: grid; place-items: center; padding: 0; cursor: pointer; transition: opacity .2s; }
+.features-nav svg { display: block; width: 14px; height: 14px; }
+.features-nav:disabled { opacity: .3; cursor: default; }
 /* 端のフェード＝「続きがある」ことを示す。ドット＝現在位置インジケーター */
 .features-wrap::before, .features-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 1; pointer-events: none; }
 .features-wrap::before { left: 0; background: linear-gradient(90deg, #fff 15%, rgba(255,255,255,0)); }
 .features-wrap::after { right: 0; background: linear-gradient(270deg, #fff 15%, rgba(255,255,255,0)); }
-.features-dots { display: flex; justify-content: center; gap: 7px; margin-top: 16px; }
+.features-dots { display: flex; justify-content: center; gap: 7px; }
 .fdot { width: 7px; height: 7px; border-radius: 4px; background: #d3e2dc; transition: width 0.25s, background 0.25s; }
 .fdot.on { width: 22px; background: #177083; }
 .feature-icon svg { display: block; }
@@ -177,7 +178,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
    --i4 は必ず .ico の上で決める（:root で決めると #177083 に固定されて受け継がれ、三麻の青・削除の赤に追従しない） */
 .ico { --i4: var(--i1); }
 .ico.ico-l { --i4: #E75620; }
-@media (min-width: 700px) { .feature { flex: 0 0 300px; } .features-nav { display: block; } }
+@media (min-width: 700px) { .feature { flex: 0 0 300px; } }
 .feature-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .fi-green { background: #E4F3EC; }
 .fi-blue { background: #EAF0FB; }
@@ -190,6 +191,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home { max-width: none; }
   #view-home .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 560px); grid-template-areas: "h1 ill" "desc ill" "cta ill" "trust ill" "recent ill"; column-gap: 48px; max-width: 1180px; margin: 0 auto; padding: 40px 40px 56px; text-align: left; align-items: start; }
   #view-home .hero h1 { grid-area: h1; font-size: 42px; margin-top: 30px; }
+  #view-home .hero h1 { font-size: min(42px, 3.27vw); }
   #view-home .hero .hero-illust { grid-area: ill; max-width: 560px; width: 100%; margin: 0; align-self: center; }
   #view-home .hero .hero-desc { grid-area: desc; max-width: 520px; margin: 0 0 24px; font-size: 16px; }
   #view-home .hero .cta-btn { grid-area: cta; margin: 0 0 12px; max-width: 380px; }
@@ -207,7 +209,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home .lp-solution .lp-inner, #view-home .lp-screens .lp-inner { max-width: 1180px; }
   #view-home .features-wrap { max-width: none; }
   #view-home .features-row { display: grid; grid-template-columns: repeat(4, 184px); justify-content: center; gap: 14px; overflow: visible; padding: 4px 0 8px; }
-  #view-home .features-row::after, #view-home .features-nav, #view-home .features-dots { display: none; }
+  #view-home .features-row::after, #view-home .features-ctl { display: none; }
 
   #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; padding-left: 32px; padding-right: 32px; }
   #view-home .home-content:not(.lp-howto-wrap) > .ad-slot { grid-column: 1 / -1; }
@@ -302,14 +304,39 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; }
 .compare-table td.before { color: #999; width: 50%; }
 .compare-table td.after { color: #1a1a1a; font-weight: 700; width: 50%; }
+/* 比較の動き（2026-11-04）: 見えたら上の行から順に、左に線が引かれて右が現れる。.pre はJSが付ける（無ければ完成形） */
+.compare-table td.before span { background: linear-gradient(#AAB6B3, #AAB6B3) left 56% / 100% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.compare-table td.after span { display: inline-block; }
+.compare-table.go td.before span { transition: background-size .4s ease var(--d, 0s); }
+.compare-table.go td.after span { transition: opacity .35s ease calc(var(--d, 0s) + .3s), transform .35s ease calc(var(--d, 0s) + .3s); }
+.compare-table tbody tr:nth-child(2) { --d: .45s; } .compare-table tbody tr:nth-child(3) { --d: .9s; } .compare-table tbody tr:nth-child(4) { --d: 1.35s; }
+.compare-table.pre td.before span { background-size: 0 1.5px; }
+.compare-table.pre td.after span { opacity: 0; transform: translateX(-10px); }
+/* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
+.lp-mini { max-width: 340px; margin: 0 auto 24px; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 12px 14px 10px; }
+.lp-mini-t { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #177083; text-align: center; }
+.lp-mini-g { display: grid; grid-template-columns: 22px 1fr 72px; gap: 6px 8px; align-items: center; font-size: 14px; font-variant-numeric: tabular-nums; }
+.lp-mini-g .h { font-size: 11px; font-weight: 700; color: #6B7A77; text-align: center; } .lp-mini-g .h.r { text-align: right; }
+.lp-mini-g .n { font-weight: 900; text-align: center; } .lp-mini-g .v { min-height: 31px; background: #F4F7F6; border-radius: 6px; padding: 5px 8px; text-align: right; box-sizing: border-box; }
+.lp-mini-g .s { font-weight: 900; text-align: right; transition: opacity .25s; } .lp-mini-g .s.p { color: #1A237E; } .lp-mini-g .s.m { color: #C62828; } .lp-mini-g .s.off { opacity: 0; }
+.lp-mini-c { margin: 8px 0 0; font-size: 11px; color: #6B7A77; text-align: center; }
+/* スマホの下に固定する「はじめる」（2026-11-04）: ヒーローのボタンが見えなくなってから、締めのボタンが見えるまで。ボタンは動かさない（透明度だけ） */
+.lp-fix { position: fixed; left: 0; right: 0; bottom: 0; z-index: 150; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.96); border-top: 1px solid #DCE6E3; text-align: center; opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s; }
+.lp-fix.on { opacity: 1; visibility: visible; } .lp-fix .cta-btn { padding: 13px 20px; font-size: 16px; }
+@media (min-width: 1100px) { .lp-fix { display: none; } }
+@media (prefers-reduced-motion: reduce) { .compare-table td span, .lp-mini-g .s, .lp-fix { transition: none; } }
 
 /* ⑦ 始めやすさ: 3ステップ */
 .lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
 .lp-start h2 { font-size: 22px; font-weight: 900; color: #1a1a1a; margin-bottom: 22px; }
-.steps { display: flex; flex-direction: column; gap: 12px; max-width: 340px; margin: 0 auto 20px; }
-.step { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 12px; padding: 14px 16px; text-align: left; }
-.step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #177083; color: #fff; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; }
-.step-text { font-size: 15px; color: #1a1a1a; font-weight: 600; }
+/* 番号を線でつなぐ。線はスクロールに合わせて伸びる（2026-11-04。JSが無いときは全部つながった形） */
+.steps { position: relative; display: flex; flex-direction: column; gap: 30px; width: fit-content; max-width: 100%; margin: 0 auto 26px; }
+.steps-line { position: absolute; left: 14px; top: 15px; bottom: 15px; width: 3px; background: #C9D6EE; overflow: hidden; }
+.steps-line i { display: block; height: 100%; background: #177083; transform-origin: top; transform: scaleY(var(--p, 1)); }
+.step { position: relative; display: flex; align-items: center; gap: 14px; text-align: left; }
+.step-num { flex-shrink: 0; width: 31px; height: 31px; border-radius: 50%; background: #177083; color: #fff; font-weight: 800; font-size: 15px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background .25s; }
+.steps.js .step:not(.on) .step-num { background: #AFC0E0; }
+.step-text { font-size: 16px; color: #1a1a1a; font-weight: 700; line-height: 1.5; }
 .start-note { font-size: 19px; font-weight: 900; color: #177083; }
 .start-note strong { color: #E75620; font-size: 24px; }
 
@@ -324,6 +351,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* ヒーロー */
 .hero { text-align: center; padding: 16px 20px 40px; background: transparent; }
 .hero h1 { font-size: min(33px, 8vw); line-height: 1.28; font-weight: 900; color: #177083; margin-bottom: 16px; letter-spacing: -0.5px; }
+.hero h1 .h1-em { font-size: 1.14em; letter-spacing: -1px; background: linear-gradient(transparent 66%, #FFDCCB 66%); }
 .hero-illust { margin: 0 auto 20px; max-width: 380px; }
 .hero-illust svg { width: 100%; height: auto; display: block; }
 
@@ -2613,7 +2641,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="view-home" class="view active">
 <!-- ファーストビュー -->
 <section class="hero">
-  <h1>麻雀のスコア記録、<br>まだ電卓と紙とペンで<br>やってますか？</h1>
+  <h1>麻雀のスコア記録、<br>まだ<span class="h1-em">電卓と紙とペン</span>で<br>やってますか？</h1>
 
   <div class="hero-illust" aria-hidden="true">
     <svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -2740,7 +2768,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-start">
     <div class="lp-inner">
       <h2>必要なものはスマホのみ。</h2>
-      <div class="steps">
+      <div class="steps" id="lp-steps"><span class="steps-line" aria-hidden="true"><i></i></span>
         <div class="step"><span class="step-num">1</span><span class="step-text">メンバーの名前を入れる</span></div>
         <div class="step"><span class="step-num">2</span><span class="step-text">URLをシェアする</span></div>
         <div class="step"><span class="step-num">3</span><span class="step-text">試合後、表示点数を入れるだけ</span></div>
@@ -2753,15 +2781,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-compare">
     <div class="lp-inner">
       <h2>手書きのスコア表は、もう卒業。</h2>
-      <table class="compare-table">
+      <table class="compare-table" id="lp-compare">
         <thead>
           <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
         </thead>
         <tbody>
-          <tr><td class="before">試合ごとの記録が面倒</td><td class="after">入れるだけでスコア記録完了</td></tr>
-          <tr><td class="before">返し点・ウマ・オカを手計算</td><td class="after">すべて自動で計算</td></tr>
-          <tr><td class="before">正しい計算か何度も確認</td><td class="after">成績もグラフも自動作成</td></tr>
-          <tr><td class="before">電卓・紙・ペンが必要</td><td class="after">スマホ1台のみ</td></tr>
+          <tr><td class="before"><span>試合ごとの記録が面倒</span></td><td class="after"><span>入れるだけでスコア記録完了</span></td></tr>
+          <tr><td class="before"><span>返し点・ウマ・オカを手計算</span></td><td class="after"><span>すべて自動で計算</span></td></tr>
+          <tr><td class="before"><span>正しい計算か何度も確認</span></td><td class="after"><span>成績もグラフも自動作成</span></td></tr>
+          <tr><td class="before"><span>電卓・紙・ペンが必要</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
         </tbody>
       </table>
       <p class="start-note" style="margin-top:22px;text-align:center">めんどうな計算は、<strong>ぜんぶ</strong> まじゃすこへ。</p>
@@ -2772,9 +2800,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="features-wrap">
-        <button type="button" class="features-nav prev" onclick="featuresScroll(-1)" aria-label="前の項目へ">‹</button>
-        <div class="features-row" id="features-row">
+      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="n">A</span><span class="v">41,300</span><span class="s p">+61.3</span><span class="n">B</span><span class="v">28,200</span><span class="s p">+8.2</span><span class="n">C</span><span class="v">22,500</span><span class="s m">−17.5</span><span class="n">D</span><span class="v">8,000</span><span class="s m">−52.0</span></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+<div class="features-wrap">
+                <div class="features-row" id="features-row">
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><rect x="12" y="6" width="24" height="36" rx="5" fill="#177083"/><rect x="16" y="11" width="16" height="7" rx="2" fill="#E4F3EC"/><g fill="#E4F3EC"><rect x="16" y="22" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="22" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="22" width="4.5" height="4" rx="1.2"/><rect x="16" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="21.8" y="28.5" width="4.5" height="4" rx="1.2"/><rect x="27.5" y="28.5" width="4.5" height="4" rx="1.2" fill="#E75620"/></g></svg></div>
           <h3>スコアを一瞬で計算</h3>
@@ -2836,9 +2864,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <p>機種変更しても、成績はずっと残る。</p>
         </div>
         </div>
-        <button type="button" class="features-nav next" onclick="featuresScroll(1)" aria-label="次の項目へ">›</button>
-      </div>
-      <div class="features-dots" id="features-dots" aria-hidden="true"></div>
+        </div>
+<div class="features-ctl"><button type="button" class="features-nav prev" id="features-prev" onclick="featuresScroll(-1)" aria-label="前の項目へ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L4 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="features-dots" id="features-dots" aria-hidden="true"></div><button type="button" class="features-nav next" id="features-next" onclick="featuresScroll(1)" aria-label="次の項目へ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 2 L10 7 L5 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       <p class="start-note" style="margin-top:22px;text-align:center">そしてこの全部が、<strong>無料</strong>。</p>
     </div>
   </section>
@@ -2912,6 +2939,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <footer class="site-footer">
   <div class="ft"><a class="ft-brand" href="/"><img src="/assets/favicon.png" alt="" width="40" height="40"><span><b>まじゃすこ</b><small>麻雀のスコア記録を、スマホでかんたんに</small></span></a><div class="ft-sns"><a href="https://x.com/majasco_jp" target="_blank" rel="noopener" aria-label="まじゃすこ公式X（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/99/a9/2199a9db-0dc2-305f-7b8f-a5bc80258dbf/ProductionAppIcon-0-0-1x_U007emarketing-0-8-0-0-0-85-220.png/128x128bb.jpg" alt="X" width="40" height="40" loading="lazy"></a><a href="https://www.instagram.com/majasco_jp/" target="_blank" rel="noopener" aria-label="まじゃすこ公式Instagram（@majasco_jp）"><img src="https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/01/2d/b1/012db1a7-249a-86e8-f025-72491c2a6475/Prod-0-0-1x_U007epad-0-0-0-1-0-0-sRGB-85-220.png/128x128bb.jpg" alt="Instagram" width="40" height="40" loading="lazy"></a></div><nav class="ft-cols" aria-label="サイトのリンク"><div><b>使う</b><a href="/">トップ</a><a href="/score-basics.html">スコア計算の基本</a><a href="/faq.html">よくある質問</a></div><div><b>読む</b><a href="/blog.html">ブログ</a><a href="/news/">お知らせ</a><a href="/news/feed.xml">お知らせRSS</a></div><div><b>このサイトについて</b><a href="/about.html">運営者について</a><a href="/contact.html">お問い合わせ</a><a href="/terms.html">利用規約</a><a href="/privacy.html">プライバシーポリシー</a></div></nav><div class="ft-copy">© 2026 まじゃすこ</div></div>
 </footer>
+<div class="lp-fix" id="lp-fix"><button class="cta-btn" onclick="openQuickStart()">はじめる</button></div>
 </div>
 
 <!-- SETUP -->
@@ -7788,6 +7816,55 @@ function initLpDemo() {
     if (e.isIntersecting && !lpDemoUser) lpDemoTimer = setInterval(() => lpDemo(lpDemoIdx + 1), 5000);
   }), { threshold: 0.5 }).observe(root);
 }
+// LPの動き（2026-11-04）。HTMLは完成形で、動きを減らす設定の端末やJSが無いときはそのまま見える
+function initLpMotion() {
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // スマホの下の「はじめる」: ヒーローのボタンが見えなくなってから、締めのボタンが見えるまで
+  const fix = document.getElementById('lp-fix'), heroBtn = document.querySelector('.hero .cta-btn'), closeBtn = document.querySelector('.lp-close .cta-btn');
+  if (fix && heroBtn && closeBtn && 'IntersectionObserver' in window) {
+    const st = { hero: true, close: false };
+    const io = new IntersectionObserver(es => {
+      es.forEach(e => { if (e.target === heroBtn) st.hero = e.isIntersecting || e.boundingClientRect.top > 0; else st.close = e.isIntersecting || e.boundingClientRect.top < 0; });
+      fix.classList.toggle('on', !st.hero && !st.close);
+    });
+    io.observe(heroBtn); io.observe(closeBtn);
+  }
+  if (still || !('IntersectionObserver' in window)) return;
+  const once = (el, fn, threshold) => { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); fn(); } }, { threshold }); io.observe(el); };
+  // 比較: 見えたら上の行から順に
+  const cmp = document.getElementById('lp-compare');
+  if (cmp) { cmp.classList.add('pre'); once(cmp, () => { cmp.classList.add('go'); cmp.classList.remove('pre'); }, 0.35); }
+  // 小窓: 見えたら表示点数を順に入れて、スコアを出す
+  const mini = document.getElementById('lp-mini');
+  if (mini) {
+    const vs = [...mini.querySelectorAll('.v')], ss = [...mini.querySelectorAll('.s')], full = vs.map(v => v.textContent);
+    vs.forEach(v => { v.textContent = ''; }); ss.forEach(x => x.classList.add('off'));
+    once(mini, () => {
+      vs.forEach((v, i) => { for (let k = 1; k <= full[i].length; k++) setTimeout(() => { v.textContent = full[i].slice(0, k); }, 300 + i * 420 + k * 55); });
+      ss.forEach((x, i) => setTimeout(() => x.classList.remove('off'), 300 + vs.length * 420 + 200 + i * 170));
+    }, 0.5);
+  }
+  // 始めやすさ: スクロールに合わせて線を伸ばす（見えている間だけ動かす）
+  const steps = document.getElementById('lp-steps');
+  if (steps) {
+    const items = [...steps.querySelectorAll('.step')], line = steps.querySelector('.steps-line i');
+    steps.classList.add('js');
+    let wait = false;
+    const draw = () => {
+      wait = false;
+      const r = steps.getBoundingClientRect();
+      const p = Math.max(0, Math.min(1, (window.innerHeight * 0.72 - r.top) / r.height));
+      line.style.setProperty('--p', p.toFixed(3));
+      items.forEach((el, i) => el.classList.toggle('on', p > 0 && p >= i / (items.length - 1) - 0.02));
+    };
+    const onScroll = () => { if (!wait) { wait = true; requestAnimationFrame(draw); } };
+    draw();
+    new IntersectionObserver(es => {
+      if (es[0].isIntersecting) { window.addEventListener('scroll', onScroll, { passive: true }); draw(); }
+      else { window.removeEventListener('scroll', onScroll); draw(); }
+    }).observe(steps);
+  }
+}
 function initFeaturesCarousel() {
   const row = document.getElementById('features-row');
   if (!row || row.children.length < 2) return;
@@ -7802,6 +7879,9 @@ function initFeaturesCarousel() {
       if (d < bd) { bd = d; best = i; }
     });
     Array.from(dots.children).forEach((el, i) => el.classList.toggle('on', i === best));
+    const prev = document.getElementById('features-prev'), next = document.getElementById('features-next');
+    if (prev) prev.disabled = row.scrollLeft <= 2;
+    if (next) next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 2;
   };
   updateDots();
   row.addEventListener('scroll', updateDots, { passive: true });
@@ -7813,7 +7893,7 @@ function hideBmTip(e) {
   const el = document.getElementById('bm-tip'); if (el) el.remove();
 }
 (function () { try { if (localStorage.getItem('bmTipHidden') === '1') { const el = document.getElementById('bm-tip'); if (el) el.remove(); } } catch (err) {} })();
-// PC用の矢印: カード1枚分だけスクロール
+// 矢印: カード1枚分だけスクロール
 function featuresScroll(dir) {
   const row = document.getElementById('features-row');
   if (!row || !row.children.length) return;
@@ -14986,7 +15066,7 @@ if (appState.games && appState.games.length) requestPersistentStorage(); // 履�
 renderRecentGames();
 setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
-initFeaturesCarousel(); initLpDemo();
+initFeaturesCarousel(); initLpDemo(); initLpMotion();
 const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ #v=（見るだけのリンク）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
