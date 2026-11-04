@@ -30,8 +30,9 @@ def tshot(sel, name):
     eshot("#hd-box", name, maxw=3000)
     pg.evaluate("document.getElementById('hd-box').remove()")
 
-# 2026-11-04〜: 周りごと撮る。カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）。
-# 画面の地の色を少し残し、期間の行やタブも入れる。横に長い表はカードの枠ごと全部広げて撮る
+# 2026-11-04〜: カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）。
+# 画面の地の色を少し残す。成績表・総当たり表は「自分の成績」のカードと同じ見え方にそろえるため、
+# 期間の行・タブは入れずカードだけを撮る（横に長い表はカードの枠ごと全部広げて撮る）
 APP_PAD = 12
 LP_META = {}  # 撮った画像の大きさ。最後に index.html の数字を書きかえる（tools/lp_hd_meta.py）
 def wshot(js_parts, name, maxw=3000, col=False):
@@ -93,9 +94,9 @@ for mk in ("score", "avg", "top", "las"):
     LP_META["rank"] = {"rt": round(y / im.width, 4), "w": im.width, "th": y, "bh": im.height - y}
 pg.evaluate("circleMetric = 'score'; renderCircle()"); pg.wait_for_timeout(300)
 pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "grid", col=True)
+wshot("[...document.querySelectorAll('#circle-body > .card')]", "grid", col=True)
 pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "h2h", col=True)
+wshot("[...document.querySelectorAll('#circle-body > .card')]", "h2h", col=True)
 pg.evaluate("circleTab = 'rank'; renderCircle()"); pg.wait_for_timeout(500)
 pg.evaluate("(async () => { await syncCircleGamesToMine(); })()"); pg.wait_for_timeout(1500)
 pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1200)
