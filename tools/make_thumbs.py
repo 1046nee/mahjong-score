@@ -174,7 +174,7 @@ THUMBS = [
  T("blog-nichijougo", "#F59E0B", lambda: bubble(30, 40, 150, 56, "テンパる", 28) + bubble(140, 120, 150, 56, "安パイ", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
  T("blog-sekai-mahjong", "#0F766E", lambda: route_flags() + bubble(70, 146, 180, 54, "世界の麻雀", 28, "#FFD23F") + sparkle(282, 168, 11) + sparkle(36, 176, 8)),
  T("blog-mahjong-suuji", "#DB2777", lambda: bubble(36, 40, 130, 56, "136枚", 28) + bubble(154, 120, 130, 56, "なぜ？", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
- T("blog-naga-guide", "#7C3AED", lambda: robot(110, 120, 1.15) + '<rect x="204" y="118" width="20" height="60" rx="5" fill="#fff"/><rect x="232" y="84" width="20" height="94" rx="5" fill="#FFD23F"/><rect x="260" y="136" width="20" height="42" rx="5" fill="#fff"/>' + sparkle(276, 44, 12) + sparkle(42, 186, 9)),
+ T("blog-naga-guide", "#2D1B69", lambda: '<circle cx="160" cy="124" r="96" fill="#7C3AED"/><image x="52" y="24" width="216" height="200" href="data:image/webp;base64,' + open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "naga_thumb.b64")).read() + '"/>' + sparkle(40, 44, 12) + sparkle(276, 186, 9)),
  T("blog-ai-haifu", "#0EA5E9", lambda: robot(110, 120, 1.15) + card(196, 64, 96, 116, "#fff", 10) + lines(208, 82, 6, 72, 15) + sparkle(276, 34, 12) + sparkle(42, 186, 9)),
  T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
  T("blog-yakuman-rules", "#E8505B", lambda: row_center(["m1", "s9", "z1", "z7"], 44, 44, 4) + bubble(46, 146, 104, 52, "役満", 28) + bubble(170, 146, 104, 52, "×2?", 28) + sparkle(266, 46, 13) + sparkle(54, 54, 9)),

@@ -144,8 +144,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p class="post-meta">2026.11.04</p>
 
   <figure class="eyecatch"><img src="/assets/thumbs/blog-naga-guide.svg" alt="【実演】麻雀AI NAGAの使い方のイメージ" width="320" height="240" fetchpriority="high"></figure>
-  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>NAGAは有料の麻雀AI。<strong>月¥550から</strong>で、東南戦なら月10<ruby>半荘<rt>ハンチャン</rt></ruby>分から解析できる</li><li>雀魂の牌譜は、非公式の拡張機能で<strong>カスタム牌譜</strong>にして読み込む（1局10NPから）</li><li>解析画面は<strong>「次違」でNAGAと違う局面だけ</strong>見る。タイプで答えが割れたら、どちらも間違いではない</li></ul></div>
-  <div class="post-toc"><b>この記事でわかること</b><a href="#what">NAGAとは</a><a href="#soul">雀魂で使えるか</a><a href="#price">料金とプラン</a><a href="#join">登録と購入</a><a href="#steps">解析の手順</a><a href="#view">解析画面の見方</a><a href="#demo">実演</a><a href="#types">7タイプ</a><a href="#model">モデルの人</a><a href="#read">読み方のコツ</a></div>
+  <div class="post-ans"><p class="pa-h">この記事の結論</p><ul><li>NAGAは有料の麻雀AI。<strong>月550円から</strong>で、東南戦なら月10<ruby>半荘<rt>ハンチャン</rt></ruby>分から解析できる</li><li>雀魂の牌譜は、非公式の拡張機能で<strong>カスタム牌譜</strong>にして読み込む（1局10NPから）</li><li>無料のMAKAにない強みは<strong>情報量・7タイプ・局面を変えた検証</strong>。悩んだ局を深く掘るならNAGA</li></ul></div>
+  <div class="post-toc"><b>この記事でわかること</b><a href="#what">NAGAとは</a><a href="#soul">雀魂で使えるか</a><a href="#why">MAKAとの違い</a><a href="#price">料金とプラン</a><a href="#join">登録と購入</a><a href="#steps">解析の手順</a><a href="#view">解析画面の見方</a><a href="#demo">実演</a><a href="#types">7タイプ</a><a href="#model">モデルの人</a><a href="#read">読み方のコツ</a></div>
   <p>麻雀AIに自分の<ruby>打牌<rt>ダハイ</rt></ruby>を見てもらいたいけれど、NAGAは何から始めればいいのか分かりにくい。この記事では、雀魂で打った実際の局を解析にかけて、登録から解析画面の読み方まで順番に見ていきます。無料のMAKAやMortalとの違いは「<a href="/blog-ai-haifu.html">麻雀AIで牌譜を分析する方法</a>」に、AIごとの比較は「<a href="/blog-mahjong-ai.html">麻雀AIの違い</a>」にまとめています。</p>
 
   <div class="ad-slot" data-ad="article_top" style="margin:6px 0 10px"></div>
@@ -167,14 +167,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>変換には、個人の開発者が公開している<a href="https://chromewebstore.google.com/detail/mahjongsoul-review-suppor/kdmfnkdgpialmejpgflfllkjakolamcc" target="_blank" rel="noopener">雀魂牌譜検討サポーター</a>（Chrome・Edgeの拡張機能）が便利です。NAGAや雀魂の公式ツールではありません。説明では、牌譜の閲覧画面だけで動き、ゲームのプレイには影響しないとされています。使うかどうかは、雀魂の利用規約も確かめたうえで判断してください。</p>
   <p>雀魂は1局ごとにNPを使うので、半荘まるごとより<strong>悩んだ局だけを選ぶ</strong>のがおすすめです。全8局なら80NPで、天鳳の半荘解析（50NP）より多くなります。</p>
 
+  <h2 id="why">雀魂にMAKAがあるのに、なぜNAGAを使うの？</h2>
+  <figure class="nv-c"><img src="/assets/naga/chara-yorokobi.webp" alt="NAGAの公式キャラクター" width="200" height="185" loading="lazy" decoding="async"></figure>
+  <p>雀魂には無料のAI分析「MAKA」があります。手軽さではMAKAが上で、ボタン1つで分析でき、拡張機能もいりません。それでもNAGAを使う人がいるのは、<strong>見られることの深さが違う</strong>からです。</p>
+  <div class="table-scroll"><table class="lc-tbl">
+    <thead><tr><th>くらべる点</th><th>MAKA</th><th>NAGA</th></tr></thead>
+    <tbody>
+      <tr><td>料金</td><td>無料で使える</td><td>月550円から</td></tr>
+      <tr><td>始めやすさ</td><td>雀魂の中でボタン1つ</td><td>登録と拡張機能が必要</td></tr>
+      <tr><td>三麻</td><td>使える</td><td>使えない</td></tr>
+      <tr><td>打ち方の種類</td><td>1つ</td><td>7タイプを見比べる</td></tr>
+      <tr><td>見られる情報</td><td>打牌の候補・鳴き・リーチ・評価</td><td>これに加えて、危険度・<ruby>聴牌<rt>テンパイ</rt></ruby>確率・<ruby>和了<rt>ホーラ</rt></ruby>や放銃の確率・順位予想</td></tr>
+      <tr><td>局面を変えて試す</td><td>できない</td><td>できる</td></tr>
+      <tr><td>結果の見返し</td><td>最初の案内では7日</td><td>会員の間はいつでも</td></tr>
+    </tbody>
+  </table></div>
+  <p>NAGAの魅力をまとめると、次の4つです。</p>
+  <ul>
+    <li><strong>「なぜ危ないか」まで考えられる</strong>：どの牌が誰に危ないか、局がどう終わりそうかが数字で見える</li>
+    <li><strong>答えが1つに決まらない</strong>：タイプを変えると、打ち方によって答えが変わる局面がわかる</li>
+    <li><strong>「もしも」を試せる</strong>：牌や点数を変えて、何が判断を変えたのかを確かめられる</li>
+    <li><strong>記録が残り、人と話せる</strong>：レポートを残して見返し、URLを送って仲間と検討できる</li>
+  </ul>
+  <h3>使っている人の声</h3>
+  <ul class="nv-v">
+    <li><b>小江戸緑さん（四麻23代目天鳳位）</b>NAGAを使いながら天鳳位になった打ち手。AIは損得の感覚を数字で見せてくれるので、勘を磨くのに役立つと書いている。基本の戦術を知っている中級者以上に特に向く、という見方</li>
+    <li><b>渡辺太プロ（Mリーグ）</b>NAGAの本のコメントで、ふだんからNAGAを使っていると話している</li>
+    <li><b>沖中祐也プロ</b>いちばんありがたいのは、悩ましい打牌を抜き出してくれること。さっと見るだけなら1半荘10分かからないと書いている</li>
+    <li><b>t-yokoさん（天鳳最高七段）</b>情報量の多さ、タイプの違い、条件を変えて試せる点をNAGAの良さに挙げる。ただ、ほとんどの人はMAKAで足りるとも書いている</li>
+    <li><b>NIKO25さん（雀魂）</b>同じ半荘をNAGAの2タイプとMAKAに見せた検証で、新タイプ同士でも一番手が同じなのは88%だった。全部のAIがそろった指摘は素直に直す、という使い分けをしている</li>
+    <li><b>まーじらんさん</b>ふだんは無料のMAKAで振り返り、試したいことや残したい牌譜が出たらNAGAに入る使い方を勧めている</li>
+  </ul>
+  <p>おすすめの順番は、<strong>まず無料のMAKAで振り返る習慣をつけて、物足りなくなったらNAGA</strong>です。Goldなら月に10半荘分から試せるので、「この局だけは納得したい」という1局のために入ってみるのもよい使い方です。</p>
+
   <h2 id="price">料金とプラン</h2>
   <p>NAGAは、毎月もらえるNP（ナーガポイント）を使って解析する仕組みです。プランは3つあります。</p>
   <div class="table-scroll"><table class="lc-tbl">
     <thead><tr><th>プラン</th><th>月の料金</th><th>もらえるNP</th><th>東南戦の目安</th></tr></thead>
     <tbody>
-      <tr><td>Gold</td><td>¥550</td><td>500NP</td><td>10半荘</td></tr>
-      <tr><td>Platinum</td><td>¥1,100</td><td>1,500NP</td><td>30半荘</td></tr>
-      <tr><td>Diamond</td><td>¥2,200</td><td>5,000NP</td><td>100半荘</td></tr>
+      <tr><td>Gold</td><td>550円</td><td>500NP</td><td>10半荘</td></tr>
+      <tr><td>Platinum</td><td>1,100円</td><td>1,500NP</td><td>30半荘</td></tr>
+      <tr><td>Diamond</td><td>2,200円</td><td>5,000NP</td><td>100半荘</td></tr>
     </tbody>
   </table></div>
   <p>NPの使い道は解析だけではありません。主なサービスと消費NPです。</p>
@@ -239,7 +272,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <thead><tr><th class="c-n">番号</th><th>場所</th><th>わかること</th></tr></thead>
     <tbody>
       <tr><td class="c-n">1</td><td>操作パネル</td><td>局面の移動と表示の切り替え</td></tr>
-      <tr><td class="c-n">2</td><td><ruby>聴牌<rt>テンパイ</rt></ruby>確率</td><td>相手がテンパイしている確率</td></tr>
+      <tr><td class="c-n">2</td><td>聴牌確率</td><td>相手がテンパイしている確率</td></tr>
       <tr><td class="c-n">3</td><td>打牌推奨度</td><td>NAGAがその牌を切る度合い</td></tr>
       <tr><td class="c-n">4</td><td>危険度</td><td>相手の待ち牌である確率</td></tr>
       <tr><td class="c-n">5</td><td>局面の位置</td><td>局の流れと、判断が違った場所</td></tr>
@@ -278,7 +311,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <h3>5〜7. 局面の位置・終局の確率・期待順位</h3>
   <figure class="nv"><img src="/assets/naga/graph.webp" alt="局面の位置のグラフと、終局の確率、期待順位" width="760" height="308" loading="lazy" decoding="async"><figcaption>左から局の流れのグラフ、終局の確率、期待順位</figcaption></figure>
   <p>グラフは局の始めから終わりまでの流れです。赤い印が今の局面で、途中の縦線がNAGAと判断が違った場所を示します。<strong>白は打牌、青は<ruby>副露<rt>フーロ</rt></ruby>・槓、赤は<ruby>立直<rt>リーチ</rt></ruby>の判断</strong>です。線の色は、流局（灰）・横移動（黄）・放銃（赤）・和了（緑）の確率です。右の棒は半荘が終わるときの順位の割合で、上から1着、2着、3着、ラスの順に並びます。</p>
-  <p>今回の局面では、終盤に2人がリーチしたところで横移動の確率が一気に上がりました。自分の<ruby>和了<rt>ホーラ</rt></ruby>確率は0.3%、放銃確率は3.8%です。無理に攻める局面ではないことが、数字からもわかります。</p>
+  <p>今回の局面では、終盤に2人がリーチしたところで横移動の確率が一気に上がりました。自分の和了確率は0.3%、放銃確率は3.8%です。無理に攻める局面ではないことが、数字からもわかります。</p>
 
   <h3>8. リッチ表示：3Dの卓で振り返る</h3>
   <figure class="nv"><img src="/assets/naga/rich.webp" alt="NAGAの解析レポートのリッチ表示。3Dの卓" width="1000" height="625" loading="lazy" decoding="async"><figcaption>リッチ表示。下のタイムラインに、打・鳴・立の印が出る（公式のサンプル対局）</figcaption></figure>
@@ -335,7 +368,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>NAGAには打ち方の違う7タイプがあります。公式のタイプガイドは、どのタイプも強く、違うのは「どうやって勝つか」だと説明しています。数字は7タイプなどをAI同士で打たせた結果で、各タイプ21万半荘分です。</p>
   <div class="table-scroll"><table class="lc-tbl nv-t">
     <thead><tr><th>タイプ</th><th class="c-n">和了率</th><th class="c-n">放銃率</th><th class="c-n">副露率</th><th class="c-n">立直率</th><th class="c-n">平均和了点</th></tr></thead>
-    <tbody><tr><td>アナンタ<small>超ラス回避派</small></td><td class="c-n">20.8%</td><td class="c-n">10.9%</td><td class="c-n">33.5%</td><td class="c-n">17.0%</td><td class="c-n">7,014点</td></tr><tr><td>ウロボロス<small>トップ取り派</small></td><td class="c-n">21.7%</td><td class="c-n">12.8%</td><td class="c-n">34.2%</td><td class="c-n">20.6%</td><td class="c-n">7,292点</td></tr><tr><td>オメガ<small>副露派</small></td><td class="c-n">22.1%</td><td class="c-n">12.2%</td><td class="c-n">36.3%</td><td class="c-n">17.9%</td><td class="c-n">6,680点</td></tr><tr><td>ガンマ<small>守備重視派</small></td><td class="c-n">21.1%</td><td class="c-n">11.8%</td><td class="c-n">33.1%</td><td class="c-n">16.1%</td><td class="c-n">6,701点</td></tr><tr><td>ニシキ<small>バランス派</small></td><td class="c-n">21.9%</td><td class="c-n">12.7%</td><td class="c-n">32.8%</td><td class="c-n">18.8%</td><td class="c-n">6,894点</td></tr><tr><td>ヒバカリ<small>超門前派</small></td><td class="c-n">19.5%</td><td class="c-n">12.0%</td><td class="c-n">22.4%</td><td class="c-n">17.2%</td><td class="c-n">7,333点</td></tr><tr><td>カガシ<small>超副露派</small></td><td class="c-n">23.2%</td><td class="c-n">14.0%</td><td class="c-n">39.6%</td><td class="c-n">15.5%</td><td class="c-n">6,422点</td></tr></tbody>
+    <tbody><tr><td class="nv-tc"><img src="/assets/naga/chara-ananta.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>アナンタ<small>超ラス回避派</small></span></td><td class="c-n">20.8%</td><td class="c-n">10.9%</td><td class="c-n">33.5%</td><td class="c-n">17.0%</td><td class="c-n">7,014点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-ouroboros.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>ウロボロス<small>トップ取り派</small></span></td><td class="c-n">21.7%</td><td class="c-n">12.8%</td><td class="c-n">34.2%</td><td class="c-n">20.6%</td><td class="c-n">7,292点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-omega.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>オメガ<small>副露派</small></span></td><td class="c-n">22.1%</td><td class="c-n">12.2%</td><td class="c-n">36.3%</td><td class="c-n">17.9%</td><td class="c-n">6,680点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-gamma.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>ガンマ<small>守備重視派</small></span></td><td class="c-n">21.1%</td><td class="c-n">11.8%</td><td class="c-n">33.1%</td><td class="c-n">16.1%</td><td class="c-n">6,701点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-nishiki.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>ニシキ<small>バランス派</small></span></td><td class="c-n">21.9%</td><td class="c-n">12.7%</td><td class="c-n">32.8%</td><td class="c-n">18.8%</td><td class="c-n">6,894点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-hibakari.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>ヒバカリ<small>超門前派</small></span></td><td class="c-n">19.5%</td><td class="c-n">12.0%</td><td class="c-n">22.4%</td><td class="c-n">17.2%</td><td class="c-n">7,333点</td></tr><tr><td class="nv-tc"><img src="/assets/naga/chara-kagashi.webp" alt="" width="34" height="34" loading="lazy" decoding="async"><span>カガシ<small>超副露派</small></span></td><td class="c-n">23.2%</td><td class="c-n">14.0%</td><td class="c-n">39.6%</td><td class="c-n">15.5%</td><td class="c-n">6,422点</td></tr></tbody>
   </table></div>
   <figure class="fg"><p class="fg-ttl">副露率でくらべる</p><div class="nb-r"><span class="nb-n">カガシ</span><span class="nb-b"><i style="width:99%"></i></span><b>39.6%</b></div><div class="nb-r"><span class="nb-n">オメガ</span><span class="nb-b"><i style="width:91%"></i></span><b>36.3%</b></div><div class="nb-r"><span class="nb-n">ウロボロス</span><span class="nb-b"><i style="width:86%"></i></span><b>34.2%</b></div><div class="nb-r"><span class="nb-n">アナンタ</span><span class="nb-b"><i style="width:84%"></i></span><b>33.5%</b></div><div class="nb-r"><span class="nb-n">ガンマ</span><span class="nb-b"><i style="width:83%"></i></span><b>33.1%</b></div><div class="nb-r"><span class="nb-n">ニシキ</span><span class="nb-b"><i style="width:82%"></i></span><b>32.8%</b></div><div class="nb-r"><span class="nb-n">ヒバカリ</span><span class="nb-b"><i style="width:56%"></i></span><b>22.4%</b></div><figcaption>いちばん鳴くカガシと、いちばん鳴かないヒバカリで17ポイントの差がある</figcaption></figure>
   <div class="table-scroll"><table class="lc-tbl">
@@ -401,14 +434,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <h2 id="matome">まとめ</h2>
   <ul>
-    <li>NAGAは月¥550から。NPを使って解析する。NPは翌月に持ち越せない</li>
+    <li>NAGAは月550円から。NPを使って解析する。NPは翌月に持ち越せない</li>
     <li>雀魂は拡張機能でカスタム牌譜にして、悩んだ局を1局10NPから解析する</li>
     <li>解析画面は「次違」で違う局面を見て、棒の長さと危険度を読む</li>
     <li>タイプで答えが割れる局面は、打ち方の違い。目指す打ち方に近いタイプを選ぶ</li>
     <li>オメガは渡辺太プロがモデル。アナンタ・ウロボロスは自己改善型</li>
   </ul>
-  <p class="nv-src">参考にした公開情報：<a href="https://naga.dmv.nico/naga_report/top/" target="_blank" rel="noopener">NAGA公式</a>（<a href="https://naga.dmv.nico/naga_report/manual/" target="_blank" rel="noopener">マニュアル</a>・<a href="https://naga.dmv.nico/naga_report/faq/" target="_blank" rel="noopener">FAQ</a>・<a href="https://naga.dmv.nico/htmls/naga_type_guide.html" target="_blank" rel="noopener">タイプガイド</a>）／<a href="https://dwango.co.jp/news/6454281032957952/" target="_blank" rel="noopener">ドワンゴの発表（2025年3月）</a>／<a href="https://kinmaweb.jp/archives/285262" target="_blank" rel="noopener">キンマweb（2026年10月14日）</a>／<a href="https://github.com/kbkn3/MahjongSoul-review-supporter" target="_blank" rel="noopener">雀魂牌譜検討サポーター（GitHub）</a>／<a href="https://note.com/zeromaxbet/n/n625291d1ff7a" target="_blank" rel="noopener">沖中祐也さんのnote</a>。解析レポートの画像は公式の利用ガイドラインに沿って掲載し、同卓者の名前は匿名にしています。料金やプランは変わることがあります。2026年11月時点の内容です。</p>
-  <style>.blog-post .nv{margin:10px 0 16px}.blog-post .nv img{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:8px}.blog-post .nv.sm img{max-width:270px}.blog-post .nv-t td small{display:block;font-size:11px;color:#6B7A77}.nb-r{display:flex;align-items:center;gap:8px;margin:7px 0}.nb-n{flex:none;width:112px;font-size:12.5px;font-weight:700}.nb-b{flex:1;height:14px;background:#fff;border-radius:4px;overflow:hidden}.nb-b i{display:block;height:100%;background:#177083}.nb-r b{flex:none;width:46px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}.blog-post .nv-src{font-size:12px;color:#6B7A77;line-height:1.7}</style>
+  <p class="nv-src">参考にした公開情報：<a href="https://naga.dmv.nico/naga_report/top/" target="_blank" rel="noopener">NAGA公式</a>（<a href="https://naga.dmv.nico/naga_report/manual/" target="_blank" rel="noopener">マニュアル</a>・<a href="https://naga.dmv.nico/naga_report/faq/" target="_blank" rel="noopener">FAQ</a>・<a href="https://naga.dmv.nico/htmls/naga_type_guide.html" target="_blank" rel="noopener">タイプガイド</a>）／<a href="https://dwango.co.jp/news/6454281032957952/" target="_blank" rel="noopener">ドワンゴの発表（2025年3月）</a>／<a href="https://kinmaweb.jp/archives/285262" target="_blank" rel="noopener">キンマweb（2026年10月14日）</a>／<a href="https://github.com/kbkn3/MahjongSoul-review-supporter" target="_blank" rel="noopener">雀魂牌譜検討サポーター（GitHub）</a>／<a href="https://note.com/zeromaxbet/n/n625291d1ff7a" target="_blank" rel="noopener">沖中祐也さんのnote</a>。<a href="https://note.com/coedog/n/n8e72494955e0" target="_blank" rel="noopener">小江戸緑さん</a>・<a href="https://note.com/tyoko_tenhou6dan/n/na66c372d19f2" target="_blank" rel="noopener">t-yokoさん</a>・<a href="https://kyomo-michikusa.com/jantama-naga-maka-3ai/" target="_blank" rel="noopener">NIKO25さん</a>・<a href="https://mazillan-mahjong.com/archives/324" target="_blank" rel="noopener">まーじらんさん</a>の記事。解析レポートの画像は公式の利用ガイドラインに沿って掲載し、同卓者の名前は匿名にしています。NAGAのキャラクター画像は公式素材です（©DWANGO Co., Ltd.）。料金やプランは変わることがあります。2026年11月時点の内容です。</p>
+  <style>.blog-post .nv{margin:10px 0 16px}.blog-post .nv img{display:block;max-width:100%;height:auto;margin:0 auto;border-radius:8px}.blog-post .nv.sm img{max-width:270px}.blog-post .nv-t td small{display:block;font-size:11px;color:#6B7A77}.blog-post .nv-t td.nv-tc{text-align:center;font-size:12.5px;font-weight:700;line-height:1.3}.blog-post .nv-tc img{display:block;width:30px;height:auto;margin:0 auto 2px}.blog-post .nv-tc span{display:block;white-space:nowrap}.blog-post .nv-t td small{font-size:10px!important;font-weight:500}.blog-post .nv-c{float:right;margin:0 0 6px 12px;width:112px}.blog-post .nv-c img{width:100%;height:auto;display:block}.blog-post .nv-v{list-style:none;padding:0}.blog-post .nv-v li{border-left:3px solid #9FC3BD;padding:2px 0 2px 12px;margin:0 0 12px;font-size:14px;line-height:1.75}.blog-post .nv-v b{display:block;color:#136070;font-size:13px}.nb-r{display:flex;align-items:center;gap:8px;margin:7px 0}.nb-n{flex:none;width:112px;font-size:12.5px;font-weight:700}.nb-b{flex:1;height:14px;background:#fff;border-radius:4px;overflow:hidden}.nb-b i{display:block;height:100%;background:#177083}.nb-r b{flex:none;width:46px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}.blog-post .nv-src{font-size:12px;color:#6B7A77;line-height:1.7}</style>
 
   <div class="ad-slot" data-ad="article_bottom" style="margin:28px 0 0"></div>
 
