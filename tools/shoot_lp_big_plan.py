@@ -32,37 +32,12 @@ def tshot(sel, name):
 
 # 2026-11-04〜: カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）が、
 # 余白は最小限（地の色の帯がカードを囲う空間に見えないように。自分の成績カードと同じく、枠＝カードそのもの）。
-# 横に長い表はカードの枠ごと全部広げて撮る。
 # カードの色つきの枠（仲間ページの色・#177083の box-shadow）は「自分の成績」のカードに無いので、
 # 撮るときに消す（消さないと枠だけ色が浮いて見える）
+# 2026-11-05〜: 成績表・総当たり表は横に広げず、モバイルで実際に見えるとおりの大きさ・範囲のまま撮る
+# （期間の行・タブは入れずカードだけ。表は端末の横スクロールと同じく、見えている列だけでよい＝ユーザーの指定）
 APP_PAD = 3
 LP_META = {}  # 撮った画像の大きさ。最後に index.html の数字を書きかえる（tools/lp_hd_meta.py）
-def wshot(js_parts, name, maxw=3000, col=False):
-    """js_parts: 要素の並びを返すJS。複製して1つの箱に入れ、表を全部広げてから撮る。col=True なら左の列だけの細い画像（-c）も作る"""
-    info = pg.evaluate("""([parts, pad]) => { const els = eval(parts).filter(e => !e.classList.contains('card') || e.querySelector('table')); const bg = getComputedStyle(els[0].closest('.view') || document.body).backgroundColor;
-      // 幅は複製する前の本物で測る（複製の中で測ると、タブのボタンなどが伸びて幅が暴れる）。カード＝表の全部の幅＋（カード−表の箱）
-      const oc = els.filter(e => e.querySelector('table')).pop(), otb = oc.querySelector('table'), obox = otb.closest('.stt, .tbl-scroll, .mx-scroll') || otb.parentElement;
-      const w = Math.ceil(otb.scrollWidth + oc.getBoundingClientRect().width - obox.getBoundingClientRect().width);
-      const b = document.createElement('div'); b.id = 'hd-box';
-      b.style.cssText = `position:absolute;left:0;top:0;z-index:2147483000;background:${bg};padding:${pad}px;width:${w + pad * 2}px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px`;
-      els.forEach(e => b.appendChild(e.cloneNode(true))); document.body.appendChild(b);
-      [...b.children].forEach(x => { x.style.width = w + 'px'; x.style.margin = '0'; x.style.boxSizing = 'border-box'; x.style.flex = 'none'; });
-      b.querySelectorAll('*').forEach(x => { const cs = getComputedStyle(x); if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') x.style.overflow = 'visible'; if (cs.maxHeight !== 'none') x.style.maxHeight = 'none'; if (cs.position === 'sticky') x.style.position = 'relative'; x.style.boxShadow = 'none'; });
-      const card = [...b.children].filter(e => e.querySelector('table')).pop(), th = card.querySelector('table tr > *:first-child'), bl = b.getBoundingClientRect().left;
-      const bt = b.getBoundingClientRect().top, tt = card.querySelector('table').getBoundingClientRect();
-      return { colRight: th ? th.getBoundingClientRect().right - bl : 0, boxW: b.getBoundingClientRect().width, boxH: b.getBoundingClientRect().height, tTop: tt.top - bt, tBot: tt.bottom - bt }; }""", [js_parts, APP_PAD])
-    eshot("#hd-box", name, maxw=maxw)
-    pg.evaluate("document.getElementById('hd-box').remove()")
-    # 実機のモバイル（390px幅）で見たときと同じ文字の大きさで表示するための比率（画像の本当のCSS幅/390）
-    LP_META[name] = {"iw": round(info["boxW"] / 390, 4), "ih": round(info["boxH"] / 390, 4)}
-    if col and info["colRight"]:
-        im = _I.open(os.path.join(SITE, "lp-hd-" + name + ".webp")).convert("RGB")
-        k = im.width / info["boxW"]; x = round((info["colRight"] + 1) * k)
-        y0, y1 = round(info["tTop"] * k), round(info["tBot"] * k)  # 表の上から下まで（上の期間の行・タブは動かす）
-        im.crop((0, y0, x, y1)).save(os.path.join(SITE, "lp-hd-" + name + "-c.webp"), quality=88, method=6)
-        LP_META[name].update({"ct": round(y0 / im.height, 4), "ch": round((y1 - y0) / im.height, 4), "cw": x, "chh": y1 - y0,
-                               "icw": round((info["colRight"] + 1) / 390, 4)})
-        print("col", name, LP_META[name])
 def cshot(sels, name, pad=APP_PAD, max_h=None, q=86):
     """選んだ要素を囲む四角＋地の色の余白で、画面のまま撮る（縦に長いときは max_h の所で、要素の切れ目で切る）"""
     pg.evaluate("(s) => { const e = document.querySelector(s); window.scrollTo(0, Math.max(0, e.getBoundingClientRect().top + scrollY - 40)); }", sels[0])
@@ -99,9 +74,11 @@ for mk in ("score", "avg", "top", "las"):
     LP_META["rank"] = {"rt": round(y / im.width, 4), "w": im.width, "th": y, "bh": im.height - y}
 pg.evaluate("circleMetric = 'score'; renderCircle()"); pg.wait_for_timeout(300)
 pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "grid", col=True)
+pg.evaluate("document.querySelector('#circle-body > .card').style.boxShadow = 'none'")
+cshot(["#circle-body > .card"], "grid", q=86)
 pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "h2h", col=True)
+pg.evaluate("document.querySelector('#circle-body > .card').style.boxShadow = 'none'")
+cshot(["#circle-body > .card"], "h2h", q=86)
 pg.evaluate("circleTab = 'rank'; renderCircle()"); pg.wait_for_timeout(500)
 pg.evaluate("(async () => { await syncCircleGamesToMine(); })()"); pg.wait_for_timeout(1500)
 pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1200)
@@ -124,7 +101,7 @@ cshot(["#mp-pane-hist .hist-card"], "games-list", q=82)
 gt = _I.open(os.path.join(SITE, "lp-hd-games-tile.webp")); LP_META["games-tile"] = {"w": gt.width, "h": gt.height}
 gl = _I.open(os.path.join(SITE, "lp-hd-games-list.webp")); LP_META["games-list"] = {"w": gl.width, "h": gl.height}
 for n in ("grid", "h2h"):
-    LP_META[n]["w"], LP_META[n]["h"] = _I.open(os.path.join(SITE, "lp-hd-" + n + ".webp")).size
+    im = _I.open(os.path.join(SITE, "lp-hd-" + n + ".webp")); LP_META[n] = {"w": im.width, "h": im.height}
 import json as _json
 if not os.environ.get("LP_SITE"):
     import subprocess

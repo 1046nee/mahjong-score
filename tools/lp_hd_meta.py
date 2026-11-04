@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """LPの成績の節の画像の大きさに合わせて、index.html の数字を書きかえる（shoot_lp_big_plan.py が最後に呼ぶ・2026-11-04〜）。
-引数: 撮った画像の大きさのJSON。書きかえるもの: 画像の width/height、止める左の列の位置（--ct・--ch）、順位のタブの高さ（--rt）"""
+引数: 撮った画像の大きさのJSON。書きかえるもの: 画像の width/height、順位のタブの高さ（--rt）"""
 import json, os, re, sys
 MJ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 m = json.loads(sys.argv[1]); p = os.path.join(MJ, "index.html"); s = open(p, encoding="utf-8").read()
@@ -9,11 +9,7 @@ def wh(src, w, h):
     s, n = re.subn(r'(<img[^>]*src="/assets/screens/' + re.escape(src) + r'"[^>]*?) width="\d+" height="\d+"', lambda x: f'{x.group(1)} width="{w}" height="{h}"', s)
     assert n, src
 for n in ("grid", "h2h"):
-    g = m[n]; wh(f"lp-hd-{n}.webp", g["w"], g["h"]); wh(f"lp-hd-{n}-c.webp", g["cw"], g["chh"])
-    s, k = re.subn(r'(<img class="lp-col"[^>]*src="/assets/screens/lp-hd-' + n + r'-c\.webp"[^>]*?)(?: style="[^"]*")?( loading)', lambda x: f'{x.group(1)} style="--ct:{g["ct"]};--ch:{g["ch"]};--icw:{g["icw"]}"{x.group(2)}', s); assert k, n
-    # 実機のモバイル幅(390px)で見たときと同じ文字の大きさにする比率（--iw・--ih）をボタンに書く
-    pat = re.compile(r'(<button type="button" class="lp-shot lp-pan lp-panxy")(?: style="[^"]*")?((?:(?!</button>).)*?<img src="/assets/screens/lp-hd-' + re.escape(n) + r'\.webp")', re.S)
-    s, k = pat.subn(lambda x: f'{x.group(1)} style="--iw:{g["iw"]};--ih:calc(var(--cw) * {g["ih"]})"{x.group(2)}', s); assert k, n
+    g = m[n]; wh(f"lp-hd-{n}.webp", g["w"], g["h"])
 r = m["rank"]
 for mk in ("score", "avg", "top", "las"):
     wh(f"lp-hd-rank-{mk}-t.webp", r["w"], r["th"]); wh(f"lp-hd-rank-{mk}.webp", r["w"], r["bh"])
