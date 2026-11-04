@@ -236,8 +236,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-live-in > .card.card { margin: 0; padding: 12px 14px; border: 0; border-radius: 0; box-shadow: none; }
 .lp-live-in .mp-sec { margin: 0; } .lp-live-in .card-head-row { min-height: 0; } /* 本番は #mp-pane-hist で余白を消しているので、id を外した複製には同じ指定を書く */ .lp-live-in .history-body { padding: 0; gap: 0; overflow: visible; } .lp-live-in .hist-viewseg { margin-bottom: 0; }
 /* 自分の成績（1枚目）だけは押せない見本（数字とグラフをLPだけで動かすため）。他はすべて本物どおり指で操作できる */
-.lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; }
-.lp-live-in .mc-scroll { overflow: hidden; }
+.lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; } .lp-live .mc-trend { pointer-events: auto; } /* グラフの年月日と横スクロールだけ触れる */
+.lp-live-in .mc-scroll { overscroll-behavior-x: contain; } .lp-live-in .sp-hit { pointer-events: none; }
 .lp-touch, .lp-touch-multi .lp-live-pane { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .lp-touch-multi { overflow: hidden; }
 /* 順位・過去の試合はタブのタップだけで切り替える（横スワイプは付けない。2026-11-05 ユーザーの指定） */
@@ -248,9 +248,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* LPだけの動き（自分の成績）: 数字が順に出て、着順の帯とグラフが左から伸びる。.pre の付け外しで進む・戻る */
 .lp-live.js .mc-grid b, .lp-live.js .ms-pts b, .lp-live.js .mc-pts b { transition: opacity .35s ease var(--nd, 0s), transform .35s ease var(--nd, 0s); }
 /* clip-path は none へは動かないので、完成形も inset で書く */
-.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 2.6s linear var(--line-delay, 1.1s); }
+.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 2.6s linear; }
 .lp-live.pre .mc-grid b, .lp-live.pre .ms-pts b, .lp-live.pre .mc-pts b { opacity: 0; transform: translateY(8px); transition-delay: 0s; transition-duration: .15s; }
-.lp-live.pre .mc-bar, .lp-live.pre .mc-line { clip-path: inset(0 100% 0 0); transition-delay: 0s; transition-duration: .2s; }
+/* 線は見えている範囲の左端から描く（--c0 は見えている左端より右の割合。グラフは右端の新しい月を見せているので、全体の左端から描くと見えるまでに間が空く） */
+.lp-live.pre .mc-bar { clip-path: inset(0 100% 0 0); transition-delay: 0s; transition-duration: .2s; } .lp-live.pre .mc-line { clip-path: inset(0 var(--c0, 100%) 0 0); transition-delay: 0s; transition-duration: .2s; }
 @media (prefers-reduced-motion: reduce) { .lp-shows.js .lp-show { transition: none; } }
 /* スマホの枠の決まり（サイト・SNS画像・動画・サムネで共通。docs/image-tools.md「スマホの枠」）：
    高さ＝幅×2.06／枠3.5%（上下左右同じ）／外の角15%・画面の角11.5%／画面の上の帯10%の中央にノッチ（幅30%・高さ7%）。
@@ -8644,8 +8645,6 @@ function initLpMotion() {
   if (row && live) {
     const numEls = [...live.querySelectorAll('.mc-grid b, .ms-pts b, .mc-pts b')];
     numEls.forEach((b, i) => b.style.setProperty('--nd', (i * 0.1).toFixed(2) + 's'));
-    // 推移グラフは、数字が最後（箱下）まで出たらすぐ続けて動き出す（固定の遅れだと間が空いて見えた）
-    live.style.setProperty('--line-delay', (Math.max(0, numEls.length - 1) * 0.1 + 0.35).toFixed(2) + 's');
     live.classList.add('pre'); void live.offsetHeight; live.classList.add('js');
     let seen = false;
     const sync = () => live.classList.toggle('pre', !(seen && live.closest('.lp-show').classList.contains('is-on')));
@@ -8749,10 +8748,62 @@ function fitLpLive() {
     if (host) inner.style.transform = `scale(${host.clientWidth / 358})`;
   });
   const live = document.getElementById('lp-live');
-  if (live) live.querySelector('.lp-live-in').querySelectorAll('.mc-scroll').forEach(e => { e.scrollLeft = e.scrollWidth; });
+  if (live && live.clientWidth !== fitLpLive.w) { fitLpLive.w = live.clientWidth; lpSparkEnd(); } // 高さだけの変化（スマホのアドレスバー）では、動かしたグラフを戻さない
+}
+// 推移グラフを右端（新しい月）へ送り、線を描き始める位置を覚える
+function lpSparkEnd() {
+  const live = document.getElementById('lp-live'), sc = live && live.querySelector('.mc-scroll');
+  if (!sc) return;
+  sc.scrollLeft = sc.scrollWidth;
+  live.style.setProperty('--c0', ((1 - sc.scrollLeft / sc.scrollWidth) * 100).toFixed(1) + '%');
+}
+// 自分の成績の推移グラフ: 年｜月｜日の切り替え。過去の試合のタイルの日付と自分のスコアから、本番の miniSparkHtml で描く（タイルの合計は通算スコアと一致する）。
+// 月は撮ったままのグラフ。2日以上にわたるゲームは最初の日に入る
+function initLpSpark() {
+  const live = document.getElementById('lp-live'), tile = document.querySelector('#lp-live-games .lp-live-pane');
+  if (!live || !tile) return;
+  live.removeAttribute('role'); live.querySelector('.lp-live-in').removeAttribute('aria-hidden');
+  const hist = [];
+  tile.querySelectorAll('.yr-sec').forEach(sec => {
+    const y = parseInt(sec.querySelector('.ht-year').firstChild.textContent, 10);
+    sec.querySelectorAll('.ht').forEach(t => {
+      const d = t.querySelector('.ht-d').textContent.split('/').map(Number), b = t.querySelector('.ht-sc b');
+      if (t.querySelector('.ht-lb') || !b) return;
+      const sc = parseFloat(b.textContent.replace(/,/g, '').replace('−', '-'));
+      if (Number.isFinite(sc)) hist.push({ t: new Date(y, d[0] - 1, d[1], 12).getTime(), sc, o: hist.length });
+    });
+  });
+  const list = sortHist(hist), total = list.reduce((a, x) => a + x.sc, 0);
+  const trend = live.querySelector('.mc-trend'), title = trend.querySelector('.mc-trend-h small');
+  const saved = { m: [trend.querySelector('.mc-spark-row').outerHTML, title.textContent] };
+  trend.addEventListener('click', e => {
+    const b = e.target.closest('.sp-unit button');
+    if (!b) return;
+    const u = ['y', 'm', 'd'][[...b.parentElement.children].indexOf(b)];
+    [...b.parentElement.children].forEach(x => x.classList.toggle('on', x === b));
+    if (!saved[u]) {
+      const keep = sparkUnit; sparkUnit = u;
+      const box = document.createElement('div');
+      box.innerHTML = miniSparkHtml(list, 4, total);
+      const count = sparkUnitCount(list); sparkUnit = keep;
+      box.querySelectorAll('.sp-pop, .sp-ring, .sp-lab').forEach(x => x.remove());
+      box.querySelectorAll('*').forEach(x => [...x.attributes].forEach(a => { if (/^on|^data-|^role$|^aria-/.test(a.name)) x.removeAttribute(a.name); }));
+      saved[u] = [box.innerHTML, `通算スコアの推移（${count}）`];
+    }
+    trend.querySelectorAll('.mc-spark-row, .sp-pop').forEach(x => x.remove());
+    trend.insertAdjacentHTML('beforeend', saved[u][0]);
+    title.textContent = saved[u][1];
+    lpSparkEnd();
+    const line = trend.querySelector('.mc-line');
+    if (line && !live.classList.contains('pre')) { line.style.transition = 'none'; line.style.clipPath = `inset(0 ${live.style.getPropertyValue('--c0')} 0 0)`; void line.getBoundingClientRect(); line.style.transition = ''; line.style.clipPath = ''; }
+  });
 }
 // 成績表・総当たり表のLPデモ: 本物の合計/個人戦/チーム戦ボタンを押すと、撮っておいた3状態のうち1つに切りかえる
 function initLpKindSwap() {
+  // 総当たり表は、いちばん長い勝敗の文字で列の幅が決まる。切り替えても幅が変わらないように、3枚をいちばん広い列にそろえる
+  const mats = [...document.querySelectorAll('.lp-kind-wrap table.mx-solid')].map(t => { const n = t.querySelectorAll('thead th').length - 1; return { t, n, col: (parseFloat(t.style.width) - 76) / n }; });
+  const col = Math.max(...mats.map(x => x.col));
+  mats.forEach(x => { x.t.style.width = (76 + x.n * col) + 'px'; });
   document.querySelectorAll('.lp-kind-wrap').forEach(wrap => {
     wrap.addEventListener('click', e => {
       const btn = e.target.closest('.sk-seg button');
@@ -8841,6 +8892,20 @@ function initLpGames() {
   const ok = (el, k) => k === 'all' || (k === 'team') === el.classList.contains('tm');
   const head = el => el.querySelector('.ht-year').firstChild.textContent;
   let k = 'all', vi = 0;
+  // カレンダーは本番の circleCalendarHtml で描く。タイルの日付を材料にする（x.g が無いので「n試合」だけ数え直す）
+  const cal = panes[2].querySelector('.history-body'), items = [];
+  tile.querySelectorAll('.yr-sec').forEach(sec => {
+    const y = parseInt(head(sec), 10);
+    sec.querySelectorAll('.ht').forEach(t => { const d = t.querySelector('.ht-d').textContent.split('/').map(Number); items.push({ sid: 'g' + items.length, ms: new Date(y, d[0] - 1, d[1], 12).getTime(), y, m: d[0] - 1, n: parseInt(t.querySelector('.ht-c b').textContent, 10) || 0, el: t, html: t.outerHTML }); });
+  });
+  calS.lpg = { month: null, day: null, mode: 'years', yc: null };
+  window.lpGamesCal = () => {
+    const list = items.filter(x => ok(x.el, k)), S = calS.lpg;
+    cal.innerHTML = circleCalendarHtml(list, x => x.ms, x => `<div class="ht-grid" style="margin-bottom:8px">${x.html}</div>`, 'lpg', 'lpGamesCal()');
+    const y = Math.floor(S.month / 12), m = S.month % 12, hint = cal.querySelector('.cal-hint');
+    const part = S.mode === 'year' ? list.filter(x => x.y === y) : list.filter(x => x.y === y && x.m === m);
+    if (hint) hint.textContent = hint.textContent.replace(/\d+ゲーム \/ 0試合/, gamesRoundsText(part.length, part.reduce((a, x) => a + x.n, 0)));
+  };
   const counts = () => {
     const y = {}, m = {}; let g = 0, r = 0;
     tile.querySelectorAll('.yr-sec').forEach(sec => {
@@ -8873,8 +8938,9 @@ function initLpGames() {
           mo.querySelector('.mo-h span').textContent = gamesRoundsText(v.g, v.r);
         });
       });
-      p.querySelectorAll('.cal-year .cal-m').forEach(b => { const n = c.y[b.querySelector('b').textContent]; b.querySelector('span').textContent = n && n.g ? `${n.g}ゲーム` : '—'; });
     });
+    calS.lpg.day = null;
+    lpGamesCal();
     panes[vi].scrollTop = 0;
   };
   host.addEventListener('click', e => {
@@ -16172,7 +16238,7 @@ if (appState.games && appState.games.length) requestPersistentStorage(); // 履�
 renderRecentGames();
 setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
-initFeaturesCarousel(); initSnapRow('howto'); initSnapRow('shows'); fitLpLive(); window.addEventListener('resize', fitLpLive, { passive: true }); initLpMotion(); initHowtoVideos(); initLpKindSwap(); initLpRank(); initLpGames();
+initFeaturesCarousel(); initSnapRow('howto'); initSnapRow('shows'); fitLpLive(); window.addEventListener('resize', fitLpLive, { passive: true }); initLpMotion(); initHowtoVideos(); initLpKindSwap(); initLpRank(); initLpGames(); initLpSpark();
 const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ #v=（見るだけのリンク）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
