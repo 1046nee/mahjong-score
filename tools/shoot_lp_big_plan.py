@@ -31,21 +31,32 @@ def tshot(sel, name):
     pg.evaluate("document.getElementById('hd-box').remove()")
 pg.evaluate("setMpPeriod('all'); mpMode = 4; circleTab = 'rank'; circleMetric = 'score'; renderCircle()")
 pg.wait_for_timeout(900)
-eshot("#circle-body .rank-card", "rank", cut=3 * 760)
+# 通算順位: 指標ごとに1枚。指標のタブから下を、カードと同じ縦横の比で切る
+for mk in ("score", "avg", "top", "las"):
+    pg.evaluate(f"circleMetric = '{mk}'; renderCircle()"); pg.wait_for_timeout(700)
+    off = pg.evaluate("""() => { const c = document.querySelector('#circle-body .rank-card'), b = [...c.querySelectorAll('button')].find(x => x.textContent.includes('通算スコア')), r = b.parentElement;
+      const a = r.querySelector('.on') || b; r.scrollLeft = a.offsetLeft - (r.clientWidth - a.offsetWidth) / 2; return r.getBoundingClientRect().top - c.getBoundingClientRect().top - 10; }""")
+    pg.wait_for_timeout(300)
+    path = os.path.join(OUT, "hd-rank.png")
+    pg.locator("#circle-body .rank-card").first.screenshot(path=path)
+    im = _I.open(path).convert("RGB"); d = pg.evaluate("window.devicePixelRatio"); y = int(off * d)
+    im = im.crop((0, y, im.width, y + round(im.width * 1.376)))
+    im.save(os.path.join(SITE, f"lp-hd-rank-{mk}.webp"), quality=88, method=6); print("hd rank", mk, im.size)
+pg.evaluate("circleMetric = 'score'; renderCircle()"); pg.wait_for_timeout(300)
 pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
 tshot("#circle-body .card table", "grid")
 pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
 tshot("#circle-body .card table", "h2h")
 pg.evaluate("circleTab = 'rank'; renderCircle()"); pg.wait_for_timeout(500)
-pg.set_viewport_size({"width": 390, "height": 1500})
-pg.evaluate("window.scrollTo(0, 0)")
-pg.evaluate("openCircleMember('HjepWbWQ')"); pg.wait_for_timeout(1200)
-eshot("#form-modal .form-modal-box", "member", cut=3 * 760)
-pg.evaluate("closeFormModal()"); pg.wait_for_timeout(300)
-pg.set_viewport_size({"width": 390, "height": 844})
 pg.evaluate("(async () => { await syncCircleGamesToMine(); })()"); pg.wait_for_timeout(1500)
 pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1200)
 pg.evaluate("document.querySelectorAll('.sp-pop').forEach(p => p.remove())")
-eshot("#view-history .mc-card", "mypage")
+# 自分の成績はLPに本物の部品のまま載せる（数字とグラフを動かすため）。押せないように属性を外して書き出す
+pg.evaluate("myAv = { k: 's1', c: '#E75620' }; renderHistory()"); pg.wait_for_timeout(900)
+card = pg.evaluate("""() => { const c = document.querySelector('#view-history .mc-card').cloneNode(true);
+  c.querySelectorAll('.sp-pop, .sp-ring, .sp-lab').forEach(e => e.remove());
+  [c, ...c.querySelectorAll('*')].forEach(e => [...e.attributes].forEach(a => { if (/^on|^id$|^data-|^role$|^aria-|^tabindex$/.test(a.name)) e.removeAttribute(a.name); }));
+  return c.outerHTML; }""")
+io.open(os.path.join(OUT, "lp-card.html"), "w", encoding="utf-8").write(card); print("card", len(card))
 pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
-eshot("#history-body", "games", cut=3 * 760)
+eshot("#history-body", "games", cut=3 * 2300, q=82)

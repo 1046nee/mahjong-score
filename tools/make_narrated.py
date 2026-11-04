@@ -6,9 +6,10 @@
 BGM: 自作（numpy）。外の曲は使わない
 出力: まじゃすこ素材/video/<名前>.mp4 （コミットしない）
 使い方: python tools/make_narrated.py [名前]
+  VOICEVOX の声: 先にエンジン（run.exe）を動かして python tools/make_narrated.py [名前] --vv <話者ID> <クレジットの名前> [出力名]
 台本は NARR に足す。1場面＝(字幕の区切りのリスト, 場面を作る関数)。場面を作る関数は (出る秒, 消える秒) を受けて要素を返す
 """
-import asyncio, io, os, subprocess, sys, tempfile, wave
+import asyncio, io, json, os, subprocess, sys, tempfile, urllib.parse, urllib.request, wave
 import numpy as np
 import truststore
 truststore.inject_into_ssl()  # 会社のネットワークでは Windows の証明書で検証する（検証は無効にしない）
@@ -26,7 +27,7 @@ GAP = 0.22    # 場面の間の息つぎ
 LEAD = 0.25   # 場面が切り替わってから声が始まるまで
 
 ms.CSS += """
-.sub { position: absolute; left: 60px; right: 140px; top: 1430px; z-index: 30; text-align: center; opacity: 0; }
+.sub { position: absolute; left: 60px; right: 140px; top: 1408px; z-index: 30; text-align: center; opacity: 0; }
 .sub span { display: inline-block; background: rgba(31,42,40,.88); color: #fff; font-size: 50px; font-weight: 800; line-height: 1.4; white-space: nowrap; border-radius: 18px; padding: 12px 30px; }
 """
 ms.JS += r"""
@@ -45,6 +46,27 @@ async def tts(text, path):
             if ch["type"] == "audio": f.write(ch["data"])
             elif ch["type"] == "WordBoundary": words.append((ch["offset"] / 1e7, ch["text"]))
     return words
+
+VV = None  # (話者ID, クレジットの名前)
+VV_URL = "http://127.0.0.1:50021"
+
+def vv_post(path, body=None, ctype="application/json"):
+    r = urllib.request.Request(VV_URL + path, data=body if body is not None else b"", headers={"Content-Type": ctype}, method="POST")
+    return urllib.request.build_opener(urllib.request.ProxyHandler({})).open(r, timeout=120).read()
+
+def vv_query(text):
+    return json.loads(vv_post("/audio_query?" + urllib.parse.urlencode({"text": say(text), "speaker": VV[0]})))
+
+def vv_len(q):
+    return sum(m["vowel_length"] + (m.get("consonant_length") or 0) for a in q["accent_phrases"] for m in a["moras"] + ([a["pause_mora"]] if a.get("pause_mora") else []))
+
+def vv_tts(phrases, path):
+    """声は1文まとめて作る。字幕の区切りは、区切りごとの長さの割合から出す"""
+    q = vv_query("".join(phrases))
+    q["speedScale"] = 1.12; q["prePhonemeLength"] = 0.03; q["postPhonemeLength"] = 0.05; q["intonationScale"] = 1.15
+    open(path, "wb").write(vv_post(f"/synthesis?speaker={VV[0]}", json.dumps(q).encode("utf-8")))
+    ls = [vv_len(vv_query(p)) for p in phrases]
+    return [sum(ls[:i]) / sum(ls) for i in range(len(ls))]
 
 def load(mp3, tmp):
     w = os.path.join(tmp, "x.wav")
@@ -82,25 +104,25 @@ def soft_bgm(dur):
     return b[:int(dur * SR)]
 
 def v_kinou():
-    hero = v3.hero_svg().replace('<svg ', '<svg style="width:940px;height:auto;display:block;margin:0 auto" ', 1)
+    hero = v3.hero_svg().replace('<svg ', '<svg style="width:760px;height:auto;display:block;margin:0 auto" ', 1)
     def s0(a, b):
         return [ms.at(a, b, '<div class="badge">セット麻雀の人へ</div><h1>麻雀の集計、<br>まだ電卓で<br>やってる？</h1>', cls="cap hook", style="top:330px", anim="pop"),
-                ms.at(a + .3, b, hero, style="position:absolute;left:0;right:0;top:1010px", anim="fade")]
+                ms.at(a + .3, b, hero, style="position:absolute;left:0;right:0;top:890px", anim="fade")]
     def s1(a, b):
-        return [ms.at(a, b, '<h1>点数を入れるだけ。</h1>', cls="cap", style="top:250px"), ms.phone_at(a, b, "howto-3.jpg", y=420)[0],
-                ms.chip_at(a + 1.0, b, ("合計", "100,000点", "pos"), "r", 960)]
+        return [ms.at(a, b, '<h1>点数を入れるだけ。</h1>', cls="cap", style="top:250px"), ms.phone_at(a, b, "howto-3.jpg", y=400, w=460)[0],
+                ms.chip_at(a + 1.0, b, ("合計", "100,000点", "pos"), "r", 860)]
     def s2(a, b):
-        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-4.jpg", y=500)[0]]
+        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-4.jpg", y=430, w=460)[0]]
         for i, (c, s) in enumerate([(("", "+69.1", ("medal", 1)), "l"), (("", "+64.0", ("medal", 2)), "r"), (("", "−53.5", ("medal", 3)), "l")]):
-            e.append(ms.chip_at(a + .4 + i * .3, b, c, s, 720 + i * 150))
+            e.append(ms.chip_at(a + .4 + i * .3, b, c, s, 640 + i * 135))
         return e
     def s3(a, b):
-        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-2.jpg", y=500)[0],
-                ms.chip_at(a + .7, b, ("見る人は", "登録いらず", ""), "r", 800)]
+        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-2.jpg", y=430, w=460)[0],
+                ms.chip_at(a + .7, b, ("見る人は", "登録いらず", ""), "r", 720)]
     def s4(a, b):
         return [ms.at(a, b, '<h1>通算の成績も、<br>自動でたまる。</h1>', cls="cap", style="top:200px"),
-                ms.phone_at(a, b, "lp-mypage.jpg", y=500, scroll=f"{a + .6},{b - .3},0,240")[0],
-                ms.chip_at(a + .5, b, ("通算スコア", "+347.0", "pos"), "r", 760), ms.chip_at(a + .9, b, ("トップ率", "26%", ""), "l", 960)]
+                ms.phone_at(a, b, "lp-mypage.jpg", y=430, w=460, scroll=f"{a + .6},{b - .3},0,210")[0],
+                ms.chip_at(a + .5, b, ("通算スコア", "+347.0", "pos"), "r", 680), ms.chip_at(a + .9, b, ("トップ率", "26%", ""), "l", 860)]
     def s5(a, b):
         return [ms.end_card(a)]
     return [(["麻雀の集計、", "まだ電卓でやってますか？"], s0),
@@ -118,13 +140,14 @@ def build(name, fn):
         clips = []
         for i, (ph, _) in enumerate(scenes):
             mp3 = os.path.join(tmp, f"{i}.mp3")
-            words = asyncio.run(tts("".join(ph), mp3))
+            if VV: ratio = vv_tts(ph, mp3)
+            else: words = asyncio.run(tts("".join(ph), mp3))
             x = load(mp3, tmp)
             nz = np.nonzero(np.abs(x) > .004)[0]
             head = nz[0] / SR
             x = x[nz[0]:nz[-1] + 1]
             d = len(x) / SR
-            clips.append((x, [max(0, t - head) for t in phrase_times(ph, words, d)], d))
+            clips.append((x, [r * d for r in ratio] if VV else [max(0, t - head) for t in phrase_times(ph, words, d)], d))
     t, els, sub, place = 0.0, [], [], []
     for (ph, mk), (x, marks, d) in zip(scenes, clips):
         a, b = t, t + LEAD + d + GAP
@@ -140,7 +163,8 @@ def build(name, fn):
         t = b
     dur = t
     tmpname = "_narr-" + name
-    ms.build(tmpname, lambda: (dur, els + sub))
+    credit = [f'<div class="dom" style="left:0;right:0;top:1560px;text-align:center;font-size:32px">VOICEVOX:{ms.esc(VV[1])}</div>'] if VV else []
+    ms.build(tmpname, lambda: (dur, els + sub + credit))
     # 音
     v = np.zeros(int(dur * SR))
     for a, x in place: mh.put(v, x, a, 1.0)
@@ -160,7 +184,13 @@ def build(name, fn):
     print("ok", name, f"{dur:.1f}s", mp4)
 
 if __name__ == "__main__":
-    only = sys.argv[1] if len(sys.argv) > 1 else ""
+    a = sys.argv[1:]
+    out = None
+    if "--vv" in a:
+        k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2])
+        if len(a) > k + 3: out = a[k + 3]
+        a = a[:k]
+    only = a[0] if a else ""
     for k, fn in NARR.items():
         if not only or only in k:
-            build(k, fn)
+            build(out or k, fn)
