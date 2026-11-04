@@ -78,10 +78,15 @@
   `tools/shoot_feature_screens.py` の `cshot(選ぶ要素の並び, 名前)`（全部の要素と中の要素を囲む四角＋余白。中でスクロールする箱は `own=True`）。お知らせ「マイページを追加しました」の4枚はこれで撮る（assets/screens に直接 JPEG）
 - シート（結果のシート）は暗い幕の上に出るので、幕を地の色にし、画面を縦に長くして中を全部見せてから切る
 - **LPの成績の節（2〜5枚目）は周りごと撮る**（2026-11-04〜・`tools/shoot_lp_big_plan.py`）: 期間の行・タブ・カードの枠まで入れて、地の色を12px残す。
-  成績表・総当たり表はカードごと全部の列を広げて撮る（`wshot`）。順位はカードを撮って指標のタブの下で上下に分ける。過去の試合は期間・タブ・カードの上から（`cshot`）。
+  成績表・総当たり表はカードごと全部の列を広げて撮る（`wshot`）。順位はカードを撮って指標のタブの下で上下に分ける。過去の試合はタイル・一覧それぞれカードだけを撮る（`cshot`、1枚ずつ2回）。
+  **カードの色つきの枠**（仲間ページ/マイページの `box-shadow: 0 0 0 2px var(--circ-frame/--pc)`）は「自分の成績」のカード（`#view-history .mc-card`、ring対象外）には無いので、
+  撮る前に対象の要素へ `style.boxShadow = 'none'` を当てて消す（`wshot`の中・`circleMetric`ループの中・gamesの`cshot`の前）
   撮り終わると `tools/lp_hd_meta.py` が index.html の画像の大きさ・止める列の位置（--ct/--ch）・タブの高さ（--rt）・総当たりの縮尺（--ihn）を書きかえる。
   実行（本物の仲間ページの名前を置きかえたデータが要る＝個人PCで）: `LP_PLAN=tools/shoot_lp_big_plan.py LP_DSF=3 python tools/shoot_lp_screens.py <circle_anon.json>`。
   試し撮りは `LP_SITE=<別のフォルダ>`（本物の画像と index.html を書きかえない）・`LP_MIN_SESS=<試合の数>`
+- **通算順位・過去の試合の動き**（2026-11-05〜）: 指標のタブ／タイル・一覧の状態を、まず最後（いちばん右／一覧）まで順に選んでから、
+  最後の状態だけ下にスクロールする（`.rk`/`.gm` に `.scroll` が付いたときだけ `lp-rk`/`lp-pany` が動く。index.htmlの`flipCycle`）。
+  過去の試合はタイルの静止画→一覧の下スクロールの2状態カード（`lp-hd-games-tile.webp`・`lp-hd-games-list.webp`。旧`lp-hd-games.webp`は廃止）
 - LPの成績表・総当たり表は、左の名前の列を同じ画像から切り出した細い画像（`lp-hd-grid-c.webp`・`lp-hd-h2h-c.webp`）を上に重ねて、横に動いても止めておく
 
 ## アプリ実画面のスクショ（IG v2・テーマWeek用）
