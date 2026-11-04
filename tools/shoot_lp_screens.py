@@ -59,7 +59,7 @@ CUT_JS = """(sel) => { const root = document.querySelector(sel); if (!root) retu
 
 with sync_playwright() as p:
     br = p.chromium.launch()
-    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="ja-JP")
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=int(os.environ.get("LP_DSF", "2")), locale="ja-JP")
     ctx.route("https://www.gstatic.com/firebasejs/**", lambda r: r.fulfill(status=200, content_type="application/javascript",
               body=(FIREBASE_STUB + AUTH_STUB) if "firebase-app-compat" in r.request.url else ""))
     ctx.route(lambda u: not u.startswith("http://127.0.0.1:8806") and "gstatic" not in u, lambda r: r.abort())
@@ -95,7 +95,7 @@ with sync_playwright() as p:
         cut = pg.evaluate(CUT_JS, sel)
         shots.append((name, path, cut))
 
-    exec(open(os.path.join(MJ, "tools", "shoot_lp_screens_plan.py"), encoding="utf-8").read())
+    exec(open(os.path.join(MJ, os.environ.get("LP_PLAN", "tools/shoot_lp_screens_plan.py")), encoding="utf-8").read())
     print("errors", errs)
     for name, path, cut in shots:
         print(name, "切れ:", cut if cut else "なし")

@@ -218,18 +218,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   body:has(#view-home.active) .global-header { max-width: 1180px; }
   #view-home .lp-screens h2 { text-align: center; }
 }
-/* 実際の画面の切り抜き（2026-11-04）: スマホの枠は付けず、中身を大きく見せる。見えたら左右から入り、戻すと元に戻る（.js .pre はJSが付ける） */
-.lp-shows { display: flex; flex-direction: column; gap: 32px; max-width: 420px; margin: 22px auto 0; }
-.lp-show { margin: 0; }
-.lp-show figcaption { margin-bottom: 12px; text-align: center; }
+/* 実際の画面（2026-11-04）: スマホの枠は付けず、3倍で撮った中身を横にめくる。真ん中の1枚を大きく。大きな表はカードの中をゆっくり動かし、押すと全体を見られる */
+.lp-shows { --cw: min(330px, 84vw); display: flex; gap: 14px; width: 100vw; margin: 16px calc(50% - 50vw) 0; padding: 8px calc(50vw - var(--cw) / 2) 14px; box-sizing: border-box; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.lp-shows::-webkit-scrollbar { display: none; }
+.lp-show { flex: 0 0 var(--cw); margin: 0; scroll-snap-align: center; }
+.lp-show figcaption { min-height: 132px; margin-bottom: 10px; text-align: center; }
 .lp-show figcaption b { display: block; font-size: 18px; font-weight: 900; color: #1F2A28; }
-.lp-show figcaption span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.7; color: #4F5C5A; }
-.lp-show figcaption a { display: inline-block; margin-top: 4px; font-size: 13px; font-weight: 800; color: #2F56A8; }
-.lp-show img { display: block; width: 100%; height: auto; border-radius: 16px; background: #fff; box-shadow: 0 10px 26px rgba(47,74,134,.16); }
-.lp-show.js figcaption, .lp-show.js img { transition: opacity .5s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
-.lp-show.pre figcaption { opacity: 0; transform: translateY(16px); transition-duration: .25s; }
-.lp-show.pre img { opacity: 0; transform: translateX(-44px); transition-duration: .25s; } .lp-show:nth-child(even).pre img { transform: translateX(44px); }
-@media (min-width: 1100px) { #view-home .lp-shows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 44px; max-width: 980px; align-items: start; } }
+.lp-show figcaption span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.65; color: #4F5C5A; }
+.lp-show figcaption a { display: inline-block; margin-top: 2px; font-size: 13px; font-weight: 800; color: #2F56A8; }
+.lp-shot { position: relative; display: block; width: 100%; height: calc(var(--cw) * 1.376); padding: 0; border: 0; border-radius: 16px; overflow: hidden; background: #fff; box-shadow: 0 10px 26px rgba(47,74,134,.16); cursor: zoom-in; font: inherit; }
+.lp-shot img { display: block; width: 100%; height: auto; }
+.lp-shot.lp-pan img { position: absolute; left: 0; top: 0; width: auto; max-width: none; height: 100%; }
+.lp-look { position: absolute; right: 10px; bottom: 10px; padding: 6px 12px; border-radius: 999px; background: rgba(31,42,40,.86); color: #fff; font-size: 12px; font-weight: 800; }
+.lp-shows.js .lp-show { transition: transform .3s, opacity .3s; } .lp-shows.js .lp-show:not(.is-on) { transform: scale(.94); opacity: .6; }
+.lp-shows.js .is-on .lp-pan img { animation: lp-pan 16s ease-in-out .6s infinite alternate; }
+@keyframes lp-pan { to { transform: translateX(calc(-100% + var(--cw))); } }
+@media (prefers-reduced-motion: reduce) { .lp-shows.js .lp-show { transition: none; } .lp-shows.js .is-on .lp-pan img { animation: none; } }
+.lp-zoom { position: fixed; inset: 0; z-index: 450; background: #fff; overflow: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.lp-zoom img { display: block; max-width: none; }
+.lp-zoom-x { position: fixed; right: 14px; top: 14px; z-index: 451; display: grid; place-items: center; width: 44px; height: 44px; border: 1.5px solid #C3CECB; border-radius: 50%; background: #F4F7F6; color: #1F2A28; font-size: 26px; font-weight: 700; line-height: 1; cursor: pointer; }
 /* スマホの枠の決まり（サイト・SNS画像・動画・サムネで共通。docs/image-tools.md「スマホの枠」）：
    高さ＝幅×2.06／枠3.5%（上下左右同じ）／外の角15%・画面の角11.5%／画面の上の帯10%の中央にノッチ（幅30%・高さ7%）。
    スクショは帯の下に幅いっぱいで置き、下ははみ出た分だけ隠れる */
@@ -2745,12 +2752,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-screens">
     <div class="lp-inner">
       <h2>これまでの成績が一目でわかる。</h2>
-      <div class="lp-shows">
-        <figure class="lp-show"><figcaption><b>自分の成績が、ひと目で</b><span>平均着順・トップ率・ラス回避と、通算スコアの推移。月を押すと、その月の試合が並びます。</span><a href="/news/mypage-stats.html">くわしく見る ›</a></figcaption><img src="/assets/screens/lp-crop-mypage.jpg" width="642" height="710" alt="マイページの成績。通算スコアの推移のグラフで月を選ぶと、その月のゲームごとの順位とスコアが並ぶ" loading="lazy" decoding="async"></figure>
-        <figure class="lp-show"><figcaption><b>全員の成績を、1枚の表で</b><span>試合数・着順の回数・トップ率・ラス回避・通算スコアまで、メンバーを横に並べて。</span><a href="/news/nakama-page.html">くわしく見る ›</a></figcaption><img src="/assets/screens/lp-crop-grid.jpg" width="605" height="840" alt="仲間ページの成績表。メンバーごとのゲーム数・試合数・平均着順・着順の回数・トップ率・通算スコア" loading="lazy" decoding="async"></figure>
-        <figure class="lp-show"><figcaption><b>仲間の通算順位が、表彰台で</b><span>ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span><a href="/news/nakama-page.html">くわしく見る ›</a></figcaption><img src="/assets/screens/lp-crop-rank.jpg" width="610" height="350" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコアが並ぶ" loading="lazy" decoding="async"></figure>
-        <figure class="lp-show"><figcaption><b>あの人には勝ち越してる？</b><span>同じ試合で上だった回数を、メンバー同士の総当たりで。相性が数字で出ます。</span><a href="/news/nakama-page.html#h2h">くわしく見る ›</a></figcaption><img src="/assets/screens/lp-crop-h2h.jpg" width="610" height="515" alt="総当たり表。メンバー同士の直接対決の勝ち越し・負け越し" loading="lazy" decoding="async"></figure>
+      <div class="lp-shows" id="shows-row">
+        <figure class="lp-show"><figcaption><b>自分の成績が、ひと目で</b><span>平均着順・トップ率・ラス回避と、通算スコアの推移。四麻・三麻、個人戦・チーム戦でも分けて見られます。</span><a href="/news/mypage-stats.html">くわしく見る ›</a></figcaption><button type="button" class="lp-shot" onclick="lpZoom(this)" aria-label="自分の成績が、ひと目でを大きく見る"><img src="/assets/screens/lp-hd-mypage.webp" width="1074" height="1476" alt="マイページの成績カード。平均着順・通算スコア・トップ率・素点と、通算スコアの推移のグラフ" loading="lazy" decoding="async"></button></figure>
+        <figure class="lp-show"><figcaption><b>全員の成績を、1枚の表で</b><span>25人分でも1枚に。試合数・着順の回数・トップ率・通算スコアまで、メンバーを横に並べて。</span><a href="/news/nakama-page.html">くわしく見る ›</a></figcaption><button type="button" class="lp-shot lp-pan" onclick="lpZoom(this)" aria-label="全員の成績を、1枚の表でを大きく見る"><img src="/assets/screens/lp-hd-grid.webp" width="3000" height="1103" alt="仲間ページの成績表。25人分のゲーム数・試合数・平均着順・着順の回数・トップ率・通算スコア" loading="lazy" decoding="async"><span class="lp-look">押すと全体を見る</span></button></figure>
+        <figure class="lp-show"><figcaption><b>仲間の通算順位が、表彰台で</b><span>ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span><a href="/news/nakama-page.html">くわしく見る ›</a></figcaption><button type="button" class="lp-shot" onclick="lpZoom(this)" aria-label="仲間の通算順位が、表彰台でを大きく見る"><img src="/assets/screens/lp-hd-rank.webp" width="1074" height="2280" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコアが並ぶ" loading="lazy" decoding="async"></button></figure>
+        <figure class="lp-show"><figcaption><b>あの人には勝ち越してる？</b><span>全員の総当たりを、1枚の表に。同じ試合で上だった回数で、相性が数字で出ます。</span><a href="/news/nakama-page.html#h2h">くわしく見る ›</a></figcaption><button type="button" class="lp-shot lp-pan" onclick="lpZoom(this)" aria-label="あの人には勝ち越してる？を大きく見る"><img src="/assets/screens/lp-hd-h2h.webp" width="3000" height="2181" alt="総当たり表。25人のメンバー同士の直接対決の勝ち越し・負け越し" loading="lazy" decoding="async"><span class="lp-look">押すと全体を見る</span></button></figure>
+        <figure class="lp-show"><figcaption><b>その日の順位とスコアが、ずらり</b><span>打った日ごとに、自分の順位とスコアが並びます。押せばその日の結果が開きます。</span><a href="/news/mypage-stats.html">くわしく見る ›</a></figcaption><button type="button" class="lp-shot" onclick="lpZoom(this)" aria-label="その日の順位とスコアが、ずらりを大きく見る"><img src="/assets/screens/lp-hd-games.webp" width="978" height="2280" alt="マイページの過去の試合の一覧。ゲームごとに自分の順位とスコア、相手が並ぶ" loading="lazy" decoding="async"></button></figure>
+        <figure class="lp-show"><figcaption><b>メンバーごとの成績と推移</b><span>平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span><a href="/news/nakama-page.html">くわしく見る ›</a></figcaption><button type="button" class="lp-shot" onclick="lpZoom(this)" aria-label="メンバーごとの成績と推移を大きく見る"><img src="/assets/screens/lp-hd-member.webp" width="1170" height="2280" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy" decoding="async"></button></figure>
       </div>
+      <div class="features-ctl"><button type="button" class="features-nav prev" id="shows-prev" onclick="snapScroll('shows',-1)" aria-label="前の画面へ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L4 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="features-dots" id="shows-dots" aria-hidden="true"></div><button type="button" class="features-nav next" id="shows-next" onclick="snapScroll('shows',1)" aria-label="次の画面へ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 2 L10 7 L5 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
   </section>
 
@@ -2785,7 +2795,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <p>順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</p>
       </div>
       </div>
-      <div class="features-ctl howto-ctl"><button type="button" class="features-nav prev" id="howto-prev" onclick="howtoScroll(-1)" aria-label="前のステップへ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L4 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="features-dots" id="howto-dots" aria-hidden="true"></div><button type="button" class="features-nav next" id="howto-next" onclick="howtoScroll(1)" aria-label="次のステップへ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 2 L10 7 L5 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+      <div class="features-ctl howto-ctl"><button type="button" class="features-nav prev" id="howto-prev" onclick="snapScroll('howto',-1)" aria-label="前のステップへ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L4 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="features-dots" id="howto-dots" aria-hidden="true"></div><button type="button" class="features-nav next" id="howto-next" onclick="snapScroll('howto',1)" aria-label="次のステップへ"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M5 2 L10 7 L5 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </section>
 
   </div>
@@ -2828,7 +2838,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+81.3</span><span class="n" style="color:#0075c2">B</span><span class="v">13,000</span><span class="s m">−27.0</span><span class="t m">−43.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">1,000</span><span class="s m">−59.0</span><span class="t m">−45.0</span></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,82.6 328.0,25.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,124.6" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,78.8 328.0,126.0" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
 <div class="features-wrap">
                 <div class="features-row" id="features-row">
         <div class="feature">
@@ -7827,18 +7837,16 @@ function initLpMotion() {
   };
   // 比較・見出し: .pre の付け外しで進む・戻る。.js（動きの指定）は完成形から .pre にしたあとで付ける（最初の準備を動かさない）
   const cmp = document.getElementById('lp-compare');
-  const heads = [...document.querySelectorAll('.lp-start h2, .lp-compare h2')], shows = [...document.querySelectorAll('.lp-show')];
+  const heads = [...document.querySelectorAll('.lp-start h2, .lp-compare h2')];
   heads.forEach(h => { h.innerHTML = '<span class="lp-m"><span class="lp-r">' + h.innerHTML + '</span></span>'; h.classList.add('pre'); });
   if (cmp) cmp.classList.add('pre');
-  shows.forEach(f => f.classList.add('pre'));
   void document.body.offsetHeight;
   heads.forEach(h => { h.classList.add('js'); replay(h, 0.1, () => h.classList.remove('pre'), () => h.classList.add('pre')); });
-  shows.forEach(f => { f.classList.add('js'); replay(f, 0.2, () => f.classList.remove('pre'), () => f.classList.add('pre')); });
   if (cmp) { cmp.classList.add('js'); replay(cmp, 0.35, () => cmp.classList.remove('pre'), () => cmp.classList.add('pre')); }
   // 小窓: 見えたら3試合分、表示点数を入れる → スコアが出る → 合計とグラフが進む。最後はHTMLの完成形と同じになる
   const mini = document.getElementById('lp-mini');
   if (mini) {
-    const G = [[41300, 28200, 22500, 8000], [8000, 15600, 30400, 46000], [52000, 13000, 34000, 1000]], S = [[61.3, 8.2, -17.5, -52.0], [-52.0, -24.4, 10.4, 66.0], [72.0, -27.0, 14.0, -59.0]];
+    const G = [[41300, 28200, 22500, 8000], [-2000, 15600, 30400, 56000], [52000, 20000, 34000, -6000]], S = [[61.3, 8.2, -17.5, -52.0], [-62.0, -24.4, 10.4, 76.0], [72.0, -20.0, 14.0, -66.0]];
     const vs = [...mini.querySelectorAll('.v')], ss = [...mini.querySelectorAll('.s')], ts = [...mini.querySelectorAll('.t')], label = document.getElementById('lp-mini-k');
     const lines = [...mini.querySelectorAll('polyline')], base = lines.map(l => l.getAttribute('points').split(' ').map(p => p.split(',').map(Number)));
     const fmt = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1), tot = [0, 0, 0, 0];
@@ -7852,7 +7860,7 @@ function initLpMotion() {
     const later = (ms, f) => timers.push(setTimeout(f, ms));
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
-      G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US'); }));
+      G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
       S[g].forEach((v, i) => later(1100 + i * 120, () => { ss[i].textContent = fmt(v); tone(ss[i], v); ss[i].classList.remove('off'); }));
       later(1750, () => {
         S[g].forEach((v, i) => { tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]); });
@@ -7897,8 +7905,9 @@ function initLpMotion() {
     }).observe(steps);
   }
 }
-function initHowtoRow() {
-  const row = document.getElementById('howto-row'), dots = document.getElementById('howto-dots');
+// 横にめくる列（使い方・成績の節）。id は <名前>-row / -dots / -prev / -next
+function initSnapRow(name) {
+  const row = document.getElementById(name + '-row'), dots = document.getElementById(name + '-dots');
   if (!row || !dots) return;
   const items = [...row.children];
   dots.innerHTML = items.map(() => '<span class="fdot"></span>').join('');
@@ -7908,17 +7917,31 @@ function initHowtoRow() {
     items.forEach((el, i) => { const d = Math.abs(el.offsetLeft + el.offsetWidth / 2 - c); if (d < bd) { bd = d; best = i; } });
     items.forEach((el, i) => el.classList.toggle('is-on', i === best));
     [...dots.children].forEach((el, i) => el.classList.toggle('on', i === best));
-    document.getElementById('howto-prev').disabled = best === 0;
-    document.getElementById('howto-next').disabled = best === items.length - 1;
+    document.getElementById(name + '-prev').disabled = best === 0;
+    document.getElementById(name + '-next').disabled = best === items.length - 1;
   };
   row.classList.add('js');
   update();
   row.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update, { passive: true });
 }
-function howtoScroll(dir) {
-  const row = document.getElementById('howto-row');
-  if (row) row.scrollBy({ left: dir * (row.children[0].offsetWidth + 12), behavior: 'smooth' });
+function snapScroll(name, dir) {
+  const row = document.getElementById(name + '-row');
+  if (row) row.scrollBy({ left: dir * (row.children[0].offsetWidth + 14), behavior: 'smooth' });
+}
+// 画像を押すと全体を大きく見る。表は実物の大きさのまま、上下左右にスクロールできる
+function lpZoom(btn) {
+  const src = btn.querySelector('img'), box = document.createElement('div');
+  box.className = 'lp-zoom'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', src.alt);
+  const img = new Image(); img.src = src.src; img.alt = src.alt;
+  img.style.width = (btn.classList.contains('lp-pan') ? src.naturalWidth / 1.6 : Math.min(window.innerWidth, 560)) + 'px';
+  if (!btn.classList.contains('lp-pan')) img.style.margin = '0 auto';
+  const x = document.createElement('button');
+  x.type = 'button'; x.className = 'lp-zoom-x'; x.textContent = '×'; x.setAttribute('aria-label', '閉じる');
+  const close = () => { box.remove(); x.remove(); document.removeEventListener('keydown', esc); document.body.style.overflow = ''; btn.focus(); };
+  const esc = e => { if (e.key === 'Escape') close(); };
+  x.onclick = close; document.addEventListener('keydown', esc);
+  box.appendChild(img); document.body.append(box, x); document.body.style.overflow = 'hidden'; x.focus();
 }
 function initFeaturesCarousel() {
   const row = document.getElementById('features-row');
@@ -15133,7 +15156,7 @@ if (appState.games && appState.games.length) requestPersistentStorage(); // 履�
 renderRecentGames();
 setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
-initFeaturesCarousel(); initHowtoRow(); initLpMotion();
+initFeaturesCarousel(); initSnapRow('howto'); initSnapRow('shows'); initLpMotion();
 const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ #v=（見るだけのリンク）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
