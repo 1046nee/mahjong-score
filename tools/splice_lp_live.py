@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """tools/shoot_lp_live_plan.py が書き出した lp-live-*.html（匿名化済みデータのみ）を、
 LPの「これまでの成績が一目でわかる。」の4枚（成績表・通算順位・総当たり表・過去の試合）に埋めこむ。
-成績表・総当たり表は合計/個人戦/チーム戦の3状態をタップで、通算順位は6指標・過去の試合はタイル/
-一覧/カレンダーの3状態を指スワイプで切りかえられるようにする。
+どのカードもタブのタップで切りかえる（横スワイプは付けない）。通算順位の個人戦・チーム戦と、
+過去の試合の個人戦・チーム戦はLPのJS（initLpRank・initLpGames）が組み立てる。
 実行: python tools/splice_lp_live.py（先に shoot_lp_live_plan.py を実行しておくこと）"""
 import os
 import re
@@ -45,25 +45,24 @@ def main():
     assert n == 1, "h2h"
 
     rank_panes = ''.join(
-        f'<div class="lp-live-pane"><div class="lp-live-in">{read(f"lp-live-rank-{mk}.html")}</div></div>'
+        f'<div class="lp-live-pane{" on" if mk == "score" else ""}"><div class="lp-live-in">{read(f"lp-live-rank-{mk}.html")}</div></div>'
         for mk in ("score", "avg", "top", "las", "pmax", "pmin")
     )
     pat = re.compile(r'<figure class="lp-show"><figcaption><b>仲間の順位が、表彰台で</b>.*?</figure>', re.S)
     new = ('<figure class="lp-show"><figcaption><b>仲間の順位が、表彰台で</b>'
-           '<span>通算スコアも平均着順もトップ率も最高・最低点数も。指で横にスワイプすると切りかわります。</span>'
+           '<span>通算スコアも平均着順もトップ率も最高・最低点数も。タブを押すと順位が入れかわります。</span>'
            '<a href="/news/nakama-page.html">くわしく見る ›</a></figcaption>'
            '<div class="lp-shot lp-touch-multi" id="lp-live-rank"><div class="lp-live-swipe">' + rank_panes + '</div></div></figure>')
     s, n = pat.subn(new, s, count=1)
     assert n == 1, "rank"
 
     games_panes = ''.join(
-        f'<div class="lp-live-pane"><div class="lp-live-in">{read(f"lp-live-games-{k}.html")}</div></div>'
+        f'<div class="lp-live-pane{" on" if k == "tile" else ""}"><div class="lp-live-in">{read(f"lp-live-games-{k}.html")}</div></div>'
         for k in ("tile", "list", "cal")
     )
     pat = re.compile(r'<figure class="lp-show"><figcaption><b>その日の順位とスコアが、ずらり</b>.*?</figure>', re.S)
     new = ('<figure class="lp-show"><figcaption><b>その日の順位とスコアが、ずらり</b>'
-           '<span>タイル・一覧・カレンダーを切りかえると、打った日ごとに自分の順位とスコアが並びます。'
-           '指で横にスワイプ・縦にスクロールできます。</span><a href="/news/mypage-stats.html">くわしく見る ›</a></figcaption>'
+           '<span>タイル・一覧・カレンダーを切りかえると、打った日ごとに自分の順位とスコアが並びます。</span><a href="/news/mypage-stats.html">くわしく見る ›</a></figcaption>'
            '<div class="lp-shot lp-touch-multi" id="lp-live-games"><div class="lp-live-swipe">' + games_panes + '</div></div></figure>')
     s, n = pat.subn(new, s, count=1)
     assert n == 1, "games"
