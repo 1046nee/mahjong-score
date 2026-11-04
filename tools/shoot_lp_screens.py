@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 DATA = sys.argv[1]
 EXPLORE = "--explore" in sys.argv
 OUT = os.path.join(MJ, "まじゃすこ素材", "ig", "shots")
-SITE = os.path.join(MJ, "assets", "screens")
+SITE = os.environ.get("LP_SITE") or os.path.join(MJ, "assets", "screens")  # 試し撮りは LP_SITE に別の場所（本物の画像を上書きしない）
 os.makedirs(OUT, exist_ok=True)
 UID = "uidSHOT01"
 
@@ -76,7 +76,7 @@ with sync_playwright() as p:
     pg.wait_for_timeout(800)
     pg.add_style_tag(content="#toast, .toast { display: none !important; }")
     pg.evaluate(f"openCircle('{CID}')")
-    pg.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleData && Object.keys(circleSess || {}).length > 50", timeout=30000)
+    pg.wait_for_function("() => document.querySelector('#view-circle').classList.contains('active') && circleData && Object.keys(circleSess || {}).length >= " + os.environ.get("LP_MIN_SESS", "50") + "", timeout=30000)
     pg.wait_for_timeout(1500)
     if EXPLORE:
         pg.screenshot(path=os.path.join(OUT, "lp-explore.png"), full_page=True)
