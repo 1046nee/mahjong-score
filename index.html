@@ -441,10 +441,10 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-step h3 { font-size: 20px; font-weight: 900; text-align: center; margin: 0 0 14px; color: #1a1a1a; }
 .howto-shot { background: #177083; border-radius: 26px; padding: 24px 16px; display: flex; justify-content: center; }
 .howto-shot svg { width: 200px; height: auto; display: block; }
-/* 使い方の4枚は本物の画面のスクショ（2026-10-26〜・tools/shoot_howto_screens.py）。スマホの枠は「打つほど」と同じ形 */
+/* 使い方の4枚は本物の操作デモ動画（2026-11-05〜・tools/record_howto_demo.py＋split_howto_demo.py）。スマホの枠は「打つほど」と同じ形 */
 .howto-phone { --pw: 210px; width: var(--pw); padding: calc(var(--pw) * .035); border-radius: calc(var(--pw) * .15); background: #1F2A28; box-shadow: 0 12px 28px rgba(0,0,0,.25); }
 .howto-phone > .lp-phone-bar { border-radius: calc(var(--pw) * .115) calc(var(--pw) * .115) 0 0; }
-.howto-phone img { display: block; width: 100%; height: calc(var(--pw) * 1.89); object-fit: cover; object-position: top; border-radius: 0 0 calc(var(--pw) * .115) calc(var(--pw) * .115); }
+.howto-phone img, .howto-phone video { display: block; width: 100%; height: calc(var(--pw) * 1.89); object-fit: cover; object-position: top; border-radius: 0 0 calc(var(--pw) * .115) calc(var(--pw) * .115); background: #fff; }
 .howto-step p { margin-top: 12px; font-size: 15px; color: #444; }
 /* 使い方は横にめくる（2026-11-04・1099px以下）: 真ん中の1枚を大きく、次の1枚が見える。1100px以上は4列のまま */
 @media (max-width: 1099px) {
@@ -2815,25 +2815,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="howto-row" id="howto-row">
       <div class="howto-step">
         <h3>1. 人数を選ぶ</h3>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/howto-1.jpg" width="720" height="1558" alt="「はじめる」を押すと出る、何人で打つかを選ぶ画面" loading="lazy"></div></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><video src="/assets/screens/howto-1.mp4" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted loop playsinline preload="none" aria-hidden="true"></video></div></div>
         <p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p>
       </div>
 
       <div class="howto-step">
         <h3>2. URLをメンバーにシェアする</h3>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/howto-2.jpg" width="720" height="1558" alt="試合の画面で「共有」を押すと出る、試合のURLとLINEで送るボタン" loading="lazy"></div></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><video src="/assets/screens/howto-2.mp4" poster="/assets/screens/howto-2.jpg" width="780" height="1688" muted loop playsinline preload="none" aria-hidden="true"></video></div></div>
         <p>画面右上の「共有」から、LINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</p>
       </div>
 
       <div class="howto-step">
         <h3>3. 試合後に表示点数を入力する</h3>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/howto-3.jpg" width="720" height="1558" alt="点数入力の画面。4人の持ち点を入れると入力合計100,000点のチェックが出る" loading="lazy"></div></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><video src="/assets/screens/howto-3.mp4" poster="/assets/screens/howto-3.jpg" width="780" height="1688" muted loop playsinline preload="none" aria-hidden="true"></video></div></div>
         <p>試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</p>
       </div>
 
       <div class="howto-step">
         <h3>4. 結果はリアルタイムで全員に</h3>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#FFFFFF" aria-hidden="true"><span class="lp-phone-island"></span></span><img src="/assets/screens/howto-4.jpg" width="720" height="1558" alt="4試合入れたあとの総合順位と試合結果の画面" loading="lazy"></div></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#FFFFFF" aria-hidden="true"><span class="lp-phone-island"></span></span><video src="/assets/screens/howto-4.mp4" poster="/assets/screens/howto-4.jpg" width="780" height="1688" muted loop playsinline preload="none" aria-hidden="true"></video></div></div>
         <p>順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</p>
       </div>
       </div>
@@ -8009,6 +8009,25 @@ function initSnapRow(name) {
 function snapScroll(name, dir) {
   const row = document.getElementById(name + '-row');
   if (row) row.scrollBy({ left: dir * (row.children[0].offsetWidth + 14), behavior: 'smooth' });
+}
+// 使い方の4本の動画: 画面に入っているあいだだけ再生。1099px以下は真ん中（.is-on）の1本だけ、1100px以上は4列とも同時に
+function initHowtoVideos() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  const section = document.getElementById('howto'), row = document.getElementById('howto-row');
+  if (!section || !row) return;
+  const vids = [...section.querySelectorAll('.howto-step video')];
+  if (!vids.length) return;
+  const wide = () => window.matchMedia('(min-width: 1100px)').matches;
+  let visible = false;
+  const sync = () => {
+    if (!visible) { vids.forEach(v => v.pause()); return; }
+    if (wide()) { vids.forEach(v => { if (v.paused) { v.currentTime = 0; v.play().catch(() => {}); } }); return; }
+    const on = row.querySelector('.howto-step.is-on video');
+    vids.forEach(v => { if (v === on) { if (v.paused) { v.currentTime = 0; v.play().catch(() => {}); } } else v.pause(); });
+  };
+  new IntersectionObserver(es => { visible = es[es.length - 1].isIntersecting; sync(); }, { threshold: 0.25 }).observe(section);
+  row.addEventListener('snap', sync);
+  window.addEventListener('resize', sync, { passive: true });
 }
 // 画像を押すと全体を大きく見る。表は実物の大きさのまま、上下左右にスクロールできる
 function lpZoom(btn) {
@@ -15268,7 +15287,7 @@ if (appState.games && appState.games.length) requestPersistentStorage(); // 履�
 renderRecentGames();
 setTimeout(prefetchCircleColors, 800); // 前に開いた仲間ページの名簿の色（ログインしていなくても）
 initSetupForm();
-initFeaturesCarousel(); initSnapRow('howto'); initSnapRow('shows'); fitLpLive(); window.addEventListener('resize', fitLpLive, { passive: true }); initLpMotion();
+initFeaturesCarousel(); initSnapRow('howto'); initSnapRow('shows'); fitLpLive(); window.addEventListener('resize', fitLpLive, { passive: true }); initLpMotion(); initHowtoVideos();
 const urlHash = location.hash.slice(1);
 // 判定順に注意: #my=（引き継ぎURL）→ #join=（仲間ページの招待）→ #c=（仲間ページ）→ #v=（見るだけのリンク）→ セッションID（8文字以上）→ ページ内アンカー。
 // my=は「8文字以上」の条件も満たすため、先に判定しないとセッション参加に吸い込まれてエラーになる
