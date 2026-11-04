@@ -10,14 +10,14 @@ def wh(src, w, h):
     assert n, src
 for n in ("grid", "h2h"):
     g = m[n]; wh(f"lp-hd-{n}.webp", g["w"], g["h"]); wh(f"lp-hd-{n}-c.webp", g["cw"], g["chh"])
-    s, k = re.subn(r'(<img class="lp-col"[^>]*src="/assets/screens/lp-hd-' + n + r'-c\.webp"[^>]*?)(?: style="[^"]*")?( loading)', lambda x: f'{x.group(1)} style="--ct:{g["ct"]};--ch:{g["ch"]}"{x.group(2)}', s); assert k, n
+    s, k = re.subn(r'(<img class="lp-col"[^>]*src="/assets/screens/lp-hd-' + n + r'-c\.webp"[^>]*?)(?: style="[^"]*")?( loading)', lambda x: f'{x.group(1)} style="--ct:{g["ct"]};--ch:{g["ch"]};--icw:{g["icw"]}"{x.group(2)}', s); assert k, n
+    # 実機のモバイル幅(390px)で見たときと同じ文字の大きさにする比率（--iw・--ih）をボタンに書く
+    pat = re.compile(r'(<button type="button" class="lp-shot lp-pan lp-panxy")(?: style="[^"]*")?((?:(?!</button>).)*?<img src="/assets/screens/lp-hd-' + re.escape(n) + r'\.webp")', re.S)
+    s, k = pat.subn(lambda x: f'{x.group(1)} style="--iw:{g["iw"]};--ih:calc(var(--cw) * {g["ih"]})"{x.group(2)}', s); assert k, n
 r = m["rank"]
 for mk in ("score", "avg", "top", "las"):
     wh(f"lp-hd-rank-{mk}-t.webp", r["w"], r["th"]); wh(f"lp-hd-rank-{mk}.webp", r["w"], r["bh"])
 s, k = re.subn(r'<div class="lp-shot lp-flip" id="lp-flip"(?: style="[^"]*")?>', f'<div class="lp-shot lp-flip" id="lp-flip" style="--rt:{r["rt"]}">', s); assert k
-# 総当たり表は成績表と同じ縮尺で見せる（表の高さの比＝枠の何倍の高さにするか）
-ihn = round(m["h2h"]["h"] / m["grid"]["h"], 3)
-s, k = re.subn(r'<button type="button" class="lp-shot lp-pan lp-panxy"(?: style="[^"]*")?', f'<button type="button" class="lp-shot lp-pan lp-panxy" style="--ihn:{max(1, ihn)}"', s); assert k
 wh("lp-hd-games-tile.webp", m["games-tile"]["w"], m["games-tile"]["h"])
 wh("lp-hd-games-list.webp", m["games-list"]["w"], m["games-list"]["h"])
 open(p, "w", encoding="utf-8").write(s); print("index.html updated")

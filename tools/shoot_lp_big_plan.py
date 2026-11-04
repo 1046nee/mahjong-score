@@ -30,11 +30,12 @@ def tshot(sel, name):
     eshot("#hd-box", name, maxw=3000)
     pg.evaluate("document.getElementById('hd-box').remove()")
 
-# 2026-11-04〜: カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）。
-# 画面の地の色を少し残す。横に長い表はカードの枠ごと全部広げて撮る。
+# 2026-11-04〜: カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）が、
+# 余白は最小限（地の色の帯がカードを囲う空間に見えないように。自分の成績カードと同じく、枠＝カードそのもの）。
+# 横に長い表はカードの枠ごと全部広げて撮る。
 # カードの色つきの枠（仲間ページの色・#177083の box-shadow）は「自分の成績」のカードに無いので、
 # 撮るときに消す（消さないと枠だけ色が浮いて見える）
-APP_PAD = 12
+APP_PAD = 3
 LP_META = {}  # 撮った画像の大きさ。最後に index.html の数字を書きかえる（tools/lp_hd_meta.py）
 def wshot(js_parts, name, maxw=3000, col=False):
     """js_parts: 要素の並びを返すJS。複製して1つの箱に入れ、表を全部広げてから撮る。col=True なら左の列だけの細い画像（-c）も作る"""
@@ -52,12 +53,15 @@ def wshot(js_parts, name, maxw=3000, col=False):
       return { colRight: th ? th.getBoundingClientRect().right - bl : 0, boxW: b.getBoundingClientRect().width, boxH: b.getBoundingClientRect().height, tTop: tt.top - bt, tBot: tt.bottom - bt }; }""", [js_parts, APP_PAD])
     eshot("#hd-box", name, maxw=maxw)
     pg.evaluate("document.getElementById('hd-box').remove()")
+    # 実機のモバイル（390px幅）で見たときと同じ文字の大きさで表示するための比率（画像の本当のCSS幅/390）
+    LP_META[name] = {"iw": round(info["boxW"] / 390, 4), "ih": round(info["boxH"] / 390, 4)}
     if col and info["colRight"]:
         im = _I.open(os.path.join(SITE, "lp-hd-" + name + ".webp")).convert("RGB")
         k = im.width / info["boxW"]; x = round((info["colRight"] + 1) * k)
         y0, y1 = round(info["tTop"] * k), round(info["tBot"] * k)  # 表の上から下まで（上の期間の行・タブは動かす）
         im.crop((0, y0, x, y1)).save(os.path.join(SITE, "lp-hd-" + name + "-c.webp"), quality=88, method=6)
-        LP_META[name] = {"ct": round(y0 / im.height, 4), "ch": round((y1 - y0) / im.height, 4), "w": im.width, "h": im.height, "cw": x, "chh": y1 - y0}
+        LP_META[name].update({"ct": round(y0 / im.height, 4), "ch": round((y1 - y0) / im.height, 4), "cw": x, "chh": y1 - y0,
+                               "icw": round((info["colRight"] + 1) / 390, 4)})
         print("col", name, LP_META[name])
 def cshot(sels, name, pad=APP_PAD, max_h=None, q=86):
     """選んだ要素を囲む四角＋地の色の余白で、画面のまま撮る（縦に長いときは max_h の所で、要素の切れ目で切る）"""
