@@ -40,8 +40,10 @@ for mk in ("score", "avg", "top", "las"):
     path = os.path.join(OUT, "hd-rank.png")
     pg.locator("#circle-body .rank-card").first.screenshot(path=path)
     im = _I.open(path).convert("RGB"); d = pg.evaluate("window.devicePixelRatio"); y = int(off * d)
-    im = im.crop((0, y, im.width, y + round(im.width * 1.376)))
-    im.save(os.path.join(SITE, f"lp-hd-rank-{mk}.webp"), quality=88, method=6); print("hd rank", mk, im.size)
+    sh = round(im.width * .17)  # タブの帯（LPでは上に固定して、下の順位だけ動かす）
+    im.crop((0, y, im.width, y + sh)).save(os.path.join(SITE, f"lp-hd-rank-{mk}-t.webp"), quality=88, method=6)
+    b = im.crop((0, y + sh, im.width, y + sh + int(880 * d)))
+    b.save(os.path.join(SITE, f"lp-hd-rank-{mk}.webp"), quality=86, method=6); print("hd rank", mk, b.size)
 pg.evaluate("circleMetric = 'score'; renderCircle()"); pg.wait_for_timeout(300)
 pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
 tshot("#circle-body .card table", "grid")

@@ -9,7 +9,8 @@
 - HTMLの1コマずつを時刻を進めながら撮って、ffmpeg でつなぐ（録画ではないので毎回同じ仕上がり）。要: `pip install imageio-ffmpeg`
 - 見た目は tools/make_sns_v3.py と共通（淡い緑の地・本物の画面のスマホ・数字のカード・✨）。画面は assets/screens/ のスクショ
 - 台本は make_short.py の `VIDEOS` に関数を1つ足す。要素は `at(出る秒, 消える秒, 中身)`、スマホは `phone_at`、数字のカードは `chip_at`、最後は `end_card`
-- **ナレーションと字幕の型**（2026-11-04・ユーザーの理想に近い形・`python tools/make_narrated.py [名前]`）: 見た目は make_short.py のまま、声の長さから場面の時刻を決める。声は男性の自然な声（edge-tts・ja-JP-KeitaNeural・+12%）、字幕は声に合わせて下に出す（1区切り16文字以内・語の途中で折らない）、BGMは自作で控えめ。無理なカットインは増やさない。要: `pip install edge-tts truststore`。edge-tts は非公式の使い方なので、公開の前に利用条件を確かめる
+- **ナレーションと字幕の型**（2026-11-04・ユーザーの理想に近い形・`python tools/make_narrated.py [名前]`）: 見た目は make_short.py のまま、声の長さから場面の時刻を決める。声は男性の自然な声（edge-tts・ja-JP-KeitaNeural・+12%）、**字幕は声に合わせて、白い文字に濃い縁取りで出す（黒い帯は付けない）。位置はスマホの下の y=1500（下の約300pxに入らない）。1区切り16文字以内・語の途中で折らない。スマホは幅520pxのまま小さくしない**（見出しを上へ寄せ、スマホを y=400 に置いて、字幕の場所を作る。2026-11-04 ユーザーの指定）、BGMは自作で控えめ。無理なカットインは増やさない。要: `pip install edge-tts truststore`。edge-tts は非公式の使い方なので、公開の前に利用条件を確かめる
+- 声は VOICEVOX も使える: エンジン（run.exe）を動かして `python tools/make_narrated.py kinou --vv <話者ID> <クレジットの名前> [出力名]`。話者IDは http://127.0.0.1:50021/speakers。動画に `VOICEVOX:名前` のクレジットが入る。音声の作業はユーザーが家のPCで行う（2026-11-04。会社PCではエンジンの起動が権限で止まった）
 - 外の曲は動画に焼き込まない（著作権の都合）。音ありは `tools/make_hype.py` だけで、BGM・効果音は numpy で自作、声は Windows の音声合成（Microsoft Haruka）。make_short.py の動画は音なし
 - **テンポの速い型**（2026-11-04・`python tools/make_hype.py [名前]`）: 150BPM・1.6秒ごとに切り替え・文字を叩きつけて画面をゆらす・地の色を毎回変える・全体15秒前後。台本は make_hype.py の `HYPE` に足す。スマホの部品は `.bar` などの素直なクラス名を使っているので、足すCSSは `hy-` を付ける（ぶつかるとノッチが左へ寄った）
 - 文字は画面の上〜中央に置く。**下の約300pxと右端の約150pxは、いいね・コメントのボタンと説明文に隠れる**

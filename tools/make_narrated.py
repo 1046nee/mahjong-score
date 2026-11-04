@@ -27,8 +27,8 @@ GAP = 0.22    # 場面の間の息つぎ
 LEAD = 0.25   # 場面が切り替わってから声が始まるまで
 
 ms.CSS += """
-.sub { position: absolute; left: 60px; right: 140px; top: 1408px; z-index: 30; text-align: center; opacity: 0; }
-.sub span { display: inline-block; background: rgba(31,42,40,.88); color: #fff; font-size: 50px; font-weight: 800; line-height: 1.4; white-space: nowrap; border-radius: 18px; padding: 12px 30px; }
+.sub { position: absolute; left: 60px; right: 140px; top: 1500px; z-index: 30; text-align: center; opacity: 0; }
+.sub span { display: inline-block; color: #fff; font-size: 54px; font-weight: 900; line-height: 1.3; white-space: nowrap; -webkit-text-stroke: 12px #1F2A28; paint-order: stroke fill; }
 """
 ms.JS += r"""
 const renderBase = window.render;
@@ -104,25 +104,25 @@ def soft_bgm(dur):
     return b[:int(dur * SR)]
 
 def v_kinou():
-    hero = v3.hero_svg().replace('<svg ', '<svg style="width:760px;height:auto;display:block;margin:0 auto" ', 1)
+    hero = v3.hero_svg().replace('<svg ', '<svg style="width:940px;height:auto;display:block;margin:0 auto" ', 1)
     def s0(a, b):
         return [ms.at(a, b, '<div class="badge">セット麻雀の人へ</div><h1>麻雀の集計、<br>まだ電卓で<br>やってる？</h1>', cls="cap hook", style="top:330px", anim="pop"),
-                ms.at(a + .3, b, hero, style="position:absolute;left:0;right:0;top:890px", anim="fade")]
+                ms.at(a + .3, b, hero, style="position:absolute;left:0;right:0;top:880px", anim="fade")]
     def s1(a, b):
-        return [ms.at(a, b, '<h1>点数を入れるだけ。</h1>', cls="cap", style="top:250px"), ms.phone_at(a, b, "howto-3.jpg", y=400, w=460)[0],
-                ms.chip_at(a + 1.0, b, ("合計", "100,000点", "pos"), "r", 860)]
+        return [ms.at(a, b, '<h1>点数を入れるだけ。</h1>', cls="cap", style="top:230px"), ms.phone_at(a, b, "howto-3.jpg", y=400)[0],
+                ms.chip_at(a + 1.0, b, ("合計", "100,000点", "pos"), "r", 900)]
     def s2(a, b):
-        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-4.jpg", y=445, w=460)[0]]
+        e = [ms.at(a, b, '<h1>順位とスコアが、<br>その場で出る。</h1>', cls="cap", style="top:170px"), ms.phone_at(a, b, "howto-4.jpg", y=400)[0]]
         for i, (c, s) in enumerate([(("", "+69.1", ("medal", 1)), "l"), (("", "+64.0", ("medal", 2)), "r"), (("", "−53.5", ("medal", 3)), "l")]):
-            e.append(ms.chip_at(a + .4 + i * .3, b, c, s, 640 + i * 135))
+            e.append(ms.chip_at(a + .4 + i * .3, b, c, s, 620 + i * 150))
         return e
     def s3(a, b):
-        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:200px"), ms.phone_at(a, b, "howto-2.jpg", y=445, w=460)[0],
-                ms.chip_at(a + .7, b, ("見る人は", "登録いらず", ""), "r", 720)]
+        return [ms.at(a, b, '<h1>URLを送れば、<br>全員のスマホに。</h1>', cls="cap", style="top:170px"), ms.phone_at(a, b, "howto-2.jpg", y=400)[0],
+                ms.chip_at(a + .7, b, ("見る人は", "登録いらず", ""), "r", 700)]
     def s4(a, b):
-        return [ms.at(a, b, '<h1>通算の成績も、<br>自動でたまる。</h1>', cls="cap", style="top:200px"),
-                ms.phone_at(a, b, "lp-mypage.jpg", y=445, w=460, scroll=f"{a + .6},{b - .3},0,110")[0],
-                ms.chip_at(a + .5, b, ("通算スコア", "+347.0", "pos"), "r", 680), ms.chip_at(a + .9, b, ("トップ率", "26%", ""), "l", 860)]
+        return [ms.at(a, b, '<h1>通算の成績も、<br>自動でたまる。</h1>', cls="cap", style="top:170px"),
+                ms.phone_at(a, b, "lp-mypage.jpg", y=400, scroll=f"{a + .6},{b - .3},0,120")[0],
+                ms.chip_at(a + .5, b, ("通算スコア", "+347.0", "pos"), "r", 660), ms.chip_at(a + .9, b, ("トップ率", "26%", ""), "l", 860)]
     def s5(a, b):
         return [ms.end_card(a)]
     return [(["麻雀の集計、", "まだ電卓でやってますか？"], s0),
