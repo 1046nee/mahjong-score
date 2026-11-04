@@ -245,7 +245,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* LPだけの動き: 数字が順に出て、着順の帯とグラフが左から伸びる。.pre の付け外しで進む・戻る */
 .lp-live.js .mc-grid b, .lp-live.js .ms-pts b, .lp-live.js .mc-pts b { transition: opacity .35s ease var(--nd, 0s), transform .35s ease var(--nd, 0s); }
 /* clip-path は none へは動かないので、完成形も inset で書く */
-.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 2.6s linear 1.1s; }
+.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 2.6s linear var(--line-delay, 1.1s); }
 .lp-live.pre .mc-grid b, .lp-live.pre .ms-pts b, .lp-live.pre .mc-pts b { opacity: 0; transform: translateY(8px); transition-delay: 0s; transition-duration: .15s; }
 .lp-live.pre .mc-bar, .lp-live.pre .mc-line { clip-path: inset(0 100% 0 0); transition-delay: 0s; transition-duration: .2s; }
 @keyframes lp-rk { to { transform: translateY(calc(-100% + var(--cw) * (1.376 - var(--rt, .17)))); } }
@@ -7889,7 +7889,10 @@ function initLpMotion() {
   // 3枚目（指標のタブ）・5枚目（タイル→一覧）は同じ条件で、状態を順に選んでから最後だけ下にスクロールする
   const row = document.getElementById('shows-row'), live = document.getElementById('lp-live'), flip = document.getElementById('lp-flip'), gflip = document.getElementById('lp-games-flip');
   if (row && live && flip) {
-    live.querySelectorAll('.mc-grid b, .ms-pts b, .mc-pts b').forEach((b, i) => b.style.setProperty('--nd', (i * 0.1).toFixed(2) + 's'));
+    const numEls = [...live.querySelectorAll('.mc-grid b, .ms-pts b, .mc-pts b')];
+    numEls.forEach((b, i) => b.style.setProperty('--nd', (i * 0.1).toFixed(2) + 's'));
+    // 推移グラフは、数字が最後（箱下）まで出たらすぐ続けて動き出す（固定の遅れだと間が空いて見えた）
+    live.style.setProperty('--line-delay', (Math.max(0, numEls.length - 1) * 0.1 + 0.35).toFixed(2) + 's');
     live.classList.add('pre'); void live.offsetHeight; live.classList.add('js');
     const flipCycle = (root, sel, pause, scrollMs) => {
       const items = [...root.querySelectorAll(sel)];
