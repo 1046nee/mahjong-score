@@ -219,7 +219,7 @@ def v_aruaru():
     for i, it in enumerate(items):
         els.append(at(t, t + 3.3, f'<span class="no">{i+1}</span><div class="tx">{esc(it)}</div>', cls="card", style="top:640px", anim="right"))
         t += 3.3
-    els.append(at(t, t + 4.2, '<h1>それ、まじゃすこなら<br>ぜんぶ自動。</h1>', cls="cap", style="top:230px", anim="pop"))
+    els.append(at(t, t + 4.2, '<h1>それ、まじゃすこなら<br>全部自動。</h1>', cls="cap", style="top:230px", anim="pop"))
     e, hh = phone_at(t + 0.3, t + 4.2, "howto-4.jpg", y=600); els.append(e)
     els.append(chip_at(t + 1.2, t + 4.2, ("", "+69.1", ("medal", 1)), "l", 900))
     els.append(chip_at(t + 1.6, t + 4.2, ("通算", "自動", ""), "r", 1100))
@@ -304,7 +304,7 @@ PAGE_VIDEOS = {
    [(0, "マイページを開いて"), ("month", "通算スコアの\n推移のグラフ"), ("pick", "月を押すと"), ("pop", "その月の試合が\n並ぶ")]),
  "mypage-h2h": ("マイページ", "あの人には、\n勝ち越してる？",
    [(0, "マイページを開いて"), ("tab", "「対戦成績」を押すと"), ("h2h", "相手ごとの\n勝ち-負け"), ("pct", "勝率順にも\n並べかえ"), ("vs", "1人押すと\nくわしく")]),
- "mypage-hist": ("マイページ", "打った日の結果、\nぜんぶ残る。",
+ "mypage-hist": ("マイページ", "打った日の結果、\n全部残る。",
    [(0, "マイページを開いて"), ("tab", "「過去の試合」を押すと"), ("list", "順位とスコアが\n日ごとに"), ("open", "1つ押すと"), ("result", "その日の結果が\n開く")]),
  "play-team": ("チーム戦", "チーム戦も、\nまじゃすこで。",
    [(0, "「はじめる」から\nメンバーを先に決める"), ("members", "8人の名前を入れて"), ("team", "「チーム戦」を押すと"), ("teams", "4チームに\n自動で分かれる"),

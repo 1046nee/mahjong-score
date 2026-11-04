@@ -299,19 +299,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-compare h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
 .compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .compare-table th { font-size: 14px; padding: 12px 10px; text-align: center; }
-.compare-table th.before { background: #eceff1; color: #888; }
-.compare-table th.after { background: #177083; color: #fff; }
-.compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; }
-.compare-table td.before { color: #999; width: 50%; }
-.compare-table td.after { color: #1a1a1a; font-weight: 700; width: 50%; }
-/* 比較の動き（2026-11-04）: 見えたら上の行から順に、左に線が引かれて右が現れる。.pre はJSが付ける（無ければ完成形） */
-.compare-table td.before span { background: linear-gradient(#AAB6B3, #AAB6B3) left 56% / 100% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.compare-table td.after span { display: inline-block; }
-.compare-table.go td.before span { transition: background-size .4s ease var(--d, 0s); }
-.compare-table.go td.after span { transition: opacity .35s ease calc(var(--d, 0s) + .3s), transform .35s ease calc(var(--d, 0s) + .3s); }
+.compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 44%; }
+.compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 56%; }
+.compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; word-break: keep-all; } /* 折り返しは <wbr> の所だけ（語の途中で切らない） */
+.compare-table td.before { position: relative; color: #7A8785; background: #F5F7F7; }
+.compare-table td.after { color: #fff; font-size: 14px; font-weight: 800; background: linear-gradient(#177083, #177083) right / 100% 100% no-repeat; border-top-color: rgba(255,255,255,.2); }
+/* 比較の動き（2026-11-04・参考サイトの slideIn / sheen / shout）: 見えたら上の行から順に、左に斜線が引かれて文字が沈み、右は緑が塗られて文字が右から入り、チェックが弾み、光が走る。.pre はJSが付ける（無ければ完成形） */
+.compare-table td.before::after { content: ''; position: absolute; inset: 7px 8px; pointer-events: none; background: linear-gradient(to bottom right, transparent calc(50% - 1.6px), #E75620 calc(50% - 1px), #E75620 calc(50% + 1px), transparent calc(50% + 1.6px)); clip-path: inset(0); }
+.compare-table td.after span { display: flex; align-items: center; gap: 7px; }
+.compare-table td.after span::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.6 9.4l3 3 5.8-6.4' fill='none' stroke='%23177083' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
+.compare-table.go td.before { transition: color .3s ease calc(var(--d, 0s) + .15s); }
+.compare-table.go td.before::after { transition: clip-path .3s ease-out var(--d, 0s); }
+.compare-table.go td.after { transition: background-size .32s ease-out calc(var(--d, 0s) + .22s); }
+.compare-table.go td.after span { animation: lp-slide .38s cubic-bezier(.2,.8,.2,1) calc(var(--d, 0s) + .3s) both; }
+.compare-table.go td.after span::before { animation: lp-pop .42s ease calc(var(--d, 0s) + .55s) both; }
+.compare-table.go td.after::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.5) 50%, transparent 58%) 250% 0 / 250% 100% no-repeat; animation: lp-sheen .7s ease calc(var(--d, 0s) + .6s) both; }
+.compare-table td.after { position: relative; overflow: hidden; }
 .compare-table tbody tr:nth-child(2) { --d: .45s; } .compare-table tbody tr:nth-child(3) { --d: .9s; } .compare-table tbody tr:nth-child(4) { --d: 1.35s; }
-.compare-table.pre td.before span { background-size: 0 1.5px; }
-.compare-table.pre td.after span { opacity: 0; transform: translateX(-10px); }
+.compare-table.pre td.before { color: #3F4C4A; } .compare-table.pre td.before::after { clip-path: inset(0 100% 0 0); }
+.compare-table.pre td.after { background-size: 0 100%; } .compare-table.pre td.after span { opacity: 0; }
 /* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
 .lp-mini { max-width: 340px; margin: 0 auto 24px; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 12px 14px 10px; }
 .lp-mini-t { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #177083; text-align: center; }
@@ -333,7 +339,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 @keyframes lp-pop { 0% { transform: scale(.4); } 65% { transform: scale(1.18); } 100% { transform: scale(1); } }
 @keyframes lp-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes lp-shout { 0% { opacity: 0; transform: scale(2.2); } 60% { opacity: 1; transform: scale(.92); } 100% { opacity: 1; transform: scale(1); } }
-@keyframes lp-flash { 0% { background: #D9F0E5; } 100% { background: transparent; } }
+@keyframes lp-slide { from { opacity: 0; transform: translateX(40%); } to { opacity: 1; transform: none; } }
+@keyframes lp-sheen { to { background-position: -150% 0; } }
 @keyframes lp-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .lp-m { display: block; overflow: hidden; padding-bottom: .1em; } .lp-r { display: block; }
 h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
@@ -342,9 +349,8 @@ h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transfor
 .steps.js:not(.done) ~ .start-note { opacity: 0; } .steps.done ~ .start-note { animation: lp-up .45s ease both; }
 .steps.done ~ .start-note strong { display: inline-block; animation: lp-shout .55s ease .25s both; }
 .compare-table.pre thead th { opacity: 0; } .compare-table.go thead th { transition: opacity .35s; }
-.compare-table.go td.after { animation: lp-flash .8s ease calc(var(--d, 0s) + .4s) both; }
-.compare-table.pre ~ .start-note { opacity: 0; } .compare-table.go ~ .start-note { animation: lp-up .45s ease 2.1s both; }
-.compare-table.go ~ .start-note strong { display: inline-block; animation: lp-shout .55s ease 2.4s both; }
+.compare-table.pre ~ .start-note { opacity: 0; } .compare-table.go ~ .start-note { animation: lp-up .45s ease 2.3s both; }
+.compare-table ~ .start-note strong { color: #E75620; } .compare-table.go ~ .start-note strong { display: inline-block; animation: lp-shout .55s ease 2.6s both; }
 /* 機能のカード: 真ん中のカードを大きく、アイコンをゆらす（1099px以下。1100px以上は格子） */
 @media (max-width: 1099px) {
   .features-row.js { padding: 14px calc(50% - 92px) 20px; scroll-padding-left: 0; }
@@ -353,7 +359,7 @@ h2.pre .lp-r { transform: translateY(115%); } h2.go .lp-r { transition: transfor
   .features-row.js .feature.is-on { transform: scale(1.06); opacity: 1; box-shadow: 0 10px 22px rgba(23,112,131,.2); }
   .features-row.js .feature.is-on .feature-icon svg { animation: lp-bob 2s ease-in-out infinite; }
 }
-@media (prefers-reduced-motion: reduce) { .compare-table td span, .lp-mini-g .s, .lp-fix, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .compare-table td, .compare-table td::after, .lp-mini-g .s, .lp-fix, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
 
 /* ⑦ 始めやすさ: 3ステップ */
 .lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
@@ -1304,27 +1310,29 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .ht-legend + .ht-year { margin-top: 4px; }
 .ht-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
 /* 中身が入りきらないときは正方形より少し縦に伸びる（切って隠さない。2026-10-08: 名前の2行目・顔・+n が欠けていた） */
-.ht { aspect-ratio: 1 / 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 7px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
+.ht { aspect-ratio: 1 / 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 2px; padding: 7px; border: 1.5px solid transparent; border-radius: 14px; background: #fff; box-shadow: var(--sh-1); text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
 .ht:active { opacity: .75; }
 .ht.k4, .ht.k3 { border-color: var(--kb); }
 .ht-top { display: flex; align-items: center; gap: 3px; height: 18px; flex: none; }
 .ht-k { width: 14px; height: 14px; margin: 0; flex: none; }
-.ht-multi { flex: none; height: 16px; padding: 0 4px; border-radius: 8px; background: #C07A22; color: #fff; font-size: 9.5px; font-weight: 800; line-height: 16px; }
+.ht-multi { flex: none; height: 16px; padding: 0 4px; border-radius: 8px; background: #C07A22; color: #fff; font-size: 9.5px; font-weight: 800; line-height: 16px; } .ht-multi.tm { background: #FCE9DD; color: #A8480F; }
 .ht-top em { margin-left: auto; flex: none; font-style: normal; height: 18px; padding: 0 5px; border-radius: 9px; font-size: 10px; font-weight: 800; line-height: 18px; }
 .ht-me { background: var(--pc-tint); color: var(--pc); }
 .ht-out { background: #6B7A77; color: #fff; }
 .ht-rk { background: var(--md0-tint); color: var(--md0-ink); } .ht-rk.r1 { background: var(--md1-tint); color: var(--md1-ink); } .ht-rk.r2 { background: #E1E9F1; color: #34506A; } .ht-rk.r3 { background: var(--md3-tint); color: var(--md3-ink); }
 .ht-name { flex: none; max-height: 2.5em; font-size: 12px; font-weight: 800; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
-.ht-avs { display: flex; height: 20px; flex: none; margin-top: auto; align-items: center; padding-left: 2px; } /* 名前の下の余りは顔の上に寄せる（顔とスコアはいつも下にそろう） */
-.ht-avs i { width: 16px; height: 16px; margin-right: 2px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 9.5px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; flex: none; }
+.ht-avs { display: flex; height: 20px; flex: none; align-items: center; padding-left: 2px; } /* 余りは1か所に固めず行の間に分ける（.ht の space-between。真ん中が空いて見えないように。2026-11-04） */
+.ht-avs i { width: 18px; height: 18px; margin-right: 2px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-size: 10px; font-style: normal; font-weight: 800; box-shadow: 0 0 0 1.5px #fff; flex: none; }
 .ht-avs i.me { box-shadow: 0 0 0 1.5px #fff, 0 0 0 3px var(--pc); z-index: 1; margin: 0 4px 0 2px; }
-.ht-avs i.more { width: auto; min-width: 16px; padding: 0 3px; border-radius: 8px; }
+.ht-avs i.more { width: auto; min-width: 18px; padding: 0 3px; border-radius: 9px; }
 .ht-avs i.more { background: #E3E9E8; color: #4F5C5A; font-size: 9px; }
 .ht-n { display: flex; flex: none; align-items: baseline; gap: 2px; font-size: 11px; font-weight: 700; color: #5F6E6B; }
 .ht-n b { font-size: 20px; font-weight: 900; color: var(--pc); line-height: 1; font-variant-numeric: tabular-nums; }
-.ht-n .ht-d { margin-left: auto; font-size: 11px; font-weight: 700; color: #5F6E6B; font-variant-numeric: tabular-nums; }
+.ht-m { display: flex; flex: none; align-items: baseline; justify-content: space-between; gap: 4px; font-size: 11px; font-weight: 700; line-height: 14px; color: #5F6E6B; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ht-c b { margin-right: 1px; font-size: 13px; font-weight: 900; color: var(--pc); }
+.ht-lb { flex: none; font-size: 10px; font-weight: 800; color: #5F6E6B; }
 .ht-tag { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 800; padding: 1px 6px; border-radius: 8px; }
-.ht-sc { min-width: 0; gap: 4px; } .ht-sc b { font-size: 17px; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: clip; white-space: nowrap; } .ht-sc .ht-d { flex: none; }
+.ht-sc { min-width: 0; min-height: 20px; gap: 4px; } .ht-sc b { font-size: 17px; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: clip; white-space: nowrap; }
 .ht-grid.sc2 .ht-sc b { font-size: 15px; } .ht-grid.sc3 .ht-sc b { font-size: 13px; } /* スコアの桁が多いときは全部のタイルで同じだけ小さく */ .ht-sc b.pos { color: #1A237E; } .ht-sc b.neg { color: #C62828; } .ht-sc b.nil, .ht-sc b:not(.pos):not(.neg) { color: #1F2A28; }
 /* メンバーの成績: 連携している試合の1行（日付・試合名・その人のスコア） */
 /* メンバーの成績のシート: 地を選んでいる形式の色に（四麻＝少し緑・三麻＝淡い青）。カード・タイルは白で浮かせる */
@@ -1364,9 +1372,9 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .ht.out .ht-name { color: #5F6E6B; }
 .ht.empty { background: #F3F5F5; border: 1.5px dashed #AEBBB8; box-shadow: none; }
 .ht.empty .ht-name { color: #6B7A77; }
-.ht.empty .ht-n b { color: #AEBBB8; }
+.ht.empty .ht-n b, .ht.empty .ht-c b { color: #AEBBB8; }
 .ht.empty .ht-tag { background: #E3E9E8; color: #5F6E6B; }
-.ht.few .ht-tag { background: #EEF2F1; color: #5F6E6B; } /* 試合が少ないゲームは札だけ（枠の色は形式・チーム戦を表す。2026-10-08） */
+.ht.few .ht-c, .ht.few .ht-c b { color: #9A5B12; } /* 試合が少ないゲームは試合数の色だけ（枠の色は形式・チーム戦を表す） */
 .hist-viewseg .seg, .hist-viewseg .seg.xs { margin: 0; } /* .seg.xs の下の余白を消して、右の「追加・送る」「期間」と上下の中心をそろえる */
 .hist-viewseg { margin-bottom: 14px; }
 .gr.out .gr-name, .gr.out .gr-date { color: #8A9AA5; font-weight: 700; }
@@ -2086,8 +2094,9 @@ button.ios-row:active { background: #F2F6F5; }
   #form-modal:has(.sheet-body) { align-items: flex-end; padding: 0; }
   #form-modal:has(.sheet-body) .form-modal-box { max-width: none; max-height: 92vh; border-radius: 20px 20px 0 0;
     padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); animation: sheet-up .22s ease-out; }
-  #form-modal:has(.sheet-body) .form-modal-box { padding-top: 0; }
 }
+/* 箱の上の余白は全部の幅で0（余白があると、貼り付いた見出しが余白の下で止まり、スクロールした中身が余白に透けて見える。2026-11-04）。上の間は見出しの padding で取る */
+#form-modal:has(.sheet-body) .form-modal-box { padding-top: 0; }
 #form-modal:has(.sheet-body) .form-modal-title { font-size: 17px; font-weight: 800; }
 @keyframes sheet-up { from { transform: translateY(32px); opacity: .6; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { #form-modal .form-modal-box { animation: none !important; } }
@@ -2809,19 +2818,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- ⑥ Before / After 比較（薄緑） -->
   <section class="lp-section lp-compare">
     <div class="lp-inner">
-      <h2>手書きのスコア表は、もう卒業。</h2>
+      <h2 style="word-break:keep-all">手書きのスコア表は、<wbr>もう卒業。</h2>
       <table class="compare-table" id="lp-compare">
         <thead>
           <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
         </thead>
         <tbody>
-          <tr><td class="before"><span>試合ごとの記録が面倒</span></td><td class="after"><span>入れるだけでスコア記録完了</span></td></tr>
-          <tr><td class="before"><span>返し点・ウマ・オカを手計算</span></td><td class="after"><span>すべて自動で計算</span></td></tr>
-          <tr><td class="before"><span>正しい計算か何度も確認</span></td><td class="after"><span>成績もグラフも自動作成</span></td></tr>
-          <tr><td class="before"><span>電卓・紙・ペンが必要</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
+          <tr><td class="before"><span>試合ごとの<wbr>記録が面倒</span></td><td class="after"><span>入れるだけで<wbr>スコア記録完了</span></td></tr>
+          <tr><td class="before"><span>返し点・<wbr>ウマ・<wbr>オカを<wbr>手計算</span></td><td class="after"><span>すべて<wbr>自動で計算</span></td></tr>
+          <tr><td class="before"><span>正しい計算か<wbr>何度も確認</span></td><td class="after"><span>成績もグラフも<wbr>自動作成</span></td></tr>
+          <tr><td class="before"><span>電卓・<wbr>紙・<wbr>ペンが<wbr>必要</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
         </tbody>
       </table>
-      <p class="start-note" style="margin-top:22px;text-align:center">めんどうな計算は、<strong>ぜんぶ</strong> まじゃすこへ。</p>
+      <p class="start-note" style="margin-top:22px;text-align:center;word-break:keep-all">面倒な計算は、<wbr><strong>全部</strong> まじゃすこへ。</p>
     </div>
   </section>
 
@@ -2927,7 +2936,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </svg>
       </div>
       <h2>麻雀のスコア記録は、<br><span class="brand-green">まじゃすこ</span>で。</h2>
-      <p class="lp-body" style="text-align:center">紙とペンを片付けたら、あとは打つだけ。<br>今日の対局から、記録はぜんぶスマホにおまかせ。</p>
+      <p class="lp-body" style="text-align:center">紙とペンを片付けたら、あとは打つだけ。<br>今日の対局から、記録は全部スマホにおまかせ。</p>
       <p class="lp-body" style="text-align:center;font-size:13px;color:#5f6e6b;margin-top:10px">仲間内のセット麻雀はもちろん、サークルの定例会・社内の麻雀大会・麻雀教室の練習記録にもそのまま使えます。</p>
       <p class="cta-trust close-trust"><span>完全無料</span><span>アプリDL不要</span><span>会員登録不要</span></p>
       <button class="cta-btn" onclick="openQuickStart()">はじめる</button>
@@ -6235,7 +6244,7 @@ function openCircleMember(mid) {
     </div>`;
   };
   const boundHtml = cmBoundView === 'tile'
-    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, hideMark: true, score: b.score, onclick: `openResultSheet('${jsq(b.sid)}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})` })))
+    ? histTilesHtml(bound.filter(b => b.g).map(b => ({ g: b.g, me: b.seat, onclick: `openResultSheet('${jsq(b.sid)}',{from:'circle',me:${b.seat == null ? 'null' : Number(b.seat)},self:${mid === myMid},member:'${mid}'})` })))
     : cmBoundView === 'cal' ? circleCalendarHtml(bound.map(b => ({ ...b, g: b.g })), b => b.ms, b => `<div class="cg-list" style="margin-bottom:8px">${cgCard(b)}</div>`, 'cm', `openCircleMember('${jsq(mid)}')`)
     : listByYearHtml(bound, b => b.ms, cgCard, b => (b.g ? (b.g.rounds || []).filter(r => roundMembers(r, b.g.settings || {}).includes(b.seat)).length : 0)); // 年・月の区画（過去の試合と同じ）
   const canEdit = canEditRosterMember(r);
@@ -6418,8 +6427,8 @@ function mupGamesListHtml(res, P) {
   if (!res.games.length) return seg + '<div class="mu-none-g">いっしょに打ったゲームはありません</div>';
   const a = P[0];
   const seatA = gm => (gm.seat[a] != null ? Number(gm.seat[a]) : null);
-  // タイル: 試合数の代わりに選んだ最初の人のそのゲーム全体のスコア（連携済みの試合のタイルと同じ）
-  if (mupGamesView === 'tile') return seg + histTilesHtml(res.games.map(gm => { const me = seatA(gm); return { g: gm.g, me, hideMark: true, score: me == null ? null : gameTotals(gm.g)[me], rounds: gm.n, onclick: mupGameOpen(gm) }; }));
+  // タイル: 選んだ最初の人から見る（スコアと順位はそのゲーム全体）
+  if (mupGamesView === 'tile') return seg + histTilesHtml(res.games.map(gm => { const me = seatA(gm); return { g: gm.g, me, rounds: gm.n, onclick: mupGameOpen(gm) }; }));
   const rowOf = gm => mupGameRowHtml(gm, P);
   if (mupGamesView === 'cal') return seg + circleCalendarHtml(res.games, gm => gm.ms, gm => `<div class="gm-list" style="margin-bottom:8px">${rowOf(gm)}</div>`, 'mup', 'renderMatchup()');
   return seg + listByYearHtml(res.games, gm => gm.ms, rowOf, gm => gm.n);
@@ -14472,13 +14481,7 @@ function renderHistoryList() {
     body.innerHTML = histTilesHtml(tshow.map(x => {
       const t = histState(x.g);
       const me = t === 'me' ? tagOf(x.g.id).me : t === 'out' ? null : undefined;
-      // 自分が出た試合は、自分のスコアと順位もタイルに出す（myResultHtml と同じ数え方）
-      let score, rank;
-      if (typeof me === 'number') {
-        const played = playedFlags(x.g), tot = gameTotals(x.g);
-        if (played[me] && (x.g.rounds || []).length) { score = tot[me]; rank = 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0); }
-      }
-      return { g: x.g, me, score, rank, onclick: `openResultSheet('${jsq(x.g.id)}')` };
+      return { g: x.g, me, onclick: `openResultSheet('${jsq(x.g.id)}')` };
     })) + (tshow.length < sorted.length ? `<button type="button" class="mp-more" onclick="histShowAll=true;renderHistoryList()">さらに表示（あと${sorted.length - tshow.length}ゲーム）</button>` : '');
     renderSendBar();
     return;
@@ -14560,23 +14563,41 @@ function histTilesHtml(items) {
   if (!items.length) return '';
   const nEmpty = items.filter(x => !(x.g.rounds || []).length).length;
   const nFew = items.filter(x => { const n = (x.g.rounds || []).length; return n > 0 && n <= HIST_FEW; }).length;
-  const tileOf = ({ g, me, onclick, hideMark, score, rank }) => {
-    const n = (g.rounds || []).length, s = g.settings || {}, np = s.numPlayers === 3 ? 3 : 4;
-    const names = s.playerNames || [], played = playedFlags(g), tot = gameTotals(g);
+  // 見出しの試合数: 項目に rounds があればそれ（対戦を見る＝いっしょに打った試合だけ）。無ければゲームの全試合
+  const nRof = x => (x.rounds != null ? x.rounds : (x.g.rounds || []).length);
+  // タイルの中身はどの画面でも同じ（2026-11-04）。呼ぶ側は me（数字＝その席の人から見る・null＝不参加・undefined＝わからない）だけ渡す。
+  // me の席が打っていればその人のスコアと順位。ほかはそのゲームの1位のスコア（「1位」の印付き・色を付けない）
+  const infoOf = x => {
+    const g = x.g, n = (g.rounds || []).length, played = playedFlags(g), tot = gameTotals(g);
+    const mine = n > 0 && typeof x.me === 'number' && !!played[x.me];
+    const best = Math.max(...played.map((p, i) => (p ? tot[i] || 0 : -Infinity)));
+    return { played, tot, mine, out: x.me === null || (n > 0 && typeof x.me === 'number' && !mine),
+      score: mine ? tot[x.me] : n && Number.isFinite(best) ? best : null,
+      rank: mine ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[x.me] ? 1 : 0), 0) : null };
+  };
+  const infos = new Map(items.map(x => [x, infoOf(x)]));
+  const tileOf = x => {
+    const { g, me, onclick } = x, { played, tot, mine, out, score, rank } = infos.get(x);
+    const n = (g.rounds || []).length, s = g.settings || {}, np = s.numPlayers === 3 ? 3 : 4, team = isTeamGame(g);
+    const names = s.playerNames || [];
     const who = memberDisplayOrder(s).filter(i => played[i] && !isPlaceholderName(names[i])).sort((a, b) => (tot[b] || 0) - (tot[a] || 0));
     const nP = played.filter(Boolean).length;
     const st = !n ? ' empty' : n <= HIST_FEW ? ' few' : '';
-    const d = new Date(gameDayMs(g));
+    const d = new Date(gameDayMs(g)), day = `${d.getMonth() + 1}/${d.getDate()}`;
     const MAXAV = who.length > 4 ? 3 : 4; // 5人以上は3人＋「+n」（幅104pxのタイルでも欠けない数。2026-10-08）
     const avs = who.slice(0, MAXAV).map(i => `<i class="${i === me ? 'me' : ''}" style="background:${seatAvColor(g, i)}">${seatAvInner(g, i)}</i>`).join('')
       + (who.length > MAXAV ? `<i class="more">+${who.length - MAXAV}</i>` : '');
-    // rank があれば「参加」の代わりに自分の順位（メダルの色）。マイページの過去の試合（2026-10-26 ユーザーの依頼「タイルの中にスコアや順位を」）
-    const mark = typeof rank === 'number' ? `<em class="ht-rk r${rank <= 3 ? rank : 0}">${rank}位</em>` : hideMark ? '' : me == null ? (me === null ? '<em class="ht-out">不参加</em>' : '') : '<em class="ht-me">参加</em>';
-    return `<button type="button" class="ht k${np}${isTeamGame(g) ? ' tm' : ''}${st}${me === null ? ' out' : ''}" onclick="${onclick}" aria-label="${esc(g.name || '')} ${n}試合">
-      <span class="ht-top"><span class="gk k${np} ht-k">${kindSvg(np, 14)}</span>${nP > np ? `<span class="ht-multi">${nP}人</span>` : ''}${mark}</span>
+    // 右上: 出た試合は順位（メダルの色）。試合がまだ無ければ「参加」、出ていなければ「不参加」
+    const mark = mine ? `<em class="ht-rk r${rank <= 3 ? rank : 0}">${rank}位</em>` : out ? '<em class="ht-out">不参加</em>' : typeof me === 'number' ? '<em class="ht-me">参加</em>' : '';
+    const multi = nP > np; // 幅104pxでは札を3つ並べられないので、席より多い人数を優先し、不参加の札がある所ではチーム戦の札を出さない（枠の色でわかる）
+    const sc = score == null ? '<b class="nil">—</b>' : mine ? `<b class="${scoreCls(score)}">${fmtScore(score)}</b>` : `<span class="ht-lb">1位</span><b>${fmtScore(score)}</b>`;
+    const say = `${g.name || ''} ${np === 3 ? '三麻' : '四麻'} ${nRof(x)}試合 ${day}${mine ? ` ${rank}位 ${fmtScore(score)}` : out ? ' 不参加' : ''}`;
+    return `<button type="button" class="ht k${np}${team ? ' tm' : ''}${st}${out ? ' out' : ''}" onclick="${onclick}" aria-label="${esc(say)}">
+      <span class="ht-top"><span class="gk k${np} ht-k">${kindSvg(np, 14)}</span>${multi ? `<span class="ht-multi">${nP}人</span>` : team && !out ? '<span class="ht-multi tm">チーム</span>' : ''}${mark}</span>
       <span class="ht-name">${esc(g.name || '（名前なし）')}</span>
       <span class="ht-avs">${avs}</span>
-      ${score !== undefined ? `<span class="ht-n ht-sc"><b class="${score == null ? 'nil' : scoreCls(score)}">${score == null ? '—' : fmtScore(score)}</b><span class="ht-d">${d.getMonth() + 1}/${d.getDate()}</span></span>` : `<span class="ht-n"><b>${n}</b>試合${!n ? '<em class="ht-tag">空</em>' : n <= HIST_FEW ? '<em class="ht-tag">少ない</em>' : `<span class="ht-d">${d.getMonth() + 1}/${d.getDate()}</span>`}</span>`}</button>`;
+      <span class="ht-m"><span class="ht-c"><b>${nRof(x)}</b>試合</span><span class="ht-d">${day}</span></span>
+      <span class="ht-n ht-sc">${sc}${!n ? '<em class="ht-tag">空</em>' : ''}</span></button>`;
   };
   // 年ごとに区切る（items は新しい順）
   const years = [];
@@ -14586,8 +14607,6 @@ function histTilesHtml(items) {
     if (!b || b.y !== y) years.push(b = { y, list: [] });
     b.list.push(x);
   });
-  // 見出しの試合数: 項目に rounds があればそれ（対戦を見る＝いっしょに打った試合だけ）。無ければゲームの全試合
-  const nRof = x => (x.rounds != null ? x.rounds : (x.g.rounds || []).length);
   // 年の見出し: その年のゲーム数／試合数、カッコに自分が出た分（rounds を渡した対戦を見るでは出さない＝全部いっしょに打った試合）（自分の席がわかる試合だけ・自分が出た1戦を数える）
   const yearHead = b => {
     const nR = b.list.reduce((a, x) => a + nRof(x), 0);
@@ -14597,8 +14616,8 @@ function histTilesHtml(items) {
   };
   // 年の中を月ごとに区切る（一覧と同じ「10月」の見出し。2026-10-08）
   const byMonth = list => { const out = []; list.forEach(x => { const m = new Date(gameDayMs(x.g)).getMonth(); let b = out[out.length - 1]; if (!b || b.m !== m) out.push(b = { m, list: [] }); b.list.push(x); }); return out; };
-  // スコアを出すタイル（メンバーの成績の連携済みの試合）は、いちばん長いスコアに合わせて全部のタイルで同じ大きさ（2026-10-08）
-  const scLen = Math.max(0, ...items.filter(x => x.score != null).map(x => fmtScore(x.score).length));
+  // スコアは、いちばん長いスコアに合わせて全部のタイルで同じ大きさ（2026-10-08）
+  const scLen = Math.max(0, ...items.map(x => infos.get(x).score).filter(v => v != null).map(v => fmtScore(v).length));
   const scCls = scLen >= 8 ? ' sc3' : scLen >= 6 ? ' sc2' : '';
   const tiles = years.map(b => yrSecHtml(b.y, yearHead(b), byMonth(b.list).map(mo => moSecHtml(mo.m, mo.list.length, mo.list.reduce((a, x) => a + nRof(x), 0), `<div class="ht-grid${scCls}">${mo.list.map(tileOf).join('')}</div>`)).join(''))).join('');
   return tiles; // 「nゲーム・空・少ない」の凡例は出さない（2026-10-07 ユーザー指定。タイルの点線・琥珀色の縁はそのまま）
