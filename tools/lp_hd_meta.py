@@ -18,5 +18,6 @@ s, k = re.subn(r'<div class="lp-shot lp-flip" id="lp-flip"(?: style="[^"]*")?>',
 # 総当たり表は成績表と同じ縮尺で見せる（表の高さの比＝枠の何倍の高さにするか）
 ihn = round(m["h2h"]["h"] / m["grid"]["h"], 3)
 s, k = re.subn(r'<button type="button" class="lp-shot lp-pan lp-panxy"(?: style="[^"]*")?', f'<button type="button" class="lp-shot lp-pan lp-panxy" style="--ihn:{max(1, ihn)}"', s); assert k
-wh("lp-hd-games.webp", m["games"]["w"], m["games"]["h"])
+wh("lp-hd-games-tile.webp", m["games-tile"]["w"], m["games-tile"]["h"])
+wh("lp-hd-games-list.webp", m["games-list"]["w"], m["games-list"]["h"])
 open(p, "w", encoding="utf-8").write(s); print("index.html updated")

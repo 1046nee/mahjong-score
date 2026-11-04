@@ -31,8 +31,9 @@ def tshot(sel, name):
     pg.evaluate("document.getElementById('hd-box').remove()")
 
 # 2026-11-04〜: カードの縁でぴったり切らない（角の外に別の色が残る・枠が欠けるのを防ぐ）。
-# 画面の地の色を少し残す。成績表・総当たり表は「自分の成績」のカードと同じ見え方にそろえるため、
-# 期間の行・タブは入れずカードだけを撮る（横に長い表はカードの枠ごと全部広げて撮る）
+# 画面の地の色を少し残す。横に長い表はカードの枠ごと全部広げて撮る。
+# カードの色つきの枠（仲間ページの色・#177083の box-shadow）は「自分の成績」のカードに無いので、
+# 撮るときに消す（消さないと枠だけ色が浮いて見える）
 APP_PAD = 12
 LP_META = {}  # 撮った画像の大きさ。最後に index.html の数字を書きかえる（tools/lp_hd_meta.py）
 def wshot(js_parts, name, maxw=3000, col=False):
@@ -45,7 +46,7 @@ def wshot(js_parts, name, maxw=3000, col=False):
       b.style.cssText = `position:absolute;left:0;top:0;z-index:2147483000;background:${bg};padding:${pad}px;width:${w + pad * 2}px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px`;
       els.forEach(e => b.appendChild(e.cloneNode(true))); document.body.appendChild(b);
       [...b.children].forEach(x => { x.style.width = w + 'px'; x.style.margin = '0'; x.style.boxSizing = 'border-box'; x.style.flex = 'none'; });
-      b.querySelectorAll('*').forEach(x => { const cs = getComputedStyle(x); if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') x.style.overflow = 'visible'; if (cs.maxHeight !== 'none') x.style.maxHeight = 'none'; if (cs.position === 'sticky') x.style.position = 'relative'; });
+      b.querySelectorAll('*').forEach(x => { const cs = getComputedStyle(x); if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') x.style.overflow = 'visible'; if (cs.maxHeight !== 'none') x.style.maxHeight = 'none'; if (cs.position === 'sticky') x.style.position = 'relative'; x.style.boxShadow = 'none'; });
       const card = [...b.children].filter(e => e.querySelector('table')).pop(), th = card.querySelector('table tr > *:first-child'), bl = b.getBoundingClientRect().left;
       const bt = b.getBoundingClientRect().top, tt = card.querySelector('table').getBoundingClientRect();
       return { colRight: th ? th.getBoundingClientRect().right - bl : 0, boxW: b.getBoundingClientRect().width, boxH: b.getBoundingClientRect().height, tTop: tt.top - bt, tBot: tt.bottom - bt }; }""", [js_parts, APP_PAD])
@@ -78,7 +79,7 @@ pg.wait_for_timeout(900)
 for mk in ("score", "avg", "top", "las"):
     pg.evaluate(f"circleMetric = '{mk}'; renderCircle()"); pg.wait_for_timeout(700)
     pg.evaluate("""() => { const c = document.querySelector('#circle-body .rank-card'), b = [...c.querySelectorAll('button')].find(x => x.textContent.includes('通算スコア')), r = b.parentElement;
-      const a = r.querySelector('.on') || b; r.scrollLeft = a.offsetLeft - (r.clientWidth - a.offsetWidth) / 2; }""")
+      const a = r.querySelector('.on') || b; r.scrollLeft = a.offsetLeft - (r.clientWidth - a.offsetWidth) / 2; c.style.boxShadow = 'none'; }""")
     pg.wait_for_timeout(300)
     pg.set_viewport_size({"width": 390, "height": 3000}); pg.wait_for_timeout(300)
     pg.evaluate("window.scrollTo(0, 0)")
@@ -94,9 +95,9 @@ for mk in ("score", "avg", "top", "las"):
     LP_META["rank"] = {"rt": round(y / im.width, 4), "w": im.width, "th": y, "bh": im.height - y}
 pg.evaluate("circleMetric = 'score'; renderCircle()"); pg.wait_for_timeout(300)
 pg.evaluate("circleTab = 'grid'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .card')]", "grid", col=True)
+wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "grid", col=True)
 pg.evaluate("circleTab = 'h2h'; renderCircle()"); pg.wait_for_timeout(900)
-wshot("[...document.querySelectorAll('#circle-body > .card')]", "h2h", col=True)
+wshot("[...document.querySelectorAll('#circle-body > .low-filt, #circle-body > .tabbar, #circle-body > .card')]", "h2h", col=True)
 pg.evaluate("circleTab = 'rank'; renderCircle()"); pg.wait_for_timeout(500)
 pg.evaluate("(async () => { await syncCircleGamesToMine(); })()"); pg.wait_for_timeout(1500)
 pg.evaluate("showView('history'); setMpPeriod('all'); mpMode = 4; setMpPane('sum'); sparkUnit = 'm'; renderHistory()"); pg.wait_for_timeout(1200)
@@ -108,11 +109,16 @@ card = pg.evaluate("""() => { const c = document.querySelector('#view-history .m
   [c, ...c.querySelectorAll('*')].forEach(e => [...e.attributes].forEach(a => { if (/^on|^id$|^data-|^role$|^aria-|^tabindex$/.test(a.name)) e.removeAttribute(a.name); }));
   return c.outerHTML; }""")
 io.open(os.path.join(OUT, "lp-card.html"), "w", encoding="utf-8").write(card); print("card", len(card))
-pg.evaluate("setMpPane('hist'); histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
-cshot(["#mp-pane-filt", "#mp-pane-tabs", "#mp-pane-hist .hist-card"], "games", max_h=2300, q=82)
+pg.evaluate("setMpPane('hist'); histView = 'tile'; renderHistoryList()"); pg.wait_for_timeout(1200)
+pg.evaluate("document.querySelector('#mp-pane-hist .hist-card').style.boxShadow = 'none'")
+cshot(["#mp-pane-hist .hist-card"], "games-tile", max_h=2300, q=86)
+pg.evaluate("histView = 'new'; renderHistoryList()"); pg.wait_for_timeout(1200)
+pg.evaluate("document.querySelector('#mp-pane-hist .hist-card').style.boxShadow = 'none'")
+cshot(["#mp-pane-hist .hist-card"], "games-list", q=82)
 
 # 撮った画像の大きさに合わせて、LPの数字（画像の縦横・止める列の位置・順位のタブの高さ）を書きかえる
-gi = _I.open(os.path.join(SITE, "lp-hd-games.webp")); LP_META["games"] = {"w": gi.width, "h": gi.height}
+gt = _I.open(os.path.join(SITE, "lp-hd-games-tile.webp")); LP_META["games-tile"] = {"w": gt.width, "h": gt.height}
+gl = _I.open(os.path.join(SITE, "lp-hd-games-list.webp")); LP_META["games-list"] = {"w": gl.width, "h": gl.height}
 for n in ("grid", "h2h"):
     LP_META[n]["w"], LP_META[n]["h"] = _I.open(os.path.join(SITE, "lp-hd-" + n + ".webp")).size
 import json as _json
