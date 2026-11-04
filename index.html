@@ -240,17 +240,26 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-phone-island { width: calc(var(--pw) * .30); height: calc(var(--pw) * .07); border-radius: 999px; background: #1F2A28; }
 .lp-phone-screen { overflow: hidden; height: calc(var(--pw) * 1.89); }
 .lp-phone-screen::-webkit-scrollbar { display: none; }
-.lp-scr { display: none; width: 100%; height: auto; }
-.lp-scr.on { display: block; animation: lpIn .35s ease; }
-@keyframes lpIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .lp-scr.on { animation: none; } }
-.lp-demo-cap { text-align: center; max-width: 340px; }
+.lp-phone-screen { position: relative; }
+.lp-scr { position: absolute; left: 0; top: 0; width: 100%; height: auto; opacity: 0; transform: translateY(26px); transition: opacity .4s ease, transform .4s ease; }
+.lp-scr.past { transform: translateY(-26px); }
+.lp-scr.on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .lp-scr { transition: none; } }
+/* スクロールで画面が変わる（2026-11-04・参考サイトの貼り付く帯と番号）: 箱を長くして、中を画面に貼り付ける。.js はJSが付ける（無ければタブで切り替え）。sticky なので画面のスクロールは奪わない */
+.lp-track.js { height: 280svh; }
+.lp-track.js .lp-demo { position: sticky; top: 0; height: 100svh; margin-top: 0; justify-content: center; }
+.lp-demo-no { display: block; font-style: normal; font-size: 30px; font-weight: 900; line-height: 1; color: #2F4A86; letter-spacing: 1px; margin-bottom: 4px; }
+.lp-demo-cap { text-align: center; max-width: 340px; min-height: 124px; }
 .lp-demo-cap b { display: block; font-size: 17px; font-weight: 900; color: #1F2A28; }
 .lp-demo-cap span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.7; color: #4F5C5A; }
 .lp-demo-cap a { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 800; color: #2F56A8; }
 @media (min-width: 1100px) {
   #view-home .lp-demo { display: grid; grid-template-columns: 320px minmax(0, 440px); grid-template-areas: "phone tabs"; justify-content: center; column-gap: 56px; align-items: center; }
-  #view-home .lp-phone { grid-area: phone; --pw: 320px; }
+  #view-home .lp-phone { grid-area: phone; --pw: min(320px, calc((100svh - 48px) / 2.06)); }
+  #view-home .lp-track.js .lp-demo { align-content: center; }
+  #view-home .lp-demo-tabs { counter-reset: lpn; }
+  #view-home .lp-tab { counter-increment: lpn; }
+  #view-home .lp-tab .lp-tab-t::before { content: '0' counter(lpn); margin-right: 10px; color: #2F4A86; }
   #view-home .lp-demo-tabs { grid-area: tabs; flex-direction: column; flex-wrap: nowrap; gap: 10px; }
   #view-home .lp-tab { text-align: left; border-radius: 12px; padding: 14px 18px; }
   #view-home .lp-tab b { display: none; }
@@ -2756,11 +2765,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-screens">
     <div class="lp-inner">
       <h2>これまでの成績が一目でわかる。</h2>
-      <div class="lp-demo" id="lp-demo">
-        <div class="lp-demo-tabs" role="tablist" aria-label="見たい画面を選ぶ"><button type="button" role="tab" class="lp-tab on" aria-selected="true" aria-controls="lp-scr-mypage" onclick="lpDemo(0, true)"><b>自分の成績</b><span class="lp-tab-t">グラフを押すと、その月の試合</span><span class="lp-tab-d">自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-grid" onclick="lpDemo(1, true)"><b>成績表</b><span class="lp-tab-t">全員の成績を、1枚の表で</span><span class="lp-tab-d">試合数・着順の回数・トップ率・ラス回避・通算スコアまで、メンバーを横に並べて。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-rank" onclick="lpDemo(2, true)"><b>通算順位</b><span class="lp-tab-t">仲間の通算順位が、表彰台で</span><span class="lp-tab-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-games" onclick="lpDemo(3, true)"><b>過去の試合</b><span class="lp-tab-t">その日の順位とスコアが、ずらり</span><span class="lp-tab-d">打った日ごとに、自分の順位とスコアが並びます。押せばその日の結果が開きます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-h2h" onclick="lpDemo(4, true)"><b>総当たり</b><span class="lp-tab-t">あの人には勝ち越してる？</span><span class="lp-tab-d">同じ試合で上だった回数を、メンバー同士の総当たりで。相性が数字で出ます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-member" onclick="lpDemo(5, true)"><b>メンバーの成績</b><span class="lp-tab-t">メンバーごとの成績と推移</span><span class="lp-tab-d">平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。</span></button></div>
-        <div class="lp-phone" aria-label="スマホの画面"><div class="lp-phone-in"><span class="lp-phone-bar" style="background:#E6F1EB" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="lp-phone-screen"><img id="lp-scr-mypage" class="lp-scr on" role="tabpanel" src="/assets/screens/lp-mypage.jpg" width="720" height="1558" alt="マイページの成績。通算スコアの推移のグラフで月を選ぶと、その月のゲームごとの順位とスコアが並ぶ" loading="lazy" data-href="/news/mypage-stats.html" data-title="グラフを押すと、その月の試合" data-desc="自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。" data-top="#E6F1EB"><img id="lp-scr-grid" class="lp-scr" role="tabpanel" src="/assets/screens/lp-grid.jpg" width="720" height="1558" alt="仲間ページの成績表。メンバーごとのゲーム数・試合数・平均着順・着順の回数・トップ率・通算スコア" loading="lazy" data-href="/news/nakama-page.html" data-title="全員の成績を、1枚の表で" data-desc="試合数・着順の回数・トップ率・ラス回避・通算スコアまで、メンバーを横に並べて。" data-top="#FAF6EB"><img id="lp-scr-rank" class="lp-scr" role="tabpanel" src="/assets/screens/lp-rank.jpg" width="720" height="1558" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコアが並ぶ" loading="lazy" data-href="/news/nakama-page.html" data-title="仲間の通算順位が、表彰台で" data-desc="ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。" data-top="#FAF6EB"><img id="lp-scr-games" class="lp-scr" role="tabpanel" src="/assets/screens/lp-games.jpg" width="720" height="1558" alt="マイページの過去の試合の一覧。ゲームごとに自分の順位とスコア、着順の回数、相手が並ぶ" loading="lazy" data-href="/news/mypage-stats.html" data-title="その日の順位とスコアが、ずらり" data-desc="打った日ごとに、自分の順位とスコアが並びます。押せばその日の結果が開きます。" data-top="#E4F3EC"><img id="lp-scr-h2h" class="lp-scr" role="tabpanel" src="/assets/screens/lp-h2h.jpg" width="720" height="1558" alt="総当たり表。メンバー同士の直接対決の勝ち越し・負け越し" loading="lazy" data-href="/news/nakama-page.html#h2h" data-title="あの人には勝ち越してる？" data-desc="同じ試合で上だった回数を、メンバー同士の総当たりで。相性が数字で出ます。" data-top="#FAF6EB"><img id="lp-scr-member" class="lp-scr" role="tabpanel" src="/assets/screens/lp-member.jpg" width="720" height="1558" alt="メンバーの成績の画面。平均着順・通算スコア・トップ率と、通算スコアの推移のグラフ" loading="lazy" data-href="/news/nakama-page.html" data-title="メンバーごとの成績と推移" data-desc="平均着順・トップ率・ラス回避と、通算スコアの上がり下がりがグラフで。" data-top="#7F7F7F"></div></div></div>
-        <div class="lp-demo-cap"><b id="lp-demo-t">グラフを押すと、その月の試合</b><span id="lp-demo-d">自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。</span><a id="lp-demo-a" href="/news/mypage-stats.html">くわしく見る ›</a></div>
-      </div>
+      <div class="lp-track" id="lp-track"><div class="lp-demo" id="lp-demo">
+        <div class="lp-demo-tabs" role="tablist" aria-label="見たい画面を選ぶ"><button type="button" role="tab" class="lp-tab on" aria-selected="true" aria-controls="lp-scr-mypage" onclick="lpDemo(0, true)"><b>自分の成績</b><span class="lp-tab-t">グラフを押すと、その月の試合</span><span class="lp-tab-d">自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-grid" onclick="lpDemo(1, true)"><b>成績表</b><span class="lp-tab-t">全員の成績を、1枚の表で</span><span class="lp-tab-d">試合数・着順の回数・トップ率・ラス回避・通算スコアまで、メンバーを横に並べて。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-rank" onclick="lpDemo(2, true)"><b>通算順位</b><span class="lp-tab-t">仲間の通算順位が、表彰台で</span><span class="lp-tab-d">ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。</span></button><button type="button" role="tab" class="lp-tab" aria-selected="false" aria-controls="lp-scr-h2h" onclick="lpDemo(3, true)"><b>総当たり</b><span class="lp-tab-t">あの人には勝ち越してる？</span><span class="lp-tab-d">同じ試合で上だった回数を、メンバー同士の総当たりで。相性が数字で出ます。</span></button></div>
+        <div class="lp-phone" aria-label="スマホの画面"><div class="lp-phone-in"><span class="lp-phone-bar" style="background:#E6F1EB" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="lp-phone-screen"><img id="lp-scr-mypage" class="lp-scr on" role="tabpanel" src="/assets/screens/lp-mypage.jpg" width="720" height="1558" alt="マイページの成績。通算スコアの推移のグラフで月を選ぶと、その月のゲームごとの順位とスコアが並ぶ" loading="lazy" data-href="/news/mypage-stats.html" data-title="グラフを押すと、その月の試合" data-desc="自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。" data-top="#E6F1EB"><img id="lp-scr-grid" class="lp-scr" role="tabpanel" src="/assets/screens/lp-grid.jpg" width="720" height="1558" alt="仲間ページの成績表。メンバーごとのゲーム数・試合数・平均着順・着順の回数・トップ率・通算スコア" loading="lazy" data-href="/news/nakama-page.html" data-title="全員の成績を、1枚の表で" data-desc="試合数・着順の回数・トップ率・ラス回避・通算スコアまで、メンバーを横に並べて。" data-top="#FAF6EB"><img id="lp-scr-rank" class="lp-scr" role="tabpanel" src="/assets/screens/lp-rank.jpg" width="720" height="1558" alt="仲間ページの通算順位の画面。表彰台に1位から3位、その下に4位以下のスコアが並ぶ" loading="lazy" data-href="/news/nakama-page.html" data-title="仲間の通算順位が、表彰台で" data-desc="ゲームを集めるだけで、通算スコア・平均着順の順位が自動で決まります。" data-top="#FAF6EB"><img id="lp-scr-h2h" class="lp-scr" role="tabpanel" src="/assets/screens/lp-h2h.jpg" width="720" height="1558" alt="総当たり表。メンバー同士の直接対決の勝ち越し・負け越し" loading="lazy" data-href="/news/nakama-page.html#h2h" data-title="あの人には勝ち越してる？" data-desc="同じ試合で上だった回数を、メンバー同士の総当たりで。相性が数字で出ます。" data-top="#FAF6EB"></div></div></div>
+        <div class="lp-demo-cap"><i class="lp-demo-no" id="lp-demo-n" aria-hidden="true">01</i><b id="lp-demo-t">グラフを押すと、その月の試合</b><span id="lp-demo-d">自分の通算スコアの推移。月を押すと、その月のゲームの順位とスコアが下に並びます。</span><a id="lp-demo-a" href="/news/mypage-stats.html">くわしく見る ›</a></div>
+      </div></div>
     </div>
   </section>
 
@@ -7819,36 +7828,50 @@ function goUsage() {
 }
 // ---- LP: 特徴カードのカルーセル ----
 // 横スクロール＋スナップ（ループはしない）。現在位置はドットで示す
-// 実際の画面（スマホ1台の中で切り替え）。押されるまでは5秒ごとに次の画面へ（画面に見えているときだけ・動きを減らす設定なら動かさない）
-let lpDemoIdx = 0, lpDemoUser = false, lpDemoTimer = null;
+// 実際の画面（スマホ1台の中で切り替え）。スクロールの位置で画面が決まる（上へ戻せば逆順）。タブを押すとその画面の位置までスクロールする
+let lpDemoIdx = 0;
 function lpDemo(i, user) {
-  const root = document.getElementById('lp-demo');
+  const root = document.getElementById('lp-demo'), track = document.getElementById('lp-track');
   if (!root) return;
-  if (user) { lpDemoUser = true; clearInterval(lpDemoTimer); }
   const tabs = root.querySelectorAll('.lp-tab'), scrs = root.querySelectorAll('.lp-scr');
-  lpDemoIdx = (i + scrs.length) % scrs.length;
+  lpDemoIdx = Math.max(0, Math.min(scrs.length - 1, i));
+  if (user && track.classList.contains('js')) {
+    const r = track.getBoundingClientRect(), len = r.height - window.innerHeight;
+    window.scrollTo({ top: r.top + window.scrollY + len * (lpDemoIdx + 0.5) / scrs.length, behavior: 'smooth' });
+    return;
+  }
   tabs.forEach((t, j) => { t.classList.toggle('on', j === lpDemoIdx); t.setAttribute('aria-selected', j === lpDemoIdx ? 'true' : 'false'); });
-  scrs.forEach((el, j) => el.classList.toggle('on', j === lpDemoIdx));
+  scrs.forEach((el, j) => { el.classList.toggle('on', j === lpDemoIdx); el.classList.toggle('past', j < lpDemoIdx); });
   const cur = scrs[lpDemoIdx];
   root.querySelector('.lp-phone-bar').style.background = cur.dataset.top;
   // スマホでタブが横にはみ出しているときは、選んだタブを帯の真ん中へ（ページは動かさない）
   const bar = root.querySelector('.lp-demo-tabs'), t = tabs[lpDemoIdx];
-  if (bar && t && bar.scrollWidth > bar.clientWidth + 1) bar.scrollTo({ left: t.offsetLeft - (bar.clientWidth - t.offsetWidth) / 2, behavior: user ? 'smooth' : 'auto' });
+  if (bar && t && bar.scrollWidth > bar.clientWidth + 1) bar.scrollTo({ left: t.offsetLeft - (bar.clientWidth - t.offsetWidth) / 2, behavior: 'auto' });
+  document.getElementById('lp-demo-n').textContent = '0' + (lpDemoIdx + 1);
   document.getElementById('lp-demo-t').textContent = cur.dataset.title;
   document.getElementById('lp-demo-d').textContent = cur.dataset.desc;
   document.getElementById('lp-demo-a').href = cur.dataset.href;
 }
 function initLpDemo() {
-  const root = document.getElementById('lp-demo');
-  if (!root) return;
-  root.querySelectorAll('.lp-scr').forEach(img => { img.loading = 'eager'; });
-  root.querySelector('.lp-phone').addEventListener('pointerdown', () => { lpDemoUser = true; clearInterval(lpDemoTimer); }, { passive: true });
+  const root = document.getElementById('lp-demo'), track = document.getElementById('lp-track');
+  if (!root || !track) return;
+  const scrs = root.querySelectorAll('.lp-scr');
+  scrs.forEach(img => { img.loading = 'eager'; });
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!('IntersectionObserver' in window)) return;
-  new IntersectionObserver(es => es.forEach(e => {
-    clearInterval(lpDemoTimer);
-    if (e.isIntersecting && !lpDemoUser) lpDemoTimer = setInterval(() => lpDemo(lpDemoIdx + 1), 5000);
-  }), { threshold: 0.5 }).observe(root);
+  track.classList.add('js');
+  let wait = false;
+  const draw = () => {
+    wait = false;
+    const r = track.getBoundingClientRect(), len = r.height - window.innerHeight;
+    const i = Math.max(0, Math.min(scrs.length - 1, Math.floor(-r.top / len * scrs.length)));
+    if (i !== lpDemoIdx) lpDemo(i);
+  };
+  const onScroll = () => { if (!wait) { wait = true; requestAnimationFrame(draw); } };
+  if (!('IntersectionObserver' in window)) { window.addEventListener('scroll', onScroll, { passive: true }); return; }
+  new IntersectionObserver(es => {
+    if (es[0].isIntersecting) { window.addEventListener('scroll', onScroll, { passive: true }); draw(); }
+    else { window.removeEventListener('scroll', onScroll); draw(); }
+  }).observe(track);
 }
 // LPの動き（2026-11-04）。HTMLは完成形で、動きを減らす設定の端末やJSが無いときはそのまま見える
 function initLpMotion() {
