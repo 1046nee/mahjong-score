@@ -320,7 +320,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table { table-layout: fixed; }
 .compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 40%; }
 .compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 60%; }
-.compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; word-break: keep-all; } /* 折り返しは <wbr> の所だけ（語の途中で切らない） */
+.compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; white-space: nowrap; } /* 文言は短くして必ず1行（320pxでも入る長さにする） */
+@media (max-width: 345px) { .compare-table td { font-size: 13px; padding: 12px 8px; } .compare-table td.after { font-size: 13px; } .compare-table td.after span { gap: 5px; } }
 .compare-table td.before { color: #7A8785; background: #F5F7F7; }
 .compare-table td.after { position: relative; overflow: hidden; color: #1F2A28; font-size: 14px; font-weight: 800; background: #fff; }
 .compare-table td.before span { background: linear-gradient(#9AA6A4, #9AA6A4) left 56% / 100% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
@@ -3647,10 +3648,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
         </thead>
         <tbody>
-          <tr><td class="before"><span>試合ごとの<wbr>記録が面倒</span></td><td class="after"><span>入れるだけで<wbr>スコア記録完了</span></td></tr>
-          <tr><td class="before"><span>返し点・<wbr>ウマ・<wbr>オカを<wbr>手計算</span></td><td class="after"><span>すべて<wbr>自動で計算</span></td></tr>
-          <tr><td class="before"><span>正しい計算か<wbr>何度も確認</span></td><td class="after"><span>成績もグラフも<wbr>自動作成</span></td></tr>
-          <tr><td class="before"><span>電卓・<wbr>紙・<wbr>ペンが<wbr>必要</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
+          <tr><td class="before"><span>記録が面倒</span></td><td class="after"><span>入れるだけで完了</span></td></tr>
+          <tr><td class="before"><span>ウマ・オカ計算</span></td><td class="after"><span>全部自動で計算</span></td></tr>
+          <tr><td class="before"><span>何度も検算</span></td><td class="after"><span>成績もグラフも自動</span></td></tr>
+          <tr><td class="before"><span>電卓・紙・ペン</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
         </tbody>
       </table>
       <p class="start-note" style="margin-top:22px;text-align:center;word-break:keep-all">面倒な計算は、<wbr><strong>全部</strong> まじゃすこへ。</p>
