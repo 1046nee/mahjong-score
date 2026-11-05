@@ -28,7 +28,7 @@ LEAD = 0.25   # 場面が切り替わってから声が始まるまで
 
 # 字幕は動画のカードと同じ白い丸の帯＋濃い文字。語尾の「、」「。」は出さない（2026-11-05 ユーザーの判断。白文字に黒縁は動画の雰囲気に合わない）
 ms.CSS += """
-.sub { position: absolute; left: 60px; right: 140px; top: 1500px; z-index: 30; text-align: center; opacity: 0; }
+.sub { position: absolute; left: 60px; right: 60px; top: 1500px; z-index: 30; text-align: center; opacity: 0; }
 .sub span { display: inline-block; background: rgba(255,255,255,.96); color: #1F2A28; font-size: 50px; font-weight: 900; line-height: 1.3; white-space: nowrap; border-radius: 999px; padding: 16px 44px; box-shadow: 0 12px 30px rgba(16,40,36,.14); }
 """
 ms.JS += r"""
