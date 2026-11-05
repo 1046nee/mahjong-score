@@ -119,7 +119,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-body { font-size: 15px; color: #444; line-height: 1.8; margin-bottom: 20px; }
 
 /* ③ ソリューション: 白＋緑/青アイコン。3項目は広い画面で横並び */
-.lp-solution { background: #fff; }
+.lp-solution { background: #EAF0FB; }
 /* 実際の画面（2026-10-13）: 見本のデータで撮った画面を横に並べ、押すとそのお知らせ（機能の説明）へ */
 .lp-screens { background: #EAF0FB; overflow-x: clip; } /* 入ってくる前の切り抜きで横にはみ出さない */
 .lp-screens h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 4px; } /* ほかのセクションの見出しとそろえる */
@@ -136,8 +136,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .features-nav:disabled { opacity: .3; cursor: default; }
 /* 端のフェード＝「続きがある」ことを示す。ドット＝現在位置インジケーター */
 .features-wrap::before, .features-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 28px; z-index: 1; pointer-events: none; }
-.features-wrap::before { left: 0; background: linear-gradient(90deg, #fff 15%, rgba(255,255,255,0)); }
-.features-wrap::after { right: 0; background: linear-gradient(270deg, #fff 15%, rgba(255,255,255,0)); }
+.features-wrap::before { left: 0; background: linear-gradient(90deg, #EAF0FB 15%, rgba(234,240,251,0)); }
+.features-wrap::after { right: 0; background: linear-gradient(270deg, #EAF0FB 15%, rgba(234,240,251,0)); }
 .features-dots { display: flex; justify-content: center; gap: 7px; }
 .fdot { width: 7px; height: 7px; border-radius: 4px; background: #d3e2dc; transition: width 0.25s, background 0.25s; }
 .fdot.on { width: 22px; background: #177083; }
@@ -315,7 +315,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ⑥ Before / After 比較表 */
 /* 地の色は1つおきに白を挟み、色つきは緑→青→緑→青と回す（節の境目がいつも同じ強さで見え、順番を変えても決まりで塗れる。2026-11-05） */
-.lp-compare, .lp-minis { background: #fff; }
+.lp-compare { background: #fff; } .lp-minis { background: #E4F3EC; }
 .lp-minis h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 18px; }
 .lp-minis .lp-mini { margin-bottom: 0; }
 .lp-compare h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
@@ -347,13 +347,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table.pre td.after span::before { transform: scale(.3); transition: transform .15s ease var(--r); }
 .compare-table.pre td.after::after { background-position: 250% 0; transition: none; }
 /* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
-.lp-mini { max-width: 360px; margin: 0 auto 24px; background: #E4F3EC; border-radius: 14px; padding: 0 12px 10px; overflow: hidden; }
+.lp-mini { max-width: 360px; margin: 0 auto 24px; background: #fff; border-radius: 14px; box-shadow: 0 8px 22px rgba(23,112,131,.14); padding: 0 12px 10px; overflow: hidden; }
 .lp-mini-t { margin: 0 -12px 8px; padding: 9px 12px; background: #177083; font-size: 14px; font-weight: 800; color: #fff; text-align: center; }
 .lp-mini-k { margin: 0 0 6px; font-size: 12px; font-weight: 800; color: #177083; text-align: center; font-variant-numeric: tabular-nums; }
 .lp-mini-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
 /* 左半分: ゲームの画面の総合順位と同じ形（白いカード・メダルとn位・名前・大きなスコア）。入力完了で入れかわって決まる */
 .lp-mini-rank { display: flex; flex-direction: column; gap: 6px; }
-.lp-mini-rk { flex: 1; display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 4px 8px 4px 6px; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); box-sizing: border-box; transition: transform .55s cubic-bezier(.3,.8,.3,1); }
+.lp-mini-rk { flex: 1; display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 4px 8px 4px 6px; background: #fff; border-radius: 12px; box-shadow: 0 0 0 1px #E3E9E7, 0 1px 4px rgba(0,0,0,.08); box-sizing: border-box; transition: transform .55s cubic-bezier(.3,.8,.3,1); }
 .lp-mini-rn { flex: none; width: 28px; text-align: center; }
 .lp-mini-md { display: block; height: 24px; line-height: 0; } .lp-mini-md .medal { display: block; margin: 0 auto; }
 .lp-mini-ri { display: block; font-size: 10px; font-weight: 800; line-height: 1.2; color: #4F5C5A; }
@@ -373,7 +373,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-mini-ok { display: block; margin-top: 6px; padding: 7px 0; border-radius: 8px; background: #B8C6C2; color: #fff; font-size: 12.5px; font-weight: 800; line-height: 1.2; text-align: center; transition: background .2s, transform .12s; }
 .lp-mini-ok.ready { background: #177083; } .lp-mini-ok.press { background: #0F5563; transform: scale(.94); }
 @media (max-width: 345px) { .lp-mini-body { grid-template-columns: minmax(0, 1fr); } .lp-mini-rk { min-height: 42px; } .lp-mini-rn { display: flex; align-items: center; gap: 4px; width: 56px; } }
-.lp-mini-cw { margin-top: 10px; padding: 8px 8px 6px; background: #fff; border-radius: 10px; }
+.lp-mini-cw { margin-top: 10px; padding: 8px 8px 6px; background: #fff; border-radius: 10px; box-shadow: 0 0 0 1px #E3E9E7; }
 .lp-mini-ct { margin: 0 0 2px; font-size: 12px; font-weight: 800; color: #1F2A28; }
 .lp-mini-svg { display: block; width: 100%; height: auto; }
 .lp-mini-lg { margin-top: 2px; }
@@ -415,7 +415,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .start-note strong { color: #E75620; font-size: 24px; font-weight: 900; -webkit-text-stroke: .6px #E75620; } /* オレンジは細く見えるので、字の縁を足して周りの字と同じ太さに見せる（iPhoneの字は太さに上限がある） */
 
 /* ⑧ クロージング: 薄緑＋ミニイラスト＋バッジ＋オレンジCTA */
-.lp-close { background: #EAF0FB; text-align: center; }
+.lp-close { background: #E4F3EC; text-align: center; }
 .lp-close .close-illust { margin: 0 auto 10px; max-width: 210px; }
 .lp-close .close-illust svg { width: 100%; height: auto; display: block; }
 .lp-close h2 { font-size: 22px; font-weight: 900; color: #1a1a1a; margin-bottom: 16px; line-height: 1.6; }
@@ -460,7 +460,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 /* 使い方（＋お気に入り登録の案内）は白の地。中身の幅は600pxのまま、白は画面の端まで広げる */
-.lp-howto-wrap { background: #E4F3EC; box-shadow: 0 0 0 100vmax #E4F3EC; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 40px; }
+.lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 40px; }
 .howto-note { margin-top: 14px; text-align: center; }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
@@ -489,9 +489,9 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-play { margin-top: 14px; }
 .howto-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .hs button { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; }
-.hs-bar { display: block; height: 6px; border-radius: 3px; overflow: hidden; background: #C9DDD5; }
+.hs-bar { display: block; height: 6px; border-radius: 3px; overflow: hidden; background: #DCE6E3; }
 .hs-bar i { display: block; width: 100%; height: 100%; background: #177083; transform: scaleX(var(--p, 0)); transform-origin: left; }
-.hs-n { display: grid; place-items: center; width: 30px; height: 30px; margin: 8px auto 3px; border-radius: 50%; background: #C9DDD5; color: #5F6E6B; font-size: 15px; font-weight: 900; line-height: 1; transition: background .25s, color .25s; }
+.hs-n { display: grid; place-items: center; width: 30px; height: 30px; margin: 8px auto 3px; border-radius: 50%; background: #DCE6E3; color: #5F6E6B; font-size: 15px; font-weight: 900; line-height: 1; transition: background .25s, color .25s; }
 .hs.done .hs-n, .hs.on .hs-n { background: #177083; color: #fff; }
 .hs.on .hs-n { animation: lp-pop .42s ease both; }
 .hs-t { display: block; font-size: 12px; font-weight: 800; line-height: 1.35; color: #8A9694; transition: color .25s; } .hs.on .hs-t { color: #177083; } .hs.done .hs-t { color: #1F2A28; }
