@@ -250,6 +250,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-vs > span { min-width: 84px; font-size: 14px; font-weight: 800; color: #1F2A28; } .lp-vs .pp-av { display: inline-grid; margin: 0 auto 4px; }
 .lp-vs b { display: block; font-size: 30px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; } .lp-vs b.w { color: #1A237E; } .lp-vs b.l { color: #C62828; }
 .lp-vs-bar { display: flex; height: 12px; margin-bottom: 8px; border-radius: 6px; overflow: hidden; background: #E3E9E8; } .lp-vs-bar i { display: block; background: #1A237E; } .lp-vs-bar i + i { background: #C62828; }
+.lp-lock { position: relative; margin-top: 14px; border-radius: 14px; overflow: hidden; background: #F4F7F6; }
+.lp-lock-bg { padding: 12px; filter: blur(4px); opacity: .75; pointer-events: none; user-select: none; } .lp-lock-bg svg { display: block; width: 100%; height: 70px; }
+.lp-lock-row { display: flex; justify-content: space-between; gap: 8px; padding: 7px 2px; font-size: 13px; font-weight: 800; color: #1F2A28; }
+.lp-lock-fg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 14px; text-align: center; background: rgba(244,247,246,.62); }
+.lp-lock-fg b { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 900; color: #1F2A28; }
+.lp-lock-fg span { font-size: 12.5px; font-weight: 700; line-height: 1.6; color: #4F5C5A; }
+.lp-lock-fg .cta-btn { max-width: 260px; margin-top: 6px; padding: 11px 16px; font-size: 14.5px; }
 .lp-sh-note { margin: 10px 2px 0; font-size: 12px; line-height: 1.7; color: #5F6E6B; }
 /* 順位・過去の試合はタブのタップだけで切り替える（横スワイプは付けない。2026-11-05 ユーザーの指定） */
 .lp-touch-multi .lp-live-swipe { height: 100%; }
@@ -259,7 +266,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* LPだけの動き（自分の成績）: 数字が順に出て、着順の帯とグラフが左から伸びる。.pre の付け外しで進む・戻る */
 .lp-live.js .mc-grid b, .lp-live.js .ms-pts b, .lp-live.js .mc-pts b { transition: opacity .35s ease var(--nd, 0s), transform .35s ease var(--nd, 0s); }
 /* clip-path は none へは動かないので、完成形も inset で書く */
-.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 1.5s linear; }
+.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 1s linear; }
 .lp-live.pre .mc-grid b, .lp-live.pre .ms-pts b, .lp-live.pre .mc-pts b { opacity: 0; transform: translateY(8px); transition-delay: 0s; transition-duration: .15s; }
 /* 線は見えている範囲の左端から描く（--c0 は見えている左端より右の割合。グラフは右端の新しい月を見せているので、全体の左端から描くと見えるまでに間が空く） */
 .lp-live.pre .mc-bar { clip-path: inset(0 100% 0 0); transition-delay: 0s; transition-duration: .2s; } .lp-live.pre .mc-line { clip-path: inset(0 var(--c0, 100%) 0 0); transition-delay: 0s; transition-duration: .2s; }
@@ -473,8 +480,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .hs-f, .hs-d { display: none; }
 .howto-phone { --pw: clamp(170px, min(230px, calc((100svh - 330px) / 2.06)), 230px); }
 .howto-screen { position: relative; height: calc(var(--pw) * 1.89); overflow: hidden; border-radius: 0 0 calc(var(--pw) * .115) calc(var(--pw) * .115); background: #fff; }
-.howto-screen video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; opacity: 0; transform: translateX(14px); transition: opacity .28s, transform .28s; }
-.howto-screen video.on { opacity: 1; transform: none; }
+.howto-screen video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .howto-again { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.28); background: #fff; }
 .howto-again[hidden] { display: none; } /* .btn-tint の display が hidden より強い */
 .howto-cap { min-height: 150px; margin-top: 14px; }
@@ -482,7 +488,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-cap p { margin: 0; font-size: 14.5px; line-height: 1.8; color: #444; }
 .howto-cap.go { animation: lp-capin .3s ease both; }
 @keyframes lp-capin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .howto-screen video { transition: none; } .hs.on .hs-n, .howto-cap.go { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hs.on .hs-n, .howto-cap.go { animation: none; } }
 /* Safariお気に入り登録の案内（使い方の直後）。薄緑ブロックが3画面全体の背景。
    常に3画面を横並びにし、モバイルではSVGごと等倍縮小してスクロールなしで全体が見える。
    手順の説明は画像内の1〜5バッジのみ（外側に説明文は置かない） */
@@ -2686,6 +2692,7 @@ button.ios-row:active { background: #F2F6F5; }
   <symbol id="i-trash" viewBox="0 0 48 48"><rect x="12" y="15" width="24" height="26" rx="4" fill="var(--i1)"/><rect x="8" y="10" width="32" height="5" rx="2.5" fill="var(--i2)"/><rect x="19" y="6" width="10" height="5" rx="2" fill="var(--i2)"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".85"><path d="M19.5 21 V35"/><path d="M28.5 21 V35"/></g></symbol>
   <symbol id="i-eye" viewBox="0 0 48 48"><path d="M4 24 C11 13 18 10 24 10 C30 10 37 13 44 24 C37 35 30 38 24 38 C18 38 11 35 4 24 Z" fill="#fff" stroke="var(--i1)" stroke-width="3"/><circle cx="24" cy="24" r="8" fill="var(--i1)"/><circle cx="27" cy="21" r="2.6" fill="#fff"/></symbol>
   <symbol id="i-image" viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="30" rx="5" fill="#fff" stroke="var(--i1)" stroke-width="4"/><path d="M9 36 L19 24 L27 32 L32 27 L39 36 Z" fill="var(--i2)"/><circle cx="33" cy="18" r="3.6" fill="var(--i4)"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 48 48"><path d="M15 21v-6a9 9 0 0 1 18 0v6" fill="none" stroke="var(--i1)" stroke-width="5" stroke-linecap="round"/><rect x="9" y="20" width="30" height="23" rx="6" fill="var(--i1)"/><circle cx="24" cy="31" r="3.6" fill="var(--i3)"/></symbol>
   <symbol id="i-phoneAdd" viewBox="0 0 48 48"><rect x="12" y="3" width="20" height="41" rx="4.5" fill="var(--i1)"/><rect x="14" y="7" width="16" height="30" rx="2" fill="var(--i3)"/><circle cx="34" cy="31" r="10" fill="var(--i4)" stroke="#fff" stroke-width="3"/><path d="M34 26 V36 M29 31 H39" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></symbol>
   <symbol id="i-checklist" viewBox="0 0 48 48"><rect x="7" y="7" width="34" height="34" rx="6" fill="#fff" stroke="var(--i1)" stroke-width="3.6"/><g stroke="var(--i1)" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17 l2.8 2.8 l4.6-5"/><path d="M13 30 l2.8 2.8 l4.6-5"/></g><g stroke="var(--i2)" stroke-width="3.6" stroke-linecap="round"><path d="M25 17 H35"/><path d="M25 30 H35"/></g></symbol>
   <symbol id="i-warn" viewBox="0 0 48 48"><path d="M24 6 L44 40 H4 Z" fill="#D4A017" stroke="#D4A017" stroke-width="3" stroke-linejoin="round"/><path d="M24 18 V29" stroke="#3B2C00" stroke-width="3.8" stroke-linecap="round"/><circle cx="24" cy="34.5" r="2.4" fill="#3B2C00"/></symbol>
@@ -3589,7 +3596,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</span></button></li>
           <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</span></button></li>
         </ol>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><video class="on" src="/assets/screens/howto-1.mp4" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted playsinline preload="none" data-top="#7F7F7F" aria-hidden="true"></video><video class="" src="/assets/screens/howto-2.mp4" poster="/assets/screens/howto-2.jpg" width="780" height="1688" muted playsinline preload="none" data-top="#7F7F7F" aria-hidden="true"></video><video class="" src="/assets/screens/howto-3.mp4" poster="/assets/screens/howto-3.jpg" width="780" height="1688" muted playsinline preload="none" data-top="#7F7F7F" aria-hidden="true"></video><video class="" src="/assets/screens/howto-4.mp4" poster="/assets/screens/howto-4.jpg" width="780" height="1688" muted playsinline preload="none" data-top="#FFFFFF" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(0)" hidden>もう一度見る</button></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><video id="howto-video" src="/assets/screens/howto-all.mp4?v=1" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,2.56,5.72,10.68,20.92" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
       </div>
     </section>
@@ -8810,6 +8817,16 @@ function lpAvHtml(name, size) {
   const f = lpFaces[name] || { bg: '#757575', ini: name.slice(0, 1) };
   return `<span class="pp-av" style="background:${f.bg};width:${size}px;height:${size}px;font-size:${Math.round(size * .45)}px">${esc(f.ini)}</span>`;
 }
+// 「ログインすると、もっと見られる」: 下にぼかした続きを見せて、その上に案内を重ねる
+function lpLogin() {
+  closeFormModal();
+  if (currentUser) { showView('history'); return; }
+  pendingMyPage = true;
+  showView('login');
+}
+function lpLockHtml(bg, what) {
+  return `<div class="lp-lock"><div class="lp-lock-bg" aria-hidden="true">${bg}</div><div class="lp-lock-fg"><b>${ico('lock', 16)}ログインすると、もっと見られる</b><span>${esc(what)}</span><button type="button" class="cta-btn" onclick="lpLogin()">ログインして自分の記録を見る</button></div></div>`;
+}
 function lpRow(label, value, cls) { return `<div class="rs-row"><span class="rs-nm">${esc(label)}</span><b class="rs-sc ${cls || ''}">${esc(value)}</b></div>`; }
 const lpSign = t => (/^\+/.test(t) ? 'pos' : /^[-−]/.test(t) ? 'neg' : '');
 // 総当たりのマス: title の「A → B：68勝51敗（119試合）」が2人の対戦の概要
@@ -8822,7 +8839,7 @@ function lpMatchSheet(td, kindLabel) {
     <div class="lp-vs"><span>${lpAvHtml(a, 44)}<br>${esc(a)}<b class="w">${W}</b></span><span>${lpAvHtml(b, 44)}<br>${esc(b)}<b class="l">${L}</b></span></div>
     <div class="lp-vs-bar"><i style="width:${t ? W / t * 100 : 50}%"></i><i style="width:${t ? L / t * 100 : 50}%"></i></div>
     <div class="rs-box">${lpRow('同じ試合に出た回数', `${n}試合`)}${lpRow(`${a}の勝率`, pct == null ? '—' : pct + '%')}${lpRow('勝ち越し', diff === 0 ? '五分' : `${diff > 0 ? a : b} +${Math.abs(diff)}`)}${D ? lpRow('引き分け', `${D}回`) : ''}</div>
-    <p class="lp-sh-note">同じ試合で上の順位だった回数を数えています。</p>`);
+    ${lpLockHtml([...document.querySelectorAll('#lp-live-games .lp-live-pane .ht')].slice(0, 4).map(t => `<div class="lp-lock-row"><span>${esc(t.querySelector('.ht-name').textContent)}</span><span>${esc(t.querySelector('.ht-d').textContent)}</span></div>`).join(''), '2人の平均着順やスコアの比べ合い、いっしょに打った試合の一覧まで')}`);
 }
 function initLpKindSwap() {
   // 総当たり表は、いちばん長い勝敗の文字で列の幅が決まる。切り替えても幅が変わらないように、3枚をいちばん広い列にそろえる
@@ -8903,7 +8920,8 @@ function initLpRank() {
     lpSheet(`${name}の成績`, `<div class="lp-sh-who">${lpAvHtml(name, 36)}<span>四麻 ・ ${kl} ・ ${gamesRoundsText(r['ゲーム数'], r['試合数'])}</span></div>
       <div class="mc-card mc-static"><span class="mc-grid"><span><small>平均着順</small><b>${esc(r['平均着順'])}</b></span><span><small>通算スコア</small><b class="${lpSign(r['通算スコア'])}">${esc(r['通算スコア'])}</b></span><span><small>トップ率</small><b class="sm">${esc(r['トップ率'])}</b></span><span><small>連対率</small><b class="sm">${esc(r['連対率'])}</b></span><span><small>ラス回避</small><b class="sm">${esc(r['ラス回避'])}</b></span></span>
       <span class="mc-bar" role="img" aria-label="着順の分布">${bar}</span></div>
-      <div class="rs-box" style="margin-top:10px">${['素点', '順位点'].map(l => lpRow(l, r[l], lpSign(r[l]))).join('')}${['最高点数', '最低点数', '5万点以上', '箱下'].map(l => lpRow(l, r[l])).join('')}</div>`);
+      <div class="rs-box" style="margin-top:10px">${['素点', '順位点'].map(l => lpRow(l, r[l], lpSign(r[l]))).join('')}${['最高点数', '最低点数', '5万点以上', '箱下'].map(l => lpRow(l, r[l])).join('')}</div>
+      ${lpLockHtml(`<svg viewBox="0 0 300 70" preserveAspectRatio="none"><polyline points="4,52 40,44 76,50 112,30 148,36 184,20 220,28 256,12 296,16" fill="none" stroke="#1A237E" stroke-width="3"/></svg>` + [...document.querySelectorAll('.lp-kind-st[data-k="all"] table.mx-solid tbody tr')].filter(tr => tr.firstElementChild.textContent.trim() === name).flatMap(tr => [...tr.querySelectorAll('td[title]')].slice(0, 3)).map(td => `<div class="lp-lock-row"><span>${esc(td.title.split('：')[0].split(' → ')[1] || '')}</span><span>${esc((td.title.split('：')[1] || '').split('（')[0])}</span></div>`).join(''), 'スコアの推移のグラフ、相手ごとの勝ち負け、連携済みの試合の一覧まで')}`);
   };
   let k = 'all', mi = 0;
   const show = () => {
@@ -9047,46 +9065,55 @@ function snapScroll(name, dir) {
   if (row) row.scrollBy({ left: dir * (row.children[0].offsetWidth + 14), behavior: 'smooth' });
 }
 // 使い方の4本の動画: 画面に入っているあいだだけ再生。1099px以下は真ん中（.is-on）の1本だけ、1100px以上は4列とも同時に
-// 使い方: 4本の動画を1本の流れとして続けて再生する。見えたら1から、上へ戻して画面の下へ出たら止めて1に戻す（LPの動きの決まり）。動きを減らす設定では再生しない（ステップを押すと静止画が変わる）
+// 使い方: 1本の動画を流し、ステップの切れ目（data-marks）で帯と説明を進める。見えたら再生、上へ戻して画面の下へ出たら止めて1に戻す（LPの動きの決まり）。
+// iPhoneの省電力モードなどで自動再生を断られたときと、動きを減らす設定のときは「再生する」を出す（押せば動く）
 let howtoGo = () => {};
 function initHowtoVideos() {
-  const root = document.getElementById('howto-play');
-  if (!root) return;
-  const items = [...root.querySelectorAll('.hs')], vids = [...root.querySelectorAll('video')], cap = document.getElementById('howto-cap'), again = document.getElementById('howto-again'), bar = root.querySelector('.lp-phone-bar');
+  const root = document.getElementById('howto-play'), v = document.getElementById('howto-video');
+  if (!root || !v) return;
+  const items = [...root.querySelectorAll('.hs')], cap = document.getElementById('howto-cap'), btn = document.getElementById('howto-again'), bar = root.querySelector('.lp-phone-bar');
+  const M = v.dataset.marks.split(',').map(Number), TOPS = ['#7F7F7F', '#7F7F7F', '#7F7F7F', '#FFFFFF'];
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let cur = 0, raf = 0, wait = 0, visible = false;
-  const fill = (i, p) => items[i].querySelector('.hs-bar i').style.setProperty('--p', p);
-  const tick = () => {
-    const v = vids[cur];
-    if (v.duration) fill(cur, Math.min(1, v.currentTime / v.duration));
-    if (!v.paused) raf = requestAnimationFrame(tick);
-  };
-  const show = i => {
-    clearTimeout(wait); cancelAnimationFrame(raf);
-    cur = i; again.hidden = true;
-    vids.forEach((v, j) => { v.classList.toggle('on', j === i); if (j !== i) { v.pause(); try { v.currentTime = 0; } catch (e) {} } });
-    items.forEach((el, j) => { el.classList.toggle('on', j === i); el.classList.toggle('done', j < i); fill(j, j < i ? 1 : 0); });
-    bar.style.background = vids[i].dataset.top;
+  let cur = 0, raf = 0, guard = 0, visible = false;
+  v.muted = true; v.defaultMuted = true;
+  const step = i => {
+    if (i === cur) return;
+    cur = i; bar.style.background = TOPS[i];
+    items.forEach((el, j) => { el.classList.toggle('on', j === i); el.classList.toggle('done', j < i); });
     cap.innerHTML = `<h3>${i + 1}. ${items[i].querySelector('.hs-f').innerHTML}</h3><p>${items[i].querySelector('.hs-d').innerHTML}</p>`;
     cap.classList.remove('go'); void cap.offsetWidth; cap.classList.add('go');
-    if (still) return;
-    if (vids[i + 1]) vids[i + 1].preload = 'auto';
-    vids[i].currentTime = 0;
-    if (visible) vids[i].play().then(tick).catch(() => {});
   };
-  howtoGo = show;
-  if (still || !('IntersectionObserver' in window)) { vids.forEach(v => { v.preload = 'metadata'; }); return; }
-  vids.forEach((v, i) => v.addEventListener('ended', () => {
-    fill(i, 1);
-    if (i < vids.length - 1) wait = setTimeout(() => show(i + 1), 500);
-    else { items[i].classList.add('done'); again.hidden = false; }
-  }));
+  const paint = () => {
+    const t = v.currentTime;
+    let i = 0; while (i < 3 && t >= M[i + 1]) i++;
+    step(i);
+    items.forEach((el, j) => el.querySelector('.hs-bar i').style.setProperty('--p', Math.max(0, Math.min(1, (t - M[j]) / (M[j + 1] - M[j])))));
+  };
+  const tick = () => { paint(); if (!v.paused) raf = requestAnimationFrame(tick); };
+  const ask = text => { btn.textContent = text; btn.hidden = false; };
+  const start = () => {
+    clearTimeout(guard); btn.hidden = true;
+    const p = v.play();
+    if (p) p.catch(() => ask('再生する'));
+    guard = setTimeout(() => { if (visible && v.paused && !v.ended) ask('再生する'); }, 1800);
+  };
+  const seek = t => { if (v.readyState >= 1) v.currentTime = t; else v.addEventListener('loadedmetadata', () => { v.currentTime = t; }, { once: true }); };
+  // i: ステップの番号。-1 は「再生する」「もう一度見る」のボタン（終わっていれば最初から、途中ならその続きから）
+  howtoGo = i => {
+    if (i >= 0) seek(M[i] + 0.02); else if (v.ended) seek(0);
+    start();
+  };
+  v.addEventListener('play', () => { btn.hidden = true; cancelAnimationFrame(raf); tick(); });
+  v.addEventListener('timeupdate', paint);
+  v.addEventListener('seeked', paint);
+  v.addEventListener('ended', () => { paint(); items[3].classList.add('done'); ask('もう一度見る'); });
+  if (still || !('IntersectionObserver' in window)) { ask('再生する'); return; }
   new IntersectionObserver(es => {
     const e = es[es.length - 1], on = e.isIntersecting;
     if (on === visible) return;
     visible = on;
-    if (on) { vids[0].preload = 'auto'; if (again.hidden && !vids[cur].ended) { if (vids[cur].currentTime > 0) vids[cur].play().then(tick).catch(() => {}); else show(cur); } }
-    else { clearTimeout(wait); vids[cur].pause(); if (e.boundingClientRect.top > 0) show(0); }
+    if (on) { if (!v.ended) start(); }
+    else { clearTimeout(guard); v.pause(); if (e.boundingClientRect.top > 0) { btn.hidden = true; seek(0); } }
   }, { threshold: 0.4 }).observe(root.querySelector('.howto-shot'));
 }
 function initFeaturesCarousel() {

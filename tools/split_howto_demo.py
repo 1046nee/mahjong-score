@@ -46,3 +46,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    import join_howto_demo
+    join_howto_demo.main()  # 4本を1本につなぐ（LPが再生するのは howto-all.mp4）
