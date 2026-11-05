@@ -84,7 +84,7 @@ def PH(img, y=700, w=600, d=0.08, scroll=None):
 def END():
     logo = v3.furl(os.path.join(ms.MJ, "assets", "favicon.png"))
     return f'''<div class="en" data-d="0" data-k="slam"><img src="{logo}"><div class="nm">まじゃすこ</div><div class="dm">majasco.jp</div>
-      <div class="pt">無料・アプリDL不要・会員登録不要</div><div class="go">プロフィールのリンクから</div></div>'''
+      <div class="pt">無料・アプリDL不要・会員登録不要</div><div class="go">プロフィールのリンクから</div>{'<div class="pt" style="margin-top:28px;font-size:28px;opacity:.8">VOICEVOX:' + VV[1] + '</div>' if VV else ''}</div>'''
 
 def cut(beats, bg, html, voice=None, sfx=()):
     return dict(beats=beats, bg=bg, html=html, voice=voice, sfx=sfx)
@@ -181,11 +181,21 @@ def sfx(name):
         return np.sin(2 * np.pi * (200 * t + 500 * t * t)) * (t / d) ** 2 * .4 + lowpass(noise(d, 8), .4) * (t / d) ** 2 * .5
     raise KeyError(name)
 
+VV = None  # VOICEVOX の (話者ID, クレジットの名前)。--vv <ID> <名前> [出力名] で使う（ないときは Windows の Haruka）
+
 def speak(text, path, rate):
     say = text.replace("URL", "ユーアールエル").replace("'", "")
-    ps = ("Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SelectVoice('Microsoft Haruka Desktop');"
-          f"$s.Rate={rate}; $s.SetOutputToWaveFile('{path}'); $s.Speak('{say}'); $s.Dispose()")
-    subprocess.run(["powershell", "-NoProfile", "-Command", "[Console]::InputEncoding=[Text.Encoding]::UTF8;" + ps], check=True, capture_output=True, encoding="utf-8")
+    if VV:  # VOICEVOX（エンジンを先に動かす）。元気に＝少し速く・抑揚を大きく・少し高く
+        import json as _j, urllib.request as _u, urllib.parse as _p
+        op = _u.build_opener(_u.ProxyHandler({}))
+        post = lambda u, b=b"": op.open(_u.Request("http://127.0.0.1:50021" + u, data=b, headers={"Content-Type": "application/json"}, method="POST"), timeout=120).read()
+        q = _j.loads(post("/audio_query?" + _p.urlencode({"text": say, "speaker": VV[0]})))
+        q.update(speedScale=1.0 if rate < 0 else 1.1, intonationScale=1.45, pitchScale=0.04, prePhonemeLength=0.02, postPhonemeLength=0.03)
+        open(path, "wb").write(post(f"/synthesis?speaker={VV[0]}", _j.dumps(q).encode("utf-8")))
+    else:
+        ps = ("Add-Type -AssemblyName System.Speech; $s=New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.SelectVoice('Microsoft Haruka Desktop');"
+              f"$s.Rate={rate}; $s.SetOutputToWaveFile('{path}'); $s.Speak('{say}'); $s.Dispose()")
+        subprocess.run(["powershell", "-NoProfile", "-Command", "[Console]::InputEncoding=[Text.Encoding]::UTF8;" + ps], check=True, capture_output=True, encoding="utf-8")
     with wave.open(path) as w:
         sr, n, ch = w.getframerate(), w.getnframes(), w.getnchannels()
         x = np.frombuffer(w.readframes(n), dtype=np.int16).astype(float) / 32768
@@ -258,7 +268,12 @@ def build(name, fn):
     print("ok", name, f"{dur:.1f}s", mp4)
 
 if __name__ == "__main__":
-    only = sys.argv[1] if len(sys.argv) > 1 else ""
+    a, out = sys.argv[1:], None
+    if "--vv" in a:
+        k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2])
+        if len(a) > k + 3: out = a[k + 3]
+        a = a[:k]
+    only = a[0] if a else ""
     for k, fn in HYPE.items():
         if not only or only in k:
-            build(k, fn)
+            build(out or k, fn)

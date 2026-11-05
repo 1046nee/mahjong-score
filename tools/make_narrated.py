@@ -63,7 +63,7 @@ def vv_len(q):
 def vv_tts(phrases, path):
     """声は1文まとめて作る。字幕の区切りは、区切りごとの長さの割合から出す"""
     q = vv_query("".join(phrases))
-    q["speedScale"] = 1.12; q["prePhonemeLength"] = 0.03; q["postPhonemeLength"] = 0.05; q["intonationScale"] = 1.15
+    q["speedScale"] = 1.18; q["prePhonemeLength"] = 0.03; q["postPhonemeLength"] = 0.05; q["intonationScale"] = 1.35; q["pitchScale"] = 0.03  # 元気に（2026-11-05 ユーザーの判断）
     open(path, "wb").write(vv_post(f"/synthesis?speaker={VV[0]}", json.dumps(q).encode("utf-8")))
     ls = [vv_len(vv_query(p)) for p in phrases]
     return [sum(ls[:i]) / sum(ls) for i in range(len(ls))]
