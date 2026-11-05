@@ -13,7 +13,7 @@ from record_app_demo import ffmpeg_exe  # noqa: E402
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VIDEO_DIR = os.path.join(BASE, "まじゃすこ素材", "ig", "video")
 SITE = os.path.join(BASE, "assets", "screens")
-VIEW_W, VIEW_H = 390, 844
+VIEW_W, VIEW_H = 390, 792
 
 
 def main():
@@ -42,6 +42,10 @@ def main():
                        check=True, capture_output=True)
         size = os.path.getsize(out) // 1024
         print(f"howto-{i + 1}.mp4  {b2 - a2:.2f}s  {size}KB")
+        # 動画を読めない端末で出す静止画（ステップの最後のコマ）。1枚目はLPの最初のコマも撮る
+        subprocess.run([ff, "-y", "-sseof", "-0.2", "-i", out, "-frames:v", "1", "-q:v", "4", os.path.join(SITE, f"howto-step-{i + 1}.jpg")], check=True, capture_output=True)
+        if i == 0:
+            subprocess.run([ff, "-y", "-i", out, "-frames:v", "1", "-q:v", "4", os.path.join(SITE, "howto-poster.jpg")], check=True, capture_output=True)
 
 
 if __name__ == "__main__":

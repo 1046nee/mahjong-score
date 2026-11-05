@@ -20,7 +20,36 @@ OUTDIR = os.path.join(BASE, "まじゃすこ素材", "ig", "video")
 os.makedirs(OUTDIR, exist_ok=True)
 
 PORT = 8815
-VIEW_W, VIEW_H = 390, 844
+VIEW_W, VIEW_H = 390, 792  # LPのスマホの枠の中と同じ縦横（高いと下が切れて、右下の点数入力のボタンが枠から出る）
+
+# LINEのアプリは録れないので、送り先を選んで送るところを見本の画面で見せる（本物の画面ではない）
+LINE_MOCK = r"""
+window.demoLine = {
+  open() {
+    if (document.getElementById('dl')) return; // タップが2回届いても1枚だけ
+    const css = `#dl{position:fixed;inset:0;z-index:9000;background:#fff;font-family:inherit;color:#1F2A28;display:flex;flex-direction:column}
+      #dl .h{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 14px;border-bottom:1px solid #E3E9E8;font-size:16px;font-weight:800}
+      #dl .h span{color:#8A9694;font-size:14px;font-weight:700} #dl .h b.on{color:#06C755}
+      #dl .q{margin:10px 12px;padding:9px 12px;border-radius:10px;background:#F1F3F3;color:#8A9694;font-size:13px}
+      #dl .l{padding:8px 14px 4px;font-size:12px;font-weight:800;color:#8A9694}
+      #dl .r{display:flex;align-items:center;gap:12px;padding:9px 14px;font-size:15px;font-weight:700}
+      #dl .r i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:800}
+      #dl .r em{margin-left:auto;width:24px;height:24px;border-radius:50%;border:2px solid #C3CECB;display:grid;place-items:center;color:#fff;font-style:normal;font-size:14px}
+      #dl .r.on em{background:#06C755;border-color:#06C755}
+      #dl .t{flex:1;background:#8CABD8;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+      #dl .m{max-width:80%;padding:10px 12px;border-radius:14px;background:#A8E06C;font-size:14px;line-height:1.55;word-break:break-all}`;
+    const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+    const d = document.createElement('div'); d.id = 'dl';
+    d.innerHTML = `<div class="h"><span>キャンセル</span>送信先を選択<b id="dl-send">送信</b></div><div class="q">検索</div><div class="l">グループ</div>
+      <div class="r" id="dl-g"><i style="background:#177083">麻</i>麻雀グループ（4）<em>✓</em></div><div class="r"><i style="background:#8A9694">大</i>大学の友だち（6）<em></em></div>
+      <div class="l">友だち</div><div class="r"><i style="background:#C07A22">さ</i>さとし<em></em></div><div class="r"><i style="background:#4261AA">ゆ</i>ゆうた<em></em></div><div class="r"><i style="background:#5FA3A6">け</i>けんじ<em></em></div>`;
+    document.body.appendChild(d);
+    document.getElementById('dl-g').onclick = e => { e.currentTarget.classList.add('on'); document.getElementById('dl-send').classList.add('on'); };
+    document.getElementById('dl-send').onclick = () => { d.innerHTML = '<div class="h">麻雀グループ（4）</div><div class="t"><div class="m">今日のスコアはここから見られます<br>https://majasco.jp/#L7Nv5rXUS</div></div>'; };
+  },
+  close() { const d = document.getElementById('dl'); if (d) d.remove(); },
+};
+"""
 
 
 def record():
@@ -45,6 +74,7 @@ def record():
         )
         ctx.grant_permissions(["clipboard-read", "clipboard-write"])  # コピーが失敗すると生のURLがトーストに出てしまうため
         ctx.add_init_script(TAP_FX)
+        ctx.add_init_script(LINE_MOCK)
         t0 = time.time()  # 動画の録画はページ生成の瞬間から始まるので、ここを0秒とする
         page = ctx.new_page()
 
@@ -58,8 +88,11 @@ def record():
                    lambda route: route.abort())
 
         page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
-        page.wait_for_timeout(900)
+        # 共有の画面に出すURLは本番のものに（録画のローカルのアドレスを映さない）
+        page.evaluate("window.shareUrlOf = id => 'https://majasco.jp/#' + id")
+        page.wait_for_timeout(300)
         mark("start")
+        page.wait_for_timeout(1500)  # LPの最初の画面を見せる
 
         # ---- 1. 人数を選ぶ ----
         page.click("#view-home .cta-btn")
@@ -70,16 +103,26 @@ def record():
         mark("step1_end")
 
         # ---- 2. URLをメンバーにシェアする ----
-        page.click("button:has-text('共有')")
+        page.click("#view-game button:has-text('共有')")
         page.wait_for_selector("#share-sheet-url", state="visible", timeout=10000)
-        page.wait_for_timeout(500)
-        page.evaluate("""() => {
-            const el = document.getElementById('share-sheet-url');
-            if (el) el.value = el.value.replace(/^https?:\\/\\/[^/]+/, 'https://majasco.jp');
-        }""")
-        page.wait_for_timeout(300)
+        page.wait_for_timeout(800)
         page.click(".sh-url button")
         page.wait_for_timeout(1100)  # コピーのトーストを見せる
+        # 「LINEで送る」→ 麻雀グループを選ぶ → 送信（アプリの代わりに見本の画面）
+        def demo_tap(sel):  # 見本の画面は固定の重ね表示で、スマホの再現では page.click の当たり判定がずれるので、波紋を出して直接押す
+            page.evaluate("""(s) => { const e = document.querySelector(s), r = e.getBoundingClientRect();
+                document.dispatchEvent(new PointerEvent('pointerdown', { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true })); e.click(); }""", sel)
+
+        page.evaluate("window.shareLine = () => setTimeout(() => demoLine.open(), 450)")
+        page.click(".sh-btns .line")
+        page.wait_for_selector("#dl-g", timeout=5000)
+        page.wait_for_timeout(800)
+        demo_tap("#dl-g")
+        page.wait_for_timeout(700)
+        demo_tap("#dl-send")
+        page.wait_for_timeout(1500)
+        page.evaluate("demoLine.close()")
+        page.wait_for_timeout(250)
         page.click(".sheet-close")
         page.wait_for_selector("#form-modal", state="hidden", timeout=10000)
         page.wait_for_timeout(400)
@@ -101,6 +144,7 @@ def record():
                     page.locator(f"#si-{i}").fill(val)
                     page.wait_for_timeout(120)
             page.wait_for_selector("#auto-btn:not([disabled])", timeout=10000)
+            page.wait_for_timeout(pause * 2)  # オレンジに光るのを見せる
             page.click("#auto-btn")
             page.wait_for_timeout(pause)
             page.click("#confirm-btn")

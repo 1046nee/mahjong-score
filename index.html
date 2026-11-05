@@ -317,14 +317,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-compare h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
 .compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .compare-table th { font-size: 14px; padding: 12px 10px; text-align: center; }
-.compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 44%; }
-.compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 56%; }
+.compare-table { table-layout: fixed; }
+.compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 50%; }
+.compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 50%; }
 .compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; word-break: keep-all; } /* 折り返しは <wbr> の所だけ（語の途中で切らない） */
 .compare-table td.before { color: #7A8785; background: #F5F7F7; }
 .compare-table td.after { position: relative; overflow: hidden; color: #1F2A28; font-size: 14px; font-weight: 800; background: #fff; }
 .compare-table td.before span { background: linear-gradient(#9AA6A4, #9AA6A4) left 56% / 100% 1.5px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .compare-table td.after span { display: flex; align-items: center; gap: 7px; }
-.compare-table td.after span::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #177083 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.6 9.4l3 3 5.8-6.4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
+.compare-table td.after span::before { content: ''; flex: none; width: 18px; height: 18px; border-radius: 50%; background: #E75620 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4.6 9.4l3 3 5.8-6.4' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 18px no-repeat; }
 /* 比較の動き（2026-11-04）: 見えたら上の行から順に、左に取り消し線が引かれて文字が沈み、右は文字が右から入り、チェックが弾み、光が走る。
    全部 transition なので .pre を付け外しするだけで進む・戻る（戻るときは下の行から速く）。.js .pre はJSが付ける（無ければ完成形） */
 .compare-table tbody tr:nth-child(1) { --d: 0s; --r: .3s; } .compare-table tbody tr:nth-child(2) { --d: .45s; --r: .2s; } .compare-table tbody tr:nth-child(3) { --d: .9s; --r: .1s; } .compare-table tbody tr:nth-child(4) { --d: 1.35s; --r: 0s; }
@@ -474,7 +475,6 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto h2 { font-size: 22px; font-weight: 900; text-align: center; color: #1a1a1a; margin-bottom: 12px; }
 .howto > p { font-size: 15px; color: #444; }
 .howto-shot { position: relative; background: #177083; border-radius: 26px; padding: 22px 16px; display: flex; justify-content: center; }
-.howto-shot svg { width: 200px; height: auto; display: block; }
 /* 使い方の4枚は本物の操作デモ動画（2026-11-05〜・tools/record_howto_demo.py＋split_howto_demo.py）。スマホの枠は「打つほど」と同じ形 */
 .howto-phone { --pw: 210px; width: var(--pw); padding: calc(var(--pw) * .035); border-radius: calc(var(--pw) * .15); background: #1F2A28; box-shadow: 0 12px 28px rgba(0,0,0,.25); }
 .howto-phone > .lp-phone-bar { border-radius: calc(var(--pw) * .115) calc(var(--pw) * .115) 0 0; }
@@ -495,6 +495,8 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-screen video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .howto-screen img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 0; } .howto-screen img[hidden] { display: none; }
 .howto-again { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.28); background: #fff; }
+.howto-pause { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #177083; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; } .howto-pause .pl { display: none; } .howto-pause.stop .pl { display: block; } .howto-pause.stop .pz { display: none; } .howto-pause[hidden] { display: none; }
+.howto-screen { cursor: pointer; }
 .howto-again[hidden] { display: none; } /* .btn-tint の display が hidden より強い */
 .howto-cap { min-height: 150px; margin-top: 14px; }
 .howto-cap h3 { margin: 0 0 6px; font-size: 18px; font-weight: 900; text-align: center; color: #1F2A28; }
@@ -2664,6 +2666,11 @@ button.ios-row:active { background: #F2F6F5; }
 /* 2) 副ボタン（白地＋主色の枠）: 高さ48・枠1.5・角14・15px/800（以前のオレンジの薄い地＋枠＝.auto-btn もここ。オレンジはCTAだけ） */
 .auto-btn, .auto-btn.sub, .end-game-btn, .gs-acts .gs-btn, .mp-act:not(.sm) { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; height: auto; padding: 10px 16px; border: 1.5px solid var(--pc); border-radius: 14px; background: #fff; color: var(--pc); font-size: 15px; font-weight: 800; line-height: 1.3; }
 .auto-btn:disabled { background: #F4F7F6; color: #AEBBB8; border-color: #D5DEDB; }
+/* 残り1人を自動入力: 押せるようになったらオレンジで光る（次に押すものを知らせる。2026-11-05 ユーザーの指定＝オレンジはCTAだけの例外） */
+#auto-btn:not(:disabled) { background: #E75620; border-color: #E75620; color: #fff; animation: auto-glow 1.3s ease-in-out infinite; }
+#auto-btn:active:not(:disabled) { background: #C9481A; }
+@keyframes auto-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(231,86,32,.55); } 50% { box-shadow: 0 0 0 7px rgba(231,86,32,0), 0 0 16px 2px rgba(231,86,32,.6); } }
+@media (prefers-reduced-motion: reduce) { #auto-btn:not(:disabled) { animation: none; } }
 .auto-btn:active:not(:disabled), .end-game-btn:active, .gs-acts .gs-btn:active { background: var(--pc-tint); }
 /* 3) 閉じる・キャンセル（下の大きいボタン）: 灰地#EEF2F1・主色の字・高さ48・角14・15px/700。危ない操作の赤い字は各所の指定のまま */
 .modal-cancel, .sheet-close { min-height: 48px; height: auto; padding: 10px 16px; border: 0; border-radius: 14px; background: #EEF2F1; color: var(--pc); font-size: 15px; font-weight: 700; line-height: 1.3; }
@@ -3609,7 +3616,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</span></button></li>
           <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</span></button></li>
         </ol>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=2" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,2.56,5.72,10.68,20.92" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=3" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,4.2,11.72,17.56,28.44" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
       </div>
     </section>
@@ -9124,13 +9131,13 @@ function initHowtoVideos() {
   const items = [...root.querySelectorAll('.hs')], cap = document.getElementById('howto-cap'), btn = document.getElementById('howto-again'), bar = root.querySelector('.lp-phone-bar');
   const M = v.dataset.marks.split(',').map(Number), TOPS = ['#7F7F7F', '#7F7F7F', '#7F7F7F', '#FFFFFF'];
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pic = document.getElementById('howto-still');
-  let cur = 0, raf = 0, guard = 0, visible = false, broken = false;
+  const pic = document.getElementById('howto-still'), pz = document.getElementById('howto-pause');
+  let cur = 0, raf = 0, guard = 0, visible = false, broken = false, held = false; // held＝見ている人が止めた（画面に戻っても勝手に動かさない）
   v.muted = true; v.defaultMuted = true;
   const step = i => {
     if (i === cur) return;
     cur = i; bar.style.background = TOPS[i];
-    if (broken) pic.src = `/assets/screens/howto-${i + 1}.jpg`;
+    if (broken) pic.src = `/assets/screens/howto-step-${i + 1}.jpg`;
     items.forEach((el, j) => { el.classList.toggle('on', j === i); el.classList.toggle('done', j < i); });
     cap.innerHTML = `<h3>${i + 1}. ${items[i].querySelector('.hs-f').innerHTML}</h3><p>${items[i].querySelector('.hs-d').innerHTML}</p>`;
     cap.classList.remove('go'); void cap.offsetWidth; cap.classList.add('go');
@@ -9145,17 +9152,27 @@ function initHowtoVideos() {
   const tick = () => { paint(); if (!v.paused) raf = requestAnimationFrame(tick); };
   const ask = text => { btn.textContent = text; btn.hidden = false; };
   // 動画を読めない端末でも流れは見せる: 静止画に替えて、ステップを押すと画面が変わるようにする
-  const fallback = () => { broken = true; clearTimeout(guard); v.pause(); btn.hidden = true; pic.src = `/assets/screens/howto-${cur + 1}.jpg`; pic.hidden = false; };
+  const fallback = () => { broken = true; clearTimeout(guard); v.pause(); btn.hidden = true; pic.src = `/assets/screens/howto-step-${cur + 1}.jpg`; pic.hidden = false; pz.hidden = true; };
   const start = () => {
     if (broken) return;
     clearTimeout(guard); btn.hidden = true;
     const p = v.play();
     if (p) p.catch(e => { if (v.error || (e && e.name === 'NotSupportedError')) fallback(); else ask('再生する'); });
-    guard = setTimeout(() => { if (visible && v.paused && !v.ended) ask('再生する'); }, 1800);
+    guard = setTimeout(() => { if (visible && v.paused && !v.ended && !held) ask('再生する'); }, 1800);
   };
   const seek = t => { if (v.readyState >= 1) v.currentTime = t; else v.addEventListener('loadedmetadata', () => { v.currentTime = t; }, { once: true }); };
   // i: ステップの番号。-1 は「再生する」「もう一度見る」のボタン（終わっていれば最初から、途中ならその続きから）
+  const toggle = () => {
+    if (broken) return;
+    if (v.ended) { held = false; howtoGo(-1); return; }
+    if (v.paused) { held = false; start(); } else { held = true; clearTimeout(guard); v.pause(); }
+  };
+  pz.addEventListener('click', toggle);
+  root.querySelector('.howto-screen').addEventListener('click', toggle);
+  v.addEventListener('pause', () => { pz.classList.add('stop'); pz.setAttribute('aria-label', '動画を動かす'); });
+  v.addEventListener('playing', () => { pz.classList.remove('stop'); pz.setAttribute('aria-label', '動画を止める'); });
   howtoGo = i => {
+    held = false;
     if (i >= 0) { step(i); items.forEach((el, j) => el.querySelector('.hs-bar i').style.setProperty('--p', j < i ? 1 : 0)); seek(M[i] + 0.02); } else if (v.ended) seek(0);
     start();
   };
@@ -9169,7 +9186,7 @@ function initHowtoVideos() {
     const e = es[es.length - 1], on = e.isIntersecting;
     if (on === visible) return;
     visible = on;
-    if (on) { if (!v.ended) start(); }
+    if (on) { if (!v.ended && !held) start(); }
     else { clearTimeout(guard); v.pause(); if (e.boundingClientRect.top > 0) { btn.hidden = true; seek(0); } }
   }, { threshold: 0.4 }).observe(root.querySelector('.howto-shot'));
 }
