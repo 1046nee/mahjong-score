@@ -5,8 +5,10 @@
 声: edge-tts（ja-JP-KeitaNeural・男性）。台本の文字を Microsoft のサービスへ送って音声にする（要: pip install edge-tts）
 BGM: 自作（numpy）。外の曲は使わない
 出力: まじゃすこ素材/video/<名前>.mp4 （コミットしない）
-使い方: python tools/make_narrated.py [名前]
-  VOICEVOX の声: 先にエンジン（run.exe）を動かして python tools/make_narrated.py [名前] --vv <話者ID> <クレジットの名前> [出力名]
+使い方: python tools/make_narrated.py [名前]  → まじゃすこ素材/video/voice-<名前>.mp4（名前なしで全部）
+  VOICEVOX の声: 先にエンジン（run.exe）を動かして python tools/make_narrated.py [名前] --vv <話者ID> <クレジットの名前> [接尾辞]
+  例: python tools/make_narrated.py --vv 3 ずんだもん zundamon → voice-<名前>-zundamon.mp4
+場面で組む動画（NARR）は声の長さで場面の時刻が決まる。録画の動画（TIMED）は録画の目印の時刻に声を重ねる
 台本は NARR に足す。1場面＝(字幕の区切りのリスト, 場面を作る関数)。場面を作る関数は (出る秒, 消える秒) を受けて要素を返す
 """
 import asyncio, io, json, os, subprocess, sys, tempfile, urllib.parse, urllib.request, wave
@@ -36,8 +38,12 @@ const renderBase = window.render;
 window.render = (t) => { renderBase(t); document.querySelectorAll('[data-sub]').forEach(e => { const [a, b] = e.dataset.sub.split(',').map(Number); e.style.opacity = t >= a && t < b ? 1 : 0; }); };
 """
 
+# 声に渡す前の読みかえ（字幕はそのまま）。VOICEVOX の読み違いはここか下の VV_WORDS・VV_ACCENT に足す
+SAY = {"URL": "ユーアールエル", "10-30": "ワンスリー", "素点": "ソテン", "四麻": "よんま", "三麻": "さんま"}
+
 def say(text):
-    return text.replace("URL", "ユーアールエル")
+    for k, v in SAY.items(): text = text.replace(k, v)
+    return text
 
 async def tts(text, path):
     c = edge_tts.Communicate(say(text), VOICE, rate=RATE, boundary="WordBoundary")
@@ -151,41 +157,155 @@ def v_kinou():
             (["順位とスコアも、その場で出ます。"], s2),
             (["URLを送れば、", "全員のスマホで見られます。"], s3),
             (["通算の成績も、", "自動でたまっていきます。"], s4),
-            (["無料で、登録もいりません。", "プロフィールのリンクからどうぞ。"], s5)]
+            (END_LINE, s5)]
 
-NARR = {"voice-kinou": v_kinou}
+END_LINE = ["無料で、登録もいりません。", "プロフィールのリンクからどうぞ。"]
+
+def v_aruaru():
+    """集計係あるある（B）。最後に問いかけてコメントを呼ぶ"""
+    def hook(a, b):
+        return [ms.at(a, b, '<div class="badge">あるある</div><h1>セット麻雀の<br>集計係あるある</h1>', cls="cap hook", style="top:640px", anim="pop")]
+    def card(i, tx):
+        return lambda a, b: [ms.at(a, b, f'<span class="no">{i}</span><div class="tx">{ms.esc(tx)}</div>', cls="card", style="top:640px", anim="right")]
+    def sol(a, b):
+        return [ms.at(a, b, '<h1>それ、まじゃすこなら<br>全部自動。</h1>', cls="cap", style="top:170px", anim="pop"), ms.phone_at(a + .2, b, "howto-4.jpg", y=400)[0],
+                ms.chip_at(a + .8, b, ("", "+69.1", ("medal", 1)), "l", 700), ms.chip_at(a + 1.2, b, ("通算", "自動", ""), "r", 900)]
+    def q(a, b):
+        return [ms.at(a, b, '<h1>あなたの卓は、<br>いくつ当てはまる？</h1>', cls="cap", style="top:640px", anim="pop")]
+    return [(["セット麻雀の、", "集計係あるある。"], hook),
+            (["終わったあと、", "なぜか電卓を渡される。"], card(1, "終わったあと、\n電卓を渡される")),
+            (["ウマとオカの計算で、", "手が止まる。"], card(2, "ウマ・オカの計算で\n手が止まる")),
+            (["先月どっちが勝ってた？", "誰も答えられない。"], card(3, "「先月どっちが\n勝ってた？」に\n誰も答えられない")),
+            (["スコア表の写真が、", "LINEの奥に消えていく。"], card(4, "スコア表の写真が\nLINEの奥に消える")),
+            (["それ、まじゃすこなら", "全部自動です。"], sol),
+            (["あなたの卓は、", "いくつ当てはまる？"], q),
+            (END_LINE, lambda a, b: [ms.end_card(a)])]
+
+def v_umaoka():
+    """初心者の壁：ウマ・オカ（D）。例はアプリの使い方の画面と同じ数字（健太 45,200点 → +65.2）"""
+    def hook(a, b):
+        return [ms.at(a, b, '<div class="badge g">初心者の壁</div><h1>ウマ・オカって、<br>結局なに？</h1>', cls="cap hook", style="top:620px", anim="pop")]
+    def oka(a, b):
+        return [ms.at(a, b, '<div class="badge g">オカ</div><h1>トップへの<br>ごほうび</h1>', cls="cap", style="top:300px"),
+                ms.at(a + .8, b, '<div class="eq">25,000点持ち・30,000点返し<br>4人とも 5,000点ずつ出して<br>トップがまとめて受け取る<br>トップ <b>+15</b>／ほか <span style="color:#C62828">−5</span></div>', cls="cap", style="top:800px")]
+    def uma(a, b):
+        return [ms.at(a, b, '<div class="badge g">ウマ</div><h1>順位で動く<br>ポイント</h1><p>よくある「10-30」なら</p>', cls="cap", style="top:260px"),
+                ms.at(a + .8, b, '<table class="ex"><tr><td class="l">1位</td><td class="p">+30</td></tr><tr><td class="l">2位</td><td class="p">+10</td></tr>'
+                      '<tr><td class="l">3位</td><td class="n">−10</td></tr><tr><td class="l">4位</td><td class="n">−30</td></tr></table>', cls="cap", style="top:820px")]
+    def ex(a, b):
+        return [ms.at(a, b, '<h1>たとえば、<br>45,200点でトップなら</h1>', cls="cap", style="top:300px"),
+                ms.at(a + .8, b, '<div class="eq">素点 <b>+20.2</b><small style="font-size:.6em;color:#5B6866">（45,200−25,000）</small><br>ウマ <b>+30</b><br>オカ <b>+15</b><br>＝ <span class="o">+65.2</span></div>', cls="cap", style="top:740px")]
+    def app(a, b):
+        return [ms.at(a, b, '<h1>この計算、<br>まじゃすこなら自動。</h1>', cls="cap", style="top:170px", anim="pop"), ms.phone_at(a + .2, b, "howto-4.jpg", y=400)[0]]
+    return [(["ウマとオカって、", "結局なに？"], hook),
+            (["オカは、トップへのごほうび。", "4人が5,000点ずつ出して、", "トップがまとめて受け取ります。"], oka),
+            (["ウマは、順位で動くポイント。", "よくある10-30なら、", "1位はプラス30、", "4位はマイナス30。"], uma),
+            (["たとえば、", "45,200点でトップなら、", "素点が20.2、", "ウマが30、オカが15。", "合わせて、プラス65.2です。"], ex),
+            (["この計算、", "まじゃすこなら自動です。"], app),
+            (END_LINE, lambda a, b: [ms.end_card(a)])]
+
+NARR = {"kinou": v_kinou, "aruaru-shukei": v_aruaru, "kabe-umaoka": v_umaoka}
+
+# ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
+# (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
+# c = {"T0": 録画が始まる秒, "m": 録画の目印, "end": 最後のロゴの秒}
+TIMED = {
+ "play-quick": (["麻雀のスコア、", "スマホで記録してみました。"],
+   [(0, ["はじめるを押して、", "人数を選ぶだけ。"]), ("game", ["あとは、点数を入れていきます。", "下の2桁は、入れなくて大丈夫。"]),
+    ("auto", ["最後の1人は、自動です。"]), ("done", ["順位とスコアも、すぐ出ます。"]), ("share", ["URLを送れば、", "全員のスマホに。"])]),
+ "play-rounds": (["4試合目を入れると、", "順位はどう変わる？"],
+   [(0, ["3試合目まで、", "トップは健太。"]), ("input", ["4試合目の点数を、", "入れていくと…"]),
+    ("done", ["美咲が、その場で逆転！"]), ("scroll", ["個人の成績も、", "総当たりの表も、", "全部自動です。"])]),
+ "play-team": (["チーム戦も、", "まじゃすこで記録できます。"],
+   [(0, ["はじめるから、", "先にメンバーを決めます。"]), ("members", ["8人の名前を入れて、"]), ("team", ["チーム戦を押すと、"]),
+    ("teams", ["4つのチームに、", "自動で分かれます。"]), ("start", ["開始したら、", "URLを送ります。"]),
+    ("input", ["その試合の4人を選んで、", "点数を入れるだけ。"]), ("done", ["チームの順位も、", "その場で出ます。"]),
+    ("later", ["何試合打っても、", "チームの合計は自動です。"])]),
+ "play-mawashi": (["5人以上で打つ日、", "集計どうしてますか？"],
+   [(0, ["はじめるから、", "先にメンバーを決めます。"]), ("members", ["6人の名前を入れて、"]), ("start", ["四麻で開始。"]),
+    ("r1", ["試合ごとに、", "入る4人を選んで、", "点数を入れます。"]), ("r2", ["次の試合は、", "抜け番を入れかえて。"]),
+    ("done", ["試合数が違っても、"]), ("stats", ["通算と個人の成績は、", "自動で出ます。"])]),
+ "calc-vs": (["電卓とまじゃすこ、", "どっちが速い？"],
+   [(lambda c: c["T0"] + .2, ["よーい、スタート！"]), (lambda c: c["T0"] + 1.9, ["電卓は1人ずつ、", "ウマとオカを足していく。"]),
+    (lambda c: c["T0"] + 5.4, ["まじゃすこは、", "点数を入れるだけ。"]),
+    (lambda c: c["end"] - 5.5, ["まじゃすこは、もう完了。", "電卓は、まだ3人目…"]), (lambda c: c["end"] - 2.6, ["この差が、毎回です。"])]),
+}
+# 仲間ページ・マイページの録画（社用PCで撮る）は、make_short.py の字幕をそのまま声にする
+for _k, (_b, _h, _st) in ms.PAGE_VIDEOS.items():
+    if _k not in TIMED:
+        TIMED[_k] = (_h.split("\n"), [(k, h.split("\n")) for k, h in _st])
+
+def synth(ph, tmp, i):
+    """声を作って (波形, 区切りごとの始まりの秒, 長さ) を返す"""
+    mp3 = os.path.join(tmp, f"{i}.mp3")
+    if VV: ratio = vv_tts(ph, mp3)
+    else: words = asyncio.run(tts("".join(ph), mp3))
+    x = load(mp3, tmp)
+    nz = np.nonzero(np.abs(x) > .004)[0]
+    head = nz[0] / SR
+    x = x[nz[0]:nz[-1] + 1]
+    d = len(x) / SR
+    return x, ([r * d for r in ratio] if VV else [max(0, t - head) for t in phrase_times(ph, words, d)]), d
 
 def build(name, fn):
+    """場面ごとに声を作り、声の長さで場面の時刻を決める"""
     scenes = fn()
     with tempfile.TemporaryDirectory() as tmp:
-        clips = []
-        for i, (ph, _) in enumerate(scenes):
-            mp3 = os.path.join(tmp, f"{i}.mp3")
-            if VV: ratio = vv_tts(ph, mp3)
-            else: words = asyncio.run(tts("".join(ph), mp3))
-            x = load(mp3, tmp)
-            nz = np.nonzero(np.abs(x) > .004)[0]
-            head = nz[0] / SR
-            x = x[nz[0]:nz[-1] + 1]
-            d = len(x) / SR
-            clips.append((x, [r * d for r in ratio] if VV else [max(0, t - head) for t in phrase_times(ph, words, d)], d))
-    t, els, sub, place = 0.0, [], [], []
+        clips = [synth(ph, tmp, i) for i, (ph, _) in enumerate(scenes)]
+    t, els, items = 0.0, [], []
     for (ph, mk), (x, marks, d) in zip(scenes, clips):
         a, b = t, t + LEAD + d + GAP
         last = (ph, mk) == scenes[-1]
         if last: b += 1.2
         els += mk(round(a, 2), round(b, 2))
-        place.append((a + LEAD, x))
+        items.append((a + LEAD, ph, x, marks, d))
+        t = b
+    render(name, t, els, items)
+
+def build_timed(name, vname, hook, cues):
+    """録画の動画に声を重ねる。声が前の声とぶつかるときは後ろへずらす（ずれが大きいと警告）"""
+    tl = os.path.join(ms.CLIPS, vname if vname != "calc-vs" else "play-quick", "timeline.json")
+    if not os.path.exists(tl):
+        print("skip", name, "（録画がない: python tools/record_play.py", vname, "）"); return
+    marks = json.load(io.open(tl, encoding="utf-8"))["marks"]
+    with tempfile.TemporaryDirectory() as tmp:
+        hk = synth(hook, tmp, "h")
+        cs = [synth(ph, tmp, i) for i, (_, ph) in enumerate(cues)]
+        en = synth(END_LINE, tmp, "e")
+    H = max(2.6, round(LEAD + hk[2] + GAP, 2))
+    def remake():
+        ms.NARR = True; ms.HOOK = H
+        try:
+            ms.LIVE.clear()
+            return ms.VIDEOS[vname]()
+        finally:
+            ms.NARR = False; ms.HOOK = 2.6
+    dur, els = remake()
+    c = {"T0": H, "m": marks, "end": dur - 4.0}
+    items = [(LEAD, hook, *hk)]
+    nxt = LEAD + hk[2] + .15
+    for (when, ph), (x, mk, d) in zip(cues, cs):
+        want = (c["T0"] if when == 0 else c["T0"] + marks[when] if isinstance(when, str) else when(c)) + .15
+        s = max(want, nxt)
+        if s - want > .6: print(f"  ！声が {s - want:.1f}秒 おくれる: {''.join(ph)}")
+        items.append((s, ph, x, mk, d)); nxt = s + d + .15
+    s = max(c["end"] + LEAD, nxt)
+    items.append((s, END_LINE, *en))
+    render(name, max(dur, s + en[2] + 1.4), None, items, lambda: remake()[1])
+
+def render(name, dur, els, items, remake=None):
+    """items = [(声の始まりの秒, 字幕の区切り, 波形, 区切りの始まり, 長さ)]"""
+    sub, place = [], []
+    for s, ph, x, marks, d in items:
+        place.append((s, x))
         for k, p in enumerate(ph):
-            s0 = a + LEAD + marks[k]
-            s1 = a + LEAD + marks[k + 1] if k + 1 < len(ph) else a + LEAD + d + .12
+            s0 = s + marks[k]
+            s1 = s + marks[k + 1] if k + 1 < len(ph) else s + d + .12
             sub.append(f'<div class="sub" data-sub="{s0:.2f},{s1:.2f}"><span>{ms.esc(p.rstrip("、。"))}</span></div>')
             print(f"  {s0:5.2f}-{s1:5.2f} {p}")
-        t = b
-    dur = t
     tmpname = "_narr-" + name
     credit = [f'<div class="dom" style="left:0;right:0;top:1700px;text-align:center;font-size:32px">VOICEVOX:{ms.esc(VV[1])}</div>'] if VV else []
-    ms.build(tmpname, lambda: (dur, els + sub + credit))
+    ms.build(tmpname, lambda: (dur, (remake() if remake else els) + sub + credit))  # 録画の動画は build() が LIVE を消すので作り直す
     # 音
     v = np.zeros(int(dur * SR))
     for a, x in place: mh.put(v, x, a, 1.0)
@@ -206,12 +326,15 @@ def build(name, fn):
 
 if __name__ == "__main__":
     a = sys.argv[1:]
-    out = None
+    tail = ""
     if "--vv" in a:
         k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2]); vv_dict()
-        if len(a) > k + 3: out = a[k + 3]
+        if len(a) > k + 3: tail = "-" + a[k + 3]
         a = a[:k]
     only = a[0] if a else ""
     for k, fn in NARR.items():
-        if not only or only in k:
-            build(out or k, fn)
+        if not only or only == k:
+            build(f"voice-{k}{tail}", fn)
+    for k, (hook, cues) in TIMED.items():
+        if not only or only == k:
+            build_timed(f"voice-{k}{tail}", k, hook, cues)

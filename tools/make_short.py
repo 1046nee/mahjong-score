@@ -241,15 +241,24 @@ def v_umaoka():
     els.append(end_card(24.2))
     return 28.2, els
 
+# make_narrated.py（声と字幕）から使うときの切りかえ。声の版はスマホを y=400・幅520 に上げて下に字幕の場所を作り、
+# 見出しの下のひとことは声で言うので出さない。HOOK は冒頭のフックの秒（声の版は声の長さで決まる）
+NARR = False
+HOOK = 2.6
+
+def live_pos():
+    return (400, 520) if NARR else (560, 540)
+
 def caps(items, top=200):
     """[(出る秒, 消える秒, 見出し, ひとこと)] の字幕を並べる"""
+    if NARR: top = 170; items = [(a, b, h, "") for a, b, h, p in items]
     return [at(a, b, f'<h1>{esc(h)}</h1>' + (f'<p>{esc(p)}</p>' if p else ''), cls="cap", style=f"top:{top}px") for a, b, h, p in items]
 
 def v_play_quick():
     """実際の操作：はじめる→4人→点数を入れる→最後の1人は自動→順位→共有"""
-    T0 = 2.6
+    T0 = HOOK
     els = [at(0, T0, '<div class="badge g">実際の操作</div><h1>麻雀のスコア、<br>スマホで<br>記録してみた。</h1>', cls="cap hook", style="top:620px", anim="pop")]
-    e, hh, m = live_at(T0, T0 + 19.4, "play-quick", y=560, w=540)
+    e, hh, m = live_at(T0, T0 + 19.4, "play-quick", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]
     els += caps([(T0, c("game"), "「はじめる」→\n人数を選ぶ", "登録もインストールもなし"),
@@ -262,9 +271,9 @@ def v_play_quick():
 
 def v_play_rounds():
     """実際の操作：4試合目を入れると順位が入れかわり、成績表まで自動"""
-    T0 = 2.6
+    T0 = HOOK
     els = [at(0, T0, '<div class="badge g">実際の操作</div><h1>4試合目を<br>入れてみる。</h1><p>順位はどう変わる？</p>', cls="cap hook", style="top:640px", anim="pop")]
-    e, hh, m = live_at(T0, T0 + 20.4, "play-rounds", y=560, w=540)
+    e, hh, m = live_at(T0, T0 + 20.4, "play-rounds", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]
     els += caps([(T0, c("input"), "3試合目まで、\n健太がトップ。", ""),
@@ -276,11 +285,11 @@ def v_play_rounds():
 
 def play_video(clip, badge, hook, steps, x=None, w=540):
     """操作の録画1本を見せる動画。steps = [(録画の目印 or 0, 見出し)]。見出しは目印の時刻から次の目印まで"""
-    T0 = 2.6
+    T0 = HOOK
     els = [at(0, T0, f'<div class="badge g">{badge}</div><h1>{esc(hook)}</h1>', cls="cap hook", style="top:660px", anim="pop")]
     tl = json.load(io.open(os.path.join(CLIPS, clip, "timeline.json"), encoding="utf-8"))
     end = tl["end"]
-    e, hh, m = live_at(T0, T0 + end, clip, y=560, w=w, x=x)
+    e, hh, m = live_at(T0, T0 + end, clip, *((live_pos()[0], live_pos()[1]) if NARR else (560, w)), x=x)
     els.append(e)
     ts = [0 if k == 0 else m[k] for k, _ in steps] + [end]
     els += caps([(T0 + ts[i], T0 + ts[i + 1], h, "") for i, (_, h) in enumerate(steps)])
@@ -320,7 +329,7 @@ def v_calc_vs():
     """電卓 vs まじゃすこ：左は電卓の計算メモ、右は実際の操作。上にタイマー"""
     tl = json.load(io.open(os.path.join(CLIPS, "play-quick", "timeline.json"), encoding="utf-8"))
     m = tl["marks"]
-    RS = 2.8                      # よーいドン
+    RS = HOOK + 0.2               # よーいドン
     s0 = m["game"] - 0.2          # 録画の「点数入力」の少し前から
     fin = RS + (m["done"] + 0.3 - s0)  # まじゃすこが終わる時刻
     END = fin + 5.5
@@ -332,12 +341,14 @@ def v_calc_vs():
              ("nm", "翔 17,300点"), ("", "17,300 − 30,000"), ("", "＝ −12.7"), ("", "−ウマ10"), ("n", "＝ −22.7")]
     memo = ""
     for i, (c, tx) in enumerate(lines):
-        memo += f'<div class="ln {c}" data-in="{RS + 0.3 + i * 0.95:.2f}" data-out="{END}" data-a="fade">{html.escape(tx)}</div>'
-    els.append(at(RS, END, f'<div class="memo">{memo}</div>', style="position:absolute;inset:0", anim="fade"))
-    e, hh, mm = live_at(RS, END, "play-quick", y=470, w=480, start=s0, x=560)
+        memo += f'<div class="ln {c}" data-in="{RS + 0.3 + i * 0.95:.2f}" data-out="{END}" data-a="fade"' + (' style="height:56px;line-height:56px"' if NARR else '') + f'>{html.escape(tx)}</div>'
+    # 声の版は字幕（y=1500）の場所を空けるため、メモとスマホを短くして「完了！」をその上に置く
+    mst, py, pw, dy = ('style="height:900px;padding-top:30px"', 470, 440, 1290) if NARR else ('', 470, 480, 1590)
+    els.append(at(RS, END, f'<div class="memo" {mst}>{memo}</div>', style="position:absolute;inset:0", anim="fade"))
+    e, hh, mm = live_at(RS, END, "play-quick", y=py, w=pw, start=s0, x=560 + (480 - pw) // 2)
     els.append(e)
-    els.append(at(fin, END, f'<div class="done" style="left:690px;top:1590px">完了！</div>', style="position:absolute;inset:0", anim="pop"))
-    els.append(at(fin + 0.8, END, f'<div class="done l" style="left:120px;top:1590px">まだ3人目…</div>', style="position:absolute;inset:0", anim="pop"))
+    els.append(at(fin, END, f'<div class="done" style="left:690px;top:{dy}px">完了！</div>', style="position:absolute;inset:0", anim="pop"))
+    els.append(at(fin + 0.8, END, f'<div class="done l" style="left:120px;top:{dy}px">まだ3人目…</div>', style="position:absolute;inset:0", anim="pop"))
     els.append(at(fin + 2.4, END, '<h1>この差、毎回。</h1>', cls="cap", style="top:130px", anim="pop"))
     els.append(end_card(END))
     return END + 4.0, els
