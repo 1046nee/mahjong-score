@@ -340,13 +340,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table.js td.before span { transition: background-size .35s ease-out var(--d); }
 .compare-table.js td.after span { transition: opacity .38s ease calc(var(--d) + .3s), transform .38s cubic-bezier(.2,.8,.2,1) calc(var(--d) + .3s); }
 .compare-table.js td.after span::before { transition: transform .35s cubic-bezier(.34,1.8,.5,1) calc(var(--d) + .55s); }
-.compare-table.js td.after::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 42%, rgba(23,112,131,.18) 50%, transparent 58%) -150% 0 / 250% 100% no-repeat; transition: background-position .7s ease calc(var(--d) + .6s); }
 .compare-table.pre thead th { opacity: 0; }
 .compare-table.pre td.before { color: #3F4C4A; transition: color .2s ease var(--r); }
 .compare-table.pre td.before span { background-size: 0 1.5px; transition: background-size .2s ease var(--r); }
 .compare-table.pre td.after span { opacity: 0; transform: translateX(40%); transition: opacity .2s ease var(--r), transform .2s ease var(--r); }
 .compare-table.pre td.after span::before { transform: scale(.3); transition: transform .15s ease var(--r); }
-.compare-table.pre td.after::after { background-position: 250% 0; transition: none; }
 /* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
 .lp-mini { max-width: 360px; margin: 0 auto 24px; background: #fff; border-radius: 14px; box-shadow: 0 8px 22px rgba(23,112,131,.14); padding: 0 12px 10px; overflow: hidden; }
 .lp-mini-t { margin: 0 -12px 8px; padding: 9px 12px; background: #177083; font-size: 14px; font-weight: 800; color: #fff; text-align: center; }
