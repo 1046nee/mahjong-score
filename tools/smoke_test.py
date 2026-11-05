@@ -78,6 +78,68 @@ def find_chromium():
     return None  # CIではPlaywright標準のChromiumを使う
 
 
+# 失敗したときの手がかり（2026-11-05）。たまに起きる失敗の場所がわからなかったので、止まった操作・画面の状態・スクリーンショットを残す。
+# 手元は tools/smoke-fail/ に保存。CIはこのフォルダを成果物として上げる
+FAIL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "smoke-fail")
+STATE = {"done": "（まだ何も通っていない）"}
+
+
+def ok(msg):
+    print(msg)
+    STATE["done"] = msg
+
+
+def report(page, action, target):
+    out = sys.stderr
+    print("---- スモークテストの失敗の記録 ----", file=out)
+    print(f"最後に通った項目: {STATE['done']}", file=out)
+    print(f"止まった操作: {action} {target}", file=out)
+    try:
+        info = page.evaluate("""(sel) => {
+          const open = [...document.querySelectorAll('.open')].map(e => e.id || e.className);
+          const view = [...document.querySelectorAll('.view.active')].map(e => e.id);
+          let t = null;
+          try {
+            const e = document.querySelector(sel);
+            if (e) {
+              const r = e.getBoundingClientRect(), c = getComputedStyle(e);
+              const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+              t = { rect: [r.left, r.top, r.width, r.height].map(Math.round), display: c.display, visibility: c.visibility, opacity: c.opacity,
+                    disabled: !!e.disabled, top: top ? (top.id || top.className || top.tagName) : null };
+            } else t = '見つからない';
+          } catch (err) { t = '調べられない'; }
+          return { url: location.href, view, open, target: t, scrollY: Math.round(scrollY), size: [innerWidth, innerHeight] };
+        }""", str(target))
+        for k, v in info.items():
+            print(f"{k}: {v}", file=out)
+        print(f"コンソールのエラー: {page.smoke_console[-5:]}", file=out)
+    except Exception as e:
+        print(f"画面の状態を読めなかった: {str(e).splitlines()[0]}", file=out)
+    try:
+        os.makedirs(FAIL_DIR, exist_ok=True)
+        path = os.path.join(FAIL_DIR, "fail.png")
+        page.screenshot(path=path, timeout=5000)
+        print(f"スクリーンショット: {path}", file=out)
+    except Exception as e:
+        print(f"スクリーンショットを撮れなかった: {str(e).splitlines()[0]}", file=out)
+    print("----", file=out)
+
+
+def watch(page):
+    """ページの操作を包んで、失敗した瞬間に report を残す（ブラウザが閉じる前に撮るため）"""
+    page.smoke_console = []
+    page.on("console", lambda m: page.smoke_console.append(m.text[:160]) if m.type == "error" else None)
+    for name in ("click", "fill", "goto", "wait_for_selector", "wait_for_function"):
+        def call(*a, _o=getattr(page, name), _n=name, **k):
+            try:
+                return _o(*a, **k)
+            except Exception:
+                report(page, _n, a[0] if a else "")
+                raise
+        setattr(page, name, call)
+    return page
+
+
 def active_view(page):
     return page.evaluate(
         "[...document.querySelectorAll('.view')].filter(v => v.classList.contains('active')).map(v => v.id)")
@@ -103,14 +165,14 @@ def main():
         ctx.route(lambda url: not url.startswith(f"http://127.0.0.1:{PORT}")
                   and not url.startswith("https://www.gstatic.com/firebasejs"),
                   lambda route: route.abort())
-        page = ctx.new_page()
+        page = watch(ctx.new_page())
         page.on("pageerror", lambda e: page_errors.append(str(e)))
 
         # ---- 1. LP表示 ----
         page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
         page.wait_for_timeout(400)
         assert active_view(page) == ["view-home"], f"LPが表示されない: {active_view(page)}"
-        print("OK 1/7: LP表示")
+        ok("OK 1/7: LP表示")
 
         # ---- 2. グループ作成 → 共有URLに#IDがあること ----
         page.click("#view-home .cta-btn")
@@ -128,11 +190,11 @@ def main():
         assert "#" in share_url, f"共有URLに#がない: {share_url}"
         sid = share_url.split("#")[1]
         assert len(sid) == 10, f"セッションIDが10文字でない: {sid}"
-        print(f"OK 2/7: グループ作成・共有URL発行（#{sid}）")
+        ok(f"OK 2/7: グループ作成・共有URL発行（#{sid}）")
 
         # ---- 3. 共有URLを別タブで開く（受け取り側のシミュレーション）→ 試合画面が自動で開く ----
         # 同一URLへのgotoはハッシュ移動扱いで再読み込みされないため、必ず新しいページで開くこと
-        page = ctx.new_page()
+        page = watch(ctx.new_page())
         page.on("pageerror", lambda e: page_errors.append(str(e)))
         # 共有URLそのもので開く（LINEで押すとLINEの中の画面でそのまま開く形。外のブラウザに出すのは仲間ページの招待リンクだけ）
         assert "openExternalBrowser" not in share_url, f"共有URLに openExternalBrowser が残っている: {share_url}"
@@ -142,7 +204,7 @@ def main():
             " const b = document.querySelector('#score-main-body');"
             " return v && v.classList.contains('active') && b && b.innerText.includes('太郎'); }",
             timeout=15000)
-        print("OK 3/7: 共有URLからの自動参加（試合画面表示）")
+        ok("OK 3/7: 共有URLからの自動参加（試合画面表示）")
 
         # ---- 4. 点数入力（3人分＋残り1人自動入力）→ スコア表示 ----
         page.click(".fab")
@@ -155,15 +217,15 @@ def main():
             "() => { const c = document.querySelector('#score-main-body .score-card');"
             " return c && c.innerText.includes('太郎') && c.innerText.includes('+'); }",
             timeout=10000)
-        print("OK 4/7: 点数入力→総合順位にスコア表示")
+        ok("OK 4/7: 点数入力→総合順位にスコア表示")
 
         # ---- 5. グラフカードの存在 ----
         assert page.evaluate("!!document.querySelector('#chart-card')"), "スコア推移カードがない"
-        print("OK 5/7: スコア推移カードあり")
+        ok("OK 5/7: スコア推移カードあり")
 
         # ---- 6. クイックスタート（LP → 人数を選ぶ → 試合画面へ直行） ----
         # セットアップ画面も共有画面も挟まないこと・仮名が入っていることまで確認する
-        page = ctx.new_page()
+        page = watch(ctx.new_page())
         page.on("pageerror", lambda e: page_errors.append(str(e)))
         page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
         page.wait_for_timeout(400)
@@ -180,11 +242,11 @@ def main():
         assert names == ["A", "B", "C", "D"], f"仮のメンバー名が入っていない: {names}"
         assert page.evaluate("activeGame.settings.numPlayers") == 4, "四麻で作られていない"
         assert "#" in page.evaluate("location.href"), "URLに#セッションIDが無い"
-        print("OK 6/7: クイックスタート（人数選択→試合画面へ直行）")
+        ok("OK 6/7: クイックスタート（人数選択→試合画面へ直行）")
 
         # ---- 7. 三麻の初期値（35,000点持ち／35,000点返し＝オカなし／ウマ10-0-10） ----
         # 記事・画像もこの数字にそろえてあるので、変わったら両方直す必要がある
-        page = ctx.new_page()
+        page = watch(ctx.new_page())
         page.on("pageerror", lambda e: page_errors.append(str(e)))
         page.goto(f"http://127.0.0.1:{PORT}/index.html", wait_until="load", timeout=30000)
         page.wait_for_timeout(400)
@@ -201,7 +263,7 @@ def main():
         assert st["startPoints"] == 35000, f"持ち点が35,000でない: {st['startPoints']}"
         assert st["returnPoints"] == 35000, f"返し点が35,000でない: {st['returnPoints']}"
         assert st["uma"] == [10, 0, -10], f"ウマが10-0-10でない: {st['uma']}"
-        print("OK 7/7: 三麻の初期値（35,000/35,000・オカなし・ウマ10-0-10）")
+        ok("OK 7/7: 三麻の初期値（35,000/35,000・オカなし・ウマ10-0-10）")
 
         assert not page_errors, f"ページ内JSエラー: {page_errors}"
         browser.close()

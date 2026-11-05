@@ -29,6 +29,14 @@ jobs:
           python3 -m pip install --quiet playwright
           python3 -m playwright install --with-deps chromium
           python3 tools/smoke_test.py
+      - name: スモークテストの失敗の記録を残す
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-fail
+          path: tools/smoke-fail/
+          if-no-files-found: ignore
+          retention-days: 7
       # 版の印（アプリが新しい版に気づいて読み込み直すため。index.html の __APP_VERSION__ と /version.txt に同じコミット）
       - name: 版の印を入れる
         run: |

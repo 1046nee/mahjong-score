@@ -9,3 +9,5 @@ version.txt
 # 楽天ウェブサービスの accessKey（秘密。tools/fetch_book_covers.py が読む）
 .rakuten-access-key
 .youtube-api-key
+# スモークテストの失敗の記録
+tools/smoke-fail/
