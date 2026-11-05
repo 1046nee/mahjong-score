@@ -30,11 +30,12 @@ def main():
                     "-movflags", "+faststart", raw_mp4],
                    check=True, capture_output=True)
 
-    bounds = [marks["start"], marks["step1_end"], marks["step2_end"], marks["step3_end"], marks["step4_end"]]
+    segs = [(marks["start"], marks["step1_end"]), (marks["step1_end"], marks["step2_end"]), (marks["step3_start"], marks["step3_end"]), (marks["step3_end"], marks["step4_end"])]
     PAD = 0.15
     for i in range(4):
-        a, b = bounds[i], bounds[i + 1]
-        a2, b2 = max(bounds[0], a - PAD), min(bounds[-1], b + PAD)
+        a2, b2 = segs[i]
+        if i != 2: a2 = max(segs[0][0], a2 - PAD)  # 3の最初は閉じる途中を映さない
+        if i != 1: b2 = min(segs[3][1], b2 + PAD)  # 2の最後も同じ
         out = os.path.join(SITE, f"howto-{i + 1}.mp4")
         subprocess.run([ff, "-y", "-ss", f"{a2:.2f}", "-to", f"{b2:.2f}", "-i", raw_mp4,
                         "-an", "-c:v", "libx264", "-crf", "22", "-pix_fmt", "yuv420p",

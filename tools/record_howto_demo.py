@@ -121,12 +121,15 @@ def record():
         page.wait_for_timeout(700)
         demo_tap("#dl-send")
         page.wait_for_timeout(1500)
+        mark("step2_end")  # 2は送った画面で終わる。閉じるところは見せない
+        page.wait_for_timeout(200)
         page.evaluate("demoLine.close()")
         page.wait_for_timeout(250)
         page.click(".sheet-close")
         page.wait_for_selector("#form-modal", state="hidden", timeout=10000)
-        page.wait_for_timeout(400)
-        mark("step2_end")
+        page.wait_for_timeout(700)
+        mark("step3_start")  # 3は1の最後と同じゲームの画面から
+        page.wait_for_timeout(1300)
 
         # ---- 3. 試合後に表示点数を入力する（1試合目はゆっくり） ----
         def enter_round(vals, delay, pause):

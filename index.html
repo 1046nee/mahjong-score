@@ -268,7 +268,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* LPだけの動き（自分の成績）: 数字が順に出て、着順の帯とグラフが左から伸びる。.pre の付け外しで進む・戻る */
 .lp-live.js .mc-grid b, .lp-live.js .ms-pts b, .lp-live.js .mc-pts b { transition: opacity .35s ease var(--nd, 0s), transform .35s ease var(--nd, 0s); }
 /* clip-path は none へは動かないので、完成形も inset で書く */
-.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path 1s linear; }
+.lp-live.js .mc-bar, .lp-live.js .mc-line { clip-path: inset(0 0 0 0); } .lp-live.js .mc-bar { transition: clip-path .7s ease-out .5s; } .lp-live.js .mc-line { transition: clip-path .5s linear; }
 .lp-live.pre .mc-grid b, .lp-live.pre .ms-pts b, .lp-live.pre .mc-pts b { opacity: 0; transform: translateY(8px); transition-delay: 0s; transition-duration: .15s; }
 /* 線は見えている範囲の左端から描く（--c0 は見えている左端より右の割合。グラフは右端の新しい月を見せているので、全体の左端から描くと見えるまでに間が空く） */
 .lp-live.pre .mc-bar { clip-path: inset(0 100% 0 0); transition-delay: 0s; transition-duration: .2s; } .lp-live.pre .mc-line { clip-path: inset(0 var(--c0, 100%) 0 0); transition-delay: 0s; transition-duration: .2s; }
@@ -318,8 +318,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
 .compare-table th { font-size: 14px; padding: 12px 10px; text-align: center; }
 .compare-table { table-layout: fixed; }
-.compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 50%; }
-.compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 50%; }
+.compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 40%; }
+.compare-table th.after { background: #0F5563; color: #fff; font-size: 16px; font-weight: 900; width: 60%; }
 .compare-table td { font-size: 13.5px; padding: 12px 10px; border-top: 1px solid #eef2f1; vertical-align: middle; line-height: 1.6; word-break: keep-all; } /* 折り返しは <wbr> の所だけ（語の途中で切らない） */
 .compare-table td.before { color: #7A8785; background: #F5F7F7; }
 .compare-table td.after { position: relative; overflow: hidden; color: #1F2A28; font-size: 14px; font-weight: 800; background: #fff; }
@@ -407,7 +407,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .steps.js .step:not(.on) .step-num { background: #AFC0E0; }
 .step-text { font-size: 16px; color: #1a1a1a; font-weight: 700; line-height: 1.5; }
 .start-note { font-size: 19px; font-weight: 900; color: #177083; }
-.start-note strong { color: #E75620; font-size: 24px; }
+.start-note strong { color: #E75620; font-size: 24px; font-weight: 900; -webkit-text-stroke: .6px #E75620; } /* オレンジは細く見えるので、字の縁を足して周りの字と同じ太さに見せる（iPhoneの字は太さに上限がある） */
 
 /* ⑧ クロージング: 薄緑＋ミニイラスト＋バッジ＋オレンジCTA */
 .lp-close { background: #E4F3EC; text-align: center; }
@@ -3616,7 +3616,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</span></button></li>
           <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</span></button></li>
         </ol>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=3" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,4.2,11.72,17.56,28.44" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=4" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,4.2,10.84,17.92,29.12" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
       </div>
     </section>
@@ -8721,22 +8721,24 @@ function initLpMotion() {
     const later = (ms, f) => timers.push(setTimeout(f, ms));
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
-      G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
-      later(860, () => okb.classList.add('ready'));
-      later(1350, () => okb.classList.add('press'));
-      later(1520, () => {
+      // 表示点数が空の間を毎回作ってから入れる
+      const w = 600;
+      G[g].forEach((n, i) => later(w + i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
+      later(w + 860, () => okb.classList.add('ready'));
+      later(w + 1350, () => okb.classList.add('press'));
+      later(w + 1520, () => {
         okb.classList.remove('press');
         S[g].forEach((v, i) => { ss[i].textContent = fmt(v); tone(ss[i], v); ss[i].classList.remove('off'); tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]); });
         gridEl.classList.remove('hit'); void gridEl.offsetWidth; gridEl.classList.add('hit');
       });
-      later(1950, () => {
+      later(w + 1950, () => {
         S[g].forEach((v, i) => setTot(i, tot[i]));
         reorderRank();
         const t0 = performance.now();
         const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
         raf = requestAnimationFrame(step);
       });
-      if (g < 2) later(3900, () => game(g + 1));
+      if (g < 2) later(w + 3900, () => game(g + 1));
     };
     // 戻るときは線を最初の点へ縮めて、空に戻す
     const rewind = () => {
