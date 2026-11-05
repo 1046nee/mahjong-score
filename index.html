@@ -212,7 +212,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home .lp-solution .lp-inner, #view-home .lp-screens .lp-inner { max-width: 1180px; }
   #view-home .features-wrap { max-width: none; }
   #view-home .features-row { display: grid; grid-template-columns: repeat(4, 184px); justify-content: center; gap: 14px; overflow: visible; padding: 4px 0 8px; }
-  #view-home .features-row::after, #view-home .features-ctl { display: none; }
+  #view-home .features-row::after, #view-home .features-ctl { display: none; } #view-home .lp-screens .features-ctl { display: flex; } /* 成績の節はPCでも横にめくるので矢印を残す */
 
   #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; padding-left: 32px; padding-right: 32px; }
   #view-home .home-content:not(.lp-howto-wrap) > .ad-slot { grid-column: 1 / -1; }
@@ -237,6 +237,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-live-in .mc-card { margin: 0; box-shadow: 0 10px 26px rgba(47,74,134,.16); }
 /* 2〜5枚目は枠そのものがカード（自分の成績と同じ）。本番の .card の緑の線と広い余白を消す。.card.card は .card.hist-card より強くするため */
 .lp-live-in > .card.card { margin: 0; padding: 12px 14px; border: 0; border-radius: 0; box-shadow: none; }
+.lp-live-in .ht-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .lp-live-in .mo-sec { padding: 8px 6px; } /* LPのカードは幅が決まっているので、タイルは3列に固定 */
 .lp-live-in .mp-sec { margin: 0; } .lp-live-in .card-head-row { min-height: 0; } /* 本番は #mp-pane-hist で余白を消しているので、id を外した複製には同じ指定を書く */ .lp-live-in .history-body { padding: 0; gap: 0; overflow: visible; } .lp-live-in .hist-viewseg { margin-bottom: 0; }
 /* 自分の成績（1枚目）だけは押せない見本（数字とグラフをLPだけで動かすため）。他はすべて本物どおり指で操作できる */
 .lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; } .lp-live .mc-trend, .lp-live .sk-seg { pointer-events: auto; } /* 合計/個人戦/チーム戦とグラフだけ触れる */
