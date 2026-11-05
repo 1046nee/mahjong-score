@@ -33,7 +33,7 @@ CHECK_JS = r"""(sel) => {
     if (!el.offsetParent) return;
     const r = el.getBoundingClientRect();
     if (!r.width) return;
-    const box = el.closest('.mc-card, .ms-pts, .card, .sheet-body, .sp-pop, .rs-box, .podium, .lb-row, .lb-cell, .pp-cell, .mp-col') || document.body;
+    const box = el.closest('.ht, .hg-card, .rg-row, .mc-card, .ms-pts, .card, .sheet-body, .sp-pop, .rs-box, .podium, .lb-row, .lb-cell, .pp-cell, .mp-col') || document.body;
     const b = box.getBoundingClientRect();
     const clipped = el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).overflow !== 'visible';
     if (r.right > b.right + 0.5 || r.left < b.left - 0.5 || clipped) bad.push(`${el.className || el.tagName}「${el.textContent.trim().slice(0, 20)}」 right=${Math.round(r.right)} box=${Math.round(b.right)}${clipped ? ' clipped' : ''}`);
@@ -46,7 +46,7 @@ CHECK_JS = r"""(sel) => {
   return page.concat(bad);
 }"""
 # 数字や短い文を出す所（欠けてはいけない所）
-NUM_SEL = ".mp-it b, .mp-it span, .mc-grid b, .mc-head > span, .mc-head b, .lb-val, .lb-sub, .pd-val, .pd-sub, .rs-sc, .rs-n, .sp-sc, .cc-row, .ch-act, .gm-sc, .gm-res, .pp-sub2, .lc-val, .lc-sub, .lc-rk, .sp-c, .sp-meta"
+NUM_SEL = ".mp-it b, .mp-it span, .mc-grid b, .mc-head > span, .mc-head b, .lb-val, .lb-sub, .pd-val, .pd-sub, .rs-sc, .rs-n, .sp-sc, .cc-row, .ch-act, .gm-sc, .gm-res, .pp-sub2, .lc-val, .lc-sub, .lc-rk, .sp-c, .sp-meta, .ht-sc b, .cg-sc, .rg-sc, .sp-big, .sp-wsc, .sp-lsc"
 
 
 def main():
@@ -91,6 +91,10 @@ def main():
             vals = pg.evaluate("[...document.querySelectorAll('#mp-stats .mp-it')].map(e => e.innerText.split('\\n').join(' ')).join(' / ')")
             print(f"[{width}] 点数の欄: {vals}")
             allbad += [f"[{width}] マイページ: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
+            for hv in ("tile", "new"):  # 過去の試合のタイルと一覧（pts の分も入るか）
+                pg.evaluate(f"histView = '{hv}'; renderHistory()")
+                pg.wait_for_timeout(200)
+                allbad += [f"[{width}] 過去の試合 {hv}: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
             if OUT:
                 pg.screenshot(path=os.path.join(OUT, f"fit_{width}_mypage.png"), full_page=False)
             # 結果のシート
