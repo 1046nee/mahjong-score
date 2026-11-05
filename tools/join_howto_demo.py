@@ -35,7 +35,7 @@ def main():
     for p in src:
         args += ["-i", p]
     args += ["-filter_complex", chains + "".join(f"[v{i}]" for i in range(4)) + "concat=n=4:v=1:a=0[o]", "-map", "[o]", "-an",
-             "-c:v", "libx264", "-profile:v", "main", "-crf", "23", "-pix_fmt", "yuv420p", "-g", "25", "-movflags", "+faststart", out]
+             "-r", "25", "-fps_mode", "cfr", "-c:v", "libx264", "-profile:v", "main", "-level", "4.0", "-crf", "23", "-pix_fmt", "yuv420p", "-g", "25", "-movflags", "+faststart", out]  # つなぐとフレームレートが乱れてレベルが6.2になり、iPhoneが再生できない
     subprocess.run(args, check=True)
     idx = os.path.join(BASE, "index.html")
     s = io.open(idx, encoding="utf-8", newline="").read()

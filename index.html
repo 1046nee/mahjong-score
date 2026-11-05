@@ -341,22 +341,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .compare-table.pre td.after span::before { transform: scale(.3); transition: transform .15s ease var(--r); }
 .compare-table.pre td.after::after { background-position: 250% 0; transition: none; }
 /* スコアが出る小窓（2026-11-04）: 見えたら表示点数が順に入り、スコアが出る。HTMLは完成形 */
-.lp-mini { max-width: 340px; margin: 0 auto 24px; background: #E4F3EC; border-radius: 14px; padding: 0 12px 10px; overflow: hidden; }
+.lp-mini { max-width: 360px; margin: 0 auto 24px; background: #E4F3EC; border-radius: 14px; padding: 0 12px 10px; overflow: hidden; }
 .lp-mini-t { margin: 0 -12px 8px; padding: 9px 12px; background: #177083; font-size: 14px; font-weight: 800; color: #fff; text-align: center; }
 .lp-mini-k { margin: 0 0 6px; font-size: 12px; font-weight: 800; color: #177083; text-align: center; font-variant-numeric: tabular-nums; }
-.lp-mini-body { display: flex; align-items: flex-start; gap: 8px; }
-/* 左: 順位（合計スコアの多い順に並べかえる。点数を入れるたびに入れかわる） */
-.lp-mini-rank { flex: 0 0 96px; display: flex; flex-direction: column; gap: 4px; }
-.lp-mini-rk { display: flex; align-items: center; gap: 4px; min-height: 29px; background: #C7E6D9; border-radius: 6px; padding: 4px 6px; box-sizing: border-box; transition: transform .5s cubic-bezier(.3,.8,.3,1); }
-.lp-mini-rn { flex: none; width: 11px; font-size: 10.5px; font-weight: 900; color: #4F6B66; }
-.lp-mini-rc { flex: none; display: flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 900; }
-.lp-mini-rt { margin-left: auto; font-size: 12.5px; font-weight: 900; font-variant-numeric: tabular-nums; transition: opacity .25s; }
-/* 右: 表示点数を入れるとスコア・合計が出る（横幅を詰めて右半分に収める） */
-.lp-mini-g { flex: 1; min-width: 0; display: grid; grid-template-columns: 14px minmax(0, 1fr) 40px 46px; gap: 5px 4px; align-items: center; font-size: 12px; font-variant-numeric: tabular-nums; }
-.lp-mini-g .h { font-size: 9.5px; font-weight: 700; color: #4F6B66; text-align: center; } .lp-mini-g .h.r { text-align: right; }
-.lp-mini-g .n { font-weight: 900; text-align: center; } .lp-mini-g .v { min-height: 29px; background: #C7E6D9; border-radius: 6px; padding: 4px 5px; text-align: right; box-sizing: border-box; }
-.lp-mini-g .s, .lp-mini-g .t { font-weight: 900; text-align: right; transition: opacity .25s; } .lp-mini-g .s { font-weight: 700; font-size: 11.5px; }
-.lp-mini-g .p, .lp-mini-rt.p { color: #1A237E; } .lp-mini-g .m, .lp-mini-rt.m { color: #C62828; } .lp-mini-g .off, .lp-mini-rt.off { opacity: 0; }
+.lp-mini-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: stretch; }
+/* 左半分: ゲームの画面の総合順位と同じ形（白いカード・メダルとn位・名前・大きなスコア）。入力完了で入れかわって決まる */
+.lp-mini-rank { display: flex; flex-direction: column; gap: 6px; }
+.lp-mini-rk { flex: 1; display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 4px 8px 4px 6px; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.08); box-sizing: border-box; transition: transform .55s cubic-bezier(.3,.8,.3,1); }
+.lp-mini-rn { flex: none; width: 28px; text-align: center; }
+.lp-mini-md { display: block; height: 24px; line-height: 0; } .lp-mini-md .medal { display: block; margin: 0 auto; }
+.lp-mini-ri { display: block; font-size: 10px; font-weight: 800; line-height: 1.2; color: #4F5C5A; }
+.lp-mini-rc { flex: none; font-size: 15px; font-weight: 900; }
+.lp-mini-rt { margin-left: auto; display: flex; align-items: baseline; gap: 1px; white-space: nowrap; font-variant-numeric: tabular-nums; } .lp-mini-rt small { font-size: 8.5px; font-weight: 800; }
+.lp-mini-rv { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+.lp-mini-rk.pop .lp-mini-md { animation: lp-pop .42s ease both; } .lp-mini-rk.up { box-shadow: 0 0 0 2px #177083, 0 6px 14px rgba(23,112,131,.25); }
+/* 右半分: 表示点数の欄を狭くして、スコア・合計まで入れる。入力完了で反映する */
+.lp-mini-in { display: flex; flex-direction: column; min-width: 0; }
+.lp-mini-g { flex: 1; display: grid; grid-template-columns: 11px 44px minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto repeat(4, 1fr); gap: 4px 3px; align-items: center; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.lp-mini-g .h { font-size: 9.5px; font-weight: 700; color: #4F6B66; text-align: center; white-space: nowrap; } .lp-mini-g .h.r { text-align: right; }
+.lp-mini-g .n { font-weight: 900; text-align: center; } .lp-mini-g .v { min-height: 26px; line-height: 18px; background: #C7E6D9; border-radius: 6px; padding: 4px 3px; text-align: right; box-sizing: border-box; font-size: 11px; white-space: nowrap; }
+.lp-mini-g .s, .lp-mini-g .t { font-weight: 900; text-align: right; white-space: nowrap; transition: opacity .25s; } .lp-mini-g .s { font-weight: 700; font-size: 11px; }
+.lp-mini-g .p, .lp-mini-rt.p { color: #1A237E; } .lp-mini-g .m, .lp-mini-rt.m { color: #C62828; } .lp-mini-g .off { opacity: 0; }
+.lp-mini-g.hit .t { animation: lp-tick .4s ease both; }
+@keyframes lp-tick { from { transform: scale(1.3); } to { transform: none; } }
+.lp-mini-ok { display: block; margin-top: 6px; padding: 7px 0; border-radius: 8px; background: #B8C6C2; color: #fff; font-size: 12.5px; font-weight: 800; line-height: 1.2; text-align: center; transition: background .2s, transform .12s; }
+.lp-mini-ok.ready { background: #177083; } .lp-mini-ok.press { background: #0F5563; transform: scale(.94); }
+@media (max-width: 345px) { .lp-mini-body { grid-template-columns: minmax(0, 1fr); } .lp-mini-rk { min-height: 42px; } .lp-mini-rn { display: flex; align-items: center; gap: 4px; width: 56px; } }
 .lp-mini-cw { margin-top: 10px; padding: 8px 8px 6px; background: #fff; border-radius: 10px; }
 .lp-mini-ct { margin: 0 0 2px; font-size: 12px; font-weight: 800; color: #1F2A28; }
 .lp-mini-svg { display: block; width: 100%; height: auto; }
@@ -382,7 +392,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
   .features-row.js .feature.is-on { transform: scale(1.06); opacity: 1; box-shadow: 0 10px 22px rgba(23,112,131,.2); }
   .features-row.js .feature.is-on .feature-icon svg { animation: lp-bob 2s ease-in-out infinite; }
 }
-@media (prefers-reduced-motion: reduce) { .lp-mini-g .s, .lp-mini-rk, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-mini-g .s, .lp-mini-rk, .lp-mini-ok, .features-row.js .feature { transition: none; } .features-row.js .feature.is-on .feature-icon svg { animation: none; } }
 
 /* ⑦ 始めやすさ: 3ステップ */
 .lp-start { background: #EAF0FB; text-align: center; padding-top: 44px; }
@@ -483,6 +493,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-phone { --pw: clamp(170px, min(230px, calc((100svh - 330px) / 2.06)), 230px); }
 .howto-screen { position: relative; height: calc(var(--pw) * 1.89); overflow: hidden; border-radius: 0 0 calc(var(--pw) * .115) calc(var(--pw) * .115); background: #fff; }
 .howto-screen video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.howto-screen img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 0; } .howto-screen img[hidden] { display: none; }
 .howto-again { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.28); background: #fff; }
 .howto-again[hidden] { display: none; } /* .btn-tint の display が hidden より強い */
 .howto-cap { min-height: 150px; margin-top: 14px; }
@@ -3598,7 +3609,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</span></button></li>
           <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</span></button></li>
         </ol>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><video id="howto-video" src="/assets/screens/howto-all.mp4?v=1" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,2.56,5.72,10.68,20.92" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button></div>
+        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=2" poster="/assets/screens/howto-1.jpg" width="780" height="1688" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,2.56,5.72,10.68,20.92" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
       </div>
     </section>
@@ -3643,7 +3654,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn">1</span><span class="lp-mini-rc" style="background:#e60012">A</span><span class="lp-mini-rt p">+71.3</span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn">2</span><span class="lp-mini-rc" style="background:#00a040">C</span><span class="lp-mini-rt p">+6.9</span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn">3</span><span class="lp-mini-rc" style="background:#0075c2">B</span><span class="lp-mini-rt m">−36.2</span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn">4</span><span class="lp-mini-rc" style="background:#f39800">D</span><span class="lp-mini-rt m">−42.0</span></div></div><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#D4A017"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#3B2C00" font-family="-apple-system,BlinkMacSystemFont,sans-serif">1</text></svg></span><span class="lp-mini-ri">1位</span></span><span class="lp-mini-rc" style="color:#e60012">A</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+71.3</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#9AA5AD"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A28" font-family="-apple-system,BlinkMacSystemFont,sans-serif">2</text></svg></span><span class="lp-mini-ri">2位</span></span><span class="lp-mini-rc" style="color:#00a040">C</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+6.9</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#C97B3F"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#2E1A0A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">3</text></svg></span><span class="lp-mini-ri">3位</span></span><span class="lp-mini-rc" style="color:#0075c2">B</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−36.2</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">4</text></svg></span><span class="lp-mini-ri">4位</span></span><span class="lp-mini-rc" style="color:#f39800">D</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−42.0</b><small>pts</small></span></div></div><div class="lp-mini-in"><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><span class="lp-mini-ok ready" id="lp-mini-ok">入力完了</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
 <div class="features-wrap">
                 <div class="features-row" id="features-row">
         <div class="feature">
@@ -8670,29 +8681,33 @@ function initLpMotion() {
     let timers = [], raf = 0;
     const tone = (el, v) => { el.classList.toggle('p', v >= 0); el.classList.toggle('m', v < 0); };
     const drawTo = (i, k, f) => { const b = base[i], a = b[k], c = b[k + 1], pts = b.slice(0, k + 1).concat([[a[0] + (c[0] - a[0]) * f, a[1] + (c[1] - a[1]) * f]]); lines[i].setAttribute('points', pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')); };
-    const blank = () => { vs.forEach(v => { v.textContent = ''; }); ss.forEach(x => x.classList.add('off')); };
+    const okb = document.getElementById('lp-mini-ok'), gridEl = mini.querySelector('.lp-mini-g');
+    const blank = () => { vs.forEach(v => { v.textContent = ''; }); ss.forEach(x => x.classList.add('off')); okb.classList.remove('ready', 'press'); };
     // 左の順位: 点数を入れるたびに、合計の多い順へ入れかわる（FLIP＝動く前の位置から現在地へ縮めて見せる）
     const rank = document.getElementById('lp-mini-rank');
     const rankRow = i => rank && rank.querySelector(`[data-p="${i}"]`);
     const reorderRank = () => {
       if (!rank) return;
       const rows = [...rank.children], before = new Map(rows.map(el => [el, el.getBoundingClientRect()]));
-      [0, 1, 2, 3].slice().sort((a, b) => tot[b] - tot[a]).forEach((pi, i) => {
-        const el = rankRow(pi); rank.appendChild(el); el.querySelector('.lp-mini-rn').textContent = i + 1;
+      [0, 1, 2, 3].slice().sort((a, b) => tot[b] - tot[a] || a - b).forEach((pi, i) => {
+        const el = rankRow(pi); rank.appendChild(el);
+        el.querySelector('.lp-mini-md').innerHTML = medalSvg(i + 1, 24); el.querySelector('.lp-mini-ri').textContent = `${i + 1}位`;
       });
       rows.forEach(el => {
         const b = before.get(el), a = el.getBoundingClientRect(), dy = b.top - a.top;
+        el.classList.remove('pop', 'up'); void el.offsetWidth; el.classList.add('pop');
         if (!dy) return;
-        el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)`;
-        requestAnimationFrame(() => { el.style.transition = ''; el.style.transform = ''; });
+        if (dy > 0) { el.classList.add('up'); later(900, () => el.classList.remove('up')); }
+        el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)`; el.style.zIndex = dy > 0 ? 2 : 1; el.style.position = 'relative';
+        requestAnimationFrame(() => requestAnimationFrame(() => { el.style.transition = ''; el.style.transform = ''; }));
       });
     };
+    const setTot = (i, v) => { const rt = rankRow(i); if (!rt) return; const t = rt.querySelector('.lp-mini-rt'); t.querySelector('.lp-mini-rv').textContent = v == null ? '±0.0' : fmt(v); t.classList.remove('p', 'm'); if (v != null) tone(t, v); };
     const start = () => {
       tot.fill(0); blank(); ts.forEach(t => { t.textContent = '±0.0'; t.classList.remove('p', 'm'); });
       lines.forEach((l, i) => l.setAttribute('points', base[i][0].join(',')));
       label.textContent = '1試合目';
-      [0, 1, 2, 3].forEach(i => { const el = rankRow(i); if (el) { el.querySelector('.lp-mini-rt').textContent = '±0.0'; el.querySelector('.lp-mini-rt').classList.remove('p', 'm'); } });
-      reorderRank();
+      [0, 1, 2, 3].forEach(i => { const el = rankRow(i); if (!el) return; setTot(i, null); el.classList.remove('pop', 'up'); el.querySelector('.lp-mini-md').innerHTML = ''; el.querySelector('.lp-mini-ri').textContent = '—'; rank.appendChild(el); });
     };
     const stop = () => { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); };
     start();
@@ -8700,18 +8715,21 @@ function initLpMotion() {
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
       G[g].forEach((n, i) => later(i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
-      S[g].forEach((v, i) => later(1100 + i * 120, () => { ss[i].textContent = fmt(v); tone(ss[i], v); ss[i].classList.remove('off'); }));
-      later(1750, () => {
-        S[g].forEach((v, i) => {
-          tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]);
-          const rt = rankRow(i)?.querySelector('.lp-mini-rt'); if (rt) { rt.textContent = fmt(tot[i]); tone(rt, tot[i]); }
-        });
+      later(860, () => okb.classList.add('ready'));
+      later(1350, () => okb.classList.add('press'));
+      later(1520, () => {
+        okb.classList.remove('press');
+        S[g].forEach((v, i) => { ss[i].textContent = fmt(v); tone(ss[i], v); ss[i].classList.remove('off'); tot[i] = Math.round((tot[i] + v) * 10) / 10; ts[i].textContent = fmt(tot[i]); tone(ts[i], tot[i]); });
+        gridEl.classList.remove('hit'); void gridEl.offsetWidth; gridEl.classList.add('hit');
+      });
+      later(1950, () => {
+        S[g].forEach((v, i) => setTot(i, tot[i]));
         reorderRank();
         const t0 = performance.now();
         const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
         raf = requestAnimationFrame(step);
       });
-      if (g < 2) later(3300, () => game(g + 1));
+      if (g < 2) later(3900, () => game(g + 1));
     };
     // 戻るときは線を最初の点へ縮めて、空に戻す
     const rewind = () => {
@@ -8804,7 +8822,6 @@ function initLpSpark() {
     title.textContent = saved[key][1];
     lpSparkEnd();
   };
-  const redraw = () => { if (live.classList.contains('pre')) return; live.classList.add('pre'); void live.offsetHeight; requestAnimationFrame(() => requestAnimationFrame(() => live.classList.remove('pre'))); };
   // 数字は同じ節の成績表の、自分の列から
   const setKind = k => {
     const p = lpPeople(k).find(x => x.name === meName);
@@ -8819,7 +8836,7 @@ function initLpSpark() {
     live.querySelectorAll('.mc-grid > span').forEach(c => { const b = c.querySelector('b'), v = r[c.querySelector('small').textContent]; if (v == null) return; b.textContent = v; if (c.querySelector('small').textContent === '通算スコア') b.className = sign(v); });
     live.querySelector('.mc-bar').innerHTML = p.c.map((v, i) => { const w = v / p.n * 100; return w > 0 ? `<i class="${rkCls(i + 1, 4)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>` : ''; }).join('');
     live.querySelectorAll('.mp-it').forEach(c => { const l = c.querySelector('span').textContent, b = c.querySelector('b'), v = r[l]; if (v == null) return; b.textContent = v; b.className = l === '素点' || l === '順位点' ? sign(v) : l === '5万点以上' ? (parseFloat(v) > 0 ? 'pos' : '') : l === '箱下' ? (parseFloat(v) > 0 ? 'neg' : '') : ''; });
-    draw(); redraw();
+    draw();
   };
   seg.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setKind(['all', 'ind', 'team'][[...seg.children].indexOf(b)]); });
   trend.addEventListener('click', e => {
@@ -9107,16 +9124,19 @@ function initHowtoVideos() {
   const items = [...root.querySelectorAll('.hs')], cap = document.getElementById('howto-cap'), btn = document.getElementById('howto-again'), bar = root.querySelector('.lp-phone-bar');
   const M = v.dataset.marks.split(',').map(Number), TOPS = ['#7F7F7F', '#7F7F7F', '#7F7F7F', '#FFFFFF'];
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let cur = 0, raf = 0, guard = 0, visible = false;
+  const pic = document.getElementById('howto-still');
+  let cur = 0, raf = 0, guard = 0, visible = false, broken = false;
   v.muted = true; v.defaultMuted = true;
   const step = i => {
     if (i === cur) return;
     cur = i; bar.style.background = TOPS[i];
+    if (broken) pic.src = `/assets/screens/howto-${i + 1}.jpg`;
     items.forEach((el, j) => { el.classList.toggle('on', j === i); el.classList.toggle('done', j < i); });
     cap.innerHTML = `<h3>${i + 1}. ${items[i].querySelector('.hs-f').innerHTML}</h3><p>${items[i].querySelector('.hs-d').innerHTML}</p>`;
     cap.classList.remove('go'); void cap.offsetWidth; cap.classList.add('go');
   };
   const paint = () => {
+    if (broken) return;
     const t = v.currentTime;
     let i = 0; while (i < 3 && t >= M[i + 1]) i++;
     step(i);
@@ -9124,18 +9144,22 @@ function initHowtoVideos() {
   };
   const tick = () => { paint(); if (!v.paused) raf = requestAnimationFrame(tick); };
   const ask = text => { btn.textContent = text; btn.hidden = false; };
+  // 動画を読めない端末でも流れは見せる: 静止画に替えて、ステップを押すと画面が変わるようにする
+  const fallback = () => { broken = true; clearTimeout(guard); v.pause(); btn.hidden = true; pic.src = `/assets/screens/howto-${cur + 1}.jpg`; pic.hidden = false; };
   const start = () => {
+    if (broken) return;
     clearTimeout(guard); btn.hidden = true;
     const p = v.play();
-    if (p) p.catch(() => ask('再生する'));
+    if (p) p.catch(e => { if (v.error || (e && e.name === 'NotSupportedError')) fallback(); else ask('再生する'); });
     guard = setTimeout(() => { if (visible && v.paused && !v.ended) ask('再生する'); }, 1800);
   };
   const seek = t => { if (v.readyState >= 1) v.currentTime = t; else v.addEventListener('loadedmetadata', () => { v.currentTime = t; }, { once: true }); };
   // i: ステップの番号。-1 は「再生する」「もう一度見る」のボタン（終わっていれば最初から、途中ならその続きから）
   howtoGo = i => {
-    if (i >= 0) seek(M[i] + 0.02); else if (v.ended) seek(0);
+    if (i >= 0) { step(i); items.forEach((el, j) => el.querySelector('.hs-bar i').style.setProperty('--p', j < i ? 1 : 0)); seek(M[i] + 0.02); } else if (v.ended) seek(0);
     start();
   };
+  v.addEventListener('error', fallback);
   v.addEventListener('play', () => { btn.hidden = true; cancelAnimationFrame(raf); tick(); });
   v.addEventListener('timeupdate', paint);
   v.addEventListener('seeked', paint);
