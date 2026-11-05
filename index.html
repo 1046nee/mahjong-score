@@ -313,9 +313,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 
 /* ⑥ Before / After 比較表 */
-.lp-compare { background: #E4F3EC; }
+/* 地の色は1つおきに白を挟み、色つきは緑→青→緑→青と回す（節の境目がいつも同じ強さで見え、順番を変えても決まりで塗れる。2026-11-05） */
+.lp-compare, .lp-minis { background: #fff; }
+.lp-minis h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 18px; }
+.lp-minis .lp-mini { margin-bottom: 0; }
 .lp-compare h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; margin-bottom: 24px; }
-.compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.compare-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px #E3E9E7, 0 6px 18px rgba(0,0,0,0.07); }
 .compare-table th { font-size: 14px; padding: 12px 10px; text-align: center; }
 .compare-table { table-layout: fixed; }
 .compare-table th.before { background: #E3E8E7; color: #6B7A77; width: 40%; }
@@ -411,7 +414,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .start-note strong { color: #E75620; font-size: 24px; font-weight: 900; -webkit-text-stroke: .6px #E75620; } /* オレンジは細く見えるので、字の縁を足して周りの字と同じ太さに見せる（iPhoneの字は太さに上限がある） */
 
 /* ⑧ クロージング: 薄緑＋ミニイラスト＋バッジ＋オレンジCTA */
-.lp-close { background: #E4F3EC; text-align: center; }
+.lp-close { background: #EAF0FB; text-align: center; }
 .lp-close .close-illust { margin: 0 auto 10px; max-width: 210px; }
 .lp-close .close-illust svg { width: 100%; height: auto; display: block; }
 .lp-close h2 { font-size: 22px; font-weight: 900; color: #1a1a1a; margin-bottom: 16px; line-height: 1.6; }
@@ -456,7 +459,8 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 /* 使い方（＋お気に入り登録の案内）は白の地。中身の幅は600pxのまま、白は画面の端まで広げる */
-.lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); }
+.lp-howto-wrap { background: #E4F3EC; box-shadow: 0 0 0 100vmax #E4F3EC; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 40px; }
+.howto-note { margin-top: 14px; text-align: center; }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
 .info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
@@ -484,9 +488,9 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-play { margin-top: 14px; }
 .howto-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .hs button { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; }
-.hs-bar { display: block; height: 6px; border-radius: 3px; overflow: hidden; background: #DCE6E3; }
+.hs-bar { display: block; height: 6px; border-radius: 3px; overflow: hidden; background: #C9DDD5; }
 .hs-bar i { display: block; width: 100%; height: 100%; background: #177083; transform: scaleX(var(--p, 0)); transform-origin: left; }
-.hs-n { display: grid; place-items: center; width: 30px; height: 30px; margin: 8px auto 3px; border-radius: 50%; background: #DCE6E3; color: #5F6E6B; font-size: 15px; font-weight: 900; line-height: 1; transition: background .25s, color .25s; }
+.hs-n { display: grid; place-items: center; width: 30px; height: 30px; margin: 8px auto 3px; border-radius: 50%; background: #C9DDD5; color: #5F6E6B; font-size: 15px; font-weight: 900; line-height: 1; transition: background .25s, color .25s; }
 .hs.done .hs-n, .hs.on .hs-n { background: #177083; color: #fff; }
 .hs.on .hs-n { animation: lp-pop .42s ease both; }
 .hs-t { display: block; font-size: 12px; font-weight: 800; line-height: 1.35; color: #8A9694; transition: color .25s; } .hs.on .hs-t { color: #177083; } .hs.done .hs-t { color: #1F2A28; }
@@ -2827,6 +2831,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
+<!-- ⑥ Before / After 比較（薄緑） -->
+  <section class="lp-section lp-compare">
+    <div class="lp-inner">
+      <h2 style="word-break:keep-all">手書きのスコア表は、<wbr>もう卒業。</h2>
+      <table class="compare-table" id="lp-compare">
+        <thead>
+          <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="before"><span>記録が面倒</span></td><td class="after"><span>入れるだけで完了</span></td></tr>
+          <tr><td class="before"><span>ウマ・オカ計算</span></td><td class="after"><span>全部自動で計算</span></td></tr>
+          <tr><td class="before"><span>何度も検算</span></td><td class="after"><span>成績もグラフも自動</span></td></tr>
+          <tr><td class="before"><span>電卓・紙・ペン</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
+        </tbody>
+      </table>
+      <p class="start-note" style="margin-top:22px;text-align:center;word-break:keep-all">面倒な計算は、<wbr><strong>全部</strong> まじゃすこへ。</p>
+    </div>
+  </section>
+
 <!-- 本当の記録の画面の切り抜き（名前は置きかえ）。スマホの枠は付けない＝使い方の節と並べない（2026-11-04） -->
   <section class="lp-section lp-screens">
     <div class="lp-inner">
@@ -3604,6 +3627,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </section>
 
+  <!-- 小窓: 点数を入れるとスコアと順位が動く -->
+  <section class="lp-section lp-minis">
+    <div class="lp-inner">
+      <h2>表示点数を入れるだけ。</h2>
+      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#D4A017"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#3B2C00" font-family="-apple-system,BlinkMacSystemFont,sans-serif">1</text></svg></span><span class="lp-mini-ri">1位</span></span><span class="lp-mini-rc" style="color:#e60012">A</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+71.3</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#9AA5AD"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A28" font-family="-apple-system,BlinkMacSystemFont,sans-serif">2</text></svg></span><span class="lp-mini-ri">2位</span></span><span class="lp-mini-rc" style="color:#00a040">C</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+6.9</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#C97B3F"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#2E1A0A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">3</text></svg></span><span class="lp-mini-ri">3位</span></span><span class="lp-mini-rc" style="color:#0075c2">B</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−36.2</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">4</text></svg></span><span class="lp-mini-ri">4位</span></span><span class="lp-mini-rc" style="color:#f39800">D</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−42.0</b><small>pts</small></span></div></div><div class="lp-mini-in"><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><span class="lp-mini-ok ready" id="lp-mini-ok">入力完了</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+    </div>
+  </section>
+
 <!-- 使い方＋番外編（ヒーロー直下。特徴系セクションより先に見せる） -->
 <div class="home-content lp-howto-wrap">
     <section class="howto" id="howto">
@@ -3620,49 +3651,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=5" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,3.36,12.44,18.72,29.32" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
       </div>
+      <p class="start-note howto-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
     </section>
 
   </div>
-
-<!-- ここから下がLP本体（逆ピラミッド型） -->
-
-  <!-- ⑦ 始めやすさ（薄青: 3ステップ） -->
-  <section class="lp-section lp-start">
-    <div class="lp-inner">
-      <h2>必要なものはスマホのみ。</h2>
-      <div class="steps" id="lp-steps"><span class="steps-line" aria-hidden="true"><i></i></span>
-        <div class="step"><span class="step-num">1</span><span class="step-text">メンバーの名前を入れる</span></div>
-        <div class="step"><span class="step-num">2</span><span class="step-text">URLをシェアする</span></div>
-        <div class="step"><span class="step-num">3</span><span class="step-text">試合後、表示点数を入れるだけ</span></div>
-      </div>
-      <p class="start-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
-    </div>
-  </section>
-
-  <!-- ⑥ Before / After 比較（薄緑） -->
-  <section class="lp-section lp-compare">
-    <div class="lp-inner">
-      <h2 style="word-break:keep-all">手書きのスコア表は、<wbr>もう卒業。</h2>
-      <table class="compare-table" id="lp-compare">
-        <thead>
-          <tr><th class="before">これまで</th><th class="after">まじゃすこ</th></tr>
-        </thead>
-        <tbody>
-          <tr><td class="before"><span>記録が面倒</span></td><td class="after"><span>入れるだけで完了</span></td></tr>
-          <tr><td class="before"><span>ウマ・オカ計算</span></td><td class="after"><span>全部自動で計算</span></td></tr>
-          <tr><td class="before"><span>何度も検算</span></td><td class="after"><span>成績もグラフも自動</span></td></tr>
-          <tr><td class="before"><span>電卓・紙・ペン</span></td><td class="after"><span>スマホ1台のみ</span></td></tr>
-        </tbody>
-      </table>
-      <p class="start-note" style="margin-top:22px;text-align:center;word-break:keep-all">面倒な計算は、<wbr><strong>全部</strong> まじゃすこへ。</p>
-    </div>
-  </section>
 
   <!-- ⑤ 3つの価値（白＋緑/青アイコン） -->
   <section class="lp-section lp-solution">
     <div class="lp-inner">
       <h2>スマホ1台で、ここまでできる。</h2>
-      <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#D4A017"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#3B2C00" font-family="-apple-system,BlinkMacSystemFont,sans-serif">1</text></svg></span><span class="lp-mini-ri">1位</span></span><span class="lp-mini-rc" style="color:#e60012">A</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+71.3</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#9AA5AD"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A28" font-family="-apple-system,BlinkMacSystemFont,sans-serif">2</text></svg></span><span class="lp-mini-ri">2位</span></span><span class="lp-mini-rc" style="color:#00a040">C</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+6.9</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#C97B3F"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#2E1A0A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">3</text></svg></span><span class="lp-mini-ri">3位</span></span><span class="lp-mini-rc" style="color:#0075c2">B</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−36.2</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">4</text></svg></span><span class="lp-mini-ri">4位</span></span><span class="lp-mini-rc" style="color:#f39800">D</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−42.0</b><small>pts</small></span></div></div><div class="lp-mini-in"><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><span class="lp-mini-ok ready" id="lp-mini-ok">入力完了</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
 <div class="features-wrap">
                 <div class="features-row" id="features-row">
         <div class="feature">
@@ -8661,7 +8658,7 @@ function initLpMotion() {
   };
   // 比較・見出し: .pre の付け外しで進む・戻る。.js（動きの指定）は完成形から .pre にしたあとで付ける（最初の準備を動かさない）
   const cmp = document.getElementById('lp-compare');
-  const heads = [...document.querySelectorAll('.lp-start h2, .lp-compare h2')];
+  const heads = [...document.querySelectorAll('.lp-compare h2, .lp-minis h2')];
   heads.forEach(h => { h.innerHTML = '<span class="lp-m"><span class="lp-r">' + h.innerHTML + '</span></span>'; h.classList.add('pre'); });
   if (cmp) cmp.classList.add('pre');
   void document.body.offsetHeight;
