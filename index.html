@@ -239,11 +239,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-live-in > .card.card { margin: 0; padding: 12px 14px; border: 0; border-radius: 0; box-shadow: none; }
 .lp-live-in .mp-sec { margin: 0; } .lp-live-in .card-head-row { min-height: 0; } /* 本番は #mp-pane-hist で余白を消しているので、id を外した複製には同じ指定を書く */ .lp-live-in .history-body { padding: 0; gap: 0; overflow: visible; } .lp-live-in .hist-viewseg { margin-bottom: 0; }
 /* 自分の成績（1枚目）だけは押せない見本（数字とグラフをLPだけで動かすため）。他はすべて本物どおり指で操作できる */
-.lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; } .lp-live .mc-trend { pointer-events: auto; } /* グラフの年月日と横スクロールだけ触れる */
+.lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; } .lp-live .mc-trend, .lp-live .sk-seg { pointer-events: auto; } /* 合計/個人戦/チーム戦とグラフだけ触れる */
 .lp-live-in .mc-scroll { overscroll-behavior-x: contain; } .lp-live-in .sp-hit { pointer-events: none; }
 .lp-touch, .lp-touch-multi .lp-live-pane { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .lp-touch-multi { overflow: hidden; }
 #lp-live-rank .pd, #lp-live-rank .lb-cell, .lp-kind-wrap td[title], #lp-live-games .ht, #lp-live-games .gr { cursor: pointer; }
+/* 概要のシートは画面を埋めない（中身が長いときは中でスクロール。上にLPが見えていると、閉じられるとわかる） */
+#form-modal:has(.sheet-body.lp-sheet) .form-modal-box { max-height: min(74svh, 600px); }
 .lp-sh-who { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 2px 0 12px; font-size: 13px; font-weight: 800; color: #5F6E6B; }
 .lp-sh-who .pp-av { flex: none; }
 .lp-vs { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; text-align: center; }
@@ -8777,30 +8779,55 @@ function initLpSpark() {
       const d = t.querySelector('.ht-d').textContent.split('/').map(Number), b = t.querySelector('.ht-sc b');
       if (t.querySelector('.ht-lb') || !b) return;
       const sc = parseFloat(b.textContent.replace(/,/g, '').replace('−', '-'));
-      if (Number.isFinite(sc)) hist.push({ t: new Date(y, d[0] - 1, d[1], 12).getTime(), sc, o: hist.length });
+      if (Number.isFinite(sc)) hist.push({ t: new Date(y, d[0] - 1, d[1], 12).getTime(), sc, o: hist.length, tm: t.classList.contains('tm') });
     });
   });
-  const list = sortHist(hist), total = list.reduce((a, x) => a + x.sc, 0);
-  const trend = live.querySelector('.mc-trend'), title = trend.querySelector('.mc-trend-h small');
-  const saved = { m: [trend.querySelector('.mc-spark-row').outerHTML, title.textContent] };
-  trend.addEventListener('click', e => {
-    const b = e.target.closest('.sp-unit button');
-    if (!b) return;
-    const u = ['y', 'm', 'd'][[...b.parentElement.children].indexOf(b)];
-    [...b.parentElement.children].forEach(x => x.classList.toggle('on', x === b));
-    if (!saved[u]) {
-      const keep = sparkUnit; sparkUnit = u;
+  const all = sortHist(hist);
+  const trend = live.querySelector('.mc-trend'), title = trend.querySelector('.mc-trend-h small'), seg = live.querySelector('.sk-seg');
+  const saved = { allm: [trend.querySelector('.mc-spark-row').outerHTML, title.textContent] };
+  const meName = (document.querySelector('#lp-live-games .gm-as') || {}).textContent;
+  let kind = 'all', unit = 'm';
+  const draw = () => {
+    const key = kind + unit;
+    if (!saved[key]) {
+      const list = all.filter(x => kind === 'all' || (kind === 'team') === x.tm), keep = sparkUnit;
+      sparkUnit = unit;
       const box = document.createElement('div');
-      box.innerHTML = miniSparkHtml(list, 4, total);
+      box.innerHTML = miniSparkHtml(list, 4, list.reduce((a, x) => a + x.sc, 0));
       const count = sparkUnitCount(list); sparkUnit = keep;
       box.querySelectorAll('.sp-pop, .sp-ring, .sp-lab').forEach(x => x.remove());
       box.querySelectorAll('*').forEach(x => [...x.attributes].forEach(a => { if (/^on|^data-|^role$|^aria-/.test(a.name)) x.removeAttribute(a.name); }));
-      saved[u] = [box.innerHTML, `通算スコアの推移（${count}）`];
+      saved[key] = [box.innerHTML, `通算スコアの推移（${count}）`];
     }
     trend.querySelectorAll('.mc-spark-row, .sp-pop').forEach(x => x.remove());
-    trend.insertAdjacentHTML('beforeend', saved[u][0]);
-    title.textContent = saved[u][1];
+    trend.insertAdjacentHTML('beforeend', saved[key][0]);
+    title.textContent = saved[key][1];
     lpSparkEnd();
+  };
+  const redraw = () => { if (live.classList.contains('pre')) return; live.classList.add('pre'); void live.offsetHeight; requestAnimationFrame(() => requestAnimationFrame(() => live.classList.remove('pre'))); };
+  // 数字は同じ節の成績表の、自分の列から
+  const setKind = k => {
+    const p = lpPeople(k).find(x => x.name === meName);
+    if (!p) return;
+    kind = k;
+    const r = p.raw, sign = t => (/^\+/.test(t) ? 'pos' : /^[-−]/.test(t) ? 'neg' : '');
+    [...seg.children].forEach((b, i) => b.classList.toggle('on', ['all', 'ind', 'team'][i] === k));
+    seg.classList.toggle('filt', k !== 'all');
+    live.querySelector('.mc-head > span').textContent = gamesRoundsText(r['ゲーム数'], r['試合数']);
+    const cond = live.querySelector('.mc-cond');
+    if (cond) cond.textContent = `条件：すべての期間 ・ ${{ all: '個人戦＋チーム戦', ind: '個人戦のみ', team: 'チーム戦のみ' }[k]}`;
+    live.querySelectorAll('.mc-grid > span').forEach(c => { const b = c.querySelector('b'), v = r[c.querySelector('small').textContent]; if (v == null) return; b.textContent = v; if (c.querySelector('small').textContent === '通算スコア') b.className = sign(v); });
+    live.querySelector('.mc-bar').innerHTML = p.c.map((v, i) => { const w = v / p.n * 100; return w > 0 ? `<i class="${rkCls(i + 1, 4)}" style="width:${w.toFixed(2)}%">${w >= 18 ? `${i + 1}着 ${Math.round(w)}%` : w >= 9 ? Math.round(w) + '%' : ''}</i>` : ''; }).join('');
+    live.querySelectorAll('.mp-it').forEach(c => { const l = c.querySelector('span').textContent, b = c.querySelector('b'), v = r[l]; if (v == null) return; b.textContent = v; b.className = l === '素点' || l === '順位点' ? sign(v) : l === '5万点以上' ? (parseFloat(v) > 0 ? 'pos' : '') : l === '箱下' ? (parseFloat(v) > 0 ? 'neg' : '') : ''; });
+    draw(); redraw();
+  };
+  seg.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setKind(['all', 'ind', 'team'][[...seg.children].indexOf(b)]); });
+  trend.addEventListener('click', e => {
+    const b = e.target.closest('.sp-unit button');
+    if (!b) return;
+    unit = ['y', 'm', 'd'][[...b.parentElement.children].indexOf(b)];
+    [...b.parentElement.children].forEach(x => x.classList.toggle('on', x === b));
+    draw();
     const line = trend.querySelector('.mc-line');
     if (line && !live.classList.contains('pre')) { line.style.transition = 'none'; line.style.clipPath = `inset(0 ${live.style.getPropertyValue('--c0')} 0 0)`; void line.getBoundingClientRect(); line.style.transition = ''; line.style.clipPath = ''; }
   });
@@ -8808,10 +8835,13 @@ function initLpSpark() {
 // 成績表・総当たり表のLPデモ: 本物の合計/個人戦/チーム戦ボタンを押すと、撮っておいた3状態のうち1つに切りかえる
 // 成績の節の概要は本番と同じシート（#form-modal）に出す。名前と顔は順位の表から集める（lpFaces）
 const lpFaces = {};
+let lpPeople = () => [];
 function lpSheet(title, html) {
   document.getElementById('form-modal-title').textContent = title;
-  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${html}<button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
-  document.getElementById('form-modal').classList.add('open');
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body lp-sheet">${html}<button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  const m = document.getElementById('form-modal');
+  m.classList.add('open');
+  m.querySelector('.form-modal-box').scrollTop = 0;
 }
 function lpAvHtml(name, size) {
   const f = lpFaces[name] || { bg: '#757575', ini: name.slice(0, 1) };
@@ -8888,6 +8918,7 @@ function initLpRank() {
         txt: { score: rows['通算スコア'][i], avg: rows['平均着順'][i], top: rows['トップ率'][i], las: rows['ラス回避'][i], pmax: rows['最高点数'][i], pmin: rows['最低点数'][i] } };
     }).filter(p => p.n > 0);
   };
+  lpPeople = people;
   const cls = v => v > 0 ? 'pos' : v < 0 ? 'neg' : '';
   const build = (kind, m) => {
     const asc = m === 'avg' || m === 'pmin', key = v => (Number.isFinite(v) ? v : asc ? Infinity : -Infinity);
@@ -9013,8 +9044,9 @@ function initLpGames() {
   const gameSheet = el => {
     let t = el;
     if (el.classList.contains('gr')) {
-      const y = parseInt(head(el.closest('.yr-sec')), 10), day = el.querySelector('.gr-date').textContent.split('（')[0], nm = el.querySelector('.gr-name').textContent;
-      const it = items.find(x => x.y === y && x.el.querySelector('.ht-d').textContent === day && x.el.querySelector('.ht-name').textContent === nm);
+      const y = parseInt(head(el.closest('.yr-sec')), 10), day = (el.querySelector('.gr-date').textContent.match(/\d+\/\d+/g) || []), nm = el.querySelector('.gr-name').textContent;
+      const same = items.filter(x => x.y === y && x.el.querySelector('.ht-name').textContent === nm);
+      const it = same.find(x => day.includes(x.el.querySelector('.ht-d').textContent)) || same[0];
       if (!it) return;
       t = it.el;
     }
@@ -9026,7 +9058,8 @@ function initLpGames() {
     const faces = [...t.querySelectorAll('.ht-avs i')], more = faces.find(f => f.classList.contains('more'));
     const rows = faces.filter(f => f !== more).map(f => { const nm = whoOf(f); return `<div class="rs-row${f.classList.contains('me') ? ' me' : ''}"><span class="pp-av" style="background:${f.style.background};width:26px;height:26px;font-size:12px;flex:none">${esc(f.textContent.trim())}</span><span class="rs-nm">${esc(nm || '')}${f.classList.contains('me') ? '<small>あなた</small>' : ''}</span></div>`; }).join('');
     lpSheet(t.querySelector('.ht-name').textContent, `<div class="mn-sub">${esc(meta)}</div>${res}
-      <div class="card-title" style="margin:14px 0 6px">打った人（スコアの順）</div><div class="rs-box">${rows}${more ? `<div class="rs-row"><span class="rs-nm">ほか${esc(more.textContent.replace('+', ''))}人</span></div>` : ''}</div>`);
+      <div class="card-title" style="margin:14px 0 6px">打った人（スコアの順）</div><div class="rs-box">${rows}${more ? `<div class="rs-row"><span class="rs-nm">ほか${esc(more.textContent.replace('+', ''))}人</span></div>` : ''}</div>
+      ${lpLockHtml(['総合順位', '試合1の結果', '試合2の結果', 'スコア推移'].map((l, i) => `<div class="lp-lock-row"><span>${l}</span><span>${['+68.9', '45,200', '31,800', '+12.4'][i]}</span></div>`).join(''), '全員のスコアと順位、試合ごとの点数、個人成績、スコアの推移まで見られます')}`);
   };
   host.addEventListener('click', e => {
     const yr = e.target.closest('.yr-h');

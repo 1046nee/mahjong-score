@@ -346,12 +346,14 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 
 /* ---- まじゃすこの牌（assets/tiles/）を記事に並べる（2026-10-23）: 手牌・あがり牌（オレンジの下地）・鳴いた面子 ---- */
 .blog-post .hand { display: inline-flex; align-items: flex-end; flex-wrap: wrap; gap: 4px 0; max-width: 100%; }
-.blog-post .hand img { display: block; height: auto; margin-right: 1px; }
+.blog-post .hand img { display: block; flex: none; height: auto; margin-right: 1px; } /* 枠に入らないときに牌が縮んで重ならないように */
 .blog-post .h-in, .blog-post .h-win, .blog-post .h-meld, .blog-post .meld { display: inline-flex; align-items: flex-end; }
 .blog-post .h-win { margin-left: 6px; padding: 2px; background: #FFE2D3; border-radius: 4px; }
 .blog-post .h-meld { margin-left: 8px; gap: 6px; }
 .blog-post .yaku-ex { margin: 2px 0 18px; padding: 10px 10px 8px; background: #F7F9F8; border: 1px solid #E3E9E7; border-radius: 6px; overflow-x: auto; }
-.blog-post .yaku-ex .hand { flex-wrap: nowrap; }
+.blog-post .yaku-ex .hand { flex-wrap: wrap; } /* 槓子が増えて1行に入らないときは、鳴いた牌をまとめて次の行へ */
+.blog-post .h-meld { flex-wrap: wrap; row-gap: 4px; }
+@media (max-width: 345px) { .blog-post .yaku-ex .hand img { width: 16px; } .blog-post .yaku-ex .hand img[src*="-yoko"] { width: 22px; } .blog-post .yaku-ex .h-meld img { width: 14px; } .blog-post .yaku-ex .h-meld img[src*="-yoko"] { width: 19px; } }
 @media (max-width: 480px) { .blog-post .yaku-ex { padding: 8px 6px 6px; } .blog-post .yaku-ex .hand img { width: 18px; } .blog-post .yaku-ex .hand img[src*="-yoko"] { width: 24px; } .blog-post .h-win { margin-left: 4px; } .blog-post .h-meld { margin-left: 5px; gap: 4px; } }
 .blog-post h3 .han { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 800; color: #136070; background: #E4F3EC; border-radius: 3px; padding: 1px 7px; vertical-align: 2px; }
 .blog-post table.yaku-tbl td small { display: block; font-size: 11px; color: #6B7A77; }
@@ -489,6 +491,7 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc { background: #F3F6F5; }
 .blog-post table.dj-tbl td.dj-cell img { display: inline-block; vertical-align: bottom; margin-right: 1px; }
 @media (max-width: 480px) { .blog-post .dj-hand .hand img { width: 20px; } .blog-post .dj-q { padding: 8px 6px 6px 8px; } }
 @media (max-width: 360px) { .blog-post .dj-hand .hand img { width: 18px; } }
+@media (max-width: 345px) { .blog-post .dj-hand .hand img { width: 17px; } }
 /* ---- 麻雀用語の漢字の意味（blog-mahjong-kanji.html・2026-10-23） ---- */
 .blog-post table.kj-tbl td small, .blog-post table.kj-tbl th small { display: block; font-size: 11px; font-weight: 500; color: #6B7A77; }
 .blog-post table.kj-tbl .kj-big { font-size: 20px; font-weight: 900; color: #1F2A28; }
