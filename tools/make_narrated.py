@@ -54,8 +54,28 @@ def vv_post(path, body=None, ctype="application/json"):
     r = urllib.request.Request(VV_URL + path, data=body if body is not None else b"", headers={"Content-Type": ctype}, method="POST")
     return urllib.request.build_opener(urllib.request.ProxyHandler({})).open(r, timeout=120).read()
 
+# 読みとアクセントの直し（2026-11-05 ユーザーの指摘）。エンジンの辞書はそのPCにしか残らないので、毎回ここから入れる
+VV_WORDS = [("まじゃすこ", "マジャスコ", 0), ("その場", "ソノバ", 0), ("ユーアールエル", "ユーアールエル", 5)]
+# 辞書で直らない語は、アクセント句の読みの頭で見つけて下がる位置を直す（0 = 平板）
+VV_ACCENT = {"マアジャン": 1, "シュウケエ": 0, "ムリョオ": 1}
+
+def vv_dict():
+    have = {(w["surface"], w["pronunciation"]) for w in json.loads(urllib.request.build_opener(urllib.request.ProxyHandler({})).open(VV_URL + "/user_dict", timeout=30).read()).values()}
+    for sf, pr, ac in VV_WORDS:
+        if (sf, pr) not in have and (sf.translate({i: i + 0xFEE0 for i in range(0x21, 0x7F)}), pr) not in have:
+            vv_post("/user_dict_word?" + urllib.parse.urlencode({"surface": sf, "pronunciation": pr, "accent_type": ac, "word_type": "PROPER_NOUN", "priority": 10}))
+
 def vv_query(text):
-    return json.loads(vv_post("/audio_query?" + urllib.parse.urlencode({"text": say(text), "speaker": VV[0]})))
+    q = json.loads(vv_post("/audio_query?" + urllib.parse.urlencode({"text": say(text), "speaker": VV[0]})))
+    hit = False
+    for a in q["accent_phrases"]:
+        kana = "".join(m["text"] for m in a["moras"])
+        for k, ac in VV_ACCENT.items():
+            if kana.startswith(k):
+                a["accent"] = ac or len(a["moras"]); hit = True
+    if hit:
+        q["accent_phrases"] = json.loads(vv_post(f"/mora_pitch?speaker={VV[0]}", json.dumps(q["accent_phrases"]).encode("utf-8")))
+    return q
 
 def vv_len(q):
     return sum(m["vowel_length"] + (m.get("consonant_length") or 0) for a in q["accent_phrases"] for m in a["moras"] + ([a["pause_mora"]] if a.get("pause_mora") else []))
@@ -187,7 +207,7 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     out = None
     if "--vv" in a:
-        k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2])
+        k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2]); vv_dict()
         if len(a) > k + 3: out = a[k + 3]
         a = a[:k]
     only = a[0] if a else ""
