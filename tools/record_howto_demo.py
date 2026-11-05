@@ -37,7 +37,11 @@ window.demoLine = {
       #dl .r em{margin-left:auto;width:24px;height:24px;border-radius:50%;border:2px solid #C3CECB;display:grid;place-items:center;color:#fff;font-style:normal;font-size:14px}
       #dl .r.on em{background:#06C755;border-color:#06C755}
       #dl .t{flex:1;background:#8CABD8;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-      #dl .m{max-width:80%;padding:10px 12px;border-radius:14px;background:#A8E06C;font-size:14px;line-height:1.55;word-break:break-all}`;
+      #dl .m{max-width:80%;padding:10px 12px;border-radius:14px;background:#A8E06C;font-size:14px;line-height:1.55;word-break:break-all}
+      #dl .y{align-self:flex-start;display:flex;align-items:flex-start;gap:8px;animation:dlin .25s ease both} #dl .y i{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-style:normal;font-size:13px;font-weight:800}
+      #dl .y small{display:block;margin-bottom:2px;font-size:11px;color:#fff} #dl .y .m{background:#fff}
+      #dl .y img{display:block;width:74px;height:auto;filter:drop-shadow(0 3px 5px rgba(0,0,0,.25))} #dl .y em{display:block;margin-top:3px;padding:1px 8px;border-radius:9px;background:#E75620;color:#fff;font-style:normal;font-size:13px;font-weight:800;text-align:center}
+      @keyframes dlin{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}`;
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     const d = document.createElement('div'); d.id = 'dl';
     d.innerHTML = `<div class="h"><span>キャンセル</span>送信先を選択<b id="dl-send">送信</b></div><div class="q">検索</div><div class="l">グループ</div>
@@ -47,6 +51,8 @@ window.demoLine = {
     document.getElementById('dl-g').onclick = e => { e.currentTarget.classList.add('on'); document.getElementById('dl-send').classList.add('on'); };
     document.getElementById('dl-send').onclick = () => { d.innerHTML = '<div class="h">麻雀グループ（4）</div><div class="t"><div class="m">今日のスコアはここから見られます<br>https://majasco.jp/#L7Nv5rXUS</div></div>'; };
   },
+  // 仲間からの返信。スタンプはサイトの牌の絵（LINEのスタンプは使わない）
+  reply(name, color, html) { const y = document.createElement('div'); y.className = 'y'; y.innerHTML = `<i style="background:${color}">${name.slice(0, 1)}</i><div><small>${name}</small>${html}</div>`; document.querySelector('#dl .t').appendChild(y); },
   close() { const d = document.getElementById('dl'); if (d) d.remove(); },
 };
 """
@@ -75,8 +81,8 @@ def record():
         ctx.grant_permissions(["clipboard-read", "clipboard-write"])  # コピーが失敗すると生のURLがトーストに出てしまうため
         ctx.add_init_script(TAP_FX)
         ctx.add_init_script(LINE_MOCK)
-        t0 = time.time()  # 動画の録画はページ生成の瞬間から始まるので、ここを0秒とする
         page = ctx.new_page()
+        t0 = time.time()  # 動画はページができてから始まる。ページを作る前を0秒にすると、切れ目が約1秒ずれて次の画面が映りこむ
 
         def route_firebase(route):
             body = FIREBASE_STUB if "firebase-app-compat" in route.request.url else "/* stub */"
@@ -101,6 +107,7 @@ def record():
         page.wait_for_selector("#view-game.active", timeout=10000)
         page.wait_for_timeout(1000)
         mark("step1_end")
+        page.wait_for_timeout(350)
 
         # ---- 2. URLをメンバーにシェアする ----
         page.click("#view-game button:has-text('共有')")
@@ -120,9 +127,15 @@ def record():
         demo_tap("#dl-g")
         page.wait_for_timeout(700)
         demo_tap("#dl-send")
-        page.wait_for_timeout(1500)
-        mark("step2_end")  # 2は送った画面で終わる。閉じるところは見せない
-        page.wait_for_timeout(200)
+        page.wait_for_timeout(900)
+        page.evaluate("""demoLine.reply('ゆうた', '#4261AA', '<div class="m">ありがとう！見れた</div>')""")
+        page.wait_for_timeout(800)
+        page.evaluate("""demoLine.reply('さとし', '#C07A22', '<img src="/assets/tiles/z7.svg" alt=""><em>了解！</em>')""")
+        page.wait_for_timeout(800)
+        page.evaluate("""demoLine.reply('けんじ', '#5FA3A6', '<div class="m">点数の入力もできるね</div>')""")
+        page.wait_for_timeout(1400)
+        mark("step2_end")  # 2は仲間の返信で終わる。まじゃすこの画面には戻らない
+        page.wait_for_timeout(700)
         page.evaluate("demoLine.close()")
         page.wait_for_timeout(250)
         page.click(".sheet-close")
@@ -156,6 +169,7 @@ def record():
         enter_round(["483", "267", "182"], delay=110, pause=350)
         page.wait_for_timeout(1300)  # 総合順位が動くのを見せる
         mark("step3_end")
+        page.wait_for_timeout(700)  # 切れ目に次の点数入力が映らないように
 
         # ---- 4. 結果はリアルタイムで全員に（2・3試合目は素早く入力） ----
         enter_round(["312", "356", "204"], delay=55, pause=150)

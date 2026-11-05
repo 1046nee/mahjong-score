@@ -34,8 +34,7 @@ def main():
     PAD = 0.15
     for i in range(4):
         a2, b2 = segs[i]
-        if i != 2: a2 = max(segs[0][0], a2 - PAD)  # 3の最初は閉じる途中を映さない
-        if i != 1: b2 = min(segs[3][1], b2 + PAD)  # 2の最後も同じ
+        if i < 3: b2 -= PAD if i else 0.5  # 切れ目の最後のコマは止めて見せるので、次の画面が映らないように手前で切る（1の直後は共有を押すので長めに）
         out = os.path.join(SITE, f"howto-{i + 1}.mp4")
         subprocess.run([ff, "-y", "-ss", f"{a2:.2f}", "-to", f"{b2:.2f}", "-i", raw_mp4,
                         "-an", "-c:v", "libx264", "-crf", "22", "-pix_fmt", "yuv420p",
