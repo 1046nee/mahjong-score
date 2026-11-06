@@ -1055,3 +1055,7 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
   .side-more-h { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; font-size: 14px; font-weight: 900; color: #1F2A28; }
   .side-more-h::before, .side-more-h::after { content: ""; flex: 1; height: 1.5px; background: #C9D6D2; }
 }
+
+/* 読みものの組の境目に薄い線（LPと同じ #C9D6D2・2026-11-06 ユーザーの指定） */
+.side .rd-box + .rd-box { border-top: 1.5px solid #C9D6D2; padding-top: 16px; }
+@media (max-width: 900px) { .side .rd-box + .rd-box { padding-top: 18px; margin-top: 18px; } }

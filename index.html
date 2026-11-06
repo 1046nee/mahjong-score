@@ -221,6 +221,7 @@ figure[data-team-demo] .lp-shot { background: #DBF4F9; } /* 中を上下に引�
 
   #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; padding-left: 32px; padding-right: 32px; }
   #view-home .lp-art-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 20px; }
+  #view-home .lp-art-cols > .lp-art-g + .lp-art-g { border-top: 0; padding-top: 0; margin-top: 0; } /* 横に並ぶときは組の間に線を引かない（その他の上だけ） */
   #view-home .lp-art-more { max-width: calc((100% - 40px) / 3); margin-left: auto; margin-right: auto; } /* 「その他」は1列分の幅で真ん中 */
   #view-home .lp-arts .post-card.has-thumb { grid-template-columns: 88px 1fr; gap: 12px; }
   .global-header-wrap { max-width: none; }
@@ -296,6 +297,10 @@ figure[data-team-demo] .lp-shot { background: #DBF4F9; } /* 中を上下に引�
 .lp-arts > p { margin: 6px 0 18px; font-size: 14px; line-height: 1.7; text-align: center; color: #5F6E6B; word-break: keep-all; }
 .lp-art-cols, .lp-art-more { display: grid; gap: 16px; }
 .lp-art-more { margin-top: 20px; } .lp-arts .lp-art-more + .read-more-link { margin-top: 18px; }
+/* 記事の案内の前後と、組（初心者向け・Mリーグ・プロ情報…）の境目に薄い線（2026-11-06 ユーザーの指定。ブログの「ほかにも、こんな記事があります」と同じ線） */
+.lp-arts { border-top: 1.5px solid #C9D6D2; border-bottom: 1.5px solid #C9D6D2; padding: 26px 0 26px; }
+.lp-art-cols > .lp-art-g + .lp-art-g, .lp-art-more { border-top: 1.5px solid #C9D6D2; padding-top: 18px; margin-top: 4px; }
+.lp-art-more { margin-top: 20px; }
 .lp-art-g h3 { margin: 0 0 8px; font-size: 16px; font-weight: 900; color: #1F2A28; }
 .lp-art-g h3.rd-head { display: flex; align-items: center; gap: 8px; } .lp-art-g .rd-head .sb-ic { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--rc); } /* 組の名前の左のアイコン（ブログの横の列と同じ。2026-11-06） */
 .lp-arts .post-list { padding: 0 14px; background: #fff; border: 1px solid #DFE8E4; border-radius: 14px; }
