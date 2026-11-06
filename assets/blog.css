@@ -981,9 +981,9 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 .bs-list .site-head .site-head-inner, .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; gap: 0; }
 .site-head .brand img { height: 48px; width: auto; vertical-align: middle; }
 .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
-.site-head .head-lp-link { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 20px; padding: 6px 12px 6px 8px; text-decoration: none; white-space: nowrap; }
+.site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 10px; font-weight: 800; line-height: 1.1; color: #177083; background: none; border: 0; border-radius: 8px; padding: 3px 6px; text-decoration: none; white-space: nowrap; }
 .site-head .head-lp-link:hover { background: #E4F3EC; }
-@media (max-width: 360px) { .site-head .head-lp-link span { display: none; } .site-head .head-lp-link { padding: 7px; } }
+/* 左上のLPへの導線＝アイコンの下に小さな文字（枠なし。2026-11-06 ユーザーの選択） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
 :root { --hh: 65px; }
 .bs-list .cat-nav { top: var(--hh, 65px); }
 
