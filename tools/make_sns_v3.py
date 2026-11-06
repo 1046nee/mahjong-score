@@ -191,7 +191,7 @@ def howto_html(h):
   {SPARK.format(st=f"left:{px+pw+40}px;top:{py-10}px;width:56px", c="#E75620")}
   {SPARK.format(st=f"left:{px-110}px;top:{py+phh-120}px;width:40px", c="#177083")}
   <div style="position:absolute;left:72px;right:72px;top:92px">
-    <div class="tag"><b class="gm" style="background:#177083">STEP {n}</b><span>15秒でわかる使い方</span></div>
+    <div class="tag"><b class="gm" style="background:#177083">STEP {n}</b><span>30秒でわかる使い方</span></div>
     <h1 style="font-size:70px;margin-top:26px">{t}</h1>
     <p class="sub" style="font-size:32px;margin-top:16px">{html.escape(sub)}</p>
   </div>
@@ -204,7 +204,7 @@ def cover_html(kind):
     W, H = 1080, 1350
     svg = hero_svg().replace('<svg ', '<svg style="width:1000px;height:auto;display:block" ', 1)
     if kind == "howto":
-        tag, title, sub = "15秒でわかる使い方", "麻雀のスコア記録、\n4ステップで。", "ブラウザだけで、会員登録もいらない"
+        tag, title, sub = "30秒でわかる使い方", "麻雀のスコア記録、\n4ステップで。", "ブラウザだけで、会員登録もいらない"
     else:
         tag, title, sub = "はじめまして", "麻雀のスコア記録、\nまだ電卓と紙とペン？", "点数を入れるだけで、スコアが全員のスマホに"
     t = html.escape(title).replace("\n", "<br>")

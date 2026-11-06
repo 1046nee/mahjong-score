@@ -214,8 +214,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #view-home .features-row { display: grid; grid-template-columns: repeat(4, 184px); justify-content: center; gap: 14px; overflow: visible; padding: 4px 0 8px; }
   #view-home .features-row::after, #view-home .features-ctl { display: none; } #view-home .lp-screens .features-ctl { display: flex; } /* 成績の節はPCでも横にめくるので矢印を残す */
 
-  #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 20px; padding-left: 32px; padding-right: 32px; }
-  #view-home .home-content:not(.lp-howto-wrap) > .ad-slot { grid-column: 1 / -1; }
+  #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; padding-left: 32px; padding-right: 32px; }
+  #view-home .lp-art-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 20px; }
+  #view-home .lp-art-more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  #view-home .lp-arts .post-card.has-thumb { grid-template-columns: 88px 1fr; gap: 12px; }
   .global-header-wrap { max-width: none; }
   .global-header { max-width: 960px; margin: 0 auto; }
   body:has(#view-home.active) .global-header { max-width: 1180px; }
@@ -281,15 +283,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-phone-bar { display: flex; justify-content: center; align-items: center; height: calc(var(--pw) * .10); transition: background .3s; }
 .lp-phone-island { width: calc(var(--pw) * .30); height: calc(var(--pw) * .07); border-radius: 999px; background: #1F2A28; }
 /* 「もっと詳しく」とお知らせ：ブログの一覧と同じ、左に記事の絵・右に題名と説明（2026-10-26〜） */
-.read-list.rl-cards { list-style: none; padding: 0; margin: 0 0 6px; }
-.read-list.rl-cards li { margin: 0; border-bottom: 1px solid #E6ECEA; }
-.read-list.rl-cards li:last-child { border-bottom: 0; }
-.read-list.rl-cards a { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; padding: 12px 0; text-decoration: none; color: inherit; }
-.read-list.rl-cards .rl-img { display: block; width: 96px; height: 72px; border-radius: 10px; object-fit: cover; background: #EEF3F1; }
-.read-list.rl-cards .rl-txt { min-width: 0; }
-.read-list.rl-cards b { display: block; font-size: 15px; font-weight: 800; color: #1F2A28; line-height: 1.5; }
-.read-list.rl-cards .rl-desc { display: block; margin-top: 3px; font-size: 12.5px; color: #5F6E6B; line-height: 1.6; }
-.read-list.rl-cards a:hover b { color: #136070; text-decoration: underline; text-underline-offset: 3px; }
+/* 記事の案内: ブログの記事一覧と同じカード（assets/blog.css の .post-card と数字をそろえる。中身は tools/build_post_lists.js） */
+.lp-arts-wrap { padding-top: 34px; }
+.lp-arts > h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; word-break: keep-all; }
+.lp-arts > p { margin: 6px 0 18px; font-size: 14px; line-height: 1.7; text-align: center; color: #5F6E6B; word-break: keep-all; }
+.lp-art-cols, .lp-art-more { display: grid; gap: 16px; }
+.lp-art-more { margin-top: 16px; }
+.lp-art-g h3 { margin: 0 0 8px; font-size: 16px; font-weight: 900; color: #1F2A28; }
+.lp-arts .post-list { padding: 0 14px; background: #fff; border: 1px solid #DFE8E4; border-radius: 14px; }
+.lp-arts .post-card { display: block; border-bottom: 1px solid #E6ECEA; text-decoration: none; color: inherit; }
+.lp-arts .post-card:last-child { border-bottom: 0; }
+.lp-arts .post-card:hover { background: #F7FAF9; }
+.lp-arts .post-card:hover .pc-t { color: #136070; text-decoration: underline; text-underline-offset: 3px; }
+.lp-arts .post-card.has-thumb { display: grid; grid-template-columns: 88px 1fr; gap: 12px; padding: 11px 4px 11px 0; align-items: center; }
+.lp-arts .pc-thumb { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 9px; background: #EEF3F1; }
+.lp-arts .pc-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lp-arts .pc-body { min-width: 0; }
+.lp-arts .pc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 8px; margin-bottom: 3px; font-size: 12px; }
+.lp-arts .pc-cat { font-weight: 800; color: var(--cc, #177083); }
+.lp-arts .date { font-size: 12px; color: #9AA8A4; }
+.lp-arts .pc-t { display: block; font-size: 14.5px; font-weight: 800; line-height: 1.5; color: #1F2A28; }
+.lp-arts .pc-sub { display: block; margin-top: 4px; font-size: 12px; font-weight: 500; line-height: 1.55; color: #6B7A77; }
+.lp-arts .cat-beginner { --cc: #16A34A; } .lp-arts .cat-rules { --cc: #0E95A3; } .lp-arts .cat-score { --cc: #C2410C; } .lp-arts .cat-pro { --cc: #7C3AED; } .lp-arts .cat-ai { --cc: #0284C7; } .lp-arts .cat-culture { --cc: #DB2777; }
+@media (min-width: 700px) and (max-width: 1099px) { .lp-arts .post-card.has-thumb { grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 6px 12px 0; } .lp-arts .pc-t { font-size: 15.5px; } }
+@media (max-width: 380px) { .lp-arts .post-card.has-thumb { grid-template-columns: 76px 1fr; gap: 10px; } }
 /* 特徴カルーセルの見た目（2026-10-26〜・ユーザーの依頼「スクロールの位置によってはきれいに映らない」「カラフルでよい」）:
    端の白いフェードをやめて文字に被らないように／最後のカードも左にそろって止まるよう後ろに余白／上に色の帯と大きいアイコン（6色を順に） */
 .features-wrap::before, .features-wrap::after { display: none; }
@@ -459,8 +476,8 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 /* 参考コンテンツ（使い方・スコア計算の基本） */
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 /* 使い方（＋お気に入り登録の案内）は白の地。中身の幅は600pxのまま、白は画面の端まで広げる */
-.lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 40px; }
-.howto-note { margin-top: 14px; text-align: center; }
+.lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 20px; }
+.lp-mini-note { margin: -10px 0 16px; text-align: center; }
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
 .info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
@@ -489,7 +506,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
 .hs button { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; }
 .hs-bar { display: block; height: 6px; border-radius: 3px; overflow: hidden; background: #DCE6E3; }
-.hs-bar i { display: block; width: 100%; height: 100%; background: #177083; transform: scaleX(var(--p, 0)); transform-origin: left; }
+.hs-bar i { display: block; width: 100%; height: 100%; background: #E75620; transform: scaleX(var(--p, 0)); transform-origin: left; }
 .hs-n { display: grid; place-items: center; width: 30px; height: 30px; margin: 8px auto 3px; border-radius: 50%; background: #DCE6E3; color: #5F6E6B; font-size: 15px; font-weight: 900; line-height: 1; transition: background .25s, color .25s; }
 .hs.done .hs-n, .hs.on .hs-n { background: #177083; color: #fff; }
 .hs.on .hs-n { animation: lp-pop .42s ease both; }
@@ -503,9 +520,9 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto-pause { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #177083; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; } .howto-pause .pl { display: none; } .howto-pause.stop .pl { display: block; } .howto-pause.stop .pz { display: none; } .howto-pause[hidden] { display: none; }
 .howto-screen { cursor: pointer; }
 .howto-again[hidden] { display: none; } /* .btn-tint の display が hidden より強い */
-.howto-cap { min-height: 150px; margin-top: 14px; }
+.howto-cap { min-height: 84px; margin-top: 12px; } /* 説明は2行まで（320pxでも） */
 .howto-cap h3 { margin: 0 0 6px; font-size: 18px; font-weight: 900; text-align: center; color: #1F2A28; }
-.howto-cap p { margin: 0; font-size: 14.5px; line-height: 1.8; color: #444; }
+.howto-cap p { margin: 0; font-size: 14.5px; line-height: 1.7; color: #444; text-align: center; }
 .howto-cap.go { animation: lp-capin .3s ease both; }
 @keyframes lp-capin { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .hs.on .hs-n, .howto-cap.go { animation: none; } }
@@ -3632,6 +3649,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-minis">
     <div class="lp-inner">
       <h2>表示点数を入れるだけ。</h2>
+      <p class="start-note lp-mini-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
       <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#D4A017"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#3B2C00" font-family="-apple-system,BlinkMacSystemFont,sans-serif">1</text></svg></span><span class="lp-mini-ri">1位</span></span><span class="lp-mini-rc" style="color:#e60012">A</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+71.3</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#9AA5AD"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A28" font-family="-apple-system,BlinkMacSystemFont,sans-serif">2</text></svg></span><span class="lp-mini-ri">2位</span></span><span class="lp-mini-rc" style="color:#00a040">C</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+6.9</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#C97B3F"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#2E1A0A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">3</text></svg></span><span class="lp-mini-ri">3位</span></span><span class="lp-mini-rc" style="color:#0075c2">B</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−36.2</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">4</text></svg></span><span class="lp-mini-ri">4位</span></span><span class="lp-mini-rc" style="color:#f39800">D</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−42.0</b><small>pts</small></span></div></div><div class="lp-mini-in"><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><span class="lp-mini-ok ready" id="lp-mini-ok">入力完了</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
     </div>
   </section>
@@ -3639,20 +3657,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- 使い方＋番外編（ヒーロー直下。特徴系セクションより先に見せる） -->
 <div class="home-content lp-howto-wrap">
     <section class="howto" id="howto">
-      <h2>15秒でわかるまじゃすこの使い方</h2>
-      <p style="text-align:center">会員登録もインストールも不要。<br>ブラウザだけで、この4ステップです。</p>
+      <h2>30秒でわかるまじゃすこの使い方</h2>
 
       <div class="howto-play" id="howto-play">
         <ol class="howto-steps">
-          <li class="hs on"><button type="button" onclick="howtoGo(0)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">1</span><span class="hs-t">人数を選ぶ</span><span class="hs-f">人数を選ぶ</span><span class="hs-d">「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</span></button></li>
-          <li class="hs"><button type="button" onclick="howtoGo(1)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">2</span><span class="hs-t">URLを送る</span><span class="hs-f">URLをメンバーにシェアする</span><span class="hs-d">画面右上の「共有」から、LINEなどでシェア。URLを知っているメンバーだけがアクセスでき、全員が同じスコアを見られます。</span></button></li>
-          <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">試合が終わったら、目の前の表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算し、合計チェックで入力ミスも防げます。</span></button></li>
-          <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位・スコア・推移グラフまで自動で記録。「今、誰がトップ？」が全員のスマホでひと目でわかります。</span></button></li>
+          <li class="hs on"><button type="button" onclick="howtoGo(0)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">1</span><span class="hs-t">人数を選ぶ</span><span class="hs-f">人数を選ぶ</span><span class="hs-d">「はじめる」で4人か3人を選ぶだけ。すぐ入力画面が開きます。</span></button></li>
+          <li class="hs"><button type="button" onclick="howtoGo(1)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">2</span><span class="hs-t">URLを送る</span><span class="hs-f">URLをメンバーにシェアする</span><span class="hs-d">右上の「共有」からLINEで送るだけ。全員が同じスコアを見られます。</span></button></li>
+          <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算します。</span></button></li>
+          <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位もグラフも自動で記録。全員のスマホでひと目でわかります。</span></button></li>
         </ol>
         <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=5" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,3.36,12.44,18.72,29.32" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
-        <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」を押して、4人か3人かを選ぶだけ。ゲーム名と仮のメンバー名（A・B・C…）が入った状態で、すぐ点数を入力できる画面が開きます。</p></div>
+        <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」で4人か3人を選ぶだけ。すぐ入力画面が開きます。</p></div>
       </div>
-      <p class="start-note howto-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
     </section>
 
   </div>
@@ -3765,32 +3781,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </section>
 
-  <div class="home-content">
+  <div class="home-content lp-arts-wrap">
 
-    <div class="info-card">
-      <h2>麻雀のスコア記録を、もっと詳しく</h2>
-      <p style="margin-bottom:14px">仲間内のセット麻雀で長く集計係をしてきた運営者むにぃが、ルールの決め方から点数が合わないときの対処まで書いています。</p>
-      <ul class="read-list rl-cards">
-        <li><a href="score-basics.html"><img class="rl-img" src="/assets/thumbs/score-basics.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>麻雀のスコア計算の基本（初心者向け）</b><span class="rl-desc">素点・ウマ・オカとは何か。4人分のスコアを実際に計算する手順つき。</span></span></a></li>
-        <li><a href="blog-score-examples.html"><img class="rl-img" src="/assets/thumbs/blog-score-examples.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>スコア計算 実例12パターン</b><span class="rl-desc">同点・トビ・三麻・チョンボ罰符まで、途中式を省略せず全部計算しました。</span></span></a></li>
-        <li><a href="blog-house-rules.html"><img class="rl-img" src="/assets/thumbs/blog-house-rules.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>セット麻雀のルールの決め方</b><span class="rl-desc">持ち点・返し点・ウマ・同点の扱いなど、打つ前に決める10項目のチェックリスト。</span></span></a></li>
-        <li><a href="blog-score-mismatch.html"><img class="rl-img" src="/assets/thumbs/blog-score-mismatch.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>点数が合わないときのチェックリスト</b><span class="rl-desc">ズレ幅から原因を特定する方法。1,000点足りないなら、まず場の供託を疑います。</span></span></a></li>
-        <li><a href="blog-mawashi-uchi.html"><img class="rl-img" src="/assets/thumbs/blog-mawashi-uchi.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>5人以上で麻雀を打つときの回し方</b><span class="rl-desc">抜け番の回し方と、試合数が違う人同士の成績を公平に比べる方法。</span></span></a></li>
-        <li><a href="blog-season-ranking.html"><img class="rl-img" src="/assets/thumbs/blog-season-ranking.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>麻雀仲間の通算成績と相性のつけ方</b><span class="rl-desc">何日分かの成績のまとめ方と、相手ごとの「直接対決」と「スコア差」の読み方。</span></span></a></li>
-        <li><a href="faq.html"><img class="rl-img" src="/assets/thumbs/faq.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>よくある質問</b><span class="rl-desc">使い方・ルール設定・データの保存についての19の質問と答え。</span></span></a></li>
-      </ul>
+<!-- lp-articles:start -->
+    <div class="lp-arts">
+      <h2>初心者から上級者まで、<wbr>麻雀の記事</h2>
+      <p>仲間内で長く集計係をしてきた<wbr>運営者むにぃが書いています。</p>
+      <div class="lp-art-cols">
+      <section class="lp-art-g"><h3>初心者向け</h3><div class="post-list">
+        <a class="post-card has-thumb cat-beginner" href="blog-rule-basics.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-rule-basics.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">はじめての麻雀</span><span class="date">2026.07.08</span></span><span class="pc-t">【初心者向け】【図解】麻雀のルール基本の基本<span class="pc-sub">半荘・東風戦と牌の種類・読み方</span></span></span></a>
+        <a class="post-card has-thumb cat-beginner" href="blog-yaku-ichiran.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-yaku-ichiran.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">はじめての麻雀</span><span class="date">2026.10.23</span></span><span class="pc-t">【保存版】麻雀の役一覧 全38役<span class="pc-sub">翻数・鳴いたときの翻数を牌の絵でひと目で</span></span></span></a>
+        <a class="post-card has-thumb cat-beginner" href="blog-score-table.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-score-table.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">はじめての麻雀</span><span class="date">2026.07.07</span></span><span class="pc-t">【完全保存版】麻雀の点数早見表<span class="pc-sub">子・親のロン・ツモ（オール）と符計算・満貫以上を1枚で</span></span></span></a>
+        <a class="post-card has-thumb cat-pro" href="blog-mleague-kansen.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-mleague-kansen.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.23</span></span><span class="pc-t">【初心者向け】Mリーグ観戦ガイド<span class="pc-sub">卓の見方7つ・実況の言葉・ポイントのしくみ</span></span></span></a>
+      </div></section>
+      <section class="lp-art-g"><h3>Mリーグ・プロ情報</h3><div class="post-list">
+        <a class="post-card has-thumb cat-pro" href="blog-mleague-2026.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-mleague-2026.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.21</span></span><span class="pc-t">【完全版】Mリーグ2026-27ガイド<span class="pc-sub">全10チーム40選手・ルール・試合の流れを1ページで</span></span></span></a>
+        <a class="post-card has-thumb cat-pro" href="blog-mleague-history.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-mleague-history.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.21</span></span><span class="pc-t">【年表】Mリーグの歴史 2018〜2026<span class="pc-sub">歴代優勝チーム・MVP・各シーズンの順位</span></span></span></a>
+        <a class="post-card has-thumb cat-pro" href="blog-dantai-rekishi.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-dantai-rekishi.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.23</span></span><span class="pc-t">【年表】麻雀プロ団体の歴史<span class="pc-sub">連盟・最高位戦・協会・RMU・麻将連合の成り立ちと代表</span></span></span></a>
+        <a class="post-card has-thumb cat-pro" href="blog-mahjong-titles.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-mahjong-titles.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.21</span></span><span class="pc-t">【2026年】麻雀のタイトル戦と今のタイトル保持者<span class="pc-sub">鳳凰位・最高位・雀王・最強位</span></span></span></a>
+      </div></section>
+      <section class="lp-art-g"><h3>もっと上手くなりたい人向け</h3><div class="post-list">
+        <a class="post-card has-thumb cat-ai" href="blog-naga-guide.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-naga-guide.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">AI・ゲーム</span><span class="date">2026.11.04</span></span><span class="pc-t">【実演】麻雀AI NAGAの使い方<span class="pc-sub">雀魂の牌譜を解析する手順・料金・解析画面の見方と7タイプ</span></span></span></a>
+        <a class="post-card has-thumb cat-rules" href="blog-pao.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-pao.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">ルールの深掘り</span><span class="date">2026.10.27</span></span><span class="pc-t">【図解】パオ（責任払い）とは<span class="pc-sub">大三元・大四喜で誰がいくら払う？計算問題6問</span></span></span></a>
+        <a class="post-card has-thumb cat-culture" href="blog-mahjong-books.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-mahjong-books.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">作品・カルチャー</span><span class="date">2026.10.21</span></span><span class="pc-t">【2026年】【レベル別】麻雀のおすすめ本19冊<span class="pc-sub">最初の1冊から上級者の理論書まで</span></span></span></a>
+        <a class="post-card has-thumb cat-pro" href="blog-pro-dantai-rules.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-pro-dantai-rules.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.21</span></span><span class="pc-t">【プロ・上級者必見】麻雀プロ団体のルールの違い<span class="pc-sub">連盟・最高位戦・協会・RMU・麻将連合とMリーグを比較</span></span></span></a>
+      </div></section>
+      </div>
       <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
+      <div class="lp-art-more">
+      <div class="post-list"><a class="post-card has-thumb cat-score" href="score-basics.html"><span class="pc-thumb"><img src="/assets/thumbs/score-basics.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">スコア・集計</span></span><span class="pc-t">【初心者必見】麻雀のスコア計算の基本<span class="pc-sub">素点・ウマ・オカを実例で</span></span></span></a></div>
+      <div class="post-list"><a class="post-card has-thumb cat-rules" href="faq.html"><span class="pc-thumb"><img src="/assets/thumbs/faq.svg" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">よくある質問</span></span><span class="pc-t">【FAQ】まじゃすこのよくある質問<span class="pc-sub">使い方・ルール設定・データの保存</span></span></span></a></div>
+      </div>
     </div>
-
-    <div class="info-card">
-      <h2>お知らせ</h2>
-      <ul class="read-list rl-cards">
-        <li><a href="news/nakama-page.html"><img class="rl-img" src="/assets/thumbs/nakama-page.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>仲間ページを追加しました</b><span class="rl-desc">2026.10.13 ・ 定例会の通算順位・成績表・総当たり表をメンバー全員で。</span></span></a></li>
-        <li><a href="news/mypage-stats.html"><img class="rl-img" src="/assets/thumbs/mypage-stats.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>マイページを追加しました</b><span class="rl-desc">2026.10.13 ・ Googleログインで記録を残し、自分の成績とスコアの推移を見る。</span></span></a></li>
-        <li><a href="news/kiroku-kakutei.html"><img class="rl-img" src="/assets/thumbs/kiroku-kakutei.svg" alt="" width="320" height="240" loading="lazy" decoding="async"><span class="rl-txt"><b>記録の確定を追加しました</b><span class="rl-desc">2026.10.13 ・ 対局の終了から12時間で、試合の結果は書き換えられなくなります。</span></span></a></li>
-      </ul>
-      <a class="read-more-link" href="news/">お知らせをすべて見る ›</a>
-    </div>
+<!-- lp-articles:end -->
 
     <div class="ad-slot" data-ad="lp_bottom" style="margin:8px 0"></div>
 

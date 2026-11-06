@@ -266,7 +266,7 @@ def slide(fname, title_lines, sub=None, sub_hl=None, screen_fn=None, step=None, 
     print("saved:", fname)
 
 # ==== 使い方カルーセル（6枚） ====
-slide("howto-1-cover.png", ["使い方は", "かんたん4ステップ"], sub="｜1分でわかる「まじゃすこ」", sub_hl="登録不要・無料", screen_fn=screen_score)
+slide("howto-1-cover.png", ["使い方は", "かんたん4ステップ"], sub="｜30秒でわかる「まじゃすこ」", sub_hl="登録不要・無料", screen_fn=screen_score)
 slide("howto-2-step1.png", ["人数を選ぶ"], sub="4人か3人かを選ぶだけ。すぐ入力画面へ", screen_fn=screen_quickstart, step="STEP 1")
 slide("howto-3-step2.png", ["URLをシェアする"], sub="LINEで送れば、全員が同じスコア表に", screen_fn=screen_chat, step="STEP 2")
 slide("howto-4-step3.png", ["点数を入れるだけ"], sub="ウマ・オカ込みのスコアを自動計算", screen_fn=screen_input, step="STEP 3")
