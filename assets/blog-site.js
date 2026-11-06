@@ -211,7 +211,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
   const titleHtml = t => { const [m, ...r] = t.split('｜'); return escHtml(m) + (r.length ? `<span class="pc-sub">${escHtml(r.join('｜'))}</span>` : ''); };
   function cardHtml(p) {
     // 左の絵＝記事ごとの絵（assets/thumbs/・tools/make_thumbs.py）。カテゴリの色は名前の色で見せる
-    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.webp';
     return `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
       <span class="pc-thumb"><img src="${th}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
       <div class="pc-body"><span class="pc-meta"><span class="pc-cat">${BLOG_CATS[p.cat].name}</span><span class="date">${p.date}</span></span>
@@ -228,7 +228,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
   // サイドバーの1行（2026-10-27 作り直し）: 記事の絵・題名（｜の前を太く、後ろを小さく）・カテゴリの色の札・日付。
   // rank＝おすすめの順番（絵の角に番号）、isNew＝30日以内の記事に「新着」
   function sideItem(p, rank = 0) {
-    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+    const th = '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.webp';
     const main = p.title.split('｜')[0]; // 横の列は題名の前半だけ（後半の補足は出さない＝引き算。2026-10-31）
     const ms = Date.parse(p.date.replace(/\./g, '-'));
     const isNew = ms && Date.now() - ms < 30 * 864e5;
@@ -503,7 +503,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       const isList = art.classList.contains('post-list');
       const here = location.pathname;
       const cur = BLOG_POSTS.find(p => p.url === here);
-      const thumbOf = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+      const thumbOf = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.webp';
       let html = '';
       let heads = [];
       if (!isList) {

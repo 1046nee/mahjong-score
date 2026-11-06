@@ -24,7 +24,7 @@ for f in files:
         print("見出しと日付が見つからない:", slug)
         continue
     title = re.sub(r"<rt>.*?</rt>|<[^>]+>", "", m.group(1)).split("｜")[0]
-    fig = (f'\n  <figure class="eyecatch"><img src="/assets/thumbs/{slug}.svg" alt="{title}のイメージ" width="320" height="240" fetchpriority="high"></figure>\n')
+    fig = (f'\n  <figure class="eyecatch"><img src="/assets/thumbs/{slug}.webp" alt="{title}のイメージ" width="320" height="240" fetchpriority="high"></figure>\n')
     rest = s[m.end():]
     # すぐ下の大きい飾りの絵（.post-illust で small ではないもの）は外す
     rest = re.sub(r'^\s*<div class="post-illust" aria-hidden="true">.*?</svg></div>\n', "", rest, count=1, flags=re.S)

@@ -28,7 +28,7 @@ const posts = eval(postsMatch[1]);
 // blog-site.js の cardHtml() と同一のマークアップを出力すること（差があるとJS再描画でちらつく）
 const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const byDateDesc = (a, b) => b.date.localeCompare(a.date);
-const thumb = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.svg';
+const thumb = p => '/assets/thumbs/' + p.url.split('/').pop().replace('.html', '') + '.webp';
 // 題名は「｜」の前を太字の見出し、後ろを次の行に細く小さく（blog-site.js の titleHtml と同じ）
 const titleHtml = t => { const [m, ...r] = t.split('｜'); return escHtml(m) + (r.length ? `<span class="pc-sub">${escHtml(r.join('｜'))}</span>` : ''); };
 const cardHtml = p => `<a class="post-card has-thumb cat-${p.cat}" href="${p.url}">
@@ -81,8 +81,8 @@ const LP_ARTICLES = [
 ];
 // 記事の一覧に無い2本は別のカード（題名は faq.html・score-basics.html の h1 と同じ）
 const LP_MORE = [
-  { url: '/score-basics.html', cat: 'score', label: 'スコア・集計', title: '【初心者必見】麻雀のスコア計算の基本｜素点・ウマ・オカを実例で', thumb: '/assets/thumbs/score-basics.svg' },
-  { url: '/faq.html', cat: 'rules', label: 'よくある質問', title: '【FAQ】まじゃすこのよくある質問｜使い方・ルール設定・データの保存', thumb: '/assets/thumbs/faq.svg' },
+  { url: '/score-basics.html', cat: 'score', label: 'スコア・集計', title: '【初心者必見】麻雀のスコア計算の基本｜素点・ウマ・オカを実例で', thumb: '/assets/thumbs/score-basics.webp' },
+  { url: '/faq.html', cat: 'rules', label: 'よくある質問', title: '【FAQ】まじゃすこのよくある質問｜使い方・ルール設定・データの保存', thumb: '/assets/thumbs/faq.webp' },
 ];
 const lpCard = (url, cat, label, date, title, img) => `<a class="post-card has-thumb cat-${cat}" href="${url}"><span class="pc-thumb"><img src="${img}" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">${label}</span>${date ? `<span class="date">${date}</span>` : ''}</span><span class="pc-t">${titleHtml(title)}</span></span></a>`;
 {

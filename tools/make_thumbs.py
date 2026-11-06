@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """ブログの一覧のカードに出す、記事ごとの絵（サムネイル）を作る（2026-10-26〜・ユーザーの依頼「中身が少し分かる絵で、記事ごとの違いがひと目で分かるように。カラフルでよい」）。
-1記事＝1枚の SVG（assets/thumbs/{記事のファイル名}.svg・320×240）。色の地＋中身を表す絵。牌は assets/tiles/ の絵をそのまま埋め込む。
+1記事＝1枚の SVG（assets/thumbs/{記事のファイル名}.svg・320×240）と、サイトに出す WebP（同じ名前の .webp・720×540）。色の地＋中身を表す絵。牌は assets/tiles/ の絵をそのまま埋め込む。
 新しい記事を足したら THUMBS に1行足して実行: python tools/make_thumbs.py
 """
 import io, os, sys
@@ -251,7 +251,30 @@ def build():
         svg = inline_tiles(svg)
         assert "/assets/tiles/" not in svg, name
         io.open(os.path.join(OUT, name + ".svg"), "w", encoding="utf-8", newline="\n").write(svg)
+    raster([n for n, _, _ in THUMBS])
     print(len(THUMBS), "枚")
+
+
+# サイトに出すのは WebP（2026-11-06）。SVG のまま <img> で出すと、Safari（iPhone・Mac）が縁取りと影のフィルターを
+# 1倍の解像度で描いて引き伸ばすので、絵全体がぼやける。Chromium で 2.25倍（720×540）に描いて WebP にする。SVG は元の絵として残す
+SCALE = 2.25
+
+
+def raster(names):
+    from playwright.sync_api import sync_playwright
+    from PIL import Image
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        pg = b.new_page(viewport={"width": W, "height": H}, device_scale_factor=SCALE)
+        for name in names:
+            src = os.path.join(OUT, name + ".svg")
+            pg.goto("file:///" + os.path.abspath(src).replace(os.sep, "/").lstrip("/"))
+            pg.wait_for_load_state("load")
+            png = os.path.join(OUT, "_" + name + ".png")
+            pg.screenshot(path=png, clip={"x": 0, "y": 0, "width": W, "height": H})
+            Image.open(png).convert("RGB").save(os.path.join(OUT, name + ".webp"), "WEBP", quality=88, method=6)
+            os.remove(png)
+        b.close()
 
 
 if __name__ == "__main__":
