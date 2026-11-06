@@ -32,6 +32,8 @@
 - 「今月のおすすめ記事」（BLOG_POSTS の recommended・4本）・「最新のアップデート」（お知らせの新しい3本）・「公式SNS」。blog-site.js の `sideItem` / `sbHead`（2026-10-27〜）
 - 1行＝記事の絵（assets/thumbs/。おすすめは角に順番＝金銀銅）・カテゴリの色の札・30日以内は「新着」・日付・題名（「｜」の前を太字、後ろを小さく）。見出しは色の丸のアイコン＋ひとこと
 - **新しい記事は assets/thumbs/ の絵も作る**（無いとサイドバーの絵が空になる）
+- **一覧表・早見表の記事（点数早見表・役一覧・…）は、「この記事でわかること」（目次）の直下に、その1枚の画像だけを置いてから本文を始める**（2026-11-06 ユーザーの指定。前置きの文や見出しは付けない）。
+- **1枚の表の画像は点数早見表の見た目にそろえる**（色の帯の見出し・色の札・太い枠の表・大きい字・説明の文はのせない）。点数表は tools/score_sheet.py、牌と役は tools/hai_sheets.py
 - サムネは集中線の地＋黒い縁取り＋ずらした影で統一（2026-11-06。`make_thumbs.py` の STICKER）
 - **サイトに出すのは WebP（assets/thumbs/{名前}.webp・720×540）**。`make_thumbs.py` が SVG を作ってから Chromium で描いて WebP にする。SVG は元の絵（動画・OGP の材料）として残すが、ページの <img> には使わない
 - **記事の絵を作ったら共有用のPNGも作る**: `node tools/make_og_images.js blog-xxx` → og:image・twitter:image（1200×630）と JSON-LD の image を `/assets/og/blog-xxx.png` に。記事を直したら dateModified とサイトマップの lastmod も今日にする（古いままだと検索の表示がなかなか変わらない）

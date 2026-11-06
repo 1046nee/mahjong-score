@@ -232,75 +232,111 @@ def han_label(m, n):
 
 
 # ---------------- 1枚の表 ----------------
+# 見た目は点数早見表（score_sheet.py）とそろえる: 色の帯の見出し・色の札・太い枠の表・大きい字。説明の文はのせない（2026-11-06 ユーザーの指定）
 FONT = '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">'
 CSS = """@page { size: A4; margin: 0; } * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 794px; height: 1123px; } body { font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #fff; padding: 28px 32px 20px; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-feature-settings: "palt"; }
-header { display: flex; align-items: flex-end; justify-content: space-between; border-bottom: 3px solid #1F2A28; padding-bottom: 8px; margin-bottom: 12px; }
-header h1 { font-size: 30px; font-weight: 900; line-height: 1.1; } header h1 small { display: block; font-size: 12.5px; font-weight: 500; color: #55625F; margin-top: 5px; }
-.legend { text-align: right; font-size: 10.5px; color: #55625F; line-height: 1.6; }
-footer { position: absolute; left: 32px; right: 32px; bottom: 14px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; } footer b { color: #177083; font-weight: 900; }
+html, body { width: 794px; height: 1123px; } body { font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #fff; padding: 30px 34px 22px; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-feature-settings: "palt"; }
+header { display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 10px 16px; margin-bottom: 14px; }
+header h1 { font-size: 32px; font-weight: 900; letter-spacing: .04em; line-height: 1.1; } header h1 small { display: block; font-size: 13px; font-weight: 700; color: #DDF0EC; letter-spacing: 0; margin-top: 4px; }
+.legend { text-align: right; font-size: 12px; font-weight: 700; color: #fff; line-height: 1.7; background: rgba(255,255,255,.14); border-radius: 6px; padding: 5px 10px; } .legend b { font-size: 15px; } .legend span { color: #FFE68A; font-weight: 900; }
+.blk h2 { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: #1F2A28; margin-bottom: 5px; }
+.blk h2 em { font-style: normal; font-size: 18px; font-weight: 900; color: #fff; border-radius: 4px; padding: 0 12px; line-height: 28px; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid #1F2A28; }
+footer { position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; } footer b { color: #177083; font-weight: 900; }
 img { display: inline-block; vertical-align: bottom; }"""
+
+SUIT_COLOR = {"m": "#E25A1C", "p": "#4261AA", "s": "#177083", "z": "#1F2A28"}
 
 
 def hai_sheet(url):
-    def suit_row(s, label, yomi):
-        cells = "".join(f'<div class="c">{tile_img(f"{s}{n}", url, 64)}<b>{KANSU[n - 1]}{NAMES[s]}</b><span>{YOMI_NUM[n - 1]}{YOMI_SUIT[s]}</span></div>' for n in range(1, 10))
-        return f'<section class="suit {s}"><h2><em>{label}</em><small>{yomi}・一〜九が4枚ずつ（36枚）</small></h2><div class="row">{cells}</div></section>'
-    z = "".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 8))
-    aka = "".join(f'<div class="c">{tile_img(c, url, 52)}<b>赤{n}</b></div>' for c, n in [("m5r", "五萬"), ("p5r", "五筒"), ("s5r", "五索")])
-    nums = "".join(f"<td>{n}<br><b>{y}</b></td>" for n, y in zip(range(1, 10), YOMI_NUM))
+    def cell(code, name, yomi, w=52):
+        return f'<td>{tile_img(code, url, w)}<b>{name}</b><span>{yomi}</span></td>'
+
+    def suit(s, label, sub):
+        head = "".join(f"<th>{n}</th>" for n in range(1, 10))
+        cells = "".join(cell(f"{s}{n}", f"{KANSU[n - 1]}{NAMES[s]}", f"{YOMI_NUM[n - 1]}{YOMI_SUIT[s]}") for n in range(1, 10))
+        return (f'<section class="blk {s}"><h2><em>{label}</em>{sub}</h2>'
+                f'<table><thead><tr>{head}</tr></thead><tbody><tr>{cells}</tr></tbody></table></section>')
+    kaze = "".join(cell(f"z{i}", Z[i][0], Z[i][1]) for i in range(1, 5))
+    sangen = "".join(cell(f"z{i}", Z[i][0], Z[i][1]) for i in range(5, 8))
+    nums = "".join(f"<td><b>{n}</b><span>{y}</span></td>" for n, y in zip(range(1, 10), YOMI_NUM))
+    aka = "".join(cell(c, n, "赤ドラ", 40) for c, n in [("m5r", "赤五萬"), ("p5r", "赤五筒"), ("s5r", "赤五索")])
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}
-.suit h2, .zi h2 {{ display: flex; align-items: baseline; gap: 8px; font-size: 11px; font-weight: 500; color: #55625F; margin: 0 0 6px; }}
-.suit h2 em, .zi h2 em {{ font-style: normal; font-size: 15px; font-weight: 900; color: #fff; border-radius: 4px; padding: 1px 10px; }}
-.m h2 em {{ background: #E25A1C; }} .p h2 em {{ background: #4261AA; }} .s h2 em {{ background: #177083; }} .zi h2 em {{ background: #1F2A28; }}
-section {{ margin-bottom: 12px; }}
-.row {{ display: flex; gap: 8px; }} .c {{ display: flex; flex-direction: column; align-items: center; width: 74px; }}
-.c b {{ font-size: 12.5px; font-weight: 900; margin-top: 3px; }} .c span {{ font-size: 10.5px; color: #55625F; font-weight: 700; }}
-.zi .c {{ width: 74px; }} .zi .grp {{ display: flex; gap: 8px; }} .zi .lbl {{ font-size: 10.5px; color: #8A9A97; font-weight: 700; margin: 0 0 3px; }}
-.bottom {{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; margin-top: 4px; }}
-h3 {{ font-size: 13px; font-weight: 900; border-left: 4px solid #1F2A28; padding-left: 7px; margin-bottom: 6px; }}
-table {{ border-collapse: collapse; width: 100%; font-size: 11px; }} td, th {{ border: 1px solid #DFE6E3; padding: 4px 3px; text-align: center; }} th {{ background: #F3F6F5; }}
-td b {{ font-size: 11.5px; }}
-.aka {{ display: flex; gap: 10px; }} .aka .c {{ width: 64px; }} .note {{ font-size: 10.5px; line-height: 1.65; color: #33403D; }} .note b {{ color: #C2471A; }}
+section {{ margin-bottom: 10px; }}
+thead th {{ font-size: 13px; font-weight: 900; color: #fff; padding: 3px 0; border-left: 1px solid rgba(255,255,255,.35); }}
+.m thead th, .m h2 em {{ background: #E25A1C; }} .p thead th, .p h2 em {{ background: #4261AA; }} .s thead th, .s h2 em {{ background: #177083; }} .z thead th, .z h2 em, .x thead th, .x h2 em {{ background: #1F2A28; }}
+td {{ text-align: center; border-left: 1px solid #8FA29D; padding: 6px 0 5px; line-height: 1.2; }}
+td b {{ display: block; font-size: 15px; font-weight: 900; margin-top: 4px; }} td span {{ display: block; font-size: 12.5px; font-weight: 800; }}
+.m td span {{ color: #B23A0E; }} .p td span {{ color: #22397A; }} .s td span {{ color: #0B4D5A; }} .z td span {{ color: #33403D; }}
+.z table {{ width: auto; }} .z td {{ width: 76px; }} .z .row {{ display: flex; gap: 14px; }}
+.bottom {{ display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; }}
+.x td {{ padding: 6px 0; }} .x td b {{ margin-top: 0; font-size: 17px; }} .x td span {{ color: #177083; }}
+.aka td span {{ color: #B23A0E; }} .aka td {{ padding: 5px 0 4px; }} .aka td b {{ font-size: 13px; margin-top: 2px; }}
+.total {{ margin-top: 2px; border: 2px solid #1F2A28; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 9px 0; font-size: 16px; font-weight: 900; background: #FFF2B8; }}
+.total b {{ font-size: 26px; color: #B23A0E; }}
 </style></head><body>
-<header><h1>麻雀牌 一覧表<small>34種類・136枚の名前と読み方を1枚で</small></h1><div class="legend">数牌 27種（萬子・筒子・索子）＋字牌 7種（風牌・三元牌）<br>どの牌も4枚ずつ ＝ 34種 × 4枚 ＝ <b>136枚</b></div></header>
-{suit_row("m", "萬子（マンズ）", "漢数字＋萬")}{suit_row("p", "筒子（ピンズ）", "丸の数")}{suit_row("s", "索子（ソーズ）", "竹の棒の数・一索だけ鳥の絵")}
-<section class="zi"><h2><em>字牌（ジハイ）</em><small>数字がない牌・7種が4枚ずつ（28枚）</small></h2><div class="grp"><div><p class="lbl">風牌（カゼハイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(1, 5))}</div></div>
-<div><p class="lbl">三元牌（サンゲンパイ）</p><div class="grp">{"".join(f'<div class="c">{tile_img(f"z{i}", url, 64)}<b>{Z[i][0]}</b><span>{Z[i][1]}</span></div>' for i in range(5, 8))}</div></div></div></section>
-<div class="bottom"><div><h3>数字の読み方</h3><table><tr>{nums}</tr></table>
-<p class="note" style="margin-top:6px">読みは「数字＋種類」。萬子＝マン（ワンとも）、筒子＝ピン、索子＝ソー。<br>例：五萬＝ウーマン、七筒＝チーピン、二索＝リャンソー<br>9は役の名前では<b>チュー</b>（九蓮宝燈・么九牌）。七索は関西で<b>チャーソー</b>とも</p>
-<h3 style="margin-top:10px">よく出る呼び名</h3><p class="note"><b>么九牌（ヤオチューハイ）</b>：一・九の数牌と字牌。<b>中張牌（チュンチャンパイ）</b>：二〜八の数牌（タンヤオに使う）。<b>役牌</b>：三元牌と、場風・自風の牌</p></div>
-<div><h3>赤ドラ（赤五）</h3><div class="aka">{aka}</div><p class="note" style="margin-top:6px">ふつうの五と差し替えて使う牌。持っているだけで<b>ドラ1枚</b>として数える（使うかどうかはルールで決める）。</p>
-<h3 style="margin-top:10px">三麻（3人麻雀）</h3><p class="note">二萬〜八萬（28枚）を抜いた108枚で打つのが一般的。</p></div></div>
+<header><h1>麻雀牌 一覧表<small>全34種類の名前と読み方</small></h1><div class="legend">どの牌も <b>4枚</b>ずつ<br>34種 × 4枚 ＝ <span>136枚</span></div></header>
+{suit("m", "萬子", "マンズ")}{suit("p", "筒子", "ピンズ")}{suit("s", "索子", "ソーズ")}
+<section class="blk z"><h2><em>字牌</em>ジハイ</h2><div class="row">
+<table><thead><tr><th colspan="4">風牌（カゼハイ）</th></tr></thead><tbody><tr>{kaze}</tr></tbody></table>
+<table><thead><tr><th colspan="3">三元牌（サンゲンパイ）</th></tr></thead><tbody><tr>{sangen}</tr></tbody></table></div></section>
+<div class="bottom"><section class="blk x"><h2><em>数字の読み方</em></h2><table><tbody><tr>{nums}</tr></tbody></table></section>
+<section class="blk x aka"><h2><em>赤ドラ</em>持つだけでドラ1枚</h2><table><tbody><tr>{aka}</tr></tbody></table></section></div>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+
+
+# 役の一覧表に出す短い条件（表の1マスに収まる長さ）
+SHORT = {
+ "立直": "門前でテンパイして宣言", "一発": "リーチから1巡以内にあがる", "門前清自摸和": "門前でツモあがり", "断么九": "二〜八の数牌だけ",
+ "平和": "順子4つ・両面待ち", "一盃口": "同じ順子が2つ", "役牌": "三元牌・場風・自風の刻子", "海底摸月": "最後の牌でツモ",
+ "河底撈魚": "最後の捨て牌でロン", "嶺上開花": "嶺上牌でツモ", "槍槓": "加槓の牌でロン",
+ "ダブル立直": "最初の打牌でリーチ", "七対子": "対子が7つ", "三色同順": "萬筒索で同じ数の順子", "一気通貫": "1種類で123・456・789",
+ "混全帯么九": "全部の面子に一九・字牌", "対々和": "刻子が4つ", "三暗刻": "暗刻が3つ", "三色同刻": "萬筒索で同じ数の刻子",
+ "三槓子": "カンが3回", "小三元": "三元牌の刻子2つ＋雀頭", "混老頭": "一九と字牌だけ",
+ "混一色": "1種類の数牌＋字牌", "純全帯么九": "全部の面子に一九（字牌なし）", "二盃口": "一盃口が2つ", "清一色": "1種類の数牌だけ",
+ "国士無双": "一九字牌13種＋1枚", "四暗刻": "暗刻が4つ", "大三元": "三元牌の刻子が3つ", "字一色": "字牌だけ",
+ "小四喜": "風牌の刻子3つ＋雀頭", "大四喜": "風牌の刻子が4つ", "緑一色": "二三四六八索と發だけ", "清老頭": "一と九の数牌だけ",
+ "四槓子": "カンが4回", "九蓮宝燈": "1112345678999＋1枚", "天和": "親が配牌であがり", "地和": "子が最初のツモであがり",
+}
+GROUP_COLOR = {"1翻": "#177083", "2翻": "#4261AA", "3翻": "#6A4BB0", "6翻": "#A8407F", "役満": "#E25A1C"}
 
 
 def yaku_sheet(url):
-    blocks = ""
-    for grp, items in YAKU:
+    def block(grp, items):
+        c = GROUP_COLOR[grp]
         rows = ""
         for name, yomi, m, n, cond, ex in items:
-            tiles = hand_html(ex, url, 12) if ex else f'<span class="cond">{cond}</span>'
             big = "役満" if m == 13 else f"{m}翻"
-            sub = "門前のみ" if n is None else ("" if n == m else f"鳴き{n}翻")
-            rows += f'<tr><th><b>{name}</b><small>{yomi}</small></th><td class="h"><b>{big}</b>' + (f'<small>{sub}</small>' if sub else "") + f'</td><td class="t">{tiles}</td></tr>'
-        blocks += f'<section class="g"><h2>{grp}</h2><table>{rows}</table></section>'
+            if n is None:
+                naki = '<i class="mz">門前のみ</i>'
+            elif n == m:
+                naki = '<i class="ok">そのまま</i>'
+            else:
+                naki = f'<i class="dn">{n}翻</i>'
+            rows += f'<tr><th><b>{name}</b><small>{yomi}</small></th><td class="h" style="color:{c}">{big}</td><td class="n">{naki}</td><td class="t">{SHORT[name]}</td></tr>'
+        return (f'<section class="g" style="--c:{c}"><table><thead><tr><th class="gh">{grp}<small>{len(items)}役</small></th><th>翻</th><th>鳴き</th><th>形・条件</th></tr></thead>'
+                f'<tbody>{rows}</tbody></table></section>')
+    assert all(name in SHORT for _, items in YAKU for name, *_ in items)
+    G = dict(YAKU)
+    left = block("1翻", G["1翻"]) + block("2翻", G["2翻"])
+    right = block("3翻", G["3翻"]) + block("6翻", G["6翻"]) + block("役満", G["役満"])
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}
-.cols {{ column-count: 2; column-gap: 14px; }} .g {{ break-inside: avoid; margin-bottom: 6px; }}
-.g h2 {{ font-size: 12.5px; font-weight: 900; color: #fff; background: #177083; padding: 2px 8px; border-radius: 3px; margin-bottom: 2px; }}
-.g:last-child h2 {{ background: #E25A1C; }}
-table {{ width: 100%; border-collapse: collapse; }} tr {{ border-bottom: 1px solid #E3E9E7; }}
-th {{ text-align: left; width: 78px; padding: 3px 2px; line-height: 1.15; }} th b {{ display: block; font-size: 11.5px; font-weight: 900; }} th small {{ font-size: 8.5px; color: #6B7A77; font-weight: 700; }}
-td.h {{ width: 42px; line-height: 1.15; }} td.h b {{ display: block; font-size: 11px; font-weight: 900; color: #136070; }} td.h small {{ display: block; font-size: 8px; font-weight: 700; color: #8A9A97; white-space: nowrap; }}
-td.t {{ padding: 3px 0; }} .hand {{ display: inline-flex; align-items: flex-end; gap: 0; }} .hand img {{ margin-right: .5px; }}
-.h-win {{ margin-left: 3px; padding: 1px; border-radius: 2px; background: #FFE2D3; }} .h-meld {{ margin-left: 3px; display: inline-flex; gap: 2px; }} .hand {{ white-space: nowrap; }}
-.meld {{ display: inline-flex; align-items: flex-end; }} .cond {{ font-size: 9.5px; color: #55625F; }}
-.notes {{ font-size: 9.5px; color: #55625F; line-height: 1.55; margin-top: 4px; }}
+.cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }} .g {{ margin-bottom: 10px; }}
+thead th {{ background: var(--c); color: #fff; font-size: 11px; font-weight: 800; padding: 4px 0; border-left: 1px solid rgba(255,255,255,.35); }}
+thead th.gh {{ font-size: 18px; font-weight: 900; text-align: left; padding: 3px 9px; border-left: 0; }} thead th.gh small {{ font-size: 11px; font-weight: 700; margin-left: 6px; opacity: .85; }}
+thead th:nth-child(1) {{ width: 112px; }} thead th:nth-child(2) {{ width: 44px; }} thead th:nth-child(3) {{ width: 58px; }}
+tbody th {{ text-align: left; background: #E3ECE9; padding: 4px 7px; border-bottom: 1px solid #8FA29D; border-right: 1.5px solid #1F2A28; line-height: 1.15; }}
+tbody th b {{ display: block; font-size: 14px; font-weight: 900; white-space: nowrap; letter-spacing: -.02em; }} tbody th small {{ display: block; font-size: 9px; font-weight: 700; color: #55625F; white-space: nowrap; }}
+td {{ border-bottom: 1px solid #8FA29D; border-left: 1px solid #8FA29D; text-align: center; height: 37px; }}
+td.h {{ font-size: 15px; font-weight: 900; }} td.t {{ text-align: left; font-size: 11.5px; font-weight: 700; padding: 0 6px; line-height: 1.3; }}
+td.n i {{ font-style: normal; font-size: 10.5px; font-weight: 900; border-radius: 3px; padding: 2px 4px; white-space: nowrap; }}
+i.mz {{ background: #1F2A28; color: #fff; }} i.dn {{ color: #22397A; font-size: 13px !important; }} i.ok {{ color: #6B7A77; }}
+.rule {{ border: 2px solid #1F2A28; border-radius: 6px; overflow: hidden; }} .rule h3 {{ background: #1F2A28; color: #fff; font-size: 14px; font-weight: 900; padding: 4px 10px; }}
+.rule ul {{ list-style: none; padding: 7px 10px 8px; font-size: 12px; font-weight: 800; line-height: 1.75; }} .rule li::before {{ content: "●"; color: #E25A1C; font-size: 8px; margin-right: 6px; vertical-align: 2px; }}
 </style></head><body>
-<header><h1>麻雀 役一覧表<small>1翻〜役満まで全38役・翻数と牌の並びの例</small></h1><div class="legend">オレンジの枠の牌 ＝ あがり牌　右の横向きの牌 ＝ 鳴いた面子<br>鳴き○翻 ＝ チー・ポン・カンをしたときの翻数<br>文字だけの役 ＝ あがったときの状況で決まる役</div></header>
-<div class="cols">{blocks}</div>
-<p class="notes">あがるには役が1つ以上必要（ドラだけではあがれない）。役は重ねて数える。ドラ・赤ドラ・裏ドラは役ではなく、役があるときに1枚1翻を足す。流し満貫・人和・数え役満などはルールで決める。</p>
-<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+<header><h1>麻雀 役一覧表<small>1翻〜役満 全38役</small></h1><div class="legend"><span>鳴き</span>＝チー・ポン・カンをしたとき<br>門前のみ＝鳴くとつかない</div></header>
+<div class="cols"><div>{left}</div><div>{right}<div class="rule"><h3>役のきまり</h3><ul><li>あがるには役が1つ以上いる</li><li>役は重ねて数える</li><li>ドラは役ではない（役があるとき1枚1翻）</li></ul></div></div></div>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール</span></footer></body></html>"""
 
 
 def render():
