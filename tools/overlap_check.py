@@ -5,6 +5,7 @@
   2. 牌の絵が、入れ物（図・カード・セル・リストの1行）の外にはみ出していないか
   3. 同じ並びの牌の絵どうしが重なっていないか（横向きの牌・点棒・チップのわざと重ねる絵は除く）
   4. 表のセルの文字（数字）がセルの外にはみ出していないか
+  5. 見出しの左の縦線が文字（ふりがな）に重なっていないか
 を調べる。見つかったら 1 で終わる。図や表を足したら必ず通す。
 実行: python tools/overlap_check.py            （blog-*.html と主なページ）
       python tools/overlap_check.py blog-xxx.html
@@ -45,6 +46,14 @@ JS = r"""() => {
     if (!vis(c)) continue;
     if (c.scrollWidth > c.clientWidth + 2 && getComputedStyle(c).overflowX === 'visible')
       out.push(['文字のはみ出し', name(c), (c.textContent || '').trim().slice(0, 14), (c.scrollWidth - c.clientWidth).toFixed(0)]);
+  }
+  // 5: 見出しの左の縦線が文字（ふりがな）に重なっていないか（カードの中の見出しで padding を0にしたのに線が残る、など）
+  for (const h of document.querySelectorAll('.blog-post h2, .blog-post h3, .blog-post h4')) {
+    if (!vis(h)) continue;
+    const cs = getComputedStyle(h, '::before');
+    if (cs.content === 'none' || cs.display === 'none' || cs.position !== 'absolute') continue;
+    const w = parseFloat(cs.width) || 0, left = parseFloat(cs.left), pl = parseFloat(getComputedStyle(h).paddingLeft);
+    if (w > 0 && w <= 10 && !isNaN(left) && left + w + 3 > pl) out.push(['見出しの線と文字の重なり', name(h), (h.textContent || '').trim().slice(0, 14), pl.toFixed(0)]);
   }
   return out;
 }"""

@@ -120,6 +120,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 .blog-post .yl-hand .hand { flex-wrap: nowrap !important; } .blog-post .yl-hand .hand img { width: clamp(13px, 4.6vw, 24px); height: auto; }
 .blog-post .yl-yaku { background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 12px 12px 10px; margin: 0 0 14px; }
 .blog-post .yl-yaku h3 { margin: 0 0 4px !important; padding: 0 !important; border: 0 !important; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 19px; }
+body:not(.bs-list) .post-layout > .blog-post .yl-yaku h3::before { content: none; } /* カードの見出しには記事の見出しの縦線を出さない（ふりがなに重なる） */
 .blog-post .yl-yaku h3 small { font-size: 12px; font-weight: 700; color: #6B7A77; }
 .blog-post .yl-han { font-size: 12px; font-weight: 900; color: #fff; background: #177083; border-radius: 999px; padding: 2px 10px; }
 .blog-post .yl-han.h2 { background: #4261AA; } .blog-post .yl-han.h3 { background: #9B6AD6; } .blog-post .yl-han.h5 { background: #E75620; }
