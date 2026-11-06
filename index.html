@@ -483,7 +483,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .home-content { width: 100%; max-width: 600px; margin: 0 auto; padding: 40px 16px 8px; display: flex; flex-direction: column; gap: 16px; }
 /* 使い方（＋お気に入り登録の案内）は白の地。中身の幅は600pxのまま、白は画面の端まで広げる */
 .lp-howto-wrap { background: #fff; box-shadow: 0 0 0 100vmax #fff; clip-path: inset(0 -100vmax); padding-top: 34px; padding-bottom: 20px; }
-.lp-mini-note { margin: -10px 0 16px; text-align: center; }
+.lp-mini-note { margin: 16px 0 0; text-align: center; } /* カードの下（2026-11-06 ユーザーの指定） */
 .info-card { background: #fff; border: 1px solid #e2ece7; border-radius: 14px; padding: 22px 18px; line-height: 1.9; }
 .info-card h2 { font-size: 18px; color: #177083; margin-bottom: 12px; border-left: 4px solid #177083; padding-left: 10px; }
 .info-card h3 { font-size: 15px; margin: 16px 0 6px; color: #1a1a1a; }
@@ -3647,7 +3647,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="cal-today">今日</button></div><div class="cal-head"><button type="button" class="cal-nav" disabled="">‹</button><b>2022年〜2030年</b><button type="button" class="cal-nav" disabled="">›</button></div>
       <div class="cal-year"><button type="button" class="cal-m"><b>2022年</b><span>1ゲーム</span></button><button type="button" class="cal-m"><b>2023年</b><span>10ゲーム</span></button><button type="button" class="cal-m"><b>2024年</b><span>12ゲーム</span></button><button type="button" class="cal-m"><b>2025年</b><span>13ゲーム</span></button><button type="button" class="cal-m today"><b>2026年</b><span>14ゲーム</span></button><span class="cal-m none"><b>2027年</b><span>—</span></span><span class="cal-m none"><b>2028年</b><span>—</span></span><span class="cal-m none"><b>2029年</b><span>—</span></span><span class="cal-m none"><b>2030年</b><span>—</span></span></div></div><div class="cal-hint">年を押すと、その年の12か月になります。</div></div>
       </div></div></div></div></div></figure>
-        <figure class="lp-show" data-team-demo><figcaption><b>どのチームが勝ってる？</b><span>4チーム16人の対戦のデモ</span><a href="/blog-team-league.html">くわしく見る ›</a></figcaption><div class="lp-shot lp-touch"><div class="lp-live-in"><div class="game-body lp-team-demo"><div class="page-title-row">
+        <figure class="lp-show" data-team-demo><figcaption><b>最大100名でのチーム戦も可能。</b><span>4チーム16人の対戦のデモ</span><a href="/blog-team-league.html">くわしく見る ›</a></figcaption><div class="lp-shot lp-touch"><div class="lp-live-in"><div class="game-body lp-team-demo"><div class="page-title-row">
     <div style="min-width:0">
       <h1>チーム対抗リーグ戦</h1>
       <div style="font-size:11px;color:#9aa8a4;margin-top:2px">作成日 2026/11/6</div>
@@ -3907,8 +3907,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section class="lp-section lp-minis">
     <div class="lp-inner">
       <h2>表示点数を入れるだけ。</h2>
-      <p class="start-note lp-mini-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
       <div class="lp-mini" id="lp-mini"><p class="lp-mini-t">表示点数を入れると、スコアが出る</p><p class="lp-mini-k" id="lp-mini-k">3試合目</p><div class="lp-mini-body"><div class="lp-mini-rank" id="lp-mini-rank"><div class="lp-mini-rk" data-p="0"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#D4A017"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#3B2C00" font-family="-apple-system,BlinkMacSystemFont,sans-serif">1</text></svg></span><span class="lp-mini-ri">1位</span></span><span class="lp-mini-rc" style="color:#e60012">A</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+71.3</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="2"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#9AA5AD"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A28" font-family="-apple-system,BlinkMacSystemFont,sans-serif">2</text></svg></span><span class="lp-mini-ri">2位</span></span><span class="lp-mini-rc" style="color:#00a040">C</span><span class="lp-mini-rt p"><b class="lp-mini-rv">+6.9</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="1"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#C97B3F"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#2E1A0A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">3</text></svg></span><span class="lp-mini-ri">3位</span></span><span class="lp-mini-rc" style="color:#0075c2">B</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−36.2</b><small>pts</small></span></div><div class="lp-mini-rk" data-p="3"><span class="lp-mini-rn"><span class="lp-mini-md"><svg class="medal" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"/><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/><text x="12" y="16.2" text-anchor="middle" font-size="12" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">4</text></svg></span><span class="lp-mini-ri">4位</span></span><span class="lp-mini-rc" style="color:#f39800">D</span><span class="lp-mini-rt m"><b class="lp-mini-rv">−42.0</b><small>pts</small></span></div></div><div class="lp-mini-in"><div class="lp-mini-g"><span></span><span class="h">表示点数</span><span class="h r">スコア</span><span class="h r">合計</span><span class="n" style="color:#e60012">A</span><span class="v">52,000</span><span class="s p">+72.0</span><span class="t p">+71.3</span><span class="n" style="color:#0075c2">B</span><span class="v">20,000</span><span class="s m">−20.0</span><span class="t m">−36.2</span><span class="n" style="color:#00a040">C</span><span class="v">34,000</span><span class="s p">+14.0</span><span class="t p">+6.9</span><span class="n" style="color:#f39800">D</span><span class="v">−6,000</span><span class="s m">−66.0</span><span class="t m">−42.0</span></div><span class="lp-mini-ok ready" id="lp-mini-ok">入力完了</span></div></div><div class="lp-mini-cw"><p class="lp-mini-ct">スコア推移</p><svg class="lp-mini-svg" id="lp-mini-svg" viewBox="0 0 340 170" role="img" aria-label="3試合の合計スコアの推移"><line x1="42" y1="50.0" x2="328" y2="50.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="54.0" text-anchor="end" font-size="10" fill="#999">+50</text><line x1="42" y1="90.0" x2="328" y2="90.0" stroke="#bbb" stroke-width="1.5"/><text x="36" y="94.0" text-anchor="end" font-size="10" fill="#999">0</text><line x1="42" y1="130.0" x2="328" y2="130.0" stroke="#e5e5e5" stroke-width="1"/><text x="36" y="134.0" text-anchor="end" font-size="10" fill="#999">-50</text><text x="42.0" y="162" text-anchor="middle" font-size="10" fill="#999">0</text><text x="137.3" y="162" text-anchor="middle" font-size="10" fill="#999">1</text><text x="232.7" y="162" text-anchor="middle" font-size="10" fill="#999">2</text><text x="328.0" y="162" text-anchor="middle" font-size="10" fill="#999">3</text><polyline points="42.0,90.0 137.3,41.0 232.7,90.6 328.0,33.0" fill="none" stroke="#e60012" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,83.4 232.7,103.0 328.0,119.0" fill="none" stroke="#0075c2" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,104.0 232.7,95.7 328.0,84.5" fill="none" stroke="#00a040" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="42.0,90.0 137.3,131.6 232.7,70.8 328.0,123.6" fill="none" stroke="#f39800" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg><div class="chart-legend lp-mini-lg"><span><span class="legend-dot" style="background:#e60012"></span>A</span><span><span class="legend-dot" style="background:#0075c2"></span>B</span><span><span class="legend-dot" style="background:#00a040"></span>C</span><span><span class="legend-dot" style="background:#f39800"></span>D</span></div></div><p class="lp-mini-c">25,000点持ち・30,000点返し・ウマ10-30の例</p></div>
+      <p class="start-note lp-mini-note">たった <strong>10秒</strong> で、次の対局をスタート。</p>
     </div>
   </section>
 
@@ -3954,8 +3954,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div class="feature">
           <div class="feature-icon fi-green"><svg viewBox="0 0 48 48" width="30" height="30"><circle cx="13" cy="18" r="5" fill="#9fc3bd"/><path d="M5 34 Q13 25 21 34 Z" fill="#9fc3bd"/><circle cx="35" cy="18" r="5" fill="#9fc3bd"/><path d="M27 34 Q35 25 43 34 Z" fill="#9fc3bd"/><circle cx="24" cy="21" r="6" fill="#177083"/><path d="M14 39 Q24 28 34 39 Z" fill="#177083"/><path d="M40 7 Q40.9 10.1 44 11 Q40.9 11.9 40 15 Q39.1 11.9 36 11 Q39.1 10.1 40 7 Z" fill="#E75620"/></svg></div>
-          <h3>最大40人で回し打ち</h3>
-          <p>40人まで登録OK。抜け番も自動で集計。</p>
+          <h3>最大100人で回し打ち</h3>
+          <p>100人まで登録OK。抜け番も自動で集計。</p>
         </div>
         <div class="feature">
           <div class="feature-icon fi-blue"><svg viewBox="0 0 48 48" width="30" height="30"><path d="M16 8 H32 V17 A8 8 0 0 1 16 17 Z" fill="#177083"/><path d="M16 10 H10 A6.5 6.5 0 0 0 17 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><path d="M32 10 H38 A6.5 6.5 0 0 1 31 18" stroke="#9fc3bd" stroke-width="2.5" fill="none"/><rect x="21.5" y="24" width="5" height="7" fill="#177083"/><rect x="15" y="31" width="18" height="5" rx="2" fill="#9fc3bd"/><circle cx="24" cy="14" r="2.6" fill="#E75620"/></svg></div>
@@ -4098,7 +4098,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="s-date-field"></div>
       <div class="field">
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <label>メンバー名（最大40人）</label>
+          <label>メンバー名（最大100人）</label>
           <button type="button" class="edit-tab" onclick="openPlayersManage()" style="flex-shrink:0">登録名の管理</button>
         </div>
         <div style="display:flex;gap:8px">
@@ -9973,7 +9973,7 @@ function savePlayerNames(names) {
 }
 // ---- メンバーのタグ入力（Walica風） ----
 let setupMembers = [];
-const MAX_MEMBERS = 40;
+const MAX_MEMBERS = 100; // 2026-11-06 に40→100（ユーザーの依頼）。サーバーのルールは playerNames の番号が2桁＝0〜99 なので100人まで
 // 名前の文字数上限。長すぎる名前は表示崩れ・画像の折り返し破綻・保存サイズ増の原因になるため、
 // 入力の時点で止める（maxlength＋保存時のclampNameの二段構え）。
 // 既存データに上限を超えた名前があっても切り詰めない＝これまでの記録は今までどおり表示される
@@ -10115,7 +10115,7 @@ function onSetupDateChange() {
   if (/^\d{4}\.\d{2}\.\d{2}（.）$/.test(nm.value.trim())) nm.value = `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}（${YOUBI[dt.getDay()]}）`;
 }
 async function startGame() {
-  // 開始条件: 3人麻雀は3名以上、4人麻雀は4名以上（最大40名）
+  // 開始条件: 3人麻雀は3名以上、4人麻雀は4名以上（最大 MAX_MEMBERS 名）
   if (setupMembers.length < numPlayers) { showToast(`ゲームを開始するにはあと${numPlayers - setupMembers.length}名必要です`); return; }
   if (setupMembers.length > MAX_MEMBERS) { showToast(`メンバーは${MAX_MEMBERS}人までです`); return; }
   const name = clampName(document.getElementById('s-name').value, MAX_GROUP_LEN) || todayStr();
@@ -10185,7 +10185,7 @@ async function createGame(name, settings, opts = {}) {
 // 設定はセットアップ画面の初期値と完全に同じ値を使う（あとから設定画面と食い違わないように）
 function openQuickStart() { document.getElementById('quick-start').classList.add('open'); }
 function closeQuickStart() { document.getElementById('quick-start').classList.remove('open'); }
-// 仮のプレイヤー名 A・B・C…（27人目以降はAA・AB…。MAX_MEMBERS=40まで一意）
+// 仮のプレイヤー名 A・B・C…（27人目以降はAA・AB…。702人まで一意）
 function placeholderNames(n) {
   return Array.from({ length: n }, (_, i) => {
     const a = String.fromCharCode(65 + (i % 26));
@@ -10929,10 +10929,10 @@ function imgTableHtmlCanvas(tableHtml, sanma = false, minW = 0) {
   if (!grid.length) return null;
 
   // 列幅は文字の実測で決める（最小46・上限は列数しだい。超える見出しはセル内で折り返す）。
-  // 40人だと132pxのままでは画像の幅が端末の上限（8000px）に達してしまうため、列が多いほど上限を下げる
+  // 40人だと132pxのままでは画像の幅が端末の上限（8000px）に達してしまうため、列が多いほど上限を下げる（100人＝60列超は64px）
   const m = document.createElement('canvas').getContext('2d');
   const nCols = Math.max(...grid.map(row => row.reduce((a, c) => a + c.span, 0)));
-  const COL_MAX = nCols > 26 ? 84 : nCols > 14 ? 104 : 132;
+  const COL_MAX = nCols > 60 ? 64 : nCols > 26 ? 84 : nCols > 14 ? 104 : 132;
   const colW = new Array(nCols).fill(46);
   const FS = 13, SUB_FS = 9;  // SUB_FS = 画面の薄い点数と同じ9px
   grid.forEach(row => {
