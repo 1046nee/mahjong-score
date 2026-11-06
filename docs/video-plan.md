@@ -5,7 +5,7 @@
 そのため、アプリの話をしない回（あるある・ニッチ・初心者の壁）も混ぜ、最後の数秒だけ自然にアプリへつなぐ。
 
 ## 作り方
-- `python tools/make_short.py [名前]` → `まじゃすこ素材/video/<名前>.mp4`（コミットしない。素材は privateリポジトリ）
+- `python tools/make_short.py [名前]` → `まじゃすこ素材/video/<名前>.mp4`（本体リポジトリには入れない。素材の privateリポジトリにコミットする）
 - HTMLの1コマずつを時刻を進めながら撮って、ffmpeg でつなぐ（録画ではないので毎回同じ仕上がり）。要: `pip install imageio-ffmpeg`
 - 見た目は tools/make_sns_v3.py と共通（淡い緑の地・本物の画面のスマホ・数字のカード・✨）。画面は assets/screens/ のスクショ
 - 台本は make_short.py の `VIDEOS` に関数を1つ足す。要素は `at(出る秒, 消える秒, 中身)`、スマホは `phone_at`、数字のカードは `chip_at`、最後は `end_card`
@@ -25,9 +25,9 @@
 - **冒頭＝サムネ**（札＋題名＋絵）。`-thumb.jpg` は冒頭の画面から字幕を外したもの。地の色・字・絵の位置はそろえる
 - 字幕は必ず画面の中央。`make_short.build` が幅を確かめ、はみ出す字幕は字を小さくし、中央でなければ止まる
 - 録画と画面の高さは 390×792（スマホの枠と同じ比率）。844だと下が切れて右下のオレンジのボタンが欠ける
-- **仲間ページ・マイページの10本（nakama-*・mypage-*）は、社用PCで録画して clips を素材リポジトリに push する**（2026-11-06 ユーザーの判断。本物のデータは社用PCにしかなく、声は VOICEVOX のある別のPCで入れるため）。
-  社用PC: `python tools/record_play.py nakama-rank --data <circle_anon.json>`（10本分）→ まじゃすこ素材で `git add video/clips/nakama-* video/clips/mypage-*` → commit → push。
-  声のPC: 素材リポジトリを pull → `python tools/make_narrated.py nakama-rank --vv 3 ずんだもん zundamon`。それ以外の録画（play-*）は入れない（素材リポジトリの .gitignore）。circle_anon.json そのものは入れない
+- **録画（まじゃすこ素材/video/clips/）はすべて素材リポジトリにコミットする**（2026-11-06 ユーザーの判断。録画したPCと声を入れるPCが違っても作れるように）。
+  仲間ページ・マイページの10本（nakama-*・mypage-*）は本物のデータが社用PCにしかないので、社用PCで `python tools/record_play.py nakama-rank --data <circle_anon.json>`（10本分）→ 素材リポジトリで clips を commit・push。
+  声のPC: 素材リポジトリを pull → `python tools/make_narrated.py nakama-rank --vv 3 ずんだもん zundamon`。circle_anon.json そのものはどちらのリポジトリにも入れない
 - 会社PCは声なしの下書きまで: `python tools/make_narrated.py --draft` → `voice-<名前>-draft.mp4`。声は個人PCで `python tools/make_narrated.py --vv 3 ずんだもん zundamon`
 
 ## 1本の型（どの種類も共通）
