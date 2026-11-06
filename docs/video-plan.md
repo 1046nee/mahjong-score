@@ -114,9 +114,9 @@
 - **D は点数計算の解説まで**。アプリにつなぐときは「集計はまじゃすこで」まで（点数計算はアプリの対象外。CLAUDE.md）
 
 ## 出し方
-- 週1本から（日曜の夜）。3つのアプリに同じ動画を同じ日に出す。続いたら週2本へ
+- 毎日20:00に1本（2026-11-06〜・ユーザーの判断）。3つのアプリに同じ動画を同じ日に出す
 - 説明文：1行目に動画のフックをそのまま／2行目に「麻雀のスコア記録アプリ まじゃすこ（プロフィールのリンクから）」／ハッシュタグ3〜5個（#麻雀 #麻雀あるある #セット麻雀 #麻雀初心者 #まじゃすこ）
-- 予定と本文は Notion の SNS投稿カレンダー（チャンネル「ショート動画」）。2026-11-06 に組み直した（日曜20:00に1本・アプリの回と記事の回を交互）: 11/8 kinou → t-hai136 → aruaru-shukei → t-zure → play-quick → kabe-umaoka → play-mawashi（12/20）→ play-team（12/27）→ t-nichijou（1/3）→ calc-vs → t-tsumo70 → play-rounds → t-sanma → nakama-rank（2/7）→ t-half → mypage-graph → t-haitei → 3/7〜4/25 仲間ページとマイページを交互（社用PCで録画が要る）。
+- 予定と本文は Notion の SNS投稿カレンダー（チャンネル「ショート動画」）。**2026-11-06 に毎日20:00に1本へ変えた（ユーザーの判断）**: 11/7 kinou → t-hai136 → aruaru-shukei → t-zure → play-quick → kabe-umaoka → play-mawashi → play-team → t-nichijou → calc-vs → t-tsumo70 → play-rounds → t-sanma → t-half → t-haitei（11/21）→ 11/22〜12/1 仲間ページとマイページを交互（社用PCで録画が要る）。
   **投稿はスマホから**（2026-11-06 ユーザーの判断）。カレンダーの各行に GitHub（majasco-assets）の動画のリンクを入れてある＝スマホのブラウザで開き、右上の「…」→ Download で保存して各アプリへ。Notion は本文の「〜.mp4」を勝手に壊れたリンク（http://〜.mp）にするので、リンクは [名前](https://github.com/…) の形で書く
   説明文の最後に `VOICEVOX:ずんだもん` を入れる（クレジットの決まり）。動画に声とBGMが入っているので、アプリの曲は足さない
 
