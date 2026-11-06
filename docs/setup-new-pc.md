@@ -87,3 +87,11 @@ powershell -ExecutionPolicy Bypass -File tools\install_auto_pull.ps1
 - `tools/.rakuten-access-key` — 楽天ウェブサービスの accessKey（1行）。**本の記事に本を足す・表紙を取り直すとき（`python tools/fetch_book_covers.py`）だけ必要**。値は楽天ウェブサービスのアプリ管理画面で見られる。applicationId は公開してよい値でスクリプトに書いてある
 - `tools/.youtube-api-key` — YouTube Data API のキー（1行）。**毎月のチャンネル情報の取り直し（`python tools/fetch_yt_channels.py`）に必要**。Google Cloud（mahjong-score-2e8aa）の「認証情報」で見られる。YouTube Data API v3 だけに制限済み
 - `tools/.appcheck-debug-token` — App Check のデバッグ用トークン（1行）。App Check を強制したあと、本番DBのテスト（circle/lock/view_rules・lock_app・sync）を流すときだけ必要。Firebaseコンソール → App Check → アプリ →「デバッグトークンを管理」
+
+## 投稿用の素材を Google ドライブに置く（2026-11-06〜・個人PC）
+1. 「Google ドライブ パソコン版」を入れて、Googleアカウントでログインする（エクスプローラーに「Google Drive (G:)」が出る）
+2. 本体のフォルダで `tools\copy_to_drive.bat` をダブルクリック
+   - 先に「まじゃすこ素材」を git pull し、`G:\マイドライブ\まじゃすこ 投稿素材\` の下に「ショート動画（声入り）」「SNS画像（v3）」「Instagram画像（ig）」をコピーする
+   - コピー先は元と同じ中身にそろえる（素材リポジトリから消した物はドライブからも消える）。録画のコマ（clips）などは入れない
+   - ドライブの場所が違うときは `tools\copy_to_drive.bat "D:\マイドライブ"` のように渡す
+3. 新しい動画・画像ができたら、もう一度 2 を実行するだけ
