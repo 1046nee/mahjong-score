@@ -27,6 +27,9 @@ const inCat = (p, cat) => cat === 'all' || p.cat === cat || (cat === 'mahjong' &
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
 const BLOG_POSTS = [
+  { url: '/blog-team-league.html', cat: 'score', date: '2026.11.06', tag: 'チーム戦',
+    title: '【実例】麻雀をMリーグのようなチーム戦で楽しむ方法｜16人4チームの作り方と結果の共有',
+    desc: '16人・4チームのチーム戦を、Excelなしで記録して共有する手順を実際の画面で。' },
   { url: '/blog-naga-guide.html', cat: 'ai', date: '2026.11.04', tag: '麻雀AI',
 title: '【実演】麻雀AI NAGAの使い方｜雀魂の牌譜を解析する手順・料金・解析画面の見方と7タイプ',
 desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜の読み込み、プランとNP、解析画面の見方、7タイプとモデルの人。' },
@@ -215,12 +218,12 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       <h2>${titleHtml(p.title)}</h2></div>
     </a>`;
   }
-  // カテゴリのタブ（すべて/麻雀攻略/お知らせ/雑記）。記事の数つき。tools/build_post_lists.js と同じマークアップ
+  // カテゴリのカード（絵・名前・記事の数）。tools/build_post_lists.js と同じマークアップ
   function catNavHtml(active) {
     const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(BLOG_CATS).map(k => [k, BLOG_CATS[k].name, BLOG_CATS[k].url]));
     const count = k => BLOG_POSTS.filter(p => k === 'all' || p.cat === k).length;
     return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
-      `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
+      `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><img class="ct-ic" src="/assets/cats/${k}.svg" alt="" width="200" height="120"><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
   }
   // サイドバーの1行（2026-10-27 作り直し）: 記事の絵・題名（｜の前を太く、後ろを小さく）・カテゴリの色の札・日付。
   // rank＝おすすめの順番（絵の角に番号）、isNew＝30日以内の記事に「新着」
@@ -287,7 +290,6 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       .site-head.compact .brand img { height: 36px; }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .cat-nav { top: var(--hh, 0px) !important; }
-      @media (max-width: 420px) { .cat-nav-inner { justify-content: flex-start !important; } }
       .site-head .read-bar { position: absolute; left: 0; bottom: -1px; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
       .sns-icons { display: flex; gap: 12px; }
       .sns-icons a { display: block; border-radius: 12px; overflow: hidden; line-height: 0; box-shadow: 0 0 0 1px #E2E8E6; transition: transform .15s; }
@@ -474,20 +476,6 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     // 一覧ページはHTMLに書いてある（tools/build_post_lists.js）。空のときだけここで描く
     document.querySelectorAll('[data-cat-nav]').forEach(el => {
       if (!el.children.length) el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
-      // 選んでいるタブが画面の外（右のほう）にあると、どこにいるか分からない。真ん中あたりまで横に送る（2026-10-28）
-      // ページを移るたびに帯が真ん中へ送り直されて、タブが動いて見えた（2026-10-31）。前のページの横の位置をそのまま引き継ぎ、
-      // 選んだタブが画面からはみ出すときだけ、見える所まで少し送る
-      const inner = el.querySelector('.cat-nav-inner'), on = el.querySelector('.cat-tab.on');
-      if (inner && on && inner.scrollWidth > inner.clientWidth) {
-        let x = null;
-        try { const v = sessionStorage.getItem('catNavX'); if (v !== null) x = +v; } catch (e) {}
-        if (x === null) x = Math.max(0, on.offsetLeft - inner.offsetLeft - (inner.clientWidth - on.offsetWidth) / 2);
-        const l = on.offsetLeft - inner.offsetLeft, r = l + on.offsetWidth;
-        if (l < x + 8) x = Math.max(0, l - 24);
-        else if (r > x + inner.clientWidth - 8) x = r - inner.clientWidth + 24;
-        inner.scrollLeft = x;
-      }
-      if (inner) inner.addEventListener('click', () => { try { sessionStorage.setItem('catNavX', String(inner.scrollLeft)); } catch (e) {} });
     });
 
     // サイドバー: 今月のおすすめ記事 ＋ 最新のアップデート（/news/の新着）

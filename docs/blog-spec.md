@@ -32,18 +32,20 @@
 - 「今月のおすすめ記事」（BLOG_POSTS の recommended・4本）・「最新のアップデート」（お知らせの新しい3本）・「公式SNS」。blog-site.js の `sideItem` / `sbHead`（2026-10-27〜）
 - 1行＝記事の絵（assets/thumbs/。おすすめは角に順番＝金銀銅）・カテゴリの色の札・30日以内は「新着」・日付・題名（「｜」の前を太字、後ろを小さく）。見出しは色の丸のアイコン＋ひとこと
 - **新しい記事は assets/thumbs/ の絵も作る**（無いとサイドバーの絵が空になる）
+- サムネは集中線の地＋黒い縁取り＋ずらした影で統一（2026-11-06。`make_thumbs.py` の STICKER）
 - **記事の絵を作ったら共有用のPNGも作る**: `node tools/make_og_images.js blog-xxx` → og:image・twitter:image（1200×630）と JSON-LD の image を `/assets/og/blog-xxx.png` に。記事を直したら dateModified とサイトマップの lastmod も今日にする（古いままだと検索の表示がなかなか変わらない）
 
 ## 一覧ページの見出しとタブ（2026-10-31〜）
 - 見出し（.blog-hero）はどのページも同じ高さ（PC 150px・スマホ 140px）。地の色＝カテゴリの薄い色、題名＝カテゴリの濃い色（色は assets/blog.css の末尾の一覧）。「すべて」はまじゃすこの緑
 - 右の絵はカテゴリごとに違う（tools/hero_ill.py。blog_cats.py が入れる）。新しいテーマを足したら hero_ill.py にも絵を足す
 - ヘッダーの静的なHTMLは、blog-site.js が描くものと同じ（ロゴ48px＋右にマイページ）。違うと読み込み中に高さが変わり、タブが下にずれる
-- タブの帯の横の位置は、ページを移っても前の位置を引き継ぐ（sessionStorage `catNavX`）。選んだタブがはみ出すときだけ少し送る
+- カテゴリは**カードで選ぶ**（2026-11-06 ユーザーの依頼。横に流れる帯と追従は動きが安定しなかった）。スマホ3列×3段・PC9列で止まったまま。絵は `assets/cats/<カテゴリ>.svg`（見出しの絵と同じ）。マークアップは blog-site.js と build_post_lists.js の両方
 
 ## カードの格子は使わない（2026-10-31〜）
 - 枠で囲んだ箱（絵・題名・説明）を格子に並べる形は使わない。代わりに namethatui.com の名前でいう **List**（区切り線の行）・**Data Table**（表）・**Steps**（番号の丸）・**Tabs** を使う
 - 例外: LPの特徴（「スマホ1台で、ここまでできる。」）は横スクロールのカードのまま（2026-10-31 ユーザーの判断で戻した）
 - 例外: 日常語の記事の「8語の変身カード」（.hs-grid）は格子のまま（2026-11-04 ユーザーの判断）
+- 例外: 一覧ページのカテゴリの選択はカード（2026-11-06 ユーザーの判断）
 - ブログのトップの「テーマから探す」は消した（上のテーマのタブと重なる）。図の `.fg-cards` は区切り線のリスト（左に絵・真ん中に見出しと説明・右に判定の判子）、`.fg-check` は箱なしのチェックリスト、`.fg-flow` は箱なしの段階で表示する（CSSだけで変えたので、書き方は前のまま）
 
 ## 記事の冒頭の型（2026-10-31〜・全記事）
@@ -198,6 +200,8 @@
 15. blog-score-mismatch.html — 点数が合わないときのチェックリスト
 16. blog-mawashi-uchi.html — 5人以上の回し方・試合数が違う人の比べ方
 - お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html（10月に「いまはログインで…」の追記）
+
+- blog-team-league.html（2026-11-06）: 16人4チームのチーム戦の手順。画面は tools/shoot_team_demo.py（架空の名前）
 
 ## 統合した記事（2026-09-25・2026-10-13）
 - **2026-10-13: blog-riichi・blog-dora・blog-naki → blog-yaku-list（#riichi・#dora・#naki）、blog-starter-kit → blog-manner（#starter-kit）**。firebase.json の redirects（301）。

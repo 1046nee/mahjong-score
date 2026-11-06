@@ -69,5 +69,23 @@ def main():
     print("spliced ok, index.html size:", len(s))
 
 
+def splice_team():
+    """チーム戦のデモ（tools/shoot_team_demo.py が書き出す）だけを埋めこむ。実行: python tools/splice_lp_live.py team"""
+    s = open(IDX, encoding="utf-8", newline="").read()
+    fig = ('<figure class="lp-show" data-team-demo><figcaption><b>どのチームが勝ってる？</b>'
+           '<span>4チーム16人の対戦のデモ</span><a href="/blog-team-league.html">くわしく見る ›</a></figcaption>'
+           '<div class="lp-shot lp-touch"><div class="lp-live-in">' + read("lp-live-team.html") + '</div></div></figure>')
+    pat = re.compile(r'<figure class="lp-show" data-team-demo>.*?</figure>', re.S)
+    if pat.search(s):
+        s = pat.sub(lambda m: fig, s, count=1)
+    else:
+        m = re.search(r'<figure class="lp-show"><figcaption><b>あの日、どうだった？</b>.*?</figure>', s, re.S)
+        assert m, "games"
+        s = s[:m.end()] + "\n        " + fig + s[m.end():]
+    open(IDX, "w", encoding="utf-8", newline="").write(s)
+    print("team demo ok, index.html size:", len(s))
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    splice_team() if sys.argv[1:] == ["team"] else main()

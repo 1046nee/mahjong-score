@@ -43,7 +43,7 @@ const catNavHtml = active => {
   const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(cats).map(k => [k, cats[k].name, cats[k].url]));
   const count = k => posts.filter(p => k === 'all' || p.cat === k).length;
   return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
-    `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}>${label}<span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
+    `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><img class="ct-ic" src="/assets/cats/${k}.svg" alt="" width="200" height="120"><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
 };
 
 // 一覧ページ: すべて・麻雀の記事の入口（/mahjong/＝6テーマをまとめて）・カテゴリごと（2026-10-28〜。テーマのページは tools/blog_cats.py が作る）

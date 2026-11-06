@@ -120,8 +120,19 @@ def tenbo(x, y, w, c, dots="#E75620"):
 
 
 def bg(c, c2="#ffffff"):
-    return (f'<rect width="{W}" height="{H}" fill="{c}"/>'
-            f'<circle cx="286" cy="28" r="70" fill="{c2}" opacity=".14"/><circle cx="24" cy="226" r="56" fill="{c2}" opacity=".12"/>')
+    # 真ん中から放射する線の地（2026-11-06 ユーザーの依頼「NAGAのサムネのインパクトに負けない」）
+    import math
+    rays = "".join(f'<path d="M160 120 L{160 + 340 * math.cos(a):.0f} {120 + 340 * math.sin(a):.0f} L{160 + 340 * math.cos(a + .13):.0f} {120 + 340 * math.sin(a + .13):.0f} Z"/>'
+                   for a in [i * math.pi / 12 for i in range(24)])
+    return f'<rect width="{W}" height="{H}" fill="{c}"/><g fill="{c2}" opacity=".13">{rays}</g>'
+
+
+# 絵の外側に黒い縁と、右下へずらした影。一覧の絵は88pxまで小さくなるので太めにする
+STICKER = ('<defs><filter id="st" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">'
+           '<feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/>'
+           '<feFlood flood-color="#14110F"/><feComposite in2="d" operator="in" result="o"/>'
+           '<feOffset in="o" dx="4" dy="5" result="s"/>'
+           '<feMerge><feMergeNode in="s"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>')
 
 
 def robot(cx, cy, s=1.0):
@@ -174,6 +185,7 @@ THUMBS = [
  T("blog-nichijougo", "#F59E0B", lambda: bubble(30, 40, 150, 56, "テンパる", 28) + bubble(140, 120, 150, 56, "安パイ", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
  T("blog-sekai-mahjong", "#0F766E", lambda: route_flags() + bubble(70, 146, 180, 54, "世界の麻雀", 28, "#FFD23F") + sparkle(282, 168, 11) + sparkle(36, 176, 8)),
  T("blog-mahjong-suuji", "#DB2777", lambda: bubble(36, 40, 130, 56, "136枚", 28) + bubble(154, 120, 130, 56, "なぜ？", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
+ T("blog-team-league", "#E11D48", lambda: trophy(160, 74, 1.05) + bubble(26, 158, 128, 54, "4チーム", 27) + bubble(170, 158, 124, 54, "16人", 30, "#FFD23F") + sparkle(270, 46, 13) + sparkle(50, 52, 10)),
  T("blog-naga-guide", "#2D1B69", lambda: '<circle cx="160" cy="124" r="96" fill="#7C3AED"/><image x="52" y="24" width="216" height="200" href="data:image/webp;base64,' + open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "naga_thumb.b64")).read() + '"/>' + sparkle(40, 44, 12) + sparkle(276, 186, 9)),
  T("blog-ai-haifu", "#0EA5E9", lambda: robot(110, 120, 1.15) + card(196, 64, 96, 116, "#fff", 10) + lines(208, 82, 6, 72, 15) + sparkle(276, 34, 12) + sparkle(42, 186, 9)),
  T("blog-pao", "#0F9D8A", lambda: row_center(["z5", "z6", "z7"], 40, 50, 6) + bubble(40, 140, 110, 52, "ポン！", 26) + bubble(170, 140, 110, 52, "包", 30, "#FFD23F") + sparkle(270, 44, 13) + sparkle(54, 50, 9)),
@@ -235,7 +247,7 @@ def build():
     os.makedirs(OUT, exist_ok=True)
     for name, color, body in THUMBS:
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}">'
-               + bg(color) + body() + "</svg>")
+               + STICKER + bg(color) + '<g filter="url(#st)">' + body() + "</g></svg>")
         svg = inline_tiles(svg)
         assert "/assets/tiles/" not in svg, name
         io.open(os.path.join(OUT, name + ".svg"), "w", encoding="utf-8", newline="\n").write(svg)

@@ -1000,3 +1000,23 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 .bs-list .hero-culture { background: #FCE9F2; } .bs-list .hero-culture h1 { color: #BE185D; }
 .bs-list .hero-news { background: #EAF0FB; } .bs-list .hero-news h1 { color: #2F4A86; }
 .bs-list .hero-blog { background: #F4EDE5; } .bs-list .hero-blog h1 { color: #6E523B; }
+
+/* カテゴリはカードで選ぶ（2026-11-06 ユーザーの依頼。横に流れる帯＋追従は触ったときの動きが安定しなかった）。
+   止まったままの3列×3段（PCは9列）。太い枠は参考サイトの選択カードに合わせた */
+.cat-nav, .bs-list .cat-nav { position: static; top: auto; z-index: auto; background: none; border: 0; backdrop-filter: none; }
+.cat-nav-inner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px 12px 4px; overflow: visible; justify-content: stretch; }
+.cat-tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; min-width: 0; min-height: 84px; padding: 7px 4px 8px; background: #fff; border: 2px solid #1F2A28; border-radius: 14px; color: #1F2A28; font-size: 12.5px; font-weight: 800; line-height: 1.3; text-align: center; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+.cat-tab::before, .cat-tab::after, .cat-tab.on::after { content: none; }
+.cat-tab:hover { background: #F4F7F6; color: #1F2A28; }
+.cat-tab.on, .cat-tab.on:hover { background: var(--cc); border-color: #1F2A28; color: #fff; }
+.cat-tab .ct-ic { display: block; width: 62px; height: 37px; object-fit: contain; }
+.cat-tab .cnt { position: absolute; top: 3px; right: 6px; font-size: 10.5px; font-weight: 800; color: #6B7A77; }
+.cat-tab.on .cnt { color: #fff; }
+@media (max-width: 420px) { .cat-nav-inner { padding: 12px 10px 4px; justify-content: stretch; gap: 7px; } .cat-tab { padding: 7px 3px 8px; font-size: 12px; gap: 2px; } }
+@media (min-width: 900px) { .cat-nav-inner { grid-template-columns: repeat(9, minmax(0, 1fr)); padding: 14px 12px 6px; } }
+
+/* 記事の中の画面（スマホの縦長は細く、表は幅いっぱいに） */
+.tl-shot { max-width: 300px; margin: 16px auto; } .tl-shot.w { max-width: 420px; }
+.tl-shot img { display: block; width: 100%; height: auto; border: 1px solid #DCE6E3; border-radius: 12px; }
+.tl-shot figcaption { margin-top: 6px; font-size: 12.5px; line-height: 1.6; text-align: center; color: #5F6E6B; }
+.tl-note { font-size: 13px; color: #5F6E6B; }
