@@ -9072,6 +9072,12 @@ function fitLpLive() {
     inner.style.transform = `scale(${k})`;
     // 縮めた分だけ下を詰める。transform は高さを変えないので、中をスクロールするカード（チーム戦）の下に白い空きが残った（2026-11-06）
     inner.style.marginBottom = `${-inner.offsetHeight * (1 - k)}px`;
+    // 隠れていた画面（過去の試合の 一覧・カレンダー など）は、見えて大きさが変わったときに測り直す（2026-11-06 下に白い空きが残った）
+    if (!inner.dataset.ro && 'ResizeObserver' in window) {
+      inner.dataset.ro = '1';
+      let lastH = -1;
+      new ResizeObserver(() => { const h = inner.offsetHeight; if (h === lastH) return; lastH = h; const kk = host.clientWidth / 358; inner.style.marginBottom = `${-h * (1 - kk)}px`; }).observe(inner);
+    }
   });
   const live = document.getElementById('lp-live');
   if (live && live.clientWidth !== fitLpLive.w) { fitLpLive.w = live.clientWidth; lpSparkEnd(); } // 高さだけの変化（スマホのアドレスバー）では、動かしたグラフを戻さない
