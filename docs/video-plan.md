@@ -25,6 +25,9 @@
 - **冒頭＝サムネ**（札＋題名＋絵）。`-thumb.jpg` は冒頭の画面から字幕を外したもの。地の色・字・絵の位置はそろえる
 - 字幕は必ず画面の中央。`make_short.build` が幅を確かめ、はみ出す字幕は字を小さくし、中央でなければ止まる
 - 録画と画面の高さは 390×792（スマホの枠と同じ比率）。844だと下が切れて右下のオレンジのボタンが欠ける
+- **仲間ページ・マイページの10本（nakama-*・mypage-*）は、社用PCで録画して clips を素材リポジトリに push する**（2026-11-06 ユーザーの判断。本物のデータは社用PCにしかなく、声は VOICEVOX のある別のPCで入れるため）。
+  社用PC: `python tools/record_play.py nakama-rank --data <circle_anon.json>`（10本分）→ まじゃすこ素材で `git add video/clips/nakama-* video/clips/mypage-*` → commit → push。
+  声のPC: 素材リポジトリを pull → `python tools/make_narrated.py nakama-rank --vv 3 ずんだもん zundamon`。それ以外の録画（play-*）は入れない（素材リポジトリの .gitignore）。circle_anon.json そのものは入れない
 - 会社PCは声なしの下書きまで: `python tools/make_narrated.py --draft` → `voice-<名前>-draft.mp4`。声は個人PCで `python tools/make_narrated.py --vv 3 ずんだもん zundamon`
 
 ## 1本の型（どの種類も共通）
