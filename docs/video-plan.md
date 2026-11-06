@@ -113,7 +113,7 @@
 ## 出し方
 - 週1本から（日曜の夜）。3つのアプリに同じ動画を同じ日に出す。続いたら週2本へ
 - 説明文：1行目に動画のフックをそのまま／2行目に「麻雀のスコア記録アプリ まじゃすこ（プロフィールのリンクから）」／ハッシュタグ3〜5個（#麻雀 #麻雀あるある #セット麻雀 #麻雀初心者 #まじゃすこ）
-- 予定と本文は Notion の SNS投稿カレンダー（チャンネル「ショート動画」）。2026-11-05 に組み直した: 11/8 kinou → aruaru-shukei → kabe-umaoka → play-quick → calc-vs → play-rounds → play-mawashi（12/20・年末の集まり）→ play-team（12/27）→ 2027-01-03 から仲間ページとマイページを交互（社用PCで録画と声入れが要る）。
+- 予定と本文は Notion の SNS投稿カレンダー（チャンネル「ショート動画」）。2026-11-06 に組み直した（日曜20:00に1本・アプリの回と記事の回を交互）: 11/8 kinou → t-hai136 → aruaru-shukei → t-zure → play-quick → kabe-umaoka → play-mawashi（12/20）→ play-team（12/27）→ t-nichijou（1/3）→ calc-vs → t-tsumo70 → play-rounds → t-sanma → nakama-rank（2/7）→ t-half → mypage-graph → t-haitei → 3/7〜4/25 仲間ページとマイページを交互（社用PCで録画が要る）。
   説明文の最後に `VOICEVOX:ずんだもん` を入れる（クレジットの決まり）。動画に声とBGMが入っているので、アプリの曲は足さない
 
 ## 落とし穴
