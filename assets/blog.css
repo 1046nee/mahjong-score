@@ -981,9 +981,9 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 .bs-list .site-head .site-head-inner, .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; gap: 0; }
 .site-head .brand img { height: 48px; width: auto; vertical-align: middle; }
 .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
-.site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 10px; font-weight: 800; line-height: 1.1; color: #177083; background: none; border: 0; border-radius: 8px; padding: 3px 6px; text-decoration: none; white-space: nowrap; }
-.site-head .head-lp-link:hover { background: #E4F3EC; }
-/* 左上のLPへの導線＝アイコンの下に小さな文字（枠なし。2026-11-06 ユーザーの選択） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
+.site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #E4F3EC; border: 1px solid #C7E3D6; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
+.site-head .head-lp-link:hover { background: #D6EEE2; } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
+/* 左上のLPへの導線＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定。名前だけだと今いるページの名前に見える） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
 :root { --hh: 65px; }
 .bs-list .cat-nav { top: var(--hh, 65px); }
 
@@ -1024,3 +1024,23 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 .tl-shot img { display: block; width: 100%; height: auto; border: 1px solid #DCE6E3; border-radius: 12px; }
 .tl-shot figcaption { margin-top: 6px; font-size: 12.5px; line-height: 1.6; text-align: center; color: #5F6E6B; }
 .tl-note { font-size: 13px; color: #5F6E6B; }
+
+/* ---- 2026-11-06 ユーザーの指定 ----
+   ①横の列の読みものの組: PC（2列以上）は小さな絵の行、スマホ（1列）はLPと同じ絵と題名のカード
+   ②一覧ページは、見出しから記事の一覧の終わりまでの地をカテゴリの薄い色にする（見出しと同じ色）。
+     スマホで記事の下に来る読みものの組（横の列）は今までの地の色のまま */
+.bs-list .rd-box .rd-sp, .rd-box .rd-sp { display: none; }
+@media (max-width: 900px) {
+  .rd-box .rd-pc { display: none; }
+  .bs-list .rd-box .rd-sp { display: flex; margin-top: 10px; }
+  .rd-box .sb-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+}
+.bs-list:has(.hero-all) { --tint: #E4F3EC; } .bs-list:has(.hero-mahjong) { --tint: #E4F3EC; } .bs-list:has(.hero-beginner) { --tint: #EAF7EE; }
+.bs-list:has(.hero-rules) { --tint: #E4F3F4; } .bs-list:has(.hero-score) { --tint: #FCEFE6; } .bs-list:has(.hero-pro) { --tint: #F1EBFD; }
+.bs-list:has(.hero-ai) { --tint: #E6F3FB; } .bs-list:has(.hero-culture) { --tint: #FCE9F2; } .bs-list:has(.hero-news) { --tint: #EAF0FB; } .bs-list:has(.hero-blog) { --tint: #F4EDE5; }
+/* 中央寄せの箱でも画面の端まで塗る（影を左右に広げて、上下ははみ出さないように切る） */
+.bs-list .post-layout { background: var(--tint, transparent); box-shadow: 0 0 0 100vmax var(--tint, transparent); clip-path: inset(0 -100vmax); }
+@media (max-width: 900px) {
+  .bs-list .post-layout > [data-sidebar] { background: #EEF3F1; box-shadow: 0 0 0 100vmax #EEF3F1; clip-path: inset(0 -100vmax -100vmax); padding-top: 18px; }
+  .bs-list .post-layout { padding-bottom: 0; }
+}
