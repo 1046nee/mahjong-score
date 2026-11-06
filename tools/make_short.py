@@ -266,7 +266,7 @@ def caps(items, top=200):
 def v_play_quick():
     """実際の操作：はじめる→4人→点数を入れる→最後の1人は自動→順位→共有"""
     T0 = HOOK
-    els = hook_phone("実際の操作", "麻雀のスコア、\nスマホで記録してみた。", "howto-4.jpg", chips=[(("", "+65.2", ("medal", 1)), "l")])
+    els = hook_phone("実際の操作", "麻雀のスコア、\nスマホで\n記録してみた。", "howto-4.jpg", chips=[(("", "+65.2", ("medal", 1)), "l")])
     e, hh, m = live_at(T0, T0 + 19.4, "play-quick", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]

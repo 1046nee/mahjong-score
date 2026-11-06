@@ -258,8 +258,8 @@ def t_aruaru():
 def t_umaoka():
     vis = '<div class="vcard mid">' + art("assets/thumbs/blog-uma-oka.svg", 640, "border-radius:24px") + "</div>"
     def oka(a, b):
-        return [head(a, b, "オカ＝\nトップへのごほうび"), stage(a + .2, b, '<div class="vcard mid">' + art("assets/art/tenbo-color.svg", 700) + "</div>", top=440),
-                stage(a + .9, b, '<div class="vcard">' + vt([("25,000点持ち・30,000点返し", "", ""), ("トップ", "+15", ""), ("ほかの3人", "−5ずつ", "n")]) + "</div>", top=760)]
+        return [head(a, b, "オカ＝\nトップへのごほうび"), stage(a + .2, b, '<div class="vcard mid">' + art("assets/art/tenbo-color.svg", 420) + "</div>", top=440),
+                stage(a + .9, b, '<div class="vcard">' + vt([("25,000点持ち・30,000点返し", "", ""), ("トップ", "+15", ""), ("ほかの3人", "−5ずつ", "n")]) + "</div>", top=860)]
     def uma(a, b):
         return [head(a, b, "ウマ＝\n順位で動くポイント"), stage(a + .3, b, '<div class="vcard">' + vt([("1位", "+30", ""), ("2位", "+10", ""), ("3位", "−10", "n"), ("4位", "−30", "n")]) + "</div>", top=470)]
     def ex(a, b):
