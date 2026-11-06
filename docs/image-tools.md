@@ -38,7 +38,7 @@
 - `tools/make_ig_feature8.py` — 機能紹介feature-8「機種変更しても、履歴を引き継げる」単発
   （スマホ2台＋PIL図形のカギ＋矢印の横並び構成。カギは絵文字でなく図形で描く=画像内絵文字禁止ルール）
 - `tools/make_ig_daily.py` — IG毎日投稿用: 麻雀用語ミニ解説カード4枚（glossary-*）＋小ワザTips3枚（tips-*）
-- `tools/make_channel_art.py` — YouTube・TikTok のチャンネル画像（2026-11-06〜。出力 まじゃすこ素材/channel/）: プロフィール画像 icon-1080（丸く切り抜かれる前提。白い札のMは直径の54%・飾りは丸の内側だけ。favicon のMを座標で写して大きくても滲まない）＋丸での見え方の確認 icon-preview／YouTubeバナー yt-banner 2560×1440（文字とマークは全端末で見える中央1546×423に入れる。✨は文字に重ねず左右の外側。確認用 yt-banner-guide）／動画の透かし yt-watermark 300×300（背景透明）
+- `tools/make_channel_art.py` — YouTube・TikTok のチャンネル画像（2026-11-06〜。出力 まじゃすこ素材/channel/）: プロフィール画像 icon-1080（丸く切り抜かれる前提。白い札のMは直径の54%・飾りは丸の内側だけ。favicon のMを座標で写して大きくても滲まない）＋丸での見え方の確認 icon-preview／YouTubeバナー yt-banner 2560×1440（文字とマークは全端末で見える中央1546×423に入れる。✨は文字に重ねず左右の外側。確認用 yt-banner-guide）／動画の透かし yt-watermark 300×300（背景透明）／**Xのヘッダー x-header 1500×500**（バナーと同じ見た目。左下はプロフィール画像が重なるので空け、文字は上下60pxを避ける。確認用 x-header-guide）
 - `tools/make_threads_icon.py` — Threads/IG個人（@munii_dev）プロフィールアイコン3案 1080×1080
 - `tools/shoot_app_screens.py` — 実アプリ画面のスマホ実寸スクショ撮影（index.htmlをローカル起動＋Firebaseを最小スタブ化。本番に触れない。出力: まじゃすこ素材/ig/shots/）。
   **サンプルデータは rate:0**にしてある（アプリはもう倍率・換算を表示しないが、古い画面を撮らないよう念のため。SNS画像に出したくない情報が写る）。

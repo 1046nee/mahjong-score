@@ -6,6 +6,8 @@
 - yt-banner.png      YouTubeのバナー 2560×1440（文字とマークは全端末で見える中央 1546×423 に入れる）
 - yt-banner-guide.png バナーの見える範囲（テレビ／PC／スマホ）の線を重ねた確認用
 - yt-watermark.png   YouTubeの動画の透かし 300×300（右下に小さく出る。背景は透明）
+- x-header.png       Xのヘッダー 1500×500（YouTubeのバナーと同じ見た目。左下はプロフィール画像が重なるので空ける・上下は端末で約60px切れる）
+- x-header-guide.png Xのヘッダーの重なる所・切れる所の線を重ねた確認用
 実行: python tools/make_channel_art.py
 """
 import base64
@@ -86,6 +88,34 @@ def banner_html(guide=False):
     </div></body></html>'''
 
 
+def x_header_html(guide=False):
+    W, H = 1500, 500
+    tiles = ""  # 下の端は切れることがあり、牌の列が縞に見えるので置かない
+    sp = sparkle(1400, 120, 30, ORANGE) + sparkle(1430, 330, 22, TEAL) + sparkle(160, 120, 34, TEAL) + sparkle(250, 210, 16, ORANGE)
+    g = ""
+    if guide:
+        g = (f'<rect x="0" y="60" width="{W}" height="{H-120}" fill="none" stroke="{ORANGE}" stroke-width="4" stroke-dasharray="18 10"/>'
+             f'<text x="12" y="52" font-size="22" font-weight="800" fill="{ORANGE}">上下は端末で切れることがある</text>'
+             f'<circle cx="200" cy="{H}" r="168" fill="rgba(0,0,0,.25)"/><text x="80" y="{H-40}" font-size="22" font-weight="800" fill="#fff">プロフィール画像</text>')
+    return BASE + f'''<div style="width:{W}px;height:{H}px;position:relative;overflow:hidden;background:linear-gradient(180deg,#EAF6F1 0%,#DBF4F9 100%)">
+      <svg width="{W}" height="{H}" style="position:absolute;inset:0">
+        <circle cx="900" cy="250" r="380" fill="#fff" opacity=".45"/>
+        <circle cx="90" cy="60" r="150" fill="{TEAL}" opacity=".06"/><circle cx="1440" cy="470" r="170" fill="{TEAL}" opacity=".06"/>
+        {tiles}{sp}
+      </svg>
+      <div style="position:absolute;left:400px;right:120px;top:60px;bottom:60px;display:flex;align-items:center;justify-content:center;gap:40px">
+        {tile(200)}
+        <div style="color:#1F2A28">
+          <div style="font-size:28px;font-weight:800;color:#8A9896">majasco.jp</div>
+          <div style="font-size:78px;font-weight:900;color:{TEAL};line-height:1.05;letter-spacing:.02em;margin:0 0 10px">まじゃすこ</div>
+          <div style="font-size:32px;font-weight:800;line-height:1.3">麻雀のスコア記録を、もっとかんたんに</div>
+          <div style="font-size:24px;font-weight:700;color:#55635F;margin-top:8px"><span style="color:{ORANGE};font-weight:900">登録不要・無料</span>　URLひとつで全員のスマホに共有</div>
+        </div>
+      </div>
+      <svg width="{W}" height="{H}" style="position:absolute;inset:0">{g}</svg>
+    </div></body></html>'''
+
+
 def watermark_html():
     return BASE.replace("<body>", '<body style="background:transparent">') + f'<div style="width:300px;height:300px;display:grid;place-items:center">{tile(236, shadow=False)}</div></body></html>'
 
@@ -117,6 +147,8 @@ def main():
         shot(banner_html(), 2560, 1440, "yt-banner.png")
         shot(banner_html(guide=True), 2560, 1440, "yt-banner-guide.png")
         shot(watermark_html(), 300, 300, "yt-watermark.png", transparent=True)
+        shot(x_header_html(), 1500, 500, "x-header.png")
+        shot(x_header_html(guide=True), 1500, 500, "x-header-guide.png")
         b.close()
 
 
