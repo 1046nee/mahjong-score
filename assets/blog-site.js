@@ -26,6 +26,23 @@ const BLOG_CATS = {
 const inCat = (p, cat) => cat === 'all' || p.cat === cat || (cat === 'mahjong' && BLOG_CATS[p.cat] && BLOG_CATS[p.cat].group === 'mahjong');
 
 // 新しい順に並べる。recommended: true の記事が「今月のおすすめ記事」に出る（3〜4件を目安に手動で付け替える）
+// 読みものの組（2026-11-06 ユーザーの指定）: LPの記事の案内とブログの横の列に同じ組を出す。正はここだけ（build_post_lists.js もここから読む）
+// ic＝組の名前の左の丸いアイコン（色・絵）。more＝記事の一覧に無いページ（題名は各ページの h1 と同じ）
+const READ_GROUPS = [
+  { name: '初心者向け', ic: 'sprout', c: '#16A34A', urls: ['/blog-rule-basics.html', '/blog-yaku-ichiran.html', '/blog-score-table.html', '/blog-mleague-kansen.html'] },
+  { name: 'Mリーグ・プロ情報', ic: 'trophy', c: '#7C3AED', urls: ['/blog-mleague-2026.html', '/blog-mleague-history.html', '/blog-dantai-rekishi.html', '/blog-mahjong-titles.html'] },
+  { name: 'もっと上手くなりたい人向け', ic: 'up', c: '#E75620', urls: ['/blog-naga-guide.html', '/blog-pao.html', '/blog-mahjong-books.html', '/blog-pro-dantai-rules.html'] },
+  { name: 'その他', ic: 'more', c: '#177083', urls: [], more: [
+    { url: '/score-basics.html', cat: 'score', label: 'スコア・集計', title: '【初心者必見】麻雀のスコア計算の基本｜素点・ウマ・オカを実例で', thumb: '/assets/thumbs/score-basics.webp' },
+    { url: '/faq.html', cat: 'rules', label: 'よくある質問', title: '【FAQ】まじゃすこのよくある質問｜使い方・ルール設定・データの保存', thumb: '/assets/thumbs/faq.webp' },
+  ] },
+];
+const READ_ICON = {
+  sprout: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 21v-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 13C12 8.5 8.8 6 4.5 6c0 4.4 3 7 7.5 7Z" fill="currentColor"/><path d="M12 11.5C12 7.5 14.8 4.5 19.5 4.5c0 4.6-3 7-7.5 7Z" fill="currentColor"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0Z" fill="currentColor"/><path d="M7 6H4.5a3 3 0 0 0 3 4M17 6h2.5a3 3 0 0 1-3 4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 14v3.5M8.5 20h7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  up: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 17l5.5-5.5 3.5 3.5L20 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 8H20v5.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
+};
 const BLOG_POSTS = [
   { url: '/blog-team-league.html', cat: 'score', date: '2026.11.06', tag: 'チーム戦',
     title: '【実例】麻雀をMリーグのようなチーム戦で楽しむ方法｜16人4チームの作り方と結果の共有',
@@ -223,7 +240,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(BLOG_CATS).map(k => [k, BLOG_CATS[k].name, BLOG_CATS[k].url]));
     const count = k => BLOG_POSTS.filter(p => k === 'all' || p.cat === k).length;
     return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
-      `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><img class="ct-ic" src="/assets/cats/${k}.svg" alt="" width="200" height="120"><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
+      `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
   }
   // サイドバーの1行（2026-10-27 作り直し）: 記事の絵・題名（｜の前を太く、後ろを小さく）・カテゴリの色の札・日付。
   // rank＝おすすめの順番（絵の角に番号）、isNew＝30日以内の記事に「新着」
@@ -242,6 +259,14 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     bell: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.6L4.4 15.4A1 1 0 0 0 5.3 17h13.4a1 1 0 0 0 .9-1.6L18 12.6V9a6 6 0 0 0-6-6Zm-2.4 15.5a2.5 2.5 0 0 0 4.8 0Z" fill="currentColor"/></svg>',
     share: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="6" cy="12" r="2.6" fill="currentColor"/><circle cx="17.5" cy="6" r="2.6" fill="currentColor"/><circle cx="17.5" cy="18" r="2.6" fill="currentColor"/><path d="m8 11 7.5-4M8 13l7.5 4" stroke="currentColor" stroke-width="1.8"/></svg>',
   };
+  // 読みものの組の見出し（丸い色のアイコン＋名前）。LP（build_post_lists.js）も同じマークアップ
+  const readHead = (g, tag) => `<div class="sb-head rd-head" style="--rc:${g.c}"><span class="sb-ic">${READ_ICON[g.ic]}</span><${tag}>${g.name}</${tag}></div>`;
+  function sideItemMore(m) {
+    return `<li><a class="sb-it cat-${m.cat}" href="${m.url}">
+      <span class="sb-th"><img src="${m.thumb}" alt="" width="320" height="240" loading="lazy" decoding="async"></span>
+      <span class="sb-tx"><span class="sb-meta"><i class="sb-cat">${m.label}</i></span>
+        <b class="sb-tt">${escHtml(m.title.split('｜')[0])}</b></span></a></li>`;
+  }
   const sbHead = (ic, title, sub) => `<div class="sb-head sb-${ic}"><span class="sb-ic">${SB_ICON[ic]}</span><h2>${title}</h2>${sub ? `<small>${sub}</small>` : ''}</div>`;
 
   // 全ブログ/固定ページ共通: LP（トップ）と同じ見た目のヘッダー・フッターに差し替える。
@@ -482,18 +507,16 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       if (!el.children.length) el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
     });
 
-    // サイドバー: 今月のおすすめ記事 ＋ 最新のアップデート（/news/の新着）
+    // サイドバー: LPと同じ読みものの組（初心者向け・Mリーグ・プロ情報・もっと上手くなりたい人向け・その他。2026-11-06 ユーザーの指定。
+    // 旧「今月のおすすめ記事」「最新のアップデート」はやめた）
     document.querySelectorAll('[data-sidebar]').forEach(el => {
       const here = location.pathname;
-      const rec = BLOG_POSTS.filter(p => p.recommended && p.url !== here).sort(byDateDesc).slice(0, 4);
-      const news = BLOG_POSTS.filter(p => p.cat === 'news' && p.url !== here).sort(byDateDesc).slice(0, 3);
       let html = '';
-      if (rec.length) {
-        html += `<div class="side-box sb-box">${sbHead('star', '今月のおすすめ記事', '集計係がまず読んでほしい記事')}<ul class="sb-list">${rec.map((p, i) => sideItem(p, i + 1)).join('')}</ul></div>`;
-      }
-      html += `<div class="side-box sb-box">${sbHead('bell', '最新のアップデート', 'まじゃすこの新しい機能')}`
-        + (news.length ? `<ul class="sb-list">${news.map(p => sideItem(p)).join('')}</ul>` : '<p class="bs-empty">お知らせは準備中です。</p>')
-        + `<a class="sb-all" href="/news/">お知らせをすべて見る<span aria-hidden="true">›</span></a></div>`;
+      READ_GROUPS.forEach(g => {
+        const items = g.urls.map(u => BLOG_POSTS.find(p => p.url === u)).filter(p => p && p.url !== here).map(p => sideItem(p))
+          .concat((g.more || []).filter(m => m.url !== here).map(m => sideItemMore(m)));
+        if (items.length) html += `<div class="side-box sb-box">${readHead(g, 'h2')}<ul class="sb-list">${items.join('')}</ul></div>`;
+      });
       html += `<div class="side-box sb-box">${sbHead('share', '公式SNS', '新しい記事と機能のお知らせ')}${SNS_ICONS_HTML(40)}</div>`;
       el.innerHTML = html;
     });

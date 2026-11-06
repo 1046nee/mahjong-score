@@ -23,6 +23,8 @@ const catsMatch = src.match(/const BLOG_CATS = (\{[\s\S]*?\});/);
 const postsMatch = src.match(/const BLOG_POSTS = (\[[\s\S]*?\]);/);
 if (!catsMatch || !postsMatch) throw new Error('blog-site.js から BLOG_CATS / BLOG_POSTS を抽出できません');
 const cats = eval('(' + catsMatch[1] + ')');
+const READ_GROUPS = eval(src.match(/const READ_GROUPS = (\[[\s\S]*?\n\]);/)[1]);
+const READ_ICON = eval('(' + src.match(/const READ_ICON = (\{[\s\S]*?\n\});/)[1] + ')');
 const posts = eval(postsMatch[1]);
 
 // blog-site.js の cardHtml() と同一のマークアップを出力すること（差があるとJS再描画でちらつく）
@@ -43,7 +45,7 @@ const catNavHtml = active => {
   const items = [['all', 'すべて', '/blog.html']].concat(Object.keys(cats).map(k => [k, cats[k].name, cats[k].url]));
   const count = k => posts.filter(p => k === 'all' || p.cat === k).length;
   return '<div class="cat-nav-inner">' + items.map(([k, label, url]) =>
-    `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><img class="ct-ic" src="/assets/cats/${k}.svg" alt="" width="200" height="120"><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
+    `<a class="cat-tab cat-${k}${k === active ? ' on' : ''}" href="${url}"${k === active ? ' aria-current="page"' : ''}><span class="ct-n">${label}</span><span class="cnt">${count(k)}</span></a>`).join('') + '</div>';
 };
 
 // 一覧ページ: すべて・麻雀の記事の入口（/mahjong/＝6テーマをまとめて）・カテゴリごと（2026-10-28〜。テーマのページは tools/blog_cats.py が作る）
@@ -74,26 +76,19 @@ for (const [file, cat] of pages) {
 }
 
 // LPの記事の案内（2026-11-06 ユーザーの指定。絵と文の置き方はブログの一覧と同じ。題名は BLOG_POSTS から取るので記事と食い違わない）
-const LP_ARTICLES = [
-  ['初心者向け', ['/blog-rule-basics.html', '/blog-yaku-ichiran.html', '/blog-score-table.html', '/blog-mleague-kansen.html']],
-  ['Mリーグ・プロ情報', ['/blog-mleague-2026.html', '/blog-mleague-history.html', '/blog-dantai-rekishi.html', '/blog-mahjong-titles.html']],
-  ['もっと上手くなりたい人向け', ['/blog-naga-guide.html', '/blog-pao.html', '/blog-mahjong-books.html', '/blog-pro-dantai-rules.html']],
-];
-// 記事の一覧に無い2本は「その他」として1枚のカードに上下でまとめる（2026-11-06 ユーザーの指定。題名は faq.html・score-basics.html の h1 と同じ）
-const LP_MORE = [
-  { url: '/score-basics.html', cat: 'score', label: 'スコア・集計', title: '【初心者必見】麻雀のスコア計算の基本｜素点・ウマ・オカを実例で', thumb: '/assets/thumbs/score-basics.webp' },
-  { url: '/faq.html', cat: 'rules', label: 'よくある質問', title: '【FAQ】まじゃすこのよくある質問｜使い方・ルール設定・データの保存', thumb: '/assets/thumbs/faq.webp' },
-];
+// 組と記事は blog-site.js の READ_GROUPS（ブログの横の列と共通）
 const lpCard = (url, cat, label, date, title, img) => `<a class="post-card has-thumb cat-${cat}" href="${url}"><span class="pc-thumb"><img src="${img}" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">${label}</span>${date ? `<span class="date">${date}</span>` : ''}</span><span class="pc-t">${titleHtml(title)}</span></span></a>`;
 {
   const fp = path.join(root, 'index.html');
   let html = fs.readFileSync(fp, 'utf8');
-  const groups = LP_ARTICLES.map(([name, urls]) => `      <section class="lp-art-g"><h3>${name}</h3><div class="post-list">\n` + urls.map(u => {
+  const head = g => `<h3 class="rd-head" style="--rc:${g.c}"><span class="sb-ic">${READ_ICON[g.ic]}</span>${g.name}</h3>`;
+  const main = READ_GROUPS.filter(g => g.urls.length), other = READ_GROUPS.find(g => g.more);
+  const groups = main.map(g => `      <section class="lp-art-g">${head(g)}<div class="post-list">\n` + g.urls.map(u => {
     const p = posts.find(x => x.url === u);
     if (!p) throw new Error('LPの記事が見つかりません: ' + u);
     return '        ' + lpCard(p.url.slice(1), p.cat, cats[p.cat].name, p.date, p.title, thumb(p));
   }).join('\n') + '\n      </div></section>').join('\n');
-  const more = `      <section class="lp-art-g"><h3>その他</h3><div class="post-list">\n` + LP_MORE.map(p => '        ' + lpCard(p.url.slice(1), p.cat, p.label, '', p.title, p.thumb)).join('\n') + '\n      </div></section>';
+  const more = `      <section class="lp-art-g">${head(other)}<div class="post-list">\n` + other.more.map(p => '        ' + lpCard(p.url.slice(1), p.cat, p.label, '', p.title, p.thumb)).join('\n') + '\n      </div></section>';
   const body = `<!-- lp-articles:start -->\n    <div class="lp-arts">\n      <h2>初心者から上級者まで、<wbr>麻雀の記事</h2>\n      <p>仲間内で長く集計係をしてきた<wbr>運営者むにぃが書いています。</p>\n      <div class="lp-art-cols">\n${groups}\n      </div>\n      <div class="lp-art-more">\n${more}\n      </div>\n      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>\n    </div>\n<!-- lp-articles:end -->`;
   const re = /<!-- lp-articles:start -->[\s\S]*?<!-- lp-articles:end -->/;
   if (!re.test(html)) throw new Error('LPの記事の案内のアンカーが見つかりません');
