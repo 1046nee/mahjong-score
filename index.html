@@ -219,7 +219,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   #view-home .home-content:not(.lp-howto-wrap) { max-width: 1180px; padding-left: 32px; padding-right: 32px; }
   #view-home .lp-art-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 20px; }
-  #view-home .lp-art-more { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  #view-home .lp-art-more { max-width: calc((100% - 40px) / 3); margin-left: auto; margin-right: auto; } /* 「その他」は1列分の幅で真ん中 */
   #view-home .lp-arts .post-card.has-thumb { grid-template-columns: 88px 1fr; gap: 12px; }
   .global-header-wrap { max-width: none; }
   .global-header { max-width: 960px; margin: 0 auto; }
@@ -248,7 +248,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* 自分の成績（1枚目）だけは押せない見本（数字とグラフをLPだけで動かすため）。他はすべて本物どおり指で操作できる */
 .lp-live { cursor: default; background: transparent; box-shadow: none; } .lp-live .lp-live-in { pointer-events: none; } .lp-live .mc-trend, .lp-live .sk-seg { pointer-events: auto; } /* 合計/個人戦/チーム戦とグラフだけ触れる */
 /* チーム戦のデモ: ゲーム画面の複製。ボタン類は撮影時に外してある */
-.lp-team-demo { padding: 12px 12px 4px; background: #DBF4F9; } .lp-team-demo .page-title-row { padding: 2px 4px 10px; } .lp-team-demo .card { margin: 0 0 10px; } .lp-team-demo .card-title { margin-bottom: 10px; }
+.game-body.lp-team-demo { padding: 12px 12px 4px; background: #DBF4F9; } /* .game-body の下の余白100px（入力ボタンの分）を消す */ .lp-team-demo .page-title-row { padding: 2px 4px 10px; } .lp-team-demo .card { margin: 0 0 10px; } .lp-team-demo .card-title { margin-bottom: 10px; }
 .lp-live-in .mc-scroll { overscroll-behavior-x: contain; } .lp-live-in .sp-hit { pointer-events: none; }
 .lp-touch, .lp-touch-multi .lp-live-pane { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .lp-touch-multi { overflow: hidden; }
@@ -293,7 +293,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .lp-arts > h2 { font-size: 22px; font-weight: 900; line-height: 1.6; text-align: center; color: #1a1a1a; word-break: keep-all; }
 .lp-arts > p { margin: 6px 0 18px; font-size: 14px; line-height: 1.7; text-align: center; color: #5F6E6B; word-break: keep-all; }
 .lp-art-cols, .lp-art-more { display: grid; gap: 16px; }
-.lp-art-more { margin-top: 16px; }
+.lp-art-more { margin-top: 20px; } .lp-arts .lp-art-more + .read-more-link { margin-top: 18px; }
 .lp-art-g h3 { margin: 0 0 8px; font-size: 16px; font-weight: 900; color: #1F2A28; }
 .lp-arts .post-list { padding: 0 14px; background: #fff; border: 1px solid #DFE8E4; border-radius: 14px; }
 .lp-arts .post-card { display: block; border-bottom: 1px solid #E6ECEA; text-decoration: none; color: inherit; }
@@ -4064,11 +4064,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <a class="post-card has-thumb cat-pro" href="blog-pro-dantai-rules.html"><span class="pc-thumb"><img src="/assets/thumbs/blog-pro-dantai-rules.webp" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">Mリーグ・プロ</span><span class="date">2026.10.21</span></span><span class="pc-t">【プロ・上級者必見】麻雀プロ団体のルールの違い<span class="pc-sub">連盟・最高位戦・協会・RMU・麻将連合とMリーグを比較</span></span></span></a>
       </div></section>
       </div>
-      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
       <div class="lp-art-more">
-      <div class="post-list"><a class="post-card has-thumb cat-score" href="score-basics.html"><span class="pc-thumb"><img src="/assets/thumbs/score-basics.webp" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">スコア・集計</span></span><span class="pc-t">【初心者必見】麻雀のスコア計算の基本<span class="pc-sub">素点・ウマ・オカを実例で</span></span></span></a></div>
-      <div class="post-list"><a class="post-card has-thumb cat-rules" href="faq.html"><span class="pc-thumb"><img src="/assets/thumbs/faq.webp" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">よくある質問</span></span><span class="pc-t">【FAQ】まじゃすこのよくある質問<span class="pc-sub">使い方・ルール設定・データの保存</span></span></span></a></div>
+      <section class="lp-art-g"><h3>その他</h3><div class="post-list">
+        <a class="post-card has-thumb cat-score" href="score-basics.html"><span class="pc-thumb"><img src="/assets/thumbs/score-basics.webp" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">スコア・集計</span></span><span class="pc-t">【初心者必見】麻雀のスコア計算の基本<span class="pc-sub">素点・ウマ・オカを実例で</span></span></span></a>
+        <a class="post-card has-thumb cat-rules" href="faq.html"><span class="pc-thumb"><img src="/assets/thumbs/faq.webp" alt="" width="320" height="240" loading="lazy" decoding="async"></span><span class="pc-body"><span class="pc-meta"><span class="pc-cat">よくある質問</span></span><span class="pc-t">【FAQ】まじゃすこのよくある質問<span class="pc-sub">使い方・ルール設定・データの保存</span></span></span></a>
+      </div></section>
       </div>
+      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>
     </div>
 <!-- lp-articles:end -->
 
@@ -9062,7 +9064,11 @@ function initLpMotion() {
 function fitLpLive() {
   document.querySelectorAll('.lp-live-in').forEach(inner => {
     const host = inner.closest('.lp-shot');
-    if (host) inner.style.transform = `scale(${host.clientWidth / 358})`;
+    if (!host) return;
+    const k = host.clientWidth / 358;
+    inner.style.transform = `scale(${k})`;
+    // 縮めた分だけ下を詰める。transform は高さを変えないので、中をスクロールするカード（チーム戦）の下に白い空きが残った（2026-11-06）
+    inner.style.marginBottom = `${-inner.offsetHeight * (1 - k)}px`;
   });
   const live = document.getElementById('lp-live');
   if (live && live.clientWidth !== fitLpLive.w) { fitLpLive.w = live.clientWidth; lpSparkEnd(); } // 高さだけの変化（スマホのアドレスバー）では、動かしたグラフを戻さない

@@ -79,7 +79,7 @@ const LP_ARTICLES = [
   ['Mリーグ・プロ情報', ['/blog-mleague-2026.html', '/blog-mleague-history.html', '/blog-dantai-rekishi.html', '/blog-mahjong-titles.html']],
   ['もっと上手くなりたい人向け', ['/blog-naga-guide.html', '/blog-pao.html', '/blog-mahjong-books.html', '/blog-pro-dantai-rules.html']],
 ];
-// 記事の一覧に無い2本は別のカード（題名は faq.html・score-basics.html の h1 と同じ）
+// 記事の一覧に無い2本は「その他」として1枚のカードに上下でまとめる（2026-11-06 ユーザーの指定。題名は faq.html・score-basics.html の h1 と同じ）
 const LP_MORE = [
   { url: '/score-basics.html', cat: 'score', label: 'スコア・集計', title: '【初心者必見】麻雀のスコア計算の基本｜素点・ウマ・オカを実例で', thumb: '/assets/thumbs/score-basics.webp' },
   { url: '/faq.html', cat: 'rules', label: 'よくある質問', title: '【FAQ】まじゃすこのよくある質問｜使い方・ルール設定・データの保存', thumb: '/assets/thumbs/faq.webp' },
@@ -93,8 +93,8 @@ const lpCard = (url, cat, label, date, title, img) => `<a class="post-card has-t
     if (!p) throw new Error('LPの記事が見つかりません: ' + u);
     return '        ' + lpCard(p.url.slice(1), p.cat, cats[p.cat].name, p.date, p.title, thumb(p));
   }).join('\n') + '\n      </div></section>').join('\n');
-  const more = LP_MORE.map(p => `      <div class="post-list">${lpCard(p.url.slice(1), p.cat, p.label, '', p.title, p.thumb)}</div>`).join('\n');
-  const body = `<!-- lp-articles:start -->\n    <div class="lp-arts">\n      <h2>初心者から上級者まで、<wbr>麻雀の記事</h2>\n      <p>仲間内で長く集計係をしてきた<wbr>運営者むにぃが書いています。</p>\n      <div class="lp-art-cols">\n${groups}\n      </div>\n      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>\n      <div class="lp-art-more">\n${more}\n      </div>\n    </div>\n<!-- lp-articles:end -->`;
+  const more = `      <section class="lp-art-g"><h3>その他</h3><div class="post-list">\n` + LP_MORE.map(p => '        ' + lpCard(p.url.slice(1), p.cat, p.label, '', p.title, p.thumb)).join('\n') + '\n      </div></section>';
+  const body = `<!-- lp-articles:start -->\n    <div class="lp-arts">\n      <h2>初心者から上級者まで、<wbr>麻雀の記事</h2>\n      <p>仲間内で長く集計係をしてきた<wbr>運営者むにぃが書いています。</p>\n      <div class="lp-art-cols">\n${groups}\n      </div>\n      <div class="lp-art-more">\n${more}\n      </div>\n      <a class="read-more-link" href="blog.html">記事をすべて見る ›</a>\n    </div>\n<!-- lp-articles:end -->`;
   const re = /<!-- lp-articles:start -->[\s\S]*?<!-- lp-articles:end -->/;
   if (!re.test(html)) throw new Error('LPの記事の案内のアンカーが見つかりません');
   const crlf = html.includes('\r\n');
