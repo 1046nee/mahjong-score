@@ -1155,11 +1155,6 @@ select.cs-role { flex: none; box-sizing: border-box; width: 114px; height: 30px;
 .team-members-zone { display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; padding: 9px 10px 10px; }
 .team-chip { border: 1.5px solid transparent; background: #F4F7F6; border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700; color: #1F2A28; cursor: grab; user-select: none; -webkit-user-select: none; max-width: 100%; overflow-wrap: anywhere; }
 .team-chip:active { cursor: grabbing; }
-.team-chip.on { background: #fff; border-color: var(--tc); box-shadow: 0 0 0 2px var(--pc-a15, rgba(0,0,0,.08)); }
-/* 名前を押すと出る「移すチーム」。押したチームへ一度で移る */
-.team-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px 10px; border-top: 1px dashed #E0E7E5; }
-.team-pick > span { font-size: 11.5px; font-weight: 800; color: #6B7A77; margin-right: 2px; }
-.team-pick button { border: 0; border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 12px; font-weight: 800; background: var(--tc); color: var(--ti, #fff); cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
 /* チーム順位カードのメンバー名 */
 .team-members-line { font-size: 11px; color: #999; margin-top: 1px; overflow-wrap: anywhere; }
 /* チームの識別記号（履歴・成績表・チーム順位で所属を示す。色ではなく記号で区別） */
@@ -4164,7 +4159,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
             <button type="button" class="edit-tab" onclick="randomizeTeams()"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-dice"/></svg>ランダム編成</button>
           </div>
-          <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前を押すと、移すチームを選べます</div>
+          <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前を押すと次のチームへ移ります</div>
         </div>
       </div>
     </div>
@@ -10577,7 +10572,6 @@ function renderTeamEditor() {
   const wrap = ctx && document.getElementById(ctx.containerId);
   if (!wrap) return;
   const minTeams = ctx.minTeams || 2;
-  const pick = ctx.pick;
   const pen = '<svg class="pen" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20l4-1 11-11-3-3L5 16z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>';
   const tcv = ti => `--tc:${teamColorOf(ti)};--ti:${teamInkOf(ti)}`;
   wrap.innerHTML = ctx.teams.map((t, ti) => `
@@ -10589,11 +10583,9 @@ function renderTeamEditor() {
         ${ctx.teams.length > minTeams ? `<button type="button" class="round-del-btn" onclick="removeTeam(${ti})">削除</button>` : ''}
       </div>
       <div class="team-members-zone">
-        ${t.members.map(id => `<span class="team-chip${pick === id ? ' on' : ''}" draggable="true" ondragstart="onTeamDragStart(event, ${id})" onclick="tapMoveTeamMember(${id})">${esc(ctx.nameOf(id))}</span>`).join('')
+        ${t.members.map(id => `<span class="team-chip" draggable="true" ondragstart="onTeamDragStart(event, ${id})" onclick="tapMoveTeamMember(${id})">${esc(ctx.nameOf(id))}</span>`).join('')
           || '<span style="font-size:11px;color:#9AA7A4;align-self:center">メンバーを追加するとここに表示されます</span>'}
       </div>
-      ${pick != null && t.members.includes(pick) ? `<div class="team-pick"><span>移すチーム</span>${ctx.teams.map((u, ui) => ui === ti ? '' :
-        `<button type="button" style="${tcv(ui)}" onclick="moveTeamMember(${pick}, ${ui})">${esc(u.name || defaultTeamName(ui))}</button>`).join('')}</div>` : ''}
     </div>`).join('');
 }
 // チームの色の上の字の色（明るい色は濃い字にして読めるように）
@@ -10616,14 +10608,12 @@ function moveTeamMember(id, toTi) {
     if (p >= 0) t.members.splice(p, 1);
   });
   teamEditorCtx.teams[toTi].members.push(id);
-  teamEditorCtx.pick = null;
   renderTeamEditor();
 }
-// 名前を押すと、そのチームの下に「移すチーム」が出る（もう一度押すと閉じる）。スマホでドラッグしにくい場合の操作
+// 名前を押すと次のチームへ移る（スマホでドラッグしにくい場合の操作）。移す先の一覧は出さない（長いチーム名で崩れるため。2026-11-06 ユーザーの指定）
 function tapMoveTeamMember(id) {
-  captureTeamNames();
-  teamEditorCtx.pick = teamEditorCtx.pick === id ? null : id;
-  renderTeamEditor();
+  const cur = teamEditorCtx.teams.findIndex(t => t.members.includes(id));
+  moveTeamMember(id, (cur + 1) % teamEditorCtx.teams.length);
 }
 function onTeamDragStart(e, id) {
   e.dataTransfer.setData('text/plain', String(id));
@@ -13491,7 +13481,7 @@ function settingsFormHtml(name, s) {
           <button type="button" class="edit-tab" onclick="addTeam()">＋ チームを追加</button>
           <button type="button" class="edit-tab" onclick="randomizeTeams()">${ico('dice', 15)}ランダム編成</button>
         </div>
-        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前を押すと、移すチームを選べます</div>
+        <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前を押すと次のチームへ移ります</div>
       </div>
     </div>`;
 }
