@@ -156,7 +156,7 @@ def t_half():
     return [(["Mリーグのポイントは、", "シーズン中に2回も半分になる。"], hook("Mリーグ", "ポイントは\n2回半分になる", A)),
             (["半分にすると、", "チームの差も半分。", "150の差は75になります。"], s1),
             (["たとえば400で1位のAも、", "半分の200から始まって、", "ここで80落とすと120。"], s2),
-            (["ファイナルでさらに半分。", "最後はAが逆転しました。", "※架空のチームの例です"], s3),
+            (["ファイナルでさらに半分。", "最後はAが逆転しました。", "架空のチームの例です。"], s3),
             (END, article_end("blog-mleague-points", "計算の全部は記事で"))]
 
 def t_sanma():
@@ -232,4 +232,46 @@ def t_haitei():
             (["リーチもできません。", "最後の捨て牌には、", "チーもポンもできません。"], s2),
             (END, article_end("blog-haitei", "海底の決まりは記事で"))]
 
-TOPICS = {"t-hai136": t_hai, "t-half": t_half, "t-sanma": t_sanma, "t-tsumo70": t_tsumo, "t-zure": t_zure, "t-nichijou": t_nichijou, "t-haitei": t_haitei}
+# ---- 文字だけだった2本の作り直し（2026-11-06 ユーザーの指摘）----
+APP_END = ["無料で、登録もいりません。", "プロフィールのリンクからどうぞ。"]
+
+def t_aruaru():
+    vis = '<div class="vcard mid">' + art("assets/photo-score-sheets.jpg", 800, "border-radius:24px;height:520px;object-fit:cover") + "</div>"
+    def card(i, tx, rel):
+        def mk(a, b):
+            return [head(a, b, f"あるある{i}"), stage(a + .2, b, f'<div class="vcard mid">{art(rel, 620, "border-radius:24px")}<div class="tx" style="font-size:60px;font-weight:900;line-height:1.35;margin-top:26px">{esc(tx)}</div></div>', top=400, anim="right")]
+        return mk
+    def sol(a, b):
+        return [ms.at(a, b, '<h1>それ、まじゃすこなら<br>全部自動。</h1>', cls="cap", style="top:170px", anim="pop"), ms.phone_at(a + .2, b, "howto-4.jpg", y=400)[0],
+                ms.chip_at(a + .8, b, ("", "+69.1", ("medal", 1)), "l", 700), ms.chip_at(a + 1.2, b, ("通算", "自動", ""), "r", 900)]
+    def q(a, b):
+        return [head(a, b, "あなたの卓は、\nいくつ当てはまる？"), stage(a + .2, b, '<div class="vcard mid">' + art("assets/thumbs/blog-shukei-gakari.svg", 640, "border-radius:24px") + "</div>", top=540)]
+    return [(["セット麻雀の、", "集計係あるある。"], hook("あるある", "セット麻雀の\n集計係あるある", vis, g=False)),
+            (["終わったあと、", "なぜか電卓を渡される。"], card(1, "終わったあと、\n電卓を渡される", "assets/thumbs/blog-score-examples.svg")),
+            (["ウマとオカの計算で、", "手が止まる。"], card(2, "ウマ・オカの計算で\n手が止まる", "assets/thumbs/blog-uma-oka.svg")),
+            (["先月どっちが勝ってた？", "誰も答えられない。"], card(3, "「先月どっちが勝ってた？」\n誰も答えられない", "assets/thumbs/blog-season-ranking.svg")),
+            (["スコア表の写真が、", "LINEの奥に消えていく。"], card(4, "スコア表の写真が\nLINEの奥に消える", "assets/photo-score-notebook.jpg")),
+            (["それ、まじゃすこなら", "全部自動です。"], sol),
+            (["あなたの卓は、", "いくつ当てはまる？"], q),
+            (APP_END, lambda a, b: [ms.end_card(a)])]
+
+def t_umaoka():
+    vis = '<div class="vcard mid">' + art("assets/thumbs/blog-uma-oka.svg", 640, "border-radius:24px") + "</div>"
+    def oka(a, b):
+        return [head(a, b, "オカ＝トップへのごほうび"), stage(a + .2, b, '<div class="vcard mid">' + art("assets/art/tenbo-color.svg", 700) + "</div>", top=380),
+                stage(a + .9, b, '<div class="vcard">' + vt([("25,000点持ち・30,000点返し", "", ""), ("トップ", "+15", ""), ("ほかの3人", "−5ずつ", "n")]) + "</div>", top=760)]
+    def uma(a, b):
+        return [head(a, b, "ウマ＝順位で動くポイント"), stage(a + .3, b, '<div class="vcard">' + vt([("1位", "+30", ""), ("2位", "+10", ""), ("3位", "−10", "n"), ("4位", "−30", "n")]) + "</div>", top=430)]
+    def ex(a, b):
+        return [head(a, b, "45,200点でトップなら"), stage(a + .2, b, '<div class="vcard">' + vt([("素点", "+20.2", ""), ("ウマ", "+30", ""), ("オカ", "+15", "")]) + "</div>", top=400),
+                stage(a + 1.6, b, f'<div class="big" data-pre="+" data-count="{a + 1.6},{a + 3.0},0,65.2,1">+0.0</div>', top=1010)]
+    def app(a, b):
+        return [ms.at(a, b, '<h1>この計算、<br>まじゃすこなら自動。</h1>', cls="cap", style="top:170px", anim="pop"), ms.phone_at(a + .2, b, "howto-4.jpg", y=400)[0]]
+    return [(["ウマとオカって、", "結局なに？"], hook("初心者の壁", "ウマ・オカって、\n結局なに？", vis)),
+            (["オカは、トップへのごほうび。", "4人が5,000点ずつ出して、", "トップがまとめて受け取ります。"], oka),
+            (["ウマは、順位で動くポイント。", "よくある10-30なら、", "1位はプラス30、", "4位はマイナス30。"], uma),
+            (["たとえば、", "45,200点でトップなら、", "素点が20.2、", "ウマが30、オカが15。", "合わせて、プラス65.2です。"], ex),
+            (["この計算、", "まじゃすこなら自動です。"], app),
+            (APP_END, lambda a, b: [ms.end_card(a)])]
+
+TOPICS = {"aruaru-shukei": t_aruaru, "kabe-umaoka": t_umaoka, "t-hai136": t_hai, "t-half": t_half, "t-sanma": t_sanma, "t-tsumo70": t_tsumo, "t-zure": t_zure, "t-nichijou": t_nichijou, "t-haitei": t_haitei}
