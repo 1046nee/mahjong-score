@@ -525,6 +525,14 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       if (!el.children.length) el.innerHTML = catNavHtml(el.getAttribute('data-cat-nav'));
     });
 
+    // 記事の中: 日付の横にカテゴリの色の札（押すとそのカテゴリの一覧へ。2026-11-06 ユーザーの指定）
+    {
+      const cur = BLOG_POSTS.find(p => p.url === location.pathname);
+      const meta = document.querySelector('.blog-post .post-meta');
+      if (cur && meta && BLOG_CATS[cur.cat] && !meta.querySelector('.post-cat')) {
+        meta.insertAdjacentHTML('afterbegin', `<a class="post-cat cat-${cur.cat}" href="${BLOG_CATS[cur.cat].url}">${BLOG_CATS[cur.cat].name}</a>`);
+      }
+    }
     // サイドバー: LPと同じ読みものの組（初心者向け・Mリーグ・プロ情報・もっと上手くなりたい人向け・その他。2026-11-06 ユーザーの指定。
     // 旧「今月のおすすめ記事」「最新のアップデート」はやめた）
     document.querySelectorAll('[data-sidebar]').forEach(el => {

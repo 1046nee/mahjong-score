@@ -715,7 +715,7 @@ body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row 
 .post-card .pc-body { min-width: 0; }
 .post-card.has-thumb h2 { font-size: 15.5px; line-height: 1.55; }
 .post-card.has-thumb .excerpt { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.75; }
-.post-card .pc-cat { display: inline-block; color: #fff; background: var(--cc, #0E95A3); border-radius: 4px; padding: 1px 8px; font-size: 11px; }
+.post-card .pc-cat { display: inline-block; color: var(--cc, #0E95A3); color: color-mix(in srgb, var(--cc, #0E95A3) 88%, #000); background: none; padding: 0; font-size: 11.5px; font-weight: 800; } /* 一覧はLPと同じ色の文字だけ（2026-11-06 ユーザーの指定。色の札は記事の中の日付の横へ） */
 @media (min-width: 700px) { .post-card.has-thumb { grid-template-columns: 184px 1fr; gap: 18px; } .post-card.has-thumb h2 { font-size: 16.5px; } }
 @media (max-width: 380px) { .post-card.has-thumb { grid-template-columns: 104px 1fr; gap: 12px; } .post-card.has-thumb .excerpt { display: none; } }
 
@@ -852,7 +852,7 @@ body:not(.bs-list) .side-box.sb-box, .bs-list .side-box.sb-box { border-top: 0; 
 .sb-tx { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .sb-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font-size: 10.5px; line-height: 1.3; }
 .sb-meta i { font-style: normal; font-weight: 800; border-radius: 3px; padding: 1px 6px; }
-.sb-cat { color: var(--cc, #177083); background: color-mix(in srgb, var(--cc, #177083) 12%, #fff); }
+.sb-cat { color: var(--cc, #177083); color: color-mix(in srgb, var(--cc, #177083) 88%, #000); background: none; padding-left: 0 !important; padding-right: 0 !important; }
 .sb-new { color: #fff; background: #E75620; }
 .sb-meta time { color: #8A9A97; }
 .sb-tt { font-size: 13px; font-weight: 800; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -1059,3 +1059,8 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 /* 読みものの組の境目に薄い線（LPと同じ #C9D6D2・2026-11-06 ユーザーの指定） */
 .side .rd-box + .rd-box { border-top: 1.5px solid #C9D6D2; padding-top: 16px; }
 @media (max-width: 900px) { .side .rd-box + .rd-box { padding-top: 18px; margin-top: 18px; } }
+
+/* 記事の中: 日付の横にカテゴリの色の札（白い字・2026-11-06 ユーザーの指定。blog-site.js が入れる） */
+body .blog-post .post-meta a.post-cat, .post-meta .post-cat { color: #fff !important; text-decoration: none !important; }
+.post-meta .post-cat { display: inline-block; vertical-align: 1px; margin-right: 8px; color: #fff; background: var(--cc, #177083); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 800; line-height: 1.4; text-decoration: none; }
+.post-meta .post-cat:hover { filter: brightness(1.08); }
