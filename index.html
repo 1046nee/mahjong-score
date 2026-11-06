@@ -5149,6 +5149,7 @@ let pendingMyPage = false; // #mypage・#login で開いたとき、ログイン
 function renderHeaderAccount() {
   const b = document.getElementById('hdr-acct');
   if (!b) return;
+  saveHdrAcctCache();
   if (!loginAvailable()) { b.style.display = 'none'; return; }
   b.classList.toggle('ready', authKnown);
   if (currentUser) {
@@ -5167,6 +5168,22 @@ function renderHeaderAccount() {
     b.textContent = 'ログイン';
     b.setAttribute('aria-label', 'ログイン');
   }
+}
+// ブログ・記事のページのヘッダー（assets/blog-site.js）も同じボタンにするための控え（2026-11-06 ユーザーの依頼）。
+// 記事のページはログインの仕組みを読みこまないので、LPで分かったログイン状態とアイコンの形だけを localStorage に残す
+function saveHdrAcctCache() {
+  try {
+    if (!authKnown) return;
+    if (!loginAvailable() || !currentUser) { localStorage.removeItem('mj-hdr-acct'); return; }
+    const nm = String(currentUser.displayName || currentUser.email || '').trim();
+    const own = validAv(myAv) ? myAv : null;
+    let a;
+    if (own && own.k !== 'ini') a = { t: 'ill', v: own.k, w: !!AV_WIDE[own.k], bg: own.c };
+    else if (own) a = { t: 'ini', v: avInitial(myLabel()), bg: own.c };
+    else if (currentUser.photoURL) a = { t: 'photo', v: currentUser.photoURL, ini: (nm[0] || 'M').toUpperCase() };
+    else a = { t: 'ini', v: (nm[0] || 'M').toUpperCase() };
+    localStorage.setItem('mj-hdr-acct', JSON.stringify(a));
+  } catch (e) {}
 }
 // ヘッダーのボタン・試合の画面の下のリンク: ログイン中はマイページ、未ログインはログイン画面
 function hdrAcctClick() {

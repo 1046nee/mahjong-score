@@ -314,6 +314,12 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       .site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #EEF7F4; border: 1px solid #B7DCCD; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
       .site-head .head-lp-link:hover { filter: brightness(.97); } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
       /* 左上のLPへの導線＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定。名前だけだと今いるページの名前に見える） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
+      .site-head .hdr-acct { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 999px; padding: 6px 13px; white-space: nowrap; text-decoration: none; }
+      .site-head .hdr-acct.in { background: #EEF7F4; border-color: #B7DCCD; padding: 3px 11px 3px 3px; }
+      .site-head .hdr-av { width: 26px; height: 26px; border-radius: 50%; background: #177083; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
+      .site-head .hdr-av img:not(.av-ill) { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .site-head .hdr-av .av-ill { width: 72%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; display: block; } .site-head .hdr-av .av-ill.w { width: 84%; }
+      @media (max-width: 380px) { .site-head .hdr-acct.in .hdr-label { display: none; } .site-head .hdr-acct.in { padding: 3px; } }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .cat-nav { top: var(--hh, 0px) !important; }
       .site-head .read-bar { position: fixed; left: 0; top: 0; z-index: 60; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
@@ -330,13 +336,27 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       .author-box p { font-size: 13px; color: #444; margin: 0 0 8px; line-height: 1.8; }
       .author-box a { font-size: 13px; color: #177083; font-weight: 700; }`;
     document.head.appendChild(st);
+    // 右上はLPと同じボタン（2026-11-06 ユーザーの依頼）: ログイン中＝アイコン＋「マイページ」（薄緑）、未ログイン＝緑の枠の「ログイン」。
+    // ログイン状態は LP が localStorage に残した控え（mj-hdr-acct・index.html の saveHdrAcctCache）で決める
+    const hdrAcctHtml = () => {
+      let a = null;
+      try { a = JSON.parse(localStorage.getItem('mj-hdr-acct') || 'null'); } catch (e) {}
+      const okBg = c => /^#[0-9A-Fa-f]{6}$/.test(c || '') ? c : '';
+      let av = '';
+      if (a && a.t === 'ill' && /^[a-z0-9-]+$/.test(a.v || '')) av = `<img class="av-ill${a.w ? ' w' : ''}" src="/assets/tiles/${a.v}.svg" alt="">`;
+      else if (a && a.t === 'photo' && /^https:\/\//.test(a.v || '')) av = `<img src="${escHtml(a.v)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${escHtml(String(a.ini || 'M').slice(0, 2)).replace(/'/g, '')}'))">`;
+      else if (a && a.t === 'ini') av = escHtml(String(a.v || 'M').slice(0, 2));
+      if (!a || !av) return '<a class="hdr-acct" href="/#mypage" aria-label="ログイン">ログイン</a>';
+      const bg = okBg(a.bg);
+      return `<a class="hdr-acct in" href="/#mypage" aria-label="マイページ（ログイン中）"><span class="hdr-av"${bg ? ` style="background:${bg}"` : ''}>${av}</span><span class="hdr-label">マイページ</span></a>`;
+    };
     const head = document.querySelector('.site-head');
     if (head) {
       // 右上はマイページ。ロゴは真ん中。一覧ページだけ左上にLP（スコア記録アプリのトップ）へのボタン（2026-11-06 ユーザーの依頼）
       const lpLink = document.body.classList.contains('bs-list') ? '<a class="head-lp-link" href="/" aria-label="スコア記録アプリへ移動"><span class="r"><svg class="go" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="2.5" width="14" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8" y="5.5" width="8" height="3.6" rx=".8" fill="currentColor"/><g fill="currentColor"><circle cx="9" cy="12.6" r="1.15"/><circle cx="12" cy="12.6" r="1.15"/><circle cx="15" cy="12.6" r="1.15"/><circle cx="9" cy="16.4" r="1.15"/><circle cx="12" cy="16.4" r="1.15"/><circle cx="15" cy="16.4" r="1.15"/></g></svg></span><span>スコア記録へ</span></a>' : '';
       head.innerHTML = `<div class="site-head-inner">${lpLink}
         <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco"></a>
-        <a class="head-app-link" href="/#mypage">マイページ</a>
+        ${hdrAcctHtml()}
       </div>`;
       // ヘッダーは上に残し、下へ読み進めたら少し細くする（2026-10-27）。記事では読んだところまでオレンジの線
       const art = document.querySelector('.blog-post');
