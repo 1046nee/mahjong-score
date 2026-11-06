@@ -181,6 +181,15 @@ def end_card(a, line="無料・アプリDL不要・会員登録不要"):
     return at(a, None, f'''<img class="logo" src="{logo}"><div class="nm">まじゃすこ</div><div class="dm">majasco.jp</div>
       <div class="pt">{esc(line)}</div><div class="go">プロフィールのリンクから</div>''', cls="end", style="top:520px", anim="pop")
 
+def hook_phone(badge, title, img, a=0, b=None, chips=()):
+    """操作の動画の冒頭＝サムネ。文字だけにせず、本物の画面のスマホを下に置く"""
+    b = HOOK if b is None else b
+    ph, _ = v3.phone(img, (W - 340) // 2, 800, 340)
+    out = [at(a, b, f'<div class="badge g">{badge}</div><h1>{esc(title)}</h1>', cls="cap hook", style="top:230px", anim="pop"), at(a, b, ph, style="position:absolute;inset:0", anim="fade")]
+    for i, (c, s) in enumerate(chips):
+        out.append(chip_at(a + .3 + i * .2, b, c, s, 980 + i * 180))
+    return out
+
 def sparkles():
     S = v3.SPARK
     return (S.format(st="left:900px;top:540px;width:70px", c="#E75620") + S.format(st="left:110px;top:1500px;width:52px", c="#177083")
@@ -257,7 +266,7 @@ def caps(items, top=200):
 def v_play_quick():
     """実際の操作：はじめる→4人→点数を入れる→最後の1人は自動→順位→共有"""
     T0 = HOOK
-    els = [at(0, T0, '<div class="badge g">実際の操作</div><h1>麻雀のスコア、<br>スマホで<br>記録してみた。</h1>', cls="cap hook", style="top:620px", anim="pop")]
+    els = hook_phone("実際の操作", "麻雀のスコア、\nスマホで記録してみた。", "howto-4.jpg", chips=[(("", "+65.2", ("medal", 1)), "l")])
     e, hh, m = live_at(T0, T0 + 19.4, "play-quick", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]
@@ -272,7 +281,7 @@ def v_play_quick():
 def v_play_rounds():
     """実際の操作：4試合目を入れると順位が入れかわり、成績表まで自動"""
     T0 = HOOK
-    els = [at(0, T0, '<div class="badge g">実際の操作</div><h1>4試合目を<br>入れてみる。</h1><p>順位はどう変わる？</p>', cls="cap hook", style="top:640px", anim="pop")]
+    els = hook_phone("実際の操作", "4試合目で、\n順位はどう変わる？", "howto-4.jpg", chips=[(("逆転", "2位→1位", "pos"), "r")])
     e, hh, m = live_at(T0, T0 + 20.4, "play-rounds", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]
@@ -283,10 +292,12 @@ def v_play_rounds():
     els.append(end_card(T0 + 20.4))
     return T0 + 24.4, els
 
+HOOK_IMG = {"nakama": "circle-rank.jpg", "mypage": "lp-mypage.jpg", "play": "howto-4.jpg"}
+
 def play_video(clip, badge, hook, steps, x=None, w=540):
     """操作の録画1本を見せる動画。steps = [(録画の目印 or 0, 見出し)]。見出しは目印の時刻から次の目印まで"""
     T0 = HOOK
-    els = [at(0, T0, f'<div class="badge g">{badge}</div><h1>{esc(hook)}</h1>', cls="cap hook", style="top:660px", anim="pop")]
+    els = hook_phone(badge, hook, HOOK_IMG.get(clip.split("-")[0], "howto-4.jpg"))
     tl = json.load(io.open(os.path.join(CLIPS, clip, "timeline.json"), encoding="utf-8"))
     end = tl["end"]
     e, hh, m = live_at(T0, T0 + end, clip, *((live_pos()[0], live_pos()[1]) if NARR else (560, w)), x=x)
@@ -372,6 +383,13 @@ def build(name, fn):
         b = p.chromium.launch()
         pg = b.new_page(viewport={"width": W, "height": H})
         pg.goto(v3.furl(hp)); pg.wait_for_load_state("networkidle"); pg.wait_for_timeout(400)
+        # 字幕は必ず画面の中央。幅を超える字幕は字を小さくして収める（2026-11-06 ユーザーの指定）
+        off = pg.evaluate("""() => { const bad = []; document.querySelectorAll('.sub span').forEach(e => { let w = e.getBoundingClientRect().width;
+            if (w > 960) { e.style.fontSize = (parseFloat(getComputedStyle(e).fontSize) * 950 / w) + 'px'; w = e.getBoundingClientRect().width; }
+            const r = e.getBoundingClientRect(); if (Math.abs((r.left + r.right) / 2 - 540) > 1 || r.left < 40 || r.right > 1040) bad.push(e.textContent); }); return bad; }""")
+        assert not off, ("字幕が中央にない", off)
+        SIG = """() => [...document.querySelectorAll('[data-in],[data-scroll],[data-timer],[data-sub],[data-count],[data-w]')].map(e => e.style.opacity + e.style.transform + e.style.width + e.style.rotate + (e.dataset.count || e.dataset.timer ? e.textContent : '')).join('|')"""
+        last, lastbuf = None, None
         n = int(dur * FPS)
         for i in range(n):
             t = i / FPS
@@ -382,10 +400,17 @@ def build(name, fn):
                     L["cur"] = fn_
                     pg.evaluate("(a) => setLive(...a)", [L["n"], src, x, y, op, sc, rx, ry, rs, ro])
             pg.evaluate(f"render({t})")
-            buf = pg.screenshot(type="jpeg", quality=92)
+            sig = pg.evaluate(SIG)
+            if sig == last and not any(L["a"] - 0.5 <= t <= L["b"] + 0.4 for L in LIVE):
+                buf = lastbuf  # 動いていないコマは前のコマと同じ（撮り直さないので速い）
+            else:
+                buf = pg.screenshot(type="jpeg", quality=92)
+            last, lastbuf = sig, buf
             ff.stdin.write(buf)
-            if abs(t - 1.5) < 1 / FPS / 2:
-                io.open(os.path.join(OUT, name + "-thumb.jpg"), "wb").write(buf)
+            if abs(t - 1.5) < 1 / FPS / 2:  # サムネは冒頭の画面から字幕を外したもの
+                pg.evaluate("document.body.classList.add('cover')")
+                io.open(os.path.join(OUT, name + "-thumb.jpg"), "wb").write(pg.screenshot(type="jpeg", quality=92))
+                pg.evaluate("document.body.classList.remove('cover')")
         b.close()
     ff.stdin.close(); ff.wait()
     os.remove(hp)

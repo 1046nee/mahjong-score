@@ -7,7 +7,7 @@
 出力: まじゃすこ素材/video/clips/<名前>/f00001.jpg … と timeline.json
   timeline.json = { "frames": [[秒, ファイル名], …], "moves": [[開始秒, 終了秒, x0, y0, x1, y1], …],
                     "taps": [[秒, x, y], …], "marks": { "名前": 秒 }, "end": 秒 }
-  座標はアプリの画面の CSS px（幅390×高さ844）
+  座標はアプリの画面の CSS px（幅390×高さ792）
 使い方: python tools/record_play.py [名前]   （省略で全部）
 """
 import sys, os, io, json, time, shutil, functools, threading, http.server
@@ -468,7 +468,7 @@ UID = "uidSHOT01"
 
 
 def open_page(br, seed=None, cid=None):
-    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="ja-JP")
+    ctx = br.new_context(viewport={"width": 390, "height": 792}, device_scale_factor=2, locale="ja-JP")  # スマホの枠の画面と同じ比率。844だと下が切れて右下のボタンが欠ける
     ctx.route("https://www.gstatic.com/firebasejs/**", lambda r: r.fulfill(status=200, content_type="application/javascript",
               body=(FIREBASE_STUB + AUTH_STUB) if "firebase-app-compat" in r.request.url else ""))
     ctx.route(lambda u: not u.startswith(f"http://127.0.0.1:{PORT}") and "gstatic" not in u, lambda r: r.abort())

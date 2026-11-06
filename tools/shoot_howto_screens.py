@@ -31,7 +31,7 @@ for r in ROUNDS:
 shots = []
 with sync_playwright() as p:
     br = p.chromium.launch()
-    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, locale="ja-JP")
+    ctx = br.new_context(viewport={"width": 390, "height": 792}, device_scale_factor=2, locale="ja-JP")
     ctx.route("https://www.gstatic.com/firebasejs/**", lambda r: r.fulfill(status=200, content_type="application/javascript",
               body=(FIREBASE_STUB + AUTH_STUB) if "firebase-app-compat" in r.request.url else ""))
     ctx.route(lambda u: not u.startswith("http://127.0.0.1:8807") and "gstatic" not in u, lambda r: r.abort())
@@ -84,6 +84,6 @@ with sync_playwright() as p:
     br.close()
 srv.shutdown()
 for name, path in shots:
-    im = Image.open(path).convert("RGB").resize((720, round(844 * 720 / 390)), Image.LANCZOS)
+    im = Image.open(path).convert("RGB").resize((720, round(792 * 720 / 390)), Image.LANCZOS)
     im.save(os.path.join(SITE, "howto-" + name + ".jpg"), quality=86, optimize=True, progressive=True)
 print("saved", [s[0] for s in shots])

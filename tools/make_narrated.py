@@ -55,6 +55,7 @@ async def tts(text, path):
     return words
 
 VV = None  # (話者ID, クレジットの名前)
+DRAFT = False  # True: 声なし。字幕の長さは文字数から見積もる（声は個人PCで --vv を付けて作り直す）
 VV_URL = "http://127.0.0.1:50021"
 
 def vv_post(path, body=None, ctype="application/json"):
@@ -205,6 +206,8 @@ def v_umaoka():
             (END_LINE, lambda a, b: [ms.end_card(a)])]
 
 NARR = {"kinou": v_kinou, "aruaru-shukei": v_aruaru, "kabe-umaoka": v_umaoka}
+import video_topics  # 記事をもとにした動画（台本は tools/video_topics.py）
+NARR.update(video_topics.TOPICS)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
@@ -237,6 +240,11 @@ for _k, (_b, _h, _st) in ms.PAGE_VIDEOS.items():
 
 def synth(ph, tmp, i):
     """声を作って (波形, 区切りごとの始まりの秒, 長さ) を返す"""
+    if DRAFT:
+        lens = [max(4, len(p)) / 6.6 + .12 for p in ph]
+        d = sum(lens); acc = 0; st = []
+        for x_ in lens: st.append(acc); acc += x_
+        return np.zeros(int(d * SR)), st, d
     mp3 = os.path.join(tmp, f"{i}.mp3")
     if VV: ratio = vv_tts(ph, mp3)
     else: words = asyncio.run(tts("".join(ph), mp3))
@@ -309,7 +317,7 @@ def render(name, dur, els, items, remake=None):
     # 音
     v = np.zeros(int(dur * SR))
     for a, x in place: mh.put(v, x, a, 1.0)
-    v = v / np.abs(v).max()
+    v = v / max(np.abs(v).max(), 1e-9)
     env = np.convolve((np.abs(v) > .02).astype(float), np.ones(4000) / 4000, "same")
     m = soft_bgm(dur); m = m / np.abs(m).max() * .3 * (1 - .5 * np.clip(env * 2, 0, 1))
     x = v * .95 + m
@@ -331,6 +339,8 @@ if __name__ == "__main__":
         k = a.index("--vv"); VV = (int(a[k + 1]), a[k + 2]); vv_dict()
         if len(a) > k + 3: tail = "-" + a[k + 3]
         a = a[:k]
+    if "--draft" in a:
+        a.remove("--draft"); DRAFT = True; tail = "-draft"
     only = a[0] if a else ""
     for k, fn in NARR.items():
         if not only or only == k:
