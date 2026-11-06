@@ -981,6 +981,9 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 .bs-list .site-head .site-head-inner, .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; gap: 0; }
 .site-head .brand img { height: 48px; width: auto; vertical-align: middle; }
 .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
+.site-head .head-lp-link { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 20px; padding: 6px 12px 6px 8px; text-decoration: none; white-space: nowrap; }
+.site-head .head-lp-link:hover { background: #E4F3EC; }
+@media (max-width: 360px) { .site-head .head-lp-link span { display: none; } .site-head .head-lp-link { padding: 7px; } }
 :root { --hh: 65px; }
 .bs-list .cat-nav { top: var(--hh, 65px); }
 
@@ -1005,15 +1008,19 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
    止まったままの3列×3段（PCは9列）。太い枠は参考サイトの選択カードに合わせた */
 .cat-nav, .bs-list .cat-nav { position: static; top: auto; z-index: auto; background: none; border: 0; backdrop-filter: none; }
 .cat-nav-inner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px 12px 4px; overflow: visible; justify-content: stretch; }
-.cat-tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; min-width: 0; min-height: 84px; padding: 7px 4px 8px; background: #fff; border: 2px solid #1F2A28; border-radius: 14px; color: #1F2A28; font-size: 12.5px; font-weight: 800; line-height: 1.3; text-align: center; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+.cat-tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; min-width: 0; min-height: 96px; padding: 8px 4px 9px; background: #F4F7F6; background: color-mix(in srgb, var(--cc) 9%, #fff); border: 2px solid transparent; border-radius: 12px; color: var(--cc); color: color-mix(in srgb, var(--cc) 82%, #000); font-size: 12.5px; font-weight: 800; line-height: 1.3; text-align: center; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; transition: background .15s, border-color .15s, color .15s; }
+/* カテゴリのカード（2026-11-06 ユーザーの指定）: 黒い枠はやめ、カテゴリの色を薄く敷く。選ぶとその色で塗りつぶす。本数は名前の下の小さな札 */
 .cat-tab::before, .cat-tab::after, .cat-tab.on::after { content: none; }
-.cat-tab:hover { background: #F4F7F6; color: #1F2A28; }
-.cat-tab.on, .cat-tab.on:hover { background: var(--cc); border-color: #1F2A28; color: #fff; }
-.cat-tab .ct-ic { display: block; width: 62px; height: 37px; object-fit: contain; }
-.cat-tab .cnt { position: absolute; top: 3px; right: 6px; font-size: 10.5px; font-weight: 800; color: #6B7A77; }
-.cat-tab.on .cnt { color: #fff; }
-@media (max-width: 420px) { .cat-nav-inner { padding: 12px 10px 4px; justify-content: stretch; gap: 7px; } .cat-tab { padding: 7px 3px 8px; font-size: 12px; gap: 2px; } }
-@media (min-width: 900px) { .cat-nav-inner { grid-template-columns: repeat(9, minmax(0, 1fr)); padding: 14px 12px 6px; } }
+.cat-tab.cat-all { --cc: #177083; }
+.cat-tab:hover { border-color: color-mix(in srgb, var(--cc) 40%, #fff); color: color-mix(in srgb, var(--cc) 82%, #000); background: color-mix(in srgb, var(--cc) 13%, #fff); }
+.cat-tab.on, .cat-tab.on:hover { background: var(--cc); border-color: var(--cc); color: #fff; }
+.cat-tab .ct-ic { display: block; width: 54px; height: 34px; object-fit: contain; background: #fff; border-radius: 9px; padding: 2px 6px; box-sizing: content-box; }
+.cat-tab .cnt { font-size: 10.5px; font-weight: 800; line-height: 1; color: inherit; background: #fff; border-radius: 999px; padding: 3px 7px 3px; margin-top: auto; }
+.cat-tab .cnt::after { content: "本"; font-size: 9.5px; margin-left: 1px; }
+.cat-tab.on .cnt { background: rgba(255,255,255,.24); color: #fff; }
+.cat-tab .ct-n { min-height: 2.6em; display: flex; align-items: center; }
+@media (max-width: 420px) { .cat-nav-inner { padding: 12px 10px 4px; justify-content: stretch; gap: 7px; } .cat-tab { padding: 7px 3px 8px; font-size: 12px; } }
+@media (min-width: 900px) { .cat-nav-inner { grid-template-columns: repeat(9, minmax(0, 1fr)); padding: 14px 12px 6px; } .cat-tab .ct-n { min-height: 2.6em; } }
 
 /* 記事の中の画面（スマホの縦長は細く、表は幅いっぱいに） */
 .tl-shot { max-width: 300px; margin: 16px auto; } .tl-shot.w { max-width: 420px; }

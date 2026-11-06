@@ -288,6 +288,9 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       .site-head .brand img { height: 48px; vertical-align: middle; transition: height .2s; }
       .site-head.compact .site-head-inner { padding: 4px 56px; }
       .site-head.compact .brand img { height: 36px; }
+      .site-head .head-lp-link { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 20px; padding: 6px 12px 6px 8px; text-decoration: none; white-space: nowrap; }
+      .site-head .head-lp-link:hover { background: #E4F3EC; }
+      @media (max-width: 360px) { .site-head .head-lp-link span { display: none; } .site-head .head-lp-link { padding: 7px; } }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .cat-nav { top: var(--hh, 0px) !important; }
       .site-head .read-bar { position: absolute; left: 0; bottom: -1px; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
@@ -306,8 +309,9 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     document.head.appendChild(st);
     const head = document.querySelector('.site-head');
     if (head) {
-      // 左上は戻るボタン用に空けておく（padding 56px）。右上はマイページ。ロゴは真ん中
-      head.innerHTML = `<div class="site-head-inner">
+      // 右上はマイページ。ロゴは真ん中。一覧ページだけ左上にLP（スコア記録アプリのトップ）へのボタン（2026-11-06 ユーザーの依頼）
+      const lpLink = document.body.classList.contains('bs-list') ? '<a class="head-lp-link" href="/" aria-label="スコア記録アプリのトップへ"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>スコア記録</span></a>' : '';
+      head.innerHTML = `<div class="site-head-inner">${lpLink}
         <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco"></a>
         <a class="head-app-link" href="/#mypage">マイページ</a>
       </div>`;
