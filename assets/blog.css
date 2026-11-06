@@ -740,14 +740,16 @@ body:not(.bs-list) .post-layout > .blog-post figure:not(.eyecatch):not(.hai-row 
 .side-l .sl-rel a:hover span { color: #136070; text-decoration: underline; text-underline-offset: 3px; }
 @media (min-width: 1200px) {
   body .post-layout { max-width: 1320px; grid-template-columns: 228px minmax(0, 1fr) 264px; gap: 44px; padding-left: 28px; padding-right: 28px; }
-  body .post-layout > .blog-post, body .post-layout > .post-list { width: 100%; max-width: 740px; justify-self: center; }
+  body .post-layout > .blog-post, body .post-layout > .post-list { width: 100%; max-width: 740px; justify-self: center; grid-column: 2; grid-row: 1; }
+  /* 左の列は JS があとから入れる。列の場所を先に決めておかないと、入った瞬間に記事が左から真ん中へ動いて画面が揺れる（2026-11-06） */
+  body .post-layout > .side-l { grid-column: 1; grid-row: 1; } body .post-layout > .side:not(.side-l) { grid-column: 3; grid-row: 1; }
   .side-l { display: block; align-self: stretch; }
-  .side-l .sl-in { position: sticky; top: 64px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
+  .side-l .sl-in { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 16px; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
   /* ヘッダー・タブ・見出しの帯も3列の幅にそろえる */
   body .site-head .site-head-inner, .cat-nav-inner, .bs-list .crumbs, .bs-list .site-head-inner, .bs-list .blog-hero > .hero-txt { max-width: 1264px; }
   .bs-list .app-banner { max-width: 1320px; }
   /* 右の列もスクロールについてくる（長いときは列の中でスクロール） */
-  .post-layout > .side:not(.side-l) { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; scrollbar-width: thin; }
+  .post-layout > .side:not(.side-l) { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; scrollbar-width: thin; }
 }
 /* 記事の最初の絵（一覧のカードと同じ絵・2026-10-26〜・tools/add_eyecatch.py） */
 .blog-post .eyecatch { margin: 4px auto 22px; max-width: 420px; }
@@ -977,12 +979,12 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 
 /* ヘッダーは読み込みの前から、JSで描くものと同じ形・高さにする（2026-10-31）。
    前は静的なHTMLが小さいロゴ＋「ブログ」で、JSが描き直すとヘッダーが高くなり、カテゴリのタブが下にずれて見えた */
-.site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: sticky; top: 0; z-index: 50; }
+.site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: relative; z-index: 50; }
 .bs-list .site-head .site-head-inner, .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; gap: 0; }
 .site-head .brand img { height: 48px; width: auto; vertical-align: middle; }
 .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
-.site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #E4F3EC; border: 1px solid #C7E3D6; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
-.site-head .head-lp-link:hover { background: #D6EEE2; } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
+.site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #EEF7F4; border: 1px solid #B7DCCD; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
+.site-head .head-lp-link:hover { filter: brightness(.97); } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
 /* 左上のLPへの導線＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定。名前だけだと今いるページの名前に見える） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
 :root { --hh: 65px; }
 .bs-list .cat-nav { top: var(--hh, 65px); }
@@ -1008,11 +1010,11 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
    止まったままの3列×3段（PCは9列）。太い枠は参考サイトの選択カードに合わせた */
 .cat-nav, .bs-list .cat-nav { position: static; top: auto; z-index: auto; background: none; border: 0; backdrop-filter: none; }
 .cat-nav-inner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 12px 12px 4px; overflow: visible; justify-content: stretch; }
-.cat-tab { position: relative; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 5px; min-width: 0; min-height: 44px; padding: 5px 6px; background: #F4F7F6; background: color-mix(in srgb, var(--cc) 9%, #fff); border: 2px solid transparent; border-radius: 10px; color: var(--cc); color: color-mix(in srgb, var(--cc) 82%, #000); font-size: 12.5px; font-weight: 800; line-height: 1.25; text-align: center; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; transition: background .15s, border-color .15s, color .15s; }
+.cat-tab { position: relative; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 5px; min-width: 0; min-height: 44px; padding: 5px 6px; background: #F4F7F6; background: color-mix(in srgb, var(--cc) 9%, #fff); border: 1.5px solid #DCE5E2; border: 1.5px solid color-mix(in srgb, var(--cc) 26%, #fff); border-radius: 10px; color: var(--cc); color: color-mix(in srgb, var(--cc) 82%, #000); font-size: 12.5px; font-weight: 800; line-height: 1.25; text-align: center; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; transition: background .15s, border-color .15s, color .15s; -webkit-tap-highlight-color: transparent; }
 /* カテゴリの札（2026-11-06 ユーザーの指定）: 黒い枠はやめ、カテゴリの色を薄く敷く。選ぶとその色で塗りつぶす。絵は出さず、縦に短く（名前＋本数） */
 .cat-tab::before, .cat-tab::after, .cat-tab.on::after { content: none; }
 .cat-tab.cat-all { --cc: #177083; }
-.cat-tab:hover { border-color: color-mix(in srgb, var(--cc) 40%, #fff); color: color-mix(in srgb, var(--cc) 82%, #000); background: color-mix(in srgb, var(--cc) 13%, #fff); }
+.cat-tab:hover { border-color: color-mix(in srgb, var(--cc) 55%, #fff); color: color-mix(in srgb, var(--cc) 82%, #000); background: color-mix(in srgb, var(--cc) 13%, #fff); }
 .cat-tab.on, .cat-tab.on:hover { background: var(--cc); border-color: var(--cc); color: #fff; }
 .cat-tab .cnt { font-size: 10.5px; font-weight: 800; line-height: 1; color: inherit; opacity: .75; }
 .cat-tab.on .cnt { opacity: .9; }
@@ -1043,4 +1045,13 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 @media (max-width: 900px) {
   .bs-list .post-layout > [data-sidebar] { background: #EEF3F1; box-shadow: 0 0 0 100vmax #EEF3F1; clip-path: inset(0 -100vmax -100vmax); padding-top: 18px; }
   .bs-list .post-layout { padding-bottom: 0; }
+}
+
+/* 読みものの組の見出し: アイコンと名前を真ん中でそろえる（2026-11-06） */
+.sb-head.rd-head { align-items: center; } .sb-head.rd-head .sb-ic { grid-row: auto; }
+/* スマホ: 記事の一覧と下の読みものの組の境目に「ほかにも」の見出し */
+.side-more-h { display: none; }
+@media (max-width: 900px) {
+  .side-more-h { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; font-size: 14px; font-weight: 900; color: #1F2A28; }
+  .side-more-h::before, .side-more-h::after { content: ""; flex: 1; height: 1.5px; background: #C9D6D2; }
 }

@@ -308,17 +308,15 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     }
     const st = document.createElement('style');
     st.textContent = `
-      .site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: sticky; top: 0; z-index: 50; }
+      .site-head { background: #fff; border-bottom: 1px solid #eef3f2; position: relative; z-index: 50; } /* LPのヘッダーと同じ：上に残らない・細くならない（2026-11-06 ユーザーの指定） */
       .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; transition: padding .2s; }
       .site-head .brand img { height: 48px; vertical-align: middle; transition: height .2s; }
-      .site-head.compact .site-head-inner { padding: 4px 56px; }
-      .site-head.compact .brand img { height: 36px; }
-      .site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #E4F3EC; border: 1px solid #C7E3D6; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
-      .site-head .head-lp-link:hover { background: #D6EEE2; } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
+      .site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: #177083; background: #EEF7F4; border: 1px solid #B7DCCD; border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; }
+      .site-head .head-lp-link:hover { filter: brightness(.97); } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 3px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 5px 5px 6px; font-size: 9.5px; } }
       /* 左上のLPへの導線＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定。名前だけだと今いるページの名前に見える） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .cat-nav { top: var(--hh, 0px) !important; }
-      .site-head .read-bar { position: absolute; left: 0; bottom: -1px; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
+      .site-head .read-bar { position: fixed; left: 0; top: 0; z-index: 60; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
       .sns-icons { display: flex; gap: 12px; }
       .sns-icons a { display: block; border-radius: 12px; overflow: hidden; line-height: 0; box-shadow: 0 0 0 1px #E2E8E6; transition: transform .15s; }
       .sns-icons a:hover { transform: translateY(-2px); }
@@ -335,7 +333,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     const head = document.querySelector('.site-head');
     if (head) {
       // 右上はマイページ。ロゴは真ん中。一覧ページだけ左上にLP（スコア記録アプリのトップ）へのボタン（2026-11-06 ユーザーの依頼）
-      const lpLink = document.body.classList.contains('bs-list') ? '<a class="head-lp-link" href="/" aria-label="スコア記録アプリへ移動"><span class="r"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="2.5" width="14" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8" y="5.5" width="8" height="3.6" rx=".8" fill="currentColor"/><g fill="currentColor"><circle cx="9" cy="12.6" r="1.15"/><circle cx="12" cy="12.6" r="1.15"/><circle cx="15" cy="12.6" r="1.15"/><circle cx="9" cy="16.4" r="1.15"/><circle cx="12" cy="16.4" r="1.15"/><circle cx="15" cy="16.4" r="1.15"/></g></svg><svg class="go" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>スコア記録へ</span></a>' : '';
+      const lpLink = document.body.classList.contains('bs-list') ? '<a class="head-lp-link" href="/" aria-label="スコア記録アプリへ移動"><span class="r"><svg class="go" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="2.5" width="14" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8" y="5.5" width="8" height="3.6" rx=".8" fill="currentColor"/><g fill="currentColor"><circle cx="9" cy="12.6" r="1.15"/><circle cx="12" cy="12.6" r="1.15"/><circle cx="15" cy="12.6" r="1.15"/><circle cx="9" cy="16.4" r="1.15"/><circle cx="12" cy="16.4" r="1.15"/><circle cx="15" cy="16.4" r="1.15"/></g></svg></span><span>スコア記録へ</span></a>' : '';
       head.innerHTML = `<div class="site-head-inner">${lpLink}
         <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco"></a>
         <a class="head-app-link" href="/#mypage">マイページ</a>
@@ -511,7 +509,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
     // 旧「今月のおすすめ記事」「最新のアップデート」はやめた）
     document.querySelectorAll('[data-sidebar]').forEach(el => {
       const here = location.pathname;
-      let html = '';
+      let html = '<p class="side-more-h">ほかにも、こんな記事があります</p>';
       READ_GROUPS.forEach(g => {
         const ps = g.urls.map(u => BLOG_POSTS.find(p => p.url === u)).filter(p => p && p.url !== here);
         const ms = (g.more || []).filter(m => m.url !== here);
