@@ -85,6 +85,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .hdr-acct.ready { visibility: visible; }
 .hdr-read { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 800; line-height: 1; color: var(--pc); background: var(--pc-bg); border: 1px solid var(--pc-line2); border-radius: 10px; padding: 5px 8px 6px; text-decoration: none; white-space: nowrap; } /* LPだけ左上に記事一覧へ（2026-11-06）。ほかの画面では showView が隠す */
 .hdr-read:hover { filter: brightness(.97); } .hdr-read .r { display: flex; align-items: center; gap: 3px; }
+figure[data-team-demo] .lp-shot { background: #DBF4F9; } /* 中を上下に引っぱったときに見える地もデモと同じ水色（2026-11-06） */
+.score-card.rk-hide { display: none !important; } /* 総合順位の11位以下（rk-toggle で出し入れ） */
 /* LPだけ左上に記事一覧へ＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定） */
 .hdr-acct.in { background: var(--pc-bg); border-color: var(--pc-line2); padding: 3px 11px 3px 3px; }
 .hdr-av { width: 26px; height: 26px; border-radius: 50%; background: var(--pc); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0; }
@@ -3764,49 +3766,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         
       </div>
       <div class="score-val neg">-62.7<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">11</text></svg></span><span class="rank-num">11位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#0075c2"></span>葵</div>
         
       </div>
       <div class="score-val neg">-71.0<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">12</text></svg></span><span class="rank-num">12位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#00a040"></span>悠斗</div>
         
       </div>
       <div class="score-val neg">-73.6<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">13</text></svg></span><span class="rank-num">13位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#0075c2"></span>大輝</div>
         
       </div>
       <div class="score-val neg">-74.5<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">14</text></svg></span><span class="rank-num">14位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#f39800"></span>颯太</div>
         
       </div>
       <div class="score-val neg">-79.7<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">15</text></svg></span><span class="rank-num">15位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#f39800"></span>湊</div>
         
       </div>
       <div class="score-val neg">-159.4<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div><div class="score-card">
+    </div><div class="score-card rk-more rk-hide">
       <div class="rank-badge"><span class="rank-medal"><svg class="medal" viewBox="0 0 24 24" width="30" height="30" focusable="false"><circle cx="12" cy="12" r="11" fill="#E3E9E8"></circle><circle cx="12" cy="12" r="8.6" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"></circle><text x="12" y="15.5" text-anchor="middle" font-size="10" font-weight="800" fill="#4F5C5A" font-family="-apple-system,BlinkMacSystemFont,sans-serif">16</text></svg></span><span class="rank-num">16位</span></div>
       <div class="score-info">
         <div class="score-name"><span class="team-dot" style="background:#0075c2"></span>蓮</div>
         
       </div>
       <div class="score-val neg">-242.0<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>
-    </div></div></div>
+    </div><button type="button" class="auto-btn rk-toggle" style="margin-top:8px">11位以下も表示する（あと6人）</button></div></div>
     </div><div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div class="card-title" style="margin-bottom:0">試合結果</div>
@@ -3816,7 +3818,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           
         </div>
       </div>
-      <div class="tbl-scroll" style="overflow-x: auto; --trh: 34px;"><table class="rounds-table" style="table-layout:fixed;min-width:992px"><thead><tr class="team-row"><th class="sticky-col" style="width:64px;background:#5f6e6b">チーム</th><th colspan="4" style="background:#5f6e6b"><span class="team-head-name" title="ツモ軍団">ツモ軍団</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="副露キャンセル界隈">副露キャンセル界隈</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="ニナキ">ニナキ</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="萬ジャロ">萬ジャロ</span></th></tr><tr><th class="sticky-col" style="width:64px;background:#5f6e6b;">メンバー</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>健太</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>美咲</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>翔</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>陽菜</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>大輝</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>結衣</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>蓮</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>葵</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>拓海</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>彩</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>悠斗</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>凛</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>颯太</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>真央</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>湊</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>紬</th></tr></thead><tbody><tr style="cursor:pointer">
+      <div class="tbl-scroll" style="overflow-x: auto; --trh: 33px;"><table class="rounds-table" style="table-layout:fixed;min-width:992px"><thead><tr class="team-row"><th class="sticky-col" style="width:64px;background:#5f6e6b">チーム</th><th colspan="4" style="background:#5f6e6b"><span class="team-head-name" title="ツモ軍団">ツモ軍団</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="副露キャンセル界隈">副露キャンセル界隈</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="ニナキ">ニナキ</span></th><th colspan="4" class="tb" style="background:#5f6e6b"><span class="team-head-name" title="萬ジャロ">萬ジャロ</span></th></tr><tr><th class="sticky-col" style="width:64px;background:#5f6e6b;">メンバー</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>健太</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>美咲</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>翔</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#e60012"></span>陽菜</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>大輝</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>結衣</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>蓮</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#0075c2"></span>葵</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>拓海</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>彩</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>悠斗</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#00a040"></span>凛</th><th class="tb" style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>颯太</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>真央</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>湊</th><th style="background:#5f6e6b;"><span class="team-dot" style="background:#f39800"></span>紬</th></tr></thead><tbody><tr style="cursor:pointer">
     <td class="sticky-col"><div>1</div></td>
     <td style="color:#1a237e;font-weight:700"><div>+72.4</div><div class="rk-line" style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px"><span class="rk-tag r1">1</span><span>52,400</span></div></td><td style="color:#ddd">—</td><td style="color:#ddd">—</td><td style="color:#ddd">—</td><td class="tb" style="color:#ddd">—</td><td style="color:#1a237e;font-weight:700"><div>+10.6</div><div class="rk-line" style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px"><span class="rk-tag r2">2</span><span>30,600</span></div></td><td style="color:#ddd">—</td><td style="color:#ddd">—</td><td class="tb" style="color:#ddd">—</td><td style="color:#ddd">—</td><td style="color:#c62828;font-weight:700"><div>-59.7</div><div class="rk-line" style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px"><span class="rk-tag r4">4</span><span>300</span></div></td><td style="color:#ddd">—</td><td class="tb" style="color:#ddd">—</td><td style="color:#ddd">—</td><td style="color:#ddd">—</td><td style="color:#c62828;font-weight:700"><div>-23.3</div><div class="rk-line" style="font-size:9px;color:#c0c4cc;font-weight:400;margin-top:1px"><span class="rk-tag r3">3</span><span>16,700</span></div></td>
   </tr><tr style="cursor:pointer">
@@ -10296,20 +10298,35 @@ function playedFlags(g) {
 // 下にある個人成績・グラフにたどり着けなくなるため、既定は直近だけ出して残りはボタンで開く
 const ROUNDS_PREVIEW = 20;
 let roundsShowAll = false;
-function resetViewLimits() { roundsShowAll = false; logShowAll = false; }
+function resetViewLimits() { roundsShowAll = false; logShowAll = false; rankShowAll = false; }
+// 総合順位は既定で10位まで（2026-11-06 ユーザーの指定）。11位以下と未参加の人は畳んでおき、下のボタンで出し入れする。
+// 行は全部描いておき、クラスで隠す（画像は全員を描く・LPのデモの写しでも動くように、押したときの処理はページ全体で受ける）
+const RANK_PREVIEW = 10;
+let rankShowAll = false;
+function rankToggleLabel(open, n) { return open ? `${RANK_PREVIEW}位までの表示に戻す` : `${RANK_PREVIEW + 1}位以下も表示する（あと${n}人）`; }
+document.addEventListener('click', e => {
+  const b = e.target.closest('.rk-toggle');
+  if (!b) return;
+  const box = b.closest('.score-cards') || b.parentElement;
+  const rows = [...box.querySelectorAll('.score-card.rk-more')];
+  const open = rows.some(r => r.classList.contains('rk-hide'));
+  rows.forEach(r => r.classList.toggle('rk-hide', !open));
+  b.textContent = rankToggleLabel(open, rows.length);
+  rankShowAll = open;
+});
 function toggleRoundsShowAll() {
   roundsShowAll = !roundsShowAll;
   if (watchActive() && detailGame) renderDetailBody(detailGame);
   else if (document.getElementById('view-detail').classList.contains('active') && detailGame) viewDetail(detailGame);
   else renderGame();
 }
-// 表示する試合のindex（既定は直近ROUNDS_PREVIEW件。少しだけ超える程度なら全部出す）
+// 表示する試合のindex（既定は直近ROUNDS_PREVIEW件。21試合目からは畳む＝2026-11-06 ユーザーの指定）
 function visibleRoundIdx(total) {
-  if (roundsShowAll || total <= ROUNDS_PREVIEW + 5) return Array.from({ length: total }, (_, i) => i);
+  if (roundsShowAll || total <= ROUNDS_PREVIEW) return Array.from({ length: total }, (_, i) => i);
   return Array.from({ length: ROUNDS_PREVIEW }, (_, i) => total - ROUNDS_PREVIEW + i);
 }
 function roundsMoreBtnHtml(total) {
-  if (total <= ROUNDS_PREVIEW + 5) return '';
+  if (total <= ROUNDS_PREVIEW) return '';
   return roundsShowAll
     ? `<button class="auto-btn" style="margin-top:8px" onclick="toggleRoundsShowAll()">直近${ROUNDS_PREVIEW}試合だけ表示する</button>`
     : `<button class="auto-btn" style="margin-top:8px" onclick="toggleRoundsShowAll()">すべての試合を表示する（全${total}試合）</button>`;
@@ -10396,7 +10413,8 @@ function scoreCardsListHtml(g) {
       const cls = p.v >= 0 ? 'pos' : 'neg';
       valHtml = `<div class="score-val ${cls}">${p.v >= 0 ? '+' : ''}${p.v.toFixed(1)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">pts</span></div>`;
     }
-    return `<div class="score-card">
+    const more = grp.start >= RANK_PREVIEW /* start は0から＝11位以下 */ ? ` rk-more${rankShowAll ? '' : ' rk-hide'}` : '';
+    return `<div class="score-card${more}">
       ${hasRounds ? rankBadgeHtml(grp.start, grp.size > 1, grp.isLast) : '<div class="rank-badge" style="color:#ccc"><span class="rank-num" style="font-size:13px">—</span></div>'}
       <div class="score-info">
         <div class="score-name">${teamDotHtml(s, p.mi)}${esc(s.playerNames[p.mi])}</div>
@@ -10405,11 +10423,15 @@ function scoreCardsListHtml(g) {
       ${valHtml}
     </div>`;
   }).join('');
-  html += inactiveIdx.map(mi => `<div class="score-card" style="opacity:0.55">
+  const fold = ranked.length > RANK_PREVIEW || (ranked.length && inactiveIdx.length && ranked.length + inactiveIdx.length > RANK_PREVIEW);
+  const moreCls = fold ? ` rk-more${rankShowAll ? '' : ' rk-hide'}` : '';
+  html += inactiveIdx.map(mi => `<div class="score-card${moreCls}" style="opacity:0.55">
       <div class="rank-badge" style="color:#bbb"><span class="rank-num" style="font-size:11px">未参加</span></div>
       <div class="score-info"><div class="score-name">${teamDotHtml(s, mi)}${esc(s.playerNames[mi])}</div></div>
       <div class="score-val" style="color:#ccc">—</div>
     </div>`).join('');
+  const nMore = ranked.filter(p => groups[p.k].start >= RANK_PREVIEW).length + (fold ? inactiveIdx.length : 0);
+  if (nMore) html += `<button type="button" class="auto-btn rk-toggle" style="margin-top:8px">${rankToggleLabel(rankShowAll, nMore)}</button>`;
   return html;
 }
 // カード全体（タイトル＋トグル＋モードラベル＋順位リスト）

@@ -72,6 +72,17 @@ def main():
         n_rounds = pg.evaluate("(activeGame.rounds || []).length")
         if n_rounds != ROUNDS:
             bad.append(f"試合が {n_rounds}/{ROUNDS} しか入っていない")
+        # 総合順位は10位まで・試合結果は直近20試合（2026-11-06〜）。ボタンで全部を出せる
+        fold = pg.evaluate("""() => { const box = [...document.querySelectorAll('#view-game .score-cards')].find(b => b.querySelector('.rk-toggle'));
+            if (!box) return null; const vis = () => [...box.querySelectorAll('.score-card')].filter(e => e.offsetParent).length;
+            const before = vis(); box.querySelector('.rk-toggle').click(); const after = vis(); box.querySelector('.rk-toggle').click();
+            return [before, after, vis()]; }""")
+        if not fold or fold[0] != 10 or fold[1] != N or fold[2] != 10:
+            bad.append(f"総合順位の畳み方が違う（見える行: 最初・全部・戻す = {fold}）")
+        rows = pg.evaluate("() => document.querySelectorAll('#view-game .rounds-table tbody tr').length")
+        btn = pg.evaluate("() => [...document.querySelectorAll('#view-game .auto-btn')].some(b => b.textContent.includes('すべての試合を表示する'))")
+        if not btn:
+            bad.append(f"試合結果の「すべての試合を表示する」が無い（行 {rows}）")
         # 画面のはみ出し
         for w in (320, 390):
             pg.set_viewport_size({"width": w, "height": 760})

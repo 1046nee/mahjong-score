@@ -71,7 +71,7 @@ CLONE_JS = r"""() => {
   head.querySelectorAll('.title-actions').forEach(e => e.remove());
   wrap.appendChild(head);
   pick.forEach(s => { const e = document.querySelector(s); const c = e.closest('.card').cloneNode(true); wrap.appendChild(c); });
-  wrap.querySelectorAll('.edit-tab, [id$="-collapse"], .collapse-btn, button').forEach(e => { if (!e.closest('.sk-seg')) e.remove(); });
+  wrap.querySelectorAll('.edit-tab, [id$="-collapse"], .collapse-btn, button').forEach(e => { if (!e.closest('.sk-seg') && !e.classList.contains('rk-toggle')) e.remove(); }); // 総合順位の11位以下の出し入れは残す（押すとLPの上でも動く）
   [wrap, ...wrap.querySelectorAll('*')].forEach(e => [...e.attributes].forEach(a => { if (/^on|^id$|^data-|^role$|^aria-|^tabindex$/.test(a.name)) e.removeAttribute(a.name); }));
   return wrap.outerHTML;
 }"""

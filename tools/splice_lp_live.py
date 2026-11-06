@@ -72,7 +72,7 @@ def main():
 def splice_team():
     """チーム戦のデモ（tools/shoot_team_demo.py が書き出す）だけを埋めこむ。実行: python tools/splice_lp_live.py team"""
     s = open(IDX, encoding="utf-8", newline="").read()
-    fig = ('<figure class="lp-show" data-team-demo><figcaption><b>どのチームが勝ってる？</b>'
+    fig = ('<figure class="lp-show" data-team-demo><figcaption><b>最大100名でのチーム戦も可能。</b>'
            '<span>4チーム16人の対戦のデモ</span><a href="/blog-team-league.html">くわしく見る ›</a></figcaption>'
            '<div class="lp-shot lp-touch"><div class="lp-live-in">' + read("lp-live-team.html") + '</div></div></figure>')
     pat = re.compile(r'<figure class="lp-show" data-team-demo>.*?</figure>', re.S)

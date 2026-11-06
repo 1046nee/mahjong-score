@@ -339,7 +339,8 @@
   **長いチーム名・プレイヤー名は何度でも折り返す**（`.rounds-table th`にword-break:break-all。列幅を押し広げて表を横長にしない）
 - **表示量の調整（規模が大きいときに画面が長くなりすぎないようにする）**:
   試合結果は既定で**直近`ROUNDS_PREVIEW`=20試合だけ**を描き、下の「すべての試合を表示する（全n試合）」で全件に切り替える
-  （`visibleRoundIdx` / `roundsShowAll` / `toggleRoundsShowAll`。25試合以下ならボタンを出さず全件）。
+  （`visibleRoundIdx` / `roundsShowAll` / `toggleRoundsShowAll`。20試合以下ならボタンを出さず全件＝21試合目から畳む。2026-11-06 ユーザーの指定）。
+  **総合順位は既定で10位まで**（`RANK_PREVIEW`=10・`rankShowAll`）。11位以下と未参加の人は `.rk-more.rk-hide` で隠し、下の「11位以下も表示する（あとn人）」（`.rk-toggle`）で出し入れする。行は全部描いてクラスで隠すので、画像は全員を描く。押したときの処理はページ全体の click で受ける（LPのチーム戦のデモは画面の写しで onclick が消えるため）
   履歴モーダルも既定は**最新`LOG_PREVIEW`=50件**（`logShowAll`）。
   **試合番号とタップ先は常に本来のindex**（表示を絞っても第281試合は281のまま・`openRoundMenu(280)`）。
   **画像・CSVは常に全件**（絞るのは画面だけ）。別のグループ・結果を開いたら`resetViewLimits()`で解除する。
