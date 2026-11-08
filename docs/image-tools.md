@@ -62,6 +62,7 @@
 - 記事の共有用の画像（2026-10-31〜）: 記事ごとに `/assets/og/blog-xxx.png`（1200×630）。記事の絵（assets/thumbs/blog-xxx.svg）を真ん中に大きく、左右は地の色、右下にロゴ。
   `node tools/make_og_images.js [blog-xxx]`（http.server 8765 を起こしてから）。記事の og:image・twitter:image・JSON-LD の image をこれに。ブログの一覧・テーマのページ・LP は ogp4.png のまま。
   **絵を描き直したら、PNGのファイル名も変えて（例 blog-xxx-2.png）記事の指定を書き換える**（Xは画像のURLごとに覚えている）
+  2026-11-09: サムネを集中線＋黒い縁取りにしたので、50記事を blog-xxx-2.png に作り直した（次に描き直したら -3）
 - ロゴ: `/assets/logo.png`（800×250透過・全ページヘッダー）
 - **サイトのSVG（assets/thumbs・assets/art・ページの中の絵）を作ったり直したりしたら `python tools/svg_text_check.py` を通す**（0件になるまで）。
   SVGの文字は見る人の端末の書体で描かれるので、作った環境で収まっていてもiPhoneではマスや札からはみ出すことがある。

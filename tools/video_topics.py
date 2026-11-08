@@ -275,3 +275,73 @@ def t_umaoka():
             (APP_END, lambda a, b: [ms.end_card(a)])]
 
 TOPICS = {"aruaru-shukei": t_aruaru, "kabe-umaoka": t_umaoka, "t-hai136": t_hai, "t-half": t_half, "t-sanma": t_sanma, "t-tsumo70": t_tsumo, "t-zure": t_zure, "t-nichijou": t_nichijou, "t-haitei": t_haitei}
+
+# ---- 役シリーズ（blog-yaku-ichiran.html の役を1役1本。手の絵がある役だけ）----
+import io as _io, re as _re
+
+def _yaku_list():
+    s = _io.open(os.path.join(MJ, "blog-yaku-ichiran.html"), encoding="utf-8").read()
+    s = s[s.index('<h2 id="h1">'):s.index("</article>")]
+    out = []
+    for blk in s.split("<h3>")[1:]:
+        m = _re.match(r'(.*?)</h3>\s*(<p>.*?</p>)?.*?(<div class="yaku-ex">.*?</span></span></div>)', blk, _re.S)
+        if not m or "<h2" in blk[:blk.find('<div class="yaku-ex">')] if m else True:
+            continue
+        h, p, ex = m.group(1), m.group(2) or "", m.group(3)
+        name = _re.sub(r"<rt>.*?</rt>|<[^>]+>", "", _re.search(r'<ruby class="r">(.*?)</ruby>', h).group(1))
+        read = _re.search(r"<rt>(.*?)</rt>", h).group(1)
+        han = _re.sub(r"<[^>]+>", "", _re.search(r'<span class="han">(.*?)</span>', h).group(1))
+        desc = _re.sub(r"<rt>.*?</rt>|<[^>]+>", "", p).strip()
+        codes = lambda x: _re.findall(r"/assets/tiles/([a-z0-9-]+)\.svg", x)
+        hin = codes(_re.search(r'<span class="h-in">(.*?)</span>', ex, _re.S).group(1))
+        win = codes(_re.search(r'<span class="h-win">(.*?)</span>', ex, _re.S).group(1))
+        melds = [codes(x) for x in _re.findall(r'<span class="meld"[^>]*>(.*?)</span>', ex, _re.S)]
+        out.append(dict(name=name, read=read, han=han, desc=desc, hin=hin, win=win, melds=melds))
+    return out
+
+def _chunks(text, n=17):
+    """字幕の区切り: 「、」「。」で切って、n文字までにまとめる。かっこの中は字幕と声から外す"""
+    text = _re.sub(r"（[^）]*）", "", text)
+    parts = [x for x in _re.split(r"(?<=[、。])", text) if x.strip()]
+    out, cur = [], ""
+    for x in parts:
+        if cur and len(cur) + len(x) > n:
+            out.append(cur); cur = x
+        else:
+            cur += x
+    if cur: out.append(cur)
+    return out
+
+def _hand(y, w=60):
+    """手牌の行・鳴いた組の行・あがり牌の行に分ける（横に並べると、カンが多い手で枠からはみ出した）"""
+    row1 = '<div class="trow" style="gap:3px">' + "".join(tile(c, w) for c in y["hin"]) + "</div>"
+    rows = row1
+    if y["melds"]:
+        eff = sum(len(m) + .4 * sum("yoko" in c for c in m) for m in y["melds"]) + .4 * (len(y["melds"]) - 1)
+        mw = min(64, int(880 / eff))
+        rows += '<div class="trow" style="margin-top:18px;gap:%dpx">' % round(mw * .4) + "".join(
+            '<span style="display:inline-flex;gap:2px;align-items:flex-end">' + "".join(tile(c, round(mw * 1.4) if "yoko" in c else mw) for c in m) + "</span>" for m in y["melds"]) + "</div>"
+    if y["win"]:
+        rows += ('<div class="trow" style="align-items:center;margin-top:18px"><span class="lbl" style="margin:0 16px 0 0;white-space:nowrap">あがり牌</span>'
+                 f'<span style="display:inline-block;padding:6px;border-radius:14px;background:#E75620">{tile(y["win"][0], 76)}</span></div>')
+    return f'<div class="vcard mid">{rows}</div>'
+
+def _yaku_video(i, y, n):
+    vis = _hand(y)
+    def ans(a, b):
+        return [head(a, b, "答え"), stage(a + .2, b, vis, top=400, anim="fade"),
+                stage(a + .6, b, f'<div class="mid"><div class="big" style="font-size:120px;color:#177083">{esc(y["name"])}</div><p class="lbl" style="font-size:52px">{esc(y["read"])}</p><span class="ans" style="font-size:60px">{esc(y["han"])}</span></div>', top=830, anim="pop")]
+    def desc(a, b):
+        return [head(a, b, y["name"]), stage(a + .2, b, vis, top=400, anim="fade"),
+                stage(a + .5, b, f'<div class="vcard"><div class="v" style="font-size:50px;font-weight:900;line-height:1.5">{esc(_re.sub(r"（[^）]*）", "", y["desc"]))}</div></div>', top=830)]
+    han_say = y["han"].replace("（", "、").replace("）", "")
+    scenes = [(["この手、", "何の役かわかる？"], hook(f"役シリーズ {i}/{n}", "この手、\n何の役？", vis)),
+              ([f"答えは、{y['read']}。", han_say + "。"], ans)]
+    if y["desc"]:
+        scenes.append((_chunks(y["desc"])[:4], desc))
+    scenes.append((END, article_end("blog-yaku-ichiran", "全38役は記事で")))
+    return scenes
+
+_Y = _yaku_list()
+for _i, _y in enumerate(_Y, 1):
+    TOPICS[f"y-{_i:02d}"] = (lambda i=_i, y=_y: _yaku_video(i, y, len(_Y)))
