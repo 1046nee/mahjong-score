@@ -185,7 +185,7 @@ def hook_phone(badge, title, img, a=0, b=None, chips=()):
     """操作の動画の冒頭＝サムネ。文字だけにせず、本物の画面のスマホを下に置く"""
     b = HOOK if b is None else b
     ph, _ = v3.phone(img, (W - 340) // 2, 800, 340)
-    out = [at(a, b, f'<div class="badge g">{badge}</div><h1>{esc(title)}</h1>', cls="cap hook", style="top:230px", anim="pop"), at(a, b, ph, style="position:absolute;inset:0", anim="fade")]
+    out = [at(a, b, f'<div class="badge g">{badge}</div><h1 style="font-size:88px;word-break:keep-all">{esc(title)}</h1>', cls="cap hook", style="top:230px", anim="pop"), at(a, b, ph, style="position:absolute;inset:0", anim="fade")]
     for i, (c, s) in enumerate(chips):
         out.append(chip_at(a + .3 + i * .2, b, c, s, 980 + i * 180))
     return out
