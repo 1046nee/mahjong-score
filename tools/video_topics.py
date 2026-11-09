@@ -15,6 +15,10 @@ os.makedirs(PAGES, exist_ok=True)
 ms.CSS += """
 .stage { position: absolute; left: 60px; right: 60px; }
 .vcard { background: #fff; border-radius: 40px; padding: 44px 40px; box-shadow: 0 24px 60px rgba(16,40,36,.16); }
+/* 中間の案（2026-11-09 ユーザーの選択）: 牌・イラスト・写真だけのカードは白い地を外す。文字の説明・表・式・棒グラフは白いカードのまま */
+.vcard:not(:has(.vt, .duo, .v, .tx, .eqn, .vbar)) { background: none; box-shadow: none; padding: 10px 0; border-radius: 0; }
+.vcard:not(:has(.vt, .duo, .v, .tx, .eqn, .vbar)) .trow img { filter: drop-shadow(0 10px 14px rgba(16,40,36,.22)); }
+.vcard:not(:has(.vt, .duo, .v, .tx, .eqn, .vbar)) > img { filter: drop-shadow(0 12px 22px rgba(16,40,36,.18)); }
 .trow { display: flex; justify-content: center; gap: 8px; }
 .trow img { display: block; }
 .lbl { font-size: 46px; font-weight: 900; color: #177083; text-align: center; margin: 0 0 14px; }
