@@ -353,3 +353,62 @@ def _yaku_video(i, y, n):
 _Y = _yaku_list()
 for _i, _y in enumerate(_Y, 1):
     TOPICS[f"y-{_i:02d}"] = (lambda i=_i, y=_y: _yaku_video(i, y, len(_Y)))
+
+# ---- 用語シリーズ（blog-mahjong-yougo.html の80語を1語1本。「この漢字、読める？」）----
+# 絵の決め方（2026-11-09）: 牌・手の形の言葉＝その牌の絵／山・卓・席の言葉＝サイトの卓の図（assets/art）／点棒の言葉＝点棒の絵
+_H13 = ["m1", "m2", "m3", "p4", "p5", "p6", "s7", "s8", "s9", "m5", "m5", "z1", "z1"]
+_GV = {
+    "数牌": ["m1", "p5", "s9"], "字牌": ["z1", "z2", "z5", "z7"], "風牌": ["z1", "z2", "z3", "z4"], "三元牌": ["z5", "z6", "z7"],
+    "么九牌": ["m1", "m9", "p1", "p9", "s1", "z1", "z7"], "中張牌": ["m2", "m5", "p4", "p8", "s3", "s6"], "圏風牌": ["z1"], "門風牌": ["z2"],
+    "洗牌": ["back", "back", "back", "back", "back"], "砌牌": "table-yama", "壁牌": "table-yama", "幢": "table-yama", "開門": "table-kaimon",
+    "配牌": "table-haipai", "王牌": "wanpai", "嶺上牌": "wanpai", "海底牌": "table-yama", "河底牌": "table-tsumo",
+    "理牌": ["m1", "m2", "m3", "p4", "p5", "p6", "s7", "s8", "s9"],
+    "起家": "dice-chiicha", "荘家": "table-kaze", "散家": "table-kaze", "東家・南家・西家・北家": "table-kaze", "上家": "table-kaze", "下家": "table-kaze",
+    "対面": "table-kaze", "自家・他家": "table-kaze", "連荘": "table-kaze", "輪荘": "table-kaze", "本場": "tenbo", "積み棒": "tenbo",
+    "供託": "tenbo-color", "配給原点": "tenbo-color",
+    "摸打": "table-tsumo", "自摸": "table-tsumo", "打牌": "table-tsumo", "和了": _H13, "栄和": _H13, "副露": ["z7", "z7", "z7-yoko"],
+    "吃": ["m4-yoko", "m5", "m6"], "碰": ["p5", "p5", "p5-yoko"], "槓": ["z1", "z1", "z1", "z1"], "暗槓": ["back", "z1", "z1", "back"],
+    "大明槓": ["z7", "z7", "z7", "z7-yoko"], "加槓": ["z6-yoko", "z6", "z6", "z6"], "立直": "tenbo", "聴牌": _H13[:12] + ["z2"],
+    "不聴": ["m1", "m4", "m8", "p2", "p6", "p9", "s1", "s5", "z2", "z3", "z5", "z6", "z7"], "形式聴牌": _H13[:12] + ["z2"],
+    "振聴": ["s4", "s5"], "倒牌": _H13, "搶槓": ["z6-yoko", "z6", "z6", "z6"],
+    "流局": "table-yama", "荒牌平局": "table-yama", "不聴罰符": "tenbo-color", "九種九牌": ["m1", "m9", "p1", "p9", "s1", "s9", "z1", "z2", "z5"],
+    "四風連打": ["z1", "z1", "z1", "z1"], "四家立直": "tenbo", "四開槓": "wanpai", "三家和": "table-kaze", "錯和": "tenbo", "多牌": _H13 + ["s1"],
+    "少牌": _H13[:12], "包": ["z5", "z6", "z7"],
+    "面子": ["m1", "m2", "m3"], "順子": ["p4", "p5", "p6"], "刻子": ["s7", "s7", "s7"], "槓子": ["z1", "z1", "z1", "z1"], "雀頭": ["m5", "m5"],
+    "対子": ["z6", "z6"], "搭子": ["p3", "p4"], "両面": ["s4", "s5"], "嵌張": ["m3", "m5"], "辺張": ["p1", "p2"], "単騎": ["z1"],
+    "双碰": ["m2", "m2", "s8", "s8"], "門前": _H13, "符": "tenbo", "飜": ["p5r", "p5", "p5"], "箱": "tenbo-color",
+}
+
+def _yougo_list():
+    s = _io.open(os.path.join(MJ, "blog-mahjong-yougo.html"), encoding="utf-8").read()
+    s = s[s.index("<article"):s.index("</article>")]
+    out = []
+    for a, b, c in _re.findall(r'<b class="kj">(.*?)</b><span class="ym">(.*?)</span></dt><dd>(.*?)</dd>', s):
+        a = _re.sub(r"<[^>]+>", "", a); c = _re.sub(r"<rt>.*?</rt>|<[^>]+>", "", c)
+        out.append(dict(kj=a, ym=_re.sub(r"<[^>]+>", "", b), desc=c, vis=_GV.get(a)))
+    return out
+
+def _gvis(v, big=False, small=False):
+    if isinstance(v, str):
+        wide = v == "dice-chiicha"  # 横に長い絵は幅を広く
+        return '<div class="vcard mid">' + art(f"assets/art/{v}.svg", (620 if small else 860) if wide else (300 if small else 520 if big else 440)) + "</div>"
+    n = len(v); w = min(110 if small else 130, int(860 / max(n, 1)))
+    return '<div class="vcard mid">' + '<div class="trow" style="gap:3px;align-items:flex-end">' + "".join(tile(c, round(w * 1.4) if "yoko" in c else w) for c in v) + "</div></div>"
+
+def _yougo_video(i, g, n):
+    hk = f'<div class="mid"><div class="big" style="font-size:{170 if len(g["kj"]) <= 3 else 96}px;color:#1F2A28;margin-bottom:24px">{esc(g["kj"])}</div></div>' + _gvis(g["vis"], small=True)
+    def ans(a, b):
+        return [head(a, b, g["kj"]), stage(a + .2, b, f'<div class="mid"><p class="lbl" style="font-size:40px;margin:0">読み方</p><span class="ans" style="font-size:{72 if len(g["ym"]) <= 10 else 52}px">{esc(g["ym"])}</span></div>', top=380, anim="pop"),
+                stage(a + .6, b, _gvis(g["vis"], True), top=620, anim="fade")]
+    def mean(a, b):
+        return [head(a, b, g["kj"]), stage(a + .2, b, f'<div class="vcard"><div class="v" style="font-size:52px;font-weight:900;line-height:1.5">{esc(g["desc"])}</div></div>', top=400),
+                stage(a + .5, b, _gvis(g["vis"]), top=900, anim="fade")]
+    say_ym = g["ym"].replace("・", "、または")
+    return [(["この言葉、", "読めるかな？"], hook(f"麻雀用語 {i}/{n}", "読める？", hk, g=False, top=200)),
+            ([f"答えは、{say_ym}。"], ans),
+            (_chunks(g["desc"])[:4], mean),
+            (["正式名称80語は、", "まじゃすこの記事で。"], article_end("blog-mahjong-yougo", "80語は記事で"))]
+
+_G = _yougo_list()
+for _i, _g in enumerate(_G, 1):
+    TOPICS[f"g-{_i:02d}"] = (lambda i=_i, g=_g: _yougo_video(i, g, len(_G)))
