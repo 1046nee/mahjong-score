@@ -8,7 +8,7 @@ from video_topics import at, esc, head, stage, hook, art, vt, trow, article_end,
 TOPICS = {}
 
 def card(rows):
-    return '<div class="vcard">' + vt(rows) + "</div>"
+    return '<div class="vcard">' + vt([tuple(r) + ("",) * (3 - len(r)) for r in rows]) + "</div>"  # (左, 右) だけの行も受ける
 
 def bars(rows, a, total, unit="人"):
     """rows = [(名前, 数)]。数に合わせて棒が伸びる"""
