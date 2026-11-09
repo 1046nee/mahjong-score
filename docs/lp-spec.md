@@ -34,7 +34,7 @@
    - **「画像」「個人ページに追加」「送る」ボタンは撮影時に丸ごと外す**（`.cc-head-r`・`.mp-acts-r`。複製に残しても `onclick` を外しているため押しても何も起きず紛らわしいため）。
      合計/個人戦/チーム戦はタップで本当に切り替わるが、総当たり表の「マスを押すと2人の試合」やゲームのタイル詳細など**個別の試合の編集・ポップアップは機能として付けていない**（本番の裏の画面を誤って呼び出す危険と、見せ方が重くなることを避けた・2026-11-05 ユーザー判断「重くなったり操作できない方がいいパラメータにアクセスできてしまうのであればないほうがいい」）
    撮り方（本物の仲間ページの名前を置きかえたデータが要る＝個人PCで。データはリポジトリに入れない）:
-   `LP_PLAN=tools/shoot_lp_live_plan.py python tools/shoot_lp_screens.py <circle_anon.json>` → `python tools/splice_lp_live.py`（index.htmlへ埋めこみ）。詳しくは docs/image-tools.md
+   `LP_PLAN=tools/shoot_lp_live_plan.py python tools/shoot_lp_screens.py まじゃすこ素材/data/circle_anon.json` → `python tools/splice_lp_live.py`（index.htmlへ埋めこみ）。詳しくは docs/image-tools.md
 6. クロージング「麻雀のスコア記録は、まじゃすこで。」（薄緑）→ 読みもの「もっと詳しく」→ **お知らせ（新しい3本）** → lp_bottom広告枠。読みものとお知らせは、ブログの一覧と同じく左に記事の絵（assets/thumbs/・.read-list.rl-cards）。新しい記事を載せるときは make_thumbs.py の絵も作る
 7. フッター（全ページ共通。ロゴと一言・SNSはアイコンだけ・使う／読む／このサイトについて の3つのまとまり。中身と作り方は docs/site-spec.md「共通ヘッダー/フッター」＝`tools/site_footer.py`・`assets/site-foot.css`。
    **「使い方」リンクは置かない**＝ヘッダー右上の「使い方」と重複するため）

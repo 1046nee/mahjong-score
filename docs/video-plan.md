@@ -27,8 +27,7 @@
 - 字幕は必ず画面の中央。`make_short.build` が幅を確かめ、はみ出す字幕は字を小さくし、中央でなければ止まる
 - 録画と画面の高さは 390×792（スマホの枠と同じ比率）。844だと下が切れて右下のオレンジのボタンが欠ける
 - **録画（まじゃすこ素材/video/clips/）はすべて素材リポジトリにコミットする**（2026-11-06 ユーザーの判断。録画したPCと声を入れるPCが違っても作れるように）。
-  仲間ページ・マイページの10本（nakama-*・mypage-*）は本物のデータが社用PCにしかないので、社用PCで `python tools/record_play.py nakama-rank --data <circle_anon.json>`（10本分）→ 素材リポジトリで clips を commit・push。
-  声のPC: 素材リポジトリを pull → `python tools/make_narrated.py nakama-rank --vv 3 ずんだもん zundamon`。circle_anon.json そのものはどちらのリポジトリにも入れない
+  仲間ページ・マイページの10本（nakama-*・mypage-*）の録画は `python tools/record_play.py nakama-rank --data まじゃすこ素材/data/circle_anon.json`（どのPCでも撮れる）
 - 会社PCは声なしの下書きまで: `python tools/make_narrated.py --draft` → `voice-<名前>-draft.mp4`。声は個人PCで `python tools/make_narrated.py --vv 3 ずんだもん zundamon`
 
 ## 1本の型（どの種類も共通）
@@ -62,7 +61,7 @@
 
 ## 作った動画（まじゃすこ素材/video/）
 - **2026-11-05 作り直し（今のサイトに合わせた・音なし）**: kinou・aruaru-shukei・kabe-umaoka・play-quick・play-rounds・calc-vs・play-team・play-mawashi（録画は record_play.py で撮り直し・使い方の画面は shoot_howto_screens.py で撮り直し）。
-  **まだ古いまま**: nakama-*・mypage-*（本物の仲間ページのデータ circle_anon.json が要る＝社用PCで `python tools/record_play.py <名前> --data <json>` → `python tools/make_short.py <名前>`）、kinou の「通算の成績」の画面（lp-mypage.jpg）、hype-kinou・voice-kinou（声は Windows の音声合成。声をどうするかは検討中）
+  仲間ページ・マイページの10本の録画も 2026-11-09 に 390×792 で撮り直した（まじゃすこ素材/data/circle_anon.json）
 | 名前 | 柱 | 長さ | 中身 |
 |---|---|---|---|
 | hype-kinou | A・音あり | 15.6秒 | kinou の速い版：まだ電卓？→入れるだけ→全自動→順位→全員に→成績→仲間の順位→これ全部→無料 |
