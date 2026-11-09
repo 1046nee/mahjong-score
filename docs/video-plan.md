@@ -124,6 +124,7 @@
   - どれも `VOICEVOX:ずんだもん` を入れる。【】のタグは中身と同じ言葉をくり返さない（「【三麻】三麻って…」にしない）
   - 作り方: 文面の元は1本ごとに「フック・YouTubeのタイトル・Xのタグ・中身2〜3文・問いかけ・記事・タグ3つ」。字数・タグの数・禁止語を確かめてから入れる
 - 予定と本文は Notion の SNS投稿カレンダー（チャンネル「ショート動画」）。**2026-11-06 に毎日20:00に1本へ変えた（ユーザーの判断）**: 11/7 kinou → t-hai136 → aruaru-shukei → t-zure → play-quick → kabe-umaoka → play-mawashi → play-team → t-nichijou → calc-vs → t-tsumo70 → play-rounds → t-sanma → t-half → t-haitei（11/21）→ 11/22〜12/1 仲間ページとマイページを交互（社用PCで録画が要る）。
+  **12/2〜2027/4/7 は127本を毎日（2026-11-09 ユーザーの依頼）**: 用語 g-01〜80・役 y-01〜29・Mリーグのチーム ml-01〜10・Tips 8本（t-naga・t-ai・t-dantai・t-dantairule・t-mldantai・t-mlwin・t-mlmvp・t-mlcount）を、同じ種類が続きすぎないよう混ぜた並び（用語2〜3本ごとに役・ML・Tipsを1本）。Notionの行は全部「下書きあり」で、文面は YouTubeのタイトル＋説明（YouTube・TikTok・Instagram共通）＋X の3つに縮めた形
   **投稿はスマホから**（2026-11-06 ユーザーの判断）。カレンダーの各行に GitHub（majasco-assets）の動画のリンクを入れてある＝スマホのブラウザで開き、右上の「…」→ Download で保存して各アプリへ。Notion は本文の「〜.mp4」を勝手に壊れたリンク（http://〜.mp）にするので、リンクは [名前](https://github.com/…) の形で書く
   説明文の最後に `VOICEVOX:ずんだもん` を入れる（クレジットの決まり）。動画に声とBGMが入っているので、アプリの曲は足さない
 
