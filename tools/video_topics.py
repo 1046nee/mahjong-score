@@ -303,6 +303,14 @@ def _chunks(text, n=17):
     """字幕の区切り: 「、」「。」で切って、n文字までにまとめる。かっこの中は字幕と声から外す"""
     text = _re.sub(r"（[^）]*）", "", text)
     parts = [x for x in _re.split(r"(?<=[、。])", text) if x.strip()]
+    # 句読点のない長い文は、真ん中に近い「」・を・に・で・て」の後ろで切る（字幕が1行に入らないため）
+    def cut(x):
+        if len(x) <= n: return [x]
+        ks = [k + 1 for k, ch in enumerate(x[:-2]) if ch in "」をにでてと" and 4 <= k + 1 <= len(x) - 4]
+        if not ks: return [x]
+        k = min(ks, key=lambda k: abs(k - len(x) / 2))
+        return cut(x[:k]) + cut(x[k:])
+    parts = [y for x in parts for y in cut(x)]
     out, cur = [], ""
     for x in parts:
         if cur and len(cur) + len(x) > n:

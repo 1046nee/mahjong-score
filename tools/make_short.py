@@ -385,7 +385,7 @@ def build(name, fn):
         pg.goto(v3.furl(hp)); pg.wait_for_load_state("networkidle"); pg.wait_for_timeout(400)
         # 字幕は必ず画面の中央。幅を超える字幕は字を小さくして収める（2026-11-06 ユーザーの指定）
         off = pg.evaluate("""() => { const bad = []; document.querySelectorAll('.sub span').forEach(e => { let w = e.getBoundingClientRect().width;
-            if (w > 960) { e.style.fontSize = (parseFloat(getComputedStyle(e).fontSize) * 950 / w) + 'px'; w = e.getBoundingClientRect().width; }
+            for (let k = 0; k < 8 && w > 950; k++) { e.style.fontSize = (parseFloat(getComputedStyle(e).fontSize) * 0.94) + 'px'; w = e.getBoundingClientRect().width; }
             const r = e.getBoundingClientRect(); if (Math.abs((r.left + r.right) / 2 - 540) > 1 || r.left < 40 || r.right > 1040) bad.push(e.textContent); }); return bad; }""")
         assert not off, ("字幕が中央にない", off)
         SIG = """() => [...document.querySelectorAll('[data-in],[data-scroll],[data-timer],[data-sub],[data-count],[data-w]')].map(e => e.style.opacity + e.style.transform + e.style.width + e.style.rotate + (e.dataset.count || e.dataset.timer ? e.textContent : '')).join('|')"""
