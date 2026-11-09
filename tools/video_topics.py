@@ -405,7 +405,7 @@ def _yougo_video(i, g, n):
                 stage(a + .5, b, _gvis(g["vis"]), top=900, anim="fade")]
     say_ym = g["ym"].replace("・", "、または")
     return [(["この言葉、", "読めるかな？"], hook(f"麻雀用語 {i}/{n}", "読める？", hk, g=False, top=200)),
-            ([f"答えは、{say_ym}。"], ans),
+            (_chunks(f"答えは、{say_ym}。"), ans),
             (_chunks(g["desc"])[:4], mean),
             (["正式名称80語は、", "まじゃすこの記事で。"], article_end("blog-mahjong-yougo", "80語は記事で"))]
 
