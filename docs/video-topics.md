@@ -22,6 +22,8 @@
 | t-nichijou | テンパるって、もとは麻雀？ | blog-nichijougo |
 | t-haitei | 最後の1枚で、カンできる？ | blog-haitei |
 
+**追加（2026-11-09・`tools/video_topics2.py`）**: t-naga（NAGAの使い方）・t-mlwin（歴代優勝）・t-mlmvp（歴代MVP）・t-mlcount（チーム別の優勝回数）・t-mldantai（Mリーガー40人の所属団体）・ml-01〜ml-10（チームごとの4人と所属団体）・t-dantai（プロ団体5つ）・t-dantairule（団体のルールの違い）・t-ai（麻雀AIの比較）。数字は記事の時点（2026-27シーズン）
+
 ## 初心者向け
 | # | 題名（フック） | 形 | 構成 | 絵 | 元の記事 |
 |---|---|---|---|---|---|

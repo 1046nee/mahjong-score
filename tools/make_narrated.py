@@ -209,6 +209,8 @@ def v_umaoka():
 NARR = {"kinou": v_kinou, "aruaru-shukei": v_aruaru, "kabe-umaoka": v_umaoka}
 import video_topics  # 記事をもとにした動画（台本は tools/video_topics.py）
 NARR.update(video_topics.TOPICS)
+import video_topics2  # NAGA・Mリーグ・プロ団体・麻雀AI（tools/video_topics2.py）
+NARR.update(video_topics2.TOPICS)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
