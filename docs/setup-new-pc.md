@@ -22,6 +22,13 @@
   **動作確認済み**: Windows 11・Python 3.14・Playwright 1.63 で smoke / account / sync の3本がALL PASS（2026-09-25・会社PC）
 - **Claude Code**（デスクトップアプリ / CLI / VS Code拡張のいずれか）→ **同じAnthropicアカウントでログイン**（プランはアカウントに紐づく）
 
+## 1b. ショート動画を作るPC（2026-11-09）
+- 追加の道具: `pip install numpy edge-tts truststore imageio-ffmpeg pillow playwright` と `python -m playwright install chromium`（make_narrated.py は起動時にこれらを読む）
+- 字: `C:/Windows/Fonts/NotoSansJP-VF.ttf`（Noto Sans JP の可変フォント）が入っていること（tools/make_sns_v3.py の FONT）
+- 声: VOICEVOX を起動しておく（http://127.0.0.1:50021）。`python tools/make_narrated.py [名前] --vv 3 ずんだもん zundamon`
+- 素材: 素材リポジトリ（まじゃすこ素材/）の `video/clips/`（操作の録画14本）と `video/pages/`（記事の画面）を使う。pull が `invalid index-pack` で止まるPCは `git -c http.version=HTTP/1.1 pull`
+- 声なしで見た目だけ確かめる: `python tools/make_narrated.py [名前] --draft`
+
 ## 2. リポジトリの取得
 任意の場所で:
 ```
