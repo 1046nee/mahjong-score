@@ -206,7 +206,7 @@ figure[data-team-demo] .lp-shot { background: #DBF4F9; } /* 中を上下に引�
   #view-home .lp-howto-wrap { max-width: 1180px; padding-left: 32px; padding-right: 32px; }
   /* 使い方: 左にスマホ、右に縦の4ステップ */
   #view-home .howto-play { display: grid; grid-template-columns: 340px minmax(0, 460px); grid-template-areas: "phone steps"; justify-content: center; align-items: center; column-gap: 52px; margin-top: 26px; }
-  #view-home .howto-shot { grid-area: phone; } #view-home .howto-phone { --pw: clamp(220px, calc((100svh - 110px) / 2.06), 280px); }
+  #view-home .howto-shot { grid-area: phone; } #view-home .howto-phone { --pw: clamp(220px, calc((var(--vh0, 100svh) - 110px) / 2.06), 280px); }
   #view-home .howto-steps { grid-area: steps; grid-template-columns: 1fr; gap: 6px; margin: 0; }
   #view-home .hs button { display: grid; grid-template-columns: 6px 36px minmax(0, 1fr); column-gap: 12px; align-items: center; padding: 12px 8px 12px 0; text-align: left; }
   #view-home .hs-bar { grid-row: 1 / 3; height: 100%; min-height: 44px; } #view-home .hs-bar i { transform: scaleY(var(--p, 0)); transform-origin: top; }
@@ -510,7 +510,7 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .howto { padding: 14px 2px 4px; line-height: 1.9; }
 .howto h2 { font-size: 22px; font-weight: 900; text-align: center; color: #1a1a1a; margin-bottom: 12px; }
 .howto > p { font-size: 15px; color: #444; }
-.howto-shot { position: relative; background: #177083; border-radius: 26px; padding: 22px 16px; display: flex; justify-content: center; }
+.howto-shot { position: relative; background: #177083; border-radius: 26px; padding: 36px 16px 22px; display: flex; justify-content: center; } /* 上は「再生中／停止中」の文字の分あける */
 /* 使い方の4枚は本物の操作デモ動画（2026-11-05〜・tools/record_howto_demo.py＋split_howto_demo.py）。スマホの枠は「打つほど」と同じ形 */
 .howto-phone { --pw: 210px; width: var(--pw); padding: calc(var(--pw) * .035); border-radius: calc(var(--pw) * .15); background: #1F2A28; box-shadow: 0 12px 28px rgba(0,0,0,.25); }
 .howto-phone > .lp-phone-bar { border-radius: calc(var(--pw) * .115) calc(var(--pw) * .115) 0 0; }
@@ -526,13 +526,15 @@ h2.js .lp-r { transition: transform .6s cubic-bezier(.2,.8,.2,1); } h2.pre .lp-r
 .hs.on .hs-n { animation: lp-pop .42s ease both; }
 .hs-t { display: block; font-size: 12px; font-weight: 800; line-height: 1.35; color: #8A9694; transition: color .25s; } .hs.on .hs-t { color: #177083; } .hs.done .hs-t { color: #1F2A28; }
 .hs-f, .hs-d { display: none; }
-.howto-phone { --pw: clamp(170px, min(230px, calc((100svh - 330px) / 2.06)), 230px); }
+.howto-phone { --pw: clamp(170px, min(230px, calc((var(--vh0, 100svh) - 330px) / 2.06)), 230px); } /* --vh0＝読みこみ時の画面の高さ（JS）。ブラウザの下のバーが出入りしても変えない */
 .howto-screen { position: relative; height: calc(var(--pw) * 1.89); overflow: hidden; border-radius: 0 0 calc(var(--pw) * .115) calc(var(--pw) * .115); background: #fff; }
 .howto-screen video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .howto-screen img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 0; } .howto-screen img[hidden] { display: none; }
 .howto-again { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); box-shadow: 0 6px 16px rgba(0,0,0,.28); background: #fff; }
 .howto-pause { position: absolute; right: 12px; bottom: 12px; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: #177083; box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; } .howto-pause .pl { display: none; } .howto-pause.stop .pl { display: block; } .howto-pause.stop .pz { display: none; } .howto-pause[hidden] { display: none; }
 .howto-screen { cursor: pointer; }
+.howto-state { position: absolute; left: 12px; top: 8px; z-index: 2; display: inline-flex; align-items: center; gap: 5px; padding: 1px 10px; border-radius: 999px; background: rgba(255,255,255,.18); color: #fff; font-size: 12px; font-weight: 800; line-height: 18px; pointer-events: none; }
+.howto-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .55; } .howto-state.on::before { opacity: 1; background: #7BE3B0; }
 .howto-again[hidden] { display: none; } /* .btn-tint の display が hidden より強い */
 .howto-cap { min-height: 84px; margin-top: 12px; } /* 説明は2行まで（320pxでも） */
 .howto-cap h3 { margin: 0 0 6px; font-size: 18px; font-weight: 900; text-align: center; color: #1F2A28; }
@@ -3955,7 +3957,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <li class="hs"><button type="button" onclick="howtoGo(2)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">3</span><span class="hs-t">点数を入れる</span><span class="hs-f">試合後に表示点数を入力する</span><span class="hs-d">表示点数をそのまま入力。ウマ・オカ込みのスコアを自動で計算します。</span></button></li>
           <li class="hs"><button type="button" onclick="howtoGo(3)"><span class="hs-bar" aria-hidden="true"><i></i></span><span class="hs-n">4</span><span class="hs-t">結果を見る</span><span class="hs-f">結果はリアルタイムで全員に</span><span class="hs-d">順位もグラフも自動で記録。全員のスマホでひと目でわかります。</span></button></li>
         </ol>
-        <div class="howto-shot"><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=5" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,3.36,12.44,18.72,29.32" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
+        <div class="howto-shot"><span class="howto-state" id="howto-state" aria-live="polite">停止中</span><div class="howto-phone"><span class="lp-phone-bar" style="background:#7F7F7F" aria-hidden="true"><span class="lp-phone-island"></span></span><div class="howto-screen"><img id="howto-still" src="/assets/screens/howto-step-1.jpg" alt="" hidden><video id="howto-video" src="/assets/screens/howto-all.mp4?v=5" poster="/assets/screens/howto-poster.jpg" width="780" height="1584" muted playsinline webkit-playsinline preload="metadata" data-marks="0.0,3.36,12.44,18.72,29.32" aria-hidden="true"></video></div></div><button type="button" class="btn-tint howto-again" id="howto-again" onclick="howtoGo(-1)" hidden>もう一度見る</button><button type="button" class="howto-pause" id="howto-pause" aria-label="動画を止める"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="pz" d="M4 2.5h3v11H4zM9 2.5h3v11H9z" fill="currentColor"/><path class="pl" d="M4.5 2.3v11.4l9-5.7z" fill="currentColor"/></svg></button></div>
         <div class="howto-cap" id="howto-cap" aria-live="polite"><h3>1. 人数を選ぶ</h3><p>「はじめる」で4人か3人を選ぶだけ。すぐ入力画面が開きます。</p></div>
       </div>
     </section>
@@ -9471,6 +9473,9 @@ function snapScroll(name, dir) {
 // iPhoneの省電力モードなどで自動再生を断られたときと、動きを減らす設定のときは「再生する」を出す（押せば動く）
 let howtoGo = () => {};
 function initHowtoVideos() {
+  let vw0 = 0;
+  const setVh = () => { if (innerWidth === vw0) return; vw0 = innerWidth; document.documentElement.style.setProperty('--vh0', innerHeight + 'px'); };
+  setVh(); window.addEventListener('resize', setVh, { passive: true });  // 高さだけの変化（下のバーの出入り）は無視する
   const root = document.getElementById('howto-play'), v = document.getElementById('howto-video');
   if (!root || !v) return;
   const items = [...root.querySelectorAll('.hs')], cap = document.getElementById('howto-cap'), btn = document.getElementById('howto-again'), bar = root.querySelector('.lp-phone-bar');
@@ -9514,8 +9519,17 @@ function initHowtoVideos() {
   };
   pz.addEventListener('click', toggle);
   root.querySelector('.howto-screen').addEventListener('click', toggle);
-  v.addEventListener('pause', () => { pz.classList.add('stop'); pz.setAttribute('aria-label', '動画を動かす'); });
-  v.addEventListener('playing', () => { pz.classList.remove('stop'); pz.setAttribute('aria-label', '動画を止める'); });
+  const st = document.getElementById('howto-state');
+  const showState = on => { if (st) { st.textContent = on ? '再生中' : '停止中'; st.classList.toggle('on', on); } };
+  v.addEventListener('pause', () => { pz.classList.add('stop'); pz.setAttribute('aria-label', '動画を動かす'); showState(false); });
+  v.addEventListener('playing', () => { pz.classList.remove('stop'); pz.setAttribute('aria-label', '動画を止める'); showState(true); });
+  v.addEventListener('ended', () => showState(false));
+  // 自動で動かせなかったとき（省電力・別のアプリから戻った・読みこみが遅い）に止まったままにしない
+  const resume = () => { if (visible && !held && !broken && !v.ended && v.paused && document.visibilityState === 'visible') start(); };
+  document.addEventListener('visibilitychange', resume);
+  window.addEventListener('pageshow', resume);
+  v.addEventListener('canplay', resume);
+  ['pointerdown', 'touchend', 'keydown'].forEach(ev => document.addEventListener(ev, e => { if (!root.contains(e.target)) resume(); }, { passive: true }));
   howtoGo = i => {
     held = false;
     if (i >= 0) { step(i); items.forEach((el, j) => el.querySelector('.hs-bar i').style.setProperty('--p', j < i ? 1 : 0)); seek(M[i] + 0.02); } else if (v.ended) seek(0);
