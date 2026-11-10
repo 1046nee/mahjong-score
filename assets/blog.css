@@ -1033,8 +1033,10 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
      スマホで記事の下に来る読みものの組（横の列）は今までの地の色のまま */
 .bs-list .rd-box .rd-sp, .rd-box .rd-sp { display: none; }
 @media (max-width: 900px) {
-  .rd-box .rd-pc { display: none; }
+  .bs-list .rd-box .rd-pc { display: none; }
   .bs-list .rd-box .rd-sp { display: flex; margin-top: 10px; }
+  /* 記事ページは小さな絵と題名の行（PCの横の列と同じ）を出す。一覧ページだけにしていた .rd-pc を消す指定が記事にも効いて、
+     「ほかにも、こんな記事があります」が見出しだけになっていた（2026-11-10 ユーザー指摘） */
   .rd-box .sb-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
 }
 .bs-list:has(.hero-all) { --tint: #E4F3EC; } .bs-list:has(.hero-mahjong) { --tint: #E4F3EC; } .bs-list:has(.hero-beginner) { --tint: #EAF7EE; }
@@ -1043,7 +1045,8 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 /* 中央寄せの箱でも画面の端まで塗る（影を左右に広げて、上下ははみ出さないように切る） */
 .bs-list .post-layout { background: var(--tint, transparent); box-shadow: 0 0 0 100vmax var(--tint, transparent); clip-path: inset(0 -100vmax); }
 @media (max-width: 900px) {
-  .bs-list .post-layout > [data-sidebar] { background: #EEF3F1; box-shadow: 0 0 0 100vmax #EEF3F1; clip-path: inset(0 -100vmax -100vmax); padding-top: 18px; }
+  /* 「ほかにも、こんな記事があります」の地は薄青（2026-11-10 ユーザーの指定。LPの「麻雀の記事」と同じ。記事ページ・一覧ページとも） */
+  .post-layout > [data-sidebar] { background: #EAF0FB; box-shadow: 0 0 0 100vmax #EAF0FB; clip-path: inset(0 -100vmax -100vmax); padding-top: 18px; }
   .bs-list .post-layout { padding-bottom: 0; }
 }
 
