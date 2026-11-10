@@ -245,6 +245,8 @@ import video_topics_quiz  # この手の待ちは？（14問）
 NARR.update(video_topics_quiz.TOPICS)
 import video_topics_basic  # 初心者向け b-01〜11・点数とスコア s-01〜13
 NARR.update(video_topics_basic.TOPICS)
+import video_topics_more  # 分かれ目の続き・Mリーグとプロ・AI・雑学・集まりの運営
+NARR.update(video_topics_more.TOPICS)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
