@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """tools/shoot_lp_live_plan.py が書き出した lp-live-*.html（匿名化済みデータのみ）を、
-LPの「これまでの成績が一目でわかる。」の4枚（成績表・通算順位・総当たり表・過去の試合）に埋めこむ。
+LPの「これまでの成績が一目でわかる。」の4枚（通算順位・成績表・総当たり表・過去の試合）に埋めこむ。
+カードは見出しの文で探して中身だけ差しかえるので、並び順はindex.htmlのまま変わらない。
 どのカードもタブのタップで切りかえる（横スワイプは付けない）。通算順位の個人戦・チーム戦と、
 過去の試合の個人戦・チーム戦はLPのJS（initLpRank・initLpGames）が組み立てる。
 実行: python tools/splice_lp_live.py（先に shoot_lp_live_plan.py を実行しておくこと）"""
@@ -79,8 +80,8 @@ def splice_team():
     if pat.search(s):
         s = pat.sub(lambda m: fig, s, count=1)
     else:
-        m = re.search(r'<figure class="lp-show"><figcaption><b>あの日、どうだった？</b>.*?</figure>', s, re.S)
-        assert m, "games"
+        m = re.search(r'<figure class="lp-show"><figcaption><b>自分の実力、わかる？</b>.*?</figure>', s, re.S)  # 2枚目に置く（2026-11-10 ユーザーの指定）
+        assert m, "mine"
         s = s[:m.end()] + "\n        " + fig + s[m.end():]
     open(IDX, "w", encoding="utf-8", newline="").write(s)
     print("team demo ok, index.html size:", len(s))
