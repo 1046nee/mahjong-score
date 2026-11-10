@@ -108,8 +108,7 @@ def _team_video(i, team, players):
             (["答えは、", f"{n[0]}、{n[1]}、", f"{n[2]}、{n[3]}。"], s1),
             (["全10チーム40人は、", "まじゃすこの記事で。"], article_end("blog-mleague-2026", "全10チームは記事で"))]
 
-for _i, (_t, _p) in enumerate(TEAMS, 1):
-    TOPICS[f"ml-{_i:02d}"] = (lambda i=_i, t=_t, p=_p: _team_video(i, t, p))
+# 「このチームの4人、言える？」（ml-01〜10）は2026-11-10 ユーザーの判断でやめた
 
 # ---------------- プロ団体 ----------------
 def t_dantai():

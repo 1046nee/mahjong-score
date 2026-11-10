@@ -57,6 +57,12 @@ table.ex td.p { color: #1A237E; text-align: right; } table.ex td.n { color: #C62
 .memo .ln { font-size: 33px; font-weight: 700; color: #3A3A3A; height: 66px; line-height: 66px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .memo .ln.r { font-weight: 900; color: #1A237E; } .memo .ln.n { color: #C62828; font-weight: 900; }
 .memo .ln.nm { color: #177083; font-weight: 900; }
+.memo { background-image: none; }
+.memo .hd { font-size: 30px; font-weight: 900; color: #fff; background: #177083; border-radius: 999px; display: inline-block; padding: 4px 22px; margin-bottom: 8px; }
+.memo .ln.pre { display: flex; justify-content: space-between; font-size: 40px; height: 54px; line-height: 54px; color: #2B3A67; font-weight: 900; border-bottom: 2px dashed #E9E2CC; }
+.memo .ln.s { font-size: 28px; height: 44px; line-height: 44px; color: #8A8F8C; font-weight: 700; }
+.memo .ln.big { font-size: 46px; height: 74px; line-height: 66px; color: #1A237E; font-weight: 900; border: 4px solid #E75620; border-radius: 16px; padding: 0 16px; margin: 4px 0 14px; background: #fff; }
+.memo .ln.big.n { color: #C62828; }
 .done { position: absolute; z-index: 6; background: #177083; color: #fff; font-size: 44px; font-weight: 900; border-radius: 999px; padding: 18px 40px; box-shadow: 0 14px 30px rgba(16,40,36,.25); }
 .done.l { background: #C62828; }
 .fing, .rip { position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
@@ -278,17 +284,28 @@ def v_play_quick():
     els.append(end_card(T0 + 19.4))
     return T0 + 23.4, els
 
+PRE_ROUNDS = 11.5  # 4試合目の前に、3試合目までの順位を実況する時間（2026-11-10 ユーザーの指示）
+
 def v_play_rounds():
-    """実際の操作：4試合目を入れると順位が入れかわり、成績表まで自動"""
-    T0 = HOOK
-    els = hook_phone("実際の操作", "4試合目で、\n順位はどう変わる？", "howto-4.jpg", chips=[(("逆転", "2位→1位", "pos"), "r")])
+    """実際の操作：3試合目までの順位を見せてから、4試合目を入れると美咲が逆転する"""
+    T0 = HOOK + PRE_ROUNDS
+    els = hook_phone("実際の操作", "4試合目で、\n逆転なるか？","howto-4.jpg", chips=[(("逆転", "2位→1位", "pos"), "r")])
+    P = HOOK
+    rows = [("1", "健太", "+82.7", "#D4A017", "pos"), ("2", "美咲", "+13.9", "#6E8CA8", "pos"), ("3", "翔", "−9.3", "#B4C0BD", "neg"), ("4", "陽菜", "−87.3", "#C92F42", "neg")]
+    board = "".join(f'<div style="display:grid;grid-template-columns:110px 1fr 260px;align-items:center;height:130px;border-top:3px solid #E3E9E7;font-size:60px;font-weight:900">'
+                    f'<span style="display:grid;place-items:center;width:84px;height:84px;border-radius:50%;background:{c};color:#fff;font-size:48px">{r}</span>'
+                    f'<span>{n}</span><span class="{k}" style="text-align:right;color:{"#1A237E" if k == "pos" else "#C62828"}">{v}</span></div>' for r, n, v, c, k in rows)
+    els.append(at(P, T0, '<h1>3試合目が終わって…</h1>', cls="cap", style="top:170px", anim="pop"))
+    els.append(at(P + .2, T0, f'<div style="background:#fff;border-radius:40px;padding:10px 50px;box-shadow:0 24px 60px rgba(16,40,36,.16)">{board}</div>', style="position:absolute;left:80px;right:80px;top:400px"))
+    els.append(at(P + 3.4, T0, '<div style="text-align:center"><span style="display:inline-block;background:#E75620;color:#fff;font-size:64px;font-weight:900;border-radius:999px;padding:20px 56px">差は 68.8</span></div>', style="position:absolute;left:0;right:0;top:1000px", anim="pop"))
+    els.append(at(P + 6.6, T0, '<h1 style="color:#E75620">美咲は逆転できる？</h1>', cls="cap", style="top:1180px", anim="pop"))
     e, hh, m = live_at(T0, T0 + 20.4, "play-rounds", *live_pos())
     els.append(e)
     c = lambda k: T0 + m[k]
-    els += caps([(T0, c("input"), "3試合目まで、\n健太がトップ。", ""),
-                 (c("input"), c("done"), "4試合目の点数を\n入れると…", ""),
-                 (c("done"), c("scroll"), "美咲が、その場で\n逆転！", ""),
-                 (c("scroll"), T0 + 20.4, "個人成績も、\n総当たりも自動。", "")])
+    els += caps([(T0, c("input"), "4試合目の\n点数を入れる", "健太 8,000点・美咲 52,000点"),
+                 (c("input"), c("done"), "健太はラス、\n美咲は大トップ", ""),
+                 (c("done"), c("scroll"), "美咲が+85.9で\n逆転の1位！", "健太は+30.7で2位に"),
+                 (c("scroll"), T0 + 20.4, "1試合ごとのスコアも、\n個人成績も自動。", "")])
     els.append(end_card(T0 + 20.4))
     return T0 + 24.4, els
 
@@ -347,14 +364,16 @@ def v_calc_vs():
     els = [at(0, RS, '<div class="badge">どっちが速い？</div><h1>電卓 vs<br>まじゃすこ</h1><p>4人分のスコアの集計</p>', cls="cap hook", style="top:640px", anim="pop")]
     els.append(at(RS, END, f'<div class="race-h l" style="left:40px">電卓<span class="tm" data-timer="{RS},999">0.0秒</span></div>', style="position:absolute;inset:0", anim="fade"))
     els.append(at(RS, END, f'<div class="race-h" style="left:560px">まじゃすこ<span class="tm" data-timer="{RS},{fin}">0.0秒</span></div>', style="position:absolute;inset:0", anim="fade"))
-    lines = [("nm", "健太 45,200点"), ("", "45,200 − 30,000"), ("", "＝ +15.2"), ("", "＋ウマ30 ＋オカ20"), ("r", "＝ +65.2"),
-             ("nm", "美咲 28,100点"), ("", "28,100 − 30,000"), ("", "＝ −1.9"), ("", "＋ウマ10"), ("r", "＝ +8.1"),
-             ("nm", "翔 17,300点"), ("", "17,300 − 30,000"), ("", "＝ −12.7"), ("", "−ウマ10"), ("n", "＝ −22.7")]
-    memo = ""
+    # 紙には4人の点数がもう書いてある状態から始める。途中式は小さく薄く、出した答えは大きく枠で囲む（2026-11-10 ユーザーの指示）
+    top = "".join(f'<div class="ln pre"><span>{n}</span><span>{v}</span></div>' for n, v in (("健太", "45,200"), ("美咲", "28,100"), ("翔", "17,300"), ("陽菜", "9,400")))
+    lines = [("s", "45,200 − 30,000 ＝ +15.2"), ("s", "+15.2 ＋ウマ30 ＋オカ20"), ("big", "健太　+65.2"),
+             ("s", "28,100 − 30,000 ＝ −1.9"), ("s", "−1.9 ＋ウマ10"), ("big", "美咲　+8.1"),
+             ("s", "17,300 − 30,000 ＝ −12.7"), ("s", "−12.7 −ウマ10"), ("big n", "翔　−22.7")]
+    step = (fin - RS - 0.3) / 7.5  # 「まじゃすこ」が終わったとき、電卓は3人目の途中
+    memo = f'<div class="hd">最終の点数</div>{top}<div class="hd" style="margin-top:18px">計算</div>'
     for i, (c, tx) in enumerate(lines):
-        memo += f'<div class="ln {c}" data-in="{RS + 0.3 + i * 0.95:.2f}" data-out="{END}" data-a="fade"' + (' style="height:56px;line-height:56px"' if NARR else '') + f'>{html.escape(tx)}</div>'
-    # 声の版は字幕（y=1500）の場所を空けるため、メモとスマホを短くして「完了！」をその上に置く
-    mst, py, pw, dy = ('style="height:900px;padding-top:30px"', 470, 440, 1290) if NARR else ('', 470, 480, 1590)
+        memo += f'<div class="ln {c}" data-in="{RS + 0.3 + i * step:.2f}" data-out="{END}" data-a="fade">{html.escape(tx)}</div>'
+    mst, py, pw, dy = ('style="height:900px;padding-top:26px"', 470, 440, 1290) if NARR else ('', 470, 480, 1590)
     els.append(at(RS, END, f'<div class="memo" {mst}>{memo}</div>', style="position:absolute;inset:0", anim="fade"))
     e, hh, mm = live_at(RS, END, "play-quick", y=py, w=pw, start=s0, x=560 + (480 - pw) // 2)
     els.append(e)
@@ -388,7 +407,7 @@ def build(name, fn):
             for (let k = 0; k < 8 && w > 950; k++) { e.style.fontSize = (parseFloat(getComputedStyle(e).fontSize) * 0.94) + 'px'; w = e.getBoundingClientRect().width; }
             const r = e.getBoundingClientRect(); if (Math.abs((r.left + r.right) / 2 - 540) > 1 || r.left < 40 || r.right > 1040) bad.push(e.textContent); }); return bad; }""")
         assert not off, ("字幕が中央にない", off)
-        SIG = """() => [...document.querySelectorAll('[data-in],[data-scroll],[data-timer],[data-sub],[data-count],[data-w]')].map(e => e.style.opacity + e.style.transform + e.style.width + e.style.rotate + (e.dataset.count || e.dataset.timer ? e.textContent : '')).join('|')"""
+        SIG = """() => [...document.querySelectorAll('[data-in],[data-scroll],[data-timer],[data-sub],[data-count],[data-w],[data-anim]')].map(e => e.style.cssText + (e.dataset.count || e.dataset.timer ? e.textContent : '')).join('|')"""
         last, lastbuf = None, None
         n = int(dur * FPS)
         for i in range(n):
