@@ -9056,7 +9056,7 @@ function initLpMotion() {
     const later = (ms, f) => timers.push(setTimeout(f, ms));
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
-      // 間をおかずに表示点数を入れはじめる（2026-11-10 ユーザーの指定: 試合の前の空白・グラフが伸びた後の待ちはいらない）
+      // 試合が始まったら間をおかずに表示点数を入れはじめる（2026-11-10 ユーザーの指定）
       const w = 0;
       G[g].forEach((n, i) => later(w + i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
       later(w + 860, () => okb.classList.add('ready'));
@@ -9073,7 +9073,7 @@ function initLpMotion() {
         const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
         raf = requestAnimationFrame(step);
       });
-      if (g < 2) later(w + 1950 + 600, () => game(g + 1));  // グラフが伸び終わったらすぐ次の試合
+      if (g < 2) later(w + 1950 + 600 + 600, () => game(g + 1));  // グラフが伸び終わってから1拍（0.6秒）おいて次の試合（2026-11-10 ユーザーの指定）
     };
     // 戻るときは線を最初の点へ縮めて、空に戻す
     const rewind = () => {
