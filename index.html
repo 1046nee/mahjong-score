@@ -9054,8 +9054,8 @@ function initLpMotion() {
     const later = (ms, f) => timers.push(setTimeout(f, ms));
     const game = g => {
       label.textContent = (g + 1) + '試合目'; blank();
-      // 表示点数が空の間を毎回作ってから入れる
-      const w = 600;
+      // 間をおかずに表示点数を入れはじめる（2026-11-10 ユーザーの指定: 試合の前の空白・グラフが伸びた後の待ちはいらない）
+      const w = 0;
       G[g].forEach((n, i) => later(w + i * 240, () => { vs[i].textContent = n.toLocaleString('en-US').replace('-', '−'); }));
       later(w + 860, () => okb.classList.add('ready'));
       later(w + 1350, () => okb.classList.add('press'));
@@ -9071,7 +9071,7 @@ function initLpMotion() {
         const step = t => { const f = Math.min(1, (t - t0) / 600); lines.forEach((l, i) => drawTo(i, g, f)); if (f < 1) raf = requestAnimationFrame(step); };
         raf = requestAnimationFrame(step);
       });
-      if (g < 2) later(w + 3900, () => game(g + 1));
+      if (g < 2) later(w + 1950 + 600, () => game(g + 1));  // グラフが伸び終わったらすぐ次の試合
     };
     // 戻るときは線を最初の点へ縮めて、空に戻す
     const rewind = () => {
@@ -9084,7 +9084,7 @@ function initLpMotion() {
       };
       raf = requestAnimationFrame(step);
     };
-    replay(mini, 0.5, () => { stop(); start(); later(250, () => game(0)); }, rewind);
+    replay(mini, 0.5, () => { stop(); start(); game(0); }, rewind);
   }
   // 始めやすさ: スクロールに合わせて線を伸ばす（見えている間だけ動かす）
   const steps = document.getElementById('lp-steps');
