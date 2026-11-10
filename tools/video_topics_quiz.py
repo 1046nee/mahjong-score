@@ -54,6 +54,12 @@ def _split_row(name, groups, w=46):
 def _say_tiles(s):
     return s.replace("・", "、")
 
+def _answer_lines(names):  # 6種以上は2行に分ける（1行だと字幕が中央からはみ出す。w-14 の9種待ち）
+    ts = names.split("・")
+    if len(ts) <= 5:
+        return [f"答えは、{_say_tiles(names)}。"]
+    return [f"答えは、{'、'.join(ts[:5])}、", f"{'、'.join(ts[5:])}。"]
+
 def _quiz(p, n):
     hand = tiles(p["hand"], 66)
     cnt = re.search(r"（(.*?)）", p["summ"])
@@ -74,7 +80,7 @@ def _quiz(p, n):
     expl = _chunks(p["expl"])[:5]
     return [(["この手の待ち、", "全部わかる？", f"第{p['no']}問です。"], hook(f"待ち当て {p['no']}/{n}", "この手の待ちは？", hand, g=False)),
             (["待ちの牌を、全部答えてください。", "5秒で考えてみましょう。"], think),
-            ([f"答えは、{_say_tiles(names)}。", f"{kinds.replace('・', '、')}です。"], ans),
+            (_answer_lines(names) + [f"{kinds.replace('・', '、')}です。"], ans),
             (expl, why),
             (["14問の練習問題は、", "まじゃすこの記事で。"], article_end("blog-machi-dojo", "14問は記事で"))]
 
