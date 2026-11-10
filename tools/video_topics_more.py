@@ -217,13 +217,15 @@ TOPICS["a-03"] = a03
 # ================================ 雑学 ================================
 NICHI = [("連チャン", "連荘", "親が続けて親をする", "同じことが何度も続く", ["z1"]), ("メンツ", "面子", "麻雀をする4人", "会合の顔ぶれ", ["m1", "m2", "m3"]),
          ("トイメン", "対面", "卓の向かいの席", "真向かいの席", None), ("リーチ", "立直", "テンパイを宣言する", "あと一歩の段階", None), ("チョンボ", "―", "あがりの間違いなどの反則", "うっかり間違えること", None)]
+def _koto(d):  # 「〜する」→「〜すること」、名詞→「〜のこと」（「4人こと」「ことこと」にしない）
+    return d if d.endswith("こと") else d + ("こと" if d[-1] in "うくすつぬむるぐぶ" else "のこと")
 def _nichi(i):
     w, k, d1, d2, ts = NICHI[i]
     vis = big(w, "#1F2A28", 120)
     def mk(a, b):
         return [head(a, b, w), stage(a + .3, b, f'<div class="vcard duo"><div><div class="k">麻雀では（{esc(k)}）</div><div class="v">{esc(d1)}</div></div><div><div class="k">日常では</div><div class="v o">{esc(d2)}</div></div></div>', top=420)]
     return [([f"{w}って、", "実は麻雀の言葉。"], hook("実は麻雀用語", f"{w}って\nもとは麻雀？", vis, g=False)),
-            ([f"麻雀では、{d1}こと。", f"日常では、{d2}こと。"], mk),
+            ([f"麻雀では、{_koto(d1)}。", f"日常では、{_koto(d2)}。"], mk),
             (["日常語になった麻雀用語は、", "記事で8つ紹介しています。"], article_end("blog-nichijougo", "8語は記事で"))]
 for _i in range(5):
     TOPICS[f"n-{_i + 1:02d}"] = (lambda i=_i: _nichi(i))
