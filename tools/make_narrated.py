@@ -239,6 +239,8 @@ for _k in video_topics_yaku.DROP: NARR.pop(_k, None)
 import video_topics_yougo  # 用語シリーズをカテゴリごとの12本に（gy-01〜12）
 NARR.update(video_topics_yougo.TOPICS)
 for _k in video_topics_yougo.DROP: NARR.pop(_k, None)
+import video_topics_rules  # 打つ前に決めるルール（一般・玄人・ローカル役・三麻）
+NARR.update(video_topics_rules.TOPICS)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
