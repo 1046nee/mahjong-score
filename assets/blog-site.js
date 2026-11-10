@@ -312,7 +312,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       .site-head .site-head-inner { position: relative; max-width: 960px; margin: 0 auto; padding: 8px 56px; display: flex; align-items: center; justify-content: center; transition: padding .2s; }
       .site-head .brand img { height: 48px; vertical-align: middle; transition: height .2s; }
       .site-head .head-lp-link { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 3px; height: 30px; box-sizing: border-box; font-size: 11px; font-weight: 800; line-height: 1; color: #177083; background: #EEF7F4; border: 1px solid #B7DCCD; border-radius: 999px; padding: 0 8px 0 10px; text-decoration: none; white-space: nowrap; }
-      @media (max-width: 429px) { .site-head:has(.head-lp-link) .brand img { height: 42px; } } @media (max-width: 359px) { .site-head:has(.head-lp-link) .brand img { height: 38px; } .site-head:has(.head-lp-link) .brand { transform: translateX(8px); } } .site-head .head-lp-link:hover { filter: brightness(.97); } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 2px; order: 2; } .site-head .head-lp-link .go { width: 10px; height: 10px; } .site-head .head-lp-link .ic { width: 16px; height: 16px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 0 6px 0 8px; font-size: 10px; } }
+      @media (max-width: 429px) { .site-head .brand img { height: 42px; } } @media (max-width: 359px) { .site-head .brand img { height: 38px; } .site-head:has(.head-lp-link) .brand { transform: translateX(8px); } } /* ロゴの大きさはどのページもLPと同じ（2026-11-10） */ .site-head .head-lp-link:hover { filter: brightness(.97); } .site-head .head-lp-link .go { flex-shrink: 0; } .site-head .head-lp-link .r { display: flex; align-items: center; gap: 2px; order: 2; } .site-head .head-lp-link .go { width: 10px; height: 10px; } .site-head .head-lp-link .ic { width: 16px; height: 16px; } @media (max-width: 360px) { body .site-head .head-lp-link { left: 6px; padding: 0 6px 0 8px; font-size: 10px; } }
       /* 左上のLPへの導線＝「行き先＋矢印」を1つのかたまりに（2026-11-06 ユーザーの指定。名前だけだと今いるページの名前に見える） */ @media (max-width: 360px) { body .site-head .head-app-link { padding: 6px 9px; font-size: 11px; } }
       .site-head .hdr-acct { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #177083; background: #fff; border: 1.5px solid #177083; border-radius: 999px; padding: 6px 13px; line-height: 16px; white-space: nowrap; text-decoration: none; }
       .site-head .hdr-acct.in { background: #EEF7F4; border-color: #B7DCCD; padding: 3px 11px 3px 3px; }
@@ -322,7 +322,6 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
       @media (max-width: 380px) { .site-head .hdr-acct.in .hdr-label { display: none; } .site-head .hdr-acct.in { padding: 3px; } }
       .site-head .head-app-link { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 700; color: #177083; background: #E4F3EC; border-radius: 20px; padding: 7px 14px; text-decoration: none; }
       .cat-nav { top: var(--hh, 0px) !important; }
-      .site-head .read-bar { position: fixed; left: 0; top: 0; z-index: 60; height: 3px; width: 0; background: #E75620; border-radius: 0 2px 2px 0; transition: width .1s linear; }
       .sns-icons { display: flex; gap: 12px; }
       .sns-icons a { display: block; border-radius: 12px; overflow: hidden; line-height: 0; box-shadow: 0 0 0 1px #E2E8E6; transition: transform .15s; }
       .sns-icons a:hover { transform: translateY(-2px); }
@@ -358,10 +357,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
         <a href="/" class="brand"><img src="/assets/logo.png" alt="まじゃすこ / majasco"></a>
         ${hdrAcctHtml()}
       </div>`;
-      // ヘッダーは上に残し、下へ読み進めたら少し細くする（2026-10-27）。記事では読んだところまでオレンジの線
-      const art = document.querySelector('.blog-post');
-      if (art) head.insertAdjacentHTML('beforeend', '<div class="read-bar" aria-hidden="true"></div>');
-      const bar = head.querySelector('.read-bar');
+      // 記事の読んだところまでのオレンジの線（画面の上に固定）はやめた（2026-11-10 ユーザーの指定。ヘッダーを上に残さないのと同じく、読んでいる間は何も出さない）
       let ticking = false;
       const onScroll = () => {
         ticking = false;
@@ -371,12 +367,6 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
         else if (window.scrollY < 8) head.classList.remove('compact');
         // 一覧ページのカテゴリのタブ（これも上に残る）は、ヘッダーのすぐ下に止める（2026-10-28）
         document.documentElement.style.setProperty('--hh', head.offsetHeight + 'px');
-        if (bar && art) {
-          const r = art.getBoundingClientRect();
-          const total = r.height - window.innerHeight * 0.6;
-          const p = total > 0 ? Math.min(1, Math.max(0, -r.top / total)) : 0;
-          bar.style.width = (p * 100).toFixed(1) + '%';
-        }
       };
       window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
       onScroll();
@@ -547,7 +537,7 @@ desc: 'NAGAの使い方を実際の解析レポートで実演。雀魂の牌譜
         const spCards = ps.map(p => cardHtml(p)).concat(ms.map(m => cardHtml({ url: m.url, cat: m.cat, date: '', title: m.title, thumb: m.thumb, label: m.label }))).join('');
         html += `<div class="side-box sb-box rd-box">${readHead(g, 'h2')}<ul class="sb-list rd-pc">${pcRows}</ul><div class="post-list rd-sp">${spCards}</div></div>`;
       });
-      html += `<div class="side-box sb-box">${sbHead('share', '公式SNS', '新しい記事と機能のお知らせ')}${SNS_ICONS_HTML(40)}</div>`;
+      // 公式SNSの箱はやめた（フッターにもあり、スマホでは下に2つ並んでいた・2026-11-10 ユーザーの指定）
       el.innerHTML = html;
     });
 
