@@ -233,6 +233,12 @@ import video_topics3  # 作り直し（2026-11-10〜）。同じ名前の動画�
 NARR.update(video_topics3.TOPICS)
 import video_topics_ml  # Mリーグ・プロ団体の作り直し（チームカラー）
 NARR.update(video_topics_ml.TOPICS)
+import video_topics_yaku  # 役シリーズの作り直し（詳しい版・2つ並べる版）
+NARR.update(video_topics_yaku.TOPICS)
+for _k in video_topics_yaku.DROP: NARR.pop(_k, None)
+import video_topics_yougo  # 用語シリーズをカテゴリごとの12本に（gy-01〜12）
+NARR.update(video_topics_yougo.TOPICS)
+for _k in video_topics_yougo.DROP: NARR.pop(_k, None)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒
