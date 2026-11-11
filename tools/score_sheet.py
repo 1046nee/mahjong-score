@@ -189,33 +189,34 @@ td.mg {{ background: #FFE2D2; }} td.mg b {{ color: #B23A0E; font-size: 16px; }}
 .lim tbody th {{ font-size: 13.5px; color: #B23A0E; background: #FFE2D2; }}
 .lim td {{ height: 49px; }} .lim td b {{ font-size: 16px; }} .lim td.h {{ font-size: 12px; font-weight: 800; color: #1F2A28; }}
 .fu {{ font-size: 10.5px; line-height: 1.5; }}
+.box.fu h3 {{ background: #177083; }}
 .fu .steps {{ display: flex; align-items: center; gap: 2px; margin-bottom: 6px; }}
-.fu .steps span {{ flex: 1 1 auto; text-align: center; border: 1.5px solid #8FA29D; border-radius: 5px; background: #F4F8F7; padding: 3px 2px; font-size: 10.5px; font-weight: 800; line-height: 1.3; white-space: nowrap; }}
-.fu .steps span b {{ color: #C2471A; font-size: 12.5px; margin-left: 2px; }}
+.fu .steps span {{ flex: 1 1 auto; text-align: center; border: 1.5px solid #9FC3BD; border-radius: 5px; background: #E4F3EC; color: #0B4D5A; padding: 3px 2px; font-size: 10.5px; font-weight: 800; line-height: 1.3; white-space: nowrap; }}
+.fu .steps span b {{ color: #E75620; font-size: 12.5px; margin-left: 2px; }}
 .fu .steps span small {{ font-size: 9px; color: #6B7A77; font-weight: 700; }}
-.fu .steps span.up {{ background: #FFF2B8; border-color: #C9A62A; }}
-.fu .steps u, .fu .tl u {{ text-decoration: none; font-weight: 900; color: #6B7A77; font-size: 11px; }}
+.fu .steps span.up {{ background: #E75620; border-color: #E75620; color: #fff; }}
+.fu .steps u, .fu .tl u {{ text-decoration: none; font-weight: 900; color: #177083; font-size: 11px; }}
 .fu .two {{ display: grid; grid-template-columns: 1.08fr 1fr; gap: 6px; }}
-.fu table {{ border-width: 1.5px; }}
-.fu table td, .fu table th {{ height: 37px; font-size: 14px; font-weight: 900; padding: 1px 2px; border: 1px solid #B5C3BF; background: none; line-height: 1.1; }}
-.fu thead th {{ height: 20px; font-size: 10px; font-weight: 800; color: #fff; background: #1F2A28; border-color: #1F2A28; }}
+.fu table {{ border: 2px solid #177083; }}
+.fu table td, .fu table th {{ height: 37px; font-size: 14px; font-weight: 900; padding: 1px 2px; border: 1px solid #9FC3BD; background: none; line-height: 1.1; }}
+.fu thead th {{ height: 20px; font-size: 10px; font-weight: 800; color: #fff; background: #177083; border-color: #177083; border-left-color: rgba(255,255,255,.35); }}
 .fu thead th:first-child {{ width: auto; font-size: 10px; }}
 .fu .mz thead th:nth-child(1) {{ width: 46px; }} .fu .mz thead th:nth-child(3), .fu .mz thead th:nth-child(4) {{ width: 38px; letter-spacing: -.06em; white-space: nowrap; }}
 .fu .mc thead th:nth-child(1) {{ width: 58px; }} .fu .mc thead th:nth-child(3) {{ width: 26px; }}
-.fu tbody th {{ font-size: 10.5px; font-weight: 900; color: #1F2A28; background: #E3ECE9; text-align: center; border-right: 1.5px solid #1F2A28; white-space: nowrap; }}
-.fu tbody th small {{ display: block; font-size: 7.5px; font-weight: 700; color: #4F5C5A; letter-spacing: -.02em; }}
+.fu tbody th {{ font-size: 10.5px; font-weight: 900; color: #0B4D5A; background: #E4F3EC; text-align: center; border-right: 1.5px solid #177083; white-space: nowrap; }}
+.fu tbody th small {{ display: block; font-size: 7.5px; font-weight: 700; color: #4F7F77; letter-spacing: -.02em; }}
 .fu td.sh {{ text-align: center; }}
-.fu td.p {{ color: #C2471A; }}
-.fu .mz tbody tr:nth-child(5) td:nth-child(n+3) {{ color: #C2471A; }}
+.fu td.p {{ color: #E75620; }}
+.fu .mz tbody tr:nth-child(5) td:nth-child(n+3) {{ color: #E75620; }}
 .fu td .tl {{ display: inline-flex; align-items: flex-end; gap: 0; margin: 0; font-size: 0; vertical-align: middle; }}
 .fu .tl img {{ width: 16px; height: auto; display: block; }}
 .fu .tl img.y {{ width: 21.3px; }}
-.fu .tl s {{ text-decoration: none; display: block; background: #F6B48F; border-radius: 3px; padding: 1.5px; margin-left: 1px; }}
+.fu .tl s {{ text-decoration: none; display: block; background: #E75620; border-radius: 3px; padding: 1.5px; margin-left: 1px; }}
 .fu .tl u {{ font-size: 10px; margin: 0 2px; align-self: center; }}
 .fu ul {{ list-style: none; margin-top: 5px; }}
 .fu li {{ padding-left: 10px; text-indent: -10px; font-weight: 700; }}
 .fu li::before {{ content: "・"; }}
-.fu li b {{ color: #C2471A; }}
+.fu li b {{ color: #E75620; }}
 .notes {{ margin-top: 10px; font-size: 11px; font-weight: 700; color: #1F2A28; line-height: 1.6; border-top: 2px solid #1F2A28; padding-top: 6px; }}
 footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
@@ -246,7 +247,7 @@ PARTS = {  # ファイル名: (タイトル, 帯の色, 中身の関数)
     "tensu-ko.png": ("麻雀 点数早見表｜子", "#177083", lambda d, h: h.split('<div class="grid">')[1].split('<section class="blk oya">')[0]),
     "tensu-oya.png": ("麻雀 点数早見表｜親", "#4261AA", lambda d, h: '<section class="blk oya">' + h.split('<section class="blk oya">')[1].split('</section>')[0] + '</section>'),
     "tensu-mangan.png": ("麻雀 点数早見表｜満貫以上", "#B23A0E", lambda d, h: h.split('<div class="bottom">')[1].split('<div class="box fu">')[0]),
-    "fu-keisan.png": ("麻雀 符の数え方", "#1F2A28", lambda d, h: '<div class="box fu">' + h.split('<div class="box fu">')[1].split('</div>\n</div>')[0] + '</div>'),
+    "fu-keisan.png": ("麻雀 符の数え方", "#177083", lambda d, h: '<div class="box fu">' + h.split('<div class="box fu">')[1].split('</div>\n</div>')[0] + '</div>'),
 }
 
 
