@@ -29,6 +29,18 @@
 - 素材: 素材リポジトリ（まじゃすこ素材/）の `video/clips/`（操作の録画14本）と `video/pages/`（記事の画面）を使う。pull が `invalid index-pack` で止まるPCは `git -c http.version=HTTP/1.1 pull`
 - 声なしで見た目だけ確かめる: `python tools/make_narrated.py [名前] --draft`
 
+## 1c. 3Dの対局の動画を作るPC（2026-11-11）
+- Blender の中身（bpy）を Python に入れる: `pip install bpy`（約430MB）。**bpy は Python の版が決まっている**（bpy 5.3 は Python 3.13 用）。
+  PCの Python が別の版（会社PCは 3.14）なら、3.13 を別に入れて専用の環境を作る: `py -3.13 -m venv .venv-b3d` → `.venv-b3d\Scripts\pip install bpy pillow`
+  - pip で入らないPCは、Blender 本体（blender.org）を入れて `blender -b -P tools/b3d/scene.py -- --tex … --out …` でも同じ台本が動く（引数は `--` のあと）
+- 手順（どれも本体のフォルダで）:
+  1. 牌の絵: `python tools/b3d/make_tile_tex.py out/b3d/tex`（Playwright を使う。ふだんの Python でよい）
+  2. コマ: `.venv-b3d\Scripts\python tools/b3d/scene.py --tex out/b3d/tex --out out/b3d/an1 --theme dark --anim --size 540x960 --samples 32`（止まっても同じ命令で続きから）
+  3. 動画: `python tools/b3d/make_clip.py out/b3d/an1 out/b3d/chi-test.mp4`（手順の字をのせて mp4 に）
+- 速さ: GPU の無いPCは Cycles の CPU で1コマ20〜30秒（8秒ぶん96コマで約40分）。GPU があるPCは scene.py の `sc.cycles.device = "CPU"` を `"GPU"` に変えると速い（Blender の設定でGPUを有効にしてあること）
+- `out/` と `.venv-b3d/` は .gitignore 済み。できた動画は素材リポジトリの `video/3d/` に置く
+- くわしい決まり・落とし穴は docs/video-3d.md
+
 ## 2. リポジトリの取得
 任意の場所で:
 ```

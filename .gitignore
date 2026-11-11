@@ -11,3 +11,5 @@ version.txt
 .youtube-api-key
 # スモークテストの失敗の記録
 tools/smoke-fail/
+out/
+.venv-b3d/

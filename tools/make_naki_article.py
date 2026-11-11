@@ -2,7 +2,7 @@
 """blog-naki-tejun.html を作る（鳴きの手順の記事）。ひな形は blog-kuikae.html。
 作り直したあとは `python tools/add_ruby.py` をかけ直すこと。かけないと、公開中のページのふりがなが消える。"""
 import re, json, os
-ROOT = "/home/user/mahjong-score"
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # どのPCでも動くように、この道具の場所から決める
 tpl = open(os.path.join(ROOT, "blog-kuikae.html"), encoding="utf-8").read()
 
 SLUG = "blog-naki-tejun"
