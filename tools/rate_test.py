@@ -31,7 +31,7 @@ const vals = h => [...h.matchAll(/class="score-val[^"]*">([^<]*)<span[^>]*>([^<]
 
 // 1. レートあり・チップなし
 let g = mk({s: {rate: 50}, rounds: R4});
-ok('1 レートあり・チップなし: 切り替えは「スコア｜G」', tog(g).includes('Gの順位') && !tog(g).includes('チップの順位'));
+ok('1 レートあり・チップなし: 切り替えは「スコア｜G」', tog(g).includes(">G</button>") && !tog(g).includes(">チップ</button>"));
 let h = list(g, 'g');
 ok('1 Gの値＝pts×50（チップは足さない）', JSON.stringify(vals(h)) === JSON.stringify(['+3,250G', '+500G', '−1,250G', '−2,500G']), vals(h));
 ok('1 内訳の行は出さない（チップが無いので）', !h.includes('score-bonus'));
@@ -39,14 +39,14 @@ ok('1 設定の表示はスコアだけ', gRateLabel(g.settings) === 'スコア1
 
 // 2. レートあり・チップあり（チップの最後に入れた枚数）
 g = mk({s: {rate: 50, chipRate: 100, bonusEnabled: true, finalChips: [3, -1, -2, 0]}, rounds: R4});
-ok('2 切り替えは「スコア｜チップ｜G」', tog(g).includes('チップの順位') && tog(g).includes('Gの順位'));
+ok('2 切り替えは「スコア｜チップ｜G」', tog(g).includes(">チップ</button>") && tog(g).includes(">G</button>"));
 h = list(g, 'g');
 ok('2 G＝スコア＋チップ（合計0）', JSON.stringify(vals(h)) === JSON.stringify(['+3,550G', '+400G', '−1,450G', '−2,500G']), vals(h));
 ok('2 内訳の行あり', h.includes('スコア +3,250') && h.includes('チップ +300'));
 
 // 3. チップあり・レートなし
 g = mk({s: {bonusEnabled: true, finalChips: [1, 0, 0, -1]}, rounds: R4});
-ok('3 チップあり・レートなし: Gの順位は出ない', tog(g).includes('チップの順位') && !tog(g).includes('Gの順位'));
+ok('3 チップあり・レートなし: Gの順位は出ない', tog(g).includes(">チップ</button>") && !tog(g).includes(">G</button>"));
 h = list(g, 'g');
 ok('3 Gを選んでいてもスコアの順位で出す', vals(h)[0] === '+65.0pts', vals(h)[0]);
 
@@ -59,10 +59,10 @@ g = mk({s: {rate: 50}, rounds: R4}); scoreMetric = 'g';
 g.settings.rate = 0;
 ok('5 レートを切ったらスコアの順位に戻る（中身）', vals(scoreCardsListHtml(g))[0] === '+65.0pts');
 g.settings.bonusEnabled = true;
-ok('5 切り替えの印もスコアに付く', /class="on"[^>]*>スコアの順位/.test(tog(g)), tog(g).replace(/\s+/g, ' ').slice(0, 200));
+ok('5 切り替えの印もスコアに付く', /class="on"[^>]*>スコア</.test(tog(g)), tog(g).replace(/\s+/g, ' ').slice(0, 200));
 // チップを切った場合
 g = mk({s: {bonusEnabled: true, rate: 10}, rounds: R4}); scoreMetric = 'chips'; g.settings.bonusEnabled = false;
-ok('5 チップを切ったらスコアの順位に戻る', /class="on"[^>]*>スコアの順位/.test(tog(g)) && vals(scoreCardsListHtml(g))[0] === '+65.0pts');
+ok('5 チップを切ったらスコアの順位に戻る', /class="on"[^>]*>スコア</.test(tog(g)) && vals(scoreCardsListHtml(g))[0] === '+65.0pts');
 
 // 6. 画像（総合順位・まとめ）には G を出さない・選んでいた見方は戻る
 g = mk({s: {rate: 50, chipRate: 100, bonusEnabled: true, finalChips: [3, -1, -2, 0]}, rounds: R4}); scoreMetric = 'g';
