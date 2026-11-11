@@ -23,6 +23,7 @@
 | SNS（X・Instagram・Threadsの投稿文・画像・運用） | docs/sns-ops.md（投稿予定と文面はNotionのSNS投稿カレンダー） |
 | 画像生成（OGP・SNS画像・イラスト） | docs/image-tools.md |
 | ショート動画（台本・制作・出し方） | docs/video-plan.md（作り方は tools/make_short.py） |
+| 3Dの対局の動画（Blender） | docs/video-3d.md（作り方は tools/b3d/scene.py） |
 | 別PCのセットアップ・環境構築 | docs/setup-new-pc.md |
 
 複数領域にまたがるときは該当するdocを複数読む（例: 新機能→app-spec＋lp-spec、リリース告知→blog-spec＋sns-ops）。
