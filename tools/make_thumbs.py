@@ -16,19 +16,25 @@ F = 'font-family="Hiragino Sans, Noto Sans JP, Yu Gothic, Meiryo, sans-serif"'
 
 
 # ---------------- 部品 ----------------
+def _tw(c, w):  # 横向きの牌（-yoko）は、同じ縮尺で幅が広く・高さが低い（幅×82/62）。同じ幅で描くと小さく見える
+    return w * 82 / 62 if c.endswith("-yoko") else w
+
 def tiles(codes, x0, y0, w=44, gap=4, hl=None):
     h = w * 89 / 62
     out = ""
+    x = x0
     for i, c in enumerate(codes):
-        x = x0 + i * (w + gap)
+        ww = _tw(c, w)
+        hh = ww * 69 / 82 if c.endswith("-yoko") else h
         if hl is not None and i == hl:
-            out += f'<rect x="{x - 4}" y="{y0 - 4}" width="{w + 8}" height="{h + 4}" rx="9" fill="#fff" opacity=".55"/>'
-        out += f'<image href="/assets/tiles/{c}.svg" x="{x}" y="{y0}" width="{w}" height="{h:.1f}"/>'
+            out += f'<rect x="{x - 4}" y="{y0 - 4}" width="{ww + 8}" height="{h + 4}" rx="9" fill="#fff" opacity=".55"/>'
+        out += f'<image href="/assets/tiles/{c}.svg" x="{x:.1f}" y="{y0 + h - hh:.1f}" width="{ww:.1f}" height="{hh:.1f}"/>'
+        x += ww + gap
     return out
 
 
 def row_center(codes, y0, w=44, gap=4, hl=None):
-    total = len(codes) * w + (len(codes) - 1) * gap
+    total = sum(_tw(c, w) for c in codes) + (len(codes) - 1) * gap
     return tiles(codes, (W - total) / 2, y0, w, gap, hl)
 
 

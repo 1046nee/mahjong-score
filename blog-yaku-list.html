@@ -117,7 +117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <p>役は全部で30以上ありますが、まずはこの10個で十分です。<strong>名前・翻数・鳴いてもいいか</strong>を、牌の形と一緒に覚えましょう。</p>
 <style>
 .blog-post .yl-hand { overflow-x: auto; margin: 6px 0 2px; }
-.blog-post .yl-hand .hand { flex-wrap: nowrap !important; } .blog-post .yl-hand .hand img { width: clamp(13px, 4.6vw, 24px); height: auto; }
+.blog-post .yl-hand .hand { flex-wrap: nowrap !important; } .blog-post .yl-hand .hand img { width: clamp(13px, 4.6vw, 24px); height: auto; } .blog-post .yl-hand .hand img[src*="-yoko"] { width: calc(clamp(13px, 4.6vw, 24px) * 1.323); } /* 横向きの牌は同じ縮尺で幅が広い（同じ幅だと小さく見える・2026-11-11） */
 .blog-post .yl-yaku { background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 12px 12px 10px; margin: 0 0 14px; }
 .blog-post .yl-yaku h3 { margin: 0 0 4px !important; padding: 0 !important; border: 0 !important; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 19px; }
 body:not(.bs-list) .post-layout > .blog-post .yl-yaku h3::before { content: none; } /* カードの見出しには記事の見出しの縦線を出さない（ふりがなに重なる） */
@@ -131,7 +131,7 @@ body:not(.bs-list) .post-layout > .blog-post .yl-yaku h3::before { content: none
 .blog-post .yl-hl img { outline: 2.5px solid #E75620; outline-offset: 1px; border-radius: 3px; }
 .blog-post .yl-grp { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; margin-right: 6px; vertical-align: top; }
 .blog-post .yl-grp > span { display: flex; gap: 1px; padding: 3px; border-radius: 6px; }
-.blog-post .yl-grp img { width: clamp(17px, 6vw, 24px); height: auto; }
+.blog-post .yl-grp img { width: clamp(17px, 6vw, 24px); height: auto; } .blog-post .yl-grp img[src*="-yoko"] { width: calc(clamp(17px, 6vw, 24px) * 1.323); }
 .blog-post .yl-grp small { font-size: 10.5px; font-weight: 800; line-height: 1.25; text-align: center; }
 .blog-post .yl-grp.j > span { background: #FCE3D6; } .blog-post .yl-grp.j small { color: #C2410C; }
 .blog-post .yl-grp.s > span { background: #D9F0E5; } .blog-post .yl-grp.s small { color: #176D25; }
@@ -139,7 +139,7 @@ body:not(.bs-list) .post-layout > .blog-post .yl-yaku h3::before { content: none
 .blog-post .yl-wait { display: inline-flex; gap: 2px; align-items: center; margin-left: 2px; }
 .blog-post .yl-wait img { opacity: .55; }
 .blog-post .yl-river { display: flex; gap: 2px; flex-wrap: wrap; align-items: flex-end; }
-.blog-post .yl-river img { width: 22px; height: auto; }
+.blog-post .yl-river img { width: 22px; height: auto; } .blog-post .yl-river img[src*="-yoko"] { width: 29px; }
 .blog-post .yl-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
 .blog-post .yl-lab { flex: none; font-size: 12px; font-weight: 900; color: #177083; min-width: 64px; }
 .blog-post .yl-ar { color: #E75620; font-weight: 900; }
