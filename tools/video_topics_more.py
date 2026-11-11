@@ -235,7 +235,7 @@ NAGA_DETAIL = {
               ["22.1%", "12.2%", "36.3%", "17.9%", "6,680点"], 2,
               ["3つ目、オメガ。", "副露派です。", "鳴きをうまく使って、", "スピードであがりを狙います。", "和了率と副露率は、", "どちらも2番目に高い数字です。"]),
     "gamma": ("ガンマ", "守備重視派", "危ないときは無理をせず、守備を大切に慎重に局を進める",
-              ["21.1%", "11.8%", "33.1%", "16.1%", "6,701点"], 1,
+              ["21.1%", "11.8%", "33.1%", "16.1%", "6,701点"], None,
               ["4つ目、ガンマ。", "守備重視派です。", "危ないときは無理をせず、", "慎重に局を進めます。", "相手のリーチに、", "いちばんよく降りるタイプです。"]),
     "nishiki": ("ニシキ", "バランス派", "攻めも守りも、鳴きも門前も。状況に合わせてバランスよく打つ",
                 ["21.9%", "12.7%", "32.8%", "18.8%", "6,894点"], None,
@@ -257,9 +257,9 @@ def _type_scene(k):
                f'<div><div style="font-size:84px;font-weight:900;color:#1F2A28;line-height:1.1">{n}</div>'
                f'<div class="ans" style="display:inline-block;font-size:46px;margin-top:14px">{d}</div></div></div>')
         cells = "".join(f'<div style="text-align:center;padding:12px 0;{"background:#FDEEE7;border-radius:14px" if hl == i else ""}">'
-                        f'<div style="font-size:28px;font-weight:900;color:#5F6E6B">{c}</div><div style="font-size:{38 if i == 4 else 44}px;font-weight:900;color:{"#E75620" if hl == i else "#1F2A28"}">{v}</div></div>'
+                        f'<div style="font-size:30px;font-weight:900;color:#5F6E6B">{c}</div><div style="font-size:{42 if i == 4 else 50}px;font-weight:900;color:{"#E75620" if hl == i else "#1F2A28"}">{v}</div></div>'
                         for i, (c, v) in enumerate(zip(NAGA_COLS, stats)))
-        tbl = f'<div class="vcard" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:20px 16px">{cells}</div>'
+        tbl = f'<div class="vcard" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:20px 16px"><i class="tx" style="display:none"></i>{cells}</div>'
         return [head(a, b, f"{d}"), stage(a + .2, b, top, top=330, anim="pop"),
                 stage(a + .9, b, note("「" + line + "」"), top=700), stage(a + 2.0, b, tbl, top=990)]
     return mk
