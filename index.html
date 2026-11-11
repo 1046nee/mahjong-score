@@ -1045,7 +1045,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sanma .mini-toggle button.on { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
 .metric-seg { margin: 0; }
-.seg.xs.metric-seg { padding: 2px; } .rk-head .seg.xs.metric-seg { margin: 0; align-self: center; } /* 見出しの行の中では上下の真ん中にそろえる（.seg.xs の下の余白14px・上寄せを打ち消す） */ .seg.xs.metric-seg button { min-width: 0; height: 22px; padding: 0 9px; font-size: 12px; } /* 全体で26px＝見出しの右の「画像」と同じ高さ */
+.seg.xs.metric-seg { padding: 2px; } .metric-row { display: flex; justify-content: flex-end; margin: 0 0 8px; } .metric-row .seg.xs.metric-seg { margin: 0; } /* 見出しの下の行のいちばん右（.seg.xs の下の余白14pxを打ち消す） */ .seg.xs.metric-seg button { min-width: 0; height: 22px; padding: 0 9px; font-size: 12px; } /* 全体で26px＝見出しの右の「画像」と同じ高さ */
 /* 元に戻すの確認の画面（2026-10-09） */
 .ud-src { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; padding: 10px 12px; border-radius: 12px; background: #F4F7F6; font-size: 12.5px; color: #4F5C5A; line-height: 1.5; }
 .ud-src-l { width: 100%; font-size: 11px; font-weight: 800; color: #7A6A9A; } .ud-src-t { font-weight: 700; color: #6B7A77; } .ud-src b { font-size: 15px; font-weight: 900; color: #1F2A28; }
@@ -2255,7 +2255,6 @@ button.ios-row:active { background: #F2F6F5; }
 @media (max-width: 374px) {
   #view-game .rk-head .edit-tab, #view-detail .rk-head .edit-tab { font-size: 0; padding: 0 7px; gap: 0; }
   #view-game .rk-head .edit-tab .ico, #view-detail .rk-head .edit-tab .ico { margin: 0; }
-  .rk-head .seg.xs.metric-seg button { padding: 0 7px; font-size: 11.5px; }
   .rk-head, .rk-head > div { gap: 6px !important; }
 }
 .sanma .end-game-btn { border-color: #4261AA; }
@@ -10645,13 +10644,14 @@ function scoreMainHtml(g) {
   const s = g.settings;
   const hasRounds = (g.rounds || []).length > 0;
   const collapsed = collapsedCards.score;
-  // 「スコア｜チップ｜G」は見出しの横（2026-11-11 ユーザーの指定）。たたんでいるとき・試合が無いときは出さない
+  // 「スコア｜チップ｜G」は見出しの下の行のいちばん右（2026-11-11 ユーザーの指定。見出しの横はやめた）。たたんでいるとき・試合が無いときは出さない
   const seg = (!collapsed && hasRounds && (s.bonusEnabled || gOn(s))) ? metricToggleHtml(s) : '';
   let html = `<div class="rk-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${collapsed ? '0' : '8px'}">
-    <div style="display:flex;align-items:center;gap:8px;min-width:0"><div class="card-title" style="margin-bottom:0;flex-shrink:0">総合順位</div>${seg}</div>
+    <div style="display:flex;align-items:center;gap:8px;min-width:0"><div class="card-title" style="margin-bottom:0;flex-shrink:0">総合順位</div></div>
     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
+  if (seg) html += `<div class="metric-row">${seg}</div>`;
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
   return html;
 }
