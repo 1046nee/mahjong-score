@@ -726,10 +726,14 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 /* Game */
 #view-game { background: #DBF4F9; }
 .game-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 100px; }
-.score-cards { display: flex; flex-direction: column; gap: 6px; }
-#view-game .card, #view-detail .card { padding: 14px; } /* ゲーム画面は縦を詰める（2026-10-31 ユーザーの依頼「縦のスペースをぎゅっと」） */
-.score-card { background: #fff; border-radius: 12px; padding: 7px 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 12px; }
-.rank-badge { font-size: 20px; font-weight: 800; color: var(--pc); min-width: 48px; text-align: center; flex-shrink: 0; line-height: 1.25; }
+.score-cards { display: flex; flex-direction: column; gap: 5px; }
+#view-game .card, #view-detail .card { padding: 12px; } /* ゲーム画面は縦を詰める（2026-10-31 ユーザーの依頼「縦のスペースをぎゅっと」・2026-11-11 さらに詰めた） */
+#view-game .game-body, #view-detail .game-body { gap: 8px; }
+#view-game .card .edit-tab, #view-detail .card .edit-tab { min-height: 26px; padding: 0 9px; font-size: 12px; border-radius: 13px; gap: 3px; } /* カードの見出しの右の「画像」は小さく */
+#view-game .card .edit-tab .ico, #view-detail .card .edit-tab .ico { width: 13px; height: 13px; margin: 0 2px 0 0; }
+#view-game .card .card-collapse, #view-detail .card .card-collapse { width: 24px; height: 24px; }
+.score-card { background: #fff; border-radius: 12px; padding: 4px 14px 4px 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 10px; }
+.rank-badge { font-size: 20px; font-weight: 800; color: var(--pc); width: 42px; text-align: center; flex-shrink: 0; line-height: 1.25; } /* 幅は固定（「10位タイ」でも行の形が変わらない） */
 .score-info { flex: 1; min-width: 0; }
 .score-name { font-size: 14px; font-weight: 700; overflow-wrap: break-word; overflow-wrap: anywhere; }
 /* チーム名は最大40文字。スマホでは名前欄が126px前後しかなく、そのままだと5行に伸びて
@@ -907,9 +911,9 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .rank-badge.rank-2 { color: #8e9aa5; }
 .rank-badge.rank-3 { color: #b46a3c; }
 .rank-badge.rank-last { color: #546e7a; }
-.rank-medal { display: block; line-height: 0; margin: 0 auto 1px; }
+.rank-medal { display: block; line-height: 0; margin: 0 auto; }
 .rank-badge .rank-medal + .rank-num, .sanma .rank-badge .rank-medal + .rank-num { color: #4F5C5A; }
-.rank-num { font-size: 11px; font-weight: 800; display: block; white-space: nowrap; }
+.rank-num { font-size: 9.5px; font-weight: 800; display: block; white-space: nowrap; line-height: 1.2; letter-spacing: -.02em; margin: 0 -6px; }
 
 /* Form modal (settings edit) */
 .form-modal-box { background: #fff; border-radius: 16px; padding: 20px 16px; width: 100%; max-width: 360px; max-height: 82vh; overflow-y: auto; text-align: left; overscroll-behavior: contain; } /* 端まで動かしても後ろの画面を動かさない */
@@ -992,6 +996,27 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .pt-input:focus-within { border-color: var(--pc); }
 .sheet.sanma .pt-input:focus-within { border-color: #4261AA; }
 /* チップ入力（チップ記録が有効なグループのみ）。列順は 名前｜焼き鳥｜チョンボ｜チップ｜点数 */
+.sheet-tab { margin: 0 0 12px; }
+.g-row { margin: 0 0 10px; }
+.g-row .g-lbl { display: block; font-size: 12px; font-weight: 700; color: #5F6E6B; margin: 0 0 4px; }
+.g-seg button { padding: 0 1px; font-size: 12px; letter-spacing: -.03em; }
+.chip-step input::-webkit-inner-spin-button, .chip-step input::-webkit-outer-spin-button, .g-custom input::-webkit-inner-spin-button, .g-custom input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.chip-step input, .g-custom input { -moz-appearance: textfield; }
+.g-custom { align-items: center; gap: 6px; margin-top: 6px; }
+.g-custom input { width: 110px; border: 1.5px solid #ddd; border-radius: 8px; padding: 8px 10px; font-size: 16px; text-align: right; }
+.g-custom span { font-size: 13px; font-weight: 800; color: #5F6E6B; }
+.sheet-tab .tab-dot { width: 7px; height: 7px; border-radius: 50%; background: #E75620; margin-left: 2px; }
+#sheet-inputs .chip-step, #sheet-inputs .cr-diff { display: none; }
+#sheet-inputs.tab-chips .chip-step { display: flex; }
+#sheet-inputs.tab-chips .cr-diff { display: block; }
+#sheet-inputs.tab-chips .pt-input, #sheet-inputs.tab-chips .yaki-btn, #sheet-inputs.tab-chips .sheet-hdr { display: none; }
+.cr-diff { width: 30px; text-align: right; font-size: 12.5px; font-weight: 900; color: #8A9A97; flex-shrink: 0; }
+.cr-diff.pos { color: #1a237e; } .cr-diff.neg { color: #c62828; }
+.chip-step { align-items: center; gap: 6px; flex-shrink: 0; }
+.chip-step .cs-b { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #CFE3DE; background: #fff; color: var(--pc); font-size: 22px; font-weight: 900; line-height: 1; cursor: pointer; padding: 0; touch-action: manipulation; }
+.chip-step .cs-b:active { background: #E4F3EC; }
+.sheet .chip-step input { flex: none; width: 58px; border: none; border-bottom: 2px solid transparent; border-radius: 0; padding: 6px 0; font-size: 20px; font-weight: 900; text-align: center; background: transparent; color: #1F2A28; }
+.sheet .chip-step input:focus { border-bottom-color: var(--pc); }
 .chip-input { display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; padding-right: 8px; background: #fff; width: 68px; flex-shrink: 0; }
 .chip-input input { flex: 1; width: 100%; border: none; outline: none; padding: 10px 2px 10px 6px; font-size: 15px; text-align: right; min-width: 0; background: transparent; }
 .chip-input .chip-suffix { color: #aaa; font-size: 11px; font-weight: 600; }
@@ -1019,7 +1044,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .mini-toggle button.on { background: var(--pc); color: #fff; }
 .sanma .mini-toggle button.on { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
-.metric-seg { margin: 0 0 12px; }
+.metric-seg { margin: 0 0 8px; }
 /* 元に戻すの確認の画面（2026-10-09） */
 .ud-src { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; padding: 10px 12px; border-radius: 12px; background: #F4F7F6; font-size: 12.5px; color: #4F5C5A; line-height: 1.5; }
 .ud-src-l { width: 100%; font-size: 11px; font-weight: 800; color: #7A6A9A; } .ud-src-t { font-weight: 700; color: #6B7A77; } .ud-src b { font-size: 15px; font-weight: 900; color: #1F2A28; }
@@ -4194,7 +4219,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <label class="opt-check" style="margin-top:2px">
         <input type="checkbox" id="s-bonus" onchange="onBonusOptChange()"> チップあり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-chip"/></svg>
       </label>
-      <div class="chips-hint" style="margin:6px 0 0 26px">対局を終了するときに、一人ひとりのチップの枚数をまとめて入れます（マイナスも入れられます）。</div>
+      <div class="chips-hint" style="margin:6px 0 0 26px">点数入力の「チップ」で、試合ごとに一人ひとりの枚数を入れます（マイナスも入れられます）。</div>
       <div id="s-bonus-fields" style="display:none;margin:10px 0 0 26px">
         <div class="field" style="margin-bottom:0">
           <label>持ちチップ（枚）</label>
@@ -4275,13 +4300,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="team-collapse"></span>
         </div>
       </div>
-      <div id="team-body" style="margin-top:10px"></div>
+      <div id="team-body" style="margin-top:8px"></div>
     </div>
     <div class="card">
       <div id="score-main-body"></div>
     </div>
     <div class="card">
-      <div id="rounds-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div id="rounds-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
@@ -4301,7 +4326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="rank-collapse"></span>
         </div>
       </div>
-      <div id="rank-body" style="margin-top:12px"></div>
+      <div id="rank-body" style="margin-top:8px"></div>
     </div>
     <div class="card" id="mx-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -4311,7 +4336,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="mx-collapse"></span>
         </div>
       </div>
-      <div id="mx-body" style="margin-top:12px"></div>
+      <div id="mx-body" style="margin-top:8px"></div>
     </div>
     <div class="card" id="h2h-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -4321,7 +4346,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="h2h-collapse"></span>
         </div>
       </div>
-      <div id="h2h-body" style="margin-top:12px"></div>
+      <div id="h2h-body" style="margin-top:8px"></div>
     </div>
     <div class="card" id="chart-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -4331,7 +4356,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="chart-collapse"></span>
         </div>
       </div>
-      <div class="chart-wrap" id="chart-body" style="margin-top:10px"></div>
+      <div class="chart-wrap" id="chart-body" style="margin-top:8px"></div>
     </div>
     <div class="card" id="ichart-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -4341,9 +4366,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="ichart-collapse"></span>
         </div>
       </div>
-      <div class="chart-wrap" id="ichart-body" style="margin-top:10px"></div>
+      <div class="chart-wrap" id="ichart-body" style="margin-top:8px"></div>
     </div>
-    <button type="button" class="auto-btn sub" id="chip-entry-btn" style="display:none" onclick="openChipSheet()">チップを入力する（途中でも入れておけます）</button>
     <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
       <div class="end-game-note">終了から12時間で記録が確定します。</div></div>
     <button class="auto-btn" id="compose-btn" style="display:none;margin-top:4px" onclick="openComposeModal(activeGame)"><svg class="ico" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>結果をまとめて画像にする</button>
@@ -4673,7 +4697,7 @@ function toggleCard(key) {
 }
 // 結果詳細用: タイトル行＋開閉ボタン（extraは開いているときだけ表示するボタン群）
 function detailCardHead(title, key, extra = '') {
-  return `<div style="display:flex;align-items:center;justify-content:space-between${collapsedCards[key] ? '' : ';margin-bottom:12px'}">
+  return `<div style="display:flex;align-items:center;justify-content:space-between${collapsedCards[key] ? '' : ';margin-bottom:8px'}">
     <div class="card-title" style="margin-bottom:0">${title}</div>
     <div style="display:flex;gap:6px;align-items:center">${collapsedCards[key] ? '' : extra}${collapseBtnHtml(key)}</div>
   </div>`;
@@ -8550,7 +8574,7 @@ function gameStateHtml(g, withButton) {
   // 対局を終えたあとは「終了しました」の案内を出さない（2026-10-03 ユーザー指定）。試合の画面にはボタン（チップ・再開）だけ置く
   if (isGameEnded(g)) {
     if (!withButton) return '';
-    return `<div class="gs-acts">${g.settings && g.settings.bonusEnabled ? '<button type="button" class="gs-btn" onclick="openChipSheet()">チップを入力・直す</button>' : ''}
+    return `<div class="gs-acts">${g.settings && g.settings.bonusEnabled && Array.isArray(g.settings.finalChips) ? '<button type="button" class="gs-btn" onclick="openChipSheet()">チップを直す</button>' : ''}
       <button type="button" class="gs-btn" onclick="confirmReopenGame()">再開する（続きを入力する）</button></div>`;
   }
   return '';
@@ -8621,7 +8645,6 @@ async function saveChipSheet() {
 }
 function confirmEndGame() {
   if (!activeGame) return;
-  if (activeGame.settings.bonusEnabled) { openChipSheet('end'); return; } // チップありは、終了の前にチップを入れる
   document.getElementById('confirm-modal-title').textContent = '対局を終了';
   document.getElementById('confirm-modal-desc').textContent =
     `「${activeGame.name || ''}」を終了します。12時間後に記録が確定します（それまでは修正・再開できます）。`;
@@ -10481,19 +10504,33 @@ function gRateLabel(s) {
   if (!gOn(s)) return 'なし';
   return `スコア1pt＝${Number(s.rate).toLocaleString()}G${s.bonusEnabled ? `・チップ1枚＝${(Number(s.chipRate) || 0).toLocaleString()}G` : ''}`;
 }
-// ゲームを作る画面（p='s'）と設定の変更（p='e'）で同じ欄
+// ゲームを作る画面（p='s'）と設定の変更（p='e'）で同じ欄。値はタブで選ぶ（カスタムは数字を入れる）
+const G_RATE_OPTS = [50, 100], G_CHIP_OPTS = [100, 300, 500, 1000];
+function gSegHtml(p, key, label, opts, val) {
+  const custom = !opts.includes(val);
+  return `<div class="g-row"><span class="g-lbl">${label}</span>
+    <div class="seg sm g-seg" id="${p}-g-${key}-seg">${opts.map(v => `<button type="button" class="${v === val ? 'on' : ''}" data-v="${v}" onclick="pickG('${p}','${key}',${v})">${v.toLocaleString()}G</button>`).join('')}<button type="button" class="${custom ? 'on' : ''}" data-v="c" onclick="pickG('${p}','${key}','c')">カスタム</button></div>
+    <div class="g-custom" id="${p}-g-${key}-c" style="display:${custom ? 'flex' : 'none'}"><input type="number" id="${p}-g-${key}" min="${key === 'rate' ? 1 : 0}" step="1" value="${val}" onkeydown="blockNonInt(event)"><span>G</span></div></div>`;
+}
+function pickG(p, key, v) {
+  const seg = document.getElementById(`${p}-g-${key}-seg`), box = document.getElementById(`${p}-g-${key}-c`), inp = document.getElementById(`${p}-g-${key}`);
+  if (!seg || !inp) return;
+  seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(v)));
+  if (v === 'c') { box.style.display = 'flex'; inp.focus(); inp.select && inp.select(); }
+  else { box.style.display = 'none'; inp.value = String(v); }
+}
 function gOptHtml(p, s) {
   if (!RATE_FEATURE) return '';
   const on = gOn(s);
-  const rate = Number(s && s.rate) > 0 ? Number(s.rate) : 10;
-  const chip = on ? (Number(s.chipRate) || 0) : (s && Number(s.chipRate) > 1 ? Number(s.chipRate) : 10);
+  const rate = Number(s && s.rate) > 0 ? Number(s.rate) : G_RATE_OPTS[0];
+  const chip = on ? (Number(s.chipRate) || 0) : (s && Number(s.chipRate) > 1 ? Number(s.chipRate) : G_CHIP_OPTS[0]);
   return `<label class="opt-check" style="margin-top:14px">
       <input type="checkbox" id="${p}-g" ${on ? 'checked' : ''} onchange="document.getElementById('${p}-g-fields').style.display=this.checked?'block':'none'"> レートあり（G）
     </label>
     <div class="chips-hint" style="margin:6px 0 0 26px">スコアとチップを「G」という同じ単位にそろえて、総合順位の「G」で合わせた順位を見られます。</div>
     <div id="${p}-g-fields" style="display:${on ? 'block' : 'none'};margin:10px 0 0 26px">
-      <div class="field"><label>スコア 1ptあたり（G）</label><input type="number" id="${p}-g-rate" min="1" inputmode="numeric" value="${rate}"></div>
-      <div class="field" style="margin-bottom:0"><label>チップ 1枚あたり（G）</label><input type="number" id="${p}-g-chip" min="0" inputmode="numeric" value="${chip}"></div>
+      ${gSegHtml(p, 'rate', 'スコア 1ptあたり', G_RATE_OPTS, rate)}
+      ${gSegHtml(p, 'chip', 'チップ 1枚あたり', G_CHIP_OPTS, chip)}
       <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの分は「チップあり」のときだけ足します。</div>
     </div>`;
 }
@@ -10581,7 +10618,7 @@ function scoreMainHtml(g) {
   const s = g.settings;
   const hasRounds = (g.rounds || []).length > 0;
   const collapsed = collapsedCards.score;
-  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : '10px'}">
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${collapsed ? '0' : '8px'}">
     <div class="card-title" style="margin-bottom:0">総合順位</div>
     <div style="display:flex;align-items:center;gap:6px">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
@@ -11710,7 +11747,7 @@ async function runCompose() {
 // .rank-N のクラスと .rank-num の文字は画像（imgRankingRows）が読むので残す。メダルの数字はSVGの中なので .rank-num には混ざらない
 function rankBadgeHtml(rank, isTie, isLast) {
   const label = `${rank + 1}位${isTie ? 'タイ' : ''}`;
-  return `<div class="rank-badge${rank < 3 ? ' rank-' + (rank + 1) : ''}"><span class="rank-medal">${medalSvg(rank + 1, 30)}</span><span class="rank-num">${label}</span></div>`;
+  return `<div class="rank-badge${rank < 3 ? ' rank-' + (rank + 1) : ''}"><span class="rank-medal">${medalSvg(rank + 1, 26)}</span><span class="rank-num">${label}</span></div>`;
 }
 
 // ---- スコア推移グラフ（SVG） ----
@@ -12751,7 +12788,6 @@ function renderGame() {
   { const eb = document.getElementById('game-edit-btn'); eb.textContent = gLocked ? 'ゲーム名の変更' : '設定の編集'; eb.onclick = gLocked ? () => openRenameGame(activeGame.id) : openGameEdit; }
   document.getElementById('end-game-wrap').style.display = (hasRounds && !gLocked && !gEnded) ? '' : 'none';
   { const en = document.querySelector('#end-game-wrap .end-game-note');
-    { const cb = document.getElementById('chip-entry-btn'); if (cb) cb.style.display = (s.bonusEnabled && hasRounds && !gLocked && !gEnded) ? '' : 'none'; }
     if (en && !gLocked && !gEnded) en.textContent = `終了から12時間、または最後の入力から24時間で記録が確定します（いまのままなら ${fmtDateTime(lockAtOf(activeGame))}）。`; }
   renderGameCircles(activeGame, 'game-circles');
 
@@ -12983,6 +13019,7 @@ let sheetPrefill = {};  // memberIndex → 入力値（修正時のプレフィ�
 let sheetChips = {};    // memberIndex → チップ差（チップ記録が有効なグループのみ）
 let sheetYaki = {};     // memberIndex → 焼き鳥フラグ
 let sheetChombo = {};   // memberIndex → チョンボフラグ
+let sheetTab = 'pts';   // 点数入力の「点数｜チップ」（チップありのときだけ切り替えを出す）
 // 新規入力のデフォルト参加者: 直前の試合のメンバー、なければ先頭からnumPlayers人
 function defaultParticipants(ctx) {
   const s = ctx.settings;
@@ -13042,6 +13079,7 @@ function openSheetCtx(ctx, idx) {
   sheetChips = {};
   sheetYaki = {};
   sheetChombo = {};
+  sheetTab = 'pts';
   if (isEdit) {
     const r = ctx.rounds[idx];
     roundMembers(r, s).forEach((m, k) => {
@@ -13160,40 +13198,56 @@ function renderSheetInputs() {
     return;
   }
   sheetOrder = sheetSelected.slice();
-  const withChips = false; // チップは対局の終わりにまとめて入れる（2026-10-02。openChipSheet）
+  const withChips = !!s.bonusEnabled; // チップは点数入力で、試合が終わったときの枚数を入れる（2026-11-11〜。−／＋か直接入力）
   const withYaki = !!s.yakitori;
   const withChombo = !!s.chombo;
   // 列順は左から 焼き鳥｜チョンボ｜チップ｜点数（すべて固定幅・右詰。名前が残り幅を使う）
   // オプションが1つでも有効なら文字の列見出しを1行入れる（見出しは文字、ボタンは絵文字のまま）
   const colLabel = 'font-size:11px;letter-spacing:-.5px;color:#5F6E6B;font-weight:600;text-align:center;flex-shrink:0;white-space:nowrap';
-  const header = (withChips || withYaki || withChombo)
-    ? `<div class="sheet-row" style="margin-bottom:-4px">
+  const tabs = withChips ? `<div class="seg sm sheet-tab" role="tablist" aria-label="入力するもの">
+      <button type="button" role="tab" data-t="pts" onclick="setSheetTab('pts')">点数</button>
+      <button type="button" role="tab" data-t="chips" onclick="setSheetTab('chips')">${ico('chip', 16)}チップ<span class="tab-dot" hidden></span></button></div>` : '';
+  const header = (withYaki || withChombo)
+    ? `<div class="sheet-row sheet-hdr" style="margin-bottom:-4px">
         <label></label>
         ${withYaki ? `<div style="width:42px;${colLabel}">焼き鳥</div>` : ''}
         ${withChombo ? `<div style="width:42px;${colLabel}">チョンボ</div>` : ''}
-        ${withChips ? `<div style="width:68px;${colLabel}">チップ</div>` : ''}
         <div style="width:104px;${colLabel}">点数</div>
       </div>`
     : '';
-  inputs.innerHTML = header + sheetOrder.map((m, k) => {
+  inputs.innerHTML = tabs + header + sheetOrder.map((m, k) => {
     // チップは「現在のチップ数」のみ入力。直前までの持ちチップ（自動参照）を初期値にする
     const cur = withChips ? chipBaseline(m) + (sheetChips[m] != null ? Number(sheetChips[m]) || 0 : 0) : 0;
     return `<div class="sheet-row">
       <label>${teamDotHtml(s, m)}${esc(s.playerNames[m])}</label>
       ${withYaki ? `<button type="button" class="yaki-btn${sheetYaki[m] ? ' on' : ''}" id="yi-${k}" onclick="toggleSheetYaki(${k})" aria-label="焼き鳥" aria-pressed="${!!sheetYaki[m]}">${ico('yakitori', 22)}</button>` : ''}
       ${withChombo ? `<button type="button" class="yaki-btn chombo${sheetChombo[m] ? ' on' : ''}" id="pi-${k}" onclick="toggleSheetChombo(${k})" aria-label="チョンボ" aria-pressed="${!!sheetChombo[m]}">${ico('chombo', 22)}</button>` : ''}
-      ${withChips ? `<div class="chip-input">
-        <input type="number" id="ce-${k}" value="${cur}" step="1" onkeydown="blockNonInt(event)" oninput="onChipEndInput(${k})">
-        <span class="chip-suffix">枚</span>
-      </div>` : ''}
       <div class="pt-input">
         <input type="number" id="si-${k}" placeholder="${s.startPoints / 100}" step="1" onkeydown="blockNonInt(event)" oninput="updateTotal()"
           value="${sheetPrefill[m] != null ? sheetPrefill[m] : ''}">
         <span class="pt-suffix">00</span>
-      </div>
+      </div>${withChips ? `
+      <span class="cr-diff" id="cd-${k}"></span>
+      <div class="chip-step">
+        <button type="button" class="cs-b" onclick="stepChip(${k}, -1)" aria-label="${esc(s.playerNames[m])}のチップを1枚減らす">−</button>
+        <input type="number" id="ce-${k}" value="${cur}" step="1" onkeydown="blockNonInt(event)" oninput="onChipEndInput(${k})" aria-label="${esc(s.playerNames[m])}のチップの枚数（マイナスも入れられます）">
+        <button type="button" class="cs-b" onclick="stepChip(${k}, 1)" aria-label="${esc(s.playerNames[m])}のチップを1枚増やす">＋</button>
+      </div>` : ''}
     </div>`;
   }).join('');
+  if (withChips) sheetOrder.forEach((_, k) => showChipDiff(k));
+  setSheetTab(withChips ? sheetTab : 'pts');
   updateTotal();
+}
+// 「点数｜チップ」の切り替え。入力欄は両方とも置いたまま見せ方だけ変える（値は保持・送信も両方）
+function setSheetTab(t) {
+  sheetTab = t;
+  const box = document.getElementById('sheet-inputs');
+  if (!box) return;
+  box.classList.toggle('tab-chips', t === 'chips');
+  box.querySelectorAll('.sheet-tab button').forEach(b => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  const auto = document.getElementById('auto-btn');
+  if (auto) auto.style.display = t === 'chips' ? 'none' : '';
 }
 // チップの基準値 = 開始時チップ数 + それまでの試合のチップ差の累計（最新の持ちチップを自動参照）。
 // 修正時は修正対象より前の試合まで
@@ -13206,6 +13260,8 @@ function chipBaseline(m) {
     if (!r.chips) continue;
     roundMembers(r, s).forEach((mm, k) => { if (mm === m && r.chips[k] != null) base += Number(r.chips[k]) || 0; });
   }
+  // 2026-11-10までの「対局の終わりにまとめて入れた」チップ（settings.finalChips）も、新しい試合の持ちチップに入れる
+  if (editingIndex < 0 && Array.isArray(s.finalChips)) base += Number(s.finalChips[m]) || 0;
   return base;
 }
 // 現在のチップ数を入力 → 基準値との差をチップ差として内部記録
@@ -13214,7 +13270,23 @@ function onChipEndInput(k) {
   const el = document.getElementById('ce-' + k);
   if (el.value === '') delete sheetChips[m];
   else sheetChips[m] = (Number(el.value) || 0) - chipBaseline(m);
+  showChipDiff(k);
   updateTotal();
+}
+// −／＋で1枚ずつ（マイナスの枚数にもなる）
+function stepChip(k, d) {
+  const el = document.getElementById('ce-' + k);
+  if (!el) return;
+  el.value = String((Math.round(Number(el.value)) || 0) + d);
+  onChipEndInput(k);
+}
+// この試合での増減（＋2・−1）。0なら出さない
+function showChipDiff(k) {
+  const el = document.getElementById('ce-' + k), d = document.getElementById('cd-' + k);
+  if (!el || !d) return;
+  const x = el.value === '' ? 0 : (Math.round(Number(el.value)) || 0) - chipBaseline(sheetOrder[k]);
+  d.textContent = x ? `${x > 0 ? '+' : '−'}${Math.abs(x)}` : '';
+  d.className = 'cr-diff ' + (x > 0 ? 'pos' : x < 0 ? 'neg' : '');
 }
 // 焼き鳥のON/OFF切り替え（メンバー単位で保持し、選択切替後も維持される）
 function toggleSheetYaki(k) {
@@ -13277,6 +13349,8 @@ function updateTotal() {
       entered += (ce && ce.value !== '') ? (Number(ce.value) || 0) : base;
     });
     chipsOk = entered === expectedChips;
+    const dot = document.querySelector('.sheet-tab .tab-dot');
+    if (dot) dot.hidden = chipsOk;
     chipEl.style.display = 'block';
     if (chipsOk) {
       chipEl.textContent = `チップ合計: ${entered.toLocaleString()}枚`;
@@ -13543,7 +13617,7 @@ function settingsFormHtml(name, s) {
         <div class="field" style="margin:0"><label>持ちチップ（枚）</label>
           <input type="number" id="e-start-chips" value="${s.startChips != null ? s.startChips : 20}" placeholder="20">
         </div>
-        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップは「対局を終了する」ときにまとめて入れます。</div>
+        <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップは点数入力の「チップ」で、試合ごとに入れます。</div>
       </div>
       ${gOptHtml('e', s)}
       <label class="opt-check" style="margin-top:8px">

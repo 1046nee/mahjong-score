@@ -97,8 +97,8 @@ const nums = vals(h).map(v => Number(v.replace(/[G,+]/g, '').replace('−', '-')
 ok('11 三麻も合計0', nums.reduce((a, b) => a + b, 0) === 0, vals(h));
 
 // 12. 設定の欄：レートありの試合は保存値（チップ1枚=1Gでも10にしない）
-ok('12 設定の変更の欄は保存値を出す', gOptHtml('e', {rate: 50, chipRate: 1, bonusEnabled: true}).includes('id="e-g-chip" min="0" inputmode="numeric" value="1"'));
-ok('12 レートなしの試合は初期値10', gOptHtml('e', {rate: 0, chipRate: 1}).includes('id="e-g-chip" min="0" inputmode="numeric" value="10"'));
+ok('12 設定の変更の欄は保存値を出す（1Gはタブに無いのでカスタム）', /id="e-g-chip"[^>]*value="1"/.test(gOptHtml('e', {rate: 50, chipRate: 1, bonusEnabled: true})) && /id="e-g-chip-c" style="display:flex"/.test(gOptHtml('e', {rate: 50, chipRate: 1, bonusEnabled: true})));
+ok('12 レートなしの試合は初期値（スコア50G・チップ100G）', /id="e-g-rate"[^>]*value="50"/.test(gOptHtml('e', {rate: 0, chipRate: 1})) && /id="e-g-chip"[^>]*value="100"/.test(gOptHtml('e', {rate: 0, chipRate: 1})));
 
 // 13. 旧データ（倍率を入れていた試合・chipRate 無し）
 g = mk({s: {rate: 100, chipRate: undefined, bonusEnabled: true, finalChips: [1, 0, 0, -1]}, rounds: R4});
@@ -126,6 +126,10 @@ R.push([readGOpt('s') === false ? 'PASS' : 'FAIL', '15 空でも止める', ''])
 document.getElementById('s-g-rate').value = '2.6';
 const r3 = readGOpt('s');
 R.push([r3 && r3.rate === 3 ? 'PASS' : 'FAIL', '15 小数は整数に丸める', JSON.stringify(r3)]);
+pickG('s', 'chip', 500); const r5 = readGOpt('s');
+R.push([r5 && r5.chipRate === 500 ? 'PASS' : 'FAIL', '15 タブで選んだチップのGを読む', JSON.stringify(r5)]);
+pickG('s', 'rate', 100); const r6 = readGOpt('s');
+R.push([r6 && r6.rate === 100 ? 'PASS' : 'FAIL', '15 タブで選んだスコアのGを読む', JSON.stringify(r6)]);
 document.getElementById('s-g').checked = false;
 const r4 = readGOpt('s');
 R.push([r4 && r4.rate === 0 ? 'PASS' : 'FAIL', '15 チェックを外せば0（レートなし）', JSON.stringify(r4)]);
