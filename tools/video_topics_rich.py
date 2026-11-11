@@ -179,6 +179,46 @@ def t_dantai():
             (["代表やタイトル戦の歴史は、", "年表つきで記事にまとめました。"], article_end("blog-dantai-rekishi", "年表は記事で"))]
 TOPICS["t-dantai"] = t_dantai
 
+# ======================= 鳴きの手順（t-naki）=======================
+import naki_board as _nb
+import make_sns_v3 as _v3
+_nb.BASE = _v3.furl(_v3.TILES) + "/"
+def _board(step, w=860):
+    return f'<div class="mid"><div style="width:{w}px;margin:0 auto;filter:drop-shadow(0 16px 30px rgba(16,40,36,.16))">{_nb.board(step).replace("<svg ", f"<svg width={chr(34)}{w}{chr(34)} height={chr(34)}{w}{chr(34)} ", 1)}</div></div>'
+def _meld(codes, w=92):
+    """副露の3枚。-yoko は立てた牌の 82/62 倍の幅で、下をそろえる"""
+    out = "".join(tile(c, round(w * 82 / 62) if c.endswith("-yoko") else w) for c in codes)
+    return f'<span style="display:inline-flex;align-items:flex-end;gap:4px;vertical-align:middle">{out}</span>'
+def _meld_rows(rows, w=92):
+    r = "".join(f'<div style="display:flex;align-items:center;gap:28px;padding:22px 0;{"border-top:3px solid #E3E9E7;" if i else ""}">'
+                f'<span style="font-size:46px;font-weight:900;color:#177083;width:230px;text-align:left">{a}</span>{_meld(c, w)}'
+                f'<span class="tx" style="font-size:40px;font-weight:900;color:#1F2A28;flex:1;text-align:right">{b}</span></div>' for i, (a, c, b) in enumerate(rows))
+    return f'<div class="vcard" style="padding:24px 40px">{r}</div>'
+NAKI_STEPS = [("① 声を出す", "全員に<b>聞こえる声</b>で"), ("② 手の牌を晒す", "使う2枚を<b>表にして見せる</b>"), ("③ 相手の牌を取る", "河から<b>鳴いた牌</b>を持ってくる"),
+              ("④ 右の隅に並べる", "鳴いた牌は<b>横向き</b>に"), ("⑤ 1枚切る", "ここで鳴きが<b>完了</b>")]
+def _naki_step(i):
+    t, n = NAKI_STEPS[i]
+    return sc(t, (.1, 300, _board(i + 1)), (.9, 1200, note(n)))
+def t_naki():
+    return [(["ポンやチー、", "どの順番で動いていますか？", "正しい手順は、5つあります。"], hook("鳴きの手順", "ポン・チーの\n正しい順番は？", _board(4, 640), g=False)),
+            (["1つ目は、声を出す。", "チー、ポンと、", "全員に聞こえる声で言います。"], _naki_step(0)),
+            (["2つ目。", "鳴くのに使う手の牌を、", "表にして見せます。"], _naki_step(1)),
+            (["3つ目。", "相手の河から、", "鳴いた牌を取ってきます。"], _naki_step(2)),
+            (["4つ目。", "できた組を右の隅に置いて、", "鳴いた牌は横向きにします。"], _naki_step(3)),
+            (["5つ目。", "最後に手牌から1枚切って、", "鳴きが完了です。"], _naki_step(4)),
+            (["横にする牌は、", "誰から鳴いたかで変わります。", "上家なら左、", "対面なら真ん中、", "下家なら右です。"],
+             sc("横にする牌で相手を示す", (.3, 340, _meld_rows([("上家から", ["p5-yoko", "p5", "p5"], "左を横に"), ("対面から", ["p5", "p5-yoko", "p5"], "真ん中を横に"), ("下家から", ["p5", "p5", "p5-yoko"], "右を横に")])),
+                (2.4, 1140, note("チーは上家からだけ。<b>いつも左が横</b>")))),
+            (["チーを言うときは、", "一拍おくのがコツ。", "同じ牌にポンやロンの声が出たら、", "そちらが優先だからです。"],
+             sc("チーは一拍おいて", (.3, 380, T([("ロン", "いちばん優先"), ("ポン・カン", "チーより優先"), ("チー", "一拍おいてから")])), (1.8, 960, note("協会・RMUは<b>ルールに書いてある</b>")))),
+            (["Mリーグもプロ団体も、", "この順番は同じです。", "最高位戦では、", "牌を晒す前に切ってしまうと、", "その局はあがれなくなります。"],
+             sc("プロは順番まで見られる", (.3, 360, T([("Mリーグ", "声→晒す→右へ→切る"), ("協会", "声→晒す→右へ→切る"), ("最高位戦", "晒す前に切ると反則"), ("RMU", "晒す→取る→切る")])),
+                (2.6, 1100, note("先に切ってから取るのは<b>正式ではない</b>")))),
+            (["仲間内なら、", "何を鳴いたか分かれば十分。", "雀荘や大会では、", "その場の決まりに合わせましょう。"],
+             sc("仲間内と外で分ける", (.3, 400, B([("○", "仲間内は<b>気楽に</b>"), ("○", "外では<b>声ははっきり</b>"), ("○", "まちがえたら<b>すぐ言う</b>")], 50)))),
+            (["団体ごとの決まりの比較は、", "図つきで記事にまとめました。"], article_end("blog-naki-tejun", "図は記事で"))]
+TOPICS["t-naki"] = t_naki
+
 # ======================= 世界の麻雀（x-01〜04）=======================
 XEND = (["世界の麻雀の比較表は、", "記事にまとめています。"], article_end("blog-sekai-mahjong", "比較表は記事で"))
 def _count_bars(a, hl=None):

@@ -246,6 +246,7 @@
 - 麻雀の歴史・起源／オンライン麻雀と対面の違い／点数申告の言い方
 
 ## 落とし穴
+- `tools/make_naki_article.py` のように記事を丸ごと作り直す道具は、作り直すと `add_ruby.py` が付けたふりがなが消える。作り直したら `python tools/add_ruby.py` をかけ直してから差分を見る（2026-11-11 卓の図を naki_board.py に分けたときに気づいた。公開中のページは戻した）
 - 横向きの牌（-yoko.svg）を縦の牌と同じ幅で出すと、縮尺が小さくなって小さく見える（2026-11-11 ユーザーの指摘。サムネイルの `tiles()`・役の記事の河と手の例）。**横向きの牌の幅は、縦の牌の幅×82/62（約1.32倍）**。牌の幅をCSSで決める所は `img[src*="-yoko"]` の幅も書く。`python tools/yoko_check.py`（全ページ・0件にする）
 - 役一覧（blog-yaku-ichiran）の状況役9つの場面の図は `yaku-scene`。`yaku-ex` にすると動画の `_yaku_list` が拾って y-01〜29 の番号がずれる（声入り済みの動画と合わなくなる。2026-11-11）
 - blog_cats.py が assets/blog-site.js の READ_GROUPS（固定ページの読みもの）まで記事として拾い、パンくずの無い score-basics.html で止まった（2026-11-11）。記事として読むのは BLOG_POSTS の中だけにした
