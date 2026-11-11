@@ -152,3 +152,70 @@ def r04():
              lambda a, b: [head(a, b, "三麻の確認リスト"), stage(a + .2, b, checklist(["抜く牌・持ち点・ウマ", "北抜きか、手の中で使うか", "花牌・赤の枚数", "嶺上牌の数・ツモり切り", "ツモ損かツモ折半か"], a, .5), top=400)]),
             RULE_END, (APP_END, lambda a, b: [ms.end_card(a)])]
 TOPICS["r-04"] = r04
+
+# ======================= トビ編（2026-11-11 ユーザーの依頼・blog-rule-joukyu #tobi） =======================
+import video_topics as _vt
+
+def _stk_row(kinds, label, color="#1F2A28"):
+    """点棒を縦に積んで、下に持ち点"""
+    sticks = "".join(f'<div style="margin:6px auto">{stick(k)}</div>' for k in kinds) or '<div style="height:60px"></div>'
+    return f'<div style="text-align:center">{sticks}<p class="lbl" style="margin-top:14px;color:{color}">{label}</p></div>'
+
+def _arrow(l, r):
+    return (f'<div style="display:flex;align-items:center;justify-content:center;gap:34px">{l}'
+            f'<span style="font-size:84px;font-weight:900;color:#E75620">→</span>{r}</div>')
+
+def r05():
+    vis = _arrow(_stk_row([1000], "持ち点 1,000点"), _stk_row([], "リーチで 0点", "#E75620"))
+    return [(["持ち点1,000点で、リーチ。", "これ、していいですか？", "トビありの卓で決めておきたい4つです。"], hook("揉めないルール トビ編", "トビ寸前の\nリーチはあり？", vis, g=False)),
+            (["持ち点1,000点でリーチすると、", "リーチ棒を出して0点。", "0点はまだトビではないので、", "続けられる卓と、", "リーチ自体ができない卓があります。"],
+             q("① 0点になるリーチ", _arrow(_stk_row([1000], "1,000点"), _stk_row([], "0点", "#E75620")),
+               [("できる", "0点はトビではない。局が終わっても続ける"), ("できない", "出せる点棒が残らない")], top=330)),
+            (["持ち点500点なら、", "リーチするとマイナス500点。", "あがれば戻れますが、", "あがれずに局が終わったら、", "そこでトビです。"],
+             q("② マイナスのリーチ", _arrow(_stk_row([100], "100点棒×5＝500点"), _stk_row([], "−500点", "#C62828")),
+               [("できる", "局が終わってマイナスならトビ"), ("できない", "1,000点に足りない人はダマで待つ")],
+               (2.6, 1250, note("トビを決めるのは<b>局が終わったとき</b>")), top=330)),
+            (["人を飛ばしたときのトビ賞。", "もらうのは、", "飛ばした人か、", "その時の1着か。", "点数で渡すか、チップで渡すかも決めます。"],
+             q("③ トビ賞は誰に？", None, [("飛ばした人", "とどめを刺したあがり"), ("その時の1着", "トップの人"), ("何を渡す？", "点数か、チップか")])),
+            (["山の残りが、あと3枚。", "ここでリーチしても、", "自分のツモ番はもう回ってきません。", "それでもリーチできるか。"],
+             q("④ ツモ番なしのリーチ", '<div class="mid">' + tiles(["back"] * 3, 70) + '<p class="lbl" style="margin-top:8px">山の残り 3枚</p></div>',
+               [("できる", "ロンだけを待つ"), ("できない", "四麻は残り4枚未満ならリーチ不可が多い")], top=330)),
+            (["トビありの卓なら、", "この4つを打つ前に決めておきましょう。"],
+             lambda a, b: [head(a, b, "トビの確認リスト"), stage(a + .2, b, checklist(["0点になるリーチ", "マイナスになるリーチ", "トビ賞は誰がもらうか", "ツモ番がないリーチ"], a, .5), top=400)]),
+            (_vt.END, article_end("blog-rule-joukyu", "全部で20項目は記事で")), (APP_END, lambda a, b: [ms.end_card(a)])]
+TOPICS["r-05"] = r05
+
+# ======================= 確認リスト30項目（1枚の表を見せる） =======================
+# 表の中の場所（tools/rule_sheet.py の HTML の座標・794×1123）。表の並びを変えたらここも直す
+SHEET_SEC = {"must": (34, 114, 357, 264), "opt": (34, 388, 357, 249), "local": (34, 647, 357, 205),
+             "tobi": (403, 114, 357, 176), "pro": (403, 301, 357, 336), "sanma": (403, 647, 357, 292)}
+
+def _sheet_src():
+    return _vt.v3.furl(os.path.join(_vt.MJ, "assets", "rules", "rule-checklist.png"))
+
+def sheet_crop(key, width=960):
+    x, y, w, h = SHEET_SEC[key]
+    k = width / w
+    return (f'<div style="width:{width}px;height:{h * k:.0f}px;overflow:hidden;border-radius:18px;margin:0 auto;background:#fff;box-shadow:0 12px 30px rgba(16,40,36,.16)">'
+            f'<img src="{_sheet_src()}" style="display:block;width:{794 * k:.0f}px;max-width:none;margin-left:{-x * k:.0f}px;margin-top:{-y * k:.0f}px"></div>')
+
+def sheet_whole(width=640, rot=0):
+    return (f'<img src="{_sheet_src()}" style="display:block;width:{width}px;margin:0 auto;border-radius:12px;'
+            f'transform:rotate({rot}deg);box-shadow:0 0 0 6px #177083, 18px 20px 0 #9FC3BD">')
+
+def _sec(title, key, top=330):
+    return lambda a, b: [head(a, b, title), stage(a + .15, b, sheet_crop(key), top=top)]
+
+import os
+def r06():
+    return [(["打つ前に決めておきたいこと、", "全部で30項目。", "1枚の確認リストにまとめました。"], hook("保存版", "打つ前の\n確認リスト30", sheet_whole(400, 3), g=False, top=170)),
+            (["まず、必ず決めたい5つ。", "試合の形、持ち点と返し点、", "ウマ、同点のとき、", "終わったときの供託です。"], _sec("必ず決める5つ", "must")),
+            (["必要なら、チョンボ、チップ、", "途中参加と途中抜け、", "赤ドラや喰いタン、", "記録の付け方も決めます。"], _sec("必要なら決める5つ", "opt")),
+            (["トビありの卓は、", "0点やマイナスになるリーチ、", "トビ賞、", "ツモ番がないリーチ。"], _sec("トビありの卓", "tobi")),
+            (["玄人の卓は、", "ダブル役満、国士の暗槓ロン、", "カンドラ、パオなど7つ。"], _sec("玄人の卓の7つ", "pro", top=300)),
+            (["ローカル役は、", "あるかどうかと、何点か。"], _sec("ローカル役", "local")),
+            (["三麻は、北の扱い、花牌、", "ツモ損かどうかなど6つ。"], _sec("三麻の6つ", "sanma")),
+            (["決めたものにチェック。", "いつものメンバーなら一度決めて、", "残しておけば次から聞かずに済みます。"],
+             lambda a, b: [head(a, b, "決めたらチェック"), stage(a + .15, b, sheet_whole(760), top=330)]),
+            (_vt.END, article_end("blog-rule-joukyu", "確認リストは記事に")), (APP_END, lambda a, b: [ms.end_card(a)])]
+TOPICS["r-06"] = r06

@@ -122,9 +122,10 @@
   </url>
   <url>
     <loc>https://majasco.jp/blog-house-rules.html</loc>
-    <lastmod>2026-10-31</lastmod>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <image:image><image:loc>https://majasco.jp/assets/rules/rule-checklist.png</image:loc></image:image>
   </url>
   <url>
     <loc>https://majasco.jp/blog-score-mismatch.html</loc>
@@ -434,5 +435,5 @@
     <priority>0.7</priority>
   </url>
   <url><loc>https://majasco.jp/blog-team-league.html</loc><lastmod>2026-11-06</lastmod></url>
-  <url><loc>https://majasco.jp/blog-rule-joukyu.html</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://majasco.jp/blog-rule-joukyu.html</loc><lastmod>2026-11-11</lastmod><image:image><image:loc>https://majasco.jp/assets/rules/rule-checklist.png</image:loc></image:image></url>
 </urlset>
