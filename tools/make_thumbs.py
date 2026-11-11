@@ -176,6 +176,7 @@ def T(name, color, body):
 THUMBS = [
  T("blog-haitei", "#3B82F6", lambda: row_center(["p9", "p9", "p9"], 40, 46, 6) + bubble(40, 140, 110, 52, "海底", 28) + bubble(170, 140, 110, 52, "カン×", 26, "#FFD23F") + sparkle(270, 44, 13)),
  T("blog-keishiki-tenpai", "#8B5CF6", lambda: row_center(["m1", "m2", "m3", "s2", "s3"], 44, 40, 3) + bubble(40, 140, 120, 52, "テンパイ", 24) + bubble(180, 140, 100, 52, "？", 30, "#FFD23F") + sparkle(272, 40, 12)),
+ T("blog-naki-tejun", "#177083", lambda: row_center(["m6-yoko", "m4", "m5"], 52, 44, 6) + bubble(40, 140, 110, 52, "チー", 28) + bubble(170, 140, 110, 52, "①→⑤", 26, "#FFD23F") + sparkle(268, 46, 12)),
  T("blog-kuikae", "#F59E0B", lambda: row_center(["m3", "m4", "m5"], 44, 48, 6) + bubble(40, 140, 110, 52, "チー", 28) + bubble(170, 140, 110, 52, "三萬×", 26, "#FFD23F") + sparkle(268, 46, 12)),
  T("blog-riichi-ankan", "#EF4444", lambda: row_center(["m1", "m1", "m1", "m1"], 44, 44, 4) + bubble(40, 140, 110, 52, "リーチ", 26) + bubble(170, 140, 110, 52, "カン？", 26, "#FFD23F") + sparkle(270, 44, 13)),
  T("blog-ronjutsu", "#0EA5E9", lambda: card(70, 34, 180, 130, "#fff", 10) + lines(90, 64, 5, 140, 18) + bubble(150, 160, 120, 48, "論述", 26, "#FFD23F") + sparkle(272, 40, 12) + sparkle(50, 180, 9)),
