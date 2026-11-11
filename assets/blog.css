@@ -1067,3 +1067,14 @@ body:not(.bs-list) .post-layout > .blog-post .post-toc a { display: block; margi
 body .blog-post .post-meta a.post-cat, .post-meta .post-cat { color: #fff !important; text-decoration: none !important; }
 .post-meta .post-cat { display: inline-block; vertical-align: 1px; margin-right: 8px; color: #fff; background: var(--cc, #177083); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 800; line-height: 1.4; text-decoration: none; }
 .post-meta .post-cat:hover { filter: brightness(1.08); }
+/* 状況で決まる役（一発・海底など）の場面の図（2026-11-11）: 左に場面の名前、右に牌と一言。要の牌は h-win と同じオレンジの下地 */
+.blog-post .yaku-scene { margin: 2px 0 18px; padding: 8px 10px; background: #F7F9F8; border: 1px solid #E3E9E7; border-radius: 6px; overflow-x: auto; }
+.blog-post .ys-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.blog-post .ys-row + .ys-row { border-top: 1px dashed #D5DEDB; }
+.blog-post .ys-lb { flex: none; width: 6.2em; font-size: 12.5px; font-weight: 700; color: #177083; }
+.blog-post .ys-body { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 4px 6px; min-width: 0; }
+.blog-post .ys-key { margin-left: 0; display: inline-flex; flex-wrap: wrap; row-gap: 3px; }
+.blog-post .ys-key img { display: block; margin-right: 1px; }
+.blog-post .ys-wide { flex-direction: column; align-items: flex-start; gap: 4px; } /* 13〜14枚の手は名前を上に置いて、牌を1行に収める */
+.blog-post .ys-cap { font-size: 13px; line-height: 1.5; color: #4F5C5A; align-self: center; }
+@media (max-width: 480px) { .blog-post .ys-row { gap: 6px; } .blog-post .ys-lb { width: 5.4em; font-size: 11.5px; } .blog-post .yaku-scene .hand img, .blog-post .ys-key img { width: 18px; } .blog-post .yaku-scene img[src*="-yoko"] { width: 24px; } .blog-post .ys-cap { font-size: 12px; } }
