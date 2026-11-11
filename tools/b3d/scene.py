@@ -17,7 +17,9 @@ THEME = arg("--theme", "dark")
 CAMS = arg("--cams", "wide,mid,hand,top,meld").split(",")
 SIZE = [int(x) for x in arg("--size", "720x1280").split("x")]
 SAMPLES = int(arg("--samples", "48"))
-STEP = int(arg("--step", "4"))   # 鳴きの手順のどこまで進んだか（0=鳴く前 … 5=打牌まで）
+ANIM = "--anim" in sys.argv      # 動きの試し（チーの5つの手順）。1コマずつ書き出す。途中で止まっても、できたコマは飛ばして続きから
+FPS = int(arg("--fps", "12"))
+STEP = 0 if ANIM else int(arg("--step", "4"))   # 鳴きの手順のどこまで進んだか（0=鳴く前 … 5=打牌まで）
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 sc = bpy.context.scene
@@ -115,12 +117,16 @@ def sphere(name, r, loc, m, scale=(1, 1, 1), parent=None):
     if parent: o.parent = parent
     return o
 
+def set_limb(o, a, b):
+    a, b = Vector(a), Vector(b); d = b - a
+    o.location = (a + b) / 2; o.scale = (1, 1, d.length)
+    o.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
+
 def limb(name, a, b, r, m, parent=None):
     """a→b の円柱（腕）"""
-    a, b = Vector(a), Vector(b); d = b - a
-    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=d.length, location=(a + b) / 2, vertices=20)
+    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=1, vertices=20)
     o = bpy.context.object; o.name = name
-    o.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
+    set_limb(o, a, b)
     o.data.materials.append(m)
     for poly in o.data.polygons: poly.use_smooth = True
     if parent: o.parent = parent
@@ -165,7 +171,7 @@ def tile(code, loc, parent, pose="lie", rz=0.0, name=None):
     o = bpy.data.objects.new(name or ("t_" + code), tile_mesh(code)); add(o); o.parent = parent
     x, y, z = loc
     if pose == "stand":
-        o.rotation_euler = Euler((math.radians(90), 0, rz), "XYZ"); o.location = (x, y + TT, z)      # 底が z、表が -Y
+        o.rotation_euler = Euler((math.radians(90), 0, rz), "XYZ"); o.location = (x, y + TT, z + TL / 2)      # 底が z、表が -Y
     elif pose == "down":
         o.rotation_euler = Euler((math.radians(180), 0, rz), "XYZ"); o.location = (x, y, z + TT)
     else:
@@ -229,7 +235,7 @@ def build_tiles():
             if STEP >= 5: hand.remove("s3")
             x0 = -(len(hand) - 1) / 2 * (TW + .0006) - .03
             for k, c in enumerate(hand):
-                tile(c, (x0 + k * (TW + .0006), -.318, Z), r, "stand")
+                named["hand_" + c] = tile(c, (x0 + k * (TW + .0006), -.318, Z), r, "stand")
             mx, my = .305, -.325
             if STEP >= 2:   # 晒した2枚（寝かせる）
                 tile("m4", (mx - TW - .001, my, Z), r, "lie"); tile("m5", (mx, my, Z), r, "lie")
@@ -260,40 +266,43 @@ def build_player(i, P):
     # 胴（少し前かがみ）
     torso = box(f"torso{i}", (.40 * b, .25 * b, .52 * hgt), (0, y0, .93), um, bevel=.09, parent=r)
     torso.rotation_euler = (math.radians(-10), 0, 0)
-    box(f"collar{i}", (.20 * b, .06, .05), (0, y0 + .135, 1.17 * hgt + .0), mat(f"collar{i}", P["collar"], .6), bevel=.015, parent=r).rotation_euler = (math.radians(-25), 0, 0)
-    limb(f"neck{i}", (0, y0 + .03, 1.15 * hgt), (0, y0 + .06, 1.26 * hgt), .05, skin, r)
-    # 頭（少しうつむく）
-    hz = 1.36 * hgt; hy = y0 + .09
-    head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), r)
+    box(f"collar{i}", (.20 * b, .06, .05), (0, y0 + .15, .93 + .215 * hgt), mat(f"collar{i}", P["collar"], .6), bevel=.015, parent=r).rotation_euler = (math.radians(-25), 0, 0)
+    # 頭（首は作らない。大きめの頭を胴にじかにのせる＝2026-11-11 ユーザーの判断。首があると、ずれたときに変に見える）
+    HS = 1.5
+    hd = empty(f"headroot{i}", r); hd.location = (0, y0 + .07, .93 + .26 * hgt + .115 * 1.08 * HS * .86); hd.scale = (HS, HS, HS)
+    hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
+    hy = 0; hz = 0
+    head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
     for sx in (-1, 1):   # 目（伏し目の小さな線）
-        box(f"eye{i}{sx}", (.026, .006, .006), (sx * .042, hy + .105, hz - .012), mat("eye", "#2A211D", .5), parent=r).rotation_euler = (math.radians(-20), 0, 0)
+        box(f"eye{i}{sx}", (.026, .006, .006), (sx * .042, hy + .105, hz - .012), mat("eye", "#2A211D", .5), parent=hd).rotation_euler = (math.radians(-20), 0, 0)
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
-    cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), r)
+    cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
     if kind == "bob":      # あごまでのボブ＋前髪
-        bpy.ops.mesh.primitive_cylinder_add(radius=.128, depth=.17, location=(0, hy - .03, hz - .075), vertices=32)
-        o = bpy.context.object; o.data.materials.append(hm); o.parent = r; o.scale = (1.0, .92, 1)
+        bpy.ops.mesh.primitive_cylinder_add(radius=.128, depth=.15, location=(0, hy - .03, hz - .065), vertices=32)
+        o = bpy.context.object; o.data.materials.append(hm); o.parent = hd; o.scale = (1.0, .92, 1)
         for poly in o.data.polygons: poly.use_smooth = True
-        sphere(f"bang{i}", .08, (0, hy + .062, hz + .055), hm, (1.35, .55, .5), r)
+        sphere(f"bang{i}", .08, (0, hy + .062, hz + .055), hm, (1.35, .55, .5), hd)
     elif kind == "short_messy":
         for k in range(9):
             a = k / 9 * math.tau
-            sphere(f"tuft{i}{k}", .045, (math.cos(a) * .07, hy - .02 + math.sin(a) * .07, hz + .105), hm, (1, 1, 1.25), r)
-        sphere(f"bang{i}", .07, (0.02, hy + .07, hz + .06), hm, (1.4, .5, .5), r)
+            sphere(f"tuft{i}{k}", .045, (math.cos(a) * .07, hy - .02 + math.sin(a) * .07, hz + .105), hm, (1, 1, 1.25), hd)
+        sphere(f"bang{i}", .07, (0.02, hy + .07, hz + .06), hm, (1.4, .5, .5), hd)
     elif kind == "wavy":
         for k in range(7):
             a = k / 7 * math.tau
-            sphere(f"wave{i}{k}", .05, (math.cos(a) * .075, hy - .025 + math.sin(a) * .075, hz + .085), hm, (1, 1, .9), r)
-        sphere(f"bang{i}", .06, (-.03, hy + .07, hz + .075), hm, (1.3, .5, .45), r)
+            sphere(f"wave{i}{k}", .05, (math.cos(a) * .075, hy - .025 + math.sin(a) * .075, hz + .085), hm, (1, 1, .9), hd)
+        sphere(f"bang{i}", .06, (-.03, hy + .07, hz + .075), hm, (1.3, .5, .45), hd)
     else:                  # mush: 丸く厚い前髪
-        sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), r)
+        sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
     # 腕（両手を手牌のあたりに）
     am = um
     for sx in (-1, 1):
         sh = (sx * .21 * b, y0 + .02, 1.10 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
-        limb(f"uarm{i}{sx}", sh, el, .055 * b, am, r); limb(f"farm{i}{sx}", el, wr, .042, skin, r)
-        sphere(f"elb{i}{sx}", .056 * b, el, am, parent=r); sphere(f"shd{i}{sx}", .07 * b, sh, am, parent=r)
-        sphere(f"hand{i}{sx}", .045, wr, skin, (1, 1.25, .7), r)
+        ua = limb(f"uarm{i}{sx}", sh, el, .055 * b, am, r); fa = limb(f"farm{i}{sx}", el, wr, .026, skin, r)
+        eb = sphere(f"elb{i}{sx}", .056 * b, el, am, parent=r); sphere(f"shd{i}{sx}", .07 * b, sh, am, parent=r)
+        hn = sphere(f"hand{i}{sx}", .04, wr, skin, (1, 1.15, .75), r)
+        if sx == 1: arm = dict(sh=Vector(sh), ua=ua, fa=fa, eb=eb, hand=hn, rest=Vector(wr))
     # 椅子
     cm = mat("chair", "#EDEDEA" if THEME == "dark" else "#FFFFFF", .5)
     box(f"seat{i}", (.50, .48, .08), (0, y0 - .03, .50), cm, bevel=.03, parent=r)
@@ -305,6 +314,7 @@ def build_player(i, P):
     limb(f"spole{i}", (-.62, y0 + .12, 0), (-.62, y0 + .12, .69), .02, mat("pole", "#16181A", .4), r)
     for dx in (-.08, .08):
         sphere(f"dome{i}{dx}", .075, (-.62 + dx, y0 + .12, .80), mat("dome", "#0B0C0E", .15), (1, 1, 1.25), r)
+    return arm
 
 # ---------------- 会場 ----------------
 def build_venue():
@@ -343,7 +353,7 @@ def build_venue():
 CAM = {   # 名前: (位置, 見る点, レンズmm)
     "wide": ((3.6, -4.6, 2.5), (0, 0, .95), 30),          # 会場の引き
     "mid":  ((1.25, -2.2, 1.7), (0, .05, 1.0), 38),      # 手前の選手の肩ごし
-    "hand": ((0, -.60, 1.16), (0, -.24, .77), 26),      # 手前の選手の目線（手牌と河）     # 手牌に寄る（低い位置）
+    "hand": ((0, -.50, 1.20), (0, -.22, .77), 26),      # 手前の選手の目線（手牌と河）     # 手牌に寄る（低い位置）
     "top":  ((0, -.02, 2.6), (0, 0, .76), 42),            # 真上
     "meld": ((.52, -.58, 1.05), (.27, -.33, .76), 70),     # 右端に並べた牌のアップ
 }
@@ -356,8 +366,8 @@ def add_cam(name):
     cd.dof.focus_distance = d.length
     return o
 
-build_venue(); build_table(); build_tiles()
-for i, P in enumerate(PLAYERS): build_player(i, P)
+build_venue(); build_table(); NAMED = build_tiles()
+ARMS = [build_player(i, P) for i, P in enumerate(PLAYERS)]
 
 r = sc.render; r.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = SAMPLES
 sc.cycles.use_denoising = True
@@ -367,6 +377,76 @@ os.makedirs(OUT, exist_ok=True)
 if "--save" in sys.argv:
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, f"mleague_base_{THEME}.blend"))
 import time
+
+# ---------------- 動きの試し: チーの5つの手順（8秒）----------------
+def ease(x):
+    x = max(0.0, min(1.0, x)); return x * x * (3 - 2 * x)
+def seg(t, a, b):
+    return ease((t - a) / (b - a))
+def lerp(a, b, k):
+    return Vector(a).lerp(Vector(b), k)
+ANIM_DUR = 8.0
+# 手順の区切り（秒）: ①声 0〜1.5 ②晒す 1.5〜2.1 ③取る 2.1〜3.8 ④右端に並べる 3.8〜5.0 ⑤切る 5.0〜6.6
+def anim_setup():
+    bpy.context.view_layer.update()
+    c = NAMED["called"]; mw = c.matrix_world.copy(); c.parent = None; c.matrix_world = mw     # 上家の河の六萬を、卓の座標で動かせるように
+    cd = bpy.data.cameras.new("anim"); o = bpy.data.objects.new("cam_anim", cd); add(o); sc.camera = o
+    return o
+def anim_pose(t, cam):
+    Z = TOP + .0005
+    m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
+    X4, X5, XS, HY = .0930, .1176, -.0792, -.318
+    LY = HY + TT + TL / 2                       # 倒したときの中心
+    DX, DY = .305 - X5, -.325 - LY              # 右の隅へ寄せる分
+    # ② 晒す（立てた牌を向こうへ倒す）
+    k2 = seg(t, 1.5, 2.0); k4 = seg(t, 4.2, 5.0)
+    for o, x in ((m4, X4), (m5, X5)):
+        o.rotation_euler = (math.radians(90) * (1 - k2), 0, 0)
+        o.location = lerp((x, HY + TT, Z + TL / 2), (x, LY, Z), k2) + Vector((DX, DY, 0)) * k4
+    # ③ 取る（上家の河 → 晒した2枚の左。牌は横向きのまま）
+    k3 = seg(t, 2.9, 3.8)
+    p0 = Vector((-.118, -.0675, Z)); p1 = Vector((X4 - TW / 2 - .001 - TL / 2, LY - TL / 2 + TW / 2, Z))
+    m6.location = lerp(p0, p1, k3) + Vector((0, 0, .05 * math.sin(math.pi * k3))) + Vector((DX, DY, 0)) * k4
+    m6.rotation_euler = (0, 0, -math.pi / 2)
+    # ⑤ 切る（手牌の三索 → 河の4枚目）
+    k5 = seg(t, 5.7, 6.5)
+    s3.rotation_euler = (math.radians(90) * (1 - seg(t, 5.9, 6.4)), 0, 0)
+    s3.location = lerp((XS, HY + TT, Z + TL / 2), (-.0675 + 3 * (TW + .003), -.118, Z), k5) + Vector((0, 0, .06 * math.sin(math.pi * k5)))
+    # 右手（道すじ: 休み → 手の2枚 → 河の六萬 → 2枚の左 → 3枚の上 → 右の隅 → 三索 → 河 → 休み）
+    A = ARMS[0]; R = A["rest"]; hz = TOP + .05; OFF = Vector((.004, -.026, 0))   # 手は牌の手前がわに置く（牌の絵が隠れないように）
+    keys = [(0.0, R), (0.9, R), (1.5, (X4 + .012, HY + .01, hz + .02)), (2.0, (X4 + .012, LY, hz)), (2.9, (p0.x, p0.y, hz)), (3.8, (p1.x, p1.y, hz)),
+            (4.2, (X4, LY, hz)), (5.0, (X4 + DX, LY + DY, hz)), (5.7, (XS, HY + .01, hz + .02)), (6.5, (-.0675 + 3 * (TW + .003), -.118, hz)), (7.2, R), (ANIM_DUR, R)]
+    w = Vector(keys[-1][1])
+    for (ta, pa), (tb, pb) in zip(keys, keys[1:]):
+        if ta <= t <= tb:
+            k = seg(t, ta, tb); d = (Vector(pb) - Vector(pa)).length
+            w = lerp(pa, pb, k) + Vector((0, 0, min(.07, d * .3) * math.sin(math.pi * k))); break
+    w = w + OFF * (seg(t, .9, 1.5) - seg(t, 6.5, 7.2))
+    sh = A["sh"]; el = (sh + w) / 2 + Vector((.06, .03, -.03)); el.z = max(el.z, TOP + .075)
+    set_limb(A["ua"], sh, el); set_limb(A["fa"], el, w); A["eb"].location = el; A["hand"].location = w
+    # カメラ: 肩ごし → 卓の上から → 右の隅に寄る
+    c0 = (Vector(CAM["mid"][0]), Vector(CAM["mid"][1]), 38.0)
+    px = .03 + .13 * (seg(t, 3.8, 5.0) - seg(t, 5.2, 5.9))      # 手の動きに合わせて、見る点を少し左右に振る
+    c1 = (Vector((-.30 + px * .5, -.62, 1.24)), Vector((.04 + px, -.26, .77)), 37.0)   # 手前の選手の左肩の上から（右腕が画面を横切らない・手牌の表が見える）
+    c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
+    ka = seg(t, .4, 1.4); kb = seg(t, 6.8, 7.8)
+    loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
+    cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
+    cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+
+if ANIM:
+    cam = anim_setup()
+    n = int(ANIM_DUR * FPS)
+    only = arg("--frames", "")
+    todo = [int(x) for x in only.split(",")] if only else range(n)
+    for f in todo:
+        fp = os.path.join(OUT, f"f{f:04d}.png")
+        if os.path.exists(fp): continue
+        anim_pose(f / FPS, cam)
+        r.filepath = fp
+        t0 = time.time(); bpy.ops.render.render(write_still=True); print("FRAME", f, round(time.time() - t0, 1), "s", flush=True)
+    sys.exit(0)
+
 for name in CAMS:
     if name not in CAM: continue
     sc.camera = add_cam(name)
