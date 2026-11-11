@@ -4201,6 +4201,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <input type="number" id="s-start-chips" value="20">
         </div>
       </div>
+      <div id="s-g-opt"></div>
       <label class="opt-check" style="margin-top:14px">
         <input type="checkbox" id="s-yakitori"> 焼き鳥あり<svg class="ico ico-in" width="18" height="18" aria-hidden="true" focusable="false"><use href="#i-yakitori"/></svg>
       </label>
@@ -8863,6 +8864,7 @@ function describeSettingsChanges(base, next, membersState) {
   if (!!a.chombo !== !!b.chombo) out.push(`チョンボ: ${onoff(a.chombo)} → ${onoff(b.chombo)}`);
   else if (b.chombo && (Number(a.chomboPenalty) || 0) !== (Number(b.chomboPenalty) || 0)) out.push(`チョンボ: ${penStr(a.chomboPenalty)} → ${penStr(b.chomboPenalty)}`);
   if (!!a.teamMode !== !!b.teamMode) out.push(`チーム戦: ${onoff(a.teamMode)} → ${onoff(b.teamMode)}`);
+  if (RATE_FEATURE && gRateLabel(a) !== gRateLabel(b)) out.push(`レート: ${gRateLabel(a)} → ${gRateLabel(b)}`);
   else if (b.teamMode && fpOf(teamSig(a)) !== fpOf(teamSig(b))) out.push('チーム編成を変更');
   if (!out.length && fpOf(base) !== fpOf(next)) out.push('その他の設定を変更');
   return out;
@@ -9954,6 +9956,8 @@ function initSetupForm() {
   onChomboOptChange(); onChomboPenChange();
   document.getElementById('s-start-chips').value = '20'; // チップ数の初期値は20
   onBonusOptChange();
+  const gOpt = document.getElementById('s-g-opt');
+  if (gOpt) gOpt.innerHTML = gOptHtml('s', {});
   setupTeams = null;
   setMatchType(false);
   renderMembers();
@@ -10192,8 +10196,10 @@ async function startGame() {
   const startPoints = readStart('s');
   const returnPoints = readReturn('s');
   const uma = getUmaArray();
-  // rate / chipRate は旧データ互換のためキーだけ残す（画面では使わない。新しいグループは 0 / 1）
-  const rate = 0, chipRate = 1;
+  // レート（G）: rate＝スコア1ptあたりのG（0＝なし）・chipRate＝チップ1枚あたりのG。欄が無いときは今までどおり 0 / 1
+  const gv = readGOpt('s');
+  const rate = gv ? gv.rate : 0;
+  const chipRate = gv && gv.rate > 0 ? gv.chipRate : 1;
   const bonusEnabled = document.getElementById('s-bonus').checked;
   const startChips = Number(document.getElementById('s-start-chips').value) || 0;
   const yakitori = document.getElementById('s-yakitori').checked;
@@ -10444,14 +10450,63 @@ function chipTotals(g) {
   return { chips, yaki, chombo };
 }
 
+// ---- レート（G）（2026-11-11〜） ----
+// G＝スコアとチップを同じ単位にそろえるための単位。合わせた順位（総合順位の「Gの順位」）を出すためだけに使う。
+// settings.rate＝スコア1ptあたりのG（0＝使わない）・settings.chipRate＝チップ1枚あたりのG（キーは以前のものをそのまま使う＝旧データも読める）。
+// 出すのは試合の総合順位と設定の表示・変更の記録だけ。仲間ページ・個人の成績・CSV・LP・記事には出さない。
+// RATE_FEATURE を false にすると、設定の欄も「Gの順位」も全部消える（保存してある値はそのまま）
+const RATE_FEATURE = true;
+function gOn(s) { return RATE_FEATURE && Number(s && s.rate) > 0; }
+// 席ごとの { sc: スコアのG, ch: チップのG, total }。スコアは合計pts×rate、チップはチップ差×chipRate（チップありのときだけ）
+function gTotals(g) {
+  const s = g.settings;
+  const r = Number(s.rate) || 0, cr = Number(s.chipRate) || 0;
+  const chips = s.bonusEnabled ? chipTotals(g).chips : [];
+  return gameTotals(g).map((t, i) => {
+    const sc = Math.round(t * r) || 0;
+    const ch = s.bonusEnabled ? Math.round((chips[i] || 0) * cr) || 0 : 0;
+    return { sc, ch, total: sc + ch };
+  });
+}
+function gNum(v) { return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString(); }
+function gRateLabel(s) {
+  if (!gOn(s)) return 'なし';
+  return `スコア1pt＝${Number(s.rate).toLocaleString()}G${s.bonusEnabled ? `・チップ1枚＝${(Number(s.chipRate) || 0).toLocaleString()}G` : ''}`;
+}
+// ゲームを作る画面（p='s'）と設定の変更（p='e'）で同じ欄
+function gOptHtml(p, s) {
+  if (!RATE_FEATURE) return '';
+  const on = gOn(s);
+  const rate = Number(s && s.rate) > 0 ? Number(s.rate) : 10;
+  const chip = s && Number(s.chipRate) > 1 ? Number(s.chipRate) : 10;
+  return `<label class="opt-check" style="margin-top:14px">
+      <input type="checkbox" id="${p}-g" ${on ? 'checked' : ''} onchange="document.getElementById('${p}-g-fields').style.display=this.checked?'block':'none'"> レートあり（G）
+    </label>
+    <div class="chips-hint" style="margin:6px 0 0 26px">スコアとチップを「G」という同じ単位にそろえて、合わせた順位（Gの順位）も見られます。</div>
+    <div id="${p}-g-fields" style="display:${on ? 'block' : 'none'};margin:10px 0 0 26px">
+      <div class="field"><label>スコア 1ptあたり（G）</label><input type="number" id="${p}-g-rate" min="1" inputmode="numeric" value="${rate}"></div>
+      <div class="field" style="margin-bottom:0"><label>チップ 1枚あたり（G）</label><input type="number" id="${p}-g-chip" min="0" inputmode="numeric" value="${chip}"></div>
+      <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップの分は「チップあり」のときだけ足します。</div>
+    </div>`;
+}
+// 欄から読む。null＝欄が無い（RATE_FEATURE が false）
+function readGOpt(p) {
+  const cb = document.getElementById(p + '-g');
+  if (!cb) return null;
+  const rate = cb.checked ? Math.max(0, Math.round(Number(document.getElementById(p + '-g-rate').value) || 0)) : 0;
+  const chipRate = Math.max(0, Math.round(Number(document.getElementById(p + '-g-chip').value) || 0));
+  return { rate, chipRate };
+}
+
 // ---- 総合順位カード（ゲーム画面・結果詳細で共用） ----
 // デフォルトは合計スコアの順位。右上のトグルで「チップ最終枚数」の順位に切り替えられる。
 function metricToggleHtml(s) {
-  if (!s.bonusEnabled) return '';
+  if (!s.bonusEnabled && !gOn(s)) return '';
   // 見出しの下の行に、ほかの切り替えと同じ形（.seg.xs）で置く（見出しの行に入れると狭い画面で見出しが2行になった。2026-10-09）
   return `<div class="seg xs metric-seg" role="tablist" aria-label="順位の見方">
     <button type="button" role="tab" class="${scoreMetric === 'score' ? 'on' : ''}" aria-selected="${scoreMetric === 'score'}" onclick="setMetric('score')">スコアの順位</button>
-    <button type="button" role="tab" class="${scoreMetric === 'chips' ? 'on' : ''}" aria-selected="${scoreMetric === 'chips'}" onclick="setMetric('chips')">チップの順位</button>
+    ${s.bonusEnabled ? `<button type="button" role="tab" class="${scoreMetric === 'chips' ? 'on' : ''}" aria-selected="${scoreMetric === 'chips'}" onclick="setMetric('chips')">チップの順位</button>` : ''}
+    ${gOn(s) ? `<button type="button" role="tab" class="${scoreMetric === 'g' ? 'on' : ''}" aria-selected="${scoreMetric === 'g'}" onclick="setMetric('g')">Gの順位</button>` : ''}
   </div>`;
 }
 // 順位リスト本体。metric = 'score'（pts） / 'chips'（チップ最終枚数）
@@ -10463,15 +10518,22 @@ function scoreCardsListHtml(g) {
   const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
   const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
   const chipsMode = scoreMetric === 'chips' && s.bonusEnabled;
+  const gMode = scoreMetric === 'g' && gOn(s);
   const { chips } = chipsMode ? chipTotals(g) : { chips: [] };
+  const gt = gMode ? gTotals(g) : [];
   const startChips = Number(s.startChips) || 0;
-  const vals = activeIdx.map(i => chipsMode ? startChips + (chips[i] || 0) : totals[i]);
+  const vals = activeIdx.map(i => gMode ? gt[i].total : chipsMode ? startChips + (chips[i] || 0) : totals[i]);
   const groups = rankGroups(vals);
   const ranked = activeIdx.map((mi, k) => ({ v: vals[k], mi, k })).sort((a, b) => b.v - a.v);
   let html = ranked.map(p => {
     const grp = groups[p.k];
     let valHtml, sub = '';
-    if (chipsMode) {
+    if (gMode) {
+      const v = gt[p.mi];
+      const cls = p.v > 0 ? 'pos' : p.v < 0 ? 'neg' : '';
+      valHtml = `<div class="score-val ${cls}">${gNum(p.v)}<span style="font-size:10px;vertical-align:sub;margin-left:1px">G</span></div>`;
+      if (s.bonusEnabled) sub = `<div class="score-bonus"><span style="white-space:nowrap">スコア ${gNum(v.sc)}</span>　<span style="white-space:nowrap">チップ ${gNum(v.ch)}</span></div>`;
+    } else if (chipsMode) {
       const diff = chips[p.mi] || 0;
       const cls = diff > 0 ? 'pos' : diff < 0 ? 'neg' : '';
       valHtml = `<div class="score-val ${cls}">${p.v.toLocaleString()}<span style="font-size:10px;vertical-align:sub;margin-left:1px">枚</span></div>`;
@@ -10511,7 +10573,7 @@ function scoreMainHtml(g) {
     <div style="display:flex;align-items:center;gap:6px">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}画像</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
-  if (s.bonusEnabled) html += metricToggleHtml(s); // スコアの順位｜チップの順位
+  if (s.bonusEnabled || gOn(s)) html += metricToggleHtml(s); // スコアの順位｜チップの順位｜Gの順位
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
   return html;
 }
@@ -13465,6 +13527,7 @@ function settingsFormHtml(name, s) {
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップは「対局を終了する」ときにまとめて入れます。</div>
       </div>
+      ${gOptHtml('e', s)}
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり${ico('yakitori', 18, 'ico-in')}（マークのみ・スコアに影響なし）
       </label>
@@ -13577,8 +13640,10 @@ async function saveGameEdit() {
     teams = editTeams.map(t => ({ name: t.name, members: t.members.filter(id => id >= 0 && id < playerNames.length) }));
     if (teamMode && teams.some(t => t.members.length === 0)) { showToast('メンバーがいないチームがあります。編成を確認してください'); return; }
   }
-  // rate / chipRate は画面に出さない旧キー。...s でそのまま持ち越す（旧データを書き換えない）
-  const settings = applyEditDate({ ...s, playerNames, startPoints, returnPoints, uma, bonusEnabled, startChips, yakitori, chombo, chomboPenalty, teamMode },
+  // レート（G）: 欄があれば読む。切ったときは rate だけ 0 にして chipRate は残す（もう一度入れたとき元の値が出る）。欄が無ければ ...s のまま
+  const gv = readGOpt('e');
+  const gKeys = gv ? (gv.rate > 0 ? { rate: gv.rate, chipRate: gv.chipRate } : { rate: 0 }) : {};
+  const settings = applyEditDate({ ...s, playerNames, startPoints, returnPoints, uma, bonusEnabled, startChips, yakitori, chombo, chomboPenalty, teamMode, ...gKeys },
     'e');
   if (teams) settings.teams = teams;
   else delete settings.teams;
@@ -16630,7 +16695,7 @@ function renderDetailBody(g) {
     <div style="font-size:13px;color:#555;line-height:2.2;${collapsedCards.settings ? 'display:none' : ''}">
       ${s.numPlayers === 3 ? '三麻' : '四麻'} ／ メンバー: ${s.playerNames.length}人<br>
       持ち点: ${s.startPoints.toLocaleString()} ／ 返し点: ${s.returnPoints.toLocaleString()}<br>
-      ウマ: ${s.uma.join(' / ')}${s.bonusEnabled ? `<br>チップ記録: 有効 ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}
+      ウマ: ${s.uma.join(' / ')}${s.bonusEnabled ? `<br>チップ記録: 有効 ／ 持ちチップ: ${Number(s.startChips) || 0}枚` : ''}${s.yakitori ? `${s.bonusEnabled ? ' ／ ' : '<br>'}焼き鳥: 記録する` : ''}${s.chombo ? `${(s.bonusEnabled || s.yakitori) ? ' ／ ' : '<br>'}チョンボ: ${Number(s.chomboPenalty) > 0 ? '罰符 −' + Number(s.chomboPenalty) + 'pts' : 'マークのみ'}` : ''}${s.teamMode && s.teams ? `<br>チーム戦: ${normalizedTeams(s).map(t => `${esc(t.name)}（${t.members.map(m => esc(s.playerNames[m] || '')).join('・')}）`).join(' vs ')}` : ''}${gOn(s) ? `<br>レート: ${gRateLabel(s)}` : ''}
     </div></div>`;
   if (g.rounds.length > 0) {
     // まとめプレビューとCSVは画面末尾に並ぶ対（ゲーム画面と同じ並び）
