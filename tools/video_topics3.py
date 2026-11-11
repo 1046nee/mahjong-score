@@ -282,11 +282,13 @@ def t_half():
 TOPICS["t-half"] = t_half
 
 # ======================= 麻雀AI：NAGAをすすめる =======================
+from video_topics2 import naga_face, naga_shot, naga_hook_vis  # noqa: E402
 def t_ai():
-    vis = art("assets/thumbs/blog-naga-guide.svg", 640, "border-radius:24px")
+    vis = naga_hook_vis("overview", "normal")
     def s1(a, b):
-        return [head(a, b, "おすすめはNAGA"), stage(a + .2, b, '<div class="mid"><span class="ans">NAGA</span></div>', top=380, anim="pop"),
-                stage(a + .6, b, '<div class="vcard">' + vt([("危ない牌・テンパイ率", "数字で見える", "h"), ("7つのタイプ", "答えを見比べる", ""), ("局面を変えて", "もしもを試せる", "")]) + "</div>", top=600)]
+        return [head(a, b, "おすすめはNAGA"), stage(a + .2, b, '<div class="mid" style="display:flex;align-items:center;justify-content:center;gap:24px">' + naga_face("daiseikou", 260, "margin:0") + '<span class="ans">NAGA</span></div>', top=330, anim="pop"),
+                stage(a + .6, b, '<div class="vcard">' + vt([("危ない牌・テンパイ率", "数字で見える", "h"), ("7つのタイプ", "答えを見比べる", ""), ("局面を変えて", "もしもを試せる", "")]) + "</div>", top=640),
+                stage(a + 1.4, b, naga_shot("danger", 860), top=1100)]
     def s2(a, b):
         flow = ('<div class="vcard mid" style="padding:40px 30px">'
                 '<div class="ans" style="background:#177083;font-size:56px">雀魂の牌譜</div><div class="big" style="font-size:90px;line-height:1.2">↓</div>'
@@ -294,7 +296,8 @@ def t_ai():
                 '<div class="big" style="font-size:90px;line-height:1.2">↓</div><div class="ans" style="font-size:56px">NAGAで解析</div></div>')
         return [head(a, b, "雀魂でも使える"), stage(a + .2, b, flow, top=360)]
     def s3(a, b):
-        return [head(a, b, "天鳳ならもっと簡単"), stage(a + .3, b, '<div class="vcard">' + vt([("天鳳", "牌譜のURLを貼るだけ", "h"), ("雀魂", "拡張機能で変換", ""), ("対面の麻雀", "局面を作って解析", "")]) + "</div>", top=440)]
+        return [head(a, b, "天鳳ならもっと簡単"), stage(a + .3, b, '<div class="vcard">' + vt([("天鳳", "牌譜のURLを貼るだけ", "h"), ("雀魂", "拡張機能で変換", ""), ("対面の麻雀", "局面を作って解析", "")]) + "</div>", top=400),
+                stage(a + 1.0, b, naga_shot("flow-url", 760), top=870)]
     def s4(a, b):
         return [head(a, b, "料金のめやす"), stage(a + .3, b, '<div class="vcard">' + vt([("NAGA", "月550円から", ""), ("天鳳の東南戦", "1回 50NP", ""), ("雀魂", "1局 10NPから", "h")]) + "</div>", top=440),
                 stage(a + 1.2, b, '<div class="note">雀魂は<b>悩んだ局だけ</b>選ぶのがコツ</div>', top=1000)]

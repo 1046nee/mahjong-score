@@ -78,10 +78,11 @@ def sc(title, *parts, top_term=None):
 
 # ---- 卓（上から見た図）。下＝自分 ----
 TBW = 860
+WALL_Y = 672  # 山の位置。17幢×28px の半分（238）より中心（430）から離す＝4辺の山が角で重ならない（2026-11-11）
 def _side(rot, inner):
     return f'<div class="side" style="transform:rotate({rot}deg)">{inner}</div>'
 
-def wall_row(n=17, w=28, y=640, hl=(), hlc="#E75620", up=(), dim=(), cls=""):
+def wall_row(n=17, w=28, y=WALL_Y, hl=(), hlc="#E75620", up=(), dim=(), cls=""):
     """自分の前の山（2段）。上から見るので1幢＝裏の牌1枚で描く。hl は橙の枠、up は表を向けた牌 {番号: 牌}"""
     x0 = (TBW - n * w) // 2
     out = ""
@@ -153,9 +154,9 @@ def gy02():
             x0 = (TBW - 17 * 28) // 2
             for k in range(17):
                 t0 = a + .5 + k * .08
-                row += f'<div class="ab" data-in="{t0:.2f}" data-a="pop" style="left:{x0 + k * 28}px;top:640px">{tile("back", 26)}</div>'
+                row += f'<div class="ab" data-in="{t0:.2f}" data-a="pop" style="left:{x0 + k * 28}px;top:{WALL_Y}px">{tile("back", 26)}</div>'
             sides[r] = row
-        return [head(a, b, "砌牌 → 壁牌"), stage(a + .1, b, '<div class="mid">' + term("砌牌", "チーパイ") + "　" + "</div>", top=300),
+        return [head(a, b, "砌牌 → 壁牌"), stage(a + .1, b, term2("砌牌", "チーパイ", "壁牌", "ピーパイ"), top=300),
                 stage(a + .3, b, table(sides, center='<div style="font-size:40px">2段に積んで<br>17幢ずつ</div>'), top=460)]
     def dou(a, b):
         sides = walls()
@@ -167,7 +168,7 @@ def gy02():
         sides[270] = wall_row(hl=(10,), dim=())
         dice = '<div style="display:flex;gap:16px;justify-content:center">' + tile("d3", 70) + tile("d4", 70) + "</div><div style='font-size:36px;margin-top:10px'>3＋4＝7</div>"
         return [head(a, b, "開門"), stage(a + .1, b, term("開門", "カイメン"), top=300), stage(a + .3, b, table(sides, center=dice), top=460),
-                stage(a + 1.2, b, note("サイコロの目で、山を<b>どこで割るか</b>が決まる"), top=1340)]
+                stage(a + 1.2, b, note("出た目で<b>山を割る場所</b>が決まる"), top=1340)]
     def haipai(a, b):
         hand_ = ["m1", "m4", "p9", "z2", "s3", "m7", "z5", "p2", "s8", "m9", "p6", "s3", "z7"]
         steps = '<div class="mid" style="display:flex;gap:16px;justify-content:center">' + "".join(
@@ -306,7 +307,7 @@ def gy05():
     vis = hand_line(H13, 60, "m8", True)
     def mouda(a, b):
         tb_ = table({0: wall_row(), 90: wall_row(), 180: wall_row(), 270: wall_row()},
-                    extra=(f'<div class="ab" style="left:{(TBW - 28) // 2 + 28 * 3}px;top:640px" data-anim="{a + .6},{a + 1.4},top,640,820,px;{a + .6},{a + 1.4},opacity,1,0,">{tile("back", 26)}</div>'
+                    extra=(f'<div class="ab" style="left:{(TBW - 28) // 2 + 28 * 3}px;top:{WALL_Y}px" data-anim="{a + .6},{a + 1.4},top,{WALL_Y},820,px;{a + .6},{a + 1.4},opacity,1,0,">{tile("back", 26)}</div>'
                            f'<div class="ab" data-in="{a + 2.0}" data-a="pop" style="left:{(TBW - 6 * 40) // 2}px;top:470px">{tile("s9", 38)}</div>'))
         return [head(a, b, "摸打"), stage(a + .1, b, term("摸打", "モウダ"), top=300), stage(a + .3, b, tb_, top=460),
                 stage(a + 1.0, b, note("<b>1枚引いて（ツモ）</b>→<b>1枚捨てる（打牌）</b>のくり返し"), top=1340)]

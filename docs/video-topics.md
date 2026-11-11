@@ -129,7 +129,7 @@ blog-mahjong-yougoshu の137語と Notion の用語辞典56語。形: 「◯◯�
 | 77 | プロテストの例題（シリーズ） | Q | blog-mahjong-yougo・blog-ronjutsu |
 
 ## 麻雀AI・ゲーム
-NAGAの公式キャラクターと画面は記事の中だけで使う。動画に入れるなら先に利用の条件を確かめる。
+NAGAを扱う動画には、NAGAの公式キャラクター（assets/naga/face-*・chara-*）と解析画面（assets/naga/）を入れる（2026-11-11 ユーザーの指示。公式サイトのガイドラインで商用も可・クレジット不要。付けるなら「©株式会社ドワンゴ」以外は不可）。台本の部品は tools/video_topics2.py の naga_face / naga_shot。
 | # | 題名 | 形 | 元の記事 |
 |---|---|---|---|
 | 78 | 麻雀AI、使えるのはどれ？ | 比 | blog-mahjong-ai |

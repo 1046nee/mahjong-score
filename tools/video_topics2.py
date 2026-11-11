@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """記事をもとにした動画の続き（2026-11-09〜）: NAGAの使い方・Mリーグの歴代・Mリーガーの所属・プロ団体・麻雀AIの比較。
 数字と名前は各記事の表から写した（記事の時点の情報。シーズンが変わったら記事と一緒に直す）。
-チームのロゴ・選手の写真・NAGAの公式の絵は使わない（文字・サイトの絵・自作の図だけ）。
+チームのロゴ・選手の写真は使わない（文字・サイトの絵・自作の図だけ）。
+NAGAを扱う動画は、NAGAの公式キャラクター・解析画面（assets/naga/）を使う（公式のガイドラインで商用も可・クレジット不要。2026-11-11 ユーザーの指示）。
 """
 from video_topics import at, esc, head, stage, hook, art, vt, trow, article_end, END, ms
 
@@ -22,14 +23,28 @@ def bars(rows, a, total, unit="人"):
     return f'<div class="vcard vbar-like" style="padding:30px 36px"><div class="vbar" style="display:none"></div>{out}</div>'
 
 # ---------------- NAGAの使い方 ----------------
+def naga_face(name="normal", w=300, style=""):
+    """NAGAの公式キャラクター（表情: normal shoubu daiseikou aseri yorokobi kanashimi ochikomi odoroki）"""
+    return art(f"assets/naga/face-{name}.webp", w, style)
+
+def naga_shot(name, w=900, style=""):
+    """NAGAの画面（assets/naga/ の記事用の画像）"""
+    return art(f"assets/naga/{name}.webp", w, "border-radius:20px;box-shadow:0 6px 24px rgba(0,0,0,.18);" + style)
+
+def naga_hook_vis(shot="overview", face="normal"):
+    return (f'<div style="position:relative;width:900px;margin:0 auto">{naga_shot(shot, 900)}'
+            f'<div style="position:absolute;right:-30px;bottom:-120px">{naga_face(face, 300)}</div></div>')
+
 def t_naga():
-    vis = art("assets/thumbs/blog-ai-haifu.svg", 640, "border-radius:24px")
+    vis = naga_hook_vis("overview", "normal")
     def s1(a, b):
-        return [head(a, b, "打った場所で変わる"), stage(a + .3, b, card([("天鳳", "URLを貼る", ""), ("雀魂", "拡張機能で変換", "h"), ("対面の麻雀", "局面を作る", "")]), top=440)]
+        return [head(a, b, "打った場所で変わる"), stage(a + .3, b, card([("天鳳", "URLを貼る", ""), ("雀魂", "拡張機能で変換", "h"), ("対面の麻雀", "局面を作る", "")]), top=400),
+                stage(a + 1.0, b, naga_shot("flow-url", 760), top=870)]
     def s2(a, b):
         return [head(a, b, "使うのはポイント"), stage(a + .3, b, card([("天鳳の東南戦", "50NP", ""), ("天鳳の東風戦", "30NP", ""), ("カスタム牌譜", "1局10NPから", "h")]), top=440)]
     def s3(a, b):
-        return [head(a, b, "MAKAとくらべると"), stage(a + .3, b, card([("料金", "MAKAは無料", ""), ("NAGA", "月550円から", "h"), ("三麻", "MAKAだけ", "")]), top=440)]
+        return [head(a, b, "MAKAとくらべると"), stage(a + .3, b, card([("料金", "MAKAは無料", ""), ("NAGA", "月550円から", "h"), ("三麻", "MAKAだけ", "")]), top=440),
+                stage(a + 1.0, b, naga_face("shoubu", 340), top=880, anim="pop")]
     return [(["麻雀AIのNAGA、", "使い方わかる？"], hook("麻雀AI", "NAGAの使い方、\n3ステップ", vis)),
             (["天鳳なら、牌譜のURLを貼るだけ。", "雀魂は、拡張機能で変換します。"], s1),
             (["解析にはポイントを使います。", "天鳳の東南戦で50NPです。"], s2),

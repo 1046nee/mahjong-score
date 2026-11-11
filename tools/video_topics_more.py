@@ -5,6 +5,7 @@
 import re
 from video_topics import esc, head, stage, hook, tile, article_end, END, APP_END, ms, _chunks
 import video_topics3  # noqa
+from video_topics2 import naga_face, naga_shot, naga_hook_vis
 from video_topics_yougo import tiles, term, note, stick, vt2, table, wall_row
 from video_topics_basic import sc, card, grid, big, ok_ng
 from video_topics_ml import tchip, TCOL
@@ -199,7 +200,8 @@ def a01():
             (["それ以外ならMortal。", "牌譜のURLを貼るだけで、", "無料で見てもらえます。"],
              sc("それ以外ならMortal", (.3, 400, card([("天鳳・雀魂", "牌譜のURLを貼る"), ("麻雀一番街", "牌譜のIDを貼る"), ("料金", ("無料", "o"))], 42)))),
             (["もっと深く見たいなら、", "有料のNAGA。", "雀魂の牌譜も、拡張機能で使えます。", "対面の麻雀は牌譜が残らないので、", "まじゃすこで成績を振り返りましょう。"],
-             sc("もっと深く", (.3, 400, card([("NAGA", "有料・じっくり分析"), ("雀魂の牌譜も", "Chromeの拡張機能で"), ("対面の麻雀", ("まじゃすこで成績", "o"))], 42)))),
+             sc("もっと深く", (.3, 400, card([("NAGA", "有料・じっくり分析"), ("雀魂の牌譜も", "Chromeの拡張機能で"), ("対面の麻雀", ("まじゃすこで成績", "o"))], 42)),
+                (.9, 820, naga_face("normal", 320), "pop"))),
             (END, article_end("blog-ai-haifu", "手順は記事で"))]
 TOPICS["a-01"] = a01
 
@@ -217,14 +219,24 @@ def a02():
             (END, article_end("blog-ai-haifu", "読み方は記事で"))]
 TOPICS["a-02"] = a02
 
-NAGA7 = [("アナンタ", "超ラス回避派"), ("ウロボロス", "トップ取り派"), ("オメガ", "副露派"), ("ガンマ", "守備重視派"), ("ニシキ", "バランス派"), ("ヒバカリ", "超門前派"), ("カガシ", "超副露派")]
+NAGA7 = [("アナンタ", "超ラス回避派", "ananta"), ("ウロボロス", "トップ取り派", "ouroboros"), ("オメガ", "副露派", "omega"), ("ガンマ", "守備重視派", "gamma"),
+         ("ニシキ", "バランス派", "nishiki"), ("ヒバカリ", "超門前派", "hibakari"), ("カガシ", "超副露派", "kagashi")]
+def _chara(k, w):  # NAGAの公式キャラクター（タイプごと）
+    return naga_shot("chara-" + k, w, "display:inline-block;margin:0;box-shadow:none;border-radius:0;vertical-align:middle")
 def a03():
-    vis = card(NAGA7[:3])
-    return [(["NAGAには、", "打ち方の違う7つのタイプがあります。"], hook("麻雀AI", "NAGAの\n7タイプ", vis)),
+    vis = ('<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 18px;width:900px;margin:0 auto">'
+           + "".join(f'<div style="text-align:center;font-size:30px;font-weight:900;color:#1F2A28">{_chara(k, 190)}<div>{n}</div></div>' for n, d, k in NAGA7) + "</div>")
+    rows = "".join(f'<tr><td style="font-size:40px">{_chara(k, 84)}<span style="margin-left:16px">{n}</span></td><td class="r" style="font-size:40px">{d}</td></tr>' for n, d, k in NAGA7)
+    tbl = f'<div class="vcard"><table class="vt">{rows}</table></div>'
+    def same(a, b):
+        return [head(a, b, "同じ局面でも"), stage(a + .3, b, '<div style="font-size:44px;font-weight:900;text-align:center;margin-bottom:12px">' + _chara("omega", 80) + 'オメガ</div>' + naga_shot("s31-omega", 900), top=380),
+                stage(a + 2.2, b, '<div style="font-size:44px;font-weight:900;text-align:center;margin-bottom:12px">' + _chara("hibakari", 80) + 'ヒバカリ</div>' + naga_shot("s31-hibakari", 900), top=780)]
+    return [(["NAGAには、", "打ち方の違う7つのタイプがあります。"], hook("麻雀AI", "NAGAの\n7タイプ", vis, top=200)),
             (["7つのタイプは、", "どれも強いけれど、", "勝ち方が違います。"],
-             sc("7つのタイプ", (.3, 360, grid(["タイプ", "打ち方"], [[n, d] for n, d in NAGA7], None)))),
+             sc("7つのタイプ", (.3, 340, tbl))),
             (["鳴く割合がいちばん高いのはカガシ、", "いちばん低いのはヒバカリ。", "同じ局面でも答えが割れます。"],
-             sc("鳴く割合", (.3, 400, card([("カガシ（超副露派）", ("39.6%", "o")), ("ヒバカリ（超門前派）", ("22.4%", "pos"))], 42)), (1.2, 760, note("タイプを変えると<b>答えが変わる局面</b>が分かる")))),
+             sc("鳴く割合", (.3, 400, card([(_chara("kagashi", 84) + "カガシ（超副露派）", ("39.6%", "o")), (_chara("hibakari", 84) + "ヒバカリ（超門前派）", ("22.4%", "pos"))], 42)), (1.2, 760, note("タイプを変えると<b>答えが変わる</b>")))),
+            (["たとえば、この局面。", "オメガは七筒を切り、", "ヒバカリは一索を切りたがります。"], same),
             (END, article_end("blog-naga-guide", "7タイプは記事で"))]
 TOPICS["a-03"] = a03
 
