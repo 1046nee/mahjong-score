@@ -4350,26 +4350,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div id="rank-body" style="margin-top:8px"></div>
     </div>
-    <div class="card" id="mx-card" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">総当たり表</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="mx-img-btn" onclick="showMatrixImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
-          <span id="mx-collapse"></span>
-        </div>
-      </div>
-      <div id="mx-body" style="margin-top:8px"></div>
-    </div>
-    <div class="card" id="h2h-card" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="card-title" style="margin-bottom:0">対戦成績</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
-          <span id="h2h-collapse"></span>
-        </div>
-      </div>
-      <div id="h2h-body" style="margin-top:8px"></div>
-    </div>
     <div class="card" id="chart-card" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
@@ -4390,13 +4370,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
       <div class="chart-wrap" id="ichart-body" style="margin-top:8px"></div>
     </div>
+    <!-- 総当たり表と対戦成績はスコア推移の下・最初はたたむ（2026-11-11 ユーザーの指定） -->
+    <div class="card" id="mx-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">総当たり表</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="mx-img-btn" onclick="showMatrixImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
+          <span id="mx-collapse"></span>
+        </div>
+      </div>
+      <div id="mx-body" style="margin-top:8px"></div>
+    </div>
+    <div class="card" id="h2h-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="card-title" style="margin-bottom:0">対戦成績</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
+          <span id="h2h-collapse"></span>
+        </div>
+      </div>
+      <div id="h2h-body" style="margin-top:8px"></div>
+    </div>
     <div id="end-game-wrap" style="display:none"><button type="button" class="end-game-btn" onclick="confirmEndGame()">対局を終了する</button>
       <div class="end-game-note">終了から12時間で記録が確定します。</div></div>
     <div class="act-list" id="game-acts">
       <button type="button" class="act-row" id="compose-btn" style="display:none" onclick="openComposeModal(activeGame)"><span class="ai"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></span><span class="al">結果を1枚の画像にまとめる</span><small>LINE・SNS用</small><span class="chev" aria-hidden="true">›</span></button>
       <button type="button" class="act-row" id="csv-btn" style="display:none" onclick="openCsvModal(activeGame)"><span class="ai"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-table"/></svg></span><span class="al">表計算用（CSV）に書き出す</span><small>Excelなど</small><span class="chev" aria-hidden="true">›</span></button>
       <button type="button" class="act-row" id="circle-add-btn" style="display:none" onclick="openAddToCircle()"><span class="ai"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-people"/></svg></span><span class="al">仲間ページに追加する</span><small>通算成績に</small><span class="chev" aria-hidden="true">›</span></button>
-      <button type="button" class="act-row" onclick="goMyPage()"><span class="ai"><svg class="ico" width="16" height="16" aria-hidden="true" focusable="false"><use href="#i-me"/></svg></span><span class="al">マイページ</span><small>過去の試合・成績</small><span class="chev" aria-hidden="true">›</span></button>
     </div>
   </div>
   <button class="fab" onclick="openSheet(-1)">＋ 点数入力</button>
@@ -4707,7 +4707,7 @@ let appState = { games: [], players: [] };
 // 総合順位カードの表示指標: 'score'（合計スコアの順位・デフォルト） / 'chips'（チップ最終枚数の順位）
 let scoreMetric = 'score';
 // スコア画面のカード開閉状態（key: team / score / rounds / rank / chart / settings）
-let collapsedCards = {};
+let collapsedCards = { mx: true, h2h: true }; // 総当たり表・対戦成績は最初たたむ（2026-11-11 ユーザーの指定）
 function collapseBtnHtml(key) {
   return `<button type="button" class="card-collapse" onclick="toggleCard('${jsq(key)}')" aria-label="表示切替">${collapsedCards[key] ? '▸' : '▾'}</button>`;
 }
@@ -8267,7 +8267,7 @@ function resumePendingJoin() {
 function startListening() {
   stopListening();
   scoreMetric = 'score'; // 新しいグループを開いたときはデフォルト（スコア順位）に戻す
-  collapsedCards = {}; // カードもすべて開いた状態に戻す
+  collapsedCards = { mx: true, h2h: true }; // カードを最初の状態に戻す（総当たり表・対戦成績はたたむ）
   askmeShowAll = false;
   resetViewLimits();
   sessionRef = db.ref('sessions/' + sessionId);
@@ -9837,7 +9837,7 @@ function openWatchLink(vid) {
     const s = snap.val();
     if (!s || !s.settings) { if (first) { first = false; showWatchMissing(); } return; }
     const g = normGame({ ...s, id: 'v_' + vid });
-    if (first) { scoreMetric = 'score'; collapsedCards = {}; resetViewLimits(); }
+    if (first) { scoreMetric = 'score'; collapsedCards = { mx: true, h2h: true }; resetViewLimits(); }
     detailRO = true;
     renderDetailBody(g);
     setWatchNote(true, s.at);
@@ -9854,7 +9854,7 @@ function openWatchGame(g, backTo) {
   if (!g) return;
   stopWatch();
   watchVid = null; watchBackTo = backTo || 'home';
-  scoreMetric = 'score'; collapsedCards = {}; resetViewLimits();
+  scoreMetric = 'score'; collapsedCards = { mx: true, h2h: true }; resetViewLimits();
   detailRO = true;
   renderDetailBody(g);
   setWatchNote(false);
@@ -16753,7 +16753,7 @@ function viewDetail(g) {
   else if (active && active.id === 'view-circle') detailBackTo = 'circle';
   else if (active && active.id !== 'view-detail') detailBackTo = 'history';
   scoreMetric = 'score'; // 詳細を開いたときはデフォルト（スコア順位）に戻す
-  collapsedCards = {}; // カードもすべて開いた状態に戻す
+  collapsedCards = { mx: true, h2h: true }; // カードを最初の状態に戻す（総当たり表・対戦成績はたたむ）
   renderDetailBody(g);
   showView('detail');
 }
@@ -16797,10 +16797,6 @@ function renderDetailBody(g) {
   if (g.rounds.length > 0) {
     const statsBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}</button>`;
     html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
-    const h2hBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showH2HImage(detailGame)">${ico('image', 15)}</button>`;
-    const mxBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showMatrixImage(detailGame)">${ico('image', 15)}</button>`;
-    if (h2hMatrixVisible(g)) html += `<div class="card">${detailCardHead('総当たり表', 'mx', mxBtn)}${collapsedCards.mx ? '' : h2hMatrixBodyHtml(g)}</div>`;
-    html += `<div class="card">${detailCardHead('対戦成績', 'h2h', h2hBtn)}${collapsedCards.h2h ? '' : h2hCardBodyHtml(g)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
@@ -16812,6 +16808,12 @@ function renderDetailBody(g) {
       const ichartBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'ichart')">${ico('image', 15)}</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
+
+    // 総当たり表と対戦成績はスコア推移の下（ゲーム画面と同じ並び・2026-11-11 ユーザーの指定）
+    const h2hBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showH2HImage(detailGame)">${ico('image', 15)}</button>`;
+    const mxBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showMatrixImage(detailGame)">${ico('image', 15)}</button>`;
+    if (h2hMatrixVisible(g)) html += `<div class="card">${detailCardHead('総当たり表', 'mx', mxBtn)}${collapsedCards.mx ? '' : h2hMatrixBodyHtml(g)}</div>`;
+    html += `<div class="card">${detailCardHead('対戦成績', 'h2h', h2hBtn)}${collapsedCards.h2h ? '' : h2hCardBodyHtml(g)}</div>`;
   }
 
   html += `<div class="card">${detailCardHead('設定', 'settings')}
