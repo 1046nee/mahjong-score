@@ -116,13 +116,13 @@ PAO_STEPS = [
     ["大三元の分の32,000点は、", "包の東家が1人で払います。", "字一色の分の32,000点は、", "ふつうのツモと同じに分けて、", "親の東家が16,000点、", "子の2人が8,000点ずつ。"],
 ]
 def _pao_intro(a, b):
-    return [head(a, b, "パオ（包）とは"), stage(a + .2, b, '<div class="mid">' + tiles(["z5", "z5-yoko", "z5", "z6-yoko", "z6", "z6", "z7-yoko", "z7", "z7"], 64) + "</div>", top=340),
+    return [head(a, b, "パオ（包）とは"), stage(a + .2, b, '<div class="mid">' + tiles(["z5", "z5-yoko", "z5", "z6-yoko", "z6", "z6", "z7-yoko", "z7", "z7"], 80) + "</div>", top=340),
             stage(a + .8, b, B([("1", "三元牌を2つ鳴いている人がいる"), ("2", "3つ目を鳴かせた人が「包」"), ("3", "大三元ができたら包の人が払う")], 44), top=560),
             stage(a + 2.4, b, note("大四喜も同じ（風牌の4つ目）"), top=1060)]
 def _pao2(i):
     t, sit, pay, ex = PAO[i]
     def q(a, b):
-        return [head(a, b, f"問題{i + 1}"), stage(a + .2, b, seat_table("東", labels=PAO_SEATS[i]), top=330),
+        return [head(a, b, f"問題{i + 1}"), stage(a + .2, b, seat_table("東", labels={k: v.replace("（", "<br>").replace("）", "") for k, v in PAO_SEATS[i].items()}), top=330),
                 stage(a + 1.0, b, note("<br>".join(sit)), top=1220)]
     def ans(a, b):
         rows = [[f"{w}家", (f"+{v:,}" if v > 0 else f"−{-v:,}" if v < 0 else "0")] for w, v in pay.items()]
@@ -140,8 +140,8 @@ def _pao2(i):
             (["払い方をまとめると、", "ツモなら包の人が全額、", "ロンなら放銃した人と半分ずつ。", "積み棒は包の人が払います。"], rule),
             (["6問の計算問題は、", "記事にまとめています。"], article_end("blog-pao", "6問は記事で"))]
 def _pair(xs):
-    """2行ずつつないで箇条書きにする"""
-    return ["".join(xs[k:k + 2]) for k in range(0, len(xs), 2)]
+    """文（「。」まで）ごとに1行の箇条書きにする"""
+    return [x + "。" for x in "".join(xs).split("。") if x]
 for _i in range(6):
     TOPICS[f"p-{_i + 1:02d}"] = (lambda i=_i: _pao2(i))
 
