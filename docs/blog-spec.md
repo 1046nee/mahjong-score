@@ -210,6 +210,7 @@
 16. blog-mawashi-uchi.html — 5人以上の回し方・試合数が違う人の比べ方
 - お知らせ（noindex）: news/update-2026-07.html／news/csv-export.html／news/hikitsugi-url.html（10月に「いまはログインで…」の追記）
 
+- blog-sanma-score-table.html（2026-11-11・ユーザーの依頼）: 三麻の点数表。ツモ損あり・ツモ損なし（北家の分を折半）の2枚の早見表（`python tools/sanma_score_sheet.py` → assets/score/sanma-tensu-tsumoson-*.png・青が主色）。ツモ損なしは「四麻の払い＋北家の分の半分（100点未満切り上げ）」で blog-sanma-rules の比べる表と同じ計算。**三麻の画像は点数早見表（blog-score-table）には載せない**（ユーザーの指定。文のリンクだけ）。記事の作り方は scratchpad の build_sanma_article.py の形（数字は計算から入れる）
 - blog-team-league.html（2026-11-06）: 16人4チームのチーム戦の手順。画面は tools/shoot_team_demo.py（架空の名前）
 
 ## 統合した記事（2026-09-25・2026-10-13）

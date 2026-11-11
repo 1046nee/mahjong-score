@@ -51,7 +51,7 @@ THEMES = {
 # 初めて分けたときの振り分け（cat が 'mahjong' のまま残っている記事だけに使う）
 MAP = {
     "beginner": "rule-basics yaku-list yaku-ichiran score-table manner sanma-yonma mahjong-yougoshu mahjong-yougo mahjong-kanji",
-    "rules": "rule-wakareme local-yaku yakuman-rules pao riichi-ankan kuikae keishiki-tenpai haitei sanma-rules mahjong-suuji house-rules machi-dojo ronjutsu",
+    "rules": "rule-wakareme local-yaku yakuman-rules pao riichi-ankan kuikae keishiki-tenpai haitei sanma-rules sanma-score-table mahjong-suuji house-rules machi-dojo ronjutsu",
     "score": "uma-oka score-examples score-mismatch season-ranking mawashi-uchi team-tournament league-taikai app-guide",
     "pro": "mleague-2026 mleague-history mleague-kansen mleague-points meet-mleaguer mahjong-pro mahjong-titles dantai-rekishi pro-dantai-rules",
     "ai": "mahjong-ai ai-haifu mahjong-game-apps",

@@ -181,6 +181,7 @@ THUMBS = [
  T("blog-ronjutsu", "#0EA5E9", lambda: card(70, 34, 180, 130, "#fff", 10) + lines(90, 64, 5, 140, 18) + bubble(150, 160, 120, 48, "論述", 26, "#FFD23F") + sparkle(272, 40, 12) + sparkle(50, 180, 9)),
  T("blog-mleague-points", "#6366F1", lambda: halving() + sparkle(286, 40, 11) + sparkle(40, 46, 8)),
  T("blog-league-taikai", "#10B981", lambda: trophy(160, 92, 1.1) + bubble(40, 150, 110, 48, "予選", 26) + bubble(170, 150, 110, 48, "決勝", 26, "#FFD23F") + sparkle(270, 46, 13)),
+ T("blog-sanma-score-table", "#4261AA", lambda: grid(24, 22, 3, 4, 84, 32, "#22397A", [(0, 0, "ツモ", "#fff"), (1, 0, "損あり", "#fff"), (2, 0, "損なし", "#fff"), (0, 1, "子満貫", "#22397A"), (1, 1, "6,000", "#1F2A28"), (2, 1, "8,000", "#E75620"), (0, 2, "親満貫", "#22397A"), (1, 2, "8,000", "#1F2A28"), (2, 2, "12,000", "#E75620"), (0, 3, "子跳満", "#22397A"), (1, 3, "9,000", "#1F2A28"), (2, 3, "12,000", "#E75620")], fs=14) + bubble(200, 168, 104, 44, "三麻", 26, "#FFD23F") + sparkle(300, 40, 11)),
  T("blog-sanma-rules", "#4261AA", lambda: row_center(["z4", "f1", "z5p", "f7"], 40, 46, 8) + bubble(40, 140, 110, 52, "三麻", 28) + bubble(170, 140, 110, 52, "北抜き", 24, "#FFD23F") + sparkle(286, 40, 11)),
  T("blog-nichijougo", "#F59E0B", lambda: bubble(30, 40, 150, 56, "テンパる", 28) + bubble(140, 120, 150, 56, "安パイ", 28, "#FFD23F") + sparkle(272, 46, 13) + sparkle(56, 160, 9)),
  T("blog-sekai-mahjong", "#0F766E", lambda: route_flags() + bubble(70, 146, 180, 54, "世界の麻雀", 28, "#FFD23F") + sparkle(282, 168, 11) + sparkle(36, 176, 8)),
