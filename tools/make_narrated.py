@@ -268,6 +268,9 @@ NARR.update(video_topics_ml.TOPICS)
 import video_topics_yaku  # 役シリーズの作り直し（詳しい版・2つ並べる版）
 NARR.update(video_topics_yaku.TOPICS)
 for _k in video_topics_yaku.DROP: NARR.pop(_k, None)
+import video_topics_yakus  # 状況で決まる9役（ys-01〜09・2026-11-11）
+NARR.update(video_topics_yakus.TOPICS)
+SAY.update({"門前清自摸和": "メンゼンチンツモホー", "海底摸月": "ハイテイモーユエ", "嶺上開花": "リンシャンカイホー", "槍槓": "チャンカン", "ダブル立直": "ダブルリーチ", "天和": "テンホー", "地和": "チーホー", "一発": "イッパツ", "配牌": "ハイパイ", "河底": "ホーテイ", "嶺上牌": "リンシャンパイ"})
 import video_topics_yougo  # 用語シリーズをカテゴリごとの12本に（gy-01〜12）
 NARR.update(video_topics_yougo.TOPICS)
 for _k in video_topics_yougo.DROP: NARR.pop(_k, None)

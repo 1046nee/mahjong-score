@@ -76,6 +76,7 @@
 - 台本の作り方：`PAGE_VIDEOS`（make_short.py）に「録画名: (ラベル, 冒頭の一言, [(録画の目印, 字幕)…])」を1行足すだけで動画になる
 
 ## 作った動画（まじゃすこ素材/video/）
+- 状況で決まる9役 ys-01〜09（一発・メンゼンツモ・海底・河底・嶺上・槍槓・ダブリー・天和・地和。tools/video_topics_yakus.py。2026-11-11）: 声なしの下書きまで。声入りは個人PCで `python tools/make_narrated.py ys-01 --vv 3 ずんだもん zundamon`（ys-09 まで）。カレンダー（4/7まで）の外なので、投稿日はこれから決める
 - **2026-11-05 作り直し（今のサイトに合わせた・音なし）**: kinou・aruaru-shukei・kabe-umaoka・play-quick・play-rounds・calc-vs・play-team・play-mawashi（録画は record_play.py で撮り直し・使い方の画面は shoot_howto_screens.py で撮り直し）。
   仲間ページ・マイページの10本の録画も 2026-11-09 に 390×792 で撮り直した（まじゃすこ素材/data/circle_anon.json）
 | 名前 | 柱 | 長さ | 中身 |
