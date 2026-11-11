@@ -16340,13 +16340,15 @@ function histTilesHtml(items) {
   // 見出しの試合数: 項目に rounds があればそれ（対戦を見る＝いっしょに打った試合だけ）。無ければゲームの全試合
   const nRof = x => (x.rounds != null ? x.rounds : (x.g.rounds || []).length);
   // タイルの中身はどの画面でも同じ（2026-11-04）。呼ぶ側は me（数字＝その席の人から見る・null＝不参加・undefined＝わからない）だけ渡す。
-  // me の席が打っていればその人のスコアと順位。ほかはそのゲームの1位のスコア（「1位」の印付き・色を付けない）
+  // me の席が打っていればその人のスコアと順位。出ていない試合（不参加）はスコアを出さず「—」（一覧と同じ。2026-11-11 ユーザーの指定）。
+  // 自分がわからないとき（me＝undefined）だけ、そのゲームの1位のスコア（「1位」の印付き・色を付けない）
   const infoOf = x => {
     const g = x.g, n = (g.rounds || []).length, played = playedFlags(g), tot = gameTotals(g);
     const mine = n > 0 && typeof x.me === 'number' && !!played[x.me];
     const best = Math.max(...played.map((p, i) => (p ? tot[i] || 0 : -Infinity)));
-    return { played, tot, mine, out: x.me === null || (n > 0 && typeof x.me === 'number' && !mine),
-      score: mine ? tot[x.me] : n && Number.isFinite(best) ? best : null,
+    const out = x.me === null || (n > 0 && typeof x.me === 'number' && !mine);
+    return { played, tot, mine, out,
+      score: mine ? tot[x.me] : !out && n && Number.isFinite(best) ? best : null,
       rank: mine ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[x.me] ? 1 : 0), 0) : null };
   };
   const infos = new Map(items.map(x => [x, infoOf(x)]));
