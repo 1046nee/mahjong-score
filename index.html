@@ -1045,7 +1045,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .sanma .mini-toggle button.on { background: #4261AA; }
 .metric-label { font-size: 11px; color: #999; font-weight: 600; margin-bottom: 8px; }
 .metric-seg { margin: 0; }
-.seg.xs.metric-seg button { min-width: 0; height: 24px; padding: 0 9px; font-size: 12px; }
+.seg.xs.metric-seg { padding: 2px; } .rk-head .seg.xs.metric-seg { margin: 0; align-self: center; } /* 見出しの行の中では上下の真ん中にそろえる（.seg.xs の下の余白14px・上寄せを打ち消す） */ .seg.xs.metric-seg button { min-width: 0; height: 22px; padding: 0 9px; font-size: 12px; } /* 全体で26px＝見出しの右の「画像」と同じ高さ */
 /* 元に戻すの確認の画面（2026-10-09） */
 .ud-src { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; padding: 10px 12px; border-radius: 12px; background: #F4F7F6; font-size: 12.5px; color: #4F5C5A; line-height: 1.5; }
 .ud-src-l { width: 100%; font-size: 11px; font-weight: 800; color: #7A6A9A; } .ud-src-t { font-weight: 700; color: #6B7A77; } .ud-src b { font-size: 15px; font-weight: 900; color: #1F2A28; }
@@ -2246,6 +2246,10 @@ button.ios-row:active { background: #F2F6F5; }
 .act-row .al { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .act-row small { margin-left: auto; padding-left: 6px; font-size: 11px; font-weight: 700; color: #8A9A97; white-space: nowrap; }
 .act-row .chev { color: #B5C3BF; font-size: 18px; margin-left: 2px; }
+/* カードの右上の「画像」は絵だけ（2026-11-11 ユーザーの指定）。高さはそのボタンの高さのまま、幅を同じにして正方形に近く */
+.edit-tab.img-only, .btn-tint.img-only { padding: 0 !important; gap: 0 !important; width: 32px; min-width: 32px; font-size: 0; }
+#view-game .card .edit-tab.img-only, #view-detail .card .edit-tab.img-only { width: 30px; min-width: 30px; }
+.img-only .ico { margin: 0 !important; width: 16px; height: 16px; }
 @media (max-width: 374px) { .act-row small { display: none; } .act-row .chev { margin-left: auto; } } /* 狭い画面は用途の小さな字を消して、名前を全部見せる */
 /* 総合順位の見出しの横のタブ：狭い画面は「画像」を絵だけにして、タブを少し細く */
 @media (max-width: 374px) {
@@ -4315,7 +4319,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">チーム順位</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="team-img-btn" onclick="showResultImage(activeGame,'team')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="team-collapse"></span>
         </div>
       </div>
@@ -4329,7 +4333,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="card-title" style="margin-bottom:0">試合結果</div>
         <div style="display:flex;gap:6px;align-items:center">
           <button class="edit-tab" id="log-btn" onclick="showLogModal('game')" style="display:none">履歴</button>
-          <button class="edit-tab" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="img-btn" onclick="showResultImage(activeGame,'rounds')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="rounds-collapse"></span>
         </div>
       </div>
@@ -4341,7 +4345,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="rank-img-btn" onclick="showResultImage(activeGame,'stats')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="rank-collapse"></span>
         </div>
       </div>
@@ -4351,7 +4355,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">総当たり表</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="mx-img-btn" onclick="showMatrixImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="mx-img-btn" onclick="showMatrixImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="mx-collapse"></span>
         </div>
       </div>
@@ -4361,7 +4365,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">対戦成績</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="h2h-img-btn" onclick="showH2HImage(activeGame)" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="h2h-collapse"></span>
         </div>
       </div>
@@ -4371,7 +4375,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" id="chart-title" style="margin-bottom:0">スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="chart-img-btn" onclick="showResultImage(activeGame,'chart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="chart-collapse"></span>
         </div>
       </div>
@@ -4381,7 +4385,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div class="card-title" style="margin-bottom:0">個人スコア推移</div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button class="edit-tab" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg>画像</button>
+          <button class="edit-tab img-only" aria-label="画像にする" title="画像にする" id="ichart-img-btn" onclick="showResultImage(activeGame,'ichart')" style="display:none"><svg class="ico" width="15" height="15" aria-hidden="true" focusable="false"><use href="#i-image"/></svg></button>
           <span id="ichart-collapse"></span>
         </div>
       </div>
@@ -6077,7 +6081,7 @@ function renderCircle() {
   else if (!gids.length && !['rank', 'grid', 'h2h'].includes(circleTab)) html += noGames;
   else if (circleTab === 'grid') {
     if (!gids.length) html += noGames; // 試合が無くても、表の形（空）は下に出す（2026-10-09）
-    html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint" onclick="showCircleImage()">${ico('image', 16)}画像</button>`, 'period')}${modeChips}${circleKindSegHtml()}
+    html += `<div class="card">${circleCardHead('成績表', `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCircleImage()">${ico('image', 16)}</button>`, 'period')}${modeChips}${circleKindSegHtml()}
       ${st.list.length ? '' : noBind}${circleGridHtml(st)}${`<div class="h2h-note">列＝メンバー（通算スコア順）。<span class="best-swatch"></span>＝その項目でいちばん良い値。スコアは各ゲームのルールで計算した値の合計です。</div>`}</div>`;
   } else if (circleTab === 'h2h') html += (gids.length ? '' : noGames) + circleH2HTabHtml(st, modeChips, noBind);
   else html += (gids.length ? '' : noGames) + circleRankTabHtml(st, modeChips, noBind);
@@ -6211,7 +6215,7 @@ function h2hEmptyGridHtml(keys, nameOf, avOf) {
       <div class="hg-pct"><span>勝率 <b>—</b></span></div><div class="hg-meta"><span>0試合</span><span>差 <b>—</b></span></div><div class="hg-meta"><span>着順</span><span><b>—</b></span></div></div>`).join('')}</div>`;
 }
 function circleRankTabHtml(st, modeChips, noBind) {
-  const head = circleCardHead('通算順位', `<button class="btn-tint" onclick="showCircleRankImage()">${ico('image', 16)}画像</button>`, 'period');
+  const head = circleCardHead('通算順位', `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCircleRankImage()">${ico('image', 16)}</button>`, 'period');
   if (!st.list.length) { // 数える試合が無くても、指標のピルと説明は残す（2026-10-08）
     const m0 = circleMetricsFor(st).some(([k]) => k === circleMetric) ? circleMetric : 'score';
     return `<div class="card rank-card">${head}${modeChips}${circleKindSegHtml()}<div class="pill-row" role="tablist" aria-label="指標">${circleMetricsFor(st).map(([k, l]) =>
@@ -6368,8 +6372,8 @@ function circleH2HTabHtml(st, modeChips, noBind) {
   }).join('');
   const nameOf = k => rosterName(k), avOf = k => avColor(k);
   // 総当たり表を上、だれから見た対戦成績を下（2026-10-02 ユーザー要望）
-  return `${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint" onclick="showCircleMatrixImage()">${ico('image', 16)}画像</button>`, 'period')}${circleKindSegHtml()}${mxLegendHtml('マスを押すと2人の試合')}${circleMatrixHtml(st)}</div>` : ''}
-    <div class="card">${circleCardHead('対戦成績', `<button class="btn-tint" onclick="showCircleH2HImage()">${ico('image', 16)}画像</button>`)}${modeChips}
+  return `${st.list.length > 1 ? `<div class="card">${circleCardHead('総当たり表', `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCircleMatrixImage()">${ico('image', 16)}</button>`, 'period')}${circleKindSegHtml()}${mxLegendHtml('マスを押すと2人の試合')}${circleMatrixHtml(st)}</div>` : ''}
+    <div class="card">${circleCardHead('対戦成績', `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCircleH2HImage()">${ico('image', 16)}</button>`)}${modeChips}
     <div class="who-lb">だれから見る？</div><div class="who-row">${who}</div>
     ${keys.length ? `${h2hTotalHtml(row, rosterName(circleFocus))}${h2hSortSegHtml('renderCircle()')}${h2hGridHtml(row, h2hSortKeys(row, keys), nameOf, avOf, k => `openCircleMatchup(['${circleFocus}','${k}'])`, h2hLvBase(md => circleStatsP(md).acc[circleFocus] || {}))}` : h2hEmptyBodyHtml(rosterName(circleFocus), 'renderCircle()', Object.keys(rosterOf()).filter(k => k !== circleFocus))}
     <div class="h2h-note">相手のカードを押すと、2人のどちらが勝ち越しているかと、いっしょに打った試合が見られます。<br>勝ち・負け＝同じ試合で相手より上・下の着順だった回数。着順は平均着順（自分/相手）、差は同じ試合での合計スコアの差。</div></div>`;
@@ -6563,7 +6567,7 @@ function circlePeopleTabHtml(st) {
       <span class="pp-av" style="background:${avColor(mid)}">${avInner(mid, r.name)}${r.uid ? `<i class="pp-ok" role="img" aria-label="確認済み">${ico('verified', 12)}</i>` : ''}</span>
       <span class="pp-main"><span class="pp-nm">${esc(r.name)}</span><span class="pp-sub2">${sub}</span>${sub2 ? `<span class="pp-sub2">${sub2}</span>` : ''}</span></button>`;
   }).join('');
-  return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`, `<button class="btn-tint" onclick="showCircleRosterImage()">${ico('image', 16)}画像</button>`, 'period')}${circleKindSegHtml()}
+  return `<div class="card">${circleCardHead(`名簿（${ents.length}人）`, `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCircleRosterImage()">${ico('image', 16)}</button>`, 'period')}${circleKindSegHtml()}
     ${cells ? `<div class="pp-grid">${cells}</div>` : '<div style="font-size:13px;color:#5F6E6B">まだ誰もいません。試合を追加すると、試合の名前から名簿ができます。</div>'}
     <div class="h2h-note"><span class="pp-ok-lg">${ico('verified', 12)}</span>＝確認済み（その人がログインして「これは私」と確かめた人）。名前を押すと、その人の成績・対戦成績が開きます。</div></div>
     <details class="mp-join log" style="margin-top:0"><summary>変更の履歴${ico('chevron', 14)}</summary><div style="padding-bottom:12px">${circleLogHtml()}</div></details>`;
@@ -10645,7 +10649,7 @@ function scoreMainHtml(g) {
   const seg = (!collapsed && hasRounds && (s.bonusEnabled || gOn(s))) ? metricToggleHtml(s) : '';
   let html = `<div class="rk-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${collapsed ? '0' : '8px'}">
     <div style="display:flex;align-items:center;gap:8px;min-width:0"><div class="card-title" style="margin-bottom:0;flex-shrink:0">総合順位</div>${seg}</div>
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}画像</button>`}${collapseBtnHtml('score')}</div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">${(collapsed || !hasRounds) ? '' : `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(${g === activeGame ? 'activeGame' : 'detailGame'},'score')">${ico('image', 15)}</button>`}${collapseBtnHtml('score')}</div>
   </div>`;
   if (collapsed) return html;
   html += `<div class="score-cards score-swap">${scoreCardsListHtml(g)}</div>`;
@@ -14442,7 +14446,7 @@ function myH2HCardHtml(rerender = 'renderMyStats()') {
   const seg = false ? `<div class="seg xs" role="tablist" aria-label="形式" style="margin:14px 0 0">${[['all', 'すべて'], ['4', '四麻'], ['3', '三麻']].map(([k, l]) =>
     `<button type="button" role="tab" data-np="${k}" class="${myH2HMode === k ? 'on' : ''}" aria-selected="${myH2HMode === k}" onclick="myH2HMode='${jsq(k)}';renderMyStats()">${l}</button>`).join('')}</div>` : '';
   // 仲間ページの「対戦成績」と同じカード（見出し・合計・並び順・相手ごとのカード・説明）2026-10-07
-  const head = `<div class="card-head-row"><div class="card-title">対戦成績</div>${keys.length ? `<button class="btn-tint" onclick="showMyH2HImage()">${ico('image', 16)}画像</button>` : ''}</div>${cardCondSegHtml()}`;
+  const head = `<div class="card-head-row"><div class="card-title">対戦成績</div>${keys.length ? `<button class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showMyH2HImage()">${ico('image', 16)}</button>` : ''}</div>${cardCondSegHtml()}`;
   if (!keys.length) return `${seg}<div class="card my-h2h">${head}${h2hEmptyBodyHtml('あなた', rerender)}</div>`;
   const nameOf = k => disp[k], avOf = k => avColor(disp[k]);
   return `${seg}<div class="card my-h2h">${head}
@@ -14705,7 +14709,7 @@ function msCompareHtml(np) {
   const t = msCompareTableHtml(np);
   if (!t) return '';
   // 画像はくらべる表だけを1枚に（2026-10-07。成績カードの下にあった「画像で見る」の代わり）
-  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表</span><span class="cc-head-r"><button type="button" class="btn-tint" onclick="showCompareImage(${np})">${ico('image', 16)}画像</button></span></div>
+  return `<div class="ms-card"><div class="ms-h ms-h-row"><span>成績表</span><span class="cc-head-r"><button type="button" class="btn-tint img-only" aria-label="画像にする" title="画像にする" onclick="showCompareImage(${np})">${ico('image', 16)}</button></span></div>
     ${cardCondSegHtml()}${t}
     <div class="ms-note">${(t.match(/<th title=/g) || []).length > 1 ? '個人＝自分を選んだすべての試合。仲間ページ＝そのうち、その仲間ページに入っている試合だけ。' : '自分を選んだすべての試合の成績。仲間ページに試合を入れると、仲間ページごとの列が並びます。'}</div></div>`;
 }
@@ -16769,7 +16773,7 @@ function renderDetailBody(g) {
   let html = gameStateHtml(g, false) + '<div id="detail-circles"></div>';
   // チーム順位（チーム戦が有効なグループのみ）
   if (s.teamMode && s.teams && hasRounds) {
-    const teamImgBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'team')">${ico('image', 15)}画像</button>`;
+    const teamImgBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'team')">${ico('image', 15)}</button>`;
     html += `<div class="card">${detailCardHead('チーム順位', 'team', teamImgBtn)}${collapsedCards.team ? '' : teamStandingsHtml(g)}</div>`;
   }
   // 総合順位カード（順位リスト＋スコア/チップ切替）
@@ -16777,7 +16781,7 @@ function renderDetailBody(g) {
 
   const logBtn = logEvents(g.log).length > 0
     ? `<button class="edit-tab" onclick="showLogModal('detail')">履歴</button>` : '';
-  const imgBtn = hasRounds ? `<button class="edit-tab" onclick="showResultImage(detailGame,'rounds')">${ico('image', 15)}画像</button>` : '';
+  const imgBtn = hasRounds ? `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'rounds')">${ico('image', 15)}</button>` : '';
   const rows = roundRowsWithMarks(g, visibleRoundIdx(g.rounds.length), ridx => detailRO ? '' : `openRoundMenu(${ridx},'detail')`)
     + (hasRounds ? roundsTotalRowHtml(g) : '');
   const roundsHtml = `<div class="tbl-scroll" style="overflow-x:auto" id="detail-rounds-wrap"><table class="rounds-table" style="${tableStyleFor(s.playerNames.length)}">
@@ -16791,21 +16795,21 @@ function renderDetailBody(g) {
       ? ((detailRO || (gLocked && !multiDayD)) ? '' : `<div class="rounds-foot"><span>${gLocked ? '' : '行をタップすると点数を修正できます'}</span><span class="rf-btns">${multiDayD ? `<button type="button" class="edit-tab" onclick="openDaySplit('detail')">日の区切り</button>` : ''}</span></div>`) + roundsMoreBtnHtml(g.rounds.length)
       : ''}</div>`;
   if (g.rounds.length > 0) {
-    const statsBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}画像</button>`;
+    const statsBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'stats')">${ico('image', 15)}</button>`;
     html += `<div class="card">${detailCardHead('個人成績', 'rank', statsBtn)}${collapsedCards.rank ? '' : rankCountHtml(g.rounds, s)}</div>`;
-    const h2hBtn = `<button class="edit-tab" onclick="showH2HImage(detailGame)">${ico('image', 15)}画像</button>`;
-    const mxBtn = `<button class="edit-tab" onclick="showMatrixImage(detailGame)">${ico('image', 15)}画像</button>`;
+    const h2hBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showH2HImage(detailGame)">${ico('image', 15)}</button>`;
+    const mxBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showMatrixImage(detailGame)">${ico('image', 15)}</button>`;
     if (h2hMatrixVisible(g)) html += `<div class="card">${detailCardHead('総当たり表', 'mx', mxBtn)}${collapsedCards.mx ? '' : h2hMatrixBodyHtml(g)}</div>`;
     html += `<div class="card">${detailCardHead('対戦成績', 'h2h', h2hBtn)}${collapsedCards.h2h ? '' : h2hCardBodyHtml(g)}</div>`;
   }
 
   // スコア推移グラフ（局履歴の下）
   if (g.rounds.length > 0) {
-    const chartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'chart')">${ico('image', 15)}画像</button>`;
+    const chartBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'chart')">${ico('image', 15)}</button>`;
     html += `<div class="card">${detailCardHead(s.teamMode && s.teams ? 'チームスコア推移' : 'スコア推移', 'chart', chartBtn)}${collapsedCards.chart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s)}</div>`}</div>`;
     // 個人スコア推移（チーム戦のみ・チームスコア推移の下。要件はチームスコア推移と同じ）
     if (s.teamMode && s.teams) {
-      const ichartBtn = `<button class="edit-tab" onclick="showResultImage(detailGame,'ichart')">${ico('image', 15)}画像</button>`;
+      const ichartBtn = `<button class="edit-tab img-only" aria-label="画像にする" title="画像にする" onclick="showResultImage(detailGame,'ichart')">${ico('image', 15)}</button>`;
       html += `<div class="card">${detailCardHead('個人スコア推移', 'ichart', ichartBtn)}${collapsedCards.ichart ? '' : `<div class="chart-wrap">${chartHtml(g.rounds, s, true)}</div>`}</div>`;
     }
   }
