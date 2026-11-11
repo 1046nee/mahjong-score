@@ -68,6 +68,65 @@ def n(x):
     return f"{x:,}"
 
 
+# ---------------- 符の数え方（牌の絵つき・2026-11-11〜） ----------------
+TILE_URL = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
+
+
+def t(code, yoko=False):
+    """牌1枚（assets/tiles のSVG）。横向きは鳴いた牌"""
+    return f'<img class="{"y" if yoko else ""}" src="{TILE_URL}/{code}{"-yoko" if yoko else ""}.svg" alt="">'
+
+
+def tl(*codes):
+    """牌の並び。"y:xx" は横向き、"!xx" はあがり牌（オレンジの下地）"""
+    out = ""
+    for c in codes:
+        if c == "→":
+            out += '<u>→</u>'
+        elif c.startswith("!"):
+            out += f'<s>{t(c[1:])}</s>'
+        elif c.startswith("y:"):
+            out += t(c[2:], True)
+        else:
+            out += t(c)
+    return f'<span class="tl">{out}</span>'
+
+
+# 面子の符: 名前, 牌の形, 二〜八, 一・九・字
+FU_MENTSU = [
+    ("順子", tl("p4", "p5", "p6"), "0", "0"),
+    ("明刻<small>ポン</small>", tl("y:s5", "s5", "s5"), "2", "4"),
+    ("暗刻", tl("s5", "s5", "s5"), "4", "8"),
+    ("明槓<small>大明槓・加槓</small>", tl("y:m6", "m6", "m6", "m6"), "8", "16"),
+    ("暗槓", tl("back", "m6", "m6", "back"), "16", "32"),
+]
+# 待ちの符: 名前, 形→あがり牌, 符
+FU_MACHI = [
+    ("両面", tl("s3", "s4", "→", "!s5"), "0"),
+    ("シャンポン", tl("p5", "p5", "z1", "z1", "→", "!z1"), "0"),
+    ("カンチャン", tl("m4", "m6", "→", "!m5"), "+2"),
+    ("ペンチャン", tl("s1", "s2", "→", "!s3"), "+2"),
+    ("単騎", tl("p9", "→", "!p9"), "+2"),
+]
+
+
+def fu_html():
+    """符の数え方のかたまり（1行のHTML。PARTS の切り出しが '</div>\\n</div>' を区切りに使うので改行を入れない）"""
+    steps = ('<div class="steps">'
+             '<span>副底<b>20</b></span><u>＋</u><span>門前ロン<b>+10</b><br>ツモ<b>+2</b></span><u>＋</u>'
+             '<span>面子<br><small>下の表</small></span><u>＋</u><span>雀頭が役牌<b>+2</b></span><u>＋</u>'
+             '<span>待ち<br><small>下の表</small></span><u>→</u><span class="up">10の位で<br>切り上げ</span></div>')
+    m = "".join(f'<tr><th>{a}</th><td class="sh">{b}</td><td>{c}</td><td>{e}</td></tr>' for a, b, c, e in FU_MENTSU)
+    w = "".join(f'<tr><th>{a}</th><td class="sh">{b}</td><td class="{"p" if c != "0" else ""}">{c}</td></tr>' for a, b, c in FU_MACHI)
+    two = ('<div class="two">'
+           f'<table class="mz"><thead><tr><th>面子</th><th>形</th><th>二〜八</th><th>一九字</th></tr></thead><tbody>{m}</tbody></table>'
+           f'<table class="mc"><thead><tr><th>待ち</th><th>形→あがり</th><th>符</th></tr></thead><tbody>{w}</tbody></table></div>')
+    notes = ('<ul><li><b>決まった符</b>：ピンフのツモ<b>20符</b>・七対子<b>25符</b>（切り上げない）・鳴いて符のないロン<b>30符</b></li>'
+             '<li>シャンポン待ちを<b>ロン</b>でそろえた刻子は<b>明刻</b>あつかい（ツモなら暗刻）</li>'
+             '<li>待ちが2通りに取れるときは、符の高いほうで数えてよい</li></ul>')
+    return f'<div class="box fu"><h3>符の数え方（足して、10の位で切り上げ）</h3>{steps}{two}{notes}</div>'
+
+
 # ---------------- 1枚の早見表（A4縦・794×1123 CSS px） ----------------
 def sheet_html(d):
     def block(side):
@@ -116,7 +175,7 @@ thead th {{ font-size: 14px; font-weight: 900; color: #fff; padding: 5px 0; bord
 thead th:first-child {{ width: 54px; font-size: 11px; border-left: 0; }}
 tbody th {{ font-size: 14px; font-weight: 900; text-align: center; background: #E3ECE9; border-bottom: 1px solid #8FA29D; border-right: 1.5px solid #1F2A28; }}
 .ko tbody th {{ color: #0B4D5A; }} .oya tbody th {{ color: #22397A; }}
-td {{ text-align: center; border-bottom: 1px solid #8FA29D; border-left: 1px solid #8FA29D; height: 50px; padding: 2px 0; line-height: 1.15; }}
+td {{ text-align: center; border-bottom: 1px solid #8FA29D; border-left: 1px solid #8FA29D; height: 46px; padding: 2px 0; line-height: 1.15; }}
 td b {{ display: block; font-size: 18px; font-weight: 900; letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: #111; }}
 td span {{ display: block; font-size: 11.5px; font-weight: 800; color: #1E3F7A; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }}
 td i {{ font-style: normal; font-size: 9px; margin-left: 1px; }}
@@ -124,18 +183,39 @@ td b.x {{ color: #9AA8A4; font-weight: 400; font-size: 13px; }}
 td.na {{ color: #9AA8A4; font-size: 13px; background: #EEF2F1; }}
 td.mg {{ background: #FFE2D2; }} td.mg b {{ color: #B23A0E; font-size: 16px; }}
 .blk tbody tr:nth-child(3) td, .blk tbody tr:nth-child(3) th {{ background-image: linear-gradient(#FFF2B8, #FFF2B8); }}
-.bottom {{ display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; margin-top: 14px; }}
+.bottom {{ display: grid; grid-template-columns: .86fr 1.14fr; gap: 14px; margin-top: 14px; }}
 .box h3 {{ font-size: 14px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 4px; padding: 4px 9px; margin-bottom: 6px; line-height: 1.3; }}
 .lim thead th {{ background: #1F2A28; font-size: 11px; }}
 .lim tbody th {{ font-size: 13.5px; color: #B23A0E; background: #FFE2D2; }}
-.lim td {{ height: 43px; }} .lim td b {{ font-size: 16px; }} .lim td.h {{ font-size: 12px; font-weight: 800; color: #1F2A28; }}
-.fu {{ font-size: 10.5px; line-height: 1.55; }}
-.fu table {{ border-width: 1.5px; }} .fu table td, .fu table th {{ height: auto; font-size: 11px; font-weight: 700; padding: 3px 4px; border: 1px solid #8FA29D; background: none; }}
-.fu table th {{ background: #E3ECE9; color: #1F2A28; font-weight: 800; }}
+.lim td {{ height: 49px; }} .lim td b {{ font-size: 16px; }} .lim td.h {{ font-size: 12px; font-weight: 800; color: #1F2A28; }}
+.fu {{ font-size: 10.5px; line-height: 1.5; }}
+.fu .steps {{ display: flex; align-items: center; gap: 2px; margin-bottom: 6px; }}
+.fu .steps span {{ flex: 1 1 auto; text-align: center; border: 1.5px solid #8FA29D; border-radius: 5px; background: #F4F8F7; padding: 3px 2px; font-size: 10.5px; font-weight: 800; line-height: 1.3; white-space: nowrap; }}
+.fu .steps span b {{ color: #C2471A; font-size: 12.5px; margin-left: 2px; }}
+.fu .steps span small {{ font-size: 9px; color: #6B7A77; font-weight: 700; }}
+.fu .steps span.up {{ background: #FFF2B8; border-color: #C9A62A; }}
+.fu .steps u, .fu .tl u {{ text-decoration: none; font-weight: 900; color: #6B7A77; font-size: 11px; }}
+.fu .two {{ display: grid; grid-template-columns: 1.08fr 1fr; gap: 6px; }}
+.fu table {{ border-width: 1.5px; }}
+.fu table td, .fu table th {{ height: 37px; font-size: 14px; font-weight: 900; padding: 1px 2px; border: 1px solid #B5C3BF; background: none; line-height: 1.1; }}
+.fu thead th {{ height: 20px; font-size: 10px; font-weight: 800; color: #fff; background: #1F2A28; border-color: #1F2A28; }}
+.fu thead th:first-child {{ width: auto; font-size: 10px; }}
+.fu .mz thead th:nth-child(1) {{ width: 46px; }} .fu .mz thead th:nth-child(3), .fu .mz thead th:nth-child(4) {{ width: 38px; letter-spacing: -.06em; white-space: nowrap; }}
+.fu .mc thead th:nth-child(1) {{ width: 58px; }} .fu .mc thead th:nth-child(3) {{ width: 26px; }}
+.fu tbody th {{ font-size: 10.5px; font-weight: 900; color: #1F2A28; background: #E3ECE9; text-align: center; border-right: 1.5px solid #1F2A28; white-space: nowrap; }}
+.fu tbody th small {{ display: block; font-size: 7.5px; font-weight: 700; color: #4F5C5A; letter-spacing: -.02em; }}
+.fu td.sh {{ text-align: center; }}
+.fu td.p {{ color: #C2471A; }}
+.fu .mz tbody tr:nth-child(5) td:nth-child(n+3) {{ color: #C2471A; }}
+.fu td .tl {{ display: inline-flex; align-items: flex-end; gap: 0; margin: 0; font-size: 0; vertical-align: middle; }}
+.fu .tl img {{ width: 16px; height: auto; display: block; }}
+.fu .tl img.y {{ width: 21.3px; }}
+.fu .tl s {{ text-decoration: none; display: block; background: #F6B48F; border-radius: 3px; padding: 1.5px; margin-left: 1px; }}
+.fu .tl u {{ font-size: 10px; margin: 0 2px; align-self: center; }}
 .fu ul {{ list-style: none; margin-top: 5px; }}
-.fu li {{ padding-left: 10px; text-indent: -10px; }}
+.fu li {{ padding-left: 10px; text-indent: -10px; font-weight: 700; }}
 .fu li::before {{ content: "・"; }}
-.fu b {{ color: #C2471A; }}
+.fu li b {{ color: #C2471A; }}
 .notes {{ margin-top: 10px; font-size: 11px; font-weight: 700; color: #1F2A28; line-height: 1.6; border-top: 2px solid #1F2A28; padding-top: 6px; }}
 footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
@@ -146,12 +226,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 <div class="bottom">
 <div class="box"><h3>満貫以上（符に関係なく決まる）</h3>
 <table class="lim"><thead><tr><th>名前</th><th>翻</th><th>子</th><th>親</th></tr></thead><tbody>{lim}</tbody></table></div>
-<div class="box fu"><h3>符の数え方（足して、10の位で切り上げ）</h3>
-<table><tr><th>あがりの基本（副底）</th><td>20符</td></tr><tr><th>門前でロン</th><td>+10符</td></tr><tr><th>ツモ（ピンフのツモは除く）</th><td>+2符</td></tr>
-<tr><th>待ち（カンチャン・ペンチャン・単騎）</th><td>+2符</td></tr><tr><th>雀頭が役牌</th><td>+2符</td></tr></table>
-<table style="margin-top:5px"><tr><th>刻子・槓子</th><th>明刻</th><th>暗刻</th><th>明槓</th><th>暗槓</th></tr>
-<tr><th>二〜八の数牌</th><td>2</td><td>4</td><td>8</td><td>16</td></tr><tr><th>一・九・字牌</th><td>4</td><td>8</td><td>16</td><td>32</td></tr></table>
-<ul><li><b>ピンフのツモは20符</b>、<b>七対子は25符</b>（切り上げない）</li><li>鳴いて符が20符のままのロンは30符にする</li></ul></div>
+{fu_html()}
 </div>
 <p class="notes">黄色の行（30符）がいちばんよく出る。　本場1本：ロン+300点・ツモ1人+100点。　切り上げ満貫ありなら 7,700→8,000・11,600→12,000。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>対局後のスコア（ウマ・オカ）の計算は、まじゃすこで自動に</span></footer>
@@ -184,7 +259,7 @@ def part_html(full, title, color, inner):
             f'<style>{css} body {{ width: 420px; height: auto; padding: 0; }} .wrap {{ padding: 0 10px 8px; }}'
             f'.band {{ background: {color}; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .03em; padding: 10px 14px; margin-bottom: 8px; }}'
             f'.band small {{ display: block; font-size: 12px; font-weight: 800; opacity: .9; margin-top: 2px; }}'
-            f'.wrap .blk h2 em {{ display: none; }} .site {{ text-align: right; font-size: 11px; font-weight: 800; color: #177083; margin-top: 6px; }}</style></head>'
+            f'.wrap .blk h2 em {{ display: none; }} .wrap .box.fu h3 {{ display: none; }} .site {{ text-align: right; font-size: 11px; font-weight: 800; color: #177083; margin-top: 6px; }}</style></head>'
             f'<body><div id="cap"><div class="band">{title}<small>上：ロン　下：ツモ</small></div><div class="wrap">{inner}'
             f'<div class="site">まじゃすこ majasco.jp</div></div></div></body></html>')
 
