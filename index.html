@@ -8865,6 +8865,7 @@ function describeSettingsChanges(base, next, membersState) {
   else if (b.chombo && (Number(a.chomboPenalty) || 0) !== (Number(b.chomboPenalty) || 0)) out.push(`チョンボ: ${penStr(a.chomboPenalty)} → ${penStr(b.chomboPenalty)}`);
   if (!!a.teamMode !== !!b.teamMode) out.push(`チーム戦: ${onoff(a.teamMode)} → ${onoff(b.teamMode)}`);
   if (RATE_FEATURE && gRateLabel(a) !== gRateLabel(b)) out.push(`レート: ${gRateLabel(a)} → ${gRateLabel(b)}`);
+  else if (RATE_FEATURE && gOn(b) && !b.bonusEnabled && (Number(a.chipRate) || 0) !== (Number(b.chipRate) || 0)) out.push(`レート（チップ1枚）: ${(Number(a.chipRate) || 0).toLocaleString()}G → ${(Number(b.chipRate) || 0).toLocaleString()}G`);
   else if (b.teamMode && fpOf(teamSig(a)) !== fpOf(teamSig(b))) out.push('チーム編成を変更');
   if (!out.length && fpOf(base) !== fpOf(next)) out.push('その他の設定を変更');
   return out;
@@ -10198,6 +10199,7 @@ async function startGame() {
   const uma = getUmaArray();
   // レート（G）: rate＝スコア1ptあたりのG（0＝なし）・chipRate＝チップ1枚あたりのG。欄が無いときは今までどおり 0 / 1
   const gv = readGOpt('s');
+  if (gv === false) return;
   const rate = gv ? gv.rate : 0;
   const chipRate = gv && gv.rate > 0 ? gv.chipRate : 1;
   const bonusEnabled = document.getElementById('s-bonus').checked;
@@ -10457,6 +10459,12 @@ function chipTotals(g) {
 // RATE_FEATURE を false にすると、設定の欄も「Gの順位」も全部消える（保存してある値はそのまま）
 const RATE_FEATURE = true;
 function gOn(s) { return RATE_FEATURE && Number(s && s.rate) > 0; }
+// 総合順位の見方。選んでいた見方がその試合で使えなければ（チップなし・レートなし）スコアの順位
+function metricOf(s) {
+  if (scoreMetric === 'g' && gOn(s)) return 'g';
+  if (scoreMetric === 'chips' && s.bonusEnabled) return 'chips';
+  return 'score';
+}
 // 席ごとの { sc: スコアのG, ch: チップのG, total }。スコアは合計pts×rate、チップはチップ差×chipRate（チップありのときだけ）
 function gTotals(g) {
   const s = g.settings;
@@ -10478,7 +10486,7 @@ function gOptHtml(p, s) {
   if (!RATE_FEATURE) return '';
   const on = gOn(s);
   const rate = Number(s && s.rate) > 0 ? Number(s.rate) : 10;
-  const chip = s && Number(s.chipRate) > 1 ? Number(s.chipRate) : 10;
+  const chip = on ? (Number(s.chipRate) || 0) : (s && Number(s.chipRate) > 1 ? Number(s.chipRate) : 10);
   return `<label class="opt-check" style="margin-top:14px">
       <input type="checkbox" id="${p}-g" ${on ? 'checked' : ''} onchange="document.getElementById('${p}-g-fields').style.display=this.checked?'block':'none'"> レートあり（G）
     </label>
@@ -10493,6 +10501,10 @@ function gOptHtml(p, s) {
 function readGOpt(p) {
   const cb = document.getElementById(p + '-g');
   if (!cb) return null;
+  if (cb.checked && !(Math.round(Number(document.getElementById(p + '-g-rate').value) || 0) >= 1)) {
+    showToast('レートありのときは、スコア 1ptあたりのGに1以上を入れてください', 4500);
+    return false;
+  }
   const rate = cb.checked ? Math.max(0, Math.round(Number(document.getElementById(p + '-g-rate').value) || 0)) : 0;
   const chipRate = Math.max(0, Math.round(Number(document.getElementById(p + '-g-chip').value) || 0));
   return { rate, chipRate };
@@ -10503,10 +10515,11 @@ function readGOpt(p) {
 function metricToggleHtml(s) {
   if (!s.bonusEnabled && !gOn(s)) return '';
   // 見出しの下の行に、ほかの切り替えと同じ形（.seg.xs）で置く（見出しの行に入れると狭い画面で見出しが2行になった。2026-10-09）
+  const m = metricOf(s);
   return `<div class="seg xs metric-seg" role="tablist" aria-label="順位の見方">
-    <button type="button" role="tab" class="${scoreMetric === 'score' ? 'on' : ''}" aria-selected="${scoreMetric === 'score'}" onclick="setMetric('score')">スコアの順位</button>
-    ${s.bonusEnabled ? `<button type="button" role="tab" class="${scoreMetric === 'chips' ? 'on' : ''}" aria-selected="${scoreMetric === 'chips'}" onclick="setMetric('chips')">チップの順位</button>` : ''}
-    ${gOn(s) ? `<button type="button" role="tab" class="${scoreMetric === 'g' ? 'on' : ''}" aria-selected="${scoreMetric === 'g'}" onclick="setMetric('g')">Gの順位</button>` : ''}
+    <button type="button" role="tab" class="${m === 'score' ? 'on' : ''}" aria-selected="${m === 'score'}" onclick="setMetric('score')">スコアの順位</button>
+    ${s.bonusEnabled ? `<button type="button" role="tab" class="${m === 'chips' ? 'on' : ''}" aria-selected="${m === 'chips'}" onclick="setMetric('chips')">チップの順位</button>` : ''}
+    ${gOn(s) ? `<button type="button" role="tab" class="${m === 'g' ? 'on' : ''}" aria-selected="${m === 'g'}" onclick="setMetric('g')">Gの順位</button>` : ''}
   </div>`;
 }
 // 順位リスト本体。metric = 'score'（pts） / 'chips'（チップ最終枚数）
@@ -10517,8 +10530,8 @@ function scoreCardsListHtml(g) {
   const played = playedFlags(g);
   const activeIdx = totals.map((_, i) => i).filter(i => !hasRounds || played[i]);
   const inactiveIdx = hasRounds ? totals.map((_, i) => i).filter(i => !played[i]) : [];
-  const chipsMode = scoreMetric === 'chips' && s.bonusEnabled;
-  const gMode = scoreMetric === 'g' && gOn(s);
+  const chipsMode = metricOf(s) === 'chips';
+  const gMode = metricOf(s) === 'g';
   const { chips } = chipsMode ? chipTotals(g) : { chips: [] };
   const gt = gMode ? gTotals(g) : [];
   const startChips = Number(s.startChips) || 0;
@@ -11208,8 +11221,13 @@ function imgTableDraw(layout, W, H, SUB_FS, FS) {
 const IMG_MEDAL = ['#d4a017', '#9aa5ad', '#c97b3f'];
 const IMG_MEDAL_TEXT = ['#3B2C00', '#1F2A28', '#2E1A0A']; // 画面の medalSvg と同じ濃い字
 function imgRankingRows(g, kind) {
-  const html = kind === 'team' ? teamStandingsHtml(g)
-    : `<div class="score-cards">${scoreCardsListHtml(g)}</div>`;
+  const keepMetric = scoreMetric;
+  if (scoreMetric === 'g') scoreMetric = 'score'; // 画像には G を出さない（外へ回るため。2026-11-11）
+  let html;
+  try {
+    html = kind === 'team' ? teamStandingsHtml(g)
+      : `<div class="score-cards">${scoreCardsListHtml(g)}</div>`;
+  } finally { scoreMetric = keepMetric; }
   if (!html) return [];
   const holder = document.createElement('div');
   holder.style.cssText = 'position:absolute;left:-99999px;top:0;width:600px';
@@ -13642,6 +13660,7 @@ async function saveGameEdit() {
   }
   // レート（G）: 欄があれば読む。切ったときは rate だけ 0 にして chipRate は残す（もう一度入れたとき元の値が出る）。欄が無ければ ...s のまま
   const gv = readGOpt('e');
+  if (gv === false) return;
   const gKeys = gv ? (gv.rate > 0 ? { rate: gv.rate, chipRate: gv.chipRate } : { rate: 0 }) : {};
   const settings = applyEditDate({ ...s, playerNames, startPoints, returnPoints, uma, bonusEnabled, startChips, yakitori, chombo, chomboPenalty, teamMode, ...gKeys },
     'e');
