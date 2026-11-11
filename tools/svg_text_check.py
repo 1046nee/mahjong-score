@@ -43,7 +43,9 @@ CHECK_JS = r"""
     const vb = { x: sr.left, y: sr.top }, vw = sr.width, vh = sr.height;
     const texts = [...svg.querySelectorAll('text')].filter(t => t.textContent.trim() && getComputedStyle(t).display !== 'none' && t.getAttribute('opacity') !== '0');
     if (!texts.length) return;
-    const rects = [...svg.querySelectorAll('rect')].map(r => ({ r, b: box(r), rx: parseFloat(r.getAttribute('rx') || 0) })).filter(o => o.b.x1 - o.b.x0 > 4 && o.b.y1 - o.b.y0 > 4);
+    // 見えない四角（押せる範囲の sp-hit など。塗りも線も透明）は枠ではない（2026-11-11）
+    const seen = r => { const cs = getComputedStyle(r); const clear = v => !v || v === 'none' || v === 'transparent' || /rgba\([^)]*,\s*0\)/.test(v); return !(clear(cs.fill) && clear(cs.stroke)) && cs.opacity !== '0'; };
+    const rects = [...svg.querySelectorAll('rect')].filter(seen).map(r => ({ r, b: box(r), rx: parseFloat(r.getAttribute('rx') || 0) })).filter(o => o.b.x1 - o.b.x0 > 4 && o.b.y1 - o.b.y0 > 4);
     const circles = [...svg.querySelectorAll('circle')].map(c => { const b = box(c); return { b, cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2, r: (b.x1 - b.x0) / 2 }; }).filter(o => o.r > 3);
     const tb = texts.map(t => ({ t, b: box(t) }));
     // 線（<line>）で区切ったマス: 縦の線・横の線
