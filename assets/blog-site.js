@@ -44,6 +44,9 @@ const READ_ICON = {
   more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
 };
 const BLOG_POSTS = [
+  { url: '/blog-rule-joukyu.html', cat: 'rules', date: '2026.11.11', tag: 'ルール',
+    title: '【保存版】打つ前に確認したい上級ルール17項目｜ダブル役満・国士の暗槓ロン・カンドラ・北抜き・ツモり切り',
+    desc: 'ダブル役満・国士の暗槓ロン・カンドラ・パオ・リーチ後のカン・あがりやめ、ローカル役、三麻の北抜き・花牌・赤・嶺上牌・ツモり切り・ツモ損を選択肢つきで。' },
   { url: '/blog-team-league.html', cat: 'score', date: '2026.11.06', tag: 'チーム戦',
     title: '【実例】麻雀をMリーグのようなチーム戦で楽しむ方法｜16人4チームの作り方と結果の共有',
     desc: '16人・4チームのチーム戦を、Excelなしで記録して共有する手順を実際の画面で。' },

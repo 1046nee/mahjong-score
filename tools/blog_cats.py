@@ -61,6 +61,9 @@ URL2THEME = {f"/blog-{slug}.html": k for k, v in MAP.items() for slug in v.split
 
 
 def posts_of(js):
+    # BLOG_POSTS の中だけを読む（同じ形の READ_GROUPS の固定ページまで拾うと、パンくずの無い score-basics.html で止まった・2026-11-11）
+    a = js.index("const BLOG_POSTS")
+    js = js[a:js.index("\n];", a)]
     return re.findall(r"\{ url: '([^']+)', cat: '([a-z]+)'", js)
 
 
