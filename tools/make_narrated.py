@@ -273,10 +273,15 @@ NARR.update(video_topics_ml.TOPICS)
 import video_topics_yaku  # 役シリーズの作り直し（詳しい版・2つ並べる版）
 NARR.update(video_topics_yaku.TOPICS)
 for _k in video_topics_yaku.DROP: NARR.pop(_k, None)
+import video_topics_yaku2  # 役シリーズ「この手、何の役？」の詳しい版（2026-11-11）
+NARR.update(video_topics_yaku2.TOPICS)
 import video_topics_yakus  # 状況で決まる9役（ys-01〜09・2026-11-11）
 NARR.update(video_topics_yakus.TOPICS)
 SAY.update({"門前清自摸和": "メンゼンチンツモホー", "海底摸月": "ハイテイモーユエ", "嶺上開花": "リンシャンカイホー", "槍槓": "チャンカン", "ダブル立直": "ダブルリーチ", "天和": "テンホー", "地和": "チーホー", "一発": "イッパツ", "配牌": "ハイパイ", "河底": "ホーテイ", "嶺上牌": "リンシャンパイ"})
 SAY.update({"理牌": "リーパイ", "開門": "カイメン", "門前": "メンゼン", "字一色": "ツーイーソー", "九蓮宝燈": "チューレンポートー", "九種九牌": "キュウシュキュウハイ", "少牌": "ショウハイ", "多牌": "ターハイ", "数牌": "シューパイ", "立直": "リーチ"})  # 2026-11-11 読み違いの総点検
+SAY.update({"和了率": "あがり率", "平均和了点": "平均あがり点", "放銃率": "ホウジュウ率"})
+SAY.update({"八連荘": "パーレンチャン", "日本": "にほん", "毎年": "まいねん", "全帯么九": "チャンタイヤオチュー", "么九": "ヤオチュー", "么": "ヤオ"})
+SAY.update({"一・九・字牌": "いち、きゅう、字牌", "一・九": "いち、きゅう", "四槓子": "スーカンツ", "緑一色": "リューイーソー"})
 import video_topics_yougo  # 用語シリーズをカテゴリごとの12本に（gy-01〜12）
 NARR.update(video_topics_yougo.TOPICS)
 for _k in video_topics_yougo.DROP: NARR.pop(_k, None)
@@ -288,6 +293,8 @@ import video_topics_basic  # 初心者向け b-01〜11・点数とスコア s-01
 NARR.update(video_topics_basic.TOPICS)
 import video_topics_more  # 分かれ目の続き・Mリーグとプロ・AI・雑学・集まりの運営
 NARR.update(video_topics_more.TOPICS)
+import video_topics_rich  # 説明系の動画の詳しい版（2026-11-11）。同じ名前を上書き
+NARR.update(video_topics_rich.TOPICS)
 
 # ---- 録画の動画（画面の時刻は録画で決まる）：make_short.py の動画に、目印の時刻から声と字幕を重ねる ----
 # (make_short の動画名, フックの声, [(いつ, 声)]) 。いつ = 録画の目印の名前 / 0（録画の始まり）/ 関数 c -> 秒

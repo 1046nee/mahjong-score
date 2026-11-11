@@ -223,21 +223,68 @@ NAGA7 = [("アナンタ", "超ラス回避派", "ananta"), ("ウロボロス", "
          ("ニシキ", "バランス派", "nishiki"), ("ヒバカリ", "超門前派", "hibakari"), ("カガシ", "超副露派", "kagashi")]
 def _chara(k, w):  # NAGAの公式キャラクター（タイプごと）
     return naga_shot("chara-" + k, w, "display:inline-block;margin:0;box-shadow:none;border-radius:0;vertical-align:middle")
+# 7タイプの数字は blog-naga-guide の表（NAGA公式の公開値）。紹介文は公式サイトのキャラクターのせりふ
+NAGA_DETAIL = {
+    "ananta": ("アナンタ", "超ラス回避派", "ラスのマイナスが大きい段位戦に特化。順位と点差を見ながら、ラスを避けるように立ち回る",
+               ["20.8%", "10.9%", "33.5%", "17.0%", "7,014点"], 1,
+               ["1つ目、アナンタ。", "超ラス回避派です。", "順位と点差を見ながら、", "ラスを避けるように打ちます。", "放銃率10.9%は、", "7タイプでいちばん低い数字です。"]),
+    "ouroboros": ("ウロボロス", "トップ取り派", "トップが大事な配分に特化。勝負どころではリスクを取って、思い切って前に出る",
+                  ["21.7%", "12.8%", "34.2%", "20.6%", "7,292点"], 3,
+                  ["2つ目、ウロボロス。", "トップ取り派です。", "勝負どころでは、", "思い切って前に出ます。", "立直率20.6%と、1位率28.8%は、", "どちらも7タイプでいちばん高い。"]),
+    "omega": ("オメガ", "副露派", "鳴きをうまく使って、スピードを活かしたあがりを狙う",
+              ["22.1%", "12.2%", "36.3%", "17.9%", "6,680点"], 2,
+              ["3つ目、オメガ。", "副露派です。", "鳴きをうまく使って、", "スピードであがりを狙います。", "和了率と副露率は、", "どちらも2番目に高い数字です。"]),
+    "gamma": ("ガンマ", "守備重視派", "危ないときは無理をせず、守備を大切に慎重に局を進める",
+              ["21.1%", "11.8%", "33.1%", "16.1%", "6,701点"], 1,
+              ["4つ目、ガンマ。", "守備重視派です。", "危ないときは無理をせず、", "慎重に局を進めます。", "相手のリーチに、", "いちばんよく降りるタイプです。"]),
+    "nishiki": ("ニシキ", "バランス派", "攻めも守りも、鳴きも門前も。状況に合わせてバランスよく打つ",
+                ["21.9%", "12.7%", "32.8%", "18.8%", "6,894点"], None,
+                ["5つ目、ニシキ。", "バランス派です。", "攻めも守りも、鳴きも門前も、", "状況に合わせて打ちます。", "どの数字も、", "7タイプの真ん中あたりです。"]),
+    "hibakari": ("ヒバカリ", "超門前派", "鳴ける牌が出てもけっこう我慢。門前でじっくり手を育てる",
+                 ["19.5%", "12.0%", "22.4%", "17.2%", "7,333点"], 4,
+                 ["6つ目、ヒバカリ。", "超門前派です。", "鳴ける牌が出てもがまんして、", "門前で手を育てます。", "副露率22.4%はいちばん低く、", "平均和了点7,333点はいちばん高い。"]),
+    "kagashi": ("カガシ", "超副露派", "あがりにはかなり貪欲。どんどん鳴いて、多少危なくても前に出る",
+                ["23.2%", "14.0%", "39.6%", "15.5%", "6,422点"], 2,
+                ["7つ目、カガシ。", "超副露派です。", "どんどん鳴いて、", "多少危なくても前に出ます。", "副露率39.6%と和了率23.2%は、", "どちらも7タイプでいちばん高い。"]),
+}
+NAGA_COLS = ["和了率", "放銃率", "副露率", "立直率", "平均和了点"]
+def _type_img(k, w, style=""):
+    return naga_shot("type-" + k, w, "box-shadow:none;border-radius:0;" + style)
+def _type_scene(k):
+    n, d, line, stats, hl, _ = NAGA_DETAIL[k]
+    def mk(a, b):
+        top = (f'<div style="display:flex;align-items:center;gap:20px;width:940px;margin:0 auto">{_type_img(k, 330, "margin:0;flex:none")}'
+               f'<div><div style="font-size:84px;font-weight:900;color:#1F2A28;line-height:1.1">{n}</div>'
+               f'<div class="ans" style="display:inline-block;font-size:46px;margin-top:14px">{d}</div></div></div>')
+        cells = "".join(f'<div style="text-align:center;padding:12px 0;{"background:#FDEEE7;border-radius:14px" if hl == i else ""}">'
+                        f'<div style="font-size:28px;font-weight:900;color:#5F6E6B">{c}</div><div style="font-size:{38 if i == 4 else 44}px;font-weight:900;color:{"#E75620" if hl == i else "#1F2A28"}">{v}</div></div>'
+                        for i, (c, v) in enumerate(zip(NAGA_COLS, stats)))
+        tbl = f'<div class="vcard" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:20px 16px">{cells}</div>'
+        return [head(a, b, f"{d}"), stage(a + .2, b, top, top=330, anim="pop"),
+                stage(a + .9, b, note("「" + line + "」"), top=700), stage(a + 2.0, b, tbl, top=990)]
+    return mk
 def a03():
-    vis = ('<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 18px;width:900px;margin:0 auto">'
-           + "".join(f'<div style="text-align:center;font-size:30px;font-weight:900;color:#1F2A28">{_chara(k, 190)}<div>{n}</div></div>' for n, d, k in NAGA7) + "</div>")
-    rows = "".join(f'<tr><td style="font-size:40px">{_chara(k, 84)}<span style="margin-left:16px">{n}</span></td><td class="r" style="font-size:40px">{d}</td></tr>' for n, d, k in NAGA7)
-    tbl = f'<div class="vcard"><table class="vt">{rows}</table></div>'
+    order = ["ananta", "ouroboros", "omega", "gamma", "nishiki", "hibakari", "kagashi"]
+    vis = ('<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;width:960px;margin:0 auto">'
+           + "".join(f'<div style="text-align:center;font-size:30px;font-weight:900;color:#1F2A28">{_type_img(k, 200)}<div>{NAGA_DETAIL[k][0]}</div></div>' for k in order) + "</div>")
+    def all7(a, b):
+        g = ('<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px 18px;width:960px;margin:0 auto">'
+             + "".join(f'<div data-in="{a + .3 + i * .25:.2f}" data-a="pop" style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:20px;padding:8px 14px">{_type_img(k, 110, "margin:0;flex:none")}'
+                       f'<div><div style="font-size:40px;font-weight:900">{NAGA_DETAIL[k][0]}</div><div style="font-size:30px;font-weight:900;color:#E75620">{NAGA_DETAIL[k][1]}</div></div></div>' for i, k in enumerate(order)) + "</div>")
+        return [head(a, b, "7つのタイプ"), stage(a + .1, b, g, top=330)]
     def same(a, b):
         return [head(a, b, "同じ局面でも"), stage(a + .3, b, '<div style="font-size:44px;font-weight:900;text-align:center;margin-bottom:12px">' + _chara("omega", 80) + 'オメガ</div>' + naga_shot("s31-omega", 900), top=380),
                 stage(a + 2.2, b, '<div style="font-size:44px;font-weight:900;text-align:center;margin-bottom:12px">' + _chara("hibakari", 80) + 'ヒバカリ</div>' + naga_shot("s31-hibakari", 900), top=780)]
-    return [(["NAGAには、", "打ち方の違う7つのタイプがあります。"], hook("麻雀AI", "NAGAの\n7タイプ", vis, top=200)),
-            (["7つのタイプは、", "どれも強いけれど、", "勝ち方が違います。"],
-             sc("7つのタイプ", (.3, 340, tbl))),
-            (["鳴く割合がいちばん高いのはカガシ、", "いちばん低いのはヒバカリ。", "同じ局面でも答えが割れます。"],
-             sc("鳴く割合", (.3, 400, card([(_chara("kagashi", 84) + "カガシ（超副露派）", ("39.6%", "o")), (_chara("hibakari", 84) + "ヒバカリ（超門前派）", ("22.4%", "pos"))], 42)), (1.2, 760, note("タイプを変えると<b>答えが変わる</b>")))),
-            (["たとえば、この局面。", "オメガは七筒を切り、", "ヒバカリは一索を切りたがります。"], same),
-            (END, article_end("blog-naga-guide", "7タイプは記事で"))]
+    pick = [("ラスを避けたい", "ananta"), ("トップを狙いたい", "ouroboros"), ("鳴いて速くしたい", "omega"), ("守り方を学びたい", "gamma"),
+            ("攻守を整えたい", "nishiki"), ("門前で手を育てたい", "hibakari"), ("どんどん鳴きたい", "kagashi")]
+    rows = "".join(f'<tr><td style="font-size:38px">{w}</td><td class="r" style="font-size:40px">{_type_img(k, 64, "display:inline-block;margin:0 8px 0 0;vertical-align:middle")}{NAGA_DETAIL[k][0]}</td></tr>' for w, k in pick)
+    return ([(["NAGAには、", "打ち方の違う7つのタイプがいます。", "全部、紹介します。"], hook("麻雀AI", "NAGAの\n7タイプ", vis, top=200)),
+             (["7つのタイプは、", "どれも強いけれど、", "鳴き方、守り方、", "順位の狙い方が違います。", "数字は、NAGAが公開している", "和了率や副露率です。"], all7)]
+            + [(NAGA_DETAIL[k][5], _type_scene(k)) for k in order]
+            + [(["同じ局面でも、", "タイプで答えが割れます。", "この局面、オメガは七筒を切り、", "ヒバカリは一索を切りたがります。", "迷ったら、2つのタイプを", "見比べるのがおすすめです。"], same),
+               (["選び方の目安です。", "ラスを避けたいならアナンタ、", "守りを学びたいならガンマ、", "門前で手を育てたいならヒバカリ。", "アナンタとウロボロスは、", "東南戦だけで選べます。"],
+                sc("タイプの選び方", (.3, 330, f'<div class="vcard"><table class="vt">{rows}</table></div>'), (2.5, 1240, note("アナンタ・ウロボロスは<b>東南戦だけ</b>")))),
+               (END, article_end("blog-naga-guide", "解析の手順は記事で"))])
 TOPICS["a-03"] = a03
 
 # ================================ 雑学 ================================
