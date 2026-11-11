@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Instagram用：点数早見表のカルーセル6枚（1080×1350）を作る（2026-11-11〜）。
+"""Instagram用：点数早見表のカルーセル7枚（1080×1350）を作る（2026-11-11〜）。2枚目は全部をまとめた1枚（ユーザーの指定）。
 中身は tools/score_sheet.py が作る assets/score/ の画像をそのまま使う（先に python tools/score_sheet.py）。
-出力: まじゃすこ素材/ig/score/score-1〜6.png
+出力: まじゃすこ素材/ig/score/score-1〜7.png
 実行: python tools/make_ig_score.py
 """
 import io, os
@@ -66,11 +66,13 @@ SLIDES = [
         f'<h2>子・親のロン・ツモを<br>1枚にまとめました</h2>'
         f'<ul><li>20符〜110符・1〜4翻</li><li>満貫から役満まで</li><li>符の数え方を牌の絵で</li></ul></div>'
         f'<img class="sheet" src="{SCORE}/tensu-hayamihyo-web.png"><p class="swipe">スワイプして見る →</p>{FOOT}')),
-    ("score-2.png", part("1", "子の点数", "上がロン、下がツモ（子の払い-親の払い）", "tensu-ko.png")),
-    ("score-3.png", part("2", "親の点数", "上がロン、下がツモ（ALL＝子3人が同じ額）", "tensu-oya.png")),
-    ("score-4.png", part("3", "満貫から上", "符に関係なく、翻だけで決まる", "tensu-mangan.png")),
-    ("score-5.png", part("4", "符の数え方", "足して、10の位で切り上げ", "fu-keisan.png")),
-    ("score-6.png", page(
+    ("score-2.png", page(f'<div class="band"><h1>全部まとめて1枚</h1><p>子・親・満貫から上・符の数え方（次から1つずつ大きく）</p></div>'
+                         f'<div class="pic"><img src="{SCORE}/tensu-hayamihyo.png"></div>{FOOT}')),
+    ("score-3.png", part("1", "子の点数", "上がロン、下がツモ（子の払い-親の払い）", "tensu-ko.png")),
+    ("score-4.png", part("2", "親の点数", "上がロン、下がツモ（ALL＝子3人が同じ額）", "tensu-oya.png")),
+    ("score-5.png", part("3", "満貫から上", "符に関係なく、翻だけで決まる", "tensu-mangan.png")),
+    ("score-6.png", part("4", "符の数え方", "足して、10の位で切り上げ", "fu-keisan.png")),
+    ("score-7.png", page(
         '<div class="close"><h1>保存しなくて<br>大丈夫です</h1>'
         '<div class="box"><span class="q">麻雀　点数表</span><p>と検索すれば、<br><b>この早見表がいつでも出てきます</b></p></div>'
         '<p class="app">半荘が終わったら、スコアの集計は<br><em>まじゃすこ</em></p></div>' + FOOT)),
@@ -81,7 +83,7 @@ def main():
     from playwright.sync_api import sync_playwright
     os.makedirs(OUT, exist_ok=True)
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = p.chromium.launch(executable_path=os.environ.get("PW_CHROMIUM") or None)
         for name, html in SLIDES:
             hp = os.path.join(OUT, "_tmp.html")
             io.open(hp, "w", encoding="utf-8").write(html)
