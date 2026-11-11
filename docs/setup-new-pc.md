@@ -38,7 +38,7 @@
   2. コマ: `.venv-b3d\Scripts\python tools/b3d/scene.py --tex out/b3d/tex --out out/b3d/an1 --theme dark --anim --size 540x960 --samples 32`（止まっても同じ命令で続きから）
   3. 動画: `python tools/b3d/make_clip.py out/b3d/an1 out/b3d/chi-test.mp4`（手順の字をのせて mp4 に）
 - 速さ: GPU の無いPCは Cycles の CPU で1コマ20〜30秒（8秒ぶん96コマで約40分）。GPU があるPCは scene.py の `sc.cycles.device = "CPU"` を `"GPU"` に変えると速い（Blender の設定でGPUを有効にしてあること）
-- `out/` と `.venv-b3d/` は .gitignore 済み。できた動画は素材リポジトリの `video/3d/` に置く
+- `out/` と `.venv-b3d/` は .gitignore 済み。できた動画は素材リポジトリの `3d/` に置く
 - くわしい決まり・落とし穴は docs/video-3d.md
 
 ## 2. リポジトリの取得
