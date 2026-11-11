@@ -62,7 +62,7 @@ def part(no, title, sub, img):
 
 SLIDES = [
     ("score-1.png", page(
-        f'<div class="cover"><span class="kicker">完全保存版</span><h1>麻雀<br>点数早見表</h1>'
+        f'<div class="cover"><span class="kicker">完全版</span><h1>麻雀<br>点数早見表</h1>'
         f'<h2>子・親のロン・ツモを<br>1枚にまとめました</h2>'
         f'<ul><li>20符〜110符・1〜4翻</li><li>満貫から役満まで</li><li>符の数え方を牌の絵で</li></ul></div>'
         f'<img class="sheet" src="{SCORE}/tensu-hayamihyo-web.png"><p class="swipe">スワイプして見る →</p>{FOOT}')),
