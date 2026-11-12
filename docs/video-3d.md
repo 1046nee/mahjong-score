@@ -23,6 +23,8 @@ Blender（bpy）で作る、対局の所作を説明する動画の土台。ふ�
 ## 座る人の名簿（40人）と見本（2026-11-12〜）
 - **変えないもの**: 卓・部屋・椅子・机・人の形（体・頭の作り）。**動画ごとに変わるもの**: テーマ（動き）と、座る4人の組み合わせ
 - **名簿は素材リポジトリ（非公開）の `3d/roster.json`**（実名が入るので公開リポジトリに置かない）。teams＝10チーム（ユニフォームの柄・色4つまで・えり）、people＝40人（p01〜p40・チーム・性別・髪の形と色・目の種類・眼鏡・肌・体格・背）。書いていない所は性別の標準。チームと人は tools/video_topics2.py の TEAMS（2026-27シーズン）と同じ並び
+- 名簿で書ける見た目（2026-11-12）: 髪の形 hair[0]＝short（整えた短髪）/short_messy/mush（丸い前髪）/medium（耳にかかる）/curly（くせ毛）/slick（なでつけ）/bob/long（肩より長い）/updo（まとめ髪・お団子）/ponytail、hair2＝後ろ・内側の色（金髪の下が黒い など）、eyes、glasses＝色 か [色, round|rect|thick]、beard＝mustache|goatee|both、build・height・skin。チームは uniform＝[柄, 色]（柄 zigzag|lines|camo|check）・collar・sleeve（そでだけ別の色）
+- 写真から見た目を決めたら photo を true に。写真の無い人（2026-11-12 時点: 逢川恵夢・内川幸太郎・瑞原明奈）は性別も空けておく
 - 人を直すときは **roster.json の1人分だけ書きかえる**（scene.py は触らない）。新しい髪型が要るときだけ build_player に形を足す
 - 座らせる: `scene.py --roster まじゃすこ素材/3d/roster.json --seats p01,p05,p12,p33 ...`（席0=手前・1=右・2=奥・3=左）
 - **見本（前・横・後ろ）**: `python tools/b3d/make_sheet.py まじゃすこ素材/3d/roster.json <出力> p01 p02 …`（1人約12秒。椅子と机は出さない）。ユーザーが見本で確かめてから、名簿の approved を true にする

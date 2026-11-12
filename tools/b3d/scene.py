@@ -64,7 +64,7 @@ def tex_mat(code):
     return m
 
 def pattern_mat(name, kind, cols):
-    """ユニフォームの柄（実物の柄ではなく、配色だけ）。kind: zigzag / camo / lines / plain"""
+    """ユニフォームの柄（実物の柄ではなく、配色だけ）。kind: zigzag / camo / lines / check / plain"""
     if name in _mats: return _mats[name]
     m = bpy.data.materials.new(name); m.use_nodes = True
     nt = m.node_tree; p = nt.nodes["Principled BSDF"]; p.inputs["Roughness"].default_value = .7
@@ -90,6 +90,16 @@ def pattern_mat(name, kind, cols):
         nt.links.new(tc.outputs["Object"], w.inputs["Vector"]); nt.links.new(w.outputs["Fac"], ramp.inputs["Fac"])
         el[0].position = 0;
         for i in range(1, len(cs)): el[i].position = .86 + (i - 1) * .06
+    elif kind == "check":     # 地の色に、市松の模様がところどころ入る（色1=地・色2=市松の明るい色・色3=差し色）
+        ck = nt.nodes.new("ShaderNodeTexChecker"); ck.inputs["Scale"].default_value = 42.0
+        ck.inputs["Color1"].default_value = cs[1]; ck.inputs["Color2"].default_value = cs[0]
+        n = nt.nodes.new("ShaderNodeTexNoise"); n.inputs["Scale"].default_value = 4.0; n.inputs["Detail"].default_value = 0.0
+        mr = nt.nodes.new("ShaderNodeMapRange"); mr.inputs["From Min"].default_value = .56; mr.inputs["From Max"].default_value = .58
+        mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["A"].default_value = cs[0]
+        for a_, b_ in ((tc.outputs["Object"], ck.inputs["Vector"]), (tc.outputs["Object"], n.inputs["Vector"]), (n.outputs["Fac"], mr.inputs["Value"]),
+                       (mr.outputs["Result"], mx.inputs["Factor"]), (ck.outputs["Color"], mx.inputs["B"]), (mx.outputs["Result"], p.inputs["Base Color"])):
+            nt.links.new(a_, b_)
+        _mats[name] = m; return m
     else:
         p.inputs["Base Color"].default_value = cs[0]; _mats[name] = m; return m
     nt.links.new(ramp.outputs["Color"], p.inputs["Base Color"])
@@ -314,7 +324,8 @@ def person(roster, pid):
              hair=tuple(pp.get("hair") or (("bob", "#2A211D") if fem else ("short_messy", "#2A211D"))),
              build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
-    for k in ("skin", "glasses"):
+    if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
+    for k in ("skin", "glasses", "hair2", "beard"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -358,11 +369,14 @@ def build_player(i, P):
                 cx = sx * (.042 + math.sin(a2) * (r0 + r1) / 2); cz = hz - .006 + math.cos(a2) * (r0 + r1) / 2 * 1.1
                 ly = math.sqrt(max(1e-6, .115 ** 2 - cx * cx - ((cz - hz) / 1.08) ** 2))      # 頭の丸みの上に置く（決め打ちの奥行きだと、上の1本が頭にうまった）
                 box(f"lash{i}{sx}{k}", (.0042, .007, r1 - r0), (cx, hy + ly, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
-    if P.get("glasses"):   # めがね（色を書くと付く）。細い輪2つと、つなぐ棒
-        gm = mat(f"glass{i}", P["glasses"], .3, metal=.3)
+    if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
+        g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])
+        gm = mat(f"glass{i}", gc, .3, metal=.3)
         for sx in (-1, 1):
-            bpy.ops.mesh.primitive_torus_add(major_radius=.027, minor_radius=.0035, location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0))
+            bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "rect": .0036}.get(gs, .0032), location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0),
+                                             major_segments=4 if gs in ("rect", "thick") else 48, minor_segments=8)
             o = bpy.context.object; o.data.materials.append(gm); o.parent = hd
+            if gs in ("rect", "thick"): o.rotation_euler = (math.radians(90), math.radians(45), 0); o.scale = (1.2, .85, 1)
             for poly in o.data.polygons: poly.use_smooth = True
         box(f"bridge{i}", (.03, .005, .005), (0, hy + .116, hz - .004), gm, parent=hd)
     if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
@@ -375,8 +389,13 @@ def build_player(i, P):
             y = math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001
             sp.points[k].co = (x, hy + y, hz + z, 1)
         mo = bpy.data.objects.new(f"mouth{i}", cu); add(mo); mo.parent = hd; cu.materials.append(mat("mouth", "#8A4A3C", .6))
+    if P.get("beard"):
+        bm = mat(f"beard{i}", P.get("hair", ("", "#2A211D"))[1] if P["beard"] != "gray" else "#6E6A66", .7)
+        if P["beard"] in ("mustache", "both"): sphere(f"must{i}", .02, (0, hy + .113, hz - .042), bm, (1.25, .35, .32), hd)
+        if P["beard"] in ("goatee", "both"): sphere(f"goat{i}", .014, (0, hy + .1, hz - .078), bm, (1.0, .45, .8), hd)
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
+    hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
     cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
     if kind == "bob":      # あごの長さのボブ: 後ろと横を丸く包み、顔の両わきに内巻きの毛先、まっすぐな前髪
         sphere(f"bobback{i}", .125, (0, hy - .042, hz - .045), hm, (1.13, .95, 1.02), hd)
@@ -393,10 +412,39 @@ def build_player(i, P):
             a = k / 7 * math.tau
             sphere(f"wave{i}{k}", .05, (math.cos(a) * .075, hy - .025 + math.sin(a) * .075, hz + .085), hm, (1, 1, .9), hd)
         sphere(f"bang{i}", .06, (-.03, hy + .07, hz + .075), hm, (1.3, .5, .45), hd)
+    elif kind == "short":  # 短く整えた髪＋横に流した前髪
+        sphere(f"bang{i}", .07, (.025, hy + .07, hz + .07), hm, (1.5, .5, .42), hd).rotation_euler = (0, math.radians(-12), 0)
+    elif kind == "medium": # 耳にかかる長さ＋目の上までの前髪（毛先を少し散らす）
+        for sx in (-1, 1):
+            sphere(f"mside{i}{sx}", .06, (sx * .1, hy - .005, hz + .0), hm, (.55, 1.0, 1.25), hd)
+        sphere(f"mback{i}", .12, (0, hy - .05, hz - .01), hm, (1.08, .9, 1.0), hd)
+        for k in range(5):
+            sphere(f"bang{i}{k}", .03, (-.05 + k * .025, hy + .085, hz + .045 - abs(k - 2) * .006), hm, (1.0, .6, 1.3), hd)
+    elif kind == "curly":  # くせ毛のふんわりした中くらいの長さ（耳にかかる）
+        for k in range(12):
+            a = k / 12 * math.tau
+            sphere(f"curl{i}{k}", .052, (math.cos(a) * .095, hy - .03 + math.sin(a) * .07, hz + .055 - abs(math.sin(a)) * .02), hm, (1, 1, 1.1), hd)
+        for sx in (-1, 1): sphere(f"cside{i}{sx}", .05, (sx * .108, hy - .01, hz - .03), hm, (.7, 1, 1.1), hd)
+        sphere(f"bang{i}", .06, (.0, hy + .075, hz + .07), hm, (1.4, .5, .5), hd)
+    elif kind == "slick":  # 後ろへなでつけた髪（前髪なし・額が見える）
+        sphere(f"slick{i}", .12, (0, hy - .03, hz + .045), hm, (1.03, 1.0, .82), hd)
+    elif kind == "long":   # 肩より長いまっすぐな髪＋前髪（後ろに長く垂らす）
+        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
+        for sx in (-1, 1):
+            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
+        sphere(f"bang{i}", .085, (0, hy + .058, hz + .062), hm, (1.3, .6, .46), hd)
+    elif kind == "updo":   # まとめ髪（後ろの高い所にお団子）＋顔の横に少し垂らす毛＋分けた前髪
+        sphere(f"bun{i}", .055, (0, hy - .115, hz + .06), hm2, parent=hd)
+        for sx in (-1, 1):
+            sphere(f"strand{i}{sx}", .014, (sx * .1, hy + .05, hz - .05), hm, (.7, .7, 3.0), hd)
+        sphere(f"bang{i}", .07, (-.02, hy + .068, hz + .07), hm, (1.5, .5, .42), hd).rotation_euler = (0, math.radians(10), 0)
+    elif kind == "ponytail":  # 後ろでひとつに結んだ髪＋前髪
+        sphere(f"tail{i}", .045, (0, hy - .14, hz - .02), hm2, (.8, .8, 2.0), hd)
+        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
     # 腕（両手を手牌のあたりに）
-    am = um
+    am = mat(f"sleeve{i}", P["sleeve"], .7) if P.get("sleeve") else um     # そでだけ別の色のチーム（白い胴に黒いそで など）
     body = dict(torso=torso, torso_rx=math.radians(-10), torso_loc=torso.location.copy(), collar=collar, collar_loc=collar.location.copy(), head=hd, head_loc=hd.location.copy())
     for sx in (-1, 1):
         sh = (sx * .192 * b, y0 + .02, 1.075 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
