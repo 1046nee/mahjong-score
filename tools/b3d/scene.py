@@ -318,9 +318,8 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    for sx in (-1, 1):   # 目（大きな丸い目。全員同じ作り＝実在の人の顔にしない。2026-11-12 ユーザーの依頼で、伏し目の線から変えた）
-        sphere(f"eye{i}{sx}", .024, (sx * .043, hy + .100, hz - .004), mat("eye", "#2A211D", .35), (1, .5, 1.3), hd)
-        sphere(f"eyehl{i}{sx}", .0065, (sx * .043 + .008, hy + .112, hz + .010), mat("eye_hl", "#FFFFFF", .2, emit=.6), parent=hd)
+    for sx in (-1, 1):   # 目（ふつうの大きさの黒い丸。白い点は付けない＝2026-11-12 ユーザーの判断。全員同じ作り＝実在の人の顔にしない）
+        sphere(f"eye{i}{sx}", .015, (sx * .042, hy + .106, hz - .006), mat("eye", "#2A211D", .45), (1, .5, 1.2), hd)
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
