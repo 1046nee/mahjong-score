@@ -177,12 +177,15 @@ def ik_elbow(sh, w, pole):
     p = p.normalized() if p.length > 1e-6 else Vector((1, 0, 0))
     return sh + n * a + p * h
 
+SLV = .58      # 半袖の長さ（肩→ひじの何割まで袖か）
+
 def pose_arm(A, sh, w):
     """腕1本を、肩 sh・手首 w の位置に合わせる。ひじは外・後ろ・下へ曲がる。手は前腕の向きに向ける"""
     sh, w = Vector(sh), Vector(w)
     el = ik_elbow(sh, w, Vector((.55 * A["sx"], -.45, -.7)))
     if el.y > -.50: el.z = max(el.z, TOP + .07)          # 卓の上では、ひじを卓にめりこませない
     set_limb(A["ua"], sh, el); set_limb(A["fa"], el, w)
+    if A.get("slv"): set_limb(A["slv"], sh, sh.lerp(el, SLV))
     A["eb"].location = el; A["shd"].location = sh; A["hand"].location = w
     A["hand"].rotation_euler = (w - el).to_track_quat("Y", "Z").to_euler()
 
@@ -370,7 +373,18 @@ def build_player(i, P):
     # 胴（少し前かがみ）
     torso = box(f"torso{i}", (.40 * b, .25 * b, .52 * hgt), (0, y0, .93), um, bevel=.09, parent=r)
     torso.rotation_euler = (math.radians(-10), 0, 0)
-    collar = box(f"collar{i}", (.20 * b, .06, .05), (0, y0 + .15, .93 + .215 * hgt), mat(f"collar{i}", P["collar"], .6), bevel=.015, parent=r)
+    # ユニフォームの形（全チーム共通・2026-11-13 ユーザーの指定）: 襟付きのポロシャツ＋前立てとボタン＋半袖（ひじと前腕は肌）。首の前の横棒はやめた
+    cm_ = mat(f"collar{i}", P["collar"], .6)
+    T_, F_ = .26 * hgt, .125 * b                       # 胴の上の面・前の面（胴の中の座標）
+    for sx in (-1, 1):                                  # 襟（左右の三角の折り返し。胸の上にねかせる）
+        f = box(f"cflap{i}{sx}", (.085, .014, .075), (sx * .05, F_ - .012, T_ - .05), cm_, bevel=.008, parent=torso)
+        f.rotation_euler = (math.radians(-22), math.radians(sx * 32), math.radians(-sx * 8))
+    bpy.ops.mesh.primitive_torus_add(major_radius=.095, minor_radius=.02, location=(0, -.005, T_ - .008), major_segments=40, minor_segments=10)
+    o = bpy.context.object; o.name = f"cband{i}"; o.data.materials.append(cm_); o.parent = torso; o.scale = (1.05 * b, .95 * b, 1)       # 首のまわりの襟の帯
+    for poly in o.data.polygons: poly.use_smooth = True
+    box(f"placket{i}", (.032, .008, .11), (0, F_ - .002, T_ - .125), cm_, bevel=.003, parent=torso)                  # 前立て
+    for k in range(3): sphere(f"btn{i}{k}", .0065, (0, F_ + .004, T_ - .085 - k * .035), mat("button", "#F4F4F2", .35), (1, .5, 1), torso)
+    collar = empty(f"collar{i}", r)                     # 向きをそろえるための目印（形は胴に付けた）
     collar.rotation_euler = (math.radians(-25), 0, 0)
     # 頭（首は作らない。大きめの頭を胴にじかにのせる＝2026-11-11 ユーザーの判断。首があると、ずれたときに変に見える）
     HS = 1.5
@@ -480,13 +494,14 @@ def build_player(i, P):
     body = dict(torso=torso, torso_rx=math.radians(-10), torso_loc=torso.location.copy(), collar=collar, collar_loc=collar.location.copy(), head=hd, head_loc=hd.location.copy())
     for sx in (-1, 1):
         sh = (sx * .192 * b, y0 + .02, 1.075 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
-        ua = limb(f"uarm{i}{sx}", sh, el, .055 * b, am, r); fa = limb(f"farm{i}{sx}", el, wr, .03, skin, r)     # 前腕は手首まで肌の色・少し太く
-        eb = sphere(f"elb{i}{sx}", .056 * b, el, am, parent=r); sd = sphere(f"shd{i}{sx}", .057 * b, sh, am, parent=r)      # 肩の丸みは上腕と同じ太さ・胴の角の中におさめる（.07 で外・上に置くと、肩が盛り上がって見えた。2026-11-13 ユーザーの指摘）
+        ua = limb(f"uarm{i}{sx}", sh, el, .034 * b, skin, r); fa = limb(f"farm{i}{sx}", el, wr, .03, skin, r)     # 半袖: 上腕の下半分・ひじ・前腕は肌
+        sv = limb(f"slv{i}{sx}", sh, Vector(sh).lerp(Vector(el), SLV), .058 * b, am, r)                              # 袖（肩から上腕の途中まで）
+        eb = sphere(f"elb{i}{sx}", .033 * b, el, skin, parent=r); sd = sphere(f"shd{i}{sx}", .057 * b, sh, am, parent=r)      # 肩の丸みは上腕と同じ太さ・胴の角の中におさめる（.07 で外・上に置くと、肩が盛り上がって見えた。2026-11-13 ユーザーの指摘）
         hn = sphere(f"hand{i}{sx}", .036, wr, skin, (1.05, 1.0, .6), r)     # 手のひら
         for fk, fx in enumerate((-.024, -.008, .008, .024)):               # 指4本（手の向き＝+Y にのびる）
             sphere(f"fing{i}{sx}{fk}", .0105, (fx, .042 - abs(fx) * .25, -.004), skin, (1, 2.6, 1.5), hn)
         sphere(f"thumb{i}{sx}", .012, (-sx * .036, .012, -.004), skin, (1, 2.0, 1.4), hn).rotation_euler = (0, 0, sx * math.radians(35))    # 親指は内がわ
-        body["R" if sx == 1 else "L"] = dict(sx=sx, sh=Vector(sh), ua=ua, fa=fa, eb=eb, shd=sd, hand=hn, rest=Vector(wr))
+        body["R" if sx == 1 else "L"] = dict(sx=sx, sh=Vector(sh), ua=ua, fa=fa, eb=eb, shd=sd, hand=hn, rest=Vector(wr), slv=sv)
     pose_body(body, body["R"]["rest"])       # 止まった絵でも、ひじを曲げた形にしておく
     arm = body
     # 椅子
