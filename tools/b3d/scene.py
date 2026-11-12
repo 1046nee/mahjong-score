@@ -396,7 +396,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -444,7 +444,7 @@ def build_player(i, P):
     for sx in (-1, 1):
         e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .106, hz - .006), em, ESC, hd)
         e.rotation_euler = (0, math.radians(sx * ETILT), 0)      # 顔の面の中で傾ける（＋で目じりが下がる）
-        if ek == "kiri":     # まゆ（目じりが上がる短い線）
+        if ek == "kiri" and not P.get("brows"):     # まゆ（目じりが上がる短い線）
             box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
         if ek == "cute":     # まつ毛3本（目の上の外がわに、扇のように開く短い線）
             for k, ang in enumerate((-12, 22, 56)):      # 真上からの角度（外がわへ倒す）
@@ -571,6 +571,11 @@ def build_player(i, P):
         sphere(f"hubun{i}", .04, (0, hy - .12, hz + .08), hm2, parent=hd)
         for sx in (-1, 1): sphere(f"huside{i}{sx}", .045, (sx * .107, hy + .02, hz - .06), hm, (.55, .9, 1.9), hd)
         sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
+    elif kind == "long_part":  # 前髪を真ん中で分けたロング（顔の両わきに長く垂らす）
+        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
+        for sx in (-1, 1):
+            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
+            sphere(f"bang{i}{sx}", .05, (sx * .05, hy + .084, hz + .052), hm, (1.15, .45, .5), hd).rotation_euler = (math.radians(-25), math.radians(sx * 28), 0)
     elif kind == "short_bangs":  # 短髪＋おでこにかかる前髪（毛先を少し散らす）
         for k in range(5):
             sphere(f"bang{i}{k}", .032, (-.056 + k * .028, hy + .084, hz + .07 - abs(k - 2) * .005), hm, (1.0, .55, 1.05), hd)
@@ -589,10 +594,13 @@ def build_player(i, P):
         sphere(f"uctop{i}", .1, (0, hy - .01, hz + .085), hm, (1.0, 1.15, .5), hd)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
+    if P.get("strands"):   # 顔の横に少し垂らした毛（後れ毛）
+        for sx in (-1, 1):
+            sphere(f"strd{i}{sx}", .013, (sx * .102, hy + .05, hz - .045), hm, (.7, .7, 3.2), hd)
     if P.get("acc") == "flowers":   # 髪に白い花の飾り（左右の結んだ髪に3つずつ）
         fm = mat("flower", "#FAFAF5", .5)
         for sx in (-1, 1):
-            for k in range(3): sphere(f"fl{i}{sx}{k}", .014, (sx * (.112 + k * .006), hy - .005 - k * .012, hz - .03 - k * .05), fm, (1, .6, 1), hd)
+            for k in range(3): sphere(f"fl{i}{sx}{k}", .021, (sx * .124, hy + .015 - k * .01, hz - .035 - k * .045), fm, (.6, 1, 1), hd)   # 結んだ髪の外がわ・前から見える位置
     # 腕（両手を手牌のあたりに）
     sl = P.get("sleeve")
     am = (mat(f"sleeve{i}", sl, .7) if isinstance(sl, str) else pattern_mat(f"sleeve{i}", sl[0], sl[1])) if sl else um     # そでだけ別の色のチーム（白い胴に黒いそで など）
