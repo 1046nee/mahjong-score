@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """麻雀「打つ前の確認リスト」（1枚・A4）を作る（2026-11-11〜・ユーザーの依頼）。
-点数早見表（tools/score_sheet.py）と同じ見た目。基本の10項目（blog-house-rules）＋上級の20項目（blog-rule-joukyu）を、
+点数早見表（tools/score_sheet.py）と同じ見た目。基本の10項目（blog-house-rules）＋上級の22項目（blog-rule-joukyu）を、
 □・項目・決め方（選択肢）の形で全部並べる。中身を変えたら記事の本文とそろえる。
 
 出力（assets/rules/）:
@@ -33,11 +33,13 @@ LEFT = [
         ("赤ドラ・喰いタンなど", "赤の枚数 ・ 喰いタン ・ 後づけ ・ ダブロンか頭ハネか"),
         ("記録", "誰が付けるか ・ 全員が見られるか ・ あとで見返せるか"),
     ]),
-    ("ローカル役｜あるか・何点か", "#6E8CA8", "", [
+    ("ローカル役・途中流局｜あるか・どうするか", "#6E8CA8", "", [
         ("流し満貫", "なし ／ 満貫"),
         ("十三不塔", "なし ／ 満貫 ／ 役満"),
         ("四風連打", "流局にする ／ そのまま続ける"),
         ("人和", "なし ／ 満貫 ／ 役満"),
+        ("四家立直", "流局にする ／ そのまま続ける"),
+        ("三家和", "トリロン ／ 頭ハネ ／ 流局"),
     ]),
 ]
 RIGHT = [
@@ -64,7 +66,7 @@ RIGHT = [
         ("ツモの払い", "ツモ損 ／ 北家の分を2人で折半"),
     ]),
 ]
-assert sum(len(x[3]) for x in LEFT + RIGHT) == 30  # 基本10・トビ3・玄人7・ローカル役4・三麻6（記事とそろえる）
+assert sum(len(x[3]) for x in LEFT + RIGHT) == 32  # 基本10・トビ3・玄人7・ローカル役と途中流局6・三麻6（記事とそろえる）
 
 
 def col_html(sections):
@@ -106,12 +108,12 @@ footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: fl
 footer b {{ color: #177083; font-weight: 900; }}
 {LOGO_CSS}
 </style></head><body>
-<header><h1>麻雀 打つ前の確認リスト<small>基本の10項目 ＋ 上級の20項目 ／ 決め方の選択肢つき</small></h1>
+<header><h1>麻雀 打つ前の確認リスト<small>基本の10項目 ＋ 上級の22項目 ／ 決め方の選択肢つき</small></h1>
 <div class="legend"><b></b>決めたら チェック<br><span>正解は1つではない</span></div>{logo_html()}</header>
 <div class="grid"><div>{col_html(LEFT)}</div><div>{col_html(RIGHT)}</div></div>
 <p class="foot-note">いつものメンバーなら一度決めて、LINEなどに残しておけば次からは聞かずに済む。初めての相手と打つ日は、上から読み上げて確かめる。<br>
 <b>どれを選んでも、集計で入れるのは最後の持ち点だけ</b>。ウマ・オカを付けたスコアと通算の成績は、まじゃすこで自動に。</p>
-<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>くわしくは「打つ前に決める10項目」「上級ルール20項目」の記事で</span></footer>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>くわしくは「打つ前に決める10項目」「上級ルール22項目」の記事で</span></footer>
 </body></html>"""
 
 

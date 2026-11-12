@@ -177,13 +177,13 @@ def gy02():
                 stage(a + 3.4, b, tiles(hand_, 64), top=640, anim="fade"), stage(a + 3.8, b, note("4枚ずつ3回、最後に1枚。<b>13枚</b>で始まる<br>（親は14枚）"), top=860)]
     def wanpai(a, b):
         sides = walls()
-        sides[0] = wall_row(hl=tuple(range(0, 7)), up={4: "p3"})
+        sides[0] = wall_row(hl=tuple(range(0, 7)), up={2: "p3"})   # ドラ表示牌は嶺上牌（0・1）のとなり＝時計回りに5幢目（2026-11-13 ユーザーの指摘。前は4で、時計回りに3幢目になっていた）
         return [head(a, b, "王牌"), stage(a + .1, b, term("王牌", "ワンパイ"), top=300),
                 stage(a + .3, b, table(sides, center='<div style="font-size:36px">山の最後の<br><b style="color:#FFD27A">7幢＝14枚</b>は<br>ツモらない</div>'), top=460),
                 stage(a + 1.4, b, note("表を向けた牌が<b>ドラ表示牌</b>"), top=1340)]
     def rinshan(a, b):
         sides = walls()
-        sides[0] = wall_row(hl=(0, 1), up={4: "p3"})
+        sides[0] = wall_row(hl=(0, 1), up={2: "p3"})
         return [head(a, b, "嶺上牌"), stage(a + .1, b, term("嶺上牌", "リンシャンパイ"), top=300),
                 stage(a + .3, b, table(sides, center='<div style="font-size:36px">カンをしたら<br>王牌の<b style="color:#FFD27A">端から</b><br>1枚もらう</div>'), top=460),
                 stage(a + 1.4, b, note("この牌であがると<b>嶺上開花</b>（1翻）"), top=1340)]
