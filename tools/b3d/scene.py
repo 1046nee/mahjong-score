@@ -263,6 +263,8 @@ HP = TW + .0006                          # 手牌のとなりとの間隔
 HX0 = -6 * HP - .03                      # 席0の手牌（13枚）の左端の中心
 RP = TW + .003                           # 河のとなりとの間隔
 RX0 = -2.5 * RP                          # 河の1枚目の中心（6枚で折り返す）
+TAKEN = float(arg("--taken", ".5"))   # 山から取った割合（配牌＋ツモ。0＝配る前）
+DORA = arg("--dora", "m8")            # ドラ表示牌
 RY, WY, HY = -.118, -.215, -.335         # 河・山・手牌の位置（手前の席の座標の y）。手牌と山のあいだは、倒した牌1枚（TL）が入る広さにする（-.255/-.318 だと、晒した牌が山の下にもぐった）
 BACK = {"dark": "#2F62C8", "green": "#177083"}[THEME]   # 牌の背の色
 _tile_mesh = {}
@@ -338,13 +340,23 @@ def build_tiles():
     Z = TOP + .0005
     roots = [seat_root(i) for i in range(4)]
     named = {}
+    # 山。開門（山を割る所）は手前の席の山の右寄り。その右の7幢が王牌（2026-11-13）:
+    #   王牌は時計回りに数えて5幢目の上段がドラ表示牌、6・7幢目（割れ目のとなりの2幢）が嶺上牌。手前の山では、時計回り＝右から左
+    #   配牌とツモは割れ目の左から時計回り（手前→左→奥→右の山の順・どの山も右から左）に取るので、その分の幢は置かない（TAKEN＝取った割合）
+    n = int((2 * (abs(WY) - TL / 2 - .012)) / (TW + .0008))      # 山の長さは、となりの席の山と角で重ならない数にする（牌の大きさから計算）
+    x0 = -(n - 1) / 2 * (TW + .0008); WP = TW + .0008
+    BRK = n - 8                                                   # 手前の山の、割れ目の左の幢（右の7幢が王牌）
+    order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
+    taken = set(order[:round(len(order) * TAKEN)])
     for i, r in enumerate(roots):
-        # 山（2段×13幢。手前の席から見て左右に）
-        n = int((2 * (abs(WY) - TL / 2 - .012)) / (TW + .0008))      # 山の長さは、となりの席の山と角で重ならない数にする（牌の大きさから計算）
-        x0 = -(n - 1) / 2 * (TW + .0008)
         for k in range(n):
+            if (i, k) in taken: continue
+            x = x0 + k * WP + (.007 if (i == 0 and k > BRK) else 0)     # 王牌は割れ目の分だけ右へ
             for lv in range(2):
-                tile("back", (x0 + k * (TW + .0008), WY, Z + lv * TT), r, "down", rz=math.pi / 2 * 0)
+                if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
+                    named["dora"] = tile(DORA, (x, WY, Z + TT), r, "lie"); continue
+                t = tile("back", (x, WY, Z + lv * TT), r, "down")
+                if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
         # 河（6枚で折り返す）
         rv = RIVERS[i]
         for k, c in enumerate(rv):
