@@ -17,6 +17,7 @@ THEME = arg("--theme", "dark")
 CAMS = arg("--cams", "wide,mid,hand,top,meld").split(",")
 SIZE = [int(x) for x in arg("--size", "720x1280").split("x")]
 SAMPLES = int(arg("--samples", "48"))
+FACE = arg("--face", "eyes")   # eyes＝目だけ／nm＝鼻と口も（試し。2026-11-12）
 ANIM = "--anim" in sys.argv      # 動きの試し（チーの5つの手順）。1コマずつ書き出す。途中で止まっても、できたコマは飛ばして続きから
 FPS = int(arg("--fps", "12"))
 STEP = 0 if ANIM else int(arg("--step", "4"))   # 鳴きの手順のどこまで進んだか（0=鳴く前 … 5=打牌まで）
@@ -320,6 +321,9 @@ def build_player(i, P):
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
     for sx in (-1, 1):   # 目（ふつうの大きさの黒い丸。白い点は付けない＝2026-11-12 ユーザーの判断。全員同じ作り＝実在の人の顔にしない）
         sphere(f"eye{i}{sx}", .015, (sx * .042, hy + .106, hz - .006), mat("eye", "#2A211D", .45), (1, .5, 1.2), hd)
+    if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
+        sphere(f"nose{i}", .011, (0, hy + .116, hz - .026), mat("nose", "#E3B79B", .6), (1, .7, .9), hd)
+        box(f"mouth{i}", (.026, .006, .005), (0, hy + .105, hz - .052), mat("mouth", "#8A4A3C", .6), bevel=.002, parent=hd).rotation_euler = (math.radians(-25), 0, 0)
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
@@ -405,6 +409,7 @@ CAM = {   # 名前: (位置, 見る点, レンズmm)
     "wide": ((3.6, -4.6, 2.5), (0, 0, .95), 30),          # 会場の引き
     "mid":  ((1.25, -2.2, 1.7), (0, .05, 1.0), 38),      # 手前の選手の肩ごし
     "hand": ((0, -.50, 1.20), (0, -.22, .77), 26),      # 手前の選手の目線（手牌と河）     # 手牌に寄る（低い位置）
+    "face": ((.28, -.15, 1.46), (0, .72, 1.30), 34),       # 奥の選手の顔のアップ（顔の作りを確かめる用）
     "top":  ((0, -.02, 2.6), (0, 0, .76), 42),            # 真上
     "meld": ((.52, -.58, 1.05), (.27, -.33, .76), 70),     # 右端に並べた牌のアップ
 }
