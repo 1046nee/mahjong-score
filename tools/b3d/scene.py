@@ -396,7 +396,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -452,16 +452,20 @@ def build_player(i, P):
                 cx = sx * (.042 + math.sin(a2) * (r0 + r1) / 2); cz = hz - .006 + math.cos(a2) * (r0 + r1) / 2 * 1.1
                 ly = math.sqrt(max(1e-6, .115 ** 2 - cx * cx - ((cz - hz) / 1.08) ** 2))      # 頭の丸みの上に置く（決め打ちの奥行きだと、上の1本が頭にうまった）
                 box(f"lash{i}{sx}{k}", (.0042, .007, r1 - r0), (cx, hy + ly, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
+    if P.get("brows"):     # 太めのまゆ（目じりを少し上げて、きりっと見せる）。前髪の下に見える高さ
+        for sx in (-1, 1):
+            box(f"brw{i}{sx}", (.034, .007, .0075), (sx * .043, hy + .105, hz + .02), em, bevel=.0025, parent=hd).rotation_euler = (math.radians(-14), math.radians(sx * -12), 0)
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
         gm = mat(f"glass{i}", gc, .3, metal=.3)
         for sx in (-1, 1):
-            bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "round_thick": .0055, "rect": .0036}.get(gs, .0032), location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0),
+            bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "round_thick": .0055, "rect": .0036, "rimless": .0012}.get(gs, .0032), location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0),
                                              major_segments=4 if gs in ("rect", "thick") else 48, minor_segments=8)
             o = bpy.context.object; o.data.materials.append(gm); o.parent = hd
             if gs in ("rect", "thick"):      # 4角の輪をまず形の中で45度回して四角にし、それから横長にのばす（先にのばすと菱形にゆがんだ）
                 o.data.transform(Matrix.Rotation(math.radians(45), 4, "Z")); o.scale = (1.58, 1.1, 1)      # 回すと辺が r/√2 になるので、その分だけ大きく
             if gs == "oval": o.scale = (1.2, .8, 1)
+            if gs == "rimless": o.scale = (1.15, .78, 1)      # ふちなし: ごく細い輪＋うすいレンズ
             if gs == "browline": box(f"brow_g{i}{sx}", (.056, .008, .01), (sx * .042, hy + .118, hz + .014), gm, bevel=.003, parent=hd)
             for poly in o.data.polygons: poly.use_smooth = True
         box(f"bridge{i}", (.03, .005, .005), (0, hy + .116, hz - .004), gm, parent=hd)
@@ -567,6 +571,22 @@ def build_player(i, P):
         sphere(f"hubun{i}", .04, (0, hy - .12, hz + .08), hm2, parent=hd)
         for sx in (-1, 1): sphere(f"huside{i}{sx}", .045, (sx * .107, hy + .02, hz - .06), hm, (.55, .9, 1.9), hd)
         sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
+    elif kind == "short_bangs":  # 短髪＋おでこにかかる前髪（毛先を少し散らす）
+        for k in range(5):
+            sphere(f"bang{i}{k}", .032, (-.056 + k * .028, hy + .084, hz + .07 - abs(k - 2) * .005), hm, (1.0, .55, 1.05), hd)
+        for sx in (-1, 1): sphere(f"sbs{i}{sx}", .05, (sx * .1, hy + .0, hz + .03), hm, (.5, .95, 1.0), hd)
+    elif kind == "loose_perm":   # ゆるめのパーマ（大きめの丸を少なめに・ふんわり）
+        for k in range(14):
+            a = k * 2.399; zz = .11 - (k / 13) * .12; rr = math.sqrt(max(0, .13 ** 2 - (zz - .02) ** 2)) * .92
+            px_, py_ = math.cos(a) * rr, -.015 + math.sin(a) * rr * .95
+            if py_ > .03 and zz < .07: continue
+            sphere(f"lperm{i}{k}", .043, (px_ * .97, hy + py_, hz + zz), hm, (1.1, 1.05, .75), hd)
+        sphere(f"bang{i}", .07, (.02, hy + .072, hz + .07), hm, (1.45, .5, .45), hd).rotation_euler = (0, math.radians(-10), 0)
+    elif kind == "undercut":     # 横を刈り上げ、上だけ長く後ろへ流す（横は肌が透ける短い髪）
+        cap.scale = (.95, .97, .8); cap.location = (0, hy - .03, hz + .055)
+        sd = mat(f"hairs{i}", "#5E5550", .7)
+        for sx in (-1, 1): sphere(f"ucs{i}{sx}", .085, (sx * .055, hy - .03, hz - .005), sd, (.55, 1.0, .9), hd)
+        sphere(f"uctop{i}", .1, (0, hy - .01, hz + .085), hm, (1.0, 1.15, .5), hd)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
     if P.get("acc") == "flowers":   # 髪に白い花の飾り（左右の結んだ髪に3つずつ）
