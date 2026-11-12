@@ -18,4 +18,11 @@ with sync_playwright() as p:
             if r:
                 tot += len(r); print(w, f, len(r), r[:3])
     b.close()
+# SVG の中の <image>（卓の図）: 横向きの牌の枠が 82:69 か。枠の比がちがうと、絵が枠の中で縮んで小さく見える
+import re
+for f in pages:
+    for m in re.finditer(r'<image href="[^"]*-yoko\.svg"[^>]*?width="([\d.]+)" height="([\d.]+)"', open(f, encoding="utf-8").read()):
+        w, h = float(m.group(1)), float(m.group(2))
+        if abs(w / h - 82 / 69) > .03:
+            tot += 1; print("svg", f, w, h, round(w / h, 2))
 print("total", tot)

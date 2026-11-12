@@ -7,8 +7,8 @@ def T(code, x, y, w, rot=0, op=1.0):
     """卓の図の牌（まじゃすこの牌の絵）。rot=90 で横向き"""
     yoko = rot in (90, 270)
     f = f"{code}-yoko" if yoko else code
-    h = w * (69 / 82 if yoko else 89 / 62)
     ww = w * (82 / 62) if yoko else w
+    h = ww * 69 / 82 if yoko else w * 89 / 62     # 横向きは 82:69。高さを w×69/82 にすると枠が横長すぎて、絵が枠の中で縮む（小さく見えていた）
     return f'<image href="{BASE}{f}.svg" x="{x:.1f}" y="{y:.1f}" width="{ww:.1f}" height="{h:.1f}" opacity="{op}"/>'
 
 def board(step):
@@ -51,7 +51,7 @@ def board(step):
     mx, my = 246, 272
     if step >= 2:
         if step >= 3:
-            g.append(T("m6", mx - 22, my + 4, hw, rot=90))
+            g.append(T("m6", mx - 22, my + 5.2, hw, rot=90))
         g.append(T("m4", mx, my, hw)); g.append(T("m5", mx + hw + 1, my, hw))
         x0 = mx - (26 if step >= 3 else 4)
         dash = "" if step >= 4 else 'stroke-dasharray="4 3"'
