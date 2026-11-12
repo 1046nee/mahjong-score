@@ -333,7 +333,9 @@ SHEET2_CSS = """
 .g { border: 2px solid #1F2A28; border-radius: 0; overflow: hidden; margin-bottom: 9px; background: #fff; } /* 表は点数早見表と同じ四角・濃い枠（2026-11-12 ユーザーの指定）。見出しの帯・凡例は丸角のまま */
 .g > h2 { background: var(--c); color: #fff; display: flex; align-items: baseline; gap: 8px; padding: 2px 10px 3px; font-size: 17px; font-weight: 900; line-height: 1.2; }
 .g > h2 small { font-size: 11px; font-weight: 700; opacity: .9; }
-.row { display: grid; grid-template-columns: 82px 32px 1fr; align-items: center; column-gap: 6px; padding: 3px 6px 3px 8px; border-top: 1px solid #D5E2DF; min-height: 34px; }
+.row { display: grid; grid-template-columns: 94px 32px 1fr; align-items: center; column-gap: 6px; padding: 0 6px 0 0; border-top: 1px solid color-mix(in srgb, var(--c) 30%, #fff); min-height: 34px; }
+/* 役の名前の列は、点数早見表の左の列と同じ作り: 薄い色の地＋右に濃い線（2026-11-12 ユーザーの指定）。色は表の見出しの色を薄めたもの */
+.row .nm { align-self: stretch; display: flex; flex-direction: column; justify-content: center; padding: 3px 6px 3px 8px; background: color-mix(in srgb, var(--c) 11%, #fff); border-right: 1.5px solid #1F2A28; }
 .row:first-of-type { border-top: 0; }
 .row .nm b { display: block; font-size: 14px; font-weight: 900; letter-spacing: -.03em; white-space: nowrap; line-height: 1.15; }
 .row .nm small { display: block; font-size: 8.5px; font-weight: 700; color: #55625F; white-space: nowrap; letter-spacing: -.02em; }
@@ -363,6 +365,13 @@ SHEET2_CSS = """
 """
 
 
+def _nm(name, yomi):
+    """役の名前の列。長い名前・読みは、線をはみ出さないように字を小さく（門前清自摸和・トウホクシンカンセン）"""
+    bs = ' style="font-size:12.5px"' if len(name) >= 6 else ""
+    ys = ' style="font-size:7.6px"' if len(yomi) >= 10 else ""
+    return f'<div class="nm"><b{bs}>{name}</b><small{ys}>{yomi}</small></div>'
+
+
 def _rows(items, url, color):
     out = ""
     for name, yomi, m, n, cond, ex in items:
@@ -372,7 +381,7 @@ def _rows(items, url, color):
         else:
             body = f'<p class="t">{SHORT_SIT.get(name, SHORT[name])}</p>'
             cls = "row sit"
-        out += f'<div class="{cls}"><div class="nm"><b>{name}</b><small>{yomi}</small></div>{naki_chip(m, n)}<div class="bd">{body}</div></div>'
+        out += f'<div class="{cls}">{_nm(name, yomi)}{naki_chip(m, n)}<div class="bd">{body}</div></div>'
     return out
 
 
@@ -443,7 +452,7 @@ def local_sheet(url):
     rows = ""
     for name, yomi, nk, cond, ex in LOCAL_YAKUMAN:
         body = (f'{ex_tiles(ex, url)}<p class="t">{cond}</p>' if ex else f'<p class="t">{cond}</p>')
-        rows += f'<div class="row{"" if ex else " sit"}"><div class="nm"><b>{name}</b><small>{yomi}</small></div>{LOCAL_CHIP[nk]}<div class="bd">{body}</div></div>'
+        rows += f'<div class="row{"" if ex else " sit"}">{_nm(name, yomi)}{LOCAL_CHIP[nk]}<div class="bd">{body}</div></div>'
     half = 7
     parts = rows.split('<div class="row')[1:]
     left_rows = "".join('<div class="row' + p for p in parts[:half]); right_rows = "".join('<div class="row' + p for p in parts[half:])
@@ -452,7 +461,7 @@ def local_sheet(url):
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
 .lt {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 0; }}
-.lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; width: 92px; line-height: 1.15; }}
+.lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; border-right: 1.5px solid #1F2A28; width: 92px; line-height: 1.15; }}
 .lt th b {{ display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; }} .lt th small {{ display: block; font-size: 8.5px; font-weight: 700; color: #6B5A4C; white-space: nowrap; }}
 .lt td {{ border-top: 1px solid #F2D9C2; padding: 4px 7px; font-size: 10.5px; font-weight: 700; line-height: 1.3; }}
 .lt td b {{ color: #B4561B; font-weight: 900; }} .lt td.tv {{ width: 104px; font-size: 10px; font-weight: 800; color: #1F2A28; border-left: 1px solid #F2D9C2; }}
