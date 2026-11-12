@@ -201,14 +201,14 @@ def _naki_rail(cur):
     out = ""
     for k, nm in enumerate(["発声", "開示", "回収", "副露", "打牌"]):
         now = k == cur; done = k < cur
-        bg = "#E75620" if now else ("#177083" if done else "#fff"); fg = "#fff" if (now or done) else "#8FA09C"; sz = 84 if now else 64
-        out += (f'<div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:150px"><span style="width:{sz}px;height:{sz}px;border-radius:50%;background:{bg};color:{fg};'
+        bg = "#E75620" if now else ("#177083" if done else "#fff"); fg = "#fff" if (now or done) else "#8FA09C"; sz = 78 if now else 64
+        out += (f'<div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:132px"><span style="width:{sz}px;height:{sz}px;border-radius:50%;background:{bg};color:{fg};'
                 f'display:grid;place-items:center;font-size:{round(sz * .58)}px;font-weight:900;{"" if (now or done) else "box-shadow:inset 0 0 0 4px #C9D6D2;"}">{k + 1}</span>'
                 f'<span style="font-size:{38 if now else 32}px;font-weight:900;color:{"#E75620" if now else ("#177083" if done else "#8FA09C")}">{nm}</span></div>')
     return f'<div style="display:flex;justify-content:center;align-items:flex-end;gap:14px">{out}</div>'
 def _naki_step(i):
     t, n = NAKI_STEPS[i]
-    return sc(t, (.05, 260, _naki_rail(i), "fade"), (.1, 450, _board(i + 1, 800)), (.9, 1290, note(n)))
+    return sc(t, (.05, 318, _naki_rail(i), "fade"), (.1, 492, _board(i + 1, 770)), (.9, 1296, note(n)))   # 番号の列は見出しから離す（260 だと今の番号の丸が見出しに重なった）
 def t_naki():
     return [(["ポンやチー、", "どの順番で動いていますか？", "正しい手順は、5つあります。"], hook("鳴きの手順", "ポン・チーの\n正しい順番は？", _board(4, 640), g=False)),
             (["1番、発声。", "チー、またはポンと声に出します。", "チーは、他家がポンをするかもしれないので、", "一拍おいてから言うのがマナーです。"], _naki_step(0)),
