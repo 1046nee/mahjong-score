@@ -367,7 +367,7 @@ SHEET2_CSS = """
 
 def _nm(name, yomi):
     """役の名前の列。長い名前・読みは、線をはみ出さないように字を小さく（門前清自摸和・トウホクシンカンセン）"""
-    bs = ' style="font-size:12.5px"' if len(name) >= 6 else ""
+    bs = ' style="font-size:11px"' if len(name) >= 7 else (' style="font-size:12.5px"' if len(name) >= 6 else "")
     ys = ' style="font-size:7.6px"' if len(yomi) >= 10 else ""
     return f'<div class="nm"><b{bs}>{name}</b><small{ys}>{yomi}</small></div>'
 
@@ -444,6 +444,15 @@ LOCAL_YAKU = [
  ("十二落抬", "シーアルラオタイ", "<b>4つ全部鳴いて</b>単騎であがる", "1翻"),
  ("金鶏独立", "チンチードクリツ", "十二落抬で<b>一索の単騎</b>", "満貫"),
 ]
+# ルールで2倍になる役満（形によるダブル役満）。Mリーグ・天鳳は1倍、雀魂は2倍（blog-yakuman-rules と同じ中身・2026-11-12 ユーザーの依頼）
+DOUBLE_YAKUMAN = [
+ ("四暗刻単騎", "スーアンコータンキ", "四暗刻を<b>単騎待ち</b>（雀頭の1枚待ち）であがる", dict(hand="111m333p555s222z4z", win="4z")),
+ ("国士無双十三面", "コクシジュウサンメン", "<b>13種どれでも</b>あがれる国士無双", dict(hand="19m19p19s1234567z", win="1m")),
+ ("純正九蓮宝燈", "ジュンセイチューレン", "<b>1112345678999</b>の形で9種待ち", dict(hand="1112345678999m", win="5m")),
+ ("大四喜", "ダイスーシー", "<b>風牌4種</b>を全部刻子に", dict(hand="111222333444z5m", win="5m")),
+]
+# いちばん大きい形: 字一色＋大四喜（2倍）＋四暗刻単騎（2倍）＋四槓子＝6倍
+MAX6 = dict(hand="7z", win="7z", melds=[("ankan", "1111z"), ("ankan", "2222z"), ("ankan", "3333z"), ("ankan", "4444z")])
 LOCAL_CHIP = {"mz": '<i class="c-mz">門前<br>のみ</i>', "ok": '<i class="c-ok">鳴き<br>OK</i>', "loc": '<i class="c-loc">卓で<br>決める</i>', "na": '<i class="c-na">回数<br>で決定</i>'}
 
 
@@ -458,6 +467,12 @@ def local_sheet(url):
     left_rows = "".join('<div class="row' + p for p in parts[:half]); right_rows = "".join('<div class="row' + p for p in parts[half:])
     yrow = lambda n, y, cd, v: f'<tr><th><b>{n}</b><small>{y}</small></th><td class="tc">{cd}</td><td class="tv">{v}</td></tr>'
     yk1 = "".join(yrow(*x) for x in LOCAL_YAKU[:4]); yk2 = "".join(yrow(*x) for x in LOCAL_YAKU[4:])
+    dchip = '<i class="c-dbl">ルール<br>で2倍</i>'
+    drow = lambda n, y, cd, ex: f'<div class="row">{_nm(n, y)}{dchip}<div class="bd">{ex_tiles(ex, url, avail=232)}<p class="t">{cd}</p></div></div>'
+    d1 = "".join(drow(*x) for x in DOUBLE_YAKUMAN[:2]); d2 = "".join(drow(*x) for x in DOUBLE_YAKUMAN[2:])
+    # 最大の形は、ローカル役満の左の列の下（右の列より短くて空いていた所）に置く
+    max6 = (f'<section class="g dbl m6" style="--c:#A8407F"><h2>いちばん大きい形<small>6倍役満</small></h2><div class="m6b">{ex_tiles(MAX6, url, avail=330, wmax=19)}'
+            f'<p class="t"><b>字一色</b>＋<b>大四喜</b>（2倍）＋<b>四暗刻単騎</b>（2倍）＋<b>四槓子</b>＝<b>6倍</b><br>子192,000点・親288,000点（形の2倍がないルールでは4倍）</p></div></section>')
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
 /* 行を詰めたので、画像の高さは中身に合わせる（A4の高さのままだと下半分が空く。2026-11-12）。PDF は A4 の上に置く */
@@ -471,15 +486,20 @@ html, body {{ height: auto; }} footer {{ position: static; margin-top: 10px; }}
 .box {{ border-color: #B4561B; }} .box h3 {{ background: #B4561B; }}
 /* 行の高さは役一覧表と同じにそろえる（2026-11-12 ユーザーの指定。前は70pxで間延びしていた） */
 .lt2 {{ display: grid; grid-template-columns: 1fr 1fr; }} .lt2 .lt + .lt {{ border-left: 2px solid #F2D9C2; }}
+.dbl .lt2 > div + div {{ border-left: 2px solid #1F2A28; }} .dbl .row:first-child {{ border-top: 0; }}
+.c-dbl {{ background: #F7E6EF; color: #A8407F; border: 1.5px solid #E0B4CB; }}
+.m6 .m6b {{ padding: 6px 10px 6px; background: #FBF2F7; }} .m6 .ex {{ justify-content: center; }}
+.m6 .t {{ font-size: 11px; font-weight: 800; white-space: normal; text-align: center; margin-top: 4px; line-height: 1.45; }} .m6 .t b {{ color: #A8407F; }}
 .lt td, .lt th {{ height: 34px; padding-top: 3px; padding-bottom: 3px; }} .lt td {{ font-size: 11px; }} .lt td.tv {{ font-size: 10.5px; width: 98px; }}
 </style></head><body>
-<header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
+<header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・ダブル役満・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
 <div class="cols loc">
-<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>13役</small></h2>{left_rows}</section></div>
+<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>13役</small></h2>{left_rows}</section>{max6}</div>
 <div><section class="g" style="--c:{c}"><h2>ローカル役満<small>つづき</small></h2>{right_rows}</section>
 <div class="box"><h3>ローカル役は打つ前に決める</h3><ul><li><b>あるか・ないか</b>（Mリーグなど競技のルールでは使わない）</li><li>あるなら<b>何点か</b>・<b>鳴いてもいいか</b></li><li>扱いは場所で違う。<b>初めての相手とは必ず確かめる</b></li></ul></div></div>
 </div>
 <section class="g" style="--c:#B4561B"><h2>ローカル役<small>役満より下の扱いが多い・右は扱いの例</small></h2><div class="lt2"><table class="lt"><tbody>{yk1}</tbody></table><table class="lt"><tbody>{yk2}</tbody></table></div></section>
+<section class="g dbl" style="--c:#A8407F"><h2>ルールで2倍になる役満<small>雀魂などはダブル役満・Mリーグ・天鳳は役満のまま</small></h2><div class="lt2"><div>{d1}</div><div>{d2}</div></div></section>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>扱いは一例（卓・雀荘・地域で違う）・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 
