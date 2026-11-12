@@ -64,7 +64,7 @@ def tex_mat(code):
     return m
 
 def pattern_mat(name, kind, cols):
-    """ユニフォームの柄（実物の柄ではなく、配色だけ）。kind: zigzag / camo / lines / check / plain"""
+    """ユニフォームの柄（実物の柄ではなく、配色だけ）。kind: zigzag / camo / lines / rings / check / hem / hemcheck / plain"""
     if name in _mats: return _mats[name]
     m = bpy.data.materials.new(name); m.use_nodes = True
     nt = m.node_tree; p = nt.nodes["Principled BSDF"]; p.inputs["Roughness"].default_value = .7
@@ -84,6 +84,12 @@ def pattern_mat(name, kind, cols):
         n = nt.nodes.new("ShaderNodeTexNoise"); n.inputs["Scale"].default_value = 9.0; n.inputs["Detail"].default_value = 1.0
         nt.links.new(tc.outputs["Object"], n.inputs["Vector"]); nt.links.new(n.outputs["Fac"], ramp.inputs["Fac"])
         for i in range(len(cs)): el[i].position = .36 + i * .1
+    elif kind == "rings":     # 横じま（色1が太い地・色2が細い線）。そでなら輪の線になる
+        w = nt.nodes.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "Z"
+        w.inputs["Scale"].default_value = 3.0; w.inputs["Distortion"].default_value = 0.0
+        nt.links.new(tc.outputs["Object"], w.inputs["Vector"]); nt.links.new(w.outputs["Fac"], ramp.inputs["Fac"])
+        el[0].position = 0
+        for k in range(1, len(cs)): el[k].position = .74 + (k - 1) * .08
     elif kind == "lines":
         w = nt.nodes.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "DIAGONAL"
         w.inputs["Scale"].default_value = 2.2; w.inputs["Distortion"].default_value = 0.0
@@ -128,6 +134,20 @@ def pattern_mat(name, kind, cols):
     nt.links.new(ramp.outputs["Color"], p.inputs["Base Color"])
     _mats[name] = m
     return m
+
+def add_band(m, color, lo=-.17, hi=-.07):
+    """ユニフォームの胴に、おなかの高さの横の帯を足す（胴の中の座標の z が lo〜hi の所だけ color）"""
+    nt = m.node_tree; p = nt.nodes["Principled BSDF"]; bc = p.inputs["Base Color"]
+    src = bc.links[0].from_socket if bc.links else None
+    tc = nt.nodes.new("ShaderNodeTexCoord"); sx = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(tc.outputs["Object"], sx.inputs["Vector"])
+    g1 = nt.nodes.new("ShaderNodeMath"); g1.operation = "GREATER_THAN"; g1.inputs[1].default_value = lo
+    l1 = nt.nodes.new("ShaderNodeMath"); l1.operation = "LESS_THAN"; l1.inputs[1].default_value = hi
+    mu = nt.nodes.new("ShaderNodeMath"); mu.operation = "MULTIPLY"
+    nt.links.new(sx.outputs["Z"], g1.inputs[0]); nt.links.new(sx.outputs["Z"], l1.inputs[0]); nt.links.new(g1.outputs["Value"], mu.inputs[0]); nt.links.new(l1.outputs["Value"], mu.inputs[1])
+    mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["B"].default_value = hexc(color)
+    if src: nt.links.new(src, mx.inputs["A"])
+    else: mx.inputs["A"].default_value = bc.default_value
+    nt.links.new(mu.outputs["Value"], mx.inputs["Factor"]); nt.links.new(mx.outputs["Result"], bc)
 
 # ---------------- 形 ----------------
 def add(obj):
@@ -351,6 +371,7 @@ def person(roster, pid):
              build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
+    if tm.get("belly"): d["belly"] = tm["belly"]
     for k in ("skin", "glasses", "hair2", "beard", "acc"):
         if pp.get(k): d[k] = pp[k]
     return d
@@ -368,6 +389,7 @@ def build_player(i, P):
     r = empty(f"player{i}"); r.rotation_euler = (0, 0, i * math.pi / 2)
     b = P["build"]; hgt = P["height"]
     um = pattern_mat(f"uni{i}", *P["uniform"])
+    if P.get("belly"): add_band(um, P["belly"])      # おなかの帯（JETS の赤・ABEMAS の金 など）
     skin = mat(f"skin{i}", P.get("skin", SKIN), .6)
     y0 = -.80
     # 胴（少し前かがみ）
