@@ -109,6 +109,34 @@ def summary(d, sc, k):
         d.text((264, y - 6), s[0], font=font(66), fill=INK)
         d.text((264 + d.textlength(s[0], font=font(66)) + 20, y + 22), s[1], font=font(34, 700), fill=GREEN)
 
+OUTRO_LINE = ("麻雀のスコア記録は", "まじゃすこ で")     # 締めの文言（2026-11-12 ユーザーの判断。どの3D動画も同じ）
+_icon = {}
+def outro_card(im, t, dur):
+    """締め: 会場へ引いていく絵を少しずつ暗くし、ロゴ・名前・文言・majasco.jp を順に出す（案A）"""
+    dark = min(1, t / 1.2) * .45
+    if dark > 0: im.alpha_composite(Image.new("RGBA", (W, H), (0, 0, 0, int(255 * dark))))
+    k = lambda a: max(0.0, min(1.0, (t - a) / .35))
+    if "i" not in _icon:
+        fav = Image.open(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "assets", "favicon.png")).convert("RGBA").resize((220, 220), Image.LANCZOS)
+        m = Image.new("L", (220, 220), 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, 220, 220), radius=50, fill=255)
+        fav.putalpha(Image.composite(fav.getchannel("A"), m, m)); _icon["i"] = fav
+    a1 = k(.7)
+    if a1 > 0:
+        ic = _icon["i"].copy(); ic.putalpha(ic.getchannel("A").point(lambda v: int(v * a1)))
+        im.alpha_composite(ic, ((W - 220) // 2, 560 + int((1 - a1) * 30)))
+    ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
+    A = lambda a, v=255: (255, 255, 255, int(v * a))
+    if a1 > 0: text_c(d, W / 2, 880, "まじゃすこ", font(110), A(a1))
+    a2 = k(1.1)
+    if a2 > 0:
+        text_c(d, W / 2, 1020, OUTRO_LINE[0], font(56, 800), A(a2, 240)); text_c(d, W / 2, 1100, OUTRO_LINE[1], font(56, 800), A(a2, 240))
+    a3 = k(1.5)
+    if a3 > 0:
+        d.rounded_rectangle((W / 2 - 230, 1210, W / 2 + 230, 1310), radius=50, fill=(231, 86, 32, int(255 * a3)))
+        text_c(d, W / 2, 1258, "majasco.jp", font(54), A(a3))
+    im.alpha_composite(ov)
+
+
 def main():
     a = sys.argv[1:]
     fps = int(a[a.index("--fps") + 1]) if "--fps" in a else 12
@@ -127,12 +155,17 @@ def main():
     f0, f1, hold = sc["tail"]; t = 0.0
     for f in range(f0, f1 + 1): seq.append((f, -1, t, False)); t += 1 / fps
     for _ in range(int(hold * fps)): seq.append((f1, -1, t, True)); t += 1 / fps
+    outro = sorted(glob.glob(os.path.join(src, "o[0-9]*.png")))      # 締め（scene.py --anim --outro）。最後のコマで2秒止める
+    odur = (len(outro) + 2 * fps) / fps
+    for n, fp in enumerate(outro + [outro[-1]] * (2 * fps) if outro else []): seq.append((fp, -3, n / fps, False))
     tmp = tempfile.mkdtemp(); cache = {}
     for n, (f, i, t, held) in enumerate(seq):
         if f not in cache:
             cache.clear(); cache[f] = Image.open(f if isinstance(f, str) else frames[min(f, len(frames) - 1)]).convert("RGBA").resize((W, H), Image.LANCZOS)
         im = cache[f].copy(); ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
-        if i == -2:
+        if i == -3:
+            outro_card(im, t, odur)
+        elif i == -2:
             title_card(d, sc, t, len(intro) / fps)
         elif i >= 0:
             s = sc["steps"][i]

@@ -564,6 +564,21 @@ def intro_pose(u, cam):
     cam.data.lens = 26 + (CAM["mid"][2] - 26) * e
     cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
+# ---------------- 締め（アウトロ）: 入りの逆。本題の最後の形のまま、肩ごしから回りながら引いて会場全体に戻る ----------------
+# 3Dの卓の解説動画は、どれもこの締めで終わる（2026-11-12 ユーザーの判断・案A）。ロゴと「麻雀のスコア記録は まじゃすこ で」は make_clip.py がのせる
+OUTRO_DUR = 3.0
+if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書き出す
+    cam = anim_setup(); anim_pose(ANIM_DUR, cam)
+    n = int(OUTRO_DUR * FPS)
+    only = arg("--frames", "")
+    for f in ([int(x) for x in only.split(",")] if only else range(n)):
+        fp = os.path.join(OUT, f"o{f:04d}.png")
+        if os.path.exists(fp): continue
+        intro_pose(1 - f / (n - 1), cam)
+        r.filepath = fp
+        t0 = time.time(); bpy.ops.render.render(write_still=True); print("OUTRO", f, round(time.time() - t0, 1), "s", flush=True)
+    sys.exit(0)
+
 if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 に書き出す（選手や卓は本題の最初の形のまま）
     cam = anim_setup(); anim_pose(0.0, cam)
     n = int(INTRO_DUR * FPS)
