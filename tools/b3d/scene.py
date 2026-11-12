@@ -157,7 +157,7 @@ def pose_body(B, w_right):
     R, L = B["R"], B["L"]
     w = Vector(w_right)
     need = max(0.0, (w - R["sh"]).length - (UA_LEN + FA_LEN) * .92)
-    k = min(need, .40)
+    k = min(need, .16)      # 倒しすぎると、大きな頭が左肩の上のカメラをふさぐ（.40 で画面が真っ黒になった）
     d = w - R["sh"]; d.z = 0
     d = d.normalized() if d.length > 1e-6 else Vector((0, 1, 0))
     lean = d * k + Vector((0, 0, -.22 * k))
@@ -477,8 +477,8 @@ def anim_pose(t, cam):
     pose_body(ARMS[0], w)      # ひじを曲げ、届かない分は上体を倒す
     # カメラ: 肩ごし → 卓の上から → 右の隅に寄る
     c0 = (Vector(CAM["mid"][0]), Vector(CAM["mid"][1]), 38.0)
-    px = .03 + .13 * (seg(t, 3.8, 5.0) - seg(t, 5.2, 5.9))      # 手の動きに合わせて、見る点を少し左右に振る
-    c1 = (Vector((-.30 + px * .5, -.62, 1.24)), Vector((.04 + px, -.26, .77)), 37.0)   # 手前の選手の左肩の上から（右腕が画面を横切らない・手牌の表が見える）
+    px = .03 + .13 * (seg(t, 3.8, 5.0) - seg(t, 5.2, 5.9)) - .14 * (seg(t, 2.1, 2.9) - seg(t, 3.1, 3.8))      # 手の動きに合わせて、見る点を少し左右に振る
+    c1 = (Vector((-.40 + px * .5, -.62, 1.27)), Vector((.02 + px, -.24, .77)), 33.0)   # 手前の選手の左肩の上から（右腕が画面を横切らない・手牌の表が見える）
     c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
     ka = seg(t, .4, 1.4); kb = seg(t, 6.8, 7.8)
     loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
