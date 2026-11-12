@@ -155,4 +155,4 @@
 - **キャンバス比率の変更**はW,H定数の変更＋縦座標の再配分（glow中心・sparkle位置・phone_frameのy0・footer・closingのy）で対応する。
   過去に1080×1080→1440→1350と2回実施。変更後は**全枚数をReadで目視QA**（はみ出し・装飾かぶり・「ちょい見え」の見切れ装飾）
 - **1枚の表（点数早見表・三麻・符の数え方・確認リスト・牌の一覧・役の一覧・ローカル役）には、見出しの右上にまじゃすこのロゴを付ける**（2026-11-12 ユーザーの指定。前の日の画像に付け忘れていた）。部品は `tools/sheet_logo.py`（白い角丸の札＋assets/logo.png）。新しい表を作るときも同じ部品を使う
-- **1枚の表を見た目ごと作り直したら、ファイル名を変える**（2026-11-12 ユーザーの指摘）。Googleの画像検索は、同じURLの画像の見本を古いまま出し続ける（点数早見表 tensu-hayamihyo.png が作り直す前の絵のままだった。新しい名前で出した三麻の表はすぐ新しい絵）。新しい名前にして、記事・sitemap の image:image・JSON-LD を書きかえ、古いURLは firebase.json の redirects で新しいURLへ 301。点数早見表は 2026-11-12 に `mahjong-` を頭に付けた名前へ（tools/score_sheet.py）
+- **1枚の表を見た目ごと作り直したら、ファイル名を変える**（2026-11-12 ユーザーの指摘）。Googleの画像検索は、同じURLの画像の見本を古いまま出し続ける（点数早見表 tensu-hayamihyo.png が作り直す前の絵のままだった。新しい名前で出した三麻の表はすぐ新しい絵）。新しい名前にして、記事・sitemap の image:image・JSON-LD を書きかえ、古いURLは firebase.json の redirects で新しいURLへ 301。役一覧表・ローカル役一覧表も 2026-11-12 に `mahjong-yaku-ichiran` `mahjong-local-yaku-ichiran` へ（tools/hai_sheets.py・記事の JSON-LD の image の先頭にも1枚の表を入れた）。点数早見表は 2026-11-12 に `mahjong-` を頭に付けた名前へ（tools/score_sheet.py）

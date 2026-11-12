@@ -124,6 +124,36 @@
         "source": "/assets/score/fu-keisan.png",
         "destination": "/assets/score/mahjong-fu-keisan.png",
         "type": 301
+      },
+      {
+        "source": "/assets/hai/yaku-ichiran.png",
+        "destination": "/assets/hai/mahjong-yaku-ichiran.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/hai/yaku-ichiran-web.png",
+        "destination": "/assets/hai/mahjong-yaku-ichiran-web.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/hai/yaku-ichiran.pdf",
+        "destination": "/assets/hai/mahjong-yaku-ichiran.pdf",
+        "type": 301
+      },
+      {
+        "source": "/assets/hai/local-yaku-ichiran.png",
+        "destination": "/assets/hai/mahjong-local-yaku-ichiran.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/hai/local-yaku-ichiran-web.png",
+        "destination": "/assets/hai/mahjong-local-yaku-ichiran-web.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/hai/local-yaku-ichiran.pdf",
+        "destination": "/assets/hai/mahjong-local-yaku-ichiran.pdf",
+        "type": 301
       }
     ]
   },

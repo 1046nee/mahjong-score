@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """牌の一覧表・役の一覧表（1枚）と、記事に入れる牌の並びのHTMLを作る（2026-10-23〜）。牌の絵は assets/tiles/（tools/make_tiles.py）。
 
-出力（assets/hai/）: hai-ichiran.png / hai-ichiran-web.png / hai-ichiran.pdf、yaku-ichiran.png / yaku-ichiran-web.png / yaku-ichiran.pdf
+出力（assets/hai/）: hai-ichiran.png / hai-ichiran-web.png / hai-ichiran.pdf、mahjong-yaku-ichiran.png / -web.png / .pdf、mahjong-local-yaku-ichiran.png / -web.png / .pdf
 牌の書き方: "123m" = 一二三萬、"p"=筒子、"s"=索子、"z"=字牌（1東 2南 3西 4北 5白 6發 7中）、"0" = 赤五
 実行: python tools/hai_sheets.py          （画像とPDFを作る。役の例があがりの形になっているかを先に確かめる）
       python tools/hai_sheets.py --check  （確かめるだけ）
@@ -508,7 +508,7 @@ def render():
     url = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
     with sync_playwright() as p:
         b = p.chromium.launch()
-        for name, html in [("hai-ichiran", hai_sheet(url)), ("yaku-ichiran", yaku_sheet(url)), ("local-yaku-ichiran", local_sheet(url))]:
+        for name, html in [("hai-ichiran", hai_sheet(url)), ("mahjong-yaku-ichiran", yaku_sheet(url)), ("mahjong-local-yaku-ichiran", local_sheet(url))]:   # 役の表は 2026-11-12 に作り直したので名前を変えた（画像検索の見本を新しくするため。docs/image-tools.md）
             hp = os.path.join(OUT, f"_{name}.html")
             io.open(hp, "w", encoding="utf-8").write(html)
             u = "file:///" + hp.replace("\\", "/")
