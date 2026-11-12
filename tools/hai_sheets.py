@@ -475,8 +475,7 @@ def local_sheet(url):
             f'<p class="t"><b>字一色</b>＋<b>大四喜</b>（2倍）＋<b>四暗刻単騎</b>（2倍）＋<b>四槓子</b>＝<b>6倍</b><br>子192,000点・親288,000点（形の2倍がないルールでは4倍）</p></div></section>')
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
-/* 行を詰めたので、画像の高さは中身に合わせる（A4の高さのままだと下半分が空く。2026-11-12）。PDF は A4 の上に置く */
-html, body {{ height: auto; }} footer {{ position: static; margin-top: 10px; }}
+/* 画像の大きさは役一覧表と同じ A4 にそろえる（下に余白が出てもよい。2026-11-12 ユーザーの指定） */
 .lt {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 0; }}
 .lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; border-right: 1.5px solid #1F2A28; width: 92px; line-height: 1.15; }}
 .lt th b {{ display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; }} .lt th small {{ display: block; font-size: 8.5px; font-weight: 700; color: #6B5A4C; white-space: nowrap; }}
