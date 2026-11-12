@@ -302,11 +302,16 @@ PLAYERS = [   # 席0〜3。uniform=(柄, [色…4色まで])・hair=(形, 色)�
     dict(uniform=("camo", ["#2F6B3A", "#6FA05A", "#F2F2EE", "#E9C63A"]), collar="#1D2F5C", hair=("wavy", "#15130F"), build=1.06, height=1.02),
     dict(uniform=("lines", ["#17181B", "#C22B2B"]), collar="#C22B2B", hair=("bob", "#DDD3BE"), build=.86, height=.95),
 ]
+CAST = arg("--cast", "")     # 座る4人を外のファイルで差しかえる（tools/b3d/casts/*.json。動画ごとに人を変える。2026-11-12 ユーザーの依頼）
+if CAST:
+    import json as _json
+    PLAYERS = [dict(p, uniform=(p["uniform"][0], p["uniform"][1]), hair=(p["hair"][0], p["hair"][1])) for p in _json.load(open(CAST, encoding="utf-8"))["players"]]
+    assert len(PLAYERS) == 4, "cast は4人ぶん"
 def build_player(i, P):
     r = empty(f"player{i}"); r.rotation_euler = (0, 0, i * math.pi / 2)
     b = P["build"]; hgt = P["height"]
     um = pattern_mat(f"uni{i}", *P["uniform"])
-    skin = mat("skin", SKIN, .6)
+    skin = mat(f"skin{i}", P.get("skin", SKIN), .6)
     y0 = -.80
     # 胴（少し前かがみ）
     torso = box(f"torso{i}", (.40 * b, .25 * b, .52 * hgt), (0, y0, .93), um, bevel=.09, parent=r)
@@ -321,6 +326,13 @@ def build_player(i, P):
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
     for sx in (-1, 1):   # 目（ふつうの大きさの黒い丸。白い点は付けない＝2026-11-12 ユーザーの判断。全員同じ作り＝実在の人の顔にしない）
         sphere(f"eye{i}{sx}", .015, (sx * .042, hy + .106, hz - .006), mat("eye", "#2A211D", .45), (1, .5, 1.2), hd)
+    if P.get("glasses"):   # めがね（色を書くと付く）。細い輪2つと、つなぐ棒
+        gm = mat(f"glass{i}", P["glasses"], .3, metal=.3)
+        for sx in (-1, 1):
+            bpy.ops.mesh.primitive_torus_add(major_radius=.027, minor_radius=.0035, location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0))
+            o = bpy.context.object; o.data.materials.append(gm); o.parent = hd
+            for poly in o.data.polygons: poly.use_smooth = True
+        box(f"bridge{i}", (.03, .005, .005), (0, hy + .116, hz - .004), gm, parent=hd)
     if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
         sphere(f"nose{i}", .011, (0, hy + .116, hz - .026), mat("nose", "#E3B79B", .6), (1, .7, .9), hd)
         # 口＝少し口角の上がった線（頭の丸みに沿わせた曲線。幅は目と目の間の半分ほど）
@@ -501,6 +513,20 @@ if ANIM:
     n = int(ANIM_DUR * FPS)
     only = arg("--frames", "")
     todo = [int(x) for x in only.split(",")] if only else range(n)
+    if "--marks" in sys.argv:      # 書き出さずに、動く牌が画面のどこにあるかだけを marks.json に（make_clip.py が印をのせるのに使う）
+        import json
+        from bpy_extras.object_utils import world_to_camera_view
+        names = {"m4": "hand_m4", "m5": "hand_m5", "s3": "hand_s3", "m6": "called"}
+        out = {}
+        for f in range(n):
+            anim_pose(f / FPS, cam); bpy.context.view_layer.update()
+            d = {}
+            for k, nm in names.items():
+                v = world_to_camera_view(sc, cam, NAMED[nm].matrix_world @ Vector((0, 0, TT / 2)))
+                d[k] = [round(v.x, 4), round(1 - v.y, 4)]
+            v = world_to_camera_view(sc, cam, Vector((0, -.66, 1.42))); d["head0"] = [round(v.x, 4), round(1 - v.y, 4)]
+            out[f] = d
+        json.dump(out, open(os.path.join(OUT, "marks.json"), "w")); print("MARKS", n); sys.exit(0)
     for f in todo:
         fp = os.path.join(OUT, f"f{f:04d}.png")
         if os.path.exists(fp): continue

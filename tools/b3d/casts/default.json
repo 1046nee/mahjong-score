@@ -1,0 +1,73 @@
+{
+ "note": "座る4人。席0=手前（鳴く人）・1=右・2=奥・3=左。uniform=[柄(zigzag|lines|camo), 色を4つまで]・hair=[形(short_messy|mush|wavy|bob), 色]・build=体の幅・height=背。skin（肌の色）と glasses（めがねの色）は書いたときだけ効く。実在の人の名前・ロゴ・実物の柄は書かない",
+ "players": [
+  {
+   "uniform": [
+    "zigzag",
+    [
+     "#101820",
+     "#39A9DB",
+     "#E94B8A",
+     "#101820"
+    ]
+   ],
+   "collar": "#101820",
+   "hair": [
+    "short_messy",
+    "#8A6238"
+   ],
+   "build": 1.0,
+   "height": 1.0
+  },
+  {
+   "uniform": [
+    "lines",
+    [
+     "#2B2422",
+     "#C9A24B"
+    ]
+   ],
+   "collar": "#C9A24B",
+   "hair": [
+    "mush",
+    "#2E2019"
+   ],
+   "build": 1.18,
+   "height": 0.97
+  },
+  {
+   "uniform": [
+    "camo",
+    [
+     "#2F6B3A",
+     "#6FA05A",
+     "#F2F2EE",
+     "#E9C63A"
+    ]
+   ],
+   "collar": "#1D2F5C",
+   "hair": [
+    "wavy",
+    "#15130F"
+   ],
+   "build": 1.06,
+   "height": 1.02
+  },
+  {
+   "uniform": [
+    "lines",
+    [
+     "#17181B",
+     "#C22B2B"
+    ]
+   ],
+   "collar": "#C22B2B",
+   "hair": [
+    "bob",
+    "#DDD3BE"
+   ],
+   "build": 0.86,
+   "height": 0.95
+  }
+ ]
+}
