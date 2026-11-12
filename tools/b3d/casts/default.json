@@ -1,5 +1,5 @@
 {
- "note": "座る4人。席0=手前（鳴く人）・1=右・2=奥・3=左。uniform=[柄(zigzag|lines|camo), 色を4つまで]・hair=[形(short_messy|mush|wavy|bob), 色]・build=体の幅・height=背。skin（肌の色）と glasses（めがねの色）は書いたときだけ効く。実在の人の名前・ロゴ・実物の柄は書かない",
+ "note": "座る4人。席0=手前（鳴く人）・1=右・2=奥・3=左。uniform=[柄(zigzag|lines|camo), 色を4つまで]・hair=[形(short_messy|mush|wavy|bob), 色]・build=体の幅・height=背。skin（肌の色）と glasses（めがねの色）は書いたときだけ効く。実在の人の名前・ロゴ・実物の柄は書かない。eyes＝目の種類（normal＝ふつう・tare＝タレ目・kiri＝キリッとした目・cute＝かわいらしい目）。書かなければ normal",
  "players": [
   {
    "uniform": [
@@ -51,7 +51,8 @@
     "#15130F"
    ],
    "build": 1.06,
-   "height": 1.02
+   "height": 1.02,
+   "eyes": "tare"
   },
   {
    "uniform": [

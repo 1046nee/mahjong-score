@@ -177,7 +177,7 @@ def empty(name, parent=None):
     return e
 
 # ---------------- 牌 ----------------
-TS = 1.35                                # 牌の大きさの倍率（本物は1.0。小さくて絵が読めなかったので大きく作る。2026-11-12 ユーザーの依頼）
+TS = 1.2                                 # 牌の大きさの倍率（本物は1.0。小さくて絵が読めなかったので大きく作る。1.35 は大きすぎた→1.2。2026-11-12 ユーザーの依頼）
 TW, TL, TT = 0.024 * TS, 0.032 * TS, 0.017 * TS      # 幅・長さ・厚み（m）
 HP = TW + .0006                          # 手牌のとなりとの間隔
 HX0 = -6 * HP - .03                      # 席0の手牌（13枚）の左端の中心
@@ -259,7 +259,7 @@ def build_tiles():
     named = {}
     for i, r in enumerate(roots):
         # 山（2段×13幢。手前の席から見て左右に）
-        n = 11      # 山は11幢（13だと、山を卓の中央に寄せたときに角で重なる）
+        n = int((2 * (abs(WY) - TL / 2 - .012)) / (TW + .0008))      # 山の長さは、となりの席の山と角で重ならない数にする（牌の大きさから計算）
         x0 = -(n - 1) / 2 * (TW + .0008)
         for k in range(n):
             for lv in range(2):
@@ -281,7 +281,7 @@ def build_tiles():
             x0 = -(len(hand) - 1) / 2 * HP - .03
             for k, c in enumerate(hand):
                 named["hand_" + c] = tile(c, (x0 + k * HP, HY, Z), r, "stand")
-            mx, my = .305, -.325
+            mx, my = .305, HY + TL / 2
             if STEP >= 2:   # 晒した2枚（寝かせる）
                 tile("m4", (mx - TW - .001, my, Z), r, "lie"); tile("m5", (mx, my, Z), r, "lie")
             if STEP >= 3:   # 取ってきた牌は横向きで左に（上が左＝上家の方）
@@ -299,7 +299,7 @@ SKIN = "#F1CDB3"
 PLAYERS = [   # 席0〜3。uniform=(柄, [色…4色まで])・hair=(形, 色)・build=体の幅・fem=線の細さ
     dict(uniform=("zigzag", ["#101820", "#39A9DB", "#E94B8A", "#101820"]), collar="#101820", hair=("short_messy", "#8A6238"), build=1.0, height=1.0),
     dict(uniform=("lines", ["#2B2422", "#C9A24B"]), collar="#C9A24B", hair=("mush", "#2E2019"), build=1.18, height=.97),
-    dict(uniform=("camo", ["#2F6B3A", "#6FA05A", "#F2F2EE", "#E9C63A"]), collar="#1D2F5C", hair=("wavy", "#15130F"), build=1.06, height=1.02),
+    dict(uniform=("camo", ["#2F6B3A", "#6FA05A", "#F2F2EE", "#E9C63A"]), collar="#1D2F5C", hair=("wavy", "#15130F"), build=1.06, height=1.02, eyes="tare"),
     dict(uniform=("lines", ["#17181B", "#C22B2B"]), collar="#C22B2B", hair=("bob", "#DDD3BE"), build=.86, height=.95),
 ]
 CAST = arg("--cast", "")     # 座る4人を外のファイルで差しかえる（tools/b3d/casts/*.json。動画ごとに人を変える。2026-11-12 ユーザーの依頼）
@@ -324,8 +324,16 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    for sx in (-1, 1):   # 目（ふつうの大きさの黒い丸。白い点は付けない＝2026-11-12 ユーザーの判断。全員同じ作り＝実在の人の顔にしない）
-        sphere(f"eye{i}{sx}", .015, (sx * .042, hy + .106, hz - .006), mat("eye", "#2A211D", .45), (1, .5, 1.2), hd)
+    # 目は4種類（2026-11-12 ユーザーの依頼）: normal＝ふつう／tare＝タレ目／kiri＝キリッとした目／cute＝かわいらしい目（縦長・まつ毛）。白い点（キラキラ）は付けない
+    ek = P.get("eyes", "normal"); em = mat("eye", "#2A211D", .45)
+    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.0175, (1, .5, 1.35), 0)}[ek]
+    for sx in (-1, 1):
+        e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .106, hz - .006), em, ESC, hd)
+        e.rotation_euler = (0, math.radians(sx * ETILT), 0)      # 顔の面の中で傾ける（＋で目じりが下がる）
+        if ek == "kiri":     # まゆ（目じりが上がる短い線）
+            box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
+        if ek == "cute":     # まつ毛（目じりの上にはねる短い線）
+            box(f"lash{i}{sx}", (.016, .005, .0045), (sx * .058, hy + .098, hz + .014), em, bevel=.0015, parent=hd).rotation_euler = (math.radians(-10), math.radians(sx * -38), 0)
     if P.get("glasses"):   # めがね（色を書くと付く）。細い輪2つと、つなぐ棒
         gm = mat(f"glass{i}", P["glasses"], .3, metal=.3)
         for sx in (-1, 1):
@@ -486,16 +494,20 @@ def anim_pose(t, cam):
     Z = TOP + .0005
     m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
     X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + 4 * HP     # 手牌の四萬・五萬・三索の位置（牌の大きさから計算する）
-    LY = HY + TT + TL / 2                       # 倒したときの中心
-    DX, DY = .305 - X5, -.325 - LY              # 右の隅へ寄せる分
+    # 晒した牌の置き場＝手牌の延長線上の右（手牌と平行・手前のふちをそろえる）。倒していない手牌とのあいだは GAP だけ空ける（2026-11-12 ユーザーの依頼。前は手牌の奥に倒していて、近くて見えにくかった）
+    GAP = .028
+    LY = HY + TL / 2                            # 倒した牌の中心（手前のふちが手牌の表の面と同じ線）
+    E6 = HX0 + 10 * HP + TW / 2 + GAP + TL / 2  # 取ってきた六萬（横向き）の中心
+    E4 = E6 + TL / 2 + .001 + TW / 2; E5 = E4 + TW + .001      # 晒した四萬・五萬の中心
+    DX, DY = .305 - E5, 0.0                     # 右の隅へ寄せる分（同じ線の上をすべらせる）
     # ② 晒す（立てた牌を向こうへ倒す）
     k2 = seg(t, 1.5, 2.0); k4 = seg(t, 4.2, 5.0)
-    for o, x in ((m4, X4), (m5, X5)):
+    for o, x, ex in ((m4, X4, E4), (m5, X5, E5)):
         o.rotation_euler = (math.radians(90) * (1 - k2), 0, 0)
-        o.location = lerp((x, HY + TT, Z + TL / 2), (x, LY, Z), k2) + Vector((DX, DY, 0)) * k4
+        o.location = lerp((x, HY + TT, Z + TL / 2), (ex, LY, Z), k2) + Vector((0, 0, .03 * math.sin(math.pi * k2))) + Vector((DX, DY, 0)) * k4
     # ③ 取る（上家の河 → 晒した2枚の左。牌は横向きのまま）
     k3 = seg(t, 2.9, 3.8)
-    p0 = Vector((RY, -(RX0 + 5 * RP), Z)); p1 = Vector((X4 - TW / 2 - .001 - TL / 2, LY - TL / 2 + TW / 2, Z))
+    p0 = Vector((RY, -(RX0 + 5 * RP), Z)); p1 = Vector((E6, LY - TL / 2 + TW / 2, Z))
     m6.location = lerp(p0, p1, k3) + Vector((0, 0, .05 * math.sin(math.pi * k3))) + Vector((DX, DY, 0)) * k4
     m6.rotation_euler = (0, 0, -math.pi / 2)
     # ⑤ 切る（手牌の三索 → 河の4枚目）
@@ -504,8 +516,8 @@ def anim_pose(t, cam):
     s3.location = lerp((XS, HY + TT, Z + TL / 2), (RX0 + 3 * RP, RY, Z), k5) + Vector((0, 0, .06 * math.sin(math.pi * k5)))
     # 右手（道すじ: 休み → 手の2枚 → 河の六萬 → 2枚の左 → 3枚の上 → 右の隅 → 三索 → 河 → 休み）
     A = ARMS[0]["R"]; R = A["rest"]; hz = TOP + TL + .012; OFF = Vector((.004, -.026 * TS, 0))   # 手は牌の手前がわに置く（牌の絵が隠れないように）
-    keys = [(0.0, R), (0.9, R), (1.5, (X4 + .012, HY + .01, hz + .02)), (2.0, (X4 + .012, LY, hz)), (2.9, (p0.x, p0.y, hz)), (3.8, (p1.x, p1.y, hz)),
-            (4.2, (X4, LY, hz)), (5.0, (X4 + DX, LY + DY, hz)), (5.7, (XS, HY + .01, hz + .02)), (6.5, (RX0 + 3 * RP, RY, hz)), (7.2, R), (ANIM_DUR, R)]
+    keys = [(0.0, R), (0.9, R), (1.5, (X4 + .012, HY + .01, hz + .02)), (2.0, ((E4 + E5) / 2, LY, hz)), (2.9, (p0.x, p0.y, hz)), (3.8, (p1.x, p1.y, hz)),
+            (4.2, (E4, LY, hz)), (5.0, (E4 + DX, LY + DY, hz)), (5.7, (XS, HY + .01, hz + .02)), (6.5, (RX0 + 3 * RP, RY, hz)), (7.2, R), (ANIM_DUR, R)]
     w = Vector(keys[-1][1])
     for (ta, pa), (tb, pb) in zip(keys, keys[1:]):
         if ta <= t <= tb:
@@ -525,7 +537,7 @@ def anim_pose(t, cam):
     loc = loc + Vector((-.22, -.10, .34)) * math.sin(math.pi * ka)      # 肩ごしから卓の上へは、手前の選手の頭の上を回りこむ（まっすぐ行くと体の中を通って画面が黒くなる）
     cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
     # 間のあいだは、見せたい牌に寄る（②晒した2枚・③取ってきた牌と2枚・④右の隅の3枚）
-    focus = [Vector(((X4 + X5) / 2, LY, .77)), Vector(((X4 + p1.x) / 2 + .01, LY, .77)), Vector((X4 + DX - .01, LY + DY, .77))]
+    focus = [Vector((E4 - .01, LY, .77)), Vector((E4 - .012, LY, .77)), Vector((E4 + DX - .012, LY + DY, .77))]
     # 寄るときは、牌のほぼ真上（少し手前）から見下ろす。左肩の上からのままだと、倒した牌が立っている手牌と山のあいだに隠れて見えない
     for n in range(3):
         loc = loc.lerp(focus[n] + Vector((-.02, -.17, .50)), pk[n]); tgt = tgt.lerp(focus[n], pk[n])
