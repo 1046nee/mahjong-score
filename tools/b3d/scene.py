@@ -183,7 +183,7 @@ HP = TW + .0006                          # 手牌のとなりとの間隔
 HX0 = -6 * HP - .03                      # 席0の手牌（13枚）の左端の中心
 RP = TW + .003                           # 河のとなりとの間隔
 RX0 = -2.5 * RP                          # 河の1枚目の中心（6枚で折り返す）
-RY, WY, HY = -.118, -.255, -.318         # 河・山・手牌の位置（手前の席の座標の y）
+RY, WY, HY = -.118, -.215, -.335         # 河・山・手牌の位置（手前の席の座標の y）。手牌と山のあいだは、倒した牌1枚（TL）が入る広さにする（-.255/-.318 だと、晒した牌が山の下にもぐった）
 BACK = {"dark": "#2F62C8", "green": "#177083"}[THEME]   # 牌の背の色
 _tile_mesh = {}
 def tile_mesh(code):
@@ -259,7 +259,7 @@ def build_tiles():
     named = {}
     for i, r in enumerate(roots):
         # 山（2段×13幢。手前の席から見て左右に）
-        n = 13 if i != 0 else 11
+        n = 11      # 山は11幢（13だと、山を卓の中央に寄せたときに角で重なる）
         x0 = -(n - 1) / 2 * (TW + .0008)
         for k in range(n):
             for lv in range(2):
@@ -460,7 +460,21 @@ def seg(t, a, b):
     return ease((t - a) / (b - a))
 def lerp(a, b, k):
     return Vector(a).lerp(Vector(b), k)
-ANIM_DUR = 8.0
+ANIM_DUR = 8.0 + 3 * .7      # もとの動き8秒＋見せるための間3回
+# 手順が終わるたびに、手をどけて牌を見せる間を入れる（2026-11-12 ユーザーの指摘「開示で牌が手で隠れて見えない」）。
+# FREEZE＝もとの時刻（②開示のあと・③回収のあと・④副露のあと）。その間 PAUSE 秒は牌を止め、手だけ手前へ引き、カメラが牌に寄る
+FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
+def warp(t):
+    """実際の時刻 → もとの動きの時刻（間のあいだは進まない）"""
+    for f in FREEZE:
+        if t <= f: return t
+        if t <= f + PAUSE: return f
+        t -= PAUSE
+    return t
+def pause_k(t, n):
+    """n番目の間で、手がどいている度合い（0〜1）"""
+    a = FREEZE[n] + n * PAUSE
+    return seg(t, a, a + .22) - seg(t, a + PAUSE - .05, a + PAUSE + .3)
 # 手順の区切り（秒）: ①声 0〜1.5 ②晒す 1.5〜2.1 ③取る 2.1〜3.8 ④右端に並べる 3.8〜5.0 ⑤切る 5.0〜6.6
 def anim_setup():
     bpy.context.view_layer.update()
@@ -468,6 +482,7 @@ def anim_setup():
     cd = bpy.data.cameras.new("anim"); o = bpy.data.objects.new("cam_anim", cd); add(o); sc.camera = o
     return o
 def anim_pose(t, cam):
+    tr = t; t = warp(t)          # tr＝実際の時刻・t＝もとの動きの時刻
     Z = TOP + .0005
     m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
     X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + 4 * HP     # 手牌の四萬・五萬・三索の位置（牌の大きさから計算する）
@@ -497,6 +512,8 @@ def anim_pose(t, cam):
             k = seg(t, ta, tb); d = (Vector(pb) - Vector(pa)).length
             w = lerp(pa, pb, k) + Vector((0, 0, min(.07, d * .3) * math.sin(math.pi * k))); break
     w = w + OFF * (seg(t, .9, 1.5) - seg(t, 6.5, 7.2))
+    pk = [pause_k(tr, n) for n in range(3)]
+    w = w + Vector((.085, -.085, .03)) * max(pk)      # 間のあいだは、手を右手前へ引いて牌を見せる
     pose_body(ARMS[0], w)      # ひじを曲げ、届かない分は上体を倒す
     # カメラ: 肩ごし → 卓の上から → 右の隅に寄る
     c0 = (Vector(CAM["mid"][0]), Vector(CAM["mid"][1]), 38.0)
@@ -505,7 +522,14 @@ def anim_pose(t, cam):
     c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
     ka = seg(t, .4, 1.4); kb = seg(t, 6.8, 7.8)
     loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
+    loc = loc + Vector((-.22, -.10, .34)) * math.sin(math.pi * ka)      # 肩ごしから卓の上へは、手前の選手の頭の上を回りこむ（まっすぐ行くと体の中を通って画面が黒くなる）
     cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
+    # 間のあいだは、見せたい牌に寄る（②晒した2枚・③取ってきた牌と2枚・④右の隅の3枚）
+    focus = [Vector(((X4 + X5) / 2, LY, .77)), Vector(((X4 + p1.x) / 2 + .01, LY, .77)), Vector((X4 + DX - .01, LY + DY, .77))]
+    # 寄るときは、牌のほぼ真上（少し手前）から見下ろす。左肩の上からのままだと、倒した牌が立っている手牌と山のあいだに隠れて見えない
+    for n in range(3):
+        loc = loc.lerp(focus[n] + Vector((-.02, -.17, .50)), pk[n]); tgt = tgt.lerp(focus[n], pk[n])
+        cam.data.lens += (50 - cam.data.lens) * pk[n]
     cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
 if ANIM:
