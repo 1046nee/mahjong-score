@@ -89,6 +89,14 @@ def pattern_mat(name, kind, cols):
         w.inputs["Scale"].default_value = 2.6; w.inputs["Distortion"].default_value = 0.0
         nt.links.new(tc.outputs["Object"], w.inputs["Vector"]); nt.links.new(w.outputs["Fac"], ramp.inputs["Fac"])
         for k in range(len(cs)): el[k].position = k / len(cs)
+    elif kind in ("dots", "sparkle"):   # 地の色（色1）に色2の点を散らす。dots＝花びらくらいの大きさ・sparkle＝小さなきらきら
+        vo = nt.nodes.new("ShaderNodeTexVoronoi"); vo.inputs["Scale"].default_value = 9.0 if kind == "dots" else 45.0
+        vo.inputs["Randomness"].default_value = 1.0; nt.links.new(tc.outputs["Object"], vo.inputs["Vector"])
+        dl = nt.nodes.new("ShaderNodeMath"); dl.operation = "LESS_THAN"; dl.inputs[1].default_value = .26 if kind == "dots" else .12
+        nt.links.new(vo.outputs["Distance"], dl.inputs[0])
+        mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["A"].default_value = cs[0]; mx.inputs["B"].default_value = cs[1]
+        nt.links.new(dl.outputs["Value"], mx.inputs["Factor"]); nt.links.new(mx.outputs["Result"], p.inputs["Base Color"])
+        _mats[name] = m; return m
     elif kind == "panel":     # 地の色（色1）に、片方の肩から斜めに色2の面。面の中に色3の小さな星（点）を散らす
         sx = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(tc.outputs["Object"], sx.inputs["Vector"])
         ad = nt.nodes.new("ShaderNodeMath"); ad.operation = "ADD"; nt.links.new(sx.outputs["X"], ad.inputs[0]); nt.links.new(sx.outputs["Z"], ad.inputs[1])
