@@ -90,6 +90,20 @@ def pattern_mat(name, kind, cols):
         nt.links.new(tc.outputs["Object"], w.inputs["Vector"]); nt.links.new(w.outputs["Fac"], ramp.inputs["Fac"])
         el[0].position = 0;
         for i in range(1, len(cs)): el[i].position = .86 + (i - 1) * .06
+    elif kind == "hem":       # 上は無地（色1）、すそは迷彩（色2〜）。BEAST X のような切りかえ
+        n = nt.nodes.new("ShaderNodeTexNoise"); n.inputs["Scale"].default_value = 9.0; n.inputs["Detail"].default_value = 1.0
+        nt.links.new(tc.outputs["Object"], n.inputs["Vector"])
+        r2 = nt.nodes.new("ShaderNodeValToRGB"); r2.color_ramp.interpolation = "CONSTANT"; e2 = r2.color_ramp.elements
+        cam = cs[1:]
+        while len(e2) < len(cam): e2.new(.5)
+        for k, c in enumerate(cam): e2[k].position = .36 + k * .1 if k else 0; e2[k].color = c
+        nt.links.new(n.outputs["Fac"], r2.inputs["Fac"])
+        sx = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(tc.outputs["Object"], sx.inputs["Vector"])
+        cut = nt.nodes.new("ShaderNodeMath"); cut.operation = "LESS_THAN"; cut.inputs[1].default_value = -.06
+        nt.links.new(sx.outputs["Z"], cut.inputs[0])
+        mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["A"].default_value = cs[0]
+        nt.links.new(cut.outputs["Value"], mx.inputs["Factor"]); nt.links.new(r2.outputs["Color"], mx.inputs["B"]); nt.links.new(mx.outputs["Result"], p.inputs["Base Color"])
+        _mats[name] = m; return m
     elif kind == "check":     # 地の色に、市松の模様がところどころ入る（色1=地・色2=市松の明るい色・色3=差し色）
         ck = nt.nodes.new("ShaderNodeTexChecker"); ck.inputs["Scale"].default_value = 42.0
         ck.inputs["Color1"].default_value = cs[1]; ck.inputs["Color2"].default_value = cs[0]
@@ -325,7 +339,7 @@ def person(roster, pid):
              build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
-    for k in ("skin", "glasses", "hair2", "beard"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -438,13 +452,22 @@ def build_player(i, P):
         for sx in (-1, 1):
             sphere(f"strand{i}{sx}", .014, (sx * .1, hy + .05, hz - .05), hm, (.7, .7, 3.0), hd)
         sphere(f"bang{i}", .07, (-.02, hy + .068, hz + .07), hm, (1.5, .5, .42), hd).rotation_euler = (0, math.radians(10), 0)
+    elif kind == "twintail":  # 耳の下で2つに結んだ髪（低いツインテール）＋前髪
+        for sx in (-1, 1):
+            sphere(f"twin{i}{sx}", .04, (sx * .118, hy - .03, hz - .1), hm2, (.8, .8, 2.1), hd)
+        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
     elif kind == "ponytail":  # 後ろでひとつに結んだ髪＋前髪
         sphere(f"tail{i}", .045, (0, hy - .14, hz - .02), hm2, (.8, .8, 2.0), hd)
         sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
+    if P.get("acc") == "flowers":   # 髪に白い花の飾り（左右の結んだ髪に3つずつ）
+        fm = mat("flower", "#FAFAF5", .5)
+        for sx in (-1, 1):
+            for k in range(3): sphere(f"fl{i}{sx}{k}", .014, (sx * (.112 + k * .006), hy - .005 - k * .012, hz - .03 - k * .05), fm, (1, .6, 1), hd)
     # 腕（両手を手牌のあたりに）
-    am = mat(f"sleeve{i}", P["sleeve"], .7) if P.get("sleeve") else um     # そでだけ別の色のチーム（白い胴に黒いそで など）
+    sl = P.get("sleeve")
+    am = (mat(f"sleeve{i}", sl, .7) if isinstance(sl, str) else pattern_mat(f"sleeve{i}", sl[0], sl[1])) if sl else um     # そでだけ別の色のチーム（白い胴に黒いそで など）
     body = dict(torso=torso, torso_rx=math.radians(-10), torso_loc=torso.location.copy(), collar=collar, collar_loc=collar.location.copy(), head=hd, head_loc=hd.location.copy())
     for sx in (-1, 1):
         sh = (sx * .192 * b, y0 + .02, 1.075 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
