@@ -460,6 +460,8 @@ def local_sheet(url):
     yk1 = "".join(yrow(*x) for x in LOCAL_YAKU[:4]); yk2 = "".join(yrow(*x) for x in LOCAL_YAKU[4:])
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
+/* 行を詰めたので、画像の高さは中身に合わせる（A4の高さのままだと下半分が空く。2026-11-12）。PDF は A4 の上に置く */
+html, body {{ height: auto; }} footer {{ position: static; margin-top: 10px; }}
 .lt {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 0; }}
 .lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; border-right: 1.5px solid #1F2A28; width: 92px; line-height: 1.15; }}
 .lt th b {{ display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; }} .lt th small {{ display: block; font-size: 8.5px; font-weight: 700; color: #6B5A4C; white-space: nowrap; }}
@@ -467,10 +469,9 @@ body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 
 .lt td b {{ color: #B4561B; font-weight: 900; }} .lt td.tv {{ width: 104px; font-size: 10px; font-weight: 800; color: #1F2A28; border-left: 1px solid #F2D9C2; }}
 .lt tr:first-child th, .lt tr:first-child td {{ border-top: 0; }}
 .box {{ border-color: #B4561B; }} .box h3 {{ background: #B4561B; }}
-.loc .row {{ min-height: 70px; }} .loc .row .t {{ font-size: 11px; margin-top: 3px; }} .loc .row.sit .t {{ font-size: 12.5px; }}
-.loc .row .nm b {{ font-size: 15.5px; }} .loc .row .nm small {{ font-size: 9px; }}
+/* 行の高さは役一覧表と同じにそろえる（2026-11-12 ユーザーの指定。前は70pxで間延びしていた） */
 .lt2 {{ display: grid; grid-template-columns: 1fr 1fr; }} .lt2 .lt + .lt {{ border-left: 2px solid #F2D9C2; }}
-.lt td, .lt th {{ height: 54px; }} .lt td {{ font-size: 11px; }} .lt td.tv {{ font-size: 10.5px; width: 98px; }}
+.lt td, .lt th {{ height: 34px; padding-top: 3px; padding-bottom: 3px; }} .lt td {{ font-size: 11px; }} .lt td.tv {{ font-size: 10.5px; width: 98px; }}
 </style></head><body>
 <header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
 <div class="cols loc">
@@ -495,7 +496,8 @@ def render():
             for suffix, scale in [("", 2481 / 794), ("-web", 2)]:
                 pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=scale)
                 pg.goto(u); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1000)
-                pg.screenshot(path=os.path.join(OUT, f"{name}{suffix}.png"))
+                h = pg.evaluate("Math.ceil(document.body.getBoundingClientRect().height)")      # 中身が A4 より短い表は、その高さで切る
+                pg.screenshot(path=os.path.join(OUT, f"{name}{suffix}.png"), clip={"x": 0, "y": 0, "width": 794, "height": min(1123, h)})
                 pg.close()
             pg = b.new_page(); pg.goto(u); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1000)
             pg.pdf(path=os.path.join(OUT, f"{name}.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
