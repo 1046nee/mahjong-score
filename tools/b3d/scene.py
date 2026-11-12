@@ -303,6 +303,25 @@ PLAYERS = [   # 席0〜3。uniform=(柄, [色…4色まで])・hair=(形, 色)�
     dict(uniform=("camo", ["#2F6B3A", "#6FA05A", "#F2F2EE", "#E9C63A"]), collar="#1D2F5C", hair=("wavy", "#15130F"), build=1.06, height=1.02, eyes="tare"),
     dict(uniform=("lines", ["#17181B", "#C22B2B"]), collar="#C22B2B", hair=("bob", "#E9C46A"), build=.86, height=.95, eyes="cute"),      # 赤いユニフォーム＝金髪のボブの女性（2026-11-12 ユーザーの指摘。前は髪が白っぽく、女性に見えなかった）
 ]
+SHEET = arg("--sheet", "")    # 1人の見本（前・横・後ろ）を書き出す。名簿の id を渡す
+ROSTER = arg("--roster", "")  # 名簿（チーム＝ユニフォーム・人＝髪や眼鏡）。実名が入るので素材リポジトリ（非公開）に置く: まじゃすこ素材/3d/roster.json
+SEATS = arg("--seats", "")    # 座らせる4人の id（席0=手前・1=右・2=奥・3=左）。例: --seats p01,p05,p10,p23
+def person(roster, pid):
+    """名簿の1人 → 選手の形。チームのユニフォームに、人ごとの髪・目・眼鏡・肌・体格を重ねる。書いていない所は性別の標準"""
+    pp = roster["people"][pid]; tm = roster["teams"][pp["team"]]
+    fem = pp.get("gender") == "f"
+    d = dict(uniform=(tm["uniform"][0], tm["uniform"][1]), collar=tm.get("collar", tm["uniform"][1][0]),
+             hair=tuple(pp.get("hair") or (("bob", "#2A211D") if fem else ("short_messy", "#2A211D"))),
+             build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
+             eyes=pp.get("eyes") or ("cute" if fem else "normal"))
+    for k in ("skin", "glasses"):
+        if pp.get(k): d[k] = pp[k]
+    return d
+if ROSTER:
+    import json as _json
+    _R = _json.load(open(ROSTER, encoding="utf-8"))
+    if SEATS: PLAYERS = [person(_R, x) for x in SEATS.split(",")]
+    if SHEET: PLAYERS = [person(_R, SHEET)]
 CAST = arg("--cast", "")     # 座る4人を外のファイルで差しかえる（tools/b3d/casts/*.json。動画ごとに人を変える。2026-11-12 ユーザーの依頼）
 if CAST:
     import json as _json
@@ -392,16 +411,35 @@ def build_player(i, P):
     arm = body
     # 椅子
     cm = mat("chair", "#EDEDEA" if THEME == "dark" else "#FFFFFF", .5)
-    box(f"seat{i}", (.50, .48, .08), (0, y0 - .03, .50), cm, bevel=.03, parent=r)
-    box(f"back{i}", (.48, .07, .62), (0, y0 - .30, .86), cm, bevel=.03, parent=r).rotation_euler = (math.radians(8), 0, 0)
-    limb(f"cpole{i}", (0, y0 - .03, .06), (0, y0 - .03, .46), .03, mat("pole", "#16181A", .4), r)
-    box(f"cfoot{i}", (.5, .5, .03), (0, y0 - .03, .03), mat("pole", "#16181A", .4), bevel=.01, parent=r)
-    # サイドテーブルとカメラの黒いドーム（左手前）
+    if not SHEET: box(f"seat{i}", (.50, .48, .08), (0, y0 - .03, .50), cm, bevel=.03, parent=r)
+    if not SHEET:
+        box(f"back{i}", (.48, .07, .62), (0, y0 - .30, .86), cm, bevel=.03, parent=r).rotation_euler = (math.radians(8), 0, 0)
+        limb(f"cpole{i}", (0, y0 - .03, .06), (0, y0 - .03, .46), .03, mat("pole", "#16181A", .4), r)
+        box(f"cfoot{i}", (.5, .5, .03), (0, y0 - .03, .03), mat("pole", "#16181A", .4), bevel=.01, parent=r)
+    if SHEET: return arm          # 見本（前・横・後ろ）では、椅子の横の机は出さない
+    # サイドテーブルと、ストローの刺さったペットボトルの水（左手前。2026-11-12 ユーザーの依頼で黒い球から変えた）
     box(f"side{i}", (.34, .30, .03), (-.62, y0 + .12, .70), mat("pole", "#16181A", .4), bevel=.008, parent=r)
     limb(f"spole{i}", (-.62, y0 + .12, 0), (-.62, y0 + .12, .69), .02, mat("pole", "#16181A", .4), r)
-    for dx in (-.08, .08):
-        sphere(f"dome{i}{dx}", .075, (-.62 + dx, y0 + .12, .80), mat("dome", "#0B0C0E", .15), (1, 1, 1.25), r)
+    bottle(f"btl{i}", (-.60, y0 + .10, .715), r)
     return arm
+
+def bottle(name, base, parent):
+    """500mLのペットボトルの水（高さ約21cm）＋白いキャップ＋青いラベル＋曲がったストロー"""
+    x, y, z = base
+    water = mat("bottle", "#CFE6F2", .05)
+    p = water.node_tree.nodes["Principled BSDF"]
+    p.inputs["Transmission Weight"].default_value = .85; p.inputs["IOR"].default_value = 1.33; p.inputs["Alpha"].default_value = .9
+    bpy.ops.mesh.primitive_cylinder_add(radius=.034, depth=.17, location=(x, y, z + .085), vertices=28)
+    o = bpy.context.object; o.name = name; o.data.materials.append(water); o.parent = parent
+    for poly in o.data.polygons: poly.use_smooth = True
+    sphere(name + "_sh", .034, (x, y, z + .17), water, (1, 1, .75), parent)                           # 肩（丸くすぼまる）
+    limb(name + "_nk", (x, y, z + .185), (x, y, z + .2), .014, water, parent)                          # 口
+    limb(name + "_cap", (x, y, z + .2), (x, y, z + .216), .016, mat("cap", "#F4F6F7", .4), parent)
+    limb(name + "_lb", (x, y, z + .07), (x, y, z + .115), .0352, mat("label", "#2F7FD0", .5), parent)  # ラベル
+    st = mat("straw", "#F7F7F7", .35)
+    a, b2, c = Vector((x + .004, y, z + .2)), Vector((x + .006, y, z + .285)), Vector((x + .03, y - .006, z + .30))
+    limb(name + "_s1", a, b2, .0035, st, parent); limb(name + "_s2", b2, c, .0035, st, parent)
+    sphere(name + "_sj", .0035, b2, st, parent=parent)
 
 # ---------------- 会場 ----------------
 def build_venue():
@@ -454,6 +492,25 @@ def add_cam(name):
     o.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
     cd.dof.focus_distance = d.length
     return o
+
+if SHEET:
+    # 見本: 薄い灰緑の地に1人。椅子の背もたれは後ろ姿を隠すので出さない（build_player の中で SHEET を見る）
+    w = bpy.data.worlds.new("w"); sc.world = w; w.use_nodes = True
+    w.node_tree.nodes["Background"].inputs[0].default_value = hexc("#DCE6E3"); w.node_tree.nodes["Background"].inputs[1].default_value = 1.0
+    box("floor", (8, 8, .02), (0, 0, -.01), mat("floor", "#DCE6E3", .9))
+    for k, (loc, rot, e) in enumerate((((1.5, .8, 2.6), (40, 0, 120), 120), ((-1.6, -2.4, 2.2), (55, 0, -35), 80), ((0, -3.2, 2.0), (65, 0, 0), 60))):
+        ld = bpy.data.lights.new(f"S{k}", "AREA"); ld.energy = e; ld.size = 2.5
+        o = bpy.data.objects.new(f"S{k}", ld); add(o); o.location = loc; o.rotation_euler = [math.radians(v) for v in rot]
+    ARMS = [build_player(0, PLAYERS[0])]
+    r = sc.render; r.engine = "CYCLES"; sc.cycles.device = "CPU"; sc.cycles.samples = SAMPLES; sc.cycles.use_denoising = True
+    r.resolution_x, r.resolution_y = SIZE; r.image_settings.file_format = "PNG"; sc.view_settings.view_transform = "Standard"
+    os.makedirs(OUT, exist_ok=True)
+    tgt = Vector((0, -.80, 1.16))      # 頭のてっぺんから胴まで入る高さ
+    for nm, loc in (("front", (0, .55, 1.25)), ("side", (1.55, -.80, 1.22)), ("back", (0, -2.15, 1.30))):
+        cd = bpy.data.cameras.new(nm); cd.lens = 40; o = bpy.data.objects.new("cam_" + nm, cd); add(o)
+        o.location = loc; o.rotation_euler = (tgt - Vector(loc)).to_track_quat("-Z", "Y").to_euler(); sc.camera = o
+        r.filepath = os.path.join(OUT, f"{SHEET}_{nm}.png"); bpy.ops.render.render(write_still=True); print("SHEET", SHEET, nm, flush=True)
+    sys.exit(0)
 
 build_venue(); build_table(); NAMED = build_tiles()
 ARMS = [build_player(i, P) for i, P in enumerate(PLAYERS)]
