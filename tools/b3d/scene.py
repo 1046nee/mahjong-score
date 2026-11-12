@@ -324,16 +324,19 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    # 目は4種類（2026-11-12 ユーザーの依頼）: normal＝ふつう／tare＝タレ目／kiri＝キリッとした目／cute＝かわいらしい目（縦長・まつ毛）。白い点（キラキラ）は付けない
+    # 目は4種類（2026-11-12 ユーザーの依頼）: normal＝ふつう／tare＝タレ目／kiri＝キリッとした目／cute＝かわいらしい目（ふつうの目＋まつ毛3本ずつ）。白い点（キラキラ）は付けない
     ek = P.get("eyes", "normal"); em = mat("eye", "#2A211D", .45)
-    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.0175, (1, .5, 1.35), 0)}[ek]
+    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.015, (1, .5, 1.2), 0)}[ek]
     for sx in (-1, 1):
         e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .106, hz - .006), em, ESC, hd)
         e.rotation_euler = (0, math.radians(sx * ETILT), 0)      # 顔の面の中で傾ける（＋で目じりが下がる）
         if ek == "kiri":     # まゆ（目じりが上がる短い線）
             box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
-        if ek == "cute":     # まつ毛（目じりの上にはねる短い線）
-            box(f"lash{i}{sx}", (.016, .005, .0045), (sx * .058, hy + .098, hz + .014), em, bevel=.0015, parent=hd).rotation_euler = (math.radians(-10), math.radians(sx * -38), 0)
+        if ek == "cute":     # まつ毛3本（目の上の外がわに、扇のように開く短い線）
+            for k, ang in enumerate((8, 34, 60)):      # 真上からの角度（外がわへ倒す）
+                a2 = math.radians(ang); r0, r1 = .0165, .0275
+                cx = sx * (.042 + math.sin(a2) * (r0 + r1) / 2); cz = hz - .006 + math.cos(a2) * (r0 + r1) / 2 * 1.1
+                box(f"lash{i}{sx}{k}", (.0042, .005, r1 - r0), (cx, hy + .104 - abs(cx) * .12, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
     if P.get("glasses"):   # めがね（色を書くと付く）。細い輪2つと、つなぐ棒
         gm = mat(f"glass{i}", P["glasses"], .3, metal=.3)
         for sx in (-1, 1):
