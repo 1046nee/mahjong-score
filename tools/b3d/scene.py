@@ -440,10 +440,30 @@ def build_player(i, P):
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
     # 目は4種類（2026-11-12 ユーザーの依頼）: normal＝ふつう／tare＝タレ目／kiri＝キリッとした目／cute＝かわいらしい目（ふつうの目＋まつ毛3本ずつ）。白い点（キラキラ）は付けない
     ek = P.get("eyes", "normal"); em = mat("eye", "#2A211D", .45)
-    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.015, (1, .5, 1.2), 0)}[ek]
+    # 2026-11-13 に足した目: sanpaku＝三白眼（白目の上の方に小さな黒目）／kirenaga＝切れ長（横に細長く、目じりが少し上がる）
+    #   tsuri＝つり目（目じりが強く上がる・まゆなし）／maru＝丸い大きめの目／ito＝糸目（∩の細い線）／fuse＝伏し目（上まぶたで半分かくれる）
+    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.015, (1, .5, 1.2), 0),
+                      "sanpaku": (.0085, (1, .5, 1.1), 0), "kirenaga": (.015, (1.7, .5, .55), -10), "tsuri": (.015, (1.3, .5, .85), -32),
+                      "maru": (.0185, (1, .5, 1.05), 0), "ito": (.015, (1, .5, 1), 0), "fuse": (.015, (1.2, .5, 1.1), 0)}[ek]
     for sx in (-1, 1):
+        if ek == "ito":      # 糸目: 目のかわりに、上に弧を描く細い線
+            cu = bpy.data.curves.new(f"ito{i}{sx}", "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = .0028; cu.bevel_resolution = 3; cu.use_fill_caps = True
+            sp = cu.splines.new("POLY"); sp.points.add(6)
+            for k in range(7):
+                u = k / 6 * 2 - 1; x = sx * .042 + u * .016; z = -.006 + .006 * (1 - u * u)
+                sp.points[k].co = (x, hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001, hz + z, 1)
+            o = bpy.data.objects.new(f"ito{i}{sx}", cu); add(o); o.parent = hd; cu.materials.append(em)
+            continue
+        if ek == "sanpaku":  # 白目（横長）＋上に寄せた小さな黒目
+            sphere(f"eyeo{i}{sx}", .0175, (sx * .042, hy + .103, hz - .006), em, (1.3, .45, .9), hd)                       # ふち（黒い線）
+            sphere(f"eyew{i}{sx}", .016, (sx * .042, hy + .1055, hz - .006), mat("eyewhite", "#FAF8F2", .4), (1.3, .45, .88), hd)   # 白目
+            e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .1115, hz - .0012), em, ESC, hd)                                    # 上に寄せた小さな黒目
+            continue
         e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .106, hz - .006), em, ESC, hd)
         e.rotation_euler = (0, math.radians(sx * ETILT), 0)      # 顔の面の中で傾ける（＋で目じりが下がる）
+        if ek == "fuse":     # 上まぶた（肌の色）で目の上半分をかくし、まぶたの線を引く
+            sphere(f"lid{i}{sx}", .02, (sx * .042, hy + .1035, hz + .006), skin, (1.15, .5, .55), hd)                          # 上まぶた（肌）
+            box(f"lidl{i}{sx}", (.036, .006, .0035), (sx * .042, hy + .1115, hz - .002), em, bevel=.0015, parent=hd)
         if ek == "kiri" and not P.get("brows"):     # まゆ（目じりが上がる短い線）
             box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
         if ek == "cute":     # まつ毛3本（目の上の外がわに、扇のように開く短い線）
