@@ -17,7 +17,7 @@ THEME = arg("--theme", "dark")
 CAMS = arg("--cams", "wide,mid,hand,top,meld").split(",")
 SIZE = [int(x) for x in arg("--size", "720x1280").split("x")]
 SAMPLES = int(arg("--samples", "48"))
-FACE = arg("--face", "eyes")   # eyes＝目だけ／nm＝鼻と口も（試し。2026-11-12）
+FACE = arg("--face", "nm")   # nm＝目・鼻・口（今の決まり。2026-11-12 ユーザーの判断）／eyes＝目だけ
 ANIM = "--anim" in sys.argv      # 動きの試し（チーの5つの手順）。1コマずつ書き出す。途中で止まっても、できたコマは飛ばして続きから
 FPS = int(arg("--fps", "12"))
 STEP = 0 if ANIM else int(arg("--step", "4"))   # 鳴きの手順のどこまで進んだか（0=鳴く前 … 5=打牌まで）
@@ -323,7 +323,14 @@ def build_player(i, P):
         sphere(f"eye{i}{sx}", .015, (sx * .042, hy + .106, hz - .006), mat("eye", "#2A211D", .45), (1, .5, 1.2), hd)
     if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
         sphere(f"nose{i}", .011, (0, hy + .116, hz - .026), mat("nose", "#E3B79B", .6), (1, .7, .9), hd)
-        box(f"mouth{i}", (.026, .006, .005), (0, hy + .105, hz - .052), mat("mouth", "#8A4A3C", .6), bevel=.002, parent=hd).rotation_euler = (math.radians(-25), 0, 0)
+        # 口＝少し口角の上がった線（頭の丸みに沿わせた曲線。幅は目と目の間の半分ほど）
+        cu = bpy.data.curves.new(f"mouth{i}", "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = .0032; cu.bevel_resolution = 3; cu.use_fill_caps = True
+        sp = cu.splines.new("POLY"); N = 9; sp.points.add(N - 1)
+        for k in range(N):
+            u = k / (N - 1) * 2 - 1; x = u * .021; z = -.054 + .0065 * u * u
+            y = math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001
+            sp.points[k].co = (x, hy + y, hz + z, 1)
+        mo = bpy.data.objects.new(f"mouth{i}", cu); add(mo); mo.parent = hd; cu.materials.append(mat("mouth", "#8A4A3C", .6))
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
