@@ -459,7 +459,10 @@ def build_player(i, P):
             bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "round_thick": .0055, "rect": .0036}.get(gs, .0032), location=(sx * .042, hy + .112, hz - .006), rotation=(math.radians(90), 0, 0),
                                              major_segments=4 if gs in ("rect", "thick") else 48, minor_segments=8)
             o = bpy.context.object; o.data.materials.append(gm); o.parent = hd
-            if gs in ("rect", "thick"): o.rotation_euler = (math.radians(90), math.radians(45), 0); o.scale = (1.2, .85, 1)
+            if gs in ("rect", "thick"):      # 4角の輪をまず形の中で45度回して四角にし、それから横長にのばす（先にのばすと菱形にゆがんだ）
+                o.data.transform(Matrix.Rotation(math.radians(45), 4, "Z")); o.scale = (1.58, 1.1, 1)      # 回すと辺が r/√2 になるので、その分だけ大きく
+            if gs == "oval": o.scale = (1.2, .8, 1)
+            if gs == "browline": box(f"brow_g{i}{sx}", (.056, .008, .01), (sx * .042, hy + .118, hz + .014), gm, bevel=.003, parent=hd)
             for poly in o.data.polygons: poly.use_smooth = True
         box(f"bridge{i}", (.03, .005, .005), (0, hy + .116, hz - .004), gm, parent=hd)
     if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
@@ -527,6 +530,42 @@ def build_player(i, P):
         sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
     elif kind == "ponytail":  # 後ろでひとつに結んだ髪＋前髪
         sphere(f"tail{i}", .045, (0, hy - .14, hz - .02), hm2, (.8, .8, 2.0), hd)
+        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
+    elif kind == "center": # センター分け（前髪を真ん中で分けて左右へ流す）
+        for sx in (-1, 1):
+            sphere(f"bang{i}{sx}", .05, (sx * .05, hy + .084, hz + .052), hm, (1.15, .45, .5), hd).rotation_euler = (math.radians(-25), math.radians(sx * 28), 0)   # 分け目から外へ、ななめ下に流す
+            sphere(f"cside{i}{sx}", .05, (sx * .1, hy + .01, hz + .02), hm, (.55, 1.0, 1.15), hd)
+    elif kind == "side_part":  # 七三分け（横に大きく流した前髪＋分け目）
+        sphere(f"bang{i}", .075, (.03, hy + .07, hz + .078), hm, (1.6, .5, .42), hd).rotation_euler = (0, math.radians(-18), 0)
+        sphere(f"bang{i}b", .04, (-.075, hy + .05, hz + .085), hm, (1.0, .7, .5), hd)
+    elif kind == "spiky":  # 短くツンツン立たせた髪
+        for k in range(11):
+            a = k / 11 * math.tau; rr = .05 if k % 2 else .075
+            o = sphere(f"spike{i}{k}", .028, (math.cos(a) * rr, hy - .01 + math.sin(a) * rr, hz + .115), hm, (.8, .8, 2.0), hd)
+            o.rotation_euler = (math.sin(a) * -.5, math.cos(a) * .5, 0)
+        sphere(f"bang{i}", .05, (0, hy + .08, hz + .07), hm, (1.6, .5, .4), hd)
+    elif kind == "perm":   # ふんわりしたパーマ（小さな丸を全体に）
+        for k in range(26):
+            a = k * 2.399; zz = .12 - (k / 25) * .14; rr = math.sqrt(max(0, .128 ** 2 - (zz - .02) ** 2)) * .95
+            px_, py_ = math.cos(a) * rr, -.015 + math.sin(a) * rr * .95
+            if py_ > .03 and zz < .07: continue          # 顔の前には置かない（目と口を隠した）
+            sphere(f"perm{i}{k}", .036, (px_, hy + py_, hz + zz), hm, parent=hd)
+        sphere(f"bang{i}", .07, (0, hy + .072, hz + .07), hm, (1.4, .5, .45), hd)
+    elif kind == "short_bob":  # 耳の下までの短いボブ＋前髪（後ろは刈り上げ気味）
+        sphere(f"sbback{i}", .122, (0, hy - .035, hz - .02), hm, (1.1, .95, .92), hd)
+        for sx in (-1, 1): sphere(f"sbside{i}{sx}", .045, (sx * .108, hy + .02, hz - .035), hm, (.55, .95, 1.2), hd)
+        sphere(f"bang{i}", .07, (-.02, hy + .066, hz + .07), hm, (1.4, .52, .45), hd).rotation_euler = (0, math.radians(10), 0)
+    elif kind == "long_wavy":  # 肩より長いゆるいウェーブ（毛先を外に散らす）
+        for k in range(7):
+            u = (k / 6) * 2 - 1
+            sphere(f"lw{i}{k}", .05, (u * .11, hy - .06 - (1 - abs(u)) * .02, hz - .1 - abs(math.sin(k)) * .03), hm2, (1.0, .9, 1.4), hd)
+        sphere(f"lwback{i}", .12, (0, hy - .05, hz - .03), hm2, (1.08, .75, 1.3), hd)
+        for sx in (-1, 1): sphere(f"lwside{i}{sx}", .046, (sx * .108, hy + .025, hz - .06), hm, (.6, .9, 1.9), hd)
+        sphere(f"bang{i}", .07, (.03, hy + .065, hz + .07), hm, (1.5, .5, .44), hd).rotation_euler = (0, math.radians(-14), 0)
+    elif kind == "half_up":  # 長い髪を後ろへ流し、上の方だけ小さくまとめる
+        sphere(f"huback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.7), hd)
+        sphere(f"hubun{i}", .04, (0, hy - .12, hz + .08), hm2, parent=hd)
+        for sx in (-1, 1): sphere(f"huside{i}{sx}", .045, (sx * .107, hy + .02, hz - .06), hm, (.55, .9, 1.9), hd)
         sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
