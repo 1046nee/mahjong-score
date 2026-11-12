@@ -84,6 +84,22 @@ def pattern_mat(name, kind, cols):
         n = nt.nodes.new("ShaderNodeTexNoise"); n.inputs["Scale"].default_value = 9.0; n.inputs["Detail"].default_value = 1.0
         nt.links.new(tc.outputs["Object"], n.inputs["Vector"]); nt.links.new(n.outputs["Fac"], ramp.inputs["Fac"])
         for i in range(len(cs)): el[i].position = .36 + i * .1
+    elif kind == "dlines":    # 斜めの太い線。色を並べた順に同じ幅で（同じ色を2回書くとその色が太くなる）
+        w = nt.nodes.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "DIAGONAL"; w.wave_profile = "SAW"
+        w.inputs["Scale"].default_value = 2.6; w.inputs["Distortion"].default_value = 0.0
+        nt.links.new(tc.outputs["Object"], w.inputs["Vector"]); nt.links.new(w.outputs["Fac"], ramp.inputs["Fac"])
+        for k in range(len(cs)): el[k].position = k / len(cs)
+    elif kind == "panel":     # 地の色（色1）に、片方の肩から斜めに色2の面。面の中に色3の小さな星（点）を散らす
+        sx = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(tc.outputs["Object"], sx.inputs["Vector"])
+        ad = nt.nodes.new("ShaderNodeMath"); ad.operation = "ADD"; nt.links.new(sx.outputs["X"], ad.inputs[0]); nt.links.new(sx.outputs["Z"], ad.inputs[1])
+        gt = nt.nodes.new("ShaderNodeMath"); gt.operation = "GREATER_THAN"; gt.inputs[1].default_value = .1; nt.links.new(ad.outputs["Value"], gt.inputs[0])
+        vo = nt.nodes.new("ShaderNodeTexVoronoi"); vo.inputs["Scale"].default_value = 60.0; nt.links.new(tc.outputs["Object"], vo.inputs["Vector"])
+        dl = nt.nodes.new("ShaderNodeMath"); dl.operation = "LESS_THAN"; dl.inputs[1].default_value = .08; nt.links.new(vo.outputs["Distance"], dl.inputs[0])
+        m1 = nt.nodes.new("ShaderNodeMix"); m1.data_type = "RGBA"; m1.inputs["A"].default_value = cs[1]; m1.inputs["B"].default_value = cs[2] if len(cs) > 2 else cs[1]
+        nt.links.new(dl.outputs["Value"], m1.inputs["Factor"])
+        m2 = nt.nodes.new("ShaderNodeMix"); m2.data_type = "RGBA"; m2.inputs["A"].default_value = cs[0]
+        nt.links.new(gt.outputs["Value"], m2.inputs["Factor"]); nt.links.new(m1.outputs["Result"], m2.inputs["B"]); nt.links.new(m2.outputs["Result"], p.inputs["Base Color"])
+        _mats[name] = m; return m
     elif kind == "rings":     # 横じま（色1が太い地・色2が細い線）。そでなら輪の線になる
         w = nt.nodes.new("ShaderNodeTexWave"); w.wave_type = "BANDS"; w.bands_direction = "Z"
         w.inputs["Scale"].default_value = 3.0; w.inputs["Distortion"].default_value = 0.0
