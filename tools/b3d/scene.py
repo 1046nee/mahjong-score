@@ -333,10 +333,11 @@ def build_player(i, P):
         if ek == "kiri":     # まゆ（目じりが上がる短い線）
             box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
         if ek == "cute":     # まつ毛3本（目の上の外がわに、扇のように開く短い線）
-            for k, ang in enumerate((8, 34, 60)):      # 真上からの角度（外がわへ倒す）
+            for k, ang in enumerate((-12, 22, 56)):      # 真上からの角度（外がわへ倒す）
                 a2 = math.radians(ang); r0, r1 = .0165, .0275
                 cx = sx * (.042 + math.sin(a2) * (r0 + r1) / 2); cz = hz - .006 + math.cos(a2) * (r0 + r1) / 2 * 1.1
-                box(f"lash{i}{sx}{k}", (.0042, .005, r1 - r0), (cx, hy + .104 - abs(cx) * .12, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
+                ly = math.sqrt(max(1e-6, .115 ** 2 - cx * cx - ((cz - hz) / 1.08) ** 2))      # 頭の丸みの上に置く（決め打ちの奥行きだと、上の1本が頭にうまった）
+                box(f"lash{i}{sx}{k}", (.0042, .007, r1 - r0), (cx, hy + ly, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
     if P.get("glasses"):   # めがね（色を書くと付く）。細い輪2つと、つなぐ棒
         gm = mat(f"glass{i}", P["glasses"], .3, metal=.3)
         for sx in (-1, 1):
