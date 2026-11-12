@@ -89,6 +89,41 @@
         "source": "/blog-starter-kit.html",
         "destination": "/blog-manner.html#starter-kit",
         "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-hayamihyo.png",
+        "destination": "/assets/score/mahjong-tensu-hayamihyo.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-hayamihyo-web.png",
+        "destination": "/assets/score/mahjong-tensu-hayamihyo-web.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-hayamihyo.pdf",
+        "destination": "/assets/score/mahjong-tensu-hayamihyo.pdf",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-ko.png",
+        "destination": "/assets/score/mahjong-tensu-ko.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-oya.png",
+        "destination": "/assets/score/mahjong-tensu-oya.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/tensu-mangan.png",
+        "destination": "/assets/score/mahjong-tensu-mangan.png",
+        "type": 301
+      },
+      {
+        "source": "/assets/score/fu-keisan.png",
+        "destination": "/assets/score/mahjong-fu-keisan.png",
+        "type": 301
       }
     ]
   },

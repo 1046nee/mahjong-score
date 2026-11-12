@@ -2,9 +2,9 @@
 """麻雀の点数早見表（1枚）を作る（2026-10-23〜）。点数は式から計算する（手で写さない）。
 
 出力（assets/score/）:
-- tensu-hayamihyo.png        … A4・約300dpi（2481×3508px）。画像検索・保存用の高画質版
-- tensu-hayamihyo-web.png    … 記事に表示する版（1588px幅。スマホの拡大でも荒れない）
-- tensu-hayamihyo.pdf        … 印刷用（A4・文字と線はベクター＝いくら拡大しても荒れない）
+- mahjong-tensu-hayamihyo.png        … A4・約300dpi（2481×3508px）。画像検索・保存用の高画質版
+- mahjong-tensu-hayamihyo-web.png    … 記事に表示する版（1588px幅。スマホの拡大でも荒れない）
+- mahjong-tensu-hayamihyo.pdf        … 印刷用（A4・文字と線はベクター＝いくら拡大しても荒れない）
 - score_table.json           … 記事のHTMLの表を作るためのデータ
 記事（blog-score-table.html）の表は、このデータから作り直す（tools/score_sheet.py --html で表のHTMLを出す）。
 実行: python tools/score_sheet.py   （playwright と Google Fonts の Noto Sans JP を使う）
@@ -239,18 +239,18 @@ footer b {{ color: #177083; font-weight: 900; }}
 
 # 表ごとの切り出し（A4の画面の座標・px）。表の並びを変えたらここも直す
 CROPS = {
-    "tensu-ko.png": {"x": 22, "y": 103, "width": 375, "height": 618},          # 子のロン・ツモ
-    "tensu-oya.png": {"x": 395, "y": 103, "width": 376, "height": 618},        # 親のロン・ツモ（ALL）
-    "tensu-mangan.png": {"x": 22, "y": 721, "width": 398, "height": 278},      # 満貫以上
-    "fu-keisan.png": {"x": 420, "y": 721, "width": 351, "height": 286},        # 符の数え方
+    "mahjong-tensu-ko.png": {"x": 22, "y": 103, "width": 375, "height": 618},          # 子のロン・ツモ
+    "mahjong-tensu-oya.png": {"x": 395, "y": 103, "width": 376, "height": 618},        # 親のロン・ツモ（ALL）
+    "mahjong-tensu-mangan.png": {"x": 22, "y": 721, "width": 398, "height": 278},      # 満貫以上
+    "mahjong-fu-keisan.png": {"x": 420, "y": 721, "width": 351, "height": 286},        # 符の数え方
 }
 
 
 PARTS = {  # ファイル名: (タイトル, 帯の色, 中身の関数)
-    "tensu-ko.png": ("麻雀 点数早見表｜子", "#177083", lambda d, h: h.split('<div class="grid">')[1].split('<section class="blk oya">')[0]),
-    "tensu-oya.png": ("麻雀 点数早見表｜親", "#4261AA", lambda d, h: '<section class="blk oya">' + h.split('<section class="blk oya">')[1].split('</section>')[0] + '</section>'),
-    "tensu-mangan.png": ("麻雀 点数早見表｜満貫以上", "#B23A0E", lambda d, h: h.split('<div class="bottom">')[1].split('<div class="box fu">')[0]),
-    "fu-keisan.png": ("麻雀 符の数え方", "#177083", lambda d, h: '<div class="box fu">' + h.split('<div class="box fu">')[1].split('</div>\n</div>')[0] + '</div>'),
+    "mahjong-tensu-ko.png": ("麻雀 点数早見表｜子", "#177083", lambda d, h: h.split('<div class="grid">')[1].split('<section class="blk oya">')[0]),
+    "mahjong-tensu-oya.png": ("麻雀 点数早見表｜親", "#4261AA", lambda d, h: '<section class="blk oya">' + h.split('<section class="blk oya">')[1].split('</section>')[0] + '</section>'),
+    "mahjong-tensu-mangan.png": ("麻雀 点数早見表｜満貫以上", "#B23A0E", lambda d, h: h.split('<div class="bottom">')[1].split('<div class="box fu">')[0]),
+    "mahjong-fu-keisan.png": ("麻雀 符の数え方", "#177083", lambda d, h: '<div class="box fu">' + h.split('<div class="box fu">')[1].split('</div>\n</div>')[0] + '</div>'),
 }
 
 
@@ -276,7 +276,7 @@ def render(d):
     url = "file:///" + html_path.replace("\\", "/")
     with sync_playwright() as p:
         b = p.chromium.launch()
-        for name, scale in [("tensu-hayamihyo.png", 2481 / 794), ("tensu-hayamihyo-web.png", 2)]:
+        for name, scale in [("mahjong-tensu-hayamihyo.png", 2481 / 794), ("mahjong-tensu-hayamihyo-web.png", 2)]:
             pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=scale)
             pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
             pg.screenshot(path=os.path.join(OUT, name), full_page=False)
@@ -285,7 +285,7 @@ def render(d):
         full = sheet_html(d)
         for part, (title, color, inner) in PARTS.items():
             hp = os.path.join(OUT, "_part.html")
-            sub = "上：ロン　下：ツモ" if part in ("tensu-ko.png", "tensu-oya.png", "tensu-mangan.png") else "足して、10の位で切り上げ"
+            sub = "上：ロン　下：ツモ" if part in ("mahjong-tensu-ko.png", "mahjong-tensu-oya.png", "mahjong-tensu-mangan.png") else "足して、10の位で切り上げ"
             io.open(hp, "w", encoding="utf-8").write(part_html(full, title, color, inner(d, full)).replace("上：ロン　下：ツモ", sub))
             pg = b.new_page(viewport={"width": 420, "height": 900}, device_scale_factor=3)
             pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
@@ -293,12 +293,12 @@ def render(d):
             pg.close(); os.remove(hp)
         pg = b.new_page()
         pg.goto(url); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(800)
-        pg.pdf(path=os.path.join(OUT, "tensu-hayamihyo.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
+        pg.pdf(path=os.path.join(OUT, "mahjong-tensu-hayamihyo.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
         b.close()
     os.remove(html_path)
     try:  # PNG を最適化（見た目は変えない・可逆）
         from PIL import Image
-        for name in ["tensu-hayamihyo.png", "tensu-hayamihyo-web.png"] + list(CROPS):
+        for name in ["mahjong-tensu-hayamihyo.png", "mahjong-tensu-hayamihyo-web.png"] + list(CROPS):
             f = os.path.join(OUT, name)
             Image.open(f).save(f, optimize=True)
     except ImportError:

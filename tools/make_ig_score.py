@@ -65,13 +65,13 @@ SLIDES = [
         f'<div class="cover"><span class="kicker">完全版</span><h1>麻雀<br>点数早見表</h1>'
         f'<h2>子・親のロン・ツモを<br>1枚にまとめました</h2>'
         f'<ul><li>20符〜110符・1〜4翻</li><li>満貫から役満まで</li><li>符の数え方を牌の絵で</li></ul></div>'
-        f'<img class="sheet" src="{SCORE}/tensu-hayamihyo-web.png"><p class="swipe">スワイプして見る →</p>{FOOT}')),
+        f'<img class="sheet" src="{SCORE}/mahjong-tensu-hayamihyo-web.png"><p class="swipe">スワイプして見る →</p>{FOOT}')),
     ("score-2.png", page(f'<div class="band"><h1>全部まとめて1枚</h1><p>子・親・満貫から上・符の数え方（次から1つずつ大きく）</p></div>'
-                         f'<div class="pic"><img src="{SCORE}/tensu-hayamihyo.png"></div>{FOOT}')),
-    ("score-3.png", part("1", "子の点数", "上がロン、下がツモ（子の払い-親の払い）", "tensu-ko.png")),
-    ("score-4.png", part("2", "親の点数", "上がロン、下がツモ（ALL＝子3人が同じ額）", "tensu-oya.png")),
-    ("score-5.png", part("3", "満貫から上", "符に関係なく、翻だけで決まる", "tensu-mangan.png")),
-    ("score-6.png", part("4", "符の数え方", "足して、10の位で切り上げ", "fu-keisan.png")),
+                         f'<div class="pic"><img src="{SCORE}/mahjong-tensu-hayamihyo.png"></div>{FOOT}')),
+    ("score-3.png", part("1", "子の点数", "上がロン、下がツモ（子の払い-親の払い）", "mahjong-tensu-ko.png")),
+    ("score-4.png", part("2", "親の点数", "上がロン、下がツモ（ALL＝子3人が同じ額）", "mahjong-tensu-oya.png")),
+    ("score-5.png", part("3", "満貫から上", "符に関係なく、翻だけで決まる", "mahjong-tensu-mangan.png")),
+    ("score-6.png", part("4", "符の数え方", "足して、10の位で切り上げ", "mahjong-fu-keisan.png")),
     ("score-7.png", page(
         '<div class="close"><h1>保存しなくて<br>大丈夫です</h1>'
         '<div class="box"><span class="q">麻雀　点数表</span><p>と検索すれば、<br><b>この早見表がいつでも出てきます</b></p></div>'
