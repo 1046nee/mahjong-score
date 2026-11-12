@@ -248,10 +248,11 @@ def seat_root(i):
     e = empty(f"seat{i}"); e.rotation_euler = (0, 0, i * math.pi / 2); return e
 
 HANDS = [
-    ["p3", "p4", "p6", "p7", "s3", "s5", "s6", "s7", "z7", "z7", "p9", "m4", "m5"],     # 席0（鳴く人）
+    ["p3", "p4", "p6", "p7", "p8", "s3", "s5", "s6", "s7", "s8", "s8", "m4", "m5"],     # 席0（鳴く人）。左から。六萬をチーして三索を切ると、二筒・五筒待ちのテンパイ（2026-11-13 ユーザーの指定）
     None, None, None,
 ]
-RIVERS = [["z2", "m1", "p8"], ["z4", "p9", "s1", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "p2", "s8", "z3", "m6"]]   # 席3の最後の六萬をチーする
+RIVERS = [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]]   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
+CALL_K = len(RIVERS[3]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
 
 def build_tiles():
     Z = TOP + .0005
@@ -379,9 +380,9 @@ def build_player(i, P):
     am = um
     body = dict(torso=torso, torso_rx=math.radians(-10), torso_loc=torso.location.copy(), collar=collar, collar_loc=collar.location.copy(), head=hd, head_loc=hd.location.copy())
     for sx in (-1, 1):
-        sh = (sx * .21 * b, y0 + .02, 1.10 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
+        sh = (sx * .192 * b, y0 + .02, 1.075 * hgt); el = (sx * .27 * b, y0 + .26, .90); wr = (sx * .21, y0 + .345, TOP + .04)
         ua = limb(f"uarm{i}{sx}", sh, el, .055 * b, am, r); fa = limb(f"farm{i}{sx}", el, wr, .03, skin, r)     # 前腕は手首まで肌の色・少し太く
-        eb = sphere(f"elb{i}{sx}", .056 * b, el, am, parent=r); sd = sphere(f"shd{i}{sx}", .07 * b, sh, am, parent=r)
+        eb = sphere(f"elb{i}{sx}", .056 * b, el, am, parent=r); sd = sphere(f"shd{i}{sx}", .057 * b, sh, am, parent=r)      # 肩の丸みは上腕と同じ太さ・胴の角の中におさめる（.07 で外・上に置くと、肩が盛り上がって見えた。2026-11-13 ユーザーの指摘）
         hn = sphere(f"hand{i}{sx}", .036, wr, skin, (1.05, 1.0, .6), r)     # 手のひら
         for fk, fx in enumerate((-.024, -.008, .008, .024)):               # 指4本（手の向き＝+Y にのびる）
             sphere(f"fing{i}{sx}{fk}", .0105, (fx, .042 - abs(fx) * .25, -.004), skin, (1, 2.6, 1.5), hn)
@@ -498,7 +499,7 @@ def anim_pose(t, cam):
     tr = t; t = warp(t)          # tr＝実際の時刻・t＝もとの動きの時刻
     Z = TOP + .0005
     m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
-    X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + 4 * HP     # 手牌の四萬・五萬・三索の位置（牌の大きさから計算する）
+    X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + HANDS[0].index("s3") * HP     # 手牌の四萬・五萬・三索の位置（牌の大きさから計算する）
     # 晒した牌の置き場＝手牌の延長線上の右（手牌と平行・手前のふちをそろえる）。倒していない手牌とのあいだは GAP だけ空ける（2026-11-12 ユーザーの依頼。前は手牌の奥に倒していて、近くて見えにくかった）
     GAP = .028
     LY = HY + TL / 2                            # 倒した牌の中心（手前のふちが手牌の表の面と同じ線）
@@ -512,7 +513,7 @@ def anim_pose(t, cam):
         o.location = lerp((x, HY + TT, Z + TL / 2), (ex, LY, Z), k2) + Vector((0, 0, .03 * math.sin(math.pi * k2))) + Vector((DX, DY, 0)) * k4
     # ③ 取る（上家の河 → 晒した2枚の左。牌は横向きのまま）
     k3 = seg(t, 2.9, 3.8)
-    p0 = Vector((RY, -(RX0 + 5 * RP), Z)); p1 = Vector((E6, LY - TL / 2 + TW / 2, Z))
+    p0 = Vector((RY, -(RX0 + CALL_K * RP), Z)); p1 = Vector((E6, LY - TL / 2 + TW / 2, Z))
     m6.location = lerp(p0, p1, k3) + Vector((0, 0, .05 * math.sin(math.pi * k3))) + Vector((DX, DY, 0)) * k4
     m6.rotation_euler = (0, 0, -math.pi / 2)
     # ⑤ 切る（手牌の三索 → 河の4枚目）

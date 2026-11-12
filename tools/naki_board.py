@@ -18,28 +18,29 @@ def board(step):
     tw = 20
     th = tw * 89 / 62
     # 上家の河（左。牌は上家の向き＝90度回す）。最後が六萬
-    riv_left = ["z1", "m9", "p2", "s8", "z3", "m6"]
+    riv_left = ["z1", "m9", "z3", "m6"]      # 上家は4枚目の六萬を切ったところ（自分の河は3枚。3Dの動画 tools/b3d/scene.py と同じ場面）
+    LAST = len(riv_left) - 1
     lx, ly = 62, 52
     for i, c in enumerate(riv_left):
-        hl = (i == 5)
+        hl = (i == LAST)
         if hl and step >= 3:
             continue
         cx, cy = lx + th / 2, ly + i * (tw + 2) + tw / 2
         g.append(f'<g transform="rotate(90 {cx:.1f} {cy:.1f})">' + T(c, cx - tw / 2, cy - th / 2, tw, op=1 if hl else .5) + "</g>")
-    hy = ly + 5 * (tw + 2)
+    hy = ly + LAST * (tw + 2)
     if step < 3:
         g.append(f'<rect x="{lx-3}" y="{hy-3}" width="{th+6:.0f}" height="{tw+6}" rx="5" fill="none" stroke="#E75620" stroke-width="3"/>')
     else:
         g.append(f'<rect x="{lx-1}" y="{hy-1}" width="{th+2:.0f}" height="{tw+2}" rx="4" fill="none" stroke="#9fc3bd" stroke-width="1.5" stroke-dasharray="3 3"/>')
     # 自分の河
-    my_riv = ["z2", "m1", "p8"] + (["s3"] if step >= 5 else [])
+    my_riv = ["z7", "z2", "s1"] + (["s3"] if step >= 5 else [])
     rx, ry = 122, 196
     for i, c in enumerate(my_riv):
         g.append(T(c, rx + i * (tw + 2), ry, tw, op=1 if (step >= 5 and i == 3) else .5))
     if step >= 5:
         g.append(f'<rect x="{rx + 3 * (tw + 2) - 3}" y="{ry - 3}" width="{tw + 6}" height="{th + 6:.0f}" rx="5" fill="none" stroke="#E75620" stroke-width="3"/>')
     # 自分の手牌
-    hand = ["m4", "m5", "p3", "p4", "p6", "p7", "s3", "s5", "s6", "s7", "z7", "z7", "p9"]
+    hand = ["m4", "m5", "p3", "p4", "p6", "p7", "p8", "s3", "s5", "s6", "s7", "s8", "s8"]
     hw = 16; hx = 14; hyy = 272; k = 0
     for c in hand:
         if step >= 2 and c in ("m4", "m5"): continue
