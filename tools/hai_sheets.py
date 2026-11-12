@@ -330,7 +330,7 @@ def naki_chip(m, n):
 
 SHEET2_CSS = """
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-.g { border: 2px solid var(--c); border-radius: 8px; overflow: hidden; margin-bottom: 9px; background: #fff; }
+.g { border: 2px solid #1F2A28; border-radius: 0; overflow: hidden; margin-bottom: 9px; background: #fff; } /* 表は点数早見表と同じ四角・濃い枠（2026-11-12 ユーザーの指定）。見出しの帯・凡例は丸角のまま */
 .g > h2 { background: var(--c); color: #fff; display: flex; align-items: baseline; gap: 8px; padding: 2px 10px 3px; font-size: 17px; font-weight: 900; line-height: 1.2; }
 .g > h2 small { font-size: 11px; font-weight: 700; opacity: .9; }
 .row { display: grid; grid-template-columns: 82px 32px 1fr; align-items: center; column-gap: 6px; padding: 3px 6px 3px 8px; border-top: 1px solid #D5E2DF; min-height: 34px; }
