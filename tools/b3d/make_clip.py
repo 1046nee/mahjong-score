@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-"""scene.py --anim が書き出したコマ（f0000.png〜）に、手順の表示をのせて mp4 にする。
+"""scene.py --anim が書き出したコマ（入り i0000.png〜・本題 f0000.png〜）に、題名と手順の表示をのせて mp4 にする。
   python tools/b3d/make_clip.py <コマのフォルダ> <出力.mp4> [--fps 12] [--script chi]
-のせるもの（2026-11-12 ユーザーの依頼「動き・テロップ・順番を分かりやすく指し示す表示」）:
+のせるもの（2026-11-12 ユーザーの依頼）:
+  0. 入り＝会場を回りこむ絵（scene.py --anim --intro）の上に、動画の題名（「チーの方法」）。3Dの卓の解説動画は、どれもこの入りから始める
   1. 上の帯＝手順の番号の列（済み＝緑・今＝オレンジで大きく・これから＝白い輪）。いま全体のどこかが分かる
   2. 見出し＝「② 開示」＋ひとことの説明（かな書きの読みつき）
-  3. 印＝その手順で動く牌を、番号つきの輪で囲む（位置は scene.py --marks の marks.json から）
-  4. 手順が終わるたびに絵を止める（hold）。止めている間に説明を読める。あとで声をのせる長さにもなる
-  5. 最後に、手順の一覧のカード
+  3. 手順が終わるたびに絵を止める（hold）。止めている間に説明を読める。あとで声をのせる長さにもなる
+  4. 最後に、手順の一覧のカード
+牌を番号つきの輪で囲む印は、のせない（2026-11-12 ユーザーの判断。絵のほうで手をどけて寄るので要らない）。
 字は Noto Sans JP（Windows は C:/Windows/Fonts/NotoSansJP-VF.ttf）。ffmpeg は PATH のもの、無ければ imageio-ffmpeg。
 """
 import glob, json, os, shutil, subprocess, sys, tempfile
@@ -19,7 +20,7 @@ NUM = "①②③④⑤⑥⑦⑧"
 
 # 台本: 手順ごとに (名前, 読み, 説明, 最初のコマ, 最後のコマ, 止める秒, 囲む牌, 吹き出し)。コマは scene.py の anim_pose の区切り（12fps）
 SCRIPTS = {
-    "chi": dict(title="チーの手順", steps=[
+    "chi": dict(title="チーの方法", kicker="麻雀の所作", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「チー」と声に出す。ポンが優先なので一拍おいてから", 0, 6, 2.2, [], "チー"),     # 肩ごしで顔が見えるうちに止める（カメラが動き出す前）
         ("開示", "かいじ", "鳴くのに使うターツを倒して、みんなに見せる", 7, 31, 1.6, ["m4", "m5"], ""),          # 止める所は、手がどいて真上から寄ったコマ
         ("回収", "かいしゅう", "他家（ターチャ）が切った牌を取ってくる", 32, 61, 1.4, ["m6"], ""),
@@ -74,19 +75,20 @@ def headline(d, i, s, k):
     while d.textlength(tx, font=ft) > W - 80 - 72 and ft.size > 30: ft = font(ft.size - 2, 800)
     d.text((76, y + 164), tx, font=ft, fill=INK)
 
-def ring(d, pts, i, k):
-    """動く牌を囲む輪と番号。pts=[(x,y)…]（画面の比）"""
-    if not pts: return
-    xs = [p[0] * W for p in pts]; ys = [p[1] * H for p in pts]
-    pad = 78
-    x0, y0, x1, y1 = min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad
-    if x1 < 0 or x0 > W: return
-    a = int(255 * min(1, k * 5))
-    for wd, col in ((14, (255, 255, 255, a)), (8, (231, 86, 32, a))):
-        d.rounded_rectangle((x0, y0, x1, y1), radius=40, outline=col, width=wd)
-    bx, by = max(60, min(W - 60, x0)), max(700, y0)
-    d.ellipse((bx - 44, by - 44, bx + 44, by + 44), fill=(231, 86, 32, a), outline=(255, 255, 255, a), width=5)
-    text_c(d, bx, by - 2, str(i + 1), font(52), (255, 255, 255, a))
+def title_card(d, sc, t, dur):
+    """入りの題名。少し遅れて下から入り、本題に入る直前に消える"""
+    k = min(1, max(0, (t - .5) * 3)); out = min(1, max(0, (dur - t) * 4)); a = k * out
+    if a <= 0: return
+    A = lambda v: int(v * a)
+    y = 230 + int((1 - k) * 40)      # 上に置く（真ん中だと卓と選手が隠れる）
+    d.rounded_rectangle((70, y, W - 70, y + 400), radius=60, fill=(12, 20, 22, A(215)))
+    kt = sc.get("kicker", ""); ft = font(46, 800)
+    kw = d.textlength(kt, font=ft) + 72
+    d.rounded_rectangle((W / 2 - kw / 2, y + 44, W / 2 + kw / 2, y + 44 + 78), radius=39, fill=(231, 86, 32, A(255)))
+    text_c(d, W / 2, y + 44 + 37, kt, ft, (255, 255, 255, A(255)))
+    text_c(d, W / 2, y + 222, sc["title"], font(150), (255, 255, 255, A(255)))
+    text_c(d, W / 2, y + 338, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)))
+    text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
 def bubble(d, tx, k):
     a = min(1, k * 5); s = .8 + .2 * a
@@ -114,10 +116,10 @@ def main():
     src, out = a[0], a[1]
     frames = sorted(glob.glob(os.path.join(src, "f[0-9]*.png")))
     assert frames, "コマが無い: " + src
-    mp = os.path.join(src, "marks.json")
-    marks = json.load(open(mp)) if os.path.exists(mp) else {}
+    intro = sorted(glob.glob(os.path.join(src, "i[0-9]*.png")))
     # 出すコマの並び: (元のコマ, 手順, その手順が出てからの秒, 止めているか)
     seq = []
+    for n, fp in enumerate(intro): seq.append((fp, -2, n / fps, False))
     for i, s in enumerate(sc["steps"]):
         t = 0.0
         for f in range(s[3], s[4] + 1): seq.append((f, i, t, False)); t += 1 / fps
@@ -128,13 +130,13 @@ def main():
     tmp = tempfile.mkdtemp(); cache = {}
     for n, (f, i, t, held) in enumerate(seq):
         if f not in cache:
-            cache.clear(); cache[f] = Image.open(frames[min(f, len(frames) - 1)]).convert("RGBA").resize((W, H), Image.LANCZOS)
+            cache.clear(); cache[f] = Image.open(f if isinstance(f, str) else frames[min(f, len(frames) - 1)]).convert("RGBA").resize((W, H), Image.LANCZOS)
         im = cache[f].copy(); ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
-        if i >= 0:
+        if i == -2:
+            title_card(d, sc, t, len(intro) / fps)
+        elif i >= 0:
             s = sc["steps"][i]
             rail(d, sc["steps"], i); headline(d, i, s, t)
-            m = marks.get(str(f), {})
-            ring(d, [m[k] for k in s[6] if k in m], i, t)
             if s[7] and t > .25: bubble(d, s[7], t - .25)
         else:
             rail(d, sc["steps"], len(sc["steps"]), done_all=True)

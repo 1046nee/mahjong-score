@@ -548,6 +548,32 @@ def anim_pose(t, cam):
         cam.data.lens += (50 - cam.data.lens) * pk[n]
     cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
+# ---------------- 入り（イントロ）: 会場を卓のまわりからドローンのように回りこんで、本題の最初の画角（肩ごし）に着く ----------------
+# 3Dの卓の解説動画は、どれもこの入りから始める（2026-11-12 ユーザーの依頼）。題名は make_clip.py がこの上にのせる
+INTRO_DUR = 4.0
+def intro_pose(u, cam):
+    """u=0〜1。遠く高い所から、卓を中心に回りながら近づき、anim_pose(0) のカメラにぴったり重なって終わる"""
+    e = 1 - (1 - max(0.0, min(1.0, u))) ** 1.6          # はじめ速く、着くときはゆっくり
+    end, tg1 = Vector(CAM["mid"][0]), Vector(CAM["mid"][1])
+    a1 = math.atan2(end.y, end.x); r1 = math.hypot(end.x, end.y)
+    a = a1 - math.radians(170) * (1 - e)                # 170度ぶん回る（壁のある奥と右が背景に入る側だけを通る）
+    rr = r1 + (4.9 - r1) * (1 - e); z = end.z + (3.3 - end.z) * (1 - e)
+    loc = Vector((math.cos(a) * rr, math.sin(a) * rr, z)); tgt = Vector((0, 0, .85)).lerp(tg1, e)
+    cam.data.lens = 26 + (CAM["mid"][2] - 26) * e
+    cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+
+if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 に書き出す（選手や卓は本題の最初の形のまま）
+    cam = anim_setup(); anim_pose(0.0, cam)
+    n = int(INTRO_DUR * FPS)
+    only = arg("--frames", "")
+    for f in ([int(x) for x in only.split(",")] if only else range(n)):
+        fp = os.path.join(OUT, f"i{f:04d}.png")
+        if os.path.exists(fp): continue
+        intro_pose(f / n, cam)
+        r.filepath = fp
+        t0 = time.time(); bpy.ops.render.render(write_still=True); print("INTRO", f, round(time.time() - t0, 1), "s", flush=True)
+    sys.exit(0)
+
 if ANIM:
     cam = anim_setup()
     n = int(ANIM_DUR * FPS)
