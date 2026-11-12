@@ -104,6 +104,15 @@ def pattern_mat(name, kind, cols):
         mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["A"].default_value = cs[0]
         nt.links.new(cut.outputs["Value"], mx.inputs["Factor"]); nt.links.new(r2.outputs["Color"], mx.inputs["B"]); nt.links.new(mx.outputs["Result"], p.inputs["Base Color"])
         _mats[name] = m; return m
+    elif kind == "hemcheck":  # 上は無地（色1）、すそは市松（色2・色3）。ドリブンズのような切りかえ
+        ck = nt.nodes.new("ShaderNodeTexChecker"); ck.inputs["Scale"].default_value = 40.0
+        ck.inputs["Color1"].default_value = cs[1]; ck.inputs["Color2"].default_value = cs[2]
+        sx = nt.nodes.new("ShaderNodeSeparateXYZ"); cut = nt.nodes.new("ShaderNodeMath"); cut.operation = "LESS_THAN"; cut.inputs[1].default_value = -.02
+        mx = nt.nodes.new("ShaderNodeMix"); mx.data_type = "RGBA"; mx.inputs["A"].default_value = cs[0]
+        for a_, b_ in ((tc.outputs["Object"], ck.inputs["Vector"]), (tc.outputs["Object"], sx.inputs["Vector"]), (sx.outputs["Z"], cut.inputs[0]),
+                       (cut.outputs["Value"], mx.inputs["Factor"]), (ck.outputs["Color"], mx.inputs["B"]), (mx.outputs["Result"], p.inputs["Base Color"])):
+            nt.links.new(a_, b_)
+        _mats[name] = m; return m
     elif kind == "check":     # 地の色に、市松の模様がところどころ入る（色1=地・色2=市松の明るい色・色3=差し色）
         ck = nt.nodes.new("ShaderNodeTexChecker"); ck.inputs["Scale"].default_value = 42.0
         ck.inputs["Color1"].default_value = cs[1]; ck.inputs["Color2"].default_value = cs[0]
