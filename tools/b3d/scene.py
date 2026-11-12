@@ -333,8 +333,16 @@ HANDS = [
     ["p3", "p4", "p6", "p7", "p8", "s3", "s5", "s6", "s7", "s8", "s8", "m4", "m5"],     # 席0（鳴く人）。左から。六萬をチーして三索を切ると、二筒・五筒待ちのテンパイ（2026-11-13 ユーザーの指定）
     None, None, None,
 ]
+SCENE = arg("--scene", "chi")      # 動きのテーマ: chi＝チーの方法 / kan＝カンの方法（暗槓）
+if SCENE == "kan":   # 暗槓: ツモって東が4枚そろった14枚。カンのあと嶺上牌を取り、六索を切る（2026-11-13）
+    HANDS[0] = ["m2", "m3", "m4", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "z1", "z1", "z1", "z1"]
 RIVERS = [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]]   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
 CALL_K = len(RIVERS[3]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
+
+WALL = {}
+def wall_x(k):
+    """手前の山の k 幢目の x（王牌は割れ目の分だけ右）"""
+    return WALL["x0"] + k * WALL["WP"] + (.007 if k > WALL["BRK"] else 0)
 
 def build_tiles():
     Z = TOP + .0005
@@ -348,6 +356,7 @@ def build_tiles():
     BRK = n - 8                                                   # 手前の山の、割れ目の左の幢（右の7幢が王牌）
     order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
     taken = set(order[:round(len(order) * TAKEN)])
+    WALL.update(n=n, x0=x0, WP=WP, BRK=BRK)
     for i, r in enumerate(roots):
         for k in range(n):
             if (i, k) in taken: continue
@@ -355,8 +364,10 @@ def build_tiles():
             for lv in range(2):
                 if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
                     named["dora"] = tile(DORA, (x, WY, Z + TT), r, "lie"); continue
-                t = tile("back", (x, WY, Z + lv * TT), r, "down")
+                code = {(BRK + 1, 1): "s5", (BRK + 4, 1): "p2"}.get((k, lv), "back") if i == 0 else "back"   # 伏せた牌でも、めくる・取る牌は絵を持たせる（嶺上牌＝五索・カンドラ表示牌＝二筒）
+                t = tile(code, (x, WY, Z + lv * TT), r, "down")
                 if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
+                if i == 0 and k == BRK + 4 and lv == 1: named["kandora"] = t       # カンドラ表示牌になる牌（ドラ表示牌の左となり・上段）
         # 河（6枚で折り返す）
         rv = RIVERS[i]
         for k, c in enumerate(rv):
@@ -373,7 +384,7 @@ def build_tiles():
             if STEP >= 5: hand.remove("s3")
             x0 = -(len(hand) - 1) / 2 * HP - .03
             for k, c in enumerate(hand):
-                named["hand_" + c] = tile(c, (x0 + k * HP, HY, Z), r, "stand")
+                named["hand_" + c] = named[f"hk{k}"] = tile(c, (x0 + k * HP, HY, Z), r, "stand")
             mx, my = .305, HY + TL / 2
             if STEP >= 2:   # 晒した2枚（寝かせる）
                 tile("m4", (mx - TW - .001, my, Z), r, "lie"); tile("m5", (mx, my, Z), r, "lie")
@@ -771,10 +782,12 @@ def seg(t, a, b):
     return ease((t - a) / (b - a))
 def lerp(a, b, k):
     return Vector(a).lerp(Vector(b), k)
-ANIM_DUR = 8.0 + 3 * .7      # もとの動き8秒＋見せるための間3回
+ANIM_DUR = 8.0 + 3 * .7      # もとの動き8秒＋見せるための間3回（チー）
 # 手順が終わるたびに、手をどけて牌を見せる間を入れる（2026-11-12 ユーザーの指摘「開示で牌が手で隠れて見えない」）。
 # FREEZE＝もとの時刻（②開示のあと・③回収のあと・④副露のあと）。その間 PAUSE 秒は牌を止め、手だけ手前へ引き、カメラが牌に寄る
 FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
+if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
+    FREEZE = (2.1, 3.4, 4.5, 5.9); ANIM_DUR = 8.4 + 4 * PAUSE
 def warp(t):
     """実際の時刻 → もとの動きの時刻（間のあいだは進まない）"""
     for f in FREEZE:
@@ -789,10 +802,79 @@ def pause_k(t, n):
 # 手順の区切り（秒）: ①声 0〜1.5 ②晒す 1.5〜2.1 ③取る 2.1〜3.8 ④右端に並べる 3.8〜5.0 ⑤切る 5.0〜6.6
 def anim_setup():
     bpy.context.view_layer.update()
-    c = NAMED["called"]; mw = c.matrix_world.copy(); c.parent = None; c.matrix_world = mw     # 上家の河の六萬を、卓の座標で動かせるように
+    if "called" in NAMED and SCENE == "chi":
+        c = NAMED["called"]; mw = c.matrix_world.copy(); c.parent = None; c.matrix_world = mw     # 上家の河の六萬を、卓の座標で動かせるように
+    for k_, o_ in NAMED.items():       # 動かす牌の、はじめの位置と向きを覚えておく
+        o_["p0"] = list(o_.location); o_["r0"] = list(o_.rotation_euler)
     cd = bpy.data.cameras.new("anim"); o = bpy.data.objects.new("cam_anim", cd); add(o); sc.camera = o
     return o
+def hand_path(t, keys):
+    """右手の道すじ（時刻→位置）。途中は少し持ち上げて動かす"""
+    w = Vector(keys[-1][1])
+    for (ta, pa), (tb, pb) in zip(keys, keys[1:]):
+        if ta <= t <= tb:
+            k = seg(t, ta, tb); d = (Vector(pb) - Vector(pa)).length
+            return lerp(pa, pb, k) + Vector((0, 0, min(.07, d * .3) * math.sin(math.pi * k)))
+    return w
+
+def cam_pose(t, tr, cam, px, focus, pk):
+    """カメラ: 肩ごし → 左肩の上から卓 → 最後は右の隅に寄る。間のあいだは focus の牌の真上へ"""
+    c0 = (Vector(CAM["mid"][0]), Vector(CAM["mid"][1]), 38.0)
+    c1 = (Vector((-.40 + px * .5, -.62, 1.27)), Vector((.02 + px, -.24, .77)), 33.0)
+    c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
+    ka = seg(t, .4, 1.4); kb = seg(t, ANIM_END - 1.0, ANIM_END)
+    loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
+    loc = loc + Vector((-.22, -.10, .34)) * math.sin(math.pi * ka)
+    cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
+    for n in range(len(focus)):
+        loc = loc.lerp(focus[n] + Vector((-.02, -.17, .50)), pk[n]); tgt = tgt.lerp(focus[n], pk[n])
+        cam.data.lens += (50 - cam.data.lens) * pk[n]
+    cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+
+ANIM_END = 7.8 if SCENE == "chi" else 8.2      # もとの時刻で、最後に右の隅へ寄り終える時
+
+def anim_pose_kan(t, cam):
+    """暗槓: ①発声 → ②開示（4枚を倒し、両端の2枚を伏せる）→ ③副露（右の隅へ）→ ④カンドラをめくる → ⑤嶺上牌を取る → ⑥打牌"""
+    tr = t; t = warp(t)
+    Z = TOP + .0005
+    K = [NAMED[f"hk{k}"] for k in range(10, 14)]
+    LY = HY + TL / 2
+    E = [.305 - (3 - j) * (TW + .001) for j in range(4)]       # 右の隅（手牌の延長線上）
+    k2 = seg(t, 1.5, 2.1); k3 = seg(t, 2.6, 3.4)
+    for j, o in enumerate(K):
+        x = o["p0"][0]; down = j in (0, 3)                    # 両端の2枚は伏せる
+        o.rotation_euler = (math.radians(90 + (90 if down else -90) * k2), 0, 0)
+        zl = Z + (TT if down else 0)
+        o.location = lerp((x, HY + TT, Z + TL / 2), (x, LY, zl), k2) + Vector((0, 0, .03 * math.sin(math.pi * k2))) + Vector((E[j] - x, 0, 0)) * k3
+    # ④ カンドラ（ドラ表示牌の左となりの上段をめくる）
+    kd = NAMED["kandora"]; k4 = seg(t, 3.9, 4.5); dx = Vector(kd["p0"])
+    kd.rotation_euler = (math.radians(180) * (1 - k4), 0, 0)
+    kd.location = dx + Vector((0, 0, -TT * k4 + .04 * math.sin(math.pi * k4)))
+    # ⑤ 嶺上牌（王牌の端＝割れ目のとなりの幢の上段）を取って、手牌の右に立てる
+    rs = NAMED["rinshan11"]; k5 = seg(t, 5.0, 5.9); r0 = Vector(rs["p0"])
+    xr = NAMED["hk9"]["p0"][0] + HP + .012
+    rs.rotation_euler = (math.radians(180 - 90 * k5), 0, 0)
+    rs.location = lerp(r0, (xr, HY + TT, Z + TL / 2), k5) + Vector((0, 0, .06 * math.sin(math.pi * k5)))
+    # ⑥ 打牌（六索を河の4枚目へ）
+    d6 = NAMED["hk9"]; k6 = seg(t, 6.5, 7.3); s0 = Vector(d6["p0"]); dst = (RX0 + 3 * RP, RY, Z)
+    d6.rotation_euler = (math.radians(90) * (1 - seg(t, 6.7, 7.2)), 0, 0)
+    d6.location = lerp(s0, dst, k6) + Vector((0, 0, .06 * math.sin(math.pi * k6)))
+    # 右手
+    A = ARMS[0]["R"]; R = A["rest"]; hz = TOP + TL + .012
+    kx = sum(o["p0"][0] for o in K) / 4
+    keys = [(0.0, R), (1.0, R), (1.5, (kx, HY + .01, hz + .02)), (2.1, (kx, LY, hz)), (2.6, (kx, LY, hz)), (3.4, ((E[1] + E[2]) / 2, LY, hz)),
+            (3.9, (dx.x, dx.y, hz)), (4.5, (dx.x, dx.y, hz)), (5.0, (r0.x, r0.y, hz)), (5.9, (xr, HY + .01, hz + .02)),
+            (6.5, (s0.x, HY + .01, hz + .02)), (7.3, (dst[0], dst[1], hz)), (8.0, R), (ANIM_DUR, R)]
+    w = hand_path(t, keys) + Vector((.004, -.026 * TS, 0)) * (seg(t, 1.0, 1.5) - seg(t, 7.3, 8.0))
+    pk = [pause_k(tr, n) for n in range(len(FREEZE))]
+    w = w + Vector((.085, -.085, .03)) * max(pk)
+    pose_body(ARMS[0], w)
+    px = .03 + .14 * seg(t, 2.6, 3.4) - .02 * seg(t, 3.6, 3.9) - .08 * seg(t, 5.9, 6.5)
+    focus = [Vector((kx, LY, .77)), Vector(((E[1] + E[2]) / 2, LY, .77)), Vector((dx.x - .01, dx.y, .77)), Vector((xr - .03, HY, .77))]
+    cam_pose(t, tr, cam, px, focus, pk)
+
 def anim_pose(t, cam):
+    if SCENE == "kan": return anim_pose_kan(t, cam)
     tr = t; t = warp(t)          # tr＝実際の時刻・t＝もとの動きの時刻
     Z = TOP + .0005
     m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
@@ -827,7 +909,7 @@ def anim_pose(t, cam):
             k = seg(t, ta, tb); d = (Vector(pb) - Vector(pa)).length
             w = lerp(pa, pb, k) + Vector((0, 0, min(.07, d * .3) * math.sin(math.pi * k))); break
     w = w + OFF * (seg(t, .9, 1.5) - seg(t, 6.5, 7.2))
-    pk = [pause_k(tr, n) for n in range(3)]
+    pk = [pause_k(tr, n) for n in range(len(FREEZE))]
     w = w + Vector((.085, -.085, .03)) * max(pk)      # 間のあいだは、手を右手前へ引いて牌を見せる
     pose_body(ARMS[0], w)      # ひじを曲げ、届かない分は上体を倒す
     # カメラ: 肩ごし → 卓の上から → 右の隅に寄る
