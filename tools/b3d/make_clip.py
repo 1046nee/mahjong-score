@@ -113,7 +113,7 @@ OUTRO_LINE = ("麻雀のスコア記録は", "まじゃすこ で")     # 締め
 _icon = {}
 def outro_card(im, t, dur):
     """締め: 会場へ引いていく絵を少しずつ暗くし、ロゴ・名前・文言・majasco.jp を順に出す（案A）"""
-    dark = min(1, t / 1.2) * .45
+    dark = min(1, t / 1.2) * .6      # 字が読めるように、会場の絵を暗くする
     if dark > 0: im.alpha_composite(Image.new("RGBA", (W, H), (0, 0, 0, int(255 * dark))))
     k = lambda a: max(0.0, min(1.0, (t - a) / .35))
     if "i" not in _icon:
