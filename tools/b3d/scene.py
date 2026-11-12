@@ -300,7 +300,7 @@ PLAYERS = [   # 席0〜3。uniform=(柄, [色…4色まで])・hair=(形, 色)�
     dict(uniform=("zigzag", ["#101820", "#39A9DB", "#E94B8A", "#101820"]), collar="#101820", hair=("short_messy", "#8A6238"), build=1.0, height=1.0),
     dict(uniform=("lines", ["#2B2422", "#C9A24B"]), collar="#C9A24B", hair=("mush", "#2E2019"), build=1.18, height=.97),
     dict(uniform=("camo", ["#2F6B3A", "#6FA05A", "#F2F2EE", "#E9C63A"]), collar="#1D2F5C", hair=("wavy", "#15130F"), build=1.06, height=1.02, eyes="tare"),
-    dict(uniform=("lines", ["#17181B", "#C22B2B"]), collar="#C22B2B", hair=("bob", "#DDD3BE"), build=.86, height=.95),
+    dict(uniform=("lines", ["#17181B", "#C22B2B"]), collar="#C22B2B", hair=("bob", "#E9C46A"), build=.86, height=.95, eyes="cute"),      # 赤いユニフォーム＝金髪のボブの女性（2026-11-12 ユーザーの指摘。前は髪が白っぽく、女性に見えなかった）
 ]
 CAST = arg("--cast", "")     # 座る4人を外のファイルで差しかえる（tools/b3d/casts/*.json。動画ごとに人を変える。2026-11-12 ユーザーの依頼）
 if CAST:
@@ -358,11 +358,11 @@ def build_player(i, P):
     # 髪
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
-    if kind == "bob":      # あごまでのボブ＋前髪
-        bpy.ops.mesh.primitive_cylinder_add(radius=.128, depth=.15, location=(0, hy - .03, hz - .065), vertices=32)
-        o = bpy.context.object; o.data.materials.append(hm); o.parent = hd; o.scale = (1.0, .92, 1)
-        for poly in o.data.polygons: poly.use_smooth = True
-        sphere(f"bang{i}", .08, (0, hy + .062, hz + .055), hm, (1.35, .55, .5), hd)
+    if kind == "bob":      # あごの長さのボブ: 後ろと横を丸く包み、顔の両わきに内巻きの毛先、まっすぐな前髪
+        sphere(f"bobback{i}", .125, (0, hy - .042, hz - .045), hm, (1.13, .95, 1.02), hd)
+        for sx in (-1, 1):
+            sphere(f"bobside{i}{sx}", .05, (sx * .108, hy + .028, hz - .058), hm, (.55, .95, 1.55), hd)
+        sphere(f"bang{i}", .085, (0, hy + .058, hz + .062), hm, (1.32, .62, .46), hd)
     elif kind == "short_messy":
         for k in range(9):
             a = k / 9 * math.tau
@@ -440,6 +440,7 @@ CAM = {   # 名前: (位置, 見る点, レンズmm)
     "wide": ((3.6, -4.6, 2.5), (0, 0, .95), 30),          # 会場の引き
     "mid":  ((1.25, -2.2, 1.7), (0, .05, 1.0), 38),      # 手前の選手の肩ごし
     "hand": ((0, -.50, 1.20), (0, -.22, .77), 26),      # 手前の選手の目線（手牌と河）     # 手牌に寄る（低い位置）
+    "face3": ((.12, .26, 1.44), (-.72, 0, 1.28), 34),       # 左の選手（席3）の顔のアップ
     "face": ((.28, -.15, 1.46), (0, .72, 1.30), 34),       # 奥の選手の顔のアップ（顔の作りを確かめる用）
     "top":  ((0, -.02, 2.6), (0, 0, .76), 42),            # 真上
     "meld": ((.52, -.58, 1.05), (.27, -.33, .76), 70),     # 右端に並べた牌のアップ
