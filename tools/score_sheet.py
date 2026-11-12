@@ -10,6 +10,8 @@
 実行: python tools/score_sheet.py   （playwright と Google Fonts の Noto Sans JP を使う）
 """
 import io, json, math, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -220,9 +222,10 @@ td.mg {{ background: #FFE2D2; }} td.mg b {{ color: #B23A0E; font-size: 16px; }}
 .notes {{ margin-top: 10px; font-size: 11px; font-weight: 700; color: #1F2A28; line-height: 1.6; border-top: 2px solid #1F2A28; padding-top: 6px; }}
 footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
+{LOGO_CSS}
 </style></head><body>
 <header><h1>麻雀 点数早見表<small>子・親のロン・ツモ ／ 満貫以上 ／ 符の数え方</small></h1>
-<div class="legend">上 <b>ロン</b>　下 <span>ツモ</span><br>— は出ない組み合わせ</div></header>
+<div class="legend">上 <b>ロン</b>　下 <span>ツモ</span><br>— は出ない組み合わせ</div>{logo_html()}</header>
 <div class="grid">{block("ko")}{block("oya")}</div>
 <div class="bottom">
 <div class="box"><h3>満貫以上（符に関係なく決まる）</h3>
@@ -258,10 +261,10 @@ def part_html(full, title, color, inner):
     return (f'<!doctype html><html lang="ja"><head><meta charset="utf-8">'
             f'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">'
             f'<style>{css} body {{ width: 420px; height: auto; padding: 0; }} .wrap {{ padding: 0 10px 8px; }}'
-            f'.band {{ background: {color}; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .03em; padding: 10px 14px; margin-bottom: 8px; }}'
+            f'.band {{ background: {color}; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .03em; padding: 10px 12px 10px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }}'
             f'.band small {{ display: block; font-size: 12px; font-weight: 800; opacity: .9; margin-top: 2px; }}'
             f'.wrap .blk h2 em {{ display: none; }} .wrap .box.fu h3 {{ display: none; }} .site {{ text-align: right; font-size: 11px; font-weight: 800; color: #177083; margin-top: 6px; }}</style></head>'
-            f'<body><div id="cap"><div class="band">{title}<small>上：ロン　下：ツモ</small></div><div class="wrap">{inner}'
+            f'<body><div id="cap"><div class="band"><div>{title}<small>上：ロン　下：ツモ</small></div>{logo_html(28)}</div><div class="wrap">{inner}'
             f'<div class="site">まじゃすこ majasco.jp</div></div></div></body></html>')
 
 

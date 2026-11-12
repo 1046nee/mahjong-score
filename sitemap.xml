@@ -236,7 +236,7 @@
   <url>
     <loc>https://majasco.jp/blog-yaku-ichiran.html</loc>
     <image:image><image:loc>https://majasco.jp/assets/hai/yaku-ichiran.png</image:loc></image:image>
-    <lastmod>2026-10-31</lastmod>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -278,7 +278,8 @@
   </url>
   <url>
     <loc>https://majasco.jp/blog-local-yaku.html</loc>
-    <lastmod>2026-10-31</lastmod>
+    <image:image><image:loc>https://majasco.jp/assets/hai/local-yaku-ichiran.png</image:loc></image:image>
+    <lastmod>2026-11-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

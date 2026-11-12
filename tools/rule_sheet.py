@@ -9,7 +9,9 @@
 - rule-checklist.pdf      … 印刷用（A4・文字はベクター）
 実行: python tools/rule_sheet.py
 """
-import io, os
+import io, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -102,9 +104,10 @@ li span {{ font-size: 10.5px; font-weight: 700; color: #3B4A47; line-height: 1.4
 .foot-note b {{ color: #E75620; }}
 footer {{ position: absolute; left: 34px; right: 34px; bottom: 16px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
+{LOGO_CSS}
 </style></head><body>
 <header><h1>麻雀 打つ前の確認リスト<small>基本の10項目 ＋ 上級の20項目 ／ 決め方の選択肢つき</small></h1>
-<div class="legend"><b></b>決めたら チェック<br><span>正解は1つではない</span></div></header>
+<div class="legend"><b></b>決めたら チェック<br><span>正解は1つではない</span></div>{logo_html()}</header>
 <div class="grid"><div>{col_html(LEFT)}</div><div>{col_html(RIGHT)}</div></div>
 <p class="foot-note">いつものメンバーなら一度決めて、LINEなどに残しておけば次からは聞かずに済む。初めての相手と打つ日は、上から読み上げて確かめる。<br>
 <b>どれを選んでも、集計で入れるのは最後の持ち点だけ</b>。ウマ・オカを付けたスコアと通算の成績は、まじゃすこで自動に。</p>

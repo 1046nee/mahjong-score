@@ -17,6 +17,7 @@ import io, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from score_sheet import FUS, HANS, LIMITS, OUT, exists, score, up100, n  # noqa: E402
+from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
 
 
 def pay(base, ari):
@@ -125,9 +126,9 @@ tbody th { background: #EAF0FB; }
 """
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">
-<style>{css}{sanma_css}</style></head><body>
-<header><h1>三麻 点数早見表<span class="ver">{ver["name"]}</span><small>3人麻雀の子・親のロン・ツモ ／ 満貫以上　{ver["sub"]}</small></h1>
-<div class="legend">上 <b>ロン</b>　下 <span>ツモ</span><br>— は出ない組み合わせ</div></header>
+<style>{css}{sanma_css}{LOGO_CSS} .legend {{ white-space: nowrap; }} header h1 {{ font-size: 27px; white-space: nowrap; }} .ver {{ font-size: 21px; margin-left: 8px; }}</style></head><body>
+<header><h1>三麻 点数早見表<span class="ver">{ver["name"]}</span><small>3人麻雀の子・親のロン・ツモ ／ 満貫以上</small></h1>
+<div class="legend">上 <b>ロン</b>　下 <span>ツモ</span><br>— は出ない組み合わせ</div>{logo_html()}</header>
 <div class="grid">{block("ko")}{block("oya")}</div>
 <div class="bottom">
 <div class="box"><h3>満貫以上（符に関係なく決まる）</h3>

@@ -261,7 +261,7 @@ def hai_sheet(url):
     sangen = "".join(cell(f"z{i}", Z[i][0], Z[i][1]) for i in range(5, 8))
     nums = "".join(f"<td><b>{n}</b><span>{y}</span></td>" for n, y in zip(range(1, 10), YOMI_NUM))
     aka = "".join(cell(c, n, "赤ドラ", 40) for c, n in [("m5r", "赤五萬"), ("p5r", "赤五筒"), ("s5r", "赤五索")])
-    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}
+    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}
 section {{ margin-bottom: 10px; }}
 thead th {{ font-size: 13px; font-weight: 900; color: #fff; padding: 3px 0; border-left: 1px solid rgba(255,255,255,.35); }}
 .m thead th, .m h2 em {{ background: #E25A1C; }} .p thead th, .p h2 em {{ background: #4261AA; }} .s thead th, .s h2 em {{ background: #177083; }} .z thead th, .z h2 em, .x thead th, .x h2 em {{ background: #1F2A28; }}
@@ -275,7 +275,7 @@ td b {{ display: block; font-size: 15px; font-weight: 900; margin-top: 4px; }} t
 .total {{ margin-top: 2px; border: 2px solid #1F2A28; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 9px 0; font-size: 16px; font-weight: 900; background: #FFF2B8; }}
 .total b {{ font-size: 26px; color: #B23A0E; }}
 </style></head><body>
-<header><h1>麻雀牌 一覧表<small>全34種類の名前と読み方</small></h1><div class="legend">どの牌も <b>4枚</b>ずつ<br>34種 × 4枚 ＝ <span>136枚</span></div></header>
+<header><h1>麻雀牌 一覧表<small>全34種類の名前と読み方</small></h1><div class="legend">どの牌も <b>4枚</b>ずつ<br>34種 × 4枚 ＝ <span>136枚</span></div>{logo_html()}</header>
 {suit("m", "萬子", "マンズ")}{suit("p", "筒子", "ピンズ")}{suit("s", "索子", "ソーズ")}
 <section class="blk z"><h2><em>字牌</em>ジハイ</h2><div class="row">
 <table><thead><tr><th colspan="4">風牌（カゼハイ）</th></tr></thead><tbody><tr>{kaze}</tr></tbody></table>
@@ -301,42 +301,176 @@ SHORT = {
 GROUP_COLOR = {"1翻": "#177083", "2翻": "#4261AA", "3翻": "#6A4BB0", "6翻": "#A8407F", "役満": "#E25A1C"}
 
 
+from sheet_logo import LOGO_CSS, logo_html  # noqa: E402  見出しの右上のロゴ（2026-11-12〜）
+
+
+def ex_tiles(ex, url, avail=206, wmax=13.5):
+    """牌の例を1行に。手牌 → すき間 → あがり牌（オレンジの下地）→ すき間 → 鳴いた面子。幅に入るように牌の幅を決める"""
+    hand = parse(ex["hand"]); win = parse(ex["win"]); melds = ex.get("melds", [])
+    units = len(hand) + 1 + .5
+    for k, t in melds:
+        units += .45 + (3 + 80 / 60 if k in ("pon", "chi") else (3 + 80 / 60 if k == "kan" else 4))
+        if k in ("pon", "chi"): units -= 1
+    w = min(wmax, avail / units)
+    def im(c, yoko=False):
+        return tile_img(c, url, round(w, 2), yoko)
+    h = "".join(im(c) for c in hand)
+    wn = "".join(im(c) for c in win)
+    m = "".join(meld_html(k, t, url, round(w, 2)) for k, t in melds)
+    return f'<span class="ex"><span>{h}</span><span class="win">{wn}</span>' + (f'<span class="ml">{m}</span>' if m else "") + "</span>"
+
+
+def naki_chip(m, n):
+    if n is None:
+        return '<i class="c-mz">門前<br>のみ</i>'
+    if n == m:
+        return '<i class="c-ok">鳴き<br>OK</i>'
+    return f'<i class="c-dn">鳴くと<br><b>{n}翻</b></i>'
+
+
+SHEET2_CSS = """
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.g { border: 2px solid var(--c); border-radius: 8px; overflow: hidden; margin-bottom: 9px; background: #fff; }
+.g > h2 { background: var(--c); color: #fff; display: flex; align-items: baseline; gap: 8px; padding: 2px 10px 3px; font-size: 17px; font-weight: 900; line-height: 1.2; }
+.g > h2 small { font-size: 11px; font-weight: 700; opacity: .9; }
+.row { display: grid; grid-template-columns: 82px 32px 1fr; align-items: center; column-gap: 6px; padding: 3px 6px 3px 8px; border-top: 1px solid #D5E2DF; min-height: 34px; }
+.row:first-of-type { border-top: 0; }
+.row .nm b { display: block; font-size: 14px; font-weight: 900; letter-spacing: -.03em; white-space: nowrap; line-height: 1.15; }
+.row .nm small { display: block; font-size: 8.5px; font-weight: 700; color: #55625F; white-space: nowrap; letter-spacing: -.02em; }
+.row i { display: grid; place-items: center; font-style: normal; font-size: 8px; font-weight: 900; line-height: 1.12; text-align: center; border-radius: 6px; height: 27px; }
+.c-mz { background: #1F2A28; color: #fff; } .c-ok { background: #E4F3EC; color: #177083; border: 1.5px solid #9FC3BD; }
+.c-dn { background: #EAF0FB; color: #22397A; border: 1.5px solid #B9C6E4; } .c-dn b { font-size: 10px; }
+.c-na { background: #F1F4F3; color: #8A9A97; } .c-loc { background: #FFF3E0; color: #B4561B; border: 1.5px solid #F2C6A0; }
+.row .bd { min-width: 0; }
+.ex { display: flex; align-items: flex-end; gap: 0; white-space: nowrap; }
+.ex > span { display: flex; align-items: flex-end; }
+.ex .win { margin-left: 3px; background: #E75620; border-radius: 3px; padding: 1.5px; }
+.ex .ml { margin-left: 5px; gap: 3px; } .ex .meld { display: inline-flex; align-items: flex-end; }
+.ex img { display: block; }
+.row .t { font-size: 9.5px; font-weight: 700; color: #33403D; margin-top: 1px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .t b { color: var(--c); font-weight: 900; }
+.row.sit .t { font-size: 11.5px; font-weight: 800; margin-top: 0; color: #1F2A28; white-space: normal; }
+.row.sit { min-height: 30px; }
+.legend2 { display: flex; gap: 6px; align-items: center; justify-content: center; margin: 0 0 9px; padding: 5px 8px; background: #EEF5F3; border-radius: 8px; }
+.legend2 span { display: flex; align-items: center; gap: 5px; padding: 0 6px; font-size: 11px; font-weight: 800; color: #1F2A28; white-space: nowrap; }
+.legend2 i { width: 30px; height: 22px; display: grid; place-items: center; font-style: normal; font-size: 7.5px; font-weight: 900; line-height: 1.05; border-radius: 4px; text-align: center; }
+.legend2 .win-k { width: 16px; height: 16px; background: #E75620; border-radius: 3px; }
+.box { border: 2px solid #177083; border-radius: 8px; overflow: hidden; background: #fff; }
+.box h3 { background: #177083; color: #fff; font-size: 13.5px; font-weight: 900; padding: 4px 10px; }
+.box ul { list-style: none; padding: 6px 10px 7px; font-size: 11.5px; font-weight: 800; line-height: 1.7; }
+.box li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #E75620; margin-right: 6px; vertical-align: 2px; }
+.box li b { color: #E75620; }
+"""
+
+
+def _rows(items, url, color):
+    out = ""
+    for name, yomi, m, n, cond, ex in items:
+        if ex:
+            body = f'{ex_tiles(ex, url)}<p class="t">{SHORT[name]}</p>'
+            cls = "row"
+        else:
+            body = f'<p class="t">{SHORT_SIT.get(name, SHORT[name])}</p>'
+            cls = "row sit"
+        out += f'<div class="{cls}"><div class="nm"><b>{name}</b><small>{yomi}</small></div>{naki_chip(m, n)}<div class="bd">{body}</div></div>'
+    return out
+
+
+# 状況で決まる役（牌の例が無い）は、大事な語を色で
+SHORT_SIT = {
+ "一発": "リーチから<b>1巡以内</b>にあがる（鳴きが入ると消える）", "門前清自摸和": "鳴かずに<b>自分で引いて</b>あがる",
+ "海底摸月": "<b>最後の牌</b>でツモ", "河底撈魚": "<b>最後の捨て牌</b>でロン", "嶺上開花": "<b>カンのあとに引いた牌</b>でツモ",
+ "槍槓": "ほかの人の<b>加槓の牌</b>でロン", "ダブル立直": "<b>最初の打牌</b>でリーチ", "天和": "親が<b>配牌の時点</b>であがっている",
+ "地和": "子が<b>最初のツモ</b>であがる",
+}
+
+
+def legend2():
+    return ('<div class="legend2"><span><i class="c-mz">門前<br>のみ</i>鳴くとつかない</span><span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>'
+            '<span><i class="c-ok">鳴き<br>OK</i>そのまま</span><span><i class="win-k"></i>あがり牌</span></div>')
+
+
 def yaku_sheet(url):
-    def block(grp, items):
-        c = GROUP_COLOR[grp]
-        rows = ""
-        for name, yomi, m, n, cond, ex in items:
-            big = "役満" if m == 13 else f"{m}翻"
-            if n is None:
-                naki = '<i class="mz">門前のみ</i>'
-            elif n == m:
-                naki = '<i class="ok">そのまま</i>'
-            else:
-                naki = f'<i class="dn">{n}翻</i>'
-            rows += f'<tr><th><b>{name}</b><small>{yomi}</small></th><td class="h" style="color:{c}">{big}</td><td class="n">{naki}</td><td class="t">{SHORT[name]}</td></tr>'
-        return (f'<section class="g" style="--c:{c}"><table><thead><tr><th class="gh">{grp}<small>{len(items)}役</small></th><th>翻</th><th>鳴き</th><th>形・条件</th></tr></thead>'
-                f'<tbody>{rows}</tbody></table></section>')
     assert all(name in SHORT for _, items in YAKU for name, *_ in items)
     G = dict(YAKU)
-    left = block("1翻", G["1翻"]) + block("2翻", G["2翻"])
-    right = block("3翻", G["3翻"]) + block("6翻", G["6翻"]) + block("役満", G["役満"])
-    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}
-.cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }} .g {{ margin-bottom: 10px; }}
-thead th {{ background: var(--c); color: #fff; font-size: 11px; font-weight: 800; padding: 4px 0; border-left: 1px solid rgba(255,255,255,.35); }}
-thead th.gh {{ font-size: 18px; font-weight: 900; text-align: left; padding: 3px 9px; border-left: 0; }} thead th.gh small {{ font-size: 11px; font-weight: 700; margin-left: 6px; opacity: .85; }}
-thead th:nth-child(1) {{ width: 112px; }} thead th:nth-child(2) {{ width: 44px; }} thead th:nth-child(3) {{ width: 58px; }}
-tbody th {{ text-align: left; background: #E3ECE9; padding: 4px 7px; border-bottom: 1px solid #8FA29D; border-right: 1.5px solid #1F2A28; line-height: 1.15; }}
-tbody th b {{ display: block; font-size: 14px; font-weight: 900; white-space: nowrap; letter-spacing: -.02em; }} tbody th small {{ display: block; font-size: 9px; font-weight: 700; color: #55625F; white-space: nowrap; }}
-td {{ border-bottom: 1px solid #8FA29D; border-left: 1px solid #8FA29D; text-align: center; height: 37px; }}
-td.h {{ font-size: 15px; font-weight: 900; }} td.t {{ text-align: left; font-size: 11.5px; font-weight: 700; padding: 0 6px; line-height: 1.3; }}
-td.n i {{ font-style: normal; font-size: 10.5px; font-weight: 900; border-radius: 3px; padding: 2px 4px; white-space: nowrap; }}
-i.mz {{ background: #1F2A28; color: #fff; }} i.dn {{ color: #22397A; font-size: 13px !important; }} i.ok {{ color: #6B7A77; }}
-.rule {{ border: 2px solid #1F2A28; border-radius: 6px; overflow: hidden; }} .rule h3 {{ background: #1F2A28; color: #fff; font-size: 14px; font-weight: 900; padding: 4px 10px; }}
-.rule ul {{ list-style: none; padding: 7px 10px 8px; font-size: 12px; font-weight: 800; line-height: 1.75; }} .rule li::before {{ content: "●"; color: #E25A1C; font-size: 8px; margin-right: 6px; vertical-align: 2px; }}
+    def grp(k, sub=""):
+        c = GROUP_COLOR[k]
+        return f'<section class="g" style="--c:{c}"><h2>{k}<small>{len(G[k])}役{sub}</small></h2>{_rows(G[k], url, c)}</section>'
+    left = grp("1翻") + grp("2翻")
+    right = (grp("3翻") + grp("6翻") + grp("役満", "・数え役満は13翻〜") +
+             '<div class="box"><h3>役のきまり</h3><ul><li>あがるには<b>役が1つ以上</b>いる（ドラだけではあがれない）</li>'
+             '<li>役は<b>重ねて数える</b>（リーチ＋タンヤオ＋ドラ1で3翻）</li><li>ドラは役ではない。役があるとき<b>1枚1翻</b></li></ul></div>')
+    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
+body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; }}
 </style></head><body>
-<header><h1>麻雀 役一覧表<small>1翻〜役満 全38役</small></h1><div class="legend"><span>鳴き</span>＝チー・ポン・カンをしたとき<br>門前のみ＝鳴くとつかない</div></header>
-<div class="cols"><div>{left}</div><div>{right}<div class="rule"><h3>役のきまり</h3><ul><li>あがるには役が1つ以上いる</li><li>役は重ねて数える</li><li>ドラは役ではない（役があるとき1枚1翻）</li></ul></div></div></div>
-<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール</span></footer></body></html>"""
+<header><h1>麻雀 役一覧表<small>1翻〜役満 全38役・牌の例つき</small></h1>{logo_html()}</header>{legend2()}
+<div class="cols"><div>{left}</div><div>{right}</div></div>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+
+
+# ---------------- ローカル役の一覧表（2026-11-12〜・blog-local-yaku と同じ中身） ----------------
+# (名前, 読み, 鳴き: 'mz'=門前のみ / 'ok'=鳴きOK / 'loc'=卓で決める / 'na'=形でない, 条件, 例)
+LOCAL_YAKUMAN = [
+ ("八連荘", "パーレンチャン", "na", "親が<b>8回続けて</b>あがる（8回目を役満に）", None),
+ ("大車輪", "ダイシャリン", "mz", "<b>二〜八筒を2枚ずつ</b>", dict(hand="2233445566778p", win="8p")),
+ ("四連刻", "スーレンコー", "loc", "同じ種類で<b>数が続いた刻子</b>4つ", dict(hand="2223334445559p", win="9p")),
+ ("一色四順", "イーソースーシュン", "loc", "<b>同じ順子</b>を4つ", dict(hand="1111222233335p", win="5p")),
+ ("紅孔雀", "ベニクジャク", "ok", "<b>一・五・七・九索と中</b>だけ", dict(hand="1115559997777sz"[:0] + "111555999s777z7s", win="7s")),
+ ("紅一点", "コウイッテン", "loc", "緑一色の<b>發を中</b>に（中が雀頭）", dict(hand="2233446668887zs"[:0] + "223344666888s7z", win="7z")),
+ ("黒一色", "ヘイイーソー", "loc", "<b>二・四・八筒と風牌</b>だけ", dict(hand="222444888p1112z"[:0] + "222444888p1112z", win="2z")),
+ ("百万石", "ヒャクマンゴク", "ok", "萬子だけで<b>数字の合計100以上</b>", dict(hand="9998887776665m", win="5m")),
+ ("東北新幹線", "トウホクシンカンセン", "mz", "<b>東・北</b>＋一気通貫", dict(hand="11144z12345678m", win="9m")),
+ ("金門橋", "キンモンキョウ", "loc", "<b>123・345・567・789</b>（同じ種類）", dict(hand="1233455677895s"[:0] + "123345567789p5s", win="5s")),
+ ("大七星", "ダイチーシン", "mz", "<b>字牌7種</b>の七対子", dict(hand="1122334455667z", win="7z")),
+ ("パッチリ", "パッチギ", "mz", "<b>4枚使いの対子2組</b>の七対子", dict(hand="2222m5555p77s11z9m", win="9m")),
+ ("十三不塔", "シーサンプーター", "mz", "配牌で<b>面子も搭子もなく</b>対子が1つ", None),
+]
+LOCAL_YAKU = [
+ ("人和", "レンホー", "子が<b>最初のツモより前</b>にロン", "役満・倍満・跳満・満貫"),
+ ("流し満貫", "ナガシマンガン", "流局で<b>捨て牌が全部么九牌</b>・鳴かれていない", "満貫（まれに倍満・三倍満）"),
+ ("三連刻", "サンレンコー", "<b>数が続いた刻子3つ</b>", "2翻"),
+ ("オープン立直", "オープンリーチ", "リーチで<b>手牌を全部見せる</b>", "2翻（振り込むと役満の払い）"),
+ ("五門斉", "ウーメンサイ", "<b>萬・筒・索・風・三元</b>を全部使う", "2翻・5翻・役満など"),
+ ("燕返し", "ツバメガエシ", "<b>リーチ宣言の牌</b>でロン", "扱いに揺れがある"),
+ ("十二落抬", "シーアルラオタイ", "<b>4つ全部鳴いて</b>単騎であがる", "1翻"),
+ ("金鶏独立", "チンチードクリツ", "十二落抬で<b>一索の単騎</b>", "満貫"),
+]
+LOCAL_CHIP = {"mz": '<i class="c-mz">門前<br>のみ</i>', "ok": '<i class="c-ok">鳴き<br>OK</i>', "loc": '<i class="c-loc">卓で<br>決める</i>', "na": '<i class="c-na">回数<br>で決定</i>'}
+
+
+def local_sheet(url):
+    c = "#E25A1C"
+    rows = ""
+    for name, yomi, nk, cond, ex in LOCAL_YAKUMAN:
+        body = (f'{ex_tiles(ex, url)}<p class="t">{cond}</p>' if ex else f'<p class="t">{cond}</p>')
+        rows += f'<div class="row{"" if ex else " sit"}"><div class="nm"><b>{name}</b><small>{yomi}</small></div>{LOCAL_CHIP[nk]}<div class="bd">{body}</div></div>'
+    half = 7
+    parts = rows.split('<div class="row')[1:]
+    left_rows = "".join('<div class="row' + p for p in parts[:half]); right_rows = "".join('<div class="row' + p for p in parts[half:])
+    yrow = lambda n, y, cd, v: f'<tr><th><b>{n}</b><small>{y}</small></th><td class="tc">{cd}</td><td class="tv">{v}</td></tr>'
+    yk1 = "".join(yrow(*x) for x in LOCAL_YAKU[:4]); yk2 = "".join(yrow(*x) for x in LOCAL_YAKU[4:])
+    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
+body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
+.lt {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 0; }}
+.lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; width: 92px; line-height: 1.15; }}
+.lt th b {{ display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; }} .lt th small {{ display: block; font-size: 8.5px; font-weight: 700; color: #6B5A4C; white-space: nowrap; }}
+.lt td {{ border-top: 1px solid #F2D9C2; padding: 4px 7px; font-size: 10.5px; font-weight: 700; line-height: 1.3; }}
+.lt td b {{ color: #B4561B; font-weight: 900; }} .lt td.tv {{ width: 104px; font-size: 10px; font-weight: 800; color: #1F2A28; border-left: 1px solid #F2D9C2; }}
+.lt tr:first-child th, .lt tr:first-child td {{ border-top: 0; }}
+.box {{ border-color: #B4561B; }} .box h3 {{ background: #B4561B; }}
+.loc .row {{ min-height: 70px; }} .loc .row .t {{ font-size: 11px; margin-top: 3px; }} .loc .row.sit .t {{ font-size: 12.5px; }}
+.loc .row .nm b {{ font-size: 15.5px; }} .loc .row .nm small {{ font-size: 9px; }}
+.lt2 {{ display: grid; grid-template-columns: 1fr 1fr; }} .lt2 .lt + .lt {{ border-left: 2px solid #F2D9C2; }}
+.lt td, .lt th {{ height: 54px; }} .lt td {{ font-size: 11px; }} .lt td.tv {{ font-size: 10.5px; width: 98px; }}
+</style></head><body>
+<header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
+<div class="cols loc">
+<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>13役</small></h2>{left_rows}</section></div>
+<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>つづき</small></h2>{right_rows}</section>
+<div class="box"><h3>ローカル役は打つ前に決める</h3><ul><li><b>あるか・ないか</b>（Mリーグなど競技のルールでは使わない）</li><li>あるなら<b>何点か</b>・<b>鳴いてもいいか</b></li><li>扱いは場所で違う。<b>初めての相手とは必ず確かめる</b></li></ul></div></div>
+</div>
+<section class="g" style="--c:#B4561B"><h2>ローカル役<small>役満より下の扱いが多い・右は扱いの例</small></h2><div class="lt2"><table class="lt"><tbody>{yk1}</tbody></table><table class="lt"><tbody>{yk2}</tbody></table></div></section>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>扱いは一例（卓・雀荘・地域で違う）・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 
 def render():
@@ -345,7 +479,7 @@ def render():
     url = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
     with sync_playwright() as p:
         b = p.chromium.launch()
-        for name, html in [("hai-ichiran", hai_sheet(url)), ("yaku-ichiran", yaku_sheet(url))]:
+        for name, html in [("hai-ichiran", hai_sheet(url)), ("yaku-ichiran", yaku_sheet(url)), ("local-yaku-ichiran", local_sheet(url))]:
             hp = os.path.join(OUT, f"_{name}.html")
             io.open(hp, "w", encoding="utf-8").write(html)
             u = "file:///" + hp.replace("\\", "/")
