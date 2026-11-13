@@ -680,14 +680,16 @@ def build_player(i, P):
     elif kind == "ponytail":
         sphere(f"tie{i}", .022, (0, hy - .13, hz - .02), hm2, parent=hd)
     # 長い髪は、背中がわ（胴の後ろの面より外）に垂らす（2026-11-13。頭の下で止めるだけだと、ロングがみなボブに見えた）。名前が drape の部品は下の ちぢめる対象から外す
-    # ロング（2026-11-13 ユーザーの判断）: 東城りおの形（耳の下に丸い毛束）のように、あごの下までの丸い毛束を顔の両わきに。長さは頭の下で止める
-    SIDE = {"long": ((-1, 1), 1), "long_part": ((-1, 1), 1), "long_nobang": ((-1, 1), 1), "long_wavy": ((-1, 1), 2), "hime": ((-1, 1), 1), "long_side": ((1,), 2), "half_up": ((-1, 1), 1)}
+    # ロング（2026-11-13 ユーザーの判断「ロングは前の佐野ひなこ・東城りおの髪型でいい」）: 頭の横から肩まで、細長い毛束をまっすぐ垂らし、
+    #   後ろは背中の外がわに長く。前の作り（丸を縦にのばした毛束）に戻した。名前が drape の部品は「頭の下で止める」の外
+    SIDE = {"long": (-1, 1), "long_part": (-1, 1), "long_nobang": (-1, 1), "long_wavy": (-1, 1), "hime": (-1, 1), "long_side": (1,), "half_up": (-1, 1)}
     if kind in SIDE:
-        sides, n_ = SIDE[kind]
-        for sx in sides:
-            for k in range(n_):
-                o = sphere(f"lside{i}{sx}{k}", .044 - k * .006, (sx * (.112 + k * .012), hy + .005 - k * .03, hz - .06 - k * .012), hm, (.78, .85, 1.55), hd)
-                o.rotation_euler = (0, math.radians(sx * -8), 0)
+        for sx in SIDE[kind]:
+            sphere(f"drapes{i}{sx}", .045, (sx * .108, hy + .02, hz - .075), hm, (.58, .9, 2.0), hd)
+            if kind == "long_side": sphere(f"drapes2{i}{sx}", .04, (sx * .1, hy + .045, hz - .085), hm, (.6, .8, 1.9), hd)
+            if kind == "long_wavy":
+                for w_ in range(3): sphere(f"drapew{i}{sx}{w_}", .022, (sx * (.112 + (.008 if w_ % 2 else -.004)), hy + .02, hz - .1 - w_ * .045), hm, (1, .8, 1.2), hd)
+        sphere(f"drape{i}", .118, (0, hy - .07, hz - .1), hm2, (1.06, .78, 1.55), hd)      # 後ろの長い髪（頭の後ろからつなげて、背中の外がわへ）
     if kind == "ponytail":
         sphere(f"drape{i}", .042, (0, hy - .16, hz - .13), hm2, (.8, .75, 2.3), hd).rotation_euler = (math.radians(-8), 0, 0)
     if kind == "donut":        # ドーナツの形に編んだ髪（耳の上から下へ、丸い編み目を輪にして左右に）
