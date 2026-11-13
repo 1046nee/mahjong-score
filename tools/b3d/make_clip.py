@@ -262,27 +262,54 @@ def outro_card(im, t, dur):
     im.alpha_composite(ov)
 
 
+def subtitle(d, tx, k):
+    """声の字幕（画面の下3分の1）。暗い帯に白い字・2行まで"""
+    ft = font(46, 800); a = int(235 * min(1, k * 6)); maxw = W - 2 * 90
+    rows = [tx]
+    if d.textlength(tx, font=ft) > maxw:      # 2行に分けるときは、真ん中にいちばん近い「、」「。」の後ろで切る（字の途中で折ると読みにくい）
+        cuts = [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"] or [len(tx) // 2]
+        c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rows = [tx[:c], tx[c:]]
+        while max(d.textlength(r_, font=ft) for r_ in rows) > maxw and ft.size > 34: ft = font(ft.size - 2, 800)
+    h = 46 + 64 * len(rows); y = 1560 - h // 2
+    d.rounded_rectangle((50, y, W - 50, y + h), radius=34, fill=(12, 20, 22, int(a * .86)))
+    for n, r_ in enumerate(rows): text_c(d, W / 2, y + 23 + 32 + n * 64, r_, ft, (255, 255, 255, a))
+
+
 def main():
     a = sys.argv[1:]
     fps = int(a[a.index("--fps") + 1]) if "--fps" in a else 12
-    sc = SCRIPTS[a[a.index("--script") + 1] if "--script" in a else "chi"]
+    name = a[a.index("--script") + 1] if "--script" in a else "chi"
+    sc = SCRIPTS[name]
+    # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
+    VO = {}
+    if "--voice" in a:
+        import wave, narration
+        vtmp = tempfile.mkdtemp()
+        for seg, tx in narration.lines(name):
+            wp = os.path.join(vtmp, seg + ".wav"); narration.synth(tx, wp)
+            with wave.open(wp) as wf: VO[seg] = (wp, wf.getnframes() / wf.getframerate(), tx, wf.getframerate())
+    need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
+    starts = {}      # 声を鳴らし始める時刻（秒）
     src, out = a[0], a[1]
     frames = sorted(glob.glob(os.path.join(src, "f[0-9]*.png")))
     assert frames, "コマが無い: " + src
     intro = sorted(glob.glob(os.path.join(src, "i[0-9]*.png")))
     # 出すコマの並び: (元のコマ, 手順, その手順が出てからの秒, 止めているか)
     seq = []
-    for n, fp in enumerate(intro): seq.append((fp, -2, n / fps, False))
+    starts["intro"] = .5
+    for n, fp in enumerate(intro + [intro[-1]] * max(0, int((need("intro") + .5) * fps) - len(intro)) if intro else []): seq.append((fp, -2, n / fps, False))
     pre = sorted(glob.glob(os.path.join(src, "p[0-9]*.png")))       # 前置き（scene.py --anim --pre）。手牌を映して、なぜ鳴けるかを見せる
     if pre and sc.get("pre"):
-        for n, fp in enumerate(pre + [pre[-1]] * int(sc["pre"]["hold"] * fps)): seq.append((fp, -4, n / fps, False))
+        starts["pre"] = len(seq) / fps + .6
+        for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
-        t = 0.0
+        t = 0.0; starts[f"step{i + 1}"] = len(seq) / fps + .25
         for f in range(s[3], s[4] + 1): seq.append((f, i, t, False)); t += 1 / fps
-        for _ in range(int(s[5] * fps)): seq.append((s[4], i, t, True)); t += 1 / fps
-    f0, f1, hold = sc["tail"]; t = 0.0
+        for _ in range(max(int(s[5] * fps), int((need(f"step{i + 1}") + .25) * fps) - (s[4] - s[3] + 1))): seq.append((s[4], i, t, True)); t += 1 / fps
+    f0, f1, hold = sc["tail"]; t = 0.0; starts["tail"] = len(seq) / fps + .9
     for f in range(f0, f1 + 1): seq.append((f, -1, t, False)); t += 1 / fps
-    for _ in range(int(hold * fps)): seq.append((f1, -1, t, True)); t += 1 / fps
+    for _ in range(max(int(hold * fps), int((need("tail") + .9) * fps) - (f1 - f0 + 1))): seq.append((f1, -1, t, True)); t += 1 / fps
+    starts["outro"] = len(seq) / fps + 1.2
     outro = sorted(glob.glob(os.path.join(src, "o[0-9]*.png")))      # 締め（scene.py --anim --outro）。最後のコマで2秒止める
     odur = (len(outro) + 2 * fps) / fps
     for n, fp in enumerate(outro + [outro[-1]] * (2 * fps) if outro else []): seq.append((fp, -3, n / fps, False))
@@ -306,15 +333,30 @@ def main():
             s = sc["steps"][i]
             rail(d, sc["steps"], i); headline(d, i, s, t)
             if s[7] and t > .25: bubble(d, s[7], t - .25)
+            if f"step{i + 1}" in VO and .25 <= t <= .25 + VO[f"step{i + 1}"][1] + .3: subtitle(d, VO[f"step{i + 1}"][2], t - .25)
         else:
             rail(d, sc["steps"], len(sc["steps"]), done_all=True)
             if t > .9: summary(d, sc, t - .9)
+            if "tail" in VO and .9 <= t <= .9 + VO["tail"][1] + .3: subtitle(d, VO["tail"][2], t - .9)
         Image.alpha_composite(im, ov).convert("RGB").save(os.path.join(tmp, f"f{n:04d}.png"))
     ff = shutil.which("ffmpeg")
     if not ff:
         import imageio_ffmpeg; ff = imageio_ffmpeg.get_ffmpeg_exe()
-    subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"),
-                    "-vf", "fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", out], check=True)
+    if VO:      # 声を1本の音にまとめて入れる
+        import wave, array
+        sr = next(iter(VO.values()))[3]; total = int((len(seq) / fps + .5) * sr); buf = array.array("h", [0]) * total
+        for seg, (wp, dur, tx, _) in VO.items():
+            with wave.open(wp) as wf: pcm = array.array("h", wf.readframes(wf.getnframes()))
+            o = int(starts[seg] * sr)
+            for k_ in range(min(len(pcm), total - o)): buf[o + k_] = max(-32768, min(32767, buf[o + k_] + pcm[k_]))
+        mix = os.path.join(tmp, "voice.wav")
+        with wave.open(mix, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr); wf.writeframes(buf.tobytes())
+        subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"), "-i", mix,
+                        "-vf", "fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-c:a", "aac", "-b:a", "160k", "-shortest", out], check=True)
+        shutil.rmtree(vtmp)
+    else:
+        subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"),
+                        "-vf", "fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", out], check=True)
     shutil.rmtree(tmp); print("ok", out, len(seq), "コマ", round(len(seq) / fps, 1), "秒")
 
 if __name__ == "__main__":
