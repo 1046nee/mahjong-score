@@ -419,7 +419,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or "pachi", fem=fem)
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira", "fringe"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -652,7 +652,8 @@ def build_player(i, P):
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.10, .1, -.3, -.5, ("zig", .06, 7)),
           "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
-    PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
+    if P.get("fringe"): fr = tuple(P["fringe"])      # 前髪の形を人ごとに変える（名簿の fringe。例: ["zig", .1, 8]＝ギザギザ）
+    PUFF = {"slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
@@ -662,6 +663,8 @@ def build_player(i, P):
             o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
     if kind in ("two_block", "undercut"):        # 横と後ろは短く刈った色（殻の下にもう1枚）
         hair_shell(f"hairs{i}", .6, .4, -.42, -.58, ("none",), m=mat(f"hairs{i}", "#5E5550", .7), scl=(1.0, 1.0, 1.03), th=.004)
+    if kind == "undercut":                       # 刈り上げの上の毛は、縦にとがらせて高さを出す（2026-11-13 ユーザーの指定「松本の頭をもう少し縦に尖った感じに」）
+        o = sphere(f"ucpeak{i}", .06, (0, hy + .01, hz + .135), hm, (.85, 1.75, .95), hd); o.rotation_euler = (math.radians(-18), 0, 0)      # 前後にのびた山（点でとがらせると、どんぐりの先に見えた）
     if kind == "upbang":                         # 前髪を上へ立ち上げる
         sphere(f"up{i}", .055, (.01, hy + .06, hz + .12), hm, (1.5, .7, .6), hd).rotation_euler = (math.radians(-35), 0, math.radians(-8))
     elif kind == "slick":                        # 後ろへなでつけたふくらみ
