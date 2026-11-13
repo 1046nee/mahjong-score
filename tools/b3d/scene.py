@@ -631,7 +631,7 @@ def build_player(i, P):
           "short_bob": (0.06, .05, -.5, -.55, ("zig", .05, 9)), "bob": (0.04, .04, -.7, -.72, ("blunt",)), "bob_nobang": (0.16, .0, -.7, -.72, ("part", .38, .35, .5)),
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.10, .1, -.3, -.5, ("zig", .06, 7)),
-          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "updo": (0.22, .15, -.2, -.45, ("side", .25))}
+          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.22, .15, -.2, -.45, ("side", .25))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
@@ -665,7 +665,7 @@ def build_player(i, P):
     elif kind == "ponytail":
         sphere(f"tie{i}", .022, (0, hy - .13, hz - .02), hm2, parent=hd)
     # 長い髪は、背中がわ（胴の後ろの面より外）に垂らす（2026-11-13。頭の下で止めるだけだと、ロングがみなボブに見えた）。名前が drape の部品は下の ちぢめる対象から外す
-    if kind in ("long", "long_part", "long_nobang", "half_up", "long_wavy", "ponytail"):
+    if kind in ("long", "long_part", "long_nobang", "half_up", "long_wavy", "ponytail", "hime", "long_side"):
         if kind == "ponytail":
             sphere(f"drape{i}", .042, (0, hy - .16, hz - .13), hm2, (.8, .75, 2.3), hd).rotation_euler = (math.radians(-8), 0, 0)
         else:
@@ -673,6 +673,17 @@ def build_player(i, P):
             sphere(f"drape{i}", .1, (0, hy - .165, hz - .1 - dl * .25), hm2, (1.05, .45, dl * 4.2), hd).rotation_euler = (math.radians(-8), 0, 0)
             if kind == "long_wavy":
                 for k in range(5): sphere(f"drapew{i}{k}", .035, ((k - 2) * .04, hy - .17, hz - .25 - abs(k - 2) * .01), hm2, (1, .6, 1), hd)
+    # ロングの前の毛束（2026-11-13 ユーザーの依頼「ロングの人用の髪型も」）: 肩の前に垂らす。胴の前の面より手前・腕より内がわに置く
+    FRONT = {"long": (1, 1), "long_part": (1, 1), "long_nobang": (1, 1), "long_wavy": (1, 1), "hime": (1, 1), "long_side": (0, 2), "half_up": (1, 1)}
+    if kind in FRONT:
+        for sx, n_ in ((-1, FRONT[kind][0]), (1, FRONT[kind][1])):
+            for k in range(n_):
+                x_ = sx * (.092 + k * .024); ln = (.3 if kind != "half_up" else .24) - k * .04
+                # 頭の横（殻の毛先の内がわ）から下へ、すき間なくつなげる。先は細く
+                o = sphere(f"drapef{i}{sx}{k}", .034, (x_, hy + .03 - k * .01, hz - .03 - ln * .5), hm, (1.0, .62, ln / .034 * .5), hd)
+                o.rotation_euler = (math.radians(-10), math.radians(sx * (4 + k * 6)), 0)
+                if kind == "long_wavy":      # 毛先のうねり
+                    for w_ in range(3): sphere(f"drapefw{i}{sx}{k}{w_}", .022, (x_ + sx * (.01 if w_ % 2 else -.006), hy + .035, hz - .12 - w_ * .06), hm, (1, .7, 1.3), hd)
     if P.get("strands"):   # 顔の横に少し垂らした毛（後れ毛）
         for sx in (-1, 1):
             sphere(f"strd{i}{sx}", .013, (sx * .102, hy + .05, hz - .045), hm, (.7, .7, 3.2), hd)
