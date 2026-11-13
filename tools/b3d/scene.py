@@ -541,21 +541,40 @@ def build_player(i, P):
     em = mat("eye", "#1E1A18", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FFFFFF", .35)
     EX, EZ = .05, -.02      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
+    # 目は、顔の丸い面にそのまま描く（2026-11-13 ユーザーの依頼「凹凸を持たせず、顔の球面に平面的に描かれた感じに。横から見ると目が顔から離れて見える」）。
+    #   どの部品も、顔の面に沿って曲げた薄い面。重ねる順（layer）は、面からごくわずか（0.4mm）ずつ浮かせて決める。前は平たい丸い粒を重ねていて、横から見ると飛び出していた
+    EPS = .0004
+    def patch(name, verts, faces, m):
+        me = bpy.data.meshes.new(name); me.from_pydata(verts, [], faces); me.update(); me.materials.append(m)
+        for poly in me.polygons: poly.use_smooth = True
+        o = bpy.data.objects.new(name, me); add(o); o.parent = hd; return o
     def eline(name, pts, w=.0026):
-        cu = bpy.data.curves.new(name, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = w; cu.bevel_resolution = 3; cu.use_fill_caps = True
-        sp = cu.splines.new("POLY"); sp.points.add(len(pts) - 1)
-        for k, (x, z) in enumerate(pts): sp.points[k].co = (x, surf(x, z, .0042), hz + z, 1)
-        o = bpy.data.objects.new(name, cu); add(o); o.parent = hd; cu.materials.append(em); return o
+        """顔の面に沿った線（幅 2w の帯）。両端は丸くすぼめる"""
+        V = []; n = len(pts)
+        for k, (x, z) in enumerate(pts):
+            xa, za = pts[max(0, k - 1)]; xb, zb = pts[min(n - 1, k + 1)]
+            tx, tz = xb - xa, zb - za; L = math.hypot(tx, tz) or 1.0; nx, nz = -tz / L, tx / L
+            ww = w * (.55 if k in (0, n - 1) else 1.0)
+            for sg in (1, -1):
+                px_, pz_ = x + nx * ww * sg, z + nz * ww * sg
+                V.append((px_, surf(px_, pz_, 6 * EPS), hz + pz_))
+        return patch(name, V, [(2 * k, 2 * k + 1, 2 * k + 3, 2 * k + 2) for k in range(n - 1)], em)
     def decal(name, cx, cz, rx, rz, m, layer, tilt=0, cut=None, base=None):
-        """顔にはる平たい楕円。layer が大きいほど手前。cut＝この高さより上を切り落とす（半目）"""
-        bx_, bz_ = base or (cx, cz)
-        o = sphere(name, 1, (cx, surf(bx_, bz_) - .003 + layer * .0026, hz + cz), m, (rx, .0045, rz), hd)      # 重ねる間を広く（せまいと、黒目のふちが白目にしずんで小さく見えた）
-        if cut is not None:
-            import bmesh
-            bm = bmesh.new(); bm.from_mesh(o.data)
-            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > (cut - cz) / rz], context="VERTS"); bm.to_mesh(o.data); bm.free()
-        if tilt: o.rotation_euler = (0, math.radians(tilt), 0)
-        return o
+        """顔の面に描く楕円。layer が大きいほど手前。cut＝この高さより上を切り落とす（半目）"""
+        NA, NR = 40, 5; th = math.radians(tilt); V = []
+        def put(u, v):
+            if cut is not None: v = min(v, cut - cz)
+            x = cx + u * math.cos(th) + v * math.sin(th); z = cz - u * math.sin(th) + v * math.cos(th)
+            V.append((x, surf(x, z, (layer + 1) * EPS), hz + z))
+        put(0, 0)
+        for r_ in range(1, NR + 1):
+            for a_ in range(NA):
+                an = math.tau * a_ / NA; put(rx * r_ / NR * math.cos(an), rz * r_ / NR * math.sin(an))
+        F = [(0, 1 + a_, 1 + (a_ + 1) % NA) for a_ in range(NA)]
+        for r_ in range(NR - 1):
+            b0 = 1 + r_ * NA; b1 = b0 + NA
+            F += [(b0 + a_, b1 + a_, b1 + (a_ + 1) % NA, b0 + (a_ + 1) % NA) for a_ in range(NA)]
+        return patch(name, V, F, m)
     #       白目（横, 縦）・傾き（＋で目じりが下がる）・黒目の大きさ（白目の縦に対して）・黒目の上下・半目（上を切る割合）・上まぶたの線・まつ毛
     SPEC = {"pachi": ((.019, .023), 0, .66, 0, 0, False, 0), "tare": ((.025, .016), 20, .8, -.12, 0, True, 0), "tsuri": ((.02, .02), -14, .7, 0, 0, True, 0),
             "jito": ((.02, .021), 0, .66, -.2, .4, True, 0), "hoso": ((.022, .011), 0, .9, 0, 0, True, 0), "matsuge": ((.019, .023), 0, .66, 0, 0, True, 2),
@@ -573,7 +592,7 @@ def build_player(i, P):
         lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-13）（2026-11-13 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
-        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0032, rz + .0032, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
+        decal(f"eyeo{i}{sx}", cx, EZ, rx + .004, rz + .004, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
         decal(f"eyew{i}{sx}", cx, EZ, rx, rz, white, 1, tl, cut)                         # 白目
         pr = rz * ps; pz = EZ + rz * pdy; prx = min(pr * .8, rx * .86)
         decal(f"iris{i}{sx}", cx, pz, prx, pr, gm_, 2, 0, cut, base=(cx, EZ))           # 黒目（外の輪＝濃い灰）
@@ -592,9 +611,9 @@ def build_player(i, P):
             zz = rz * math.sqrt(max(0, 1 - u * u)) * .98 + .0012 if cut is None else min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ) + .0012
             x0 = ux * (rx + .002); pts.append((cx + x0 * math.cos(t_) + zz * math.sin(t_), EZ - x0 * math.sin(t_) + zz * math.cos(t_)))
         ex_, ez_ = pts[-1]; pts.append((ex_ + sx * .004, ez_ + .0018))
-        eline(f"lid{i}{sx}", pts, .0036)
+        eline(f"lid{i}{sx}", pts, .0052)      # 面に描くと細く見えるので、太めに
         for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
-            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0075, bz + .0065)], .0023)      # 3本とも同じ長さ（2026-11-13 ユーザーの指定）
+            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0085, bz + .0072)], .0031)      # 3本とも同じ長さ（2026-11-13 ユーザーの指定）
     # まゆは描かない（2026-11-13 ユーザーの判断「どうぶつの森は眉毛がないので、いらない」）。名簿の brows は読まない
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
