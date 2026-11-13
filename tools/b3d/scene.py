@@ -499,7 +499,7 @@ def build_player(i, P):
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
-        lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-14）（2026-11-14 ユーザーの指定「男キャラにはまつ毛をつけない」）
+        lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-13）（2026-11-13 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
         decal(f"eyeo{i}{sx}", cx, EZ, rx + .0032, rz + .0032, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
@@ -509,7 +509,7 @@ def build_player(i, P):
         decal(f"pupil{i}{sx}", cx, pz - pr * .06, prx * .62, pr * .62, em, 3, 0, cut, base=(cx, EZ))   # 黒目の中（黒）
         hz2 = pz + pr * .4 if cut is None else min(pz + pr * .4, cut - .004)
         decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3, pr * .3, wm, 4, base=(cx, EZ))           # 大きい白い光（上の外がわ）
-        kira = P.get("kira", bool(P.get("fem")))      # キラキラの目（女性の標準・二重の男性の一部。一重の男性は付けない＝2026-11-14 ユーザーの指定）
+        kira = P.get("kira", bool(P.get("fem")))      # キラキラの目（女性の標準・二重の男性の一部。一重の男性は付けない＝2026-11-13 ユーザーの指定）
         decal(f"hl2{i}{sx}", cx - sx * prx * .32, pz - pr * .45, pr * (.2 if kira else .14), pr * (.2 if kira else .14), wm, 4, base=(cx, EZ))  # 小さい白い光（下の内がわ）
         if kira:     # 光を足して、瞳をきらきらに（上の内がわに小さな光・外がわの光の横に点）
             decal(f"hl3{i}{sx}", cx - sx * prx * .38, pz + pr * .42, pr * .11, pr * .11, wm, 4, base=(cx, EZ))
