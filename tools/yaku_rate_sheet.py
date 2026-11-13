@@ -60,8 +60,10 @@ RANK_CSS = """
 .r.top .no { background: #E75620; color: #fff; } .r.top .v { color: #E75620; font-size: 15px; }
 .note { margin-top: 7px; font-size: 9.5px; font-weight: 700; color: #6B7A77; line-height: 1.5; }
 .pts { display: flex; gap: 8px; margin: 0 0 9px; }
-.pts div { flex: 1; border: 2px solid #177083; border-radius: 8px; padding: 4px 8px; text-align: center; font-size: 11px; font-weight: 800; line-height: 1.3; }
-.pts b { display: block; font-size: 19px; font-weight: 900; color: #E75620; line-height: 1.15; }
+.pts div { flex: 1; border-radius: 8px; padding: 5px 8px; text-align: center; font-size: 11px; font-weight: 800; line-height: 1.3; color: #fff; }
+.pts div:nth-child(1) { background: #177083; } .pts div:nth-child(2) { background: #E25A1C; } .pts div:nth-child(3) { background: #4261AA; }
+.pts b { display: block; font-size: 20px; font-weight: 900; color: #FFE68A; line-height: 1.15; }      /* 3つの札は色の地に白い字（2026-11-13 ユーザーの指定「Xでは色味がある方がウケがいい」） */
+body { background: #EEF6F3 !important; }      /* 紙の地も薄い緑に（表の中は白のまま） */
 .lg { display: flex; gap: 10px; justify-content: center; margin: 0 0 8px; font-size: 11px; font-weight: 800; }
 .lg span { display: flex; align-items: center; gap: 4px; } .lg i { width: 26px; height: 14px; border-radius: 3px; background: var(--c); }
 """
@@ -157,8 +159,10 @@ MAN_CSS = """
 .mk { border: 2px solid #1F2A28; } .mk .hd { display: grid; grid-template-columns: 34px 112px 250px 1fr; column-gap: 8px; background: #E25A1C; color: #fff; font-size: 11px; font-weight: 900; padding: 4px 10px 4px 0; }
 .mk .hd span { text-align: center; } .mk .hd span:last-child { text-align: right; }
 .big { display: flex; gap: 8px; margin: 0 0 10px; }
-.big div { flex: 1; border: 2px solid #E25A1C; border-radius: 8px; padding: 6px 8px; text-align: center; font-size: 11.5px; font-weight: 800; line-height: 1.35; background: #FFF6F0; }
-.big b { display: block; font-size: 22px; font-weight: 900; color: #E25A1C; line-height: 1.15; }
+.big div { flex: 1; border-radius: 8px; padding: 6px 8px; text-align: center; font-size: 11.5px; font-weight: 800; line-height: 1.35; color: #fff; background: #E25A1C; }
+.big div:nth-child(2) { background: #C2410C; } .big div:nth-child(3) { background: #1F2A28; }
+.big b { display: block; font-size: 22px; font-weight: 900; color: #FFE68A; line-height: 1.15; }
+body { background: #FFF4EC !important; }
 .note { margin-top: 8px; font-size: 10px; font-weight: 700; color: #6B7A77; line-height: 1.6; }
 """
 
