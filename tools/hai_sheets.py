@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """牌の一覧表・役の一覧表（1枚）と、記事に入れる牌の並びのHTMLを作る（2026-10-23〜）。牌の絵は assets/tiles/（tools/make_tiles.py）。
 
-出力（assets/hai/）: hai-ichiran.png / hai-ichiran-web.png / hai-ichiran.pdf、mahjong-yaku-ichiran.png / -web.png / .pdf、mahjong-local-yaku-ichiran.png / -web.png / .pdf
+出力（assets/hai/）: hai-ichiran.png / hai-ichiran-web.png / hai-ichiran.pdf、mahjong-yaku-ichiran.png / -web.png / .pdf、mahjong-local-yaku-ichiran-2.png / -web.png / .pdf
 牌の書き方: "123m" = 一二三萬、"p"=筒子、"s"=索子、"z"=字牌（1東 2南 3西 4北 5白 6發 7中）、"0" = 赤五
 実行: python tools/hai_sheets.py          （画像とPDFを作る。役の例があがりの形になっているかを先に確かめる）
       python tools/hai_sheets.py --check  （確かめるだけ）
@@ -365,6 +365,11 @@ SHEET2_CSS = """
 """
 
 
+# 表の下に空白を残さない（2026-11-13 ユーザーの指定「表の下に空白があるのは嫌。行の幅は広げない」）: 紙の高さを中身に合わせ、画像もPDFもその高さで切る
+FIT_CSS = "html, body { height: auto; } footer { position: static; margin-top: 4px; }"
+FIT = ("mahjong-yaku-ichiran", "mahjong-local-yaku-ichiran-2")
+
+
 def _nm(name, yomi):
     """役の名前の列。長い名前・読みは、線をはみ出さないように字を小さく（門前清自摸和・トウホクシンカンセン）"""
     bs = ' style="font-size:11px"' if len(name) >= 7 else (' style="font-size:12.5px"' if len(name) >= 6 else "")
@@ -408,9 +413,12 @@ def yaku_sheet(url):
     left = grp("1翻") + grp("2翻")
     right = (grp("3翻") + grp("6翻") + grp("役満", "・数え役満は13翻〜") +
              '<div class="box"><h3>役のきまり</h3><ul><li>あがるには<b>役が1つ以上</b>いる（ドラだけではあがれない）</li>'
-             '<li>役は<b>重ねて数える</b>（リーチ＋タンヤオ＋ドラ1で3翻）</li><li>ドラは役ではない。役があるとき<b>1枚1翻</b></li></ul></div>')
+             '<li>役は<b>重ねて数える</b>（リーチ＋タンヤオ＋ドラ1で3翻）</li><li>ドラは役ではない。役があるとき<b>1枚1翻</b></li><li><b>鳴く</b>と、つかない役・翻が下がる役がある</li></ul></div>')
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; }}
+{FIT_CSS}
+.cols {{ align-items: stretch; }} .cols > div {{ display: flex; flex-direction: column; }} .cols > div > .g:last-of-type {{ margin-bottom: 9px; }}
+.cols .box {{ flex: 1; display: flex; flex-direction: column; margin-bottom: 9px; }} .cols .box ul {{ flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }}
 </style></head><body>
 <header><h1>麻雀 役一覧表<small>1翻〜役満 全38役・牌の例つき</small></h1>{logo_html()}</header>{legend2()}
 <div class="cols"><div>{left}</div><div>{right}</div></div>
@@ -456,26 +464,34 @@ MAX6 = dict(hand="7z", win="7z", melds=[("ankan", "1111z"), ("ankan", "2222z"), 
 LOCAL_CHIP = {"mz": '<i class="c-mz">門前<br>のみ</i>', "ok": '<i class="c-ok">鳴き<br>OK</i>', "loc": '<i class="c-loc">卓で<br>決める</i>', "na": '<i class="c-na">回数<br>で決定</i>'}
 
 
+# 役満どうしの組み合わせ（2026-11-13 ユーザーの依頼）。(倍, 役の並び, 条件の一言, 例, 札: 'mix'=役満の複合があるルール / 'dbl'=形の2倍もあるルール)
+COMBO = [
+ (2, "大三元＋字一色", "三元牌の刻子3つ＋字牌だけ", dict(hand="5556667772z", win="2z", melds=[("pon", "111z")]), "mix"),
+ (3, "大三元＋字一色＋四暗刻", "鳴かずに、刻子の待ちをツモ", dict(hand="5556667771122z", win="1z"), "mix"),
+ (4, "大三元＋字一色＋四暗刻＋四槓子", "4つとも暗槓（単騎を2倍に数えるルールでは5倍）", dict(hand="2z", win="2z", melds=[("ankan", "5555z"), ("ankan", "6666z"), ("ankan", "7777z"), ("ankan", "1111z")]), "mix"),
+ (5, "字一色＋大四喜（2倍）＋四暗刻単騎（2倍）", "風牌4種の暗刻＋字牌の単騎待ち", dict(hand="1112223334447z", win="7z"), "dbl"),
+ (6, "字一色＋大四喜（2倍）＋四暗刻単騎（2倍）＋四槓子", "いちばん大きい形。4つとも暗槓", MAX6, "dbl"),
+]
+
+
 def local_sheet(url):
     c = "#E25A1C"
     rows = ""
     for name, yomi, nk, cond, ex in LOCAL_YAKUMAN:
         body = (f'{ex_tiles(ex, url)}<p class="t">{cond}</p>' if ex else f'<p class="t">{cond}</p>')
         rows += f'<div class="row{"" if ex else " sit"}">{_nm(name, yomi)}{LOCAL_CHIP[nk]}<div class="bd">{body}</div></div>'
-    half = 7
-    parts = rows.split('<div class="row')[1:]
-    left_rows = "".join('<div class="row' + p for p in parts[:half]); right_rows = "".join('<div class="row' + p for p in parts[half:])
     yrow = lambda n, y, cd, v: f'<tr><th><b>{n}</b><small>{y}</small></th><td class="tc">{cd}</td><td class="tv">{v}</td></tr>'
-    yk1 = "".join(yrow(*x) for x in LOCAL_YAKU[:4]); yk2 = "".join(yrow(*x) for x in LOCAL_YAKU[4:])
+    yk = "".join(yrow(*x) for x in LOCAL_YAKU)
     dchip = '<i class="c-dbl">ルール<br>で2倍</i>'
     drow = lambda n, y, cd, ex: f'<div class="row">{_nm(n, y)}{dchip}<div class="bd">{ex_tiles(ex, url, avail=232)}<p class="t">{cd}</p></div></div>'
     d1 = "".join(drow(*x) for x in DOUBLE_YAKUMAN[:2]); d2 = "".join(drow(*x) for x in DOUBLE_YAKUMAN[2:])
-    # 最大の形は、ローカル役満の左の列の下（右の列より短くて空いていた所）に置く
-    max6 = (f'<section class="g dbl m6" style="--c:#A8407F"><h2>いちばん大きい形<small>6倍役満</small></h2><div class="m6b">{ex_tiles(MAX6, url, avail=330, wmax=19)}'
-            f'<p class="t"><b>字一色</b>＋<b>大四喜</b>（2倍）＋<b>四暗刻単騎</b>（2倍）＋<b>四槓子</b>＝<b>6倍</b><br>子192,000点・親288,000点（形の2倍がないルールでは4倍）</p></div></section>')
+    cchip = {"mix": '<i class="c-mix">複合<br>あり</i>', "dbl": '<i class="c-dbl">形の2倍<br>もあり</i>'}
+    pts = lambda n: f'<b>子</b>{32000 * n:,}点<br><b>親</b>{48000 * n:,}点'
+    combo = "".join(f'<div class="crow"><div class="cn"><b>{n}</b>倍</div>{cchip[k]}<div class="cf"><b>{f}</b><small>{note}</small></div>'
+                    f'<div class="ce">{ex_tiles(ex, url, avail=250, wmax=14.5)}</div><div class="cp">{pts(n)}</div></div>' for n, f, note, ex, k in COMBO)
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #B4561B; }}
-/* 画像の大きさは役一覧表と同じ A4 にそろえる（下に余白が出てもよい。2026-11-12 ユーザーの指定） */
+{FIT_CSS}
 .lt {{ width: 100%; border-collapse: collapse; table-layout: fixed; border: 0; }}
 .lt th {{ text-align: left; background: #FFF3E0; padding: 4px 8px; border-top: 1px solid #F2D9C2; border-right: 1.5px solid #1F2A28; width: 92px; line-height: 1.15; }}
 .lt th b {{ display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; }} .lt th small {{ display: block; font-size: 8.5px; font-weight: 700; color: #6B5A4C; white-space: nowrap; }}
@@ -484,22 +500,31 @@ body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 
 .lt tr:first-child th, .lt tr:first-child td {{ border-top: 0; }}
 .box {{ border-color: #B4561B; }} .box h3 {{ background: #B4561B; }}
 /* 行の高さは役一覧表と同じにそろえる（2026-11-12 ユーザーの指定。前は70pxで間延びしていた） */
-.lt2 {{ display: grid; grid-template-columns: 1fr 1fr; }} .lt2 .lt + .lt {{ border-left: 2px solid #F2D9C2; }}
+.lt2 {{ display: grid; grid-template-columns: 1fr 1fr; }}
 .dbl .lt2 > div + div {{ border-left: 2px solid #1F2A28; }} .dbl .row:first-child {{ border-top: 0; }}
-.c-dbl {{ background: #F7E6EF; color: #A8407F; border: 1.5px solid #E0B4CB; }}
-.m6 .m6b {{ padding: 6px 10px 6px; background: #FBF2F7; }} .m6 .ex {{ justify-content: center; }}
-.m6 .t {{ font-size: 11px; font-weight: 800; white-space: normal; text-align: center; margin-top: 4px; line-height: 1.45; }} .m6 .t b {{ color: #A8407F; }}
+.c-dbl {{ background: #F7E6EF; color: #A8407F; border: 1.5px solid #E0B4CB; }} .c-mix {{ background: #EDE8F8; color: #5A3FA0; border: 1.5px solid #C9BDEA; }}
 .lt td, .lt th {{ height: 34px; padding-top: 3px; padding-bottom: 3px; }} .lt td {{ font-size: 11px; }} .lt td.tv {{ font-size: 10.5px; width: 98px; }}
+/* 上の2列: 左＝ローカル役満・右＝ローカル役＋打つ前に決めるカード（右の空いた所をカードで埋めて、2列の下をそろえる。2026-11-13 ユーザーの指定） */
+.cols {{ align-items: stretch; }} .cols > div {{ display: flex; flex-direction: column; }}
+.cols .box {{ flex: 1; display: flex; flex-direction: column; margin-bottom: 9px; }} .cols .box ul {{ flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }}
+/* 役満の組み合わせ: 倍の数・札・役の並び・牌の例・点数 */
+.crow {{ display: grid; grid-template-columns: 54px 38px 1fr 262px 104px; align-items: center; column-gap: 7px; min-height: 40px; border-top: 1px solid color-mix(in srgb, var(--c) 30%, #fff); padding-right: 8px; }}
+.crow:first-of-type {{ border-top: 0; }}
+.crow .cn {{ align-self: stretch; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 11%, #fff); border-right: 1.5px solid #1F2A28; font-size: 12px; font-weight: 900; color: var(--c); }}
+.crow .cn b {{ font-size: 24px; line-height: 1; margin-right: 1px; }} .crow .cn {{ display: flex; align-items: baseline; justify-content: center; padding-top: 9px; }}
+.crow i {{ display: grid; place-items: center; font-style: normal; font-size: 8px; font-weight: 900; line-height: 1.12; text-align: center; border-radius: 6px; height: 27px; }}
+.crow .cf b {{ display: block; font-size: 12.5px; font-weight: 900; letter-spacing: -.03em; line-height: 1.25; }} .crow .cf small {{ display: block; font-size: 9.5px; font-weight: 700; color: #33403D; line-height: 1.3; }}
+.crow .cp {{ font-size: 11px; font-weight: 800; line-height: 1.35; white-space: nowrap; text-align: right; }} .crow .cp b {{ color: var(--c); font-weight: 900; margin-right: 3px; }}
 </style></head><body>
-<header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・ダブル役満・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
+<header><h1>麻雀 ローカル役一覧表<small>ローカル役満13・ローカル役8・ダブル役満・役満の組み合わせ・牌の例つき</small></h1>{logo_html()}</header>{legend2().replace('<span><i class="c-dn">鳴くと<br>1翻</i>鳴くと下がる</span>', '<span><i class="c-loc">卓で<br>決める</i>ルールしだい</span>')}
 <div class="cols loc">
-<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>13役</small></h2>{left_rows}</section>{max6}</div>
-<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>つづき</small></h2>{right_rows}</section>
-<div class="box"><h3>ローカル役は打つ前に決める</h3><ul><li><b>あるか・ないか</b>（Mリーグなど競技のルールでは使わない）</li><li>あるなら<b>何点か</b>・<b>鳴いてもいいか</b></li><li>扱いは場所で違う。<b>初めての相手とは必ず確かめる</b></li></ul></div></div>
+<div><section class="g" style="--c:{c}"><h2>ローカル役満<small>13役</small></h2>{rows}</section></div>
+<div><section class="g" style="--c:#B4561B"><h2>ローカル役<small>8役・右は扱いの例</small></h2><table class="lt"><tbody>{yk}</tbody></table></section>
+<div class="box"><h3>ローカル役は打つ前に決める</h3><ul><li><b>あるか・ないか</b>（Mリーグなど競技のルールでは使わない）</li><li>あるなら<b>何点か</b>・<b>鳴いてもいいか</b></li><li>扱いは場所で違う。<b>初めての相手とは必ず確かめる</b></li><li>決めていない役は<b>「なし」</b>として打つ</li></ul></div></div>
 </div>
-<section class="g" style="--c:#B4561B"><h2>ローカル役<small>役満より下の扱いが多い・右は扱いの例</small></h2><div class="lt2"><table class="lt"><tbody>{yk1}</tbody></table><table class="lt"><tbody>{yk2}</tbody></table></div></section>
 <section class="g dbl" style="--c:#A8407F"><h2>ルールで2倍になる役満<small>雀魂などはダブル役満・Mリーグ・天鳳は役満のまま</small></h2><div class="lt2"><div>{d1}</div><div>{d2}</div></div></section>
-<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>扱いは一例（卓・雀荘・地域で違う）・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+<section class="g" style="--c:#6A4BB0"><h2>役満の組み合わせ<small>役満どうしは重ねて数える（複合ありのルール）・5倍からは形の2倍もあるルール</small></h2>{combo}</section>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>扱いは一例（卓・雀荘・地域で違う）・点数はロンのとき・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 
 def render():
@@ -508,7 +533,7 @@ def render():
     url = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
     with sync_playwright() as p:
         b = p.chromium.launch()
-        for name, html in [("hai-ichiran", hai_sheet(url)), ("mahjong-yaku-ichiran", yaku_sheet(url)), ("mahjong-local-yaku-ichiran", local_sheet(url))]:   # 役の表は 2026-11-12 に作り直したので名前を変えた（画像検索の見本を新しくするため。docs/image-tools.md）
+        for name, html in [("hai-ichiran", hai_sheet(url)), ("mahjong-yaku-ichiran", yaku_sheet(url)), ("mahjong-local-yaku-ichiran-2", local_sheet(url))]:   # 役の表は 2026-11-12 に作り直したので名前を変えた（画像検索の見本を新しくするため。docs/image-tools.md）
             hp = os.path.join(OUT, f"_{name}.html")
             io.open(hp, "w", encoding="utf-8").write(html)
             u = "file:///" + hp.replace("\\", "/")
@@ -516,10 +541,14 @@ def render():
                 pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=scale)
                 pg.goto(u); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1000)
                 h = pg.evaluate("Math.ceil(document.body.getBoundingClientRect().height)")      # 中身が A4 より短い表は、その高さで切る
-                pg.screenshot(path=os.path.join(OUT, f"{name}{suffix}.png"), clip={"x": 0, "y": 0, "width": 794, "height": min(1123, h)})
+                pg.screenshot(path=os.path.join(OUT, f"{name}{suffix}.png"), clip={"x": 0, "y": 0, "width": 794, "height": h if name in FIT else min(1123, h)})
                 pg.close()
             pg = b.new_page(); pg.goto(u); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1000)
-            pg.pdf(path=os.path.join(OUT, f"{name}.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
+            if name in FIT:      # 紙の高さも中身に合わせる（A4 の幅のまま）
+                hh = pg.evaluate("Math.ceil(document.body.getBoundingClientRect().height)")
+                pg.pdf(path=os.path.join(OUT, f"{name}.pdf"), width="794px", height=f"{hh + 1}px", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
+            else:
+                pg.pdf(path=os.path.join(OUT, f"{name}.pdf"), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
             pg.close()
             os.remove(hp)
         b.close()
