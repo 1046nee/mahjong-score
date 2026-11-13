@@ -419,7 +419,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or ("cute" if fem else "normal"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -520,16 +520,31 @@ def build_player(i, P):
             if gs == "browline": box(f"brow_g{i}{sx}", (.056, .008, .01), (sx * .042, hy + .118, hz + .014), gm, bevel=.003, parent=hd)
             for poly in o.data.polygons: poly.use_smooth = True
         box(f"bridge{i}", (.03, .005, .005), (0, hy + .116, hz - .004), gm, parent=hd)
-    if FACE == "nm":     # 鼻＝小さな丸いふくらみ／口＝短い横線（全員同じ）
-        sphere(f"nose{i}", .011, (0, hy + .116, hz - .026), mat("nose", "#E3B79B", .6), (1, .7, .9), hd)
-        # 口＝少し口角の上がった線（頭の丸みに沿わせた曲線。幅は目と目の間の半分ほど）
-        cu = bpy.data.curves.new(f"mouth{i}", "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = .0032; cu.bevel_resolution = 3; cu.use_fill_caps = True
-        sp = cu.splines.new("POLY"); N = 9; sp.points.add(N - 1)
-        for k in range(N):
-            u = k / (N - 1) * 2 - 1; x = u * .021; z = -.054 + .0065 * u * u
-            y = math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001
-            sp.points[k].co = (x, hy + y, hz + z, 1)
-        mo = bpy.data.objects.new(f"mouth{i}", cu); add(mo); mo.parent = hd; cu.materials.append(mat("mouth", "#8A4A3C", .6))
+    if FACE == "nm":     # 鼻と口は、目と同じく形を選ぶ（2026-11-13 ユーザーの依頼「髪型・目・鼻・口を選べるように」）。名簿の nose・mouth
+        def on_head(x, z): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001
+        def line(name, pts, m, w=.0032):       # 頭の丸みに沿わせた線（pts＝顔の面の (x, z)）
+            cu = bpy.data.curves.new(name, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = w; cu.bevel_resolution = 3; cu.use_fill_caps = True
+            sp = cu.splines.new("POLY"); sp.points.add(len(pts) - 1)
+            for k, (x, z) in enumerate(pts): sp.points[k].co = (x, on_head(x, z), hz + z, 1)
+            o = bpy.data.objects.new(name, cu); add(o); o.parent = hd; cu.materials.append(m); return o
+        # 鼻: dot＝小さな丸（標準）／small＝もっと小さい／big＝大きい丸／wide＝横に広い／long＝縦に長い／point＝とがった／line＝ふくらみ無しの「く」の線
+        nk = P.get("nose", "dot"); nm_ = mat("nose", "#E3B79B", .6)
+        if nk == "line":
+            line(f"nosel{i}", [(.003, -.016), (-.004, -.026), (.004, -.03)], mat("nosel", "#C98F74", .6), .0022)
+        else:
+            r_, sc_, dz = {"dot": (.011, (1, .7, .9), 0), "small": (.0082, (1, .7, .9), 0), "big": (.0145, (1, .7, .9), -.002),
+                           "wide": (.011, (1.45, .7, .75), 0), "long": (.0095, (.85, .8, 1.5), .003), "point": (.0095, (.9, 1.25, .85), 0)}[nk]
+            sphere(f"nose{i}", r_, (0, hy + .116 + (.003 if nk == "point" else 0), hz - .026 + dz), nm_, sc_, hd)
+        # 口: smile＝口角の上がった線（標準）／flat＝まっすぐ／wide＝大きな笑い／small＝小さい笑い／frown＝への字／cat＝ω／smirk＝片方だけ上がる／open＝少し開いた口
+        mk = P.get("mouth", "smile"); mm_ = mat("mouth", "#8A4A3C", .6); N = 11
+        if mk == "open":
+            sphere(f"mouth{i}", .0105, (0, hy + .1065, hz - .056), mat("mouth_in", "#7A2E2A", .5), (1.5, .45, .8), hd)
+        else:
+            f_ = {"smile": lambda u: (u * .021, -.054 + .0065 * u * u), "flat": lambda u: (u * .017, -.054),
+                  "wide": lambda u: (u * .029, -.055 + .011 * u * u), "small": lambda u: (u * .012, -.054 + .004 * u * u),
+                  "frown": lambda u: (u * .018, -.053 - .0055 * u * u), "cat": lambda u: (u * .02, -.053 - .0045 * math.sin(math.pi * abs(u))),
+                  "smirk": lambda u: (u * .019, -.054 + .0075 * ((u + 1) / 2) ** 2)}[mk]
+            line(f"mouth{i}", [f_(k / (N - 1) * 2 - 1) for k in range(N)], mm_)
     if P.get("beard"):
         bm = mat(f"beard{i}", P.get("hair", ("", "#2A211D"))[1] if P["beard"] != "gray" else "#6E6A66", .7)
         if P["beard"] in ("mustache", "both"): sphere(f"must{i}", .02, (0, hy + .113, hz - .042), bm, (1.25, .35, .32), hd)
