@@ -664,8 +664,42 @@ def build_player(i, P):
         sd = mat(f"hairs{i}", "#5E5550", .7)
         for sx in (-1, 1): sphere(f"ucs{i}{sx}", .085, (sx * .055, hy - .03, hz - .005), sd, (.55, 1.0, .9), hd)
         sphere(f"uctop{i}", .1, (0, hy - .01, hz + .085), hm, (1.0, 1.15, .5), hd)
+    # 2026-11-13 足した形（ユーザーの依頼「前髪なし・ツーブロックなども使い分けたい」）
+    elif kind == "nobang":       # 前髪なしの短髪（おでこを出す・生えぎわは自然に丸く）
+        sphere(f"hl{i}", .1, (0, hy + .045, hz + .085), hm, (1.12, .62, .42), hd)
+        for sx in (-1, 1): sphere(f"nbs{i}{sx}", .05, (sx * .1, hy + .0, hz + .035), hm, (.5, .95, 1.0), hd)
+    elif kind == "upbang":       # アップバング（前髪を上へ立ち上げて、おでこを出す）
+        sphere(f"hl{i}", .1, (0, hy + .04, hz + .085), hm, (1.1, .6, .42), hd)
+        sphere(f"up{i}", .06, (.01, hy + .07, hz + .125), hm, (1.5, .7, .6), hd).rotation_euler = (math.radians(-35), 0, math.radians(-8))
+        for sx in (-1, 1): sphere(f"ubs{i}{sx}", .05, (sx * .1, hy + .0, hz + .035), hm, (.5, .95, 1.0), hd)
+    elif kind == "two_block":    # ツーブロック（横と後ろは短く刈り、上は長め＋前髪を下ろす）
+        cap.scale = (.95, .97, .8); cap.location = (0, hy - .03, hz + .055)
+        sd = mat(f"hairs{i}", "#5E5550", .7)
+        for sx in (-1, 1): sphere(f"tbs{i}{sx}", .085, (sx * .055, hy - .03, hz - .005), sd, (.55, 1.0, .9), hd)
+        sphere(f"tbtop{i}", .1, (0, hy - .0, hz + .09), hm, (1.05, 1.15, .52), hd)
+        for k in range(5):
+            sphere(f"bang{i}{k}", .03, (-.05 + k * .025, hy + .086, hz + .07 - abs(k - 2) * .005), hm, (1.0, .55, 1.15), hd)
+    elif kind == "bob_nobang":   # 前髪なしのボブ（分け目から横へ流す）
+        sphere(f"bobback{i}", .125, (0, hy - .042, hz - .045), hm, (1.13, .95, 1.02), hd)
+        for sx in (-1, 1):
+            sphere(f"bobside{i}{sx}", .05, (sx * .108, hy + .028, hz - .058), hm, (.55, .95, 1.55), hd)
+            sphere(f"flow{i}{sx}", .05, (sx * .055, hy + .07, hz + .075), hm, (1.2, .5, .45), hd).rotation_euler = (math.radians(-20), math.radians(sx * 35), 0)
+    elif kind == "long_nobang":  # 前髪なしのロング（かき上げて、顔の両わきに長く）
+        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
+        for sx in (-1, 1):
+            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
+            sphere(f"flow{i}{sx}", .05, (sx * .055, hy + .07, hz + .08), hm, (1.2, .5, .45), hd).rotation_euler = (math.radians(-15), math.radians(sx * 40), 0)
     else:                  # mush: 丸く厚い前髪
         sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
+    # 長い髪は、背中がわ（胴の後ろの面より外）に垂らす（2026-11-13。頭の下で止めるだけだと、ロングがみなボブに見えた）。名前が drape の部品は下の ちぢめる対象から外す
+    if kind in ("long", "long_part", "long_nobang", "half_up", "long_wavy", "ponytail"):
+        if kind == "ponytail":
+            sphere(f"drape{i}", .042, (0, hy - .16, hz - .13), hm2, (.8, .75, 2.3), hd).rotation_euler = (math.radians(-8), 0, 0)
+        else:
+            dl = .36 if kind != "long_wavy" else .3
+            sphere(f"drape{i}", .1, (0, hy - .165, hz - .1 - dl * .25), hm2, (1.05, .45, dl * 4.2), hd).rotation_euler = (math.radians(-8), 0, 0)
+            if kind == "long_wavy":
+                for k in range(5): sphere(f"drapew{i}{k}", .035, ((k - 2) * .04, hy - .17, hz - .25 - abs(k - 2) * .01), hm2, (1, .6, 1), hd)
     if P.get("strands"):   # 顔の横に少し垂らした毛（後れ毛）
         for sx in (-1, 1):
             sphere(f"strd{i}{sx}", .013, (sx * .102, hy + .05, hz - .045), hm, (.7, .7, 3.2), hd)
@@ -677,6 +711,7 @@ def build_player(i, P):
     #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
     HAIR_MIN = -.098
     for o in list(hd.children):
+        if o.name.startswith("drape"): continue
         if o.type != "MESH" or not o.data.materials or o.data.materials[0] not in (hm, hm2, mat("flower", "#FAFAF5", .5)): continue
         zs = [(o.matrix_basis @ v.co).z for v in o.data.vertices]; lo, hi = min(zs), max(zs)
         if lo >= HAIR_MIN: continue
