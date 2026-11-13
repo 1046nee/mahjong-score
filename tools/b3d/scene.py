@@ -462,7 +462,7 @@ def build_player(i, P):
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
     # 目（2026-11-13 3回目の作り直し。ユーザーの指摘「凝りすぎ。シンプルに。黒と白だけ。種類は10ぐらい」）:
-    #   細い黒のふち＋白目＋大きな黒目＋白い光1つ。形によって上まぶたの線・まつ毛を足すだけ。色は黒と白のみ
+    #   しっかりした黒のふち＋白目＋大きな黒目（濃い灰の輪＋黒の中）＋白い光2つ＋太い上まぶたの線。形で傾き・半目・まつ毛を変える。色は黒・灰・白のみ（2026-11-13 ユーザーの指摘「黒目の要素が多いのが特徴」「目の縁もしっかり」）
     #   pachi＝まる（標準）／tare＝タレ目／tsuri＝つり目／jito＝半目／hoso＝細い目／nikkori＝にっこり／ten＝点／matsuge＝まつ毛／sanpaku＝三白眼／kuro＝黒目だけ
     OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "pachi", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "matsuge",
            "uru": "pachi", "nemu": "jito", "tare_matsuge": "matsuge", "kiri": "tsuri"}      # 前の名前（古い名簿・cast）
@@ -489,31 +489,36 @@ def build_player(i, P):
     SPEC = {"pachi": ((.019, .023), 0, .66, 0, 0, False, 0), "tare": ((.02, .02), 14, .7, -.05, 0, True, 0), "tsuri": ((.02, .02), -14, .7, 0, 0, True, 0),
             "jito": ((.02, .021), 0, .66, -.2, .4, True, 0), "hoso": ((.022, .011), 0, .9, 0, 0, True, 0), "matsuge": ((.019, .023), 0, .66, 0, 0, True, 2),
             "sanpaku": ((.02, .019), 0, .42, .4, 0, False, 0)}
+    gm_ = mat("eyegray", "#4B4744", .35)      # 黒目の外がわの輪（濃い灰）。黒と白の明るさだけで黒目を3段に見せる
     for sx in (-1, 1):
         cx = sx * EX
         if ek == "nikkori":      # 上に弧を描く太めの線（にっこり）
-            eline(f"nik{i}{sx}", [(cx + u * .017, EZ - .003 + .01 * (1 - u * u)) for u in [k / 8 * 2 - 1 for k in range(9)]], .0034); continue
+            eline(f"nik{i}{sx}", [(cx + u * .017, EZ - .003 + .01 * (1 - u * u)) for u in [k / 8 * 2 - 1 for k in range(9)]], .0036); continue
         if ek == "ten":          # 点の目
             decal(f"eye{i}{sx}", cx, EZ, .0075, .0085, em, 1); continue
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
+        ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
-        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0013, rz + .0013, em, 0, tl, cut)            # 細い黒のふち
+        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0032, rz + .0032, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
         decal(f"eyew{i}{sx}", cx, EZ, rx, rz, white, 1, tl, cut)                         # 白目
-        pr = rz * ps; pz = EZ + rz * pdy
-        decal(f"pupil{i}{sx}", cx, pz, min(pr * .82, rx * .85), pr, em, 2, 0, cut, base=(cx, EZ))   # 黒目
-        hz2 = pz + pr * .38 if cut is None else min(pz + pr * .38, cut - .004)
-        decal(f"hl{i}{sx}", cx + sx * pr * .3, hz2, pr * .27, pr * .27, wm, 3, base=(cx, EZ))      # 白い光
-        if lid:                  # 上まぶたの線（白目の上のふちに沿う）
-            t_ = math.radians(tl); pts = []
-            for k in range(2, 11):
-                u = k / 10 * 2 - 1; ux = u * sx
-                zz = rz * math.sqrt(max(0, 1 - u * u)) * .92 if cut is None else min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ)
-                x0 = ux * rx * 1.04; pts.append((cx + x0 * math.cos(t_) + zz * math.sin(t_), EZ - x0 * math.sin(t_) + zz * math.cos(t_)))
-            eline(f"lid{i}{sx}", pts, .0028)
-            for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
-                bx, bz = pts[-1 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .005 - k * .0015)], .0019)
+        pr = rz * ps; pz = EZ + rz * pdy; prx = min(pr * .8, rx * .86)
+        decal(f"iris{i}{sx}", cx, pz, prx, pr, gm_, 2, 0, cut, base=(cx, EZ))           # 黒目（外の輪＝濃い灰）
+        decal(f"pupil{i}{sx}", cx, pz - pr * .06, prx * .62, pr * .62, em, 3, 0, cut, base=(cx, EZ))   # 黒目の中（黒）
+        hz2 = pz + pr * .4 if cut is None else min(pz + pr * .4, cut - .004)
+        decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3, pr * .3, wm, 4, base=(cx, EZ))           # 大きい白い光（上の外がわ）
+        decal(f"hl2{i}{sx}", cx - sx * prx * .32, pz - pr * .45, pr * .14, pr * .14, wm, 4, base=(cx, EZ))  # 小さい白い光（下の内がわ）
+        # 上まぶたの線（どの形にも太く。白目の上のふちに沿い、目じりで少しはねる）
+        t_ = math.radians(tl); pts = []
+        for k in range(1, 11):
+            u = k / 10 * 2 - 1; ux = u * sx
+            zz = rz * math.sqrt(max(0, 1 - u * u)) * .98 + .0012 if cut is None else min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ) + .0012
+            x0 = ux * (rx + .002); pts.append((cx + x0 * math.cos(t_) + zz * math.sin(t_), EZ - x0 * math.sin(t_) + zz * math.cos(t_)))
+        ex_, ez_ = pts[-1]; pts.append((ex_ + sx * .004, ez_ + .0018))
+        eline(f"lid{i}{sx}", pts, .0036)
+        for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
+            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .005 - k * .0015)], .0021)
     # まゆは描かない（2026-11-13 ユーザーの判断「どうぶつの森は眉毛がないので、いらない」）。名簿の brows は読まない
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
