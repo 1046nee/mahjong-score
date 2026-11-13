@@ -599,11 +599,7 @@ def build_player(i, P):
         decal(f"pupil{i}{sx}", cx, pz - pr * .06, prx * .62, pr * .62, em, 3, 0, cut, base=(cx, EZ))   # 黒目の中（黒）
         hz2 = pz + pr * .4 if cut is None else min(pz + pr * .4, cut - .004)
         decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3, pr * .3, wm, 4, base=(cx, EZ))           # 大きい白い光（上の外がわ）
-        kira = P.get("kira", bool(P.get("fem")))      # キラキラの目（女性の標準・二重の男性の一部。一重の男性は付けない＝2026-11-13 ユーザーの指定）
-        decal(f"hl2{i}{sx}", cx - sx * prx * .32, pz - pr * .45, pr * (.2 if kira else .14), pr * (.2 if kira else .14), wm, 4, base=(cx, EZ))  # 小さい白い光（下の内がわ）
-        if kira:     # 光を足して、瞳をきらきらに（上の内がわに小さな光・外がわの光の横に点）
-            decal(f"hl3{i}{sx}", cx - sx * prx * .38, pz + pr * .42, pr * .11, pr * .11, wm, 4, base=(cx, EZ))
-            decal(f"hl4{i}{sx}", cx + sx * prx * .05, hz2 + pr * .1, pr * .08, pr * .08, wm, 4, base=(cx, EZ))
+        # 黒目の中の白い光は1つだけ（2026-11-13 ユーザーの指定「キラキラさせすぎ。3個もいらない。1個でいい」）。名簿の kira は読まない
         # 上まぶたの線（どの形にも太く。白目の上のふちに沿い、目じりで少しはねる）
         t_ = math.radians(tl); pts = []
         for k in range(1, 11):
