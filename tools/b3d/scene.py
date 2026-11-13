@@ -490,7 +490,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or "pachi", fem=fem)
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira", "fringe"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira", "fringe", "eye_s", "eye_hl"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -589,6 +589,8 @@ def build_player(i, P):
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
+        es_ = P.get("eye_s", 1.0); rx *= es_; rz *= es_      # 目の大きさ（名簿の eye_s。1＝標準）
+        hlk = P.get("eye_hl", 1.0)                             # 黒目の中の白い光の大きさ（名簿の eye_hl。0＝無し）
         lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-13）（2026-11-13 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
@@ -598,7 +600,7 @@ def build_player(i, P):
         decal(f"iris{i}{sx}", cx, pz, prx, pr, gm_, 2, 0, cut, base=(cx, EZ))           # 黒目（外の輪＝濃い灰）
         decal(f"pupil{i}{sx}", cx, pz - pr * .06, prx * .62, pr * .62, em, 3, 0, cut, base=(cx, EZ))   # 黒目の中（黒）
         hz2 = pz + pr * .4 if cut is None else min(pz + pr * .4, cut - .004)
-        decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3, pr * .3, wm, 4, base=(cx, EZ))           # 大きい白い光（上の外がわ）
+        if hlk > 0: decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3 * hlk, pr * .3 * hlk, wm, 4, base=(cx, EZ))           # 白い光（上の外がわ・1つだけ）
         # 黒目の中の白い光は1つだけ（2026-11-13 ユーザーの指定「キラキラさせすぎ。3個もいらない。1個でいい」）。名簿の kira は読まない
         # 上まぶたの線（どの形にも太く。白目の上のふちに沿い、目じりで少しはねる）
         t_ = math.radians(tl); pts = []
