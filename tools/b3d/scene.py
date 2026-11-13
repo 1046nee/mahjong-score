@@ -983,7 +983,7 @@ def pre_pose(t, cam):
     kz = seg(t, 1.2, 2.0)
     loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
     if SCENE == "chi":                        # 上家の河（左の奥）を見る
-        riv = (Vector((-.10, -.50, 1.05)), Vector((p0.x, p0.y + .05, .77)), 30.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
+        riv = (Vector((-.11, -.42, 1.00)), Vector((p0.x, p0.y + .04, .77)), 44.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
         loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
