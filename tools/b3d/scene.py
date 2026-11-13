@@ -659,7 +659,7 @@ def build_player(i, P):
     #   （blunt＝ぱっつん／zig＝毛先がとがった束／side＝流した前髪／part＝分け目／none＝おでこを出す）。パーマ・お団子・結んだ髪などは、殻の上に足す
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
-    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None, flat=None):
+    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None, flat=None, flip=0.0):
         """殻の生えぎわ: 正面 zf・こめかみ zt・耳の上 zs・えり足 zb（殻を単位の球とみた高さ -1〜1）。前髪の形 fr"""
         import bmesh
         def bound(ph):
@@ -707,6 +707,10 @@ def build_player(i, P):
                 bump = abs(math.sin(fq * x_ + 1.3) * math.sin(fq * y_ + .7) * math.sin(fq * z_ + 2.1)) ** .5
                 f += amp * bump * min(1.0, d / .08)
             v.co = v.co * f
+            if flip:      # 外ハネ: 横と後ろの毛先を、外へ大きくはねさせて少し上へ巻く（前髪ははねさせない）
+                w_ = min(1.0, max(0.0, (abs(ph) - 1.15) / .35)); w_ = w_ * w_ * (3 - 2 * w_)
+                k_ = flip * w_ * max(0.0, 1 - d / .32) ** 2.2      # なだらかに外へ（せまい幅で急にはねると、帽子のつばに見えた）
+                v.co.x *= 1 + k_; v.co.y *= 1 + k_; v.co.z += k_ * .45
             if flat is not None:      # 角刈り（2026-11-13 ユーザーの指定）: 頭のてっぺんへ向かって、少し三角に伸びる山
                 k_ = max(0.0, v.co.z - .45) / .55; v.co.x *= 1 - .1 * k_; v.co.z *= 1 + .06 * k_ * k_      # ゆるい三角（強いと、とんがり帽子に見えた）
         if ext:      # 長い髪: 殻の毛先（生えぎわの列）から、そのまま下へ垂らす（1枚につながるので段ができない）。顔の前（|φ|<gap）はのばさない
@@ -740,7 +744,7 @@ def build_player(i, P):
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)),
           "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "kakugari": (.52, .32, -.3, -.52, ("none",)), "bun_pony": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)), "perm_side": (0.22, .24, .0, -.55, ("part", .36, -.5, .35)), "perm_center": (0.04, -.02, -.1, -.55, ("part", .36, 0, .42)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8)),
-          "twintail_long": (0.04, .02, -.45, -.5, ("blunt",)), "kakiage": (0.3, .3, .02, -.55, ("side", .55))}
+          "sotohane": (0.04, .04, -.6, -.62, ("blunt",)), "twintail_long": (0.04, .02, -.45, -.5, ("blunt",)), "kakiage": (0.3, .3, .02, -.55, ("side", .55))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     hm_cap = hm
     if kind == "kakugari":     # 角刈り: 横の刈り上げ（グレー）から上の髪の色へ、なだらかに色が変わる1枚（2026-11-13 ユーザーの指定「グラデーションみたいに自然に」）
@@ -755,7 +759,7 @@ def build_player(i, P):
     TUFT = {"kakiage": .28, "short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm_side": (.1, 7), "perm_center": (.1, 7), "perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, m=hm_cap, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), flat=(.8 if kind == "kakugari" else None), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else ((.99, 1.0, 1.06) if kind == "kakugari" else (1.12, 1.07, 1.1))))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, m=hm_cap, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), flat=(.8 if kind == "kakugari" else None), flip=(.26 if kind == "sotohane" else 0.0), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob", "sotohane") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else ((.99, 1.0, 1.06) if kind == "kakugari" else (1.12, 1.07, 1.1))))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
     if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
         for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
             o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
@@ -850,9 +854,9 @@ def build_player(i, P):
         for sx in (-1, 1): sphere(f"ear{i}{sx}", .0135, (sx * .112, hy + .04, hz - .078), em_, parent=hd)
     if "sakura" in accs:    # 桜の耳飾り（うすい桃色の花びら5枚・濃い桃色の芯）
         for sx in (-1, 1):     # 耳から細い金具でぶら下がる（2026-11-13 ユーザーの指定「ぶら下がってる感じで」）。金具の上の端は髪の中に入れて、髪の下の端から出てくるように（外に離すと、宙に浮いて見えた。前に置くと、横から見て頬の上に浮いた＝髪が下まで来ている耳の真横に置く）。花は髪の下の端より下に出す
-            limb(f"earc{i}{sx}", (sx * .143, hy + .004, hz - .02), (sx * .145, hy + .004, hz - .074), .0016, mat("ear_gold", "#D9B45A", .3, metal=.6), hd)      # 目の高さの髪から下がる（2026-11-13 ユーザーの指定）
-            sphere(f"eart{i}{sx}", .0042, (sx * .1425, hy + .004, hz - .019), mat("ear_gold", "#D9B45A", .3, metal=.6), parent=hd)      # 髪に留める小さな玉
-            flower(f"ear{i}{sx}", (sx * .146, hy + .004, hz - .086), "x+" if sx > 0 else "x-", .019, "#F9B8CB", "#E26D8F")
+            limb(f"earc{i}{sx}", (sx * .124, hy + .07, hz - .016), (sx * .126, hy + .071, hz - .068), .0016, mat("ear_gold", "#D9B45A", .3, metal=.6), hd)      # 目の高さの髪（こめかみの横の毛先）から下がる（2026-11-13 ユーザーの指定。耳の真横だと、外ハネの毛先を金具が突きぬけた）
+            sphere(f"eart{i}{sx}", .0042, (sx * .1235, hy + .0695, hz - .015), mat("ear_gold", "#D9B45A", .3, metal=.6), parent=hd)      # 髪に留める小さな玉
+            flower(f"ear{i}{sx}", (sx * .127, hy + .071, hz - .08), "x+" if sx > 0 else "x-", .019, "#F9B8CB", "#E26D8F")
     # 髪が胴にもぐらないように（2026-11-13 ユーザーの指摘「中田・黒沢・二階堂の髪が首の所に埋まっている」）。首が無いので、頭の下の端より下へ垂れた毛は胴の中に入る。
     #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
     _hr = hd.rotation_euler.to_matrix(); HAIR_MIN = -.082      # 襟の帯の上の面（約 -.094）より上で止めて、首の肌を少し見せる（-.098 だと、パーマ・ボブの後ろの髪が襟に乗って、首が埋まって見えた＝2026-11-13 ユーザーの指摘）
