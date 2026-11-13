@@ -44,6 +44,9 @@ const READ_ICON = {
   more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
 };
 const BLOG_POSTS = [
+  { url: '/blog-yaku-ranking.html', cat: 'rules', date: '2026.11.14', tag: 'ルール',
+    title: '【データで見る】麻雀の役の出やすさランキング｜リーチは41.5%・四暗刻は2,720回に1回',
+    desc: '天鳳の鳳凰卓のあがり151万回から、全37役の出やすさを有効数字3桁で。役満が何半荘に1回出るかも。' },
   { url: '/blog-naki-tejun.html', cat: 'rules', date: '2026.11.11', tag: 'ルール',
     title: '【図解】ポン・チーの手順｜発声から打牌までの順番とMリーグ・プロ団体の決まりの違い',
     desc: '鳴きの5つの手順を上から見た卓の図で。Mリーグ・協会・最高位戦・RMUの決まりの違いと、雀荘での気をつけ方。' },
