@@ -419,7 +419,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or ("matsuge" if fem else "pachi"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -461,54 +461,75 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    # 目（2026-11-13 作り直し。ユーザーの依頼「どうぶつの森で使われている目を参考に」）: 顔にはった平たいシールのような目。
-    #   黒目は大きめの楕円、白い光（ハイライト）を1〜2つ、上まぶたの線・まつ毛・半分かくすまぶたを組み合わせて12種類。実在のゲームの目をそのまま写さない
-    #   pachi＝ぱっちり（標準）／tare＝タレ目／tsuri＝つり目／jito＝半目（まぶたが重い）／nemu＝眠そう（半目＋タレ）／nikkori＝にっこり（∩）
-    #   ten＝点の目／hoso＝細い目／uru＝うるうる（大きく光2つ）／matsuge＝まつ毛／tare_matsuge＝タレ目＋まつ毛／kiri＝りりしい（細め＋まっすぐな太まゆ）／sanpaku＝三白眼
+    # 目（2026-11-13 2回目の作り直し。ユーザーの依頼「黒目だけでなく、どうぶつの森の目のような表現に」）:
+    #   白目＋色のついた瞳（茶色の輪＋黒い瞳孔）＋白い光＋太い上まぶたの線（目じりで少しはねる）＋細いふち、を顔にはったシールのように重ねる。
+    #   形（丸い・タレ・つり・半目・細い・三白眼…）と、まつ毛の有無で13種類。瞳の色は名簿の eye_color（標準は茶色）。実在のゲームの目をそのまま写さない
     OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "uru", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "tare_matsuge"}      # 前の名前（cast や古い名簿）
     ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
-    em = mat("eye", "#221A17", .35); wm = mat("eyehl", "#FFFFFF", .2); EX, EZ = .043, -.008
+    em = mat("eye", "#221A17", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FBF9F4", .35)
+    irc = P.get("eye_color", "#6A4A36"); im_ = mat(f"iris_{irc}", irc, .35); pm = mat("pupil", "#1B1411", .3)
+    EX, EZ = .047, -.008
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
     def eline(name, pts, w=.0026):
         cu = bpy.data.curves.new(name, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = w; cu.bevel_resolution = 3; cu.use_fill_caps = True
         sp = cu.splines.new("POLY"); sp.points.add(len(pts) - 1)
-        for k, (x, z) in enumerate(pts): sp.points[k].co = (x, surf(x, hz + z - hz, .0015), hz + z, 1)
+        for k, (x, z) in enumerate(pts): sp.points[k].co = (x, surf(x, z, .0042), hz + z, 1)
         o = bpy.data.objects.new(name, cu); add(o); o.parent = hd; cu.materials.append(em); return o
-    #          黒目の大きさ（横, 縦）・傾き（＋で目じりが下がる）・光の数・上まぶたの線・まぶたでかくす割合・まつ毛
-    SPEC = {"pachi": ((.0135, .0175), 0, 1, False, 0, 0), "tare": ((.0145, .0155), 16, 1, True, 0, 0), "tsuri": ((.0145, .0155), -18, 1, True, 0, 0),
-            "jito": ((.0145, .016), 0, 1, True, .45, 0), "nemu": ((.0145, .015), 14, 0, True, .55, 0), "ten": ((.0075, .0085), 0, 0, False, 0, 0),
-            "hoso": ((.016, .0075), 4, 0, True, 0, 0), "uru": ((.016, .019), 0, 2, False, 0, 0), "matsuge": ((.0135, .0175), 0, 1, True, 0, 2),
-            "tare_matsuge": ((.0145, .016), 14, 1, True, 0, 2), "kiri": ((.0145, .011), -8, 1, True, 0, 0)}
+    def decal(name, cx, cz, rx, rz, m, layer, tilt=0, cut=None, ref=None, base=None):
+        """顔にはる平たい楕円。layer が大きいほど手前。cut＝この高さ（顔の座標）より上を切り落とす（半目）。ref＝傾きの中心"""
+        bx_, bz_ = base or (cx, cz)      # 奥行きは目の中心で決める（光だけ別の所で決めると、瞳の後ろにもぐった）
+        o = sphere(name, 1, (cx, surf(bx_, bz_) - .0045 + layer * .0009, hz + cz), m, (rx, .0058, rz), hd)
+        if cut is not None:
+            import bmesh
+            bm = bmesh.new(); bm.from_mesh(o.data)
+            lim = (cut - cz) / rz
+            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > lim], context="VERTS"); bm.to_mesh(o.data); bm.free()
+        if tilt:
+            o.rotation_euler = (0, math.radians(tilt), 0)
+            if ref is not None:      # 目の中心のまわりで傾ける
+                dx, dz = cx - ref[0], cz - ref[1]; t_ = math.radians(tilt)
+                o.location.x = ref[0] + dx * math.cos(t_) + dz * math.sin(t_); o.location.z = hz + ref[1] - dx * math.sin(t_) + dz * math.cos(t_)
+        return o
+    #       白目の大きさ（横, 縦）・傾き（＋で目じりが下がる）・瞳の大きさ（白目の縦に対して）・瞳の上下・光の数・半目（上を切る割合）・まつ毛
+    SPEC = {"pachi": ((.017, .019), 0, .78, .05, 1, 0, 0), "tare": ((.018, .016), 14, .82, .0, 1, 0, 0), "tsuri": ((.018, .016), -16, .82, .0, 1, 0, 0),
+            "jito": ((.018, .017), 0, .8, -.15, 1, .42, 0), "nemu": ((.018, .016), 12, .82, -.2, 0, .5, 0), "hoso": ((.019, .0095), 4, .95, .0, 1, 0, 0),
+            "uru": ((.018, .021), 0, .82, .02, 2, 0, 0), "matsuge": ((.017, .019), 0, .78, .05, 1, 0, 2), "tare_matsuge": ((.018, .017), 12, .8, .0, 1, 0, 2),
+            "kiri": ((.018, .013), -8, .88, .0, 1, 0, 0), "sanpaku": ((.018, .016), 0, .5, .38, 0, 0, 0), "ten": ((.006, .007), 0, 0, 0, 0, 0, 0)}
     for sx in (-1, 1):
         cx = sx * EX
-        if ek == "nikkori":      # 上に弧を描く太めの線
-            eline(f"nik{i}{sx}", [(cx + u * .015, EZ - .002 + .008 * (1 - u * u)) for u in [k / 6 * 2 - 1 for k in range(7)]], .0032)
+        if ek == "nikkori":      # 上に弧を描く太めの線（にっこり）
+            eline(f"nik{i}{sx}", [(cx + u * .016, EZ - .002 + .009 * (1 - u * u)) for u in [k / 8 * 2 - 1 for k in range(9)]], .0032)
             continue
-        if ek == "sanpaku":      # 白目（横長）＋上に寄せた小さな黒目
-            sphere(f"eyeo{i}{sx}", .0175, (cx, surf(cx, EZ) - .012, hz + EZ), em, (1.3, .45, .9), hd)
-            sphere(f"eyew{i}{sx}", .016, (cx, surf(cx, EZ) - .0095, hz + EZ), mat("eyewhite", "#FAF8F2", .4), (1.3, .45, .88), hd)
-            sphere(f"eye{i}{sx}", .0085, (cx, surf(cx, EZ + .005) - .0035, hz + EZ + .005), em, (1, .5, 1.1), hd)
-            continue
-        (rx, rz), tilt, nhl, lid, hide, lash = SPEC[ek]; rx *= 1.4; rz *= 1.4      # 大きめに（顔のシールの目は大きいほうがかわいい）
-        e = sphere(f"eye{i}{sx}", 1, (cx, surf(cx, EZ) - .0045, hz + EZ), em, (rx, .006, rz), hd)
-        e.rotation_euler = (0, math.radians(sx * tilt), 0)
-        if hide:                 # 半目: 黒目の上を平らに切り落とす（肌色のまぶたを重ねると、黒目の後ろにもぐったり、白く浮いたりした）
-            import bmesh
-            bm = bmesh.new(); bm.from_mesh(e.data)
-            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > 1 - 2 * hide], context="VERTS"); bm.to_mesh(e.data); bm.free()
-        for k in range(nhl):     # 白い光（目の上の外がわに大きい光・下の内がわに小さい光）
-            hx = cx + sx * rx * (.35 if k == 0 else -.3); hz2 = EZ + rz * (.4 if k == 0 else -.45); hr = (.0055 if k == 0 else .003) * (1.15 if ek == "uru" else 1)
-            if hide and k == 0: hz2 = EZ + rz * (1 - 2 * hide - .45)
-            sphere(f"hl{i}{sx}{k}", hr, (hx, surf(cx, EZ) + .0022, hz + hz2), wm, (1, .3, 1), hd)      # 黒目の面より手前に
-        top = EZ + rz * (.9 - 2 * hide)
-        if lid:                  # 上まぶたの線（黒目より少し長い・目じりの向きに合わせて傾ける）
-            t_ = math.radians(tilt)
-            eline(f"lidl{i}{sx}", [(cx + sx * u * rx * 1.25, top + (.0025 * (1 - u * u) if not hide else 0) - sx * sx * u * math.tan(t_) * rx * 1.25 * (1 if sx > 0 else 1)) for u in [k / 6 * 2 - 1 for k in range(7)]], .0024)
-        for k in range(lash):    # まつ毛（目じりの上に、外へはねる短い線）
-            bx = cx + sx * rx * (.8 + k * .28); bz = top - .001 - k * .0035 - (math.tan(math.radians(tilt)) * rx * .9)
-            eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .006 - k * .002)], .0019)
+        if ek == "ten":          # 点の目（黒い小さな丸）
+            decal(f"eye{i}{sx}", cx, EZ, .0068, .0078, em, 1); continue
+        (rx, rz), tilt, irs, idy, nhl, hide, lash = SPEC[ek]; rx *= 1.3; rz *= 1.3; irs = min(.95, irs * 1.12)      # 大きな目・大きな瞳
+        tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
+        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0016, rz + .0016, em, 0, tl, cut)              # 細いふち
+        decal(f"eyew{i}{sx}", cx, EZ, rx, rz, white, 1, tl, cut)                           # 白目
+        ir = rz * irs; iz = EZ + rz * idy
+        if ek == "sanpaku": ir = rz * .5
+        decal(f"iris{i}{sx}", cx, iz, min(ir, rx * .92), ir, im_, 2, tl, cut, (cx, EZ), (cx, EZ))     # 瞳（色の輪）
+        decal(f"pupil{i}{sx}", cx, iz, min(ir, rx * .92) * .55, ir * .55, pm, 3, tl, cut, (cx, EZ), (cx, EZ))   # 瞳孔
+        for k in range(nhl):     # 白い光（瞳の上の外がわに大きい光・下の内がわに小さい光）
+            hx = cx + sx * ir * (.38 if k == 0 else -.32); hz2 = iz + ir * (.38 if k == 0 else -.4)
+            if cut is not None and k == 0: hz2 = min(hz2, cut - ir * .3)
+            decal(f"hl{i}{sx}{k}", hx, hz2, ir * (.3 if k == 0 else .17), ir * (.3 if k == 0 else .17), wm, 4, base=(cx, EZ))
+        # 太い上まぶたの線（白目の上のふちに沿い、目じりで少し外へはねる）
+        t_ = math.radians(tl); pts = []
+        for k in range(11):
+            u = k / 10 * 2 - 1      # -1＝目がしら（内）〜 +1＝目じり（外）… sx で左右を合わせる
+            ux = u * sx
+            if cut is None: zz = rz * math.sqrt(max(0, 1 - u * u)) * .98
+            else: zz = min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ)
+            x0 = ux * rx * 1.02; px_ = cx + x0 * math.cos(t_) + zz * math.sin(t_); pz_ = EZ - x0 * math.sin(t_) + zz * math.cos(t_)
+            pts.append((px_, pz_))
+        if not (hide == 0 and ek in ("uru",)): pts = pts[2:]      # 目がしらがわは線を短く
+        ex, ez_ = pts[-1]; pts.append((ex + sx * .0045, ez_ + .0022))       # 目じりのはね
+        eline(f"lid{i}{sx}", pts, .0026 if ek not in ("matsuge", "tare_matsuge") else .003)
+        for k in range(lash):    # まつ毛（目じりの上に、外へはねる短い線を2本）
+            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .006, bz + .0055 - k * .0015)], .0019)
         if ek == "kiri" and not P.get("brows"):     # まっすぐな太いまゆ
-            box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -10), 0)
+            box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .044, hy + .104, hz + .021), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -10), 0)
     if P.get("brows"):     # 太めのまゆ（目じりを少し上げて、きりっと見せる）。前髪の下に見える高さ
         for sx in (-1, 1):
             box(f"brw{i}{sx}", (.034, .007, .0075), (sx * .043, hy + .105, hz + .02), em, bevel=.0025, parent=hd).rotation_euler = (math.radians(-14), math.radians(sx * -12), 0)
@@ -555,142 +576,85 @@ def build_player(i, P):
         bm = mat(f"beard{i}", P.get("hair", ("", "#2A211D"))[1] if P["beard"] != "gray" else "#6E6A66", .7)
         if P["beard"] in ("mustache", "both"): sphere(f"must{i}", .02, (0, hy + .113, hz - .042), bm, (1.25, .35, .32), hd)
         if P["beard"] in ("goatee", "both"): sphere(f"goat{i}", .014, (0, hy + .1, hz - .078), bm, (1.0, .45, .8), hd)
-    # 髪
+    # 髪（2026-11-13 作り直し。ユーザーの依頼「どうぶつの森のような髪型に」）:
+    #   頭より少し大きい1枚の殻（hair_shell）を、生えぎわの線（前髪・こめかみ・耳の上・えり足の高さ）で切りぬいて作る。前髪の形は fringe
+    #   （blunt＝ぱっつん／zig＝毛先がとがった束／side＝流した前髪／part＝分け目／none＝おでこを出す）。パーマ・お団子・結んだ髪などは、殻の上に足す
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
-    cap = sphere(f"hair{i}", .124, (0, hy - .022, hz + .02), hm, (1.02, 1.0, 1.06), hd)
-    if kind == "bob":      # あごの長さのボブ: 後ろと横を丸く包み、顔の両わきに内巻きの毛先、まっすぐな前髪
-        sphere(f"bobback{i}", .125, (0, hy - .042, hz - .045), hm, (1.13, .95, 1.02), hd)
-        for sx in (-1, 1):
-            sphere(f"bobside{i}{sx}", .05, (sx * .108, hy + .028, hz - .058), hm, (.55, .95, 1.55), hd)
-        sphere(f"bang{i}", .085, (0, hy + .058, hz + .062), hm, (1.32, .62, .46), hd)
-    elif kind == "short_messy":
-        for k in range(9):
-            a = k / 9 * math.tau
-            sphere(f"tuft{i}{k}", .045, (math.cos(a) * .07, hy - .02 + math.sin(a) * .07, hz + .105), hm, (1, 1, 1.25), hd)
-        sphere(f"bang{i}", .07, (0.02, hy + .07, hz + .06), hm, (1.4, .5, .5), hd)
-    elif kind == "wavy":
-        for k in range(7):
-            a = k / 7 * math.tau
-            sphere(f"wave{i}{k}", .05, (math.cos(a) * .075, hy - .025 + math.sin(a) * .075, hz + .085), hm, (1, 1, .9), hd)
-        sphere(f"bang{i}", .06, (-.03, hy + .07, hz + .075), hm, (1.3, .5, .45), hd)
-    elif kind == "short":  # 短く整えた髪＋横に流した前髪
-        sphere(f"bang{i}", .07, (.025, hy + .07, hz + .07), hm, (1.5, .5, .42), hd).rotation_euler = (0, math.radians(-12), 0)
-    elif kind == "medium": # 耳にかかる長さ＋目の上までの前髪（毛先を少し散らす）
-        for sx in (-1, 1):
-            sphere(f"mside{i}{sx}", .06, (sx * .1, hy - .005, hz + .0), hm, (.55, 1.0, 1.25), hd)
-        sphere(f"mback{i}", .12, (0, hy - .05, hz - .01), hm, (1.08, .9, 1.0), hd)
-        for k in range(5):
-            sphere(f"bang{i}{k}", .03, (-.05 + k * .025, hy + .085, hz + .045 - abs(k - 2) * .006), hm, (1.0, .6, 1.3), hd)
-    elif kind == "curly":  # くせ毛のふんわりした中くらいの長さ（耳にかかる）
-        for k in range(12):
-            a = k / 12 * math.tau
-            sphere(f"curl{i}{k}", .052, (math.cos(a) * .095, hy - .03 + math.sin(a) * .07, hz + .055 - abs(math.sin(a)) * .02), hm, (1, 1, 1.1), hd)
-        for sx in (-1, 1): sphere(f"cside{i}{sx}", .05, (sx * .108, hy - .01, hz - .03), hm, (.7, 1, 1.1), hd)
-        sphere(f"bang{i}", .06, (.0, hy + .075, hz + .07), hm, (1.4, .5, .5), hd)
-    elif kind == "slick":  # 後ろへなでつけた髪（前髪なし・額が見える）
-        sphere(f"slick{i}", .12, (0, hy - .03, hz + .045), hm, (1.03, 1.0, .82), hd)
-    elif kind == "long":   # 肩より長いまっすぐな髪＋前髪（後ろに長く垂らす）
-        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
-        for sx in (-1, 1):
-            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
-        sphere(f"bang{i}", .085, (0, hy + .058, hz + .062), hm, (1.3, .6, .46), hd)
-    elif kind == "updo":   # まとめ髪（後ろの高い所にお団子）＋顔の横に少し垂らす毛＋分けた前髪
-        sphere(f"bun{i}", .055, (0, hy - .115, hz + .06), hm2, parent=hd)
-        for sx in (-1, 1):
-            sphere(f"strand{i}{sx}", .014, (sx * .1, hy + .05, hz - .05), hm, (.7, .7, 3.0), hd)
-        sphere(f"bang{i}", .07, (-.02, hy + .068, hz + .07), hm, (1.5, .5, .42), hd).rotation_euler = (0, math.radians(10), 0)
-    elif kind == "twintail":  # 耳の下で2つに結んだ髪（低いツインテール）＋前髪
-        for sx in (-1, 1):
-            sphere(f"twin{i}{sx}", .04, (sx * .118, hy - .03, hz - .1), hm2, (.8, .8, 2.1), hd)
-        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
-    elif kind == "ponytail":  # 後ろでひとつに結んだ髪＋前髪
-        sphere(f"tail{i}", .045, (0, hy - .14, hz - .02), hm2, (.8, .8, 2.0), hd)
-        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
-    elif kind == "center": # センター分け（前髪を真ん中で分けて左右へ流す）
-        for sx in (-1, 1):
-            sphere(f"bang{i}{sx}", .05, (sx * .05, hy + .084, hz + .052), hm, (1.15, .45, .5), hd).rotation_euler = (math.radians(-25), math.radians(sx * 28), 0)   # 分け目から外へ、ななめ下に流す
-            sphere(f"cside{i}{sx}", .05, (sx * .1, hy + .01, hz + .02), hm, (.55, 1.0, 1.15), hd)
-    elif kind == "side_part":  # 七三分け（横に大きく流した前髪＋分け目）
-        sphere(f"bang{i}", .075, (.03, hy + .07, hz + .078), hm, (1.6, .5, .42), hd).rotation_euler = (0, math.radians(-18), 0)
-        sphere(f"bang{i}b", .04, (-.075, hy + .05, hz + .085), hm, (1.0, .7, .5), hd)
-    elif kind == "spiky":  # 短くツンツン立たせた髪
+    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.012):
+        """殻の生えぎわ: 正面 zf・こめかみ zt・耳の上 zs・えり足 zb（殻を単位の球とみた高さ -1〜1）。前髪の形 fr"""
+        import bmesh
+        def bound(ph):
+            a_ = abs(ph)
+            if a_ < .85: z = zf + (zt - zf) * (a_ / .85)
+            elif a_ < 1.55: z = zt + (zs - zt) * ((a_ - .85) / .7)
+            else: z = zs + (zb - zs) * ((a_ - 1.55) / (math.pi - 1.55))
+            w = max(0.0, 1 - a_ / .95)       # 前髪の形は正面だけに効かせる
+            if fr[0] == "zig":    z += fr[1] * abs(((ph * fr[2] / math.pi) % 2) - 1) * w * 2 - fr[1] * w
+            elif fr[0] == "side": z += fr[1] * ph * w
+            elif fr[0] == "part": z += fr[1] * max(0.0, 1 - abs(ph - fr[2]) / fr[3]) * (1 if a_ < 1.2 else 0)
+            return z
+        me = bpy.data.meshes.new(name); bm = bmesh.new()
+        bmesh.ops.create_uvsphere(bm, u_segments=96, v_segments=48, radius=1.0)
+        keep = {}
+        for v in bm.verts:
+            ph = math.atan2(v.co.x, v.co.y); keep[v] = v.co.z >= bound(ph)
+        dead = [f for f in bm.faces if not any(keep[v] for v in f.verts)]
+        bmesh.ops.delete(bm, geom=dead, context="FACES")
+        for v in bm.verts:                  # 生えぎわの頂点を線の上へ寄せる（ぎざぎざにしない）
+            if not keep.get(v, True):
+                ph = math.atan2(v.co.x, v.co.y); z = max(-1.0, min(1.0, bound(ph))); rr = math.sqrt(max(0, 1 - z * z))
+                v.co = Vector((rr * math.sin(ph), rr * math.cos(ph), z))
+        bm.to_mesh(me); bm.free()
+        o = bpy.data.objects.new(name, me); add(o); o.parent = hd; me.materials.append(m)
+        o.location = (0, hy - .006, hz + .006); o.scale = (r_ * scl[0], r_ * scl[1], r_ * scl[2])
+        for poly in me.polygons: poly.use_smooth = True
+        sol = o.modifiers.new("th", "SOLIDIFY"); sol.thickness = th / r_; sol.offset = -1        # 毛先に厚みを出す
+        return o
+    # 髪型ごとの生えぎわ（zf 正面・zt こめかみ・zs 耳の上・zb えり足・前髪の形）
+    SH = {"short": (.34, .26, .02, -.55, ("side", .28)), "short_bangs": (.2, .15, .0, -.55, ("zig", .14, 7)), "nobang": (.62, .42, .02, -.55, ("none",)),
+          "upbang": (.62, .42, .02, -.55, ("none",)), "slick": (.66, .44, .0, -.5, ("none",)), "side_part": (.3, .24, .0, -.55, ("part", .36, -.5, .35)),
+          "center": (.2, .3, .0, -.55, ("part", .45, 0, .55)), "mush": (.1, .04, -.28, -.56, ("blunt",)), "medium": (.14, .02, -.48, -.6, ("zig", .1, 9)),
+          "two_block": (.2, .2, .26, .1, ("zig", .13, 7)), "undercut": (.58, .48, .34, .16, ("none",)), "spiky": (.34, .28, .05, -.5, ("zig", .14, 9)),
+          "short_messy": (.24, .2, .0, -.55, ("zig", .16, 6)), "perm": (.32, .2, -.25, -.56, ("zig", .08, 8)), "loose_perm": (.3, .18, -.3, -.58, ("side", .2)),
+          "curly": (.26, .15, -.35, -.6, ("zig", .07, 8)), "wavy": (.3, .2, -.2, -.55, ("side", .2)),
+          "short_bob": (.14, .05, -.5, -.55, ("zig", .05, 9)), "bob": (.12, .04, -.7, -.72, ("blunt",)), "bob_nobang": (.24, .0, -.7, -.72, ("part", .38, .35, .5)),
+          "long": (.12, .02, -.72, -.72, ("blunt",)), "long_part": (.2, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (.3, -.05, -.72, -.72, ("part", .35, -.4, .55)),
+          "long_wavy": (.22, .02, -.72, -.72, ("side", .25)), "half_up": (.15, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (.18, .1, -.3, -.5, ("zig", .06, 7)),
+          "twintail": (.12, .04, -.4, -.5, ("blunt",)), "updo": (.3, .15, -.2, -.45, ("side", .25))}
+    zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, scl=(1.12, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.08, 1.06, 1.1))      # 頭より大きめ（ふんわり）
+    if kind in ("two_block", "undercut"):        # 横と後ろは短く刈った色（殻の下にもう1枚）
+        hair_shell(f"hairs{i}", .6, .4, -.42, -.58, ("none",), m=mat(f"hairs{i}", "#5E5550", .7), scl=(1.0, 1.0, 1.03), th=.004)
+    if kind == "upbang":                         # 前髪を上へ立ち上げる
+        sphere(f"up{i}", .055, (.01, hy + .06, hz + .12), hm, (1.5, .7, .6), hd).rotation_euler = (math.radians(-35), 0, math.radians(-8))
+    elif kind == "slick":                        # 後ろへなでつけたふくらみ
+        sphere(f"slick{i}", .1, (0, hy - .02, hz + .07), hm, (1.05, 1.1, .6), hd)
+    elif kind == "spiky":                        # ツンツン（上に立った毛の束）
         for k in range(11):
-            a = k / 11 * math.tau; rr = .05 if k % 2 else .075
-            o = sphere(f"spike{i}{k}", .028, (math.cos(a) * rr, hy - .01 + math.sin(a) * rr, hz + .115), hm, (.8, .8, 2.0), hd)
-            o.rotation_euler = (math.sin(a) * -.5, math.cos(a) * .5, 0)
-        sphere(f"bang{i}", .05, (0, hy + .08, hz + .07), hm, (1.6, .5, .4), hd)
-    elif kind == "perm":   # ふんわりしたパーマ（小さな丸を全体に）
-        for k in range(26):
-            a = k * 2.399; zz = .12 - (k / 25) * .14; rr = math.sqrt(max(0, .128 ** 2 - (zz - .02) ** 2)) * .95
-            px_, py_ = math.cos(a) * rr, -.015 + math.sin(a) * rr * .95
-            if py_ > .03 and zz < .07: continue          # 顔の前には置かない（目と口を隠した）
-            sphere(f"perm{i}{k}", .036, (px_, hy + py_, hz + zz), hm, parent=hd)
-        sphere(f"bang{i}", .07, (0, hy + .072, hz + .07), hm, (1.4, .5, .45), hd)
-    elif kind == "short_bob":  # 耳の下までの短いボブ＋前髪（後ろは刈り上げ気味）
-        sphere(f"sbback{i}", .122, (0, hy - .035, hz - .02), hm, (1.1, .95, .92), hd)
-        for sx in (-1, 1): sphere(f"sbside{i}{sx}", .045, (sx * .108, hy + .02, hz - .035), hm, (.55, .95, 1.2), hd)
-        sphere(f"bang{i}", .07, (-.02, hy + .066, hz + .07), hm, (1.4, .52, .45), hd).rotation_euler = (0, math.radians(10), 0)
-    elif kind == "long_wavy":  # 肩より長いゆるいウェーブ（毛先を外に散らす）
-        for k in range(7):
-            u = (k / 6) * 2 - 1
-            sphere(f"lw{i}{k}", .05, (u * .11, hy - .06 - (1 - abs(u)) * .02, hz - .1 - abs(math.sin(k)) * .03), hm2, (1.0, .9, 1.4), hd)
-        sphere(f"lwback{i}", .12, (0, hy - .05, hz - .03), hm2, (1.08, .75, 1.3), hd)
-        for sx in (-1, 1): sphere(f"lwside{i}{sx}", .046, (sx * .108, hy + .025, hz - .06), hm, (.6, .9, 1.9), hd)
-        sphere(f"bang{i}", .07, (.03, hy + .065, hz + .07), hm, (1.5, .5, .44), hd).rotation_euler = (0, math.radians(-14), 0)
-    elif kind == "half_up":  # 長い髪を後ろへ流し、上の方だけ小さくまとめる
-        sphere(f"huback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.7), hd)
-        sphere(f"hubun{i}", .04, (0, hy - .12, hz + .08), hm2, parent=hd)
-        for sx in (-1, 1): sphere(f"huside{i}{sx}", .045, (sx * .107, hy + .02, hz - .06), hm, (.55, .9, 1.9), hd)
-        sphere(f"bang{i}", .08, (0, hy + .06, hz + .065), hm, (1.35, .55, .45), hd)
-    elif kind == "long_part":  # 前髪を真ん中で分けたロング（顔の両わきに長く垂らす）
-        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
+            a_ = k / 11 * math.tau; rr = .05 if k % 2 else .075
+            o = sphere(f"spike{i}{k}", .026, (math.cos(a_) * rr, hy - .01 + math.sin(a_) * rr, hz + .12), hm, (.8, .8, 2.0), hd)
+            o.rotation_euler = (math.sin(a_) * -.5, math.cos(a_) * .5, 0)
+    elif kind == "short_messy":                  # 無造作（上に小さな束）
+        for k in range(8):
+            a_ = k / 8 * math.tau
+            sphere(f"tuft{i}{k}", .04, (math.cos(a_) * .065, hy - .02 + math.sin(a_) * .065, hz + .112), hm, (1, 1, 1.0), hd)
+    elif kind in ("perm", "loose_perm", "curly", "wavy"):     # パーマ（丸い束を殻の外に）
+        n_, rad, sq = {"perm": (26, .034, 1.0), "loose_perm": (14, .042, .75), "curly": (16, .04, 1.0), "wavy": (10, .04, .8)}[kind]
+        for k in range(n_):
+            a_ = k * 2.399; zz = .12 - (k / max(1, n_ - 1)) * (.15 if kind != "wavy" else .08); rr = math.sqrt(max(0, .13 ** 2 - (zz - .02) ** 2)) * .95
+            px_, py_ = math.cos(a_) * rr, -.015 + math.sin(a_) * rr * .95
+            if py_ > .02 and zz < .08: continue          # 顔の前には置かない
+            sphere(f"perm{i}{k}", rad, (px_, hy + py_, hz + zz), hm, (1.05, 1.0, sq), hd)
+    elif kind == "updo":                         # まとめ髪（後ろの高い所にお団子）
+        sphere(f"bun{i}", .052, (0, hy - .118, hz + .06), hm2, parent=hd)
+    elif kind == "half_up":
+        sphere(f"hubun{i}", .038, (0, hy - .125, hz + .08), hm2, parent=hd)
+    elif kind == "twintail":                     # 耳の下で2つに結んだ髪
         for sx in (-1, 1):
-            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
-            sphere(f"bang{i}{sx}", .05, (sx * .05, hy + .084, hz + .052), hm, (1.15, .45, .5), hd).rotation_euler = (math.radians(-25), math.radians(sx * 28), 0)
-    elif kind == "short_bangs":  # 短髪＋おでこにかかる前髪（毛先を少し散らす）
-        for k in range(5):
-            sphere(f"bang{i}{k}", .032, (-.056 + k * .028, hy + .084, hz + .07 - abs(k - 2) * .005), hm, (1.0, .55, 1.05), hd)
-        for sx in (-1, 1): sphere(f"sbs{i}{sx}", .05, (sx * .1, hy + .0, hz + .03), hm, (.5, .95, 1.0), hd)
-    elif kind == "loose_perm":   # ゆるめのパーマ（大きめの丸を少なめに・ふんわり）
-        for k in range(14):
-            a = k * 2.399; zz = .11 - (k / 13) * .12; rr = math.sqrt(max(0, .13 ** 2 - (zz - .02) ** 2)) * .92
-            px_, py_ = math.cos(a) * rr, -.015 + math.sin(a) * rr * .95
-            if py_ > .03 and zz < .07: continue
-            sphere(f"lperm{i}{k}", .043, (px_ * .97, hy + py_, hz + zz), hm, (1.1, 1.05, .75), hd)
-        sphere(f"bang{i}", .07, (.02, hy + .072, hz + .07), hm, (1.45, .5, .45), hd).rotation_euler = (0, math.radians(-10), 0)
-    elif kind == "undercut":     # 横を刈り上げ、上だけ長く後ろへ流す（横は肌が透ける短い髪）
-        cap.scale = (.95, .97, .8); cap.location = (0, hy - .03, hz + .055)
-        sd = mat(f"hairs{i}", "#5E5550", .7)
-        for sx in (-1, 1): sphere(f"ucs{i}{sx}", .085, (sx * .055, hy - .03, hz - .005), sd, (.55, 1.0, .9), hd)
-        sphere(f"uctop{i}", .1, (0, hy - .01, hz + .085), hm, (1.0, 1.15, .5), hd)
-    # 2026-11-13 足した形（ユーザーの依頼「前髪なし・ツーブロックなども使い分けたい」）
-    elif kind == "nobang":       # 前髪なしの短髪（おでこを出す・生えぎわは自然に丸く）
-        sphere(f"hl{i}", .1, (0, hy + .045, hz + .085), hm, (1.12, .62, .42), hd)
-        for sx in (-1, 1): sphere(f"nbs{i}{sx}", .05, (sx * .1, hy + .0, hz + .035), hm, (.5, .95, 1.0), hd)
-    elif kind == "upbang":       # アップバング（前髪を上へ立ち上げて、おでこを出す）
-        sphere(f"hl{i}", .1, (0, hy + .04, hz + .085), hm, (1.1, .6, .42), hd)
-        sphere(f"up{i}", .06, (.01, hy + .07, hz + .125), hm, (1.5, .7, .6), hd).rotation_euler = (math.radians(-35), 0, math.radians(-8))
-        for sx in (-1, 1): sphere(f"ubs{i}{sx}", .05, (sx * .1, hy + .0, hz + .035), hm, (.5, .95, 1.0), hd)
-    elif kind == "two_block":    # ツーブロック（横と後ろは短く刈り、上は長め＋前髪を下ろす）
-        cap.scale = (.95, .97, .8); cap.location = (0, hy - .03, hz + .055)
-        sd = mat(f"hairs{i}", "#5E5550", .7)
-        for sx in (-1, 1): sphere(f"tbs{i}{sx}", .085, (sx * .055, hy - .03, hz - .005), sd, (.55, 1.0, .9), hd)
-        sphere(f"tbtop{i}", .1, (0, hy - .0, hz + .09), hm, (1.05, 1.15, .52), hd)
-        for k in range(5):
-            sphere(f"bang{i}{k}", .03, (-.05 + k * .025, hy + .086, hz + .07 - abs(k - 2) * .005), hm, (1.0, .55, 1.15), hd)
-    elif kind == "bob_nobang":   # 前髪なしのボブ（分け目から横へ流す）
-        sphere(f"bobback{i}", .125, (0, hy - .042, hz - .045), hm, (1.13, .95, 1.02), hd)
-        for sx in (-1, 1):
-            sphere(f"bobside{i}{sx}", .05, (sx * .108, hy + .028, hz - .058), hm, (.55, .95, 1.55), hd)
-            sphere(f"flow{i}{sx}", .05, (sx * .055, hy + .07, hz + .075), hm, (1.2, .5, .45), hd).rotation_euler = (math.radians(-20), math.radians(sx * 35), 0)
-    elif kind == "long_nobang":  # 前髪なしのロング（かき上げて、顔の両わきに長く）
-        sphere(f"lback{i}", .12, (0, hy - .055, hz - .07), hm2, (1.08, .7, 1.75), hd)
-        for sx in (-1, 1):
-            sphere(f"lside{i}{sx}", .045, (sx * .107, hy + .02, hz - .07), hm, (.55, .9, 2.0), hd)
-            sphere(f"flow{i}{sx}", .05, (sx * .055, hy + .07, hz + .08), hm, (1.2, .5, .45), hd).rotation_euler = (math.radians(-15), math.radians(sx * 40), 0)
-    else:                  # mush: 丸く厚い前髪
-        sphere(f"bang{i}", .095, (0, hy + .045, hz + .05), hm, (1.25, .75, .55), hd)
+            sphere(f"twin{i}{sx}", .04, (sx * .12, hy - .03, hz - .07), hm2, (.8, .8, 1.6), hd)
+    elif kind == "ponytail":
+        sphere(f"tie{i}", .022, (0, hy - .13, hz - .02), hm2, parent=hd)
     # 長い髪は、背中がわ（胴の後ろの面より外）に垂らす（2026-11-13。頭の下で止めるだけだと、ロングがみなボブに見えた）。名前が drape の部品は下の ちぢめる対象から外す
     if kind in ("long", "long_part", "long_nobang", "half_up", "long_wavy", "ponytail"):
         if kind == "ponytail":
