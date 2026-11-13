@@ -26,7 +26,13 @@ SCRIPTS = {
         ("回収", "かいしゅう", "他家（ターチャ）が切った牌を取ってくる", 32, 61, 1.4, ["m6"], ""),
         ("副露", "フーロ", "取った牌を横向きにして付け、卓の右に寄せる", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, ["s3"], ""),
-    ], tail=(106, 120, 2.4)),
+    ], tail=(106, 120, 2.4),
+    pre=dict(head="チーできるとき", hold=1.8, lines=[
+        (0.3, "手牌に 四萬・五萬 がある"),
+        (1.6, "六萬が来れば 四五六 の順子になる"),
+        (3.4, "上家（左の人）が 六萬 を切った → チーできる"),
+        (3.9, "チーは上家の捨て牌だけ。ポンは同じ牌2枚で、だれの捨て牌でもできる"),
+    ])),
     "kan": dict(title="カンの方法", kicker="麻雀の所作", sub="暗槓（アンカン）編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "同じ牌4枚を倒す。暗槓は外側の2枚を伏せる", 7, 33, 1.6, [], ""),
@@ -34,7 +40,12 @@ SCRIPTS = {
         ("カンドラ", "カンドラ", "ドラ表示牌のとなりを1枚めくる", 58, 79, 1.6, [], ""),
         ("嶺上牌", "リンシャンハイ", "王牌の端から1枚取ってくる", 80, 104, 1.4, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 105, 124, 1.4, [], ""),
-    ], tail=(125, 134, 2.4)),
+    ], tail=(125, 134, 2.4),
+    pre=dict(head="カンできるとき", hold=1.8, lines=[
+        (0.3, "手牌に 東 が4枚そろった"),
+        (1.6, "同じ牌4枚 → 自分の番なら 暗槓（アンカン）できる"),
+        (3.0, "人が切った牌で4枚目をそろえるのは 大明槓（ダイミンカン）"),
+    ])),
 }
 
 _fc = {}
@@ -98,6 +109,22 @@ def title_card(d, sc, t, dur):
     text_c(d, W / 2, y + 338, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)))
     text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
+def pre_card(d, pre, t):
+    """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える"""
+    k = min(1, t * 4); y = 1250 + int((1 - k) * 30)
+    rows = [tx for (ts, tx) in pre["lines"] if t >= ts]
+    d.rounded_rectangle((40, y, W - 40, y + 150 + 92 * len(pre["lines"])), radius=44, fill=(255, 255, 255, int(240 * k)))
+    ft = font(46, 800); lw = d.textlength("確認", font=ft) + 60
+    d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
+    text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
+    d.text((76 + lw + 24, y + 22), pre["head"], font=font(76), fill=INK)
+    for n, tx in enumerate(rows):
+        ft = font(40, 800)
+        while d.textlength(tx, font=ft) > W - 80 - 110 and ft.size > 28: ft = font(ft.size - 2, 800)
+        yy = y + 150 + n * 92
+        d.ellipse((80, yy + 14, 80 + 22, yy + 14 + 22), fill=GREEN)
+        d.text((120, yy), tx, font=ft, fill=INK if n < len(rows) - 1 or n == 0 else GREEN)
+
 def bubble(d, tx, k):
     a = min(1, k * 5); s = .8 + .2 * a
     cx, cy, w, h = W / 2, 1060, 420 * s, 170 * s
@@ -156,6 +183,9 @@ def main():
     # 出すコマの並び: (元のコマ, 手順, その手順が出てからの秒, 止めているか)
     seq = []
     for n, fp in enumerate(intro): seq.append((fp, -2, n / fps, False))
+    pre = sorted(glob.glob(os.path.join(src, "p[0-9]*.png")))       # 前置き（scene.py --anim --pre）。手牌を映して、なぜ鳴けるかを見せる
+    if pre and sc.get("pre"):
+        for n, fp in enumerate(pre + [pre[-1]] * int(sc["pre"]["hold"] * fps)): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
         t = 0.0
         for f in range(s[3], s[4] + 1): seq.append((f, i, t, False)); t += 1 / fps
@@ -166,12 +196,19 @@ def main():
     outro = sorted(glob.glob(os.path.join(src, "o[0-9]*.png")))      # 締め（scene.py --anim --outro）。最後のコマで2秒止める
     odur = (len(outro) + 2 * fps) / fps
     for n, fp in enumerate(outro + [outro[-1]] * (2 * fps) if outro else []): seq.append((fp, -3, n / fps, False))
-    tmp = tempfile.mkdtemp(); cache = {}
+    tmp = tempfile.mkdtemp(); cache = {}; fade = None; cache_prev = None
     for n, (f, i, t, held) in enumerate(seq):
         if f not in cache:
             cache.clear(); cache[f] = Image.open(f if isinstance(f, str) else frames[min(f, len(frames) - 1)]).convert("RGBA").resize((W, H), Image.LANCZOS)
         im = cache[f].copy(); ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
-        if i == -3:
+        # 前置きの前後は、絵を重ねてつなぐ（カメラは選手の目に飛ぶので、動かすと体の中を通る）
+        if n and i != seq[n - 1][1] and (i == -4 or seq[n - 1][1] == -4): fade = [cache_prev, 0]
+        if fade and fade[1] < 6:
+            fade[1] += 1; im = Image.blend(fade[0], im, fade[1] / 7)
+        cache_prev = cache[f]
+        if i == -4:
+            pre_card(d, sc["pre"], t)
+        elif i == -3:
             outro_card(im, t, odur)
         elif i == -2:
             title_card(d, sc, t, len(intro) / fps)

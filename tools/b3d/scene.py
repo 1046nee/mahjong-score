@@ -958,8 +958,55 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
         t0 = time.time(); bpy.ops.render.render(write_still=True); print("OUTRO", f, round(time.time() - t0, 1), "s", flush=True)
     sys.exit(0)
 
+# ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
+# 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
+PRE_DUR = 5.0
+def pre_pose(t, cam):
+    """手前の選手の目から見る（選手0は消す）。手牌の全体 → 使う牌に寄る（少し持ち上げる）→ チーは上家の河に六萬が来る。
+    入りの最後・①の最初とは、make_clip.py が重ねてつなぐ（カメラで体の中を通らないように）"""
+    anim_pose(0.0, cam)
+    if SCENE == "chi":
+        lift = [NAMED["hand_m4"], NAMED["hand_m5"]]
+        m6 = NAMED["called"]; p0 = Vector(m6.location)
+        k = seg(t, 3.1, 3.7)                   # 上家の手もとから河へ（それまでは河に無い）
+        m6.location = lerp(p0 + Vector((-.20, 0, .03)), p0, k) + Vector((0, 0, .03 * math.sin(math.pi * k)))
+        m6.hide_render = t < 3.05
+    else:
+        lift = [NAMED[f"hk{k}"] for k in range(10, 14)]
+    lx = sum(o["p0"][0] for o in lift) / len(lift)
+    up = seg(t, 1.6, 2.0)
+    for o in lift: o.location = o.location + Vector((0, 0, .016 * up))
+    hx = (NAMED["hk0"]["p0"][0] + NAMED["hk13"]["p0"][0]) / 2 if SCENE == "kan" else HX0 + 6 * HP
+    full = (Vector((hx, -.62, 1.17)), Vector((hx, HY + .05, .78)), 19.0)
+    zx = lx - (.06 if SCENE == "chi" else .02)        # 使う牌が画面の端に切れないように
+    zoom = (Vector((zx, -.55, 1.03)), Vector((zx, HY + .03, .78)), 30.0)
+    kz = seg(t, 1.2, 2.0)
+    loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
+    if SCENE == "chi":                        # 上家の河（左の奥）を見る
+        riv = (Vector((-.10, -.50, 1.05)), Vector((p0.x, p0.y + .05, .77)), 30.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
+        loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
+    cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+
+def hide_tree(o, v=True):
+    o.hide_render = v
+    for c in o.children: hide_tree(c, v)
+
+if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に書き出す
+    cam = anim_setup()
+    n = int(PRE_DUR * FPS)
+    only = arg("--frames", "")
+    for f in ([int(x) for x in only.split(",")] if only else range(n)):
+        fp = os.path.join(OUT, f"p{f:04d}.png")
+        if os.path.exists(fp): continue
+        for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
+        hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
+        r.filepath = fp
+        t0 = time.time(); bpy.ops.render.render(write_still=True); print("PRE", f, round(time.time() - t0, 1), "s", flush=True)
+    sys.exit(0)
+
 if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 に書き出す（選手や卓は本題の最初の形のまま）
     cam = anim_setup(); anim_pose(0.0, cam)
+    if SCENE == "chi": NAMED["called"].hide_render = True     # 六萬は前置きで上家が切る。入りではまだ河に無い
     n = int(INTRO_DUR * FPS)
     only = arg("--frames", "")
     for f in ([int(x) for x in only.split(",")] if only else range(n)):
