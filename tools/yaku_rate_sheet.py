@@ -7,7 +7,7 @@
 出力（assets/hai/）: mahjong-yaku-ranking.png / -web.png / .pdf、mahjong-yakuman-ranking.png / -web.png / .pdf
 実行: python tools/yaku_rate_sheet.py
 """
-import io, os, sys
+import io, math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from hai_sheets import CSS, FONT, SHEET2_CSS, YAKU, ex_tiles, naki_chip, check, OUT, ROOT  # noqa: E402
 from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
@@ -27,61 +27,77 @@ WHY = {"天和": "親が配牌の時点であがっている", "地和": "子が
 
 
 def pct(c): return c / WINS * 100
-def pct_s(c):
-    p = pct(c)
-    return f"{p:.1f}%" if p >= 1 else (f"{p:.2f}%" if p >= .01 else f"{p:.3f}%")
+def sig3(x):
+    """有効数字3桁（2026-11-14 ユーザーの指定。低い確率も 0.0192% のように3桁で）"""
+    d = 2 - math.floor(math.log10(abs(x)))
+    v = round(x, d)
+    return f"{v:,.{max(0, d)}f}"
+def pct_s(c): return sig3(pct(c)) + "%"
 def once(c, d=WINS):
-    n = d / c
-    if n < 10: return f"{n:.1f}回に1回"
-    if n < 1000: return f"{round(n):,}回に1回"
-    return f"{round(n, -2 if n < 100000 else -3):,.0f}回に1回"
+    return f"{sig3(d / c)}回に1回"
 
 
+GROUP_COLOR = {1: "#177083", 2: "#4261AA", 3: "#6A4BB0", 6: "#A8407F", 13: "#E25A1C"}      # 役一覧表（hai_sheets）の翻ごとの色と同じ
 RANK_CSS = """
-.rk { border: 2px solid #1F2A28; }
-.rk .hd { display: grid; grid-template-columns: 34px 104px 32px 222px 1fr; column-gap: 6px; background: #177083; color: #fff; font-size: 11px; font-weight: 900; padding: 4px 8px 4px 0; }
-.rk .hd span { text-align: center; } .rk .hd span:nth-child(5) { text-align: left; padding-left: 4px; }
-.r { display: grid; grid-template-columns: 34px 104px 32px 222px 1fr; column-gap: 6px; align-items: center; min-height: 31.5px; border-top: 1px solid #CFE0DC; padding-right: 8px; }
-.r .no { align-self: stretch; display: grid; place-items: center; font-size: 15px; font-weight: 900; color: #177083; background: #E4F3EC; border-right: 1.5px solid #1F2A28; }
-.r.top .no { background: #177083; color: #fff; font-size: 17px; }
-.r .nm { padding: 2px 0; } .r .nm b { display: block; font-size: 13.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; line-height: 1.15; }
-.r .nm small { display: block; font-size: 8.5px; font-weight: 700; color: #55625F; white-space: nowrap; }
-.r i { display: grid; place-items: center; font-style: normal; font-size: 8px; font-weight: 900; line-height: 1.12; text-align: center; border-radius: 6px; height: 27px; }
-.r .sit { font-size: 10.5px; font-weight: 800; color: #33403D; }
-.bar { display: flex; align-items: center; gap: 6px; }
-.bar .b { height: 14px; border-radius: 3px; background: var(--bc, #177083); min-width: 3px; }
-.bar .v { font-size: 14px; font-weight: 900; white-space: nowrap; color: #1F2A28; } .bar .o { font-size: 9.5px; font-weight: 800; color: #6B7A77; white-space: nowrap; }
-.r.top .bar .v { font-size: 16px; color: #E75620; }
-  .note { margin-top: 6px; font-size: 9.5px; font-weight: 700; color: #6B7A77; line-height: 1.5; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.rk { border: 2px solid #1F2A28; background: #fff; }
+.rk .hd { display: grid; grid-template-columns: 26px 96px 38px 1fr; background: #1F2A28; color: #fff; font-size: 10.5px; font-weight: 900; }
+.rk .hd span { text-align: center; padding: 3px 0; }
+.r { display: grid; grid-template-columns: 26px 96px 38px 1fr; align-items: stretch; min-height: 40px; border-top: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
+.r:first-of-type { border-top: 0; }
+.r .no { display: grid; place-items: center; font-size: 13px; font-weight: 900; color: #1F2A28; border-right: 1px solid #CFD8D6; }
+.r .nm { display: flex; flex-direction: column; justify-content: center; padding: 2px 5px 2px 7px; background: color-mix(in srgb, var(--c) 13%, #fff); border-right: 1.5px solid #1F2A28; border-left: 4px solid var(--c); }
+.r .nm b { display: block; font-size: 13px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; line-height: 1.15; }
+.r .nm small { display: block; font-size: 8px; font-weight: 700; color: #55625F; white-space: nowrap; }
+.r .hn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 3px; border-right: 1px solid #CFD8D6; }
+.r .hn b { display: block; width: 100%; text-align: center; background: var(--c); color: #fff; font-size: 10.5px; font-weight: 900; border-radius: 4px; line-height: 16px; }
+.r .hn small { font-size: 7.5px; font-weight: 800; color: #55625F; white-space: nowrap; line-height: 1.1; }
+.r .rt { display: flex; flex-direction: column; justify-content: center; padding: 2px 7px; gap: 2px; }
+.bar { display: flex; align-items: center; gap: 5px; }
+.bar .b { height: 9px; border-radius: 2px; background: var(--c); min-width: 2px; flex: none; }
+.bar .v { font-size: 13.5px; font-weight: 900; white-space: nowrap; color: #1F2A28; }
+.r .o { font-size: 9px; font-weight: 800; color: #6B7A77; white-space: nowrap; }
+.r.top .no { background: #E75620; color: #fff; } .r.top .v { color: #E75620; font-size: 15px; }
+.note { margin-top: 7px; font-size: 9.5px; font-weight: 700; color: #6B7A77; line-height: 1.5; }
 .pts { display: flex; gap: 8px; margin: 0 0 9px; }
-.pts div { flex: 1; border: 2px solid #177083; border-radius: 8px; padding: 5px 8px; text-align: center; font-size: 11px; font-weight: 800; line-height: 1.35; }
-.pts b { display: block; font-size: 20px; font-weight: 900; color: #E75620; line-height: 1.15; }
+.pts div { flex: 1; border: 2px solid #177083; border-radius: 8px; padding: 4px 8px; text-align: center; font-size: 11px; font-weight: 800; line-height: 1.3; }
+.pts b { display: block; font-size: 19px; font-weight: 900; color: #E75620; line-height: 1.15; }
+.lg { display: flex; gap: 10px; justify-content: center; margin: 0 0 8px; font-size: 11px; font-weight: 800; }
+.lg span { display: flex; align-items: center; gap: 4px; } .lg i { width: 26px; height: 14px; border-radius: 3px; background: var(--c); }
 """
 
 
+def han_cell(name):
+    yomi, m, n, ex = INFO[name]
+    if m == 13:
+        return "役満", ("門前のみ" if n is None else "鳴きOK")
+    return f"{m}翻", ("門前のみ" if n is None else ("鳴きOK" if n == m else f"鳴くと{n}翻"))
+
+
 def ranking_sheet(url):
-    items = sorted(COUNT.items(), key=lambda kv: -kv[1])
+    allv = dict(COUNT); allv.update(YAKUMAN)
+    items = sorted(allv.items(), key=lambda kv: -kv[1])
     mx = items[0][1]
-    rows = ""
-    for k, (name, c) in enumerate(items, 1):
-        yomi, m, n, ex = INFO[name]
-        tiles = ex_tiles(ex, url, avail=200, wmax=13) if ex else f'<span class="sit">{WHY.get(name, "状況で決まる役")}</span>'
-        if not ex:
-            from hai_sheets import SHORT_SIT, SHORT
-            tiles = f'<span class="sit">{SHORT.get(name, "")}</span>'
-        w = max(1.0, c / mx * 100)
-        bc = "#E75620" if k <= 5 else "#177083"
-        rows += (f'<div class="r{" top" if k <= 5 else ""}"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div>'
-                 f'{naki_chip(m, n)}<div>{tiles}</div><div class="bar"><div class="b" style="width:{w * .55:.1f}%;--bc:{bc}"></div>'
-                 f'<span class="v">{pct_s(c)}</span><span class="o">{once(c)}</span></div></div>')
+    def row(k, name, c):
+        yomi, m, n, ex = INFO[name]; col = GROUP_COLOR[m]; h, sub = han_cell(name)
+        w = max(1.5, (c / mx) ** .5 * 100) * .7       # 棒は平方根の長さ（低い役も見えるように）
+        return (f'<div class="r{" top" if k <= 5 else ""}" style="--c:{col}"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div>'
+                f'<div class="hn"><b>{h}</b><small>{sub}</small></div><div class="rt"><div class="bar"><div class="b" style="width:{w:.1f}%"></div>'
+                f'<span class="v">{pct_s(c)}</span></div><span class="o">あがり{once(c)}</span></div></div>')
+    half = (len(items) + 1) // 2
+    hd = '<div class="hd"><span>順位</span><span>役</span><span>翻</span><span>出現率（あがりのうち）</span></div>'
+    left = "".join(row(k, nm, c) for k, (nm, c) in enumerate(items[:half], 1))
+    right = "".join(row(k, nm, c) for k, (nm, c) in enumerate(items[half:], half + 1))
+    lg = "".join(f'<span style="--c:{GROUP_COLOR[g]}"><i></i>{"役満" if g == 13 else f"{g}翻"}</span>' for g in (1, 2, 3, 6, 13))
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}{RANK_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; }}
 </style></head><body>
-<header><h1>麻雀 役の出やすさランキング<small>あがり100回のうち、その役が何回つくか（一般役26役）</small></h1>{logo_html()}</header>
-<div class="pts"><div>いちばん出る役<b>リーチ</b>あがりの約4割</div><div>上位5役は<b>どれも2割超</b>5回に1回以上つく</div><div>出ない役<b>三槓子</b>約10万回に1回</div></div>
-<section class="rk"><div class="hd"><span>順位</span><span>役</span><span>鳴き</span><span>形の例</span><span>出現率（あがりのうち）</span></div>{rows}</section>
-<p class="note">出現率＝その役がついたあがりの回数 ÷ あがりの回数。役牌はダブ東などを2回と数えた数字。ドラは役ではないので入れていない。<br>データ: {SRC}</p>
-<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+<header><h1>麻雀 役の出やすさランキング<small>あがりのうち、その役がつく割合（一般役26役＋役満11役）</small></h1>{logo_html()}</header>
+<div class="pts"><div>いちばん出る役<b>リーチ</b>あがりの約4割</div><div>いちばん出る役満<b>四暗刻</b>あがり{once(YAKUMAN["四暗刻"])}</div><div>いちばん出ない役<b>四槓子</b>151万回のあがりで1回</div></div>
+<div class="lg">{lg}</div>
+<div class="cols2"><section class="rk">{hd}{left}</section><section class="rk">{hd}{right}</section></div>
+<p class="note">出現率＝その役がついたあがりの回数 ÷ あがりの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計。ドラは役ではないので入れていない。<br>データ: {SRC}</p>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール</span></footer></body></html>"""
 
 
 MAN_CSS = """
