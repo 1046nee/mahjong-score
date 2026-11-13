@@ -41,10 +41,10 @@ SCRIPTS = {
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, [], ""),
     ], tail=(106, 120, 2.4),
     pre=dict(head="ポンできるとき", hold=1.8, lines=[
-        (0.3, "手牌に 發 が2枚（対子）ある"),
-        (1.6, "同じ牌がもう1枚出れば、3枚そろう"),
-        (3.4, "対面（正面の人）が 發 を切った → ポンできる"),
-        (3.9, "ポンは、だれの捨て牌でもできる。横向きの牌の位置で、だれから鳴いたかを示す"),
+        (0.3, "手牌に対子（同じ牌が2枚）がある"),
+        (3.4, "他家がもう1枚同じ牌を切った → ポンできる"),
+        (3.9, "ポンは、だれの捨て牌でもできる"),
+        (4.4, "副露の横向きの牌の位置で、だれから鳴いたかわかる"),
     ])),
     "kan": dict(title="カンの方法", kicker="麻雀の所作", sub="暗槓（アンカン）編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
@@ -210,17 +210,34 @@ def pre_card(d, pre, t):
     d.text((76 + lw + 24, y + 22), pre["head"], font=font(76), fill=INK)
     for n, tx in enumerate(rows):
         ft = font(40, 800)
-        while d.textlength(tx, font=ft) > W - 80 - 110 and ft.size > 28: ft = font(ft.size - 2, 800)
+        while d.textlength(tx, font=ft) > W - 80 - 130 and ft.size > 20: ft = font(ft.size - 1, 800)      # カードからはみ出さない（2026-11-13 ユーザーの指摘。前は28で止めていて、長い行が右へはみ出した）
         yy = y + 150 + n * 92
         d.ellipse((80, yy + 14, 80 + 22, yy + 14 + 22), fill=GREEN)
         d.text((120, yy), tx, font=ft, fill=INK if n < len(rows) - 1 or n == 0 else GREEN)
 
+_bub = {}
 def bubble(d, tx, k):
-    a = min(1, k * 5); s = .8 + .2 * a
-    cx, cy, w, h = W / 2, 1060, max(420, d.textlength("「" + tx + "」", font=font(96)) + 110) * s, 170 * s      # 長い言葉（リーチ・テンパイ）は吹き出しを広げる
-    d.rounded_rectangle((cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2), radius=h / 2, fill=ORANGE, outline=WHITE, width=8)
-    d.polygon([(cx - 150, cy + h / 2 - 6), (cx - 90, cy + h / 2 - 6), (cx - 190, cy + h / 2 + 70)], fill=ORANGE)
-    text_c(d, cx, cy - 4, "「" + tx + "」", font(int(96 * s)), WHITE)
+    """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定「オレンジの吹き出しを白枠で囲うように綺麗に。これから使う吹き出しもすべて」）。
+    しっぽだけ枠が無い・ふちがぎざぎざ、にならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
+    a = min(1, k * 5); sc_ = .8 + .2 * a
+    if tx not in _bub:
+        Q = 3; ft = font(96 * Q); tmp = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
+        w = max(420, tmp.textlength("「" + tx + "」", font=font(96)) + 110); h = 170; B = 9; pad = 30; tail = 78
+        im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + tail + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
+        X = lambda v: (v + pad) * Q
+        def shape(g, col):      # g＝外へ広げる幅（白い枠は B、オレンジは 0）
+            dr.rounded_rectangle((X(-g), X(-g), X(w + g), X(h + g)), radius=(h / 2 + g) * Q, fill=col)
+            bx0, bx1, tipx, tipy = w / 2 - 152, w / 2 - 84, w / 2 - 196, h + tail - 6      # しっぽ（左下へ）
+            dr.polygon([(X(bx0 - g * 1.5), X(h - 14)), (X(bx1 + g * 1.9), X(h - 14)), (X(tipx - g * 1.25), X(tipy + g * 1.9))], fill=col)
+        shape(B, (255, 255, 255, 255)); shape(0, (231, 86, 32, 255))
+        l, t, r, b_ = dr.textbbox((0, 0), "「" + tx + "」", font=ft)
+        dr.text((X(w / 2) - (r - l) / 2 - l, X(h / 2) - 4 * Q - (b_ - t) / 2 - t), "「" + tx + "」", font=ft, fill=(255, 255, 255, 255))
+        _bub[tx] = (im.resize((im.width // Q, im.height // Q), Image.LANCZOS), w, h, pad)
+    im, w, h, pad = _bub[tx]
+    if sc_ < .999: im = im.resize((max(1, int(im.width * sc_)), max(1, int(im.height * sc_))), Image.LANCZOS)
+    if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
+    cx, cy = W / 2, 1060
+    d._image.alpha_composite(im, (int(cx - (w / 2 + pad) * sc_), int(cy - (h / 2 + pad) * sc_)))
 
 def summary(d, sc, k):
     a = int(240 * min(1, k * 3))
