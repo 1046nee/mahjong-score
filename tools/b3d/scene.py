@@ -461,14 +461,13 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    # 目（2026-11-13 2回目の作り直し。ユーザーの依頼「黒目だけでなく、どうぶつの森の目のような表現に」）:
-    #   白目＋色のついた瞳（茶色の輪＋黒い瞳孔）＋白い光＋太い上まぶたの線（目じりで少しはねる）＋細いふち、を顔にはったシールのように重ねる。
-    #   形（丸い・タレ・つり・半目・細い・三白眼…）と、まつ毛の有無で13種類。瞳の色は名簿の eye_color（標準は茶色）。実在のゲームの目をそのまま写さない
-    OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "uru", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "tare_matsuge"}      # 前の名前（cast や古い名簿）
+    # 目（2026-11-13 3回目の作り直し。ユーザーの指摘「凝りすぎ。シンプルに。黒と白だけ。種類は10ぐらい」）:
+    #   細い黒のふち＋白目＋大きな黒目＋白い光1つ。形によって上まぶたの線・まつ毛を足すだけ。色は黒と白のみ
+    #   pachi＝まる（標準）／tare＝タレ目／tsuri＝つり目／jito＝半目／hoso＝細い目／nikkori＝にっこり／ten＝点／matsuge＝まつ毛／sanpaku＝三白眼／kuro＝黒目だけ
+    OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "pachi", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "matsuge",
+           "uru": "pachi", "nemu": "jito", "tare_matsuge": "matsuge", "kiri": "tsuri"}      # 前の名前（古い名簿・cast）
     ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
-    em = mat("eye", "#221A17", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FBF9F4", .35)
-    irc = {"brown": "#6A4A36", "black": "#2B2420"}.get(P.get("eye_color", "brown"), "#6A4A36")      # 瞳の色は2種類だけ（2026-11-13 ユーザーの判断）: brown＝茶色（標準）／black＝黒
-    im_ = mat(f"iris_{irc}", irc, .35); pm = mat("pupil", "#1B1411", .3)
+    em = mat("eye", "#1E1A18", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FFFFFF", .35)
     EX, EZ = .05, -.03      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
     def eline(name, pts, w=.0026):
@@ -476,59 +475,45 @@ def build_player(i, P):
         sp = cu.splines.new("POLY"); sp.points.add(len(pts) - 1)
         for k, (x, z) in enumerate(pts): sp.points[k].co = (x, surf(x, z, .0042), hz + z, 1)
         o = bpy.data.objects.new(name, cu); add(o); o.parent = hd; cu.materials.append(em); return o
-    def decal(name, cx, cz, rx, rz, m, layer, tilt=0, cut=None, ref=None, base=None):
-        """顔にはる平たい楕円。layer が大きいほど手前。cut＝この高さ（顔の座標）より上を切り落とす（半目）。ref＝傾きの中心"""
-        bx_, bz_ = base or (cx, cz)      # 奥行きは目の中心で決める（光だけ別の所で決めると、瞳の後ろにもぐった）
-        o = sphere(name, 1, (cx, surf(bx_, bz_) - .0042 + layer * .0009, hz + cz), m, (rx, .0078, rz), hd)      # ふちが顔にしずまないよう厚めに
+    def decal(name, cx, cz, rx, rz, m, layer, tilt=0, cut=None, base=None):
+        """顔にはる平たい楕円。layer が大きいほど手前。cut＝この高さより上を切り落とす（半目）"""
+        bx_, bz_ = base or (cx, cz)
+        o = sphere(name, 1, (cx, surf(bx_, bz_) - .003 + layer * .0026, hz + cz), m, (rx, .0045, rz), hd)      # 重ねる間を広く（せまいと、黒目のふちが白目にしずんで小さく見えた）
         if cut is not None:
             import bmesh
             bm = bmesh.new(); bm.from_mesh(o.data)
-            lim = (cut - cz) / rz
-            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > lim], context="VERTS"); bm.to_mesh(o.data); bm.free()
-        if tilt:
-            o.rotation_euler = (0, math.radians(tilt), 0)
-            if ref is not None:      # 目の中心のまわりで傾ける
-                dx, dz = cx - ref[0], cz - ref[1]; t_ = math.radians(tilt)
-                o.location.x = ref[0] + dx * math.cos(t_) + dz * math.sin(t_); o.location.z = hz + ref[1] - dx * math.sin(t_) + dz * math.cos(t_)
+            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > (cut - cz) / rz], context="VERTS"); bm.to_mesh(o.data); bm.free()
+        if tilt: o.rotation_euler = (0, math.radians(tilt), 0)
         return o
-    #       白目の大きさ（横, 縦）・傾き（＋で目じりが下がる）・瞳の大きさ（白目の縦に対して）・瞳の上下・光の数・半目（上を切る割合）・まつ毛
-    SPEC = {"pachi": ((.017, .019), 0, .78, .05, 1, 0, 0), "tare": ((.018, .016), 14, .82, .0, 1, 0, 0), "tsuri": ((.018, .016), -16, .82, .0, 1, 0, 0),
-            "jito": ((.018, .017), 0, .8, -.15, 1, .42, 0), "nemu": ((.018, .016), 12, .82, -.2, 0, .5, 0), "hoso": ((.019, .0095), 4, .95, .0, 1, 0, 0),
-            "uru": ((.018, .021), 0, .82, .02, 2, 0, 0), "matsuge": ((.017, .019), 0, .78, .05, 1, 0, 2), "tare_matsuge": ((.018, .017), 12, .8, .0, 1, 0, 2),
-            "kiri": ((.018, .013), -8, .88, .0, 1, 0, 0), "sanpaku": ((.018, .016), 0, .5, .38, 0, 0, 0), "ten": ((.006, .007), 0, 0, 0, 0, 0, 0)}
+    #       白目（横, 縦）・傾き（＋で目じりが下がる）・黒目の大きさ（白目の縦に対して）・黒目の上下・半目（上を切る割合）・上まぶたの線・まつ毛
+    SPEC = {"pachi": ((.019, .023), 0, .66, 0, 0, False, 0), "tare": ((.02, .02), 14, .7, -.05, 0, True, 0), "tsuri": ((.02, .02), -14, .7, 0, 0, True, 0),
+            "jito": ((.02, .021), 0, .66, -.2, .4, True, 0), "hoso": ((.022, .011), 0, .9, 0, 0, True, 0), "matsuge": ((.019, .023), 0, .66, 0, 0, True, 2),
+            "sanpaku": ((.02, .019), 0, .42, .4, 0, False, 0)}
     for sx in (-1, 1):
         cx = sx * EX
         if ek == "nikkori":      # 上に弧を描く太めの線（にっこり）
-            eline(f"nik{i}{sx}", [(cx + u * .016, EZ - .002 + .009 * (1 - u * u)) for u in [k / 8 * 2 - 1 for k in range(9)]], .0032)
-            continue
-        if ek == "ten":          # 点の目（黒い小さな丸）
-            decal(f"eye{i}{sx}", cx, EZ, .0068, .0078, em, 1); continue
-        (rx, rz), tilt, irs, idy, nhl, hide, lash = SPEC[ek]; rx *= 1.3; rz *= 1.3; irs = min(.95, irs * 1.12)      # 大きな目・大きな瞳
+            eline(f"nik{i}{sx}", [(cx + u * .017, EZ - .003 + .01 * (1 - u * u)) for u in [k / 8 * 2 - 1 for k in range(9)]], .0034); continue
+        if ek == "ten":          # 点の目
+            decal(f"eye{i}{sx}", cx, EZ, .0075, .0085, em, 1); continue
+        if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
+            decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
+        (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
-        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0016, rz + .0016, em, 0, tl, cut)              # 細いふち
-        decal(f"eyew{i}{sx}", cx, EZ, rx, rz, white, 1, tl, cut)                           # 白目
-        ir = rz * irs; iz = EZ + rz * idy
-        if ek == "sanpaku": ir = rz * .5
-        decal(f"iris{i}{sx}", cx, iz, min(ir, rx * .92), ir, im_, 2, tl, cut, (cx, EZ), (cx, EZ))     # 瞳（色の輪）
-        decal(f"pupil{i}{sx}", cx, iz, min(ir, rx * .92) * .55, ir * .55, pm, 3, tl, cut, (cx, EZ), (cx, EZ))   # 瞳孔
-        for k in range(nhl):     # 白い光（瞳の上の外がわに大きい光・下の内がわに小さい光）
-            hx = cx + sx * ir * (.38 if k == 0 else -.32); hz2 = iz + ir * (.38 if k == 0 else -.4)
-            if cut is not None and k == 0: hz2 = min(hz2, cut - ir * .3)
-            decal(f"hl{i}{sx}{k}", hx, hz2, ir * (.3 if k == 0 else .17), ir * (.3 if k == 0 else .17), wm, 4, base=(cx, EZ))
-        # 太い上まぶたの線（白目の上のふちに沿い、目じりで少し外へはねる）
-        t_ = math.radians(tl); pts = []
-        for k in range(11):
-            u = k / 10 * 2 - 1      # -1＝目がしら（内）〜 +1＝目じり（外）… sx で左右を合わせる
-            ux = u * sx
-            if cut is None: zz = rz * math.sqrt(max(0, 1 - u * u)) * .9      # 白目の上のふちにぴったり（離れると眉毛に見えた）
-            else: zz = min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ)
-            x0 = ux * rx * 1.02; px_ = cx + x0 * math.cos(t_) + zz * math.sin(t_); pz_ = EZ - x0 * math.sin(t_) + zz * math.cos(t_)
-            pts.append((px_, pz_))
-        if not (hide == 0 and ek in ("uru",)): pts = pts[2:]      # 目がしらがわは線を短く
-        ex, ez_ = pts[-1]; pts.append((ex + sx * .0045, ez_ + .0022))       # 目じりのはね
-        eline(f"lid{i}{sx}", pts, .0026 if ek not in ("matsuge", "tare_matsuge") else .003)
-        for k in range(lash):    # まつ毛（目じりの上に、外へはねる短い線を2本）
-            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .006, bz + .0055 - k * .0015)], .0019)
+        decal(f"eyeo{i}{sx}", cx, EZ, rx + .0013, rz + .0013, em, 0, tl, cut)            # 細い黒のふち
+        decal(f"eyew{i}{sx}", cx, EZ, rx, rz, white, 1, tl, cut)                         # 白目
+        pr = rz * ps; pz = EZ + rz * pdy
+        decal(f"pupil{i}{sx}", cx, pz, min(pr * .82, rx * .85), pr, em, 2, 0, cut, base=(cx, EZ))   # 黒目
+        hz2 = pz + pr * .38 if cut is None else min(pz + pr * .38, cut - .004)
+        decal(f"hl{i}{sx}", cx + sx * pr * .3, hz2, pr * .27, pr * .27, wm, 3, base=(cx, EZ))      # 白い光
+        if lid:                  # 上まぶたの線（白目の上のふちに沿う）
+            t_ = math.radians(tl); pts = []
+            for k in range(2, 11):
+                u = k / 10 * 2 - 1; ux = u * sx
+                zz = rz * math.sqrt(max(0, 1 - u * u)) * .92 if cut is None else min(rz * math.sqrt(max(0, 1 - u * u)), cut - EZ)
+                x0 = ux * rx * 1.04; pts.append((cx + x0 * math.cos(t_) + zz * math.sin(t_), EZ - x0 * math.sin(t_) + zz * math.cos(t_)))
+            eline(f"lid{i}{sx}", pts, .0028)
+            for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
+                bx, bz = pts[-1 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .005 - k * .0015)], .0019)
     # まゆは描かない（2026-11-13 ユーザーの判断「どうぶつの森は眉毛がないので、いらない」）。名簿の brows は読まない
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
@@ -646,7 +631,10 @@ def build_player(i, P):
     PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), scl=(1.12, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.08, 1.06, 1.1))      # 頭より大きめ（ふんわり）
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.12, 1.07, 1.1))      # 頭より大きめ（ふんわり）
+    if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
+        for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
+            o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
     if kind in ("two_block", "undercut"):        # 横と後ろは短く刈った色（殻の下にもう1枚）
         hair_shell(f"hairs{i}", .6, .4, -.42, -.58, ("none",), m=mat(f"hairs{i}", "#5E5550", .7), scl=(1.0, 1.0, 1.03), th=.004)
     if kind == "upbang":                         # 前髪を上へ立ち上げる
