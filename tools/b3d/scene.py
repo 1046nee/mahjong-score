@@ -659,7 +659,7 @@ def build_player(i, P):
     #   （blunt＝ぱっつん／zig＝毛先がとがった束／side＝流した前髪／part＝分け目／none＝おでこを出す）。パーマ・お団子・結んだ髪などは、殻の上に足す
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
-    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None, flat=None, flip=0.0):
+    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None, flat=None, flip=0.0, notch=None, ridge=.03):
         """殻の生えぎわ: 正面 zf・こめかみ zt・耳の上 zs・えり足 zb（殻を単位の球とみた高さ -1〜1）。前髪の形 fr"""
         import bmesh
         def bound(ph):
@@ -668,6 +668,8 @@ def build_player(i, P):
             elif a_ < 1.55: z = zt + (zs - zt) * ((a_ - .85) / .7)
             else: z = zs + (zb - zs) * ((a_ - 1.55) / (math.pi - 1.55))
             if tuft: z -= tuft * max(0.0, 1 - abs(a_ - 1.3) / .22) ** 1.4      # 耳の前に垂れるもみあげの毛束
+            if notch and a_ > 1.0:      # 横と後ろの毛先に、束の切れ目（細いV字のすき間）をいくつか入れる（2026-11-13 ユーザーの指定「後ろ髪にも分け目がいくつか」）
+                z += notch[1] * max(0.0, 1 - abs(math.sin(notch[0] * ph + .6)) / .3) ** 1.5 * min(1.0, (a_ - 1.0) / .2)
             w = max(0.0, 1 - a_ / .95)       # 前髪の形は正面だけに効かせる
             def locks(amp, n, ph0=.37):      # 毛束: 先がとがり、束のあいだは丸い（|sin| の谷）。束ごとに長さを少し変えて自然に
                 u = n * 1.25 * ph + ph0; k = math.floor(u / math.pi)      # n＝前髪の正面に並ぶ束のおよその数の目安
@@ -700,7 +702,7 @@ def build_player(i, P):
         for v in bm.verts:
             ph = math.atan2(v.co.x, v.co.y); z = v.co.z; d = max(0.0, z - bound(ph))
             f = 1 + puff * max(0.0, z) ** 1.5                                              # 頭の上のふくらみ
-            f += .03 * math.exp(-d / .25) * math.cos(nl * 1.25 * ph + .37)                  # 毛先に近いほど、束の筋が立つ（なめらかな波）
+            f += ridge * math.exp(-d / .25) * math.cos(nl * 1.25 * ph + .37)                  # 毛先に近いほど、束の筋が立つ（なめらかな波）
             f += .02 * max(0.0, 1 - d / .1)                                               # 毛先を少し外へはねる
             if curl:                     # パーマ: 殻そのものを丸い房の凸凹にする（丸を貼りつけると、こぶに見えた）
                 amp, fq = curl; x_, y_, z_ = v.co
@@ -744,7 +746,7 @@ def build_player(i, P):
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)),
           "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "kakugari": (.52, .32, -.3, -.52, ("none",)), "bun_pony": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)), "perm_side": (0.22, .24, .0, -.55, ("part", .36, -.5, .35)), "perm_center": (0.04, -.02, -.1, -.55, ("part", .36, 0, .42)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8)),
-          "sotohane": (0.04, .04, -.6, -.62, ("blunt",)), "twintail_long": (0.04, .02, -.45, -.5, ("blunt",)), "kakiage": (0.3, .3, .02, -.55, ("side", .55))}
+          "sotohane": (-.02, .02, -.6, -.62, ("zig", .05, 11)), "twintail_long": (0.04, .02, -.45, -.5, ("blunt",)), "kakiage": (0.3, .3, .02, -.55, ("side", .55))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     hm_cap = hm
     if kind == "kakugari":     # 角刈り: 横の刈り上げ（グレー）から上の髪の色へ、なだらかに色が変わる1枚（2026-11-13 ユーザーの指定「グラデーションみたいに自然に」）
@@ -755,11 +757,11 @@ def build_player(i, P):
         mx_ = nt_.nodes.new("ShaderNodeMix"); mx_.data_type = "RGBA"; mx_.inputs["A"].default_value = hexc("#8A817B"); mx_.inputs["B"].default_value = hexc(hc)
         nt_.links.new(mr_.outputs["Result"], mx_.inputs["Factor"]); nt_.links.new(mx_.outputs["Result"], bs_.inputs["Base Color"])
     if P.get("fringe"): fr = tuple(P["fringe"])      # 前髪の形を人ごとに変える（名簿の fringe。例: ["zig", .1, 8]＝ギザギザ）
-    PUFF = {"kakugari": .1, "bun_pony": .06, "ponytail": .06, "slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
+    PUFF = {"sotohane": .12, "kakugari": .1, "bun_pony": .06, "ponytail": .06, "slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"kakiage": .28, "short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm_side": (.1, 7), "perm_center": (.1, 7), "perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, m=hm_cap, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), flat=(.8 if kind == "kakugari" else None), flip=(.26 if kind == "sotohane" else 0.0), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob", "sotohane") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else ((.99, 1.0, 1.06) if kind == "kakugari" else (1.12, 1.07, 1.1))))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, m=hm_cap, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), flat=(.8 if kind == "kakugari" else None), flip=(.2 if kind == "sotohane" else 0.0), notch=((3.4, .2) if kind == "sotohane" else None), ridge=(.045 if kind == "sotohane" else .03), th=(.009 if kind == "sotohane" else .016), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else ((.99, 1.0, 1.06) if kind == "kakugari" else (1.12, 1.07, 1.1))))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
     if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
         for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
             o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
