@@ -280,18 +280,17 @@ def outro_card(im, t, dur):
 
 
 def subtitle(d, tx, k):
-    """声の字幕（画面の下3分の1）。四角いカード・2行まで"""
+    """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
     ft = font(46, 800); a = int(235 * min(1, k * 6)); maxw = W - 2 * 90
     rows = [tx]
     if d.textlength(tx, font=ft) > maxw:      # 2行に分けるときは、真ん中にいちばん近い「、」「。」の後ろで切る（字の途中で折ると読みにくい）
         cuts = [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"] or [len(tx) // 2]
         c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rows = [tx[:c], tx[c:]]
         while max(d.textlength(r_, font=ft) for r_ in rows) > maxw and ft.size > 34: ft = font(ft.size - 2, 800)
-    # 四角いカード（2026-11-13 ユーザーの指定）: 白い地・濃い枠・角は丸めない。字は濃い色
-    h = 56 + 66 * len(rows); y = 1560 - h // 2
-    wd = min(W - 100, max(d.textlength(r_, font=ft) for r_ in rows) + 96); x0 = (W - wd) / 2
-    d.rectangle((x0, y, x0 + wd, y + h), fill=(255, 255, 255, int(a * 1.0)), outline=(31, 42, 40, a), width=5)
-    for n, r_ in enumerate(rows): text_c(d, W / 2, y + 28 + 33 + n * 66, r_, ft, (31, 42, 40, a))
+    # 暗い帯に白い字（前と同じ色・同じ透け方）。角だけ丸めない（2026-11-13 ユーザーの指定「変えるのは角丸を四角角にするだけ」。白いカードにしたのは行きすぎだった）
+    h = 46 + 64 * len(rows); y = 1560 - h // 2
+    d.rectangle((50, y, W - 50, y + h), fill=(12, 20, 22, int(a * .86)))
+    for n, r_ in enumerate(rows): text_c(d, W / 2, y + 23 + 32 + n * 64, r_, ft, (255, 255, 255, a))
 
 
 def main():
