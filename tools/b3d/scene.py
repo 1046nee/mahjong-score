@@ -650,7 +650,7 @@ def build_player(i, P):
     PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
-    LONG = {"long": (-2.6, .62), "long_part": (-2.6, .6), "long_nobang": (-2.6, .6), "long_wavy": (-2.4, .6), "hime": (-2.5, .95), "long_side": (-2.6, .62), "half_up": (-2.2, .66)}   # のばす先の高さ（殻の大きさで -1＝あご）・顔の前をあける角度
+    LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
     cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.12, 1.07, 1.1))      # 頭より大きめ（ふんわり）
     if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
         for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
@@ -680,6 +680,14 @@ def build_player(i, P):
     elif kind == "ponytail":
         sphere(f"tie{i}", .022, (0, hy - .13, hz - .02), hm2, parent=hd)
     # 長い髪は、背中がわ（胴の後ろの面より外）に垂らす（2026-11-13。頭の下で止めるだけだと、ロングがみなボブに見えた）。名前が drape の部品は下の ちぢめる対象から外す
+    # ロング（2026-11-13 ユーザーの判断）: 東城りおの形（耳の下に丸い毛束）のように、あごの下までの丸い毛束を顔の両わきに。長さは頭の下で止める
+    SIDE = {"long": ((-1, 1), 1), "long_part": ((-1, 1), 1), "long_nobang": ((-1, 1), 1), "long_wavy": ((-1, 1), 2), "hime": ((-1, 1), 1), "long_side": ((1,), 2), "half_up": ((-1, 1), 1)}
+    if kind in SIDE:
+        sides, n_ = SIDE[kind]
+        for sx in sides:
+            for k in range(n_):
+                o = sphere(f"lside{i}{sx}{k}", .044 - k * .006, (sx * (.112 + k * .012), hy + .005 - k * .03, hz - .06 - k * .012), hm, (.78, .85, 1.55), hd)
+                o.rotation_euler = (0, math.radians(sx * -8), 0)
     if kind == "ponytail":
         sphere(f"drape{i}", .042, (0, hy - .16, hz - .13), hm2, (.8, .75, 2.3), hd).rotation_euler = (math.radians(-8), 0, 0)
     if kind == "donut":        # ドーナツの形に編んだ髪（耳の上から下へ、丸い編み目を輪にして左右に）
