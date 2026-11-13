@@ -577,7 +577,7 @@ def build_player(i, P):
     #   （blunt＝ぱっつん／zig＝毛先がとがった束／side＝流した前髪／part＝分け目／none＝おでこを出す）。パーマ・お団子・結んだ髪などは、殻の上に足す
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
-    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.012):
+    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None):
         """殻の生えぎわ: 正面 zf・こめかみ zt・耳の上 zs・えり足 zb（殻を単位の球とみた高さ -1〜1）。前髪の形 fr"""
         import bmesh
         def bound(ph):
@@ -585,6 +585,7 @@ def build_player(i, P):
             if a_ < .85: z = zf + (zt - zf) * (a_ / .85)
             elif a_ < 1.55: z = zt + (zs - zt) * ((a_ - .85) / .7)
             else: z = zs + (zb - zs) * ((a_ - 1.55) / (math.pi - 1.55))
+            if tuft: z -= tuft * max(0.0, 1 - abs(a_ - 1.3) / .22) ** 1.4      # 耳の前に垂れるもみあげの毛束
             w = max(0.0, 1 - a_ / .95)       # 前髪の形は正面だけに効かせる
             def locks(amp, n, ph0=.37):      # 毛束: 先がとがり、束のあいだは丸い（|sin| の谷）。束ごとに長さを少し変えて自然に
                 u = n * 1.25 * ph + ph0; k = math.floor(u / math.pi)      # n＝前髪の正面に並ぶ束のおよその数の目安
@@ -595,17 +596,34 @@ def build_player(i, P):
             elif fr[0] == "blunt": z += (locks(.06, 4) - .02) * w
             elif fr[0] == "part": z += fr[1] * max(0.0, 1 - abs(ph - fr[2]) / fr[3]) * (1 if a_ < 1.2 else 0) + (locks(.08, 3.5) - .03) * w
             return z
+        # 生えぎわから頭のてっぺんまで、経線ごとに等分した格子で作る（球を切りぬくと、生えぎわに細い三角ができて、毛先がちりちりに見えた）
         me = bpy.data.meshes.new(name); bm = bmesh.new()
-        bmesh.ops.create_uvsphere(bm, u_segments=192, v_segments=64, radius=1.0)      # 毛束の先が出るよう細かく
-        keep = {}
+        NC, NR = 160, 36; rows = []
+        for r in range(NR):
+            t = r / NR; row = []
+            for k in range(NC):
+                ph = -math.pi + math.tau * k / NC; b = max(-.99, min(.97, bound(ph)))
+                e0 = math.asin(b); e = e0 + (math.pi / 2 - e0) * t
+                row.append(bm.verts.new((math.cos(e) * math.sin(ph), math.cos(e) * math.cos(ph), math.sin(e))))
+            rows.append(row)
+        top = bm.verts.new((0, 0, 1))
+        for r in range(NR - 1):
+            for k in range(NC):
+                bm.faces.new((rows[r][k], rows[r][(k + 1) % NC], rows[r + 1][(k + 1) % NC], rows[r + 1][k]))
+        for k in range(NC): bm.faces.new((rows[-1][k], rows[-1][(k + 1) % NC], top))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        # 形をつける（2026-11-13 ユーザーの参考画像: 上はふんわり高く、毛先に向かって束の筋が立ち、毛先は少し外へはねる）
+        nl = (fr[2] if fr[0] == "zig" else 5) * .6      # 筋は前髪の束より太く少なく（細かいと、毛先がフリルのように波打った）
         for v in bm.verts:
-            ph = math.atan2(v.co.x, v.co.y); keep[v] = v.co.z >= bound(ph)
-        dead = [f for f in bm.faces if not any(keep[v] for v in f.verts)]
-        bmesh.ops.delete(bm, geom=dead, context="FACES")
-        for v in bm.verts:                  # 生えぎわの頂点を線の上へ寄せる（ぎざぎざにしない）
-            if not keep.get(v, True):
-                ph = math.atan2(v.co.x, v.co.y); z = max(-1.0, min(1.0, bound(ph))); rr = math.sqrt(max(0, 1 - z * z))
-                v.co = Vector((rr * math.sin(ph), rr * math.cos(ph), z))
+            ph = math.atan2(v.co.x, v.co.y); z = v.co.z; d = max(0.0, z - bound(ph))
+            f = 1 + puff * max(0.0, z) ** 1.5                                              # 頭の上のふくらみ
+            f += .03 * math.exp(-d / .25) * math.cos(nl * 1.25 * ph + .37)                  # 毛先に近いほど、束の筋が立つ（なめらかな波）
+            f += .02 * max(0.0, 1 - d / .1)                                               # 毛先を少し外へはねる
+            if curl:                     # パーマ: 殻そのものを丸い房の凸凹にする（丸を貼りつけると、こぶに見えた）
+                amp, fq = curl; x_, y_, z_ = v.co
+                bump = abs(math.sin(fq * x_ + 1.3) * math.sin(fq * y_ + .7) * math.sin(fq * z_ + 2.1)) ** .5
+                f += amp * bump * min(1.0, d / .08)
+            v.co = v.co * f
         bm.to_mesh(me); bm.free()
         o = bpy.data.objects.new(name, me); add(o); o.parent = hd; me.materials.append(m)
         o.location = (0, hy - .006, hz + .006); o.scale = (r_ * scl[0], r_ * scl[1], r_ * scl[2])
@@ -624,7 +642,10 @@ def build_player(i, P):
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.10, .1, -.3, -.5, ("zig", .06, 7)),
           "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "updo": (0.22, .15, -.2, -.45, ("side", .25))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, scl=(1.12, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.08, 1.06, 1.1))      # 頭より大きめ（ふんわり）
+    PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
+    TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
+    CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), scl=(1.12, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.08, 1.06, 1.1))      # 頭より大きめ（ふんわり）
     if kind in ("two_block", "undercut"):        # 横と後ろは短く刈った色（殻の下にもう1枚）
         hair_shell(f"hairs{i}", .6, .4, -.42, -.58, ("none",), m=mat(f"hairs{i}", "#5E5550", .7), scl=(1.0, 1.0, 1.03), th=.004)
     if kind == "upbang":                         # 前髪を上へ立ち上げる
@@ -640,13 +661,6 @@ def build_player(i, P):
         for k in range(8):
             a_ = k / 8 * math.tau
             sphere(f"tuft{i}{k}", .04, (math.cos(a_) * .065, hy - .02 + math.sin(a_) * .065, hz + .112), hm, (1, 1, 1.0), hd)
-    elif kind in ("perm", "loose_perm", "curly", "wavy"):     # パーマ（丸い束を殻の外に）
-        n_, rad, sq = {"perm": (26, .034, 1.0), "loose_perm": (14, .042, .75), "curly": (16, .04, 1.0), "wavy": (10, .04, .8)}[kind]
-        for k in range(n_):
-            a_ = k * 2.399; zz = .12 - (k / max(1, n_ - 1)) * (.15 if kind != "wavy" else .08); rr = math.sqrt(max(0, .13 ** 2 - (zz - .02) ** 2)) * .95
-            px_, py_ = math.cos(a_) * rr, -.015 + math.sin(a_) * rr * .95
-            if py_ > .02 and zz < .08: continue          # 顔の前には置かない
-            sphere(f"perm{i}{k}", rad, (px_, hy + py_, hz + zz), hm, (1.05, 1.0, sq), hd)
     elif kind == "updo":                         # まとめ髪（後ろの高い所にお団子）
         sphere(f"bun{i}", .052, (0, hy - .118, hz + .06), hm2, parent=hd)
     elif kind == "half_up":
