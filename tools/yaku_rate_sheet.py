@@ -41,21 +41,21 @@ GROUP_COLOR = {1: "#177083", 2: "#4261AA", 3: "#6A4BB0", 6: "#A8407F", 13: "#E25
 RANK_CSS = """
 .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
 .rk { border: 2px solid #1F2A28; background: #fff; }
-.rk .hd { display: grid; grid-template-columns: 26px 96px 38px 1fr; background: #1F2A28; color: #fff; font-size: 10.5px; font-weight: 900; }
+.rk .hd { display: grid; grid-template-columns: 26px 96px 38px 1fr; background: #177083; color: #fff; font-size: 10.5px; font-weight: 900; }
 .rk .hd span { text-align: center; padding: 3px 0; }
 .r { display: grid; grid-template-columns: 26px 96px 38px 1fr; align-items: stretch; min-height: 40px; border-top: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
 .r:first-of-type { border-top: 0; }
-.r .no { display: grid; place-items: center; font-size: 13px; font-weight: 900; color: #1F2A28; border-right: 1px solid #CFD8D6; }
+.r .no { display: grid; place-items: center; font-size: 13px; font-weight: 900; color: var(--c); background: color-mix(in srgb, var(--c) 7%, #fff); border-right: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
 .r .nm { display: flex; flex-direction: column; justify-content: center; padding: 2px 5px 2px 7px; background: color-mix(in srgb, var(--c) 13%, #fff); border-right: 1.5px solid #1F2A28; border-left: 4px solid var(--c); }
 .r .nm b { display: block; font-size: 13px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; line-height: 1.15; }
 .r .nm small { display: block; font-size: 8px; font-weight: 700; color: #55625F; white-space: nowrap; }
-.r .hn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 3px; border-right: 1px solid #CFD8D6; }
+.r .hn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 3px; border-right: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
 .r .hn b { display: block; width: 100%; text-align: center; background: var(--c); color: #fff; font-size: 10.5px; font-weight: 900; border-radius: 4px; line-height: 16px; }
 .r .hn small { font-size: 7.5px; font-weight: 800; color: #55625F; white-space: nowrap; line-height: 1.1; }
 .r .rt { display: flex; flex-direction: column; justify-content: center; padding: 2px 7px; gap: 2px; }
 .bar { display: flex; align-items: center; gap: 5px; }
 .bar .b { height: 9px; border-radius: 2px; background: var(--c); min-width: 2px; flex: none; }
-.bar .v { font-size: 13.5px; font-weight: 900; white-space: nowrap; color: #1F2A28; }
+.bar .v { font-size: 13.5px; font-weight: 900; white-space: nowrap; color: var(--c); }
 .r .o { font-size: 9px; font-weight: 800; color: #6B7A77; white-space: nowrap; }
 .r.top .no { background: #E75620; color: #fff; } .r.top .v { color: #E75620; font-size: 15px; }
 .note { margin-top: 7px; font-size: 9.5px; font-weight: 700; color: #6B7A77; line-height: 1.5; }
@@ -100,6 +100,51 @@ body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール</span></footer></body></html>"""
 
 
+HAI_CSS = """
+.rk3 { border: 2px solid #1F2A28; background: #fff; }
+.rk3 .hd, .r3 { display: grid; grid-template-columns: 30px 100px 46px 232px 1fr; }
+.rk3 .hd { background: #177083; color: #fff; font-size: 10.5px; font-weight: 900; } .rk3 .hd span { text-align: center; padding: 3px 0; }
+.r3 { align-items: stretch; min-height: 24.2px; border-top: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
+.r3 .no { display: grid; place-items: center; font-size: 12px; font-weight: 900; color: var(--c); background: color-mix(in srgb, var(--c) 7%, #fff); border-right: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
+.r3.top .no { background: #E75620; color: #fff; }
+.r3 .nm { display: flex; flex-direction: column; justify-content: center; padding: 0 4px 0 6px; background: color-mix(in srgb, var(--c) 13%, #fff); border-right: 1.5px solid #1F2A28; border-left: 4px solid var(--c); line-height: 1.05; }
+.r3 .nm b { font-size: 11.5px; font-weight: 900; white-space: nowrap; letter-spacing: -.03em; } .r3 .nm small { font-size: 6.5px; font-weight: 700; color: #55625F; white-space: nowrap; overflow: hidden; }
+.r3 .hn { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 3px; border-right: 1px solid color-mix(in srgb, var(--c) 35%, #fff); }
+.r3 .hn b { width: 100%; text-align: center; background: var(--c); color: #fff; font-size: 9.5px; font-weight: 900; border-radius: 3px; line-height: 13px; } .r3 .hn small { font-size: 6.5px; font-weight: 800; color: #55625F; white-space: nowrap; line-height: 1.1; }
+.r3 .tl { display: flex; align-items: center; padding: 0 4px; border-right: 1px solid color-mix(in srgb, var(--c) 35%, #fff); overflow: hidden; }
+.r3 .tl .sit { font-size: 9.5px; font-weight: 800; color: #33403D; white-space: nowrap; }
+.r3 .rt { display: flex; align-items: center; gap: 6px; padding: 0 7px; }
+.r3 .b { height: 9px; border-radius: 2px; background: var(--c); min-width: 2px; flex: none; }
+.r3 .v { font-size: 12.5px; font-weight: 900; color: var(--c); white-space: nowrap; } .r3.top .v { color: #E75620; font-size: 13.5px; }
+.r3 .o { font-size: 8.5px; font-weight: 800; color: #6B7A77; white-space: nowrap; margin-left: auto; }
+.r3 .ex .win { margin-left: 2px; padding: 1px; }
+"""
+
+
+def ranking_sheet_hai(url):
+    """牌の並びつきの版（役一覧表のように、役ごとに牌の例）。1列に37役"""
+    from hai_sheets import SHORT
+    allv = dict(COUNT); allv.update(YAKUMAN)
+    items = sorted(allv.items(), key=lambda kv: -kv[1]); mx = items[0][1]
+    rows = ""
+    for k, (name, c) in enumerate(items, 1):
+        yomi, m, n, ex = INFO[name]; col = GROUP_COLOR[m]; h, sub = han_cell(name)
+        tl = ex_tiles(ex, url, avail=222, wmax=11.5) if ex else f'<span class="sit">{WHY.get(name) or SHORT.get(name, "")}</span>'
+        w = max(1.5, (c / mx) ** .5 * 100) * .55
+        rows += (f'<div class="r3{" top" if k <= 5 else ""}" style="--c:{col}"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div>'
+                 f'<div class="hn"><b>{h}</b><small>{sub}</small></div><div class="tl">{tl}</div>'
+                 f'<div class="rt"><div class="b" style="width:{w:.1f}%"></div><span class="v">{pct_s(c)}</span><span class="o">あがり{once(c)}</span></div></div>')
+    lg = "".join(f'<span style="--c:{GROUP_COLOR[g]}"><i></i>{"役満" if g == 13 else f"{g}翻"}</span>' for g in (1, 2, 3, 6, 13))
+    return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}{RANK_CSS}{HAI_CSS}
+body {{ padding: 20px 28px 16px; }} header {{ margin-bottom: 7px; padding: 8px 12px 8px 16px; }} .lg {{ margin-bottom: 6px; }}
+</style></head><body>
+<header><h1>麻雀 役の出やすさランキング<small>あがりのうち、その役がつく割合（一般役26役＋役満11役・牌の例つき）</small></h1>{logo_html()}</header>
+<div class="lg">{lg}<span><i style="background:#E75620;width:16px;border-radius:3px"></i>あがり牌</span></div>
+<section class="rk3"><div class="hd"><span>順位</span><span>役</span><span>翻</span><span>形の例</span><span>出現率（あがりのうち）</span></div>{rows}</section>
+<p class="note">出現率＝その役がついたあがりの回数 ÷ あがりの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計（例は小四喜）。データ: {SRC}</p>
+<footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
+
+
 MAN_CSS = """
 .r2 { display: grid; grid-template-columns: 34px 112px 250px 1fr; column-gap: 8px; align-items: center; min-height: 72px; border-top: 1px solid #F2C6A0; padding-right: 10px; }
 .r2:first-of-type { border-top: 0; }
@@ -141,7 +186,7 @@ body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 
 def render(names=None):
     from playwright.sync_api import sync_playwright
     url = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
-    sheets = [("mahjong-yaku-ranking", ranking_sheet(url)), ("mahjong-yakuman-ranking", yakuman_sheet(url))]
+    sheets = [("mahjong-yaku-ranking", ranking_sheet(url)), ("mahjong-yaku-ranking-hai", ranking_sheet_hai(url)), ("mahjong-yakuman-ranking", yakuman_sheet(url))]
     with sync_playwright() as p:
         b = p.chromium.launch()
         for name, html in sheets:
