@@ -499,7 +499,7 @@ def build_player(i, P):
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
-        lash = 2 if P.get("fem") else 0      # まつ毛は女性だけ（2026-11-14 ユーザーの指定「男キャラにはまつ毛をつけない」）
+        lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-14）（2026-11-14 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
         decal(f"eyeo{i}{sx}", cx, EZ, rx + .0032, rz + .0032, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
@@ -523,7 +523,7 @@ def build_player(i, P):
         ex_, ez_ = pts[-1]; pts.append((ex_ + sx * .004, ez_ + .0018))
         eline(f"lid{i}{sx}", pts, .0036)
         for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
-            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .005 - k * .0015)], .0021)
+            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * (.0085 - k * .0012), bz + .007 - k * .0014)], .0023)
     # まゆは描かない（2026-11-13 ユーザーの判断「どうぶつの森は眉毛がないので、いらない」）。名簿の brows は読まない
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
