@@ -333,11 +333,16 @@ HANDS = [
     ["p3", "p4", "p6", "p7", "p8", "s3", "s5", "s6", "s7", "s8", "s8", "m4", "m5"],     # 席0（鳴く人）。左から。六萬をチーして三索を切ると、二筒・五筒待ちのテンパイ（2026-11-13 ユーザーの指定）
     None, None, None,
 ]
-SCENE = arg("--scene", "chi")      # 動きのテーマ: chi＝チーの方法 / kan＝カンの方法（暗槓）
+SCENE = arg("--scene", "chi")      # 動きのテーマ: chi＝チーの方法 / pon＝ポンの方法（対面から）/ kan＝カンの方法（暗槓）
 if SCENE == "kan":   # 暗槓: ツモって東が4枚そろった14枚。カンのあと嶺上牌を取り、六索を切る（2026-11-13）
     HANDS[0] = ["m2", "m3", "m4", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "z1", "z1", "z1", "z1"]
-RIVERS = [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]]   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
-CALL_K = len(RIVERS[3]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
+CALL_SEAT = 3       # 鳴かれる人の席（チー＝上家の3）
+if SCENE == "pon":   # ポン（2026-11-13）: 發の対子。対面（席2）が切った發をポンして南を切ると、六萬・九萬待ち（發の役つき）
+    HANDS[0] = ["p2", "p3", "p4", "s4", "s5", "s6", "m3", "m3", "m7", "m8", "z2", "z6", "z6"]
+    CALL_SEAT = 2
+RIVERS = ([["z3", "s1", "m9"], ["z4", "p9", "m1", "s9"], ["z1", "p1", "s2", "z6"], ["z7", "m9", "z5"]] if SCENE == "pon" else
+          [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]])   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
+CALL_K = len(RIVERS[CALL_SEAT]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
 
 WALL = {}
 def wall_x(k):
@@ -372,7 +377,7 @@ def build_tiles():
         rv = RIVERS[i]
         for k, c in enumerate(rv):
             gx = RX0 + (k % 6) * RP; gy = RY - (k // 6) * (TL + .003)
-            last = (i == 3 and k == len(rv) - 1)
+            last = (i == CALL_SEAT and k == len(rv) - 1)
             if last and STEP >= 3: continue
             t = tile(c, (gx, gy, Z), r, "lie")
             if last: named["called"] = t
@@ -885,7 +890,7 @@ def pause_k(t, n):
 # 手順の区切り（秒）: ①声 0〜1.5 ②晒す 1.5〜2.1 ③取る 2.1〜3.8 ④右端に並べる 3.8〜5.0 ⑤切る 5.0〜6.6
 def anim_setup():
     bpy.context.view_layer.update()
-    if "called" in NAMED and SCENE == "chi":
+    if "called" in NAMED and SCENE in ("chi", "pon"):
         c = NAMED["called"]; mw = c.matrix_world.copy(); c.parent = None; c.matrix_world = mw     # 上家の河の六萬を、卓の座標で動かせるように
     for k_, o_ in NAMED.items():       # 動かす牌の、はじめの位置と向きを覚えておく
         o_["p0"] = list(o_.location); o_["r0"] = list(o_.rotation_euler)
@@ -914,7 +919,7 @@ def cam_pose(t, tr, cam, px, focus, pk):
         cam.data.lens += (50 - cam.data.lens) * pk[n]
     cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
-ANIM_END = 7.8 if SCENE == "chi" else 8.2      # もとの時刻で、最後に右の隅へ寄り終える時
+ANIM_END = 7.8 if SCENE in ("chi", "pon") else 8.2      # もとの時刻で、最後に右の隅へ寄り終える時
 
 def anim_pose_kan(t, cam):
     """暗槓: ①発声 → ②開示（4枚を倒し、両端の2枚を伏せる）→ ③副露（右の隅へ）→ ④カンドラをめくる → ⑤嶺上牌を取る → ⑥打牌"""
@@ -960,13 +965,19 @@ def anim_pose(t, cam):
     if SCENE == "kan": return anim_pose_kan(t, cam)
     tr = t; t = warp(t)          # tr＝実際の時刻・t＝もとの動きの時刻
     Z = TOP + .0005
-    m4, m5, s3, m6 = NAMED["hand_m4"], NAMED["hand_m5"], NAMED["hand_s3"], NAMED["called"]
-    X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + HANDS[0].index("s3") * HP     # 手牌の四萬・五萬・三索の位置（牌の大きさから計算する）
+    PON = SCENE == "pon"
+    DI = 10 if PON else HANDS[0].index("s3")       # 切る牌が手牌の何枚目か（ポン＝南・チー＝三索）
+    m4, m5, s3, m6 = NAMED["hk11"], NAMED["hk12"], NAMED[f"hk{DI}"], NAMED["called"]     # 晒す2枚は手牌の右端の2枚（チー＝四萬・五萬／ポン＝發の対子）
+    X4, X5, XS = HX0 + 11 * HP, HX0 + 12 * HP, HX0 + DI * HP     # 手牌の位置（牌の大きさから計算する）
     # 晒した牌の置き場＝手牌の延長線上の右（手牌と平行・手前のふちをそろえる）。倒していない手牌とのあいだは GAP だけ空ける（2026-11-12 ユーザーの依頼。前は手牌の奥に倒していて、近くて見えにくかった）
     GAP = .028
     LY = HY + TL / 2                            # 倒した牌の中心（手前のふちが手牌の表の面と同じ線）
-    E6 = HX0 + 10 * HP + TW / 2 + GAP + TL / 2  # 取ってきた六萬（横向き）の中心
-    E4 = E6 + TL / 2 + .001 + TW / 2; E5 = E4 + TW + .001      # 晒した四萬・五萬の中心
+    B0 = HX0 + 10 * HP + TW / 2 + GAP
+    if PON:     # 対面から鳴いたポンは、横向きの牌を真ん中に置く（横向きの牌の位置＝だれから鳴いたか。左＝上家・中＝対面・右＝下家）
+        E4 = B0 + TW / 2; E6 = E4 + TW / 2 + .001 + TL / 2; E5 = E6 + TL / 2 + .001 + TW / 2
+    else:
+        E6 = B0 + TL / 2                            # 取ってきた六萬（横向き）の中心
+        E4 = E6 + TL / 2 + .001 + TW / 2; E5 = E4 + TW + .001      # 晒した四萬・五萬の中心
     DX, DY = .305 - E5, 0.0                     # 右の隅へ寄せる分（同じ線の上をすべらせる）
     # ② 晒す（立てた牌を向こうへ倒す）
     k2 = seg(t, 1.5, 2.0); k4 = seg(t, 4.2, 5.0)
@@ -975,9 +986,10 @@ def anim_pose(t, cam):
         o.location = lerp((x, HY + TT, Z + TL / 2), (ex, LY, Z), k2) + Vector((0, 0, .03 * math.sin(math.pi * k2))) + Vector((DX, DY, 0)) * k4
     # ③ 取る（上家の河 → 晒した2枚の左。牌は横向きのまま）
     k3 = seg(t, 2.9, 3.8)
-    p0 = Vector((RY, -(RX0 + CALL_K * RP), Z)); p1 = Vector((E6, LY - TL / 2 + TW / 2, Z))
+    gx_ = RX0 + CALL_K * RP
+    p0 = Vector((-gx_, -RY, Z)) if CALL_SEAT == 2 else Vector((RY, -gx_, Z)); p1 = Vector((E6, LY - TL / 2 + TW / 2, Z))     # 鳴かれる牌の場所（席ごとに90度ずつ回した河）
     m6.location = lerp(p0, p1, k3) + Vector((0, 0, .05 * math.sin(math.pi * k3))) + Vector((DX, DY, 0)) * k4
-    m6.rotation_euler = (0, 0, -math.pi / 2)
+    m6.rotation_euler = (0, 0, math.pi + (math.pi / 2 - math.pi) * k3) if CALL_SEAT == 2 else (0, 0, -math.pi / 2)      # 対面の牌は、取りながら横向きに回す
     # ⑤ 切る（手牌の三索 → 河の4枚目）
     k5 = seg(t, 5.7, 6.5)
     s3.rotation_euler = (math.radians(90) * (1 - seg(t, 5.9, 6.4)), 0, 0)
@@ -1048,11 +1060,11 @@ def pre_pose(t, cam):
     """手前の選手の目から見る（選手0は消す）。手牌の全体 → 使う牌に寄る（少し持ち上げる）→ チーは上家の河に六萬が来る。
     入りの最後・①の最初とは、make_clip.py が重ねてつなぐ（カメラで体の中を通らないように）"""
     anim_pose(0.0, cam)
-    if SCENE == "chi":
-        lift = [NAMED["hand_m4"], NAMED["hand_m5"]]
+    if SCENE in ("chi", "pon"):
+        lift = [NAMED["hk11"], NAMED["hk12"]]
         m6 = NAMED["called"]; p0 = Vector(m6.location)
-        k = seg(t, 3.1, 3.7)                   # 上家の手もとから河へ（それまでは河に無い）
-        m6.location = lerp(p0 + Vector((-.20, 0, .03)), p0, k) + Vector((0, 0, .03 * math.sin(math.pi * k)))
+        k = seg(t, 3.1, 3.7)                   # 切った人の手もとから河へ（それまでは河に無い）
+        m6.location = lerp(p0 + (Vector((0, .20, .03)) if CALL_SEAT == 2 else Vector((-.20, 0, .03))), p0, k) + Vector((0, 0, .03 * math.sin(math.pi * k)))
         m6.hide_render = t < 3.05
     else:
         lift = [NAMED[f"hk{k}"] for k in range(10, 14)]
@@ -1061,12 +1073,13 @@ def pre_pose(t, cam):
     for o in lift: o.location = o.location + Vector((0, 0, .016 * up))
     hx = (NAMED["hk0"]["p0"][0] + NAMED["hk13"]["p0"][0]) / 2 if SCENE == "kan" else HX0 + 6 * HP
     full = (Vector((hx, -.62, 1.17)), Vector((hx, HY + .05, .78)), 19.0)
-    zx = lx - (.06 if SCENE == "chi" else .02)        # 使う牌が画面の端に切れないように
+    zx = lx - (.06 if SCENE in ("chi", "pon") else .02)        # 使う牌が画面の端に切れないように
     zoom = (Vector((zx, -.55, 1.03)), Vector((zx, HY + .03, .78)), 30.0)
     kz = seg(t, 1.2, 2.0)
     loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
-    if SCENE == "chi":                        # 上家の河（左の奥）を見る
+    if SCENE in ("chi", "pon"):               # 切った人の河を見る（チー＝上家・左の奥／ポン＝対面・正面の奥）
         riv = (Vector((-.11, -.42, 1.00)), Vector((p0.x, p0.y + .04, .77)), 44.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
+        if CALL_SEAT == 2: riv = (Vector((.0, -.34, 1.06)), Vector((.0, p0.y - .02, .77)), 40.0)
         loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
 
@@ -1089,7 +1102,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
 
 if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 に書き出す（選手や卓は本題の最初の形のまま）
     cam = anim_setup(); anim_pose(0.0, cam)
-    if SCENE == "chi": NAMED["called"].hide_render = True     # 六萬は前置きで上家が切る。入りではまだ河に無い
+    if SCENE in ("chi", "pon"): NAMED["called"].hide_render = True     # 六萬は前置きで上家が切る。入りではまだ河に無い
     n = int(INTRO_DUR * FPS)
     only = arg("--frames", "")
     for f in ([int(x) for x in only.split(",")] if only else range(n)):
