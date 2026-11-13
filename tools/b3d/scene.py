@@ -416,7 +416,7 @@ def person(roster, pid):
     d = dict(uniform=(tm["uniform"][0], tm["uniform"][1]), collar=tm.get("collar", tm["uniform"][1][0]),
              hair=tuple(pp.get("hair") or (("bob", "#2A211D") if fem else ("short_messy", "#2A211D"))),
              build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
-             eyes=pp.get("eyes") or ("cute" if fem else "normal"))
+             eyes=pp.get("eyes") or ("matsuge" if fem else "pachi"))
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
     for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth"):
@@ -461,48 +461,54 @@ def build_player(i, P):
     hd.rotation_euler = (math.radians(8), 0, 0)   # 少しうつむく
     hy = 0; hz = 0
     head = sphere(f"head{i}", .115, (0, hy, hz), skin, (1, 1, 1.08), hd)
-    # 目は4種類（2026-11-12 ユーザーの依頼）: normal＝ふつう／tare＝タレ目／kiri＝キリッとした目／cute＝かわいらしい目（ふつうの目＋まつ毛3本ずつ）。白い点（キラキラ）は付けない
-    ek = P.get("eyes", "normal"); em = mat("eye", "#2A211D", .45)
-    # 2026-11-13 に足した目: sanpaku＝三白眼（白目の上の方に小さな黒目）／kirenaga＝切れ長（横に細長く、目じりが少し上がる）
-    #   tsuri＝つり目（目じりが強く上がる・まゆなし）／maru＝丸い大きめの目／ito＝糸目（∩の細い線）／fuse＝伏し目（上まぶたで半分かくれる）
-    ER, ESC, ETILT = {"normal": (.015, (1, .5, 1.2), 0), "tare": (.015, (1.25, .5, .95), 24), "kiri": (.015, (1.35, .5, .72), -20), "cute": (.015, (1, .5, 1.2), 0),
-                      "sanpaku": (.0085, (1, .5, 1.1), 0), "kirenaga": (.015, (1.7, .5, .55), -10), "tsuri": (.015, (1.3, .5, .85), -32),
-                      "maru": (.0185, (1, .5, 1.05), 0), "ito": (.015, (1, .5, 1), 0), "fuse": (.015, (1.2, .5, 1.1), 0),
-                      # 2026-11-13 写真に合わせて足した目（ドリブンズの4人から）: small＝小さめの丸い目／hoso＝細い目（横長・上まぶたの線）
-                      #   nemu＝眠そうな目（細く、目じりが下がり、まぶたが重い）／otome＝大きめの黒目＋まつ毛＋少しタレ目
-                      "small": (.0115, (1.05, .5, 1.1), 6), "hoso": (.015, (1.45, .5, .62), 6), "nemu": (.015, (1.35, .5, .78), 16),
-                      "otome": (.0175, (1.05, .5, 1.1), 10)}[ek]
+    # 目（2026-11-13 作り直し。ユーザーの依頼「どうぶつの森で使われている目を参考に」）: 顔にはった平たいシールのような目。
+    #   黒目は大きめの楕円、白い光（ハイライト）を1〜2つ、上まぶたの線・まつ毛・半分かくすまぶたを組み合わせて12種類。実在のゲームの目をそのまま写さない
+    #   pachi＝ぱっちり（標準）／tare＝タレ目／tsuri＝つり目／jito＝半目（まぶたが重い）／nemu＝眠そう（半目＋タレ）／nikkori＝にっこり（∩）
+    #   ten＝点の目／hoso＝細い目／uru＝うるうる（大きく光2つ）／matsuge＝まつ毛／tare_matsuge＝タレ目＋まつ毛／kiri＝りりしい（細め＋まっすぐな太まゆ）／sanpaku＝三白眼
+    OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "uru", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "tare_matsuge"}      # 前の名前（cast や古い名簿）
+    ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
+    em = mat("eye", "#221A17", .35); wm = mat("eyehl", "#FFFFFF", .2); EX, EZ = .043, -.008
+    def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
+    def eline(name, pts, w=.0026):
+        cu = bpy.data.curves.new(name, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = w; cu.bevel_resolution = 3; cu.use_fill_caps = True
+        sp = cu.splines.new("POLY"); sp.points.add(len(pts) - 1)
+        for k, (x, z) in enumerate(pts): sp.points[k].co = (x, surf(x, hz + z - hz, .0015), hz + z, 1)
+        o = bpy.data.objects.new(name, cu); add(o); o.parent = hd; cu.materials.append(em); return o
+    #          黒目の大きさ（横, 縦）・傾き（＋で目じりが下がる）・光の数・上まぶたの線・まぶたでかくす割合・まつ毛
+    SPEC = {"pachi": ((.0135, .0175), 0, 1, False, 0, 0), "tare": ((.0145, .0155), 16, 1, True, 0, 0), "tsuri": ((.0145, .0155), -18, 1, True, 0, 0),
+            "jito": ((.0145, .016), 0, 1, True, .45, 0), "nemu": ((.0145, .015), 14, 0, True, .55, 0), "ten": ((.0075, .0085), 0, 0, False, 0, 0),
+            "hoso": ((.016, .0075), 4, 0, True, 0, 0), "uru": ((.016, .019), 0, 2, False, 0, 0), "matsuge": ((.0135, .0175), 0, 1, True, 0, 2),
+            "tare_matsuge": ((.0145, .016), 14, 1, True, 0, 2), "kiri": ((.0145, .011), -8, 1, True, 0, 0)}
     for sx in (-1, 1):
-        if ek == "ito":      # 糸目: 目のかわりに、上に弧を描く細い線
-            cu = bpy.data.curves.new(f"ito{i}{sx}", "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = .0028; cu.bevel_resolution = 3; cu.use_fill_caps = True
-            sp = cu.splines.new("POLY"); sp.points.add(6)
-            for k in range(7):
-                u = k / 6 * 2 - 1; x = sx * .042 + u * .016; z = -.006 + .006 * (1 - u * u)
-                sp.points[k].co = (x, hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001, hz + z, 1)
-            o = bpy.data.objects.new(f"ito{i}{sx}", cu); add(o); o.parent = hd; cu.materials.append(em)
+        cx = sx * EX
+        if ek == "nikkori":      # 上に弧を描く太めの線
+            eline(f"nik{i}{sx}", [(cx + u * .015, EZ - .002 + .008 * (1 - u * u)) for u in [k / 6 * 2 - 1 for k in range(7)]], .0032)
             continue
-        if ek == "sanpaku":  # 白目（横長）＋上に寄せた小さな黒目
-            sphere(f"eyeo{i}{sx}", .0175, (sx * .042, hy + .103, hz - .006), em, (1.3, .45, .9), hd)                       # ふち（黒い線）
-            sphere(f"eyew{i}{sx}", .016, (sx * .042, hy + .1055, hz - .006), mat("eyewhite", "#FAF8F2", .4), (1.3, .45, .88), hd)   # 白目
-            e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .1115, hz - .0012), em, ESC, hd)                                    # 上に寄せた小さな黒目
+        if ek == "sanpaku":      # 白目（横長）＋上に寄せた小さな黒目
+            sphere(f"eyeo{i}{sx}", .0175, (cx, surf(cx, EZ) - .012, hz + EZ), em, (1.3, .45, .9), hd)
+            sphere(f"eyew{i}{sx}", .016, (cx, surf(cx, EZ) - .0095, hz + EZ), mat("eyewhite", "#FAF8F2", .4), (1.3, .45, .88), hd)
+            sphere(f"eye{i}{sx}", .0085, (cx, surf(cx, EZ + .005) - .0035, hz + EZ + .005), em, (1, .5, 1.1), hd)
             continue
-        e = sphere(f"eye{i}{sx}", ER, (sx * .042, hy + .106, hz - .006), em, ESC, hd)
-        e.rotation_euler = (0, math.radians(sx * ETILT), 0)      # 顔の面の中で傾ける（＋で目じりが下がる）
-        if ek in ("hoso", "nemu"):     # 上まぶたの線（目の上に、目より少し長い線）。nemu は線を目じりへ下げ、まぶたで上をかくす
-            if ek == "nemu": sphere(f"lid{i}{sx}", .02, (sx * .042, hy + .1035, hz + .0035), skin, (1.2, .5, .5), hd)
-            bl = box(f"lidl{i}{sx}", (.034 if ek == "hoso" else .036, .006, .003), (sx * .042, hy + .1105, hz + (.0035 if ek == "hoso" else -.001)), em, bevel=.0013, parent=hd)
-            bl.rotation_euler = (0, math.radians(sx * (6 if ek == "hoso" else 16)), 0)
-        if ek == "fuse":     # 上まぶた（肌の色）で目の上半分をかくし、まぶたの線を引く
-            sphere(f"lid{i}{sx}", .02, (sx * .042, hy + .1035, hz + .006), skin, (1.15, .5, .55), hd)                          # 上まぶた（肌）
-            box(f"lidl{i}{sx}", (.036, .006, .0035), (sx * .042, hy + .1115, hz - .002), em, bevel=.0015, parent=hd)
-        if ek == "kiri" and not P.get("brows"):     # まゆ（目じりが上がる短い線）
-            box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -16), 0)
-        if ek in ("cute", "otome"):     # まつ毛3本（目の上の外がわに、扇のように開く短い線）
-            for k, ang in enumerate((-12, 22, 56)):      # 真上からの角度（外がわへ倒す）
-                a2 = math.radians(ang); r0, r1 = .0165, .0275
-                cx = sx * (.042 + math.sin(a2) * (r0 + r1) / 2); cz = hz - .006 + math.cos(a2) * (r0 + r1) / 2 * 1.1
-                ly = math.sqrt(max(1e-6, .115 ** 2 - cx * cx - ((cz - hz) / 1.08) ** 2))      # 頭の丸みの上に置く（決め打ちの奥行きだと、上の1本が頭にうまった）
-                box(f"lash{i}{sx}{k}", (.0042, .007, r1 - r0), (cx, hy + ly, cz), em, bevel=.0012, parent=hd).rotation_euler = (math.radians(-8), math.radians(sx * ang), 0)
+        (rx, rz), tilt, nhl, lid, hide, lash = SPEC[ek]; rx *= 1.4; rz *= 1.4      # 大きめに（顔のシールの目は大きいほうがかわいい）
+        e = sphere(f"eye{i}{sx}", 1, (cx, surf(cx, EZ) - .0045, hz + EZ), em, (rx, .006, rz), hd)
+        e.rotation_euler = (0, math.radians(sx * tilt), 0)
+        if hide:                 # 半目: 黒目の上を平らに切り落とす（肌色のまぶたを重ねると、黒目の後ろにもぐったり、白く浮いたりした）
+            import bmesh
+            bm = bmesh.new(); bm.from_mesh(e.data)
+            bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z > 1 - 2 * hide], context="VERTS"); bm.to_mesh(e.data); bm.free()
+        for k in range(nhl):     # 白い光（目の上の外がわに大きい光・下の内がわに小さい光）
+            hx = cx + sx * rx * (.35 if k == 0 else -.3); hz2 = EZ + rz * (.4 if k == 0 else -.45); hr = (.0055 if k == 0 else .003) * (1.15 if ek == "uru" else 1)
+            if hide and k == 0: hz2 = EZ + rz * (1 - 2 * hide - .45)
+            sphere(f"hl{i}{sx}{k}", hr, (hx, surf(cx, EZ) + .0022, hz + hz2), wm, (1, .3, 1), hd)      # 黒目の面より手前に
+        top = EZ + rz * (.9 - 2 * hide)
+        if lid:                  # 上まぶたの線（黒目より少し長い・目じりの向きに合わせて傾ける）
+            t_ = math.radians(tilt)
+            eline(f"lidl{i}{sx}", [(cx + sx * u * rx * 1.25, top + (.0025 * (1 - u * u) if not hide else 0) - sx * sx * u * math.tan(t_) * rx * 1.25 * (1 if sx > 0 else 1)) for u in [k / 6 * 2 - 1 for k in range(7)]], .0024)
+        for k in range(lash):    # まつ毛（目じりの上に、外へはねる短い線）
+            bx = cx + sx * rx * (.8 + k * .28); bz = top - .001 - k * .0035 - (math.tan(math.radians(tilt)) * rx * .9)
+            eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0065, bz + .006 - k * .002)], .0019)
+        if ek == "kiri" and not P.get("brows"):     # まっすぐな太いまゆ
+            box(f"brow{i}{sx}", (.03, .006, .0055), (sx * .043, hy + .104, hz + .017), em, bevel=.002, parent=hd).rotation_euler = (math.radians(-12), math.radians(sx * -10), 0)
     if P.get("brows"):     # 太めのまゆ（目じりを少し上げて、きりっと見せる）。前髪の下に見える高さ
         for sx in (-1, 1):
             box(f"brw{i}{sx}", (.034, .007, .0075), (sx * .043, hy + .105, hz + .02), em, bevel=.0025, parent=hd).rotation_euler = (math.radians(-14), math.radians(sx * -12), 0)
@@ -667,6 +673,17 @@ def build_player(i, P):
         fm = mat("flower", "#FAFAF5", .5)
         for sx in (-1, 1):
             for k in range(3): sphere(f"fl{i}{sx}{k}", .021, (sx * .124, hy + .015 - k * .01, hz - .035 - k * .045), fm, (.6, 1, 1), hd)   # 結んだ髪の外がわ・前から見える位置
+    # 髪が胴にもぐらないように（2026-11-13 ユーザーの指摘「中田・黒沢・二階堂の髪が首の所に埋まっている」）。首が無いので、頭の下の端より下へ垂れた毛は胴の中に入る。
+    #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
+    HAIR_MIN = -.098
+    for o in list(hd.children):
+        if o.type != "MESH" or not o.data.materials or o.data.materials[0] not in (hm, hm2, mat("flower", "#FAFAF5", .5)): continue
+        zs = [(o.matrix_basis @ v.co).z for v in o.data.vertices]; lo, hi = min(zs), max(zs)
+        if lo >= HAIR_MIN: continue
+        if o.data.materials[0].name.startswith("flower") or hi - HAIR_MIN < .01:
+            o.location.z += HAIR_MIN + .012 - lo; continue
+        f = (hi - HAIR_MIN) / (hi - lo)
+        o.scale.z *= f; o.location.z = hi - (hi - o.location.z) * f
     # 腕（両手を手牌のあたりに）
     sl = P.get("sleeve")
     am = (mat(f"sleeve{i}", sl, .7) if isinstance(sl, str) else pattern_mat(f"sleeve{i}", sl[0], sl[1])) if sl else um     # そでだけ別の色のチーム（白い胴に黒いそで など）
