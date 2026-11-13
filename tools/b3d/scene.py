@@ -490,7 +490,7 @@ def person(roster, pid):
              eyes=pp.get("eyes") or "pachi", fem=fem)
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira", "fringe", "eye_s", "eye_hl"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira", "fringe", "eye_s", "eye_hl", "eye_dz"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -539,7 +539,7 @@ def build_player(i, P):
            "uru": "pachi", "nemu": "jito", "tare_matsuge": "matsuge", "kiri": "tsuri"}      # 前の名前（古い名簿・cast）
     ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
     em = mat("eye", "#1E1A18", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FFFFFF", .35)
-    EX, EZ = .05, -.02      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
+    EX, EZ = .05, -.02 + P.get("eye_dz", 0.0)      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
     # 目は、顔の丸い面にそのまま描く（2026-11-13 ユーザーの依頼「凹凸を持たせず、顔の球面に平面的に描かれた感じに。横から見ると目が顔から離れて見える」）。
     #   どの部品も、顔の面に沿って曲げた薄い面。重ねる順（layer）は、面からごくわずか（0.4mm）ずつ浮かせて決める。前は平たい丸い粒を重ねていて、横から見ると飛び出していた
