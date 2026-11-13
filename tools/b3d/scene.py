@@ -528,7 +528,7 @@ def build_player(i, P):
         ex_, ez_ = pts[-1]; pts.append((ex_ + sx * .004, ez_ + .0018))
         eline(f"lid{i}{sx}", pts, .0036)
         for k in range(lash):    # まつ毛（目じりに外へはねる短い線）
-            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * (.0085 - k * .0012), bz + .007 - k * .0014)], .0023)
+            bx, bz = pts[-2 - k * 2]; eline(f"lash{i}{sx}{k}", [(bx, bz), (bx + sx * .0075, bz + .0065)], .0023)      # 3本とも同じ長さ（2026-11-13 ユーザーの指定）
     # まゆは描かない（2026-11-13 ユーザーの判断「どうぶつの森は眉毛がないので、いらない」）。名簿の brows は読まない
     if P.get("glasses"):   # めがね: "色" か [色, 形]。形 round＝丸い細ぶち／rect＝四角い細ぶち／thick＝太い四角
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
@@ -578,7 +578,7 @@ def build_player(i, P):
     #   （blunt＝ぱっつん／zig＝毛先がとがった束／side＝流した前髪／part＝分け目／none＝おでこを出す）。パーマ・お団子・結んだ髪などは、殻の上に足す
     kind, hc = P["hair"]; hm = mat(f"hair{i}", hc, .55)
     hm2 = mat(f"hairb{i}", P["hair2"], .55) if P.get("hair2") else hm      # 後ろ・内側の色（金髪の下が黒い など）
-    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None):
+    def hair_shell(name, zf, zt, zs, zb, fr=("blunt",), m=hm, scl=(1.08, 1.06, 1.1), r_=.124, th=.016, puff=.14, tuft=0.0, curl=None, ext=None, flat=None):
         """殻の生えぎわ: 正面 zf・こめかみ zt・耳の上 zs・えり足 zb（殻を単位の球とみた高さ -1〜1）。前髪の形 fr"""
         import bmesh
         def bound(ph):
@@ -625,6 +625,7 @@ def build_player(i, P):
                 bump = abs(math.sin(fq * x_ + 1.3) * math.sin(fq * y_ + .7) * math.sin(fq * z_ + 2.1)) ** .5
                 f += amp * bump * min(1.0, d / .08)
             v.co = v.co * f
+            if flat is not None and v.co.z > flat: v.co.z = flat + (v.co.z - flat) * .12      # 角刈り: 頭の上を平らに
         if ext:      # 長い髪: 殻の毛先（生えぎわの列）から、そのまま下へ垂らす（1枚につながるので段ができない）。顔の前（|φ|<gap）はのばさない
             zl, gap = ext; NE = 12; Rt = 1.06; prev = rows[0]
             for j in range(1, NE + 1):
@@ -655,14 +656,14 @@ def build_player(i, P):
           "short_bob": (0.06, .05, -.5, -.55, ("zig", .05, 9)), "bob": (0.04, .04, -.7, -.72, ("blunt",)), "bob_nobang": (0.16, .0, -.7, -.72, ("part", .38, .35, .5)),
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)),
-          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8))}
+          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "kakugari": (.5, .3, -.3, -.52, ("none",)), "bun_pony": (0.06, -.25, -.62, -.55, ("part", .34, .45, .5)), "perm_center": (0.04, -.02, -.1, -.55, ("part", .36, 0, .42)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     if P.get("fringe"): fr = tuple(P["fringe"])      # 前髪の形を人ごとに変える（名簿の fringe。例: ["zig", .1, 8]＝ギザギザ）
-    PUFF = {"ponytail": .06, "slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
+    PUFF = {"kakugari": .0, "bun_pony": .06, "ponytail": .06, "slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
-    CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
+    CURL = {"perm_center": (.1, 7), "perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else (1.12, 1.07, 1.1)))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), flat=(.8 if kind == "kakugari" else None), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else ((1.04, 1.04, 1.1) if kind == "kakugari" else (1.12, 1.07, 1.1))))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
     if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
         for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
             o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
@@ -703,7 +704,10 @@ def build_player(i, P):
             if kind == "long_wavy":
                 for w_ in range(3): sphere(f"drapew{i}{sx}{w_}", .022, (sx * (.112 + (.008 if w_ % 2 else -.004)), hy + .02, hz - .1 - w_ * .045), hm, (1, .8, 1.2), hd)
         sphere(f"drape{i}", .118, (0, hy - .07, hz - .1), hm2, (1.06, .78, 1.55), hd)      # 後ろの長い髪（頭の後ろからつなげて、背中の外がわへ）
-    if kind == "ponytail":     # 顔の両わきに後れ毛（正面から見て、ヘルメットに見えないように。2026-11-13 ユーザーの指摘「茅森・日向」）
+    if kind == "bun_pony":     # お団子ポニーテール: 後ろの高い所にお団子＋そこから短い毛束
+        sphere(f"bun{i}", .05, (0, hy - .12, hz + .075), hm2, parent=hd)
+        sphere(f"drape{i}", .03, (0, hy - .165, hz - .01), hm2, (.8, .75, 2.0), hd).rotation_euler = (math.radians(-14), 0, 0)
+    if kind in ("ponytail", "bun_pony"):     # 顔の両わきに後れ毛（正面から見て、ヘルメットに見えないように。2026-11-13 ユーザーの指摘「茅森・日向」）
         for sx in (-1, 1):
             sphere(f"pstrand{i}{sx}", .016, (sx * .104, hy + .052, hz - .05), hm, (.75, .7, 3.4), hd).rotation_euler = (0, math.radians(sx * -6), 0)
     if kind == "ponytail":
@@ -716,15 +720,23 @@ def build_player(i, P):
     if P.get("strands"):   # 顔の横に少し垂らした毛（後れ毛）
         for sx in (-1, 1):
             sphere(f"strd{i}{sx}", .013, (sx * .102, hy + .05, hz - .045), hm, (.7, .7, 3.2), hd)
-    if P.get("acc") == "flowers":   # 髪に白い花の飾り（左右の結んだ髪に3つずつ）
+    accs = P.get("acc") or []; accs = [accs] if isinstance(accs, str) else accs
+    if "flowers" in accs:   # 髪に白い花の飾り（結んだ髪なら毛束に3つずつ・それ以外は耳の上あたりに2つずつ）
         fm = mat("flower", "#FAFAF5", .5)
         for sx in (-1, 1):
-            for k in range(3): sphere(f"fl{i}{sx}{k}", .021, (sx * .124, hy + .015 - k * .01, hz - .035 - k * .045), fm, (.6, 1, 1), hd)   # 結んだ髪の外がわ・前から見える位置
+            if kind == "twintail":
+                for k in range(3): sphere(f"fl{i}{sx}{k}", .021, (sx * .124, hy + .015 - k * .01, hz - .035 - k * .045), fm, (.6, 1, 1), hd)
+            else:
+                for k in range(2): sphere(f"fl{i}{sx}{k}", .02, (sx * .136, hy + .03 - k * .012, hz + .03 - k * .042), fm, (.55, 1, 1), hd)
+    if "earrings" in accs:  # 白い耳飾り（顔の両わき・あごの高さに小さな玉）
+        em_ = mat("earring", "#FFFFFF", .25)
+        for sx in (-1, 1): sphere(f"ear{i}{sx}", .0135, (sx * .112, hy + .04, hz - .078), em_, parent=hd)
     # 髪が胴にもぐらないように（2026-11-13 ユーザーの指摘「中田・黒沢・二階堂の髪が首の所に埋まっている」）。首が無いので、頭の下の端より下へ垂れた毛は胴の中に入る。
     #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
     HAIR_MIN = -.098
     for o in list(hd.children):
         if o.name.startswith("drape") or o.get("noclamp"): continue
+        if o.name.startswith(("fl", "ear")) and not kind == "twintail": continue
         if o.type != "MESH" or not o.data.materials or o.data.materials[0] not in (hm, hm2, mat("flower", "#FAFAF5", .5)): continue
         zs = [(o.matrix_basis @ v.co).z for v in o.data.vertices]; lo, hi = min(zs), max(zs)
         if lo >= HAIR_MIN: continue
