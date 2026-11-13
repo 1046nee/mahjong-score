@@ -416,10 +416,10 @@ def person(roster, pid):
     d = dict(uniform=(tm["uniform"][0], tm["uniform"][1]), collar=tm.get("collar", tm["uniform"][1][0]),
              hair=tuple(pp.get("hair") or (("bob", "#2A211D") if fem else ("short_messy", "#2A211D"))),
              build=pp.get("build") or (.86 if fem else 1.04), height=pp.get("height") or (.95 if fem else 1.0),
-             eyes=pp.get("eyes") or ("matsuge" if fem else "pachi"))
+             eyes=pp.get("eyes") or "pachi", fem=fem)
     if tm.get("sleeve"): d["sleeve"] = tm["sleeve"]
     if tm.get("belly"): d["belly"] = tm["belly"]
-    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color"):
+    for k in ("skin", "glasses", "hair2", "beard", "acc", "brows", "strands", "nose", "mouth", "eye_color", "kira"):
         if pp.get(k): d[k] = pp[k]
     return d
 if ROSTER:
@@ -499,6 +499,7 @@ def build_player(i, P):
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
+        lash = 2 if P.get("fem") else 0      # まつ毛は女性だけ（2026-11-14 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
         decal(f"eyeo{i}{sx}", cx, EZ, rx + .0032, rz + .0032, em, 0, tl, cut)            # しっかりした黒のふち（2026-11-13 ユーザーの指定）
@@ -508,7 +509,11 @@ def build_player(i, P):
         decal(f"pupil{i}{sx}", cx, pz - pr * .06, prx * .62, pr * .62, em, 3, 0, cut, base=(cx, EZ))   # 黒目の中（黒）
         hz2 = pz + pr * .4 if cut is None else min(pz + pr * .4, cut - .004)
         decal(f"hl{i}{sx}", cx + sx * prx * .38, hz2, pr * .3, pr * .3, wm, 4, base=(cx, EZ))           # 大きい白い光（上の外がわ）
-        decal(f"hl2{i}{sx}", cx - sx * prx * .32, pz - pr * .45, pr * .14, pr * .14, wm, 4, base=(cx, EZ))  # 小さい白い光（下の内がわ）
+        kira = P.get("kira", bool(P.get("fem")))      # キラキラの目（女性の標準・二重の男性の一部。一重の男性は付けない＝2026-11-14 ユーザーの指定）
+        decal(f"hl2{i}{sx}", cx - sx * prx * .32, pz - pr * .45, pr * (.2 if kira else .14), pr * (.2 if kira else .14), wm, 4, base=(cx, EZ))  # 小さい白い光（下の内がわ）
+        if kira:     # 光を足して、瞳をきらきらに（上の内がわに小さな光・外がわの光の横に点）
+            decal(f"hl3{i}{sx}", cx - sx * prx * .38, pz + pr * .42, pr * .11, pr * .11, wm, 4, base=(cx, EZ))
+            decal(f"hl4{i}{sx}", cx + sx * prx * .05, hz2 + pr * .1, pr * .08, pr * .08, wm, 4, base=(cx, EZ))
         # 上まぶたの線（どの形にも太く。白目の上のふちに沿い、目じりで少しはねる）
         t_ = math.radians(tl); pts = []
         for k in range(1, 11):
@@ -638,20 +643,20 @@ def build_player(i, P):
     # 髪型ごとの生えぎわ（zf 正面・zt こめかみ・zs 耳の上・zb えり足・前髪の形）
     SH = {"short": (0.26, .26, .02, -.55, ("side", .28)), "short_bangs": (0.12, .15, .0, -.55, ("zig", .14, 7)), "nobang": (.62, .42, .02, -.55, ("none",)),
           "upbang": (.62, .42, .02, -.55, ("none",)), "slick": (.66, .44, .0, -.5, ("none",)), "side_part": (0.22, .24, .0, -.55, ("part", .36, -.5, .35)),
-          "center": (0.12, .3, .0, -.55, ("part", .45, 0, .55)), "mush": (0.02, .04, -.28, -.56, ("blunt",)), "medium": (0.06, .02, -.48, -.6, ("zig", .1, 9)),
+          "center": (0.04, -.02, .0, -.55, ("part", .36, 0, .42)), "mush": (0.02, .04, -.28, -.56, ("zig", .1, 8)), "medium": (0.06, .02, -.48, -.6, ("zig", .1, 9)),
           "two_block": (0.12, .2, .26, .1, ("zig", .13, 7)), "undercut": (.58, .48, .34, .16, ("none",)), "spiky": (0.26, .28, .05, -.5, ("zig", .14, 9)),
           "short_messy": (0.16, .2, .0, -.55, ("zig", .16, 6)), "perm": (0.24, .2, -.25, -.56, ("zig", .08, 8)), "loose_perm": (0.22, .18, -.3, -.58, ("side", .2)),
           "curly": (0.18, .15, -.35, -.6, ("zig", .07, 8)), "wavy": (0.22, .2, -.2, -.55, ("side", .2)),
           "short_bob": (0.06, .05, -.5, -.55, ("zig", .05, 9)), "bob": (0.04, .04, -.7, -.72, ("blunt",)), "bob_nobang": (0.16, .0, -.7, -.72, ("part", .38, .35, .5)),
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
           "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.10, .1, -.3, -.5, ("zig", .06, 7)),
-          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.22, .15, -.2, -.45, ("side", .25))}
+          "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     PUFF = {"slick": .06, "undercut": .08, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
-    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else (1.12, 1.07, 1.1))      # 頭より大きめ（ふんわり）
+    cap = hair_shell(f"hair{i}", zf, zt, zs, zb, fr, puff=PUFF.get(kind, .22), tuft=TUFT.get(kind, 0.0), curl=CURL.get(kind), ext=LONG.get(kind), scl=(1.15, 1.09, 1.12) if kind in ("mush", "bob", "short_bob") else ((1.0, 1.03, 1.08) if kind in ("undercut", "two_block") else (1.12, 1.07, 1.1)))      # 刈り上げは上の毛を横に出さない（角刈りに見えた）      # 頭より大きめ（ふんわり）
     if kind in ("short", "short_bangs", "short_messy", "medium", "mush", "nobang", "side_part", "center"):   # 頭のてっぺんのはね毛（2026-11-13 ユーザーの参考画像）
         for k_, (ax, ay, rot) in enumerate([(.01, -.03, (.9, .3)), (-.014, -.05, (.6, -.5))][:1 if kind in ("mush", "side_part", "center", "nobang") else 2]):
             o = sphere(f"ahoge{i}{k_}", .014, (ax, hy + ay, hz + .168), hm, (.75, .55, 1.7), hd); o.rotation_euler = (rot[0], rot[1], 0)      # 前へ倒した小さな毛束（立てるとウサギの耳に見えた）
