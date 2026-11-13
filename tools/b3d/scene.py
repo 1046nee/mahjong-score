@@ -473,7 +473,7 @@ def build_player(i, P):
            "uru": "pachi", "nemu": "jito", "tare_matsuge": "matsuge", "kiri": "tsuri"}      # 前の名前（古い名簿・cast）
     ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
     em = mat("eye", "#1E1A18", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FFFFFF", .35)
-    EX, EZ = .05, -.03      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
+    EX, EZ = .05, -.02      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
     def eline(name, pts, w=.0026):
         cu = bpy.data.curves.new(name, "CURVE"); cu.dimensions = "3D"; cu.bevel_depth = w; cu.bevel_resolution = 3; cu.use_fill_caps = True
@@ -534,16 +534,16 @@ def build_player(i, P):
         g = P["glasses"]; gc, gs = (g, "round") if isinstance(g, str) else (g[0], g[1])      # 形 round＝丸い細ぶち／round_thick＝丸い太ぶち／rect＝四角い細ぶち／thick＝太い四角
         gm = mat(f"glass{i}", gc, .3, metal=.3)
         for sx in (-1, 1):
-            bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "round_thick": .0055, "rect": .0036, "rimless": .0012}.get(gs, .0032), location=(sx * .05, hy + .108, hz - .028), rotation=(math.radians(90), 0, 0),
+            bpy.ops.mesh.primitive_torus_add(major_radius={"thick": .025}.get(gs, .027), minor_radius={"thick": .0052, "round_thick": .0055, "rect": .0036, "rimless": .0012}.get(gs, .0032), location=(sx * .05, hy + .109, hz - .018), rotation=(math.radians(90), 0, 0),
                                              major_segments=4 if gs in ("rect", "thick") else 48, minor_segments=8)
             o = bpy.context.object; o.data.materials.append(gm); o.parent = hd
             if gs in ("rect", "thick"):      # 4角の輪をまず形の中で45度回して四角にし、それから横長にのばす（先にのばすと菱形にゆがんだ）
                 o.data.transform(Matrix.Rotation(math.radians(45), 4, "Z")); o.scale = (1.58, 1.1, 1)      # 回すと辺が r/√2 になるので、その分だけ大きく
             if gs == "oval": o.scale = (1.2, .8, 1)
             if gs == "rimless": o.scale = (1.15, .78, 1)      # ふちなし: ごく細い輪＋うすいレンズ
-            if gs == "browline": box(f"brow_g{i}{sx}", (.056, .008, .01), (sx * .05, hy + .114, hz - .008), gm, bevel=.003, parent=hd)
+            if gs == "browline": box(f"brow_g{i}{sx}", (.056, .008, .01), (sx * .05, hy + .115, hz + .002), gm, bevel=.003, parent=hd)
             for poly in o.data.polygons: poly.use_smooth = True
-        box(f"bridge{i}", (.03, .005, .005), (0, hy + .112, hz - .026), gm, parent=hd)
+        box(f"bridge{i}", (.03, .005, .005), (0, hy + .113, hz - .016), gm, parent=hd)
     if FACE == "nm":     # 鼻と口は、目と同じく形を選ぶ（2026-11-13 ユーザーの依頼「髪型・目・鼻・口を選べるように」）。名簿の nose・mouth
         def on_head(x, z): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + .001
         def line(name, pts, m, w=.0032):       # 頭の丸みに沿わせた線（pts＝顔の面の (x, z)）
@@ -554,11 +554,11 @@ def build_player(i, P):
         # 鼻: dot＝小さな丸（標準）／small＝もっと小さい／big＝大きい丸／wide＝横に広い／long＝縦に長い／point＝とがった／line＝ふくらみ無しの「く」の線
         nk = P.get("nose", "dot"); nm_ = mat("nose", "#E3B79B", .6)
         if nk == "line":
-            line(f"nosel{i}", [(.003, -.032), (-.004, -.042), (.004, -.046)], mat("nosel", "#C98F74", .6), .0022)
+            line(f"nosel{i}", [(.003, -.025), (-.004, -.035), (.004, -.039)], mat("nosel", "#C98F74", .6), .0022)
         else:
             r_, sc_, dz = {"dot": (.011, (1, .7, .9), 0), "small": (.0082, (1, .7, .9), 0), "big": (.0145, (1, .7, .9), -.002),
                            "wide": (.011, (1.45, .7, .75), 0), "long": (.0095, (.85, .8, 1.5), .003), "point": (.0095, (.9, 1.25, .85), 0)}[nk]
-            sphere(f"nose{i}", r_, (0, hy + .1125 + (.003 if nk == "point" else 0), hz - .043 + dz), nm_, sc_, hd)
+            sphere(f"nose{i}", r_, (0, hy + .1125 + (.003 if nk == "point" else 0), hz - .036 + dz), nm_, sc_, hd)
         # 口: smile＝口角の上がった線（標準）／flat＝まっすぐ／wide＝大きな笑い／small＝小さい笑い／frown＝への字／cat＝ω／smirk＝片方だけ上がる／open＝少し開いた口
         mk = P.get("mouth", "smile"); mm_ = mat("mouth", "#8A4A3C", .6); N = 11
         if mk == "open":
