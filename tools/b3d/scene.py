@@ -649,11 +649,11 @@ def build_player(i, P):
           "curly": (0.18, .15, -.35, -.6, ("zig", .07, 8)), "wavy": (0.22, .2, -.2, -.55, ("side", .2)),
           "short_bob": (0.06, .05, -.5, -.55, ("zig", .05, 9)), "bob": (0.04, .04, -.7, -.72, ("blunt",)), "bob_nobang": (0.16, .0, -.7, -.72, ("part", .38, .35, .5)),
           "long": (0.04, .02, -.72, -.72, ("blunt",)), "long_part": (0.12, -.05, -.72, -.72, ("part", .45, 0, .55)), "long_nobang": (0.22, -.05, -.72, -.72, ("part", .35, -.4, .55)),
-          "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.10, .1, -.3, -.5, ("zig", .06, 7)),
+          "long_wavy": (0.14, .02, -.72, -.72, ("side", .25)), "half_up": (0.07, .03, -.72, -.72, ("zig", .05, 9)), "ponytail": (0.06, -.08, -.42, -.5, ("part", .34, .45, .5)),
           "twintail": (0.04, .04, -.4, -.5, ("blunt",)), "hime": (.06, .0, -.72, -.72, ("blunt",)), "donut": (.06, .02, -.4, -.55, ("blunt",)), "long_side": (.28, -.05, -.72, -.72, ("side", .3)), "updo": (0.1, .1, -.2, -.45, ("zig", .1, 8))}
     zf, zt, zs, zb, fr = SH.get(kind, SH["mush"])
     if P.get("fringe"): fr = tuple(P["fringe"])      # 前髪の形を人ごとに変える（名簿の fringe。例: ["zig", .1, 8]＝ギザギザ）
-    PUFF = {"slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
+    PUFF = {"ponytail": .06, "slick": .06, "undercut": .32, "two_block": .1, "spiky": .08, "nobang": .14, "upbang": .1}
     TUFT = {"short": .28, "short_bangs": .28, "nobang": .25, "upbang": .25, "side_part": .28, "center": .28, "short_messy": .3, "spiky": .3, "medium": .15}
     CURL = {"perm": (.12, 9), "loose_perm": (.11, 6), "curly": (.12, 7.5), "wavy": (.08, 5)}
     LONG = {}      # 下へのばすロングはやめた（2026-11-13 ユーザーの判断「微妙すぎる。前の東城りおの髪型みたいなイメージでいい」）。ext の作りは残してある
@@ -698,6 +698,9 @@ def build_player(i, P):
             if kind == "long_wavy":
                 for w_ in range(3): sphere(f"drapew{i}{sx}{w_}", .022, (sx * (.112 + (.008 if w_ % 2 else -.004)), hy + .02, hz - .1 - w_ * .045), hm, (1, .8, 1.2), hd)
         sphere(f"drape{i}", .118, (0, hy - .07, hz - .1), hm2, (1.06, .78, 1.55), hd)      # 後ろの長い髪（頭の後ろからつなげて、背中の外がわへ）
+    if kind == "ponytail":     # 顔の両わきに後れ毛（正面から見て、ヘルメットに見えないように。2026-11-13 ユーザーの指摘「茅森・日向」）
+        for sx in (-1, 1):
+            sphere(f"pstrand{i}{sx}", .016, (sx * .104, hy + .052, hz - .05), hm, (.75, .7, 3.4), hd).rotation_euler = (0, math.radians(sx * -6), 0)
     if kind == "ponytail":
         sphere(f"drape{i}", .042, (0, hy - .16, hz - .13), hm2, (.8, .75, 2.3), hd).rotation_euler = (math.radians(-8), 0, 0)
     if kind == "donut":        # ドーナツの形に編んだ髪（耳の上から下へ、丸い編み目を輪にして左右に）
