@@ -589,8 +589,8 @@ def build_player(i, P):
         if ek == "kuro":         # 黒目だけ（たて長の黒い楕円＋白い光）
             decal(f"eye{i}{sx}", cx, EZ, .0135, .019, em, 1); decal(f"hl{i}{sx}", cx + sx * .004, EZ + .007, .0042, .0042, wm, 3, base=(cx, EZ)); continue
         (rx, rz), tilt, ps, pdy, hide, lid, lash = SPEC[ek]
-        es_ = P.get("eye_s", 1.0); rx *= es_; rz *= es_      # 目の大きさ（名簿の eye_s。1＝標準）
-        hlk = P.get("eye_hl", 1.0)                             # 黒目の中の白い光の大きさ（名簿の eye_hl。0＝無し）
+        es_ = P.get("eye_s", .85); rx *= es_; rz *= es_      # 目の大きさ（名簿の eye_s）。標準は .85（2026-11-13 ユーザーの判断・案E「目力が強すぎて少し怖い」。男女とも）
+        hlk = P.get("eye_hl", .55)                             # 黒目の中の白い点の大きさ（名簿の eye_hl。0＝無し）。標準は .55（同じく案E）
         lash = 3 if P.get("fem") else 0      # まつ毛は女性だけ・3本（2026-11-13）（2026-11-13 ユーザーの指定「男キャラにはまつ毛をつけない」）
         ps = min(.86, ps * 1.2)          # 黒目を大きく（白目の大部分を黒目に）
         tl = sx * tilt; cut = EZ + rz * (1 - 2 * hide) if hide else None
