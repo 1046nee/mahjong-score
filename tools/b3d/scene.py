@@ -467,7 +467,8 @@ def build_player(i, P):
     OLD = {"normal": "pachi", "cute": "matsuge", "kirenaga": "hoso", "maru": "uru", "ito": "nikkori", "fuse": "jito", "small": "pachi", "otome": "tare_matsuge"}      # 前の名前（cast や古い名簿）
     ek = P.get("eyes", "pachi"); ek = OLD.get(ek, ek)
     em = mat("eye", "#221A17", .35); wm = mat("eyehl", "#FFFFFF", .2); white = mat("eyewhite", "#FBF9F4", .35)
-    irc = P.get("eye_color", "#6A4A36"); im_ = mat(f"iris_{irc}", irc, .35); pm = mat("pupil", "#1B1411", .3)
+    irc = {"brown": "#6A4A36", "black": "#2B2420"}.get(P.get("eye_color", "brown"), "#6A4A36")      # 瞳の色は2種類だけ（2026-11-13 ユーザーの判断）: brown＝茶色（標準）／black＝黒
+    im_ = mat(f"iris_{irc}", irc, .35); pm = mat("pupil", "#1B1411", .3)
     EX, EZ = .05, -.03      # 目の高さ（2026-11-13 下げた: パーツが上に集まり、口から下が広くて二重あごに見えた）
     def surf(x, z, d=.0): return hy + math.sqrt(max(1e-6, .115 ** 2 - x * x - (z / 1.08) ** 2)) + d
     def eline(name, pts, w=.0026):
