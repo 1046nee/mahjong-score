@@ -962,7 +962,7 @@ def cam_pose(t, tr, cam, px, focus, pk):
     c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
     ka = seg(t, .4, 1.4); kb = seg(t, ANIM_END - 1.0, ANIM_END)
     loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
-    loc = loc + Vector((-.22, -.10, .34)) * math.sin(math.pi * ka)
+    loc = loc + Vector((-.42, -.05, .62)) * math.sin(math.pi * ka)
     cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
     for n in range(len(focus)):
         loc = loc.lerp(focus[n] + Vector((-.02, -.17, .50)), pk[n]); tgt = tgt.lerp(focus[n], pk[n])
@@ -1064,7 +1064,7 @@ def anim_pose(t, cam):
     c2 = (Vector((.36, -.60, 1.22)), Vector((.25, -.31, .77)), 42.0)
     ka = seg(t, .4, 1.4); kb = seg(t, 6.8, 7.8)
     loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
-    loc = loc + Vector((-.22, -.10, .34)) * math.sin(math.pi * ka)      # 肩ごしから卓の上へは、手前の選手の頭の上を回りこむ（まっすぐ行くと体の中を通って画面が黒くなる）
+    loc = loc + Vector((-.42, -.05, .62)) * math.sin(math.pi * ka)      # 肩ごしから卓の上へは、手前の選手の頭の上を回りこむ（まっすぐ行くと体の中を通って画面が黒くなる）
     cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
     # 間のあいだは、見せたい牌に寄る（②晒した2枚・③取ってきた牌と2枚・④右の隅の3枚）
     focus = [Vector((E4 - .01, LY, .77)), Vector((E4 - .012, LY, .77)), Vector((E4 + DX - .012, LY + DY, .77))]
