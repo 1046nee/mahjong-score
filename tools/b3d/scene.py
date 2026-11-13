@@ -771,12 +771,12 @@ def build_player(i, P):
         for sx in (-1, 1): flower(f"ear{i}{sx}", (sx * .12, hy + .04, hz - .078), "x+" if sx > 0 else "x-", .02, "#F9B8CB", "#E26D8F")
     # 髪が胴にもぐらないように（2026-11-13 ユーザーの指摘「中田・黒沢・二階堂の髪が首の所に埋まっている」）。首が無いので、頭の下の端より下へ垂れた毛は胴の中に入る。
     #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
-    HAIR_MIN = -.078      # 襟の帯の上の面（約 -.094）より上で止めて、首の肌を少し見せる（-.098 だと、パーマ・ボブの後ろの髪が襟に乗って、首が埋まって見えた＝2026-11-13 ユーザーの指摘）
+    _hr = hd.rotation_euler.to_matrix(); HAIR_MIN = -.082      # 襟の帯の上の面（約 -.094）より上で止めて、首の肌を少し見せる（-.098 だと、パーマ・ボブの後ろの髪が襟に乗って、首が埋まって見えた＝2026-11-13 ユーザーの指摘）
     for o in list(hd.children):
         if o.name.startswith("drape") or o.get("noclamp"): continue
         if o.name.startswith(("fl", "ear")) and not kind == "twintail": continue
         if o.type != "MESH" or not o.data.materials or o.data.materials[0] not in (hm, hm2, mat("flower", "#FAFAF5", .5)): continue
-        zs = [(o.matrix_basis @ v.co).z for v in o.data.vertices]; lo, hi = min(zs), max(zs)
+        zs = [(_hr @ (o.matrix_basis @ v.co)).z for v in o.data.vertices]; lo, hi = min(zs), max(zs)      # 頭のうつむき（後ろが下がる）も入れた高さ
         if lo >= HAIR_MIN: continue
         if o.data.materials[0].name.startswith("flower") or hi - HAIR_MIN < .01:
             o.location.z += HAIR_MIN + .012 - lo; continue
