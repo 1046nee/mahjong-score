@@ -771,7 +771,7 @@ def build_player(i, P):
         for sx in (-1, 1): flower(f"ear{i}{sx}", (sx * .12, hy + .04, hz - .078), "x+" if sx > 0 else "x-", .02, "#F9B8CB", "#E26D8F")
     # 髪が胴にもぐらないように（2026-11-13 ユーザーの指摘「中田・黒沢・二階堂の髪が首の所に埋まっている」）。首が無いので、頭の下の端より下へ垂れた毛は胴の中に入る。
     #   髪の部品の下の端を HAIR_MIN（胴の上の面より少し上）までにちぢめる。長い髪は「肩の上で止まる」長さになる
-    HAIR_MIN = -.098
+    HAIR_MIN = -.078      # 襟の帯の上の面（約 -.094）より上で止めて、首の肌を少し見せる（-.098 だと、パーマ・ボブの後ろの髪が襟に乗って、首が埋まって見えた＝2026-11-13 ユーザーの指摘）
     for o in list(hd.children):
         if o.name.startswith("drape") or o.get("noclamp"): continue
         if o.name.startswith(("fl", "ear")) and not kind == "twintail": continue
