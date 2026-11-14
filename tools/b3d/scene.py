@@ -233,7 +233,7 @@ def pose_arm(A, sh, w):
     A["eb"].location = el; A["shd"].location = sh; A["hand"].location = w
     A["hand"].rotation_euler = (w - el).to_track_quat("Y", "Z").to_euler()
 
-def pose_body(B, w_right):
+def pose_body(B, w_right, w_left=None):
     """右手の行き先に合わせて、腕が届かない分だけ上体を前に倒す（腕を棒のように伸ばさない）。左腕は休みの位置のまま肩だけ付いていく"""
     R, L = B["R"], B["L"]
     w = Vector(w_right)
@@ -249,7 +249,7 @@ def pose_body(B, w_right):
     B["head"].location = B["head_loc"] + lean * .95
     B["head"].rotation_euler = (math.radians(8) + ang * .35, 0, 0)
     pose_arm(R, R["sh"] + lean, w)
-    pose_arm(L, L["sh"] + lean * .6, L["rest"])
+    pose_arm(L, L["sh"] + lean * .6, Vector(w_left) if w_left is not None else L["rest"])     # 左手は、行き先があるときだけ動かす（ロンで両手で手牌を倒す。2026-11-14）
 
 def empty(name, parent=None):
     e = bpy.data.objects.new(name, None); add(e)
@@ -422,11 +422,11 @@ if S2:
         NEXT_CODE = "m6"
         if "--taken" not in sys.argv: TAKEN = .9
         RIVERS = auto_rivers([9, 9, 9, 9], HANDS[0] + [DORA, "m6"], ban=("m6", "m9"))
-    elif SCENE == "ron":        # ロンあがり: 六筒・七筒の両面。下家（席1）が切った八筒でロン
+    elif SCENE == "ron":        # ロンあがり: 六筒・七筒の両面。下家（席1）が切った赤五筒でロン（2026-11-14 ユーザーの指定で八筒から。役はタンヤオ・ピンフ・赤1＝子の3翻30符3900点）
         HANDS[0] = ["m6", "m7", "m8", "p2", "p3", "p4", "s5", "s5", "s6", "s7", "s8", "p6", "p7"]
         CALL_SEAT = 1
         if "--taken" not in sys.argv: TAKEN = .75
-        RIVERS = auto_rivers([9, 9, 8, 8], HANDS[0] + [DORA], ban=("p5", "p8"), last={1: "p8"})
+        RIVERS = auto_rivers([9, 9, 8, 8], HANDS[0] + [DORA], ban=("p5", "p8", "p5r"), last={1: "p5r"})
     elif SCENE == "ryukyoku":   # 流局: 自家（六索・七索の両面）と対面がテンパイ、下家と上家がノーテン
         HANDS[0] = ["m3", "m4", "m5", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "s7", "z7", "z7"]
         OPEN_HANDS = {2: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
@@ -1191,7 +1191,7 @@ def s2_build():
     A = lambda x, y, dz=0.0: (x + .004, y - .026 * TS, hz + dz)            # 手は牌の手前がわに置く（牌の絵が隠れないように）
     n0 = len(RIVERS[0])
     slot = lambda k: (RX0 + (k % 6) * RP, RY + RIVER_DY - (k // 6) * RIVER_PITCH, Z)
-    mv, arms, focus, views, show = {}, {}, [], None, {}
+    mv, arms, focus, views, show = {}, {}, [], None, {}; arms_l = {}
     px = lambda t: .03
     hand = [f"hk{k}" for k in range(len(HANDS[0]))]
     xc = (P("hk0").x + P(hand[-1]).x) / 2
@@ -1249,10 +1249,13 @@ def s2_build():
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
-        c = P("called")
-        arms[0] = [(0, R), (1.0, R), (1.5, A(.05, HY - .01, .02)), (2.3, A(.05, LY)), (2.9, R), (DUR, R)]
-        focus = [OVER(xc), (Vector((c.x, c.y, .77)), Vector((-.10, -.22, .46)), 50)]
-        views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0)]      # あがり牌を見せたあとは、倒した手牌の画角に戻る
+        # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
+        xl, xr = P("hk0").x - .006, P(hand[-1]).x + .006
+        arms[0] = [(0, R), (1.0, R), (1.5, A(xr, HY - .01, .02)), (2.3, A(xr, LY)), (2.9, R), (DUR, R)]
+        L0 = Vector(ARMS[0]["L"]["rest"])
+        arms_l[0] = [(0, L0), (1.0, L0), (1.5, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
+        focus = [OVER(xc), OVER(xc)]
+        views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0)]
         pre = dict(lift=["hk11", "hk12"], call=True, cam2=None)
     elif SCENE == "ryukyoku":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
@@ -1272,11 +1275,11 @@ def s2_build():
             Ri = Vector(ARMS[giver]["R"]["rest"])      # 受け取る人は、払う人から見てどちらも左どなり。腕が届く所まで送る
             arms[giver] = arms[giver][:-1] + [(6.0, Ri), (6.5, (0, -.29, hz)), (7.3, (-.15, -.30, hz)), (7.9, Ri), (DUR, Ri)]
         arms[0] = [(0, R), (1.0, R), (1.5, A(.05, HY - .01, .02)), (2.3, A(.05, LY)), (2.9, R), (DUR, R)]
-        WIDE = (Vector((0, -.02, .77)), Vector((0, -.33, 1.53)), 36)                  # 卓の全体を上から（4人の手牌が入る）
+        WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)                  # 卓の全体を引きで上から（4人の手牌が入り、対面の手牌が上の白いカードにかからない。2026-11-14 ユーザーの指定）
         focus = [OVER(xc), WIDE, WIDE]
         views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0), (2.9, 3.6, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=(Vector((0, -.52, 1.36)), Vector((0, -.1, .77)), 30.0))
-    S2C.update(mv=mv, arms=arms, focus=focus, views=views, show=show, px=px, pre=pre)
+    S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre)
 
 def anim_pose_s2(t, cam):
     if not S2C: s2_build()
@@ -1295,7 +1298,9 @@ def anim_pose_s2(t, cam):
     for i, keys in S2C["arms"].items():
         w = hand_path(t, keys)
         if i == 0: w = w + Vector((.085, -.085, .03)) * max(pk)      # 間のあいだは、手を右手前へ引いて牌を見せる
-        pose_body(ARMS[i], w)
+        wl = hand_path(t, S2C["arms_l"][i]) if i in S2C["arms_l"] else None
+        if wl is not None and i == 0: wl = wl + Vector((-.085, -.085, .03)) * max(pk)
+        pose_body(ARMS[i], w, wl)
     cam_pose(t, tr, cam, S2C["px"](t), S2C["focus"], pk, S2C["views"])
 
 def anim_pose(t, cam):

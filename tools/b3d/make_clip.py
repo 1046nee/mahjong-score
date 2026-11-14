@@ -111,11 +111,10 @@ SCRIPTS = {
         (2.8, "{役|ヤク}が1つ以上ある", "アガるのに必要な形"),
         (3.6, "自分で引いたアガリ牌で、ツモアガリ"),
     ])),
-    "ron": dict(title="ロンアガリの方法", kicker="麻雀の所作", sub="4つの手順で覚える", steps=[
+    "ron": dict(title="ロンアガリの方法", kicker="麻雀の所作", sub="3つの手順で覚える", steps=[
         ("発声", "はっせい", "「ロン」と声に出す。ポン・チーより優先される", 0, 6, 2.2, [], "ロン"),
-        ("開示", "かいじ", "手牌を倒して、みんなに見せる", 7, 36, 2.0, [], ""),
-        ("アガリ牌", "アガリはい", "アガリ牌は相手の河に置いたまま。取ってこない", 37, 54, 2.0, [], ""),
-        ("申告", "しんこく", "役と点数を言う「タンヤオ・平和・三色、7700」", 55, 66, 2.6, [], ""),
+        ("開示", "かいじ", "両手で手牌の両端を持って、手牌を倒す", 7, 36, 2.0, [], ""),
+        ("申告", "しんこく", "点数だけを言う。役はタンヤオ・ピンフ・赤1、子の3翻30符で3900点", 37, 66, 2.6, [], "3900"),     # 役は言わず点数だけ（2026-11-14 ユーザーの指定）
     ], tail=(67, 73, 2.4),
     pre=dict(head="ロンアガリできるとき", hold=1.8, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
@@ -124,17 +123,17 @@ SCRIPTS = {
         (4.4, "だれの捨て牌でもロンできる"),
     ])),
     "ryukyoku": dict(title="流局のしかた", kicker="麻雀の所作", sub="4つの手順で覚える", steps=[
-        ("流局", "りゅうきょく", "だれもアガらずに、山の牌がなくなった", 0, 6, 2.2, [], ""),
+        ("流局", "りゅうきょく", "最後の牌を切ってもロンがなく、王牌14枚が残ってツモ番がない", 0, 6, 2.2, [], ""),
         ("テンパイ", "テンパイ", "あと1枚でアガれる人は「テンパイ」と言って手牌を倒す", 7, 36, 2.0, [], "テンパイ"),
         ("ノーテン", "ノーテン", "親から順に。テンパイでない人は「ノーテン」と言って伏せる", 37, 86, 2.0, [], ""),
         ("点棒", "てんぼう", "ノーテンの人がテンパイの人へ払う（場に3000点）", 87, 113, 2.2, [], ""),
     ], tail=(114, 125, 2.4),
     pre=dict(head="流局になるとき", hold=2.0, concl=True, lines=[
-        (0.3, "だれもアガらないまま"),
-        (1.6, "山の牌がなくなった"),
-        (2.9, "{聴牌|テンパイ}の人は手牌を見せる", "あと1枚でアガれる形"),
-        (3.7, "だれもアガらず山が終わると、流局"),
-    ])),
+        (0.3, "最後の{海底牌|ハイテイハイ}をツモった", "山の最後の1枚"),
+        (1.6, "切った{河底牌|ホウテイハイ}にロンがない", "最後の捨て牌"),
+        (2.9, "残りは{王牌|ワンパイ}14枚だけ", "ツモれない牌"),
+        (3.7, "ツモ番がなくなり、流局"),
+    ], note=(4.2, "※流局＝アガリ以外で局が終わること。この流局を荒牌平局という"))),     # 2026-11-14 ユーザーの指定
 }
 
 _fc = {}
@@ -251,6 +250,7 @@ _bub = {}
 #   吹き出しは頭の右下（卓の左手前の上）に置き、しっぽを左上へ＝手前の選手の顔の前（頭の右のふち）へ向ける。対面の顔・見出しのカードにかからない
 BUB_C = (640, 1045)          # 吹き出しの真ん中（2026-11-14 ユーザーの指定: 右へ。ふちが手前の選手の頭にかからない所＝しっぽの先だけが頭のふちに触れる）
 BUB_TIP = (-330, -125)       # しっぽの先（真ん中からのずれ。手前の選手の顔の前を指す）
+BUB_POS = {"3900": ((560, 1200), (-60, 300))}     # 言葉ごとの吹き出しの場所（真ん中, しっぽの先のずれ）。無ければ BUB_C・BUB_TIP
 def bubble(d, tx, k):
     """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定。これから使う吹き出しもすべて）。
     ふちがぎざぎざにならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
@@ -260,7 +260,8 @@ def bubble(d, tx, k):
         w = max(400, tmp.textlength("「" + tx + "」", font=font(96)) + 100); h = 160; B = 9; pad = 240
         im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
         X = lambda v: (v + pad) * Q
-        cx, cy = w / 2, h / 2; tx_, ty_ = cx + BUB_TIP[0], cy + BUB_TIP[1]
+        tip = BUB_POS.get(tx, (BUB_C, BUB_TIP))[1]
+        cx, cy = w / 2, h / 2; tx_, ty_ = cx + tip[0], cy + tip[1]
         import math as _m
         ang = _m.atan2(ty_ - cy, tx_ - cx); nx, ny = -_m.sin(ang), _m.cos(ang)
         bx, by_ = cx + _m.cos(ang) * (w / 2 - 70), cy + _m.sin(ang) * (h / 2 - 30)      # しっぽの付け根（ふちの少し内がわ）
@@ -281,7 +282,8 @@ def bubble(d, tx, k):
     im, w, h, pad = _bub[tx]
     if sc_ < .999: im = im.resize((max(1, int(im.width * sc_)), max(1, int(im.height * sc_))), Image.LANCZOS)
     if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
-    d._image.alpha_composite(im, (int(BUB_C[0] - (w / 2 + pad) * sc_), int(BUB_C[1] - (h / 2 + pad) * sc_)))
+    c_ = BUB_POS.get(tx, (BUB_C, BUB_TIP))[0]
+    d._image.alpha_composite(im, (int(c_[0] - (w / 2 + pad) * sc_), int(c_[1] - (h / 2 + pad) * sc_)))
 
 def summary(d, sc, k):
     a = int(240 * min(1, k * 3))
@@ -368,8 +370,9 @@ def main():
         for seg, tx in narration.lines(name):
             wp = os.path.join(vtmp, seg + ".wav"); narration.synth(tx, wp)
             with wave.open(wp) as wf: VO[seg] = (wp, wf.getnframes() / wf.getframerate(), tx, wf.getframerate())
-            if seg.startswith("step") and "声に出します。" in tx:     # 吹き出しは「〇〇と声に出します。」を言い終わってから（2026-11-14 ユーザーの指定・全部の動画の決まり）
-                wb = os.path.join(vtmp, seg + "_b.wav"); narration.synth(tx[:tx.index("声に出します。") + 7], wb)
+            key = next((k_ for k_ in ("声に出します。", "申告します。") if k_ in tx), None)
+            if seg.startswith("step") and key:     # 吹き出しは「〇〇と声に出します。」「〇〇と申告します。」を言い終わってから（2026-11-14 ユーザーの指定・全部の動画の決まり）
+                wb = os.path.join(vtmp, seg + "_b.wav"); narration.synth(tx[:tx.index(key) + len(key)], wb)
                 with wave.open(wb) as wf: BUB_AT[seg] = .25 + wf.getnframes() / wf.getframerate() + .05
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
