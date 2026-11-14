@@ -5,8 +5,8 @@
   - 牌が卓に当たる瞬間（晒す・置く・切る）＝短く硬い「カチッ」。2枚同時は少しずらして2回
   - 牌を持ち上げる＝小さな「コッ」／卓の上をすべらせる＝「シャッ」から「カチッ」
   - 吹き出し（ポン・カン…）が出る＝「ポンッ」とはじける音
-  - 手順の番号が進む＝小さな「ピッ」／前置きのカードの行が出る＝やわらかい「ポッ」
-  - タイトル＝強く打ちつける「タンッ」／前置きの結論の1行（緑の帯）＝「タンッ」／まとめのカード＝きれいな和音／締め＝牌をかき混ぜる「ジャラッ」
+  - 前置きで、鳴くのに使う手牌（發發）が動いた瞬間と、他家がその牌を切った瞬間＝「ポンッ」
+  - 手順の番号・箇条書き・まとめ・タイトル・締めでは鳴らさない（2026-11-14 ユーザーの指定）
   - 吹き出しは「〇〇と声に出します。」を言い終わってから出し、そのとき「ポンッ」と鳴らす（make_clip.py の BUB_AT）
 牌の当たる時刻は scene.py の動き（もとの時刻 t）から決める。止める間（FREEZE・PAUSE）をはさんだ実際の時刻 → コマ番号は frame_of() で変える
 """
@@ -110,6 +110,8 @@ def _two():
 TILE_EVENTS = {
     "pon": [(2.0, "clack2"), (2.9, "tap"), (3.8, "clack"), (5.0, "slide"), (6.5, "clack")],
 }
+# 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
+PRE_EVENTS = {"pon": [(1.6, "pop"), (3.1, "pop")], "chi": [(1.6, "pop"), (3.1, "pop")]}
 FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0)}
 PAUSE = .7
 
@@ -128,3 +130,41 @@ def render(events, total_sec, sr=SR):
         if name == "slide": o -= len(s) - int(.04 * sr)     # すべらせる音は、最後の「カチッ」がその時刻に来るように前から
         o = max(0, o); buf[o:o + len(s)] += s[:len(buf) - o]
     return buf
+
+
+# ---- 牌の音の候補（2026-11-14 ユーザーの依頼「何個か候補を出して、その中から選ぶ」）----
+def _modes(freqs, amps, decays_ms, n_ms=90, click=.6, click_band=(3000, 11500), seed=31):
+    """かたい牌の「固有の響き」をいくつか重ねる（モード合成）＋はじめの一瞬のノイズ"""
+    n = int(n_ms / 1000 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    s = sum(a * np.sin(2 * math.pi * f * t + rng.random() * 6.28) * np.exp(-t / (d / 1000)) for f, a, d in zip(freqs, amps, decays_ms))
+    c = _band(rng.normal(0, 1, n), *click_band) * np.exp(-t / .0012)
+    s = s / (np.abs(s).max() + 1e-9) + click * c / (np.abs(c).max() + 1e-9)
+    s[:int(.0004 * SR)] *= np.linspace(0, 1, int(.0004 * SR))
+    return s / np.abs(s).max()
+
+
+def _felt(ms=6, lo=150, hi=1500, seed=41):
+    n = int(.06 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    b = _band(rng.normal(0, 1, n), lo, hi) * np.exp(-t / (ms / 1000)); return b / np.abs(b).max()
+
+
+def _mix(*parts):
+    n = max(len(p) for _, p in parts); s = np.zeros(n)
+    for o, p in parts: s[o:o + len(p)] += p[:n - o]
+    return s / np.abs(s).max()
+
+
+CAND_TT = {   # 牌と牌が当たる音（晒す・置く・寄せる）
+    "A": ("今の音（短いパチッ）", lambda: clack(1.0)),
+    "B": ("固い響き（中くらいの高さ）", lambda: _modes([3220, 4870, 6610, 8420], [1, .6, .45, .3], [12, 8, 6, 4])),
+    "C": ("高く短いカチッ", lambda: _modes([5300, 7400, 9100], [1, .7, .5], [5, 4, 3], click=.8)),
+    "D": ("カチン（よく響く）", lambda: _modes([3220, 6440, 9600], [1, .45, .2], [30, 14, 6], click=.5)),
+    "E": ("2回当たるカチャ", lambda: _mix((0, _modes([3220, 4870, 6610, 8420], [1, .6, .45, .3], [12, 8, 6, 4])), (int(.012 * SR), .6 * _modes([3400, 5100, 7000], [1, .6, .4], [10, 6, 4], seed=33)))),
+}
+CAND_DA = {   # 打牌（マットの上に置く・河に切る）
+    "1": ("やわらかいトン（マットの音）", lambda: _mix((0, _felt(6)), (0, .35 * _modes([4200, 6800], [1, .5], [3, 2], n_ms=40, click=.3)))),
+    "2": ("パチッ＋トン（半々）", lambda: _mix((0, clack(1.0, ring=.1, body=0)), (0, .7 * _felt(5, 250, 1000)))),
+    "3": ("強いパシッ", lambda: _modes([], [], [], click=1.0, click_band=(500, 10000))),
+    "4": ("牌が響いてマットで止まる", lambda: _mix((0, _modes([2900, 4600, 7100], [1, .6, .4], [4, 3, 2], n_ms=50)), (0, .6 * _felt(5)))),
+    "5": ("角が当たってから倒れる", lambda: _mix((0, .45 * clack(1.0, 1.1, seed=51, ring=.1, body=0)), (int(.018 * SR), _mix((0, clack(1.0, ring=.1, body=0)), (0, .7 * _felt(5, 250, 1000)))))),
+}

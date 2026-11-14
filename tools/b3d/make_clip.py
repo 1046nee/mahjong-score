@@ -339,14 +339,10 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
     for n, (f, i, t, held) in enumerate(seq):
         sec = n / fps
         if n == 0 or i != seq[n - 1][1]:          # 場面が変わった瞬間
-            if i == -2: ev.append((sec + .05, "slap"))
-            elif i >= 0: ev.append((sec, "tick"))
-            elif i == -1: ev.append((sec + .9, "chime"))
-            elif i == -3: ev.append((sec + .3, "jara"))
+            # 画面の出来事で鳴らすのは、発声の吹き出しだけ（2026-11-14 ユーザーの指定。手順の番号・箇条書き・まとめ・タイトル・締めでは鳴らさない）
             if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
-            if i == -4:
-                ls = sc["pre"]["lines"]
-                for k, row in enumerate(ls): ev.append((sec + row[0], "slap" if sc["pre"].get("concl") and k == len(ls) - 1 else "line"))
+            if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
+                for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + t_, snd))
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
     for t, snd in sfx.TILE_EVENTS.get(name, []):
         fr = sfx.frame_of(name, t, fps)
