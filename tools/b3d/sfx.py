@@ -20,17 +20,28 @@ def _env(n, a, d):
     return np.minimum(1, t / max(a, 1e-4)) * np.exp(-t / d)
 
 
-def clack(vol=.9, pitch=1.0):
-    """牌が卓（フェルト）や牌に当たる音。高い倍音の短い減衰＋はじめの一瞬のノイズ"""
-    n = int(.12 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(7)
-    s = sum(a * np.sin(2 * math.pi * f * pitch * t) * np.exp(-t / d) for f, a, d in ((2350, .55, .018), (3720, .4, .012), (5150, .25, .008), (1150, .35, .03)))
-    s += rng.normal(0, 1, n) * np.exp(-t / .003) * .6
-    return s * vol
+def _band(x, lo, hi):
+    X = np.fft.rfft(x); f = np.fft.rfftfreq(len(x), 1 / SR); X[(f < lo) | (f > hi)] = 0
+    return np.fft.irfft(X, len(x))
+
+
+def clack(vol=.9, pitch=1.0, seed=7, ring=0.0):
+    """牌が当たる音（2026-11-14 実際の牌の音に合わせて作り直した）。
+    実際の音は、ピークから1〜10ミリ秒で消える、とても短い「パチッ」。中心は2〜5kHz、下に200〜600Hzの「コッ」という胴の音、
+    牌どうしが当たるときだけ3kHzあたりが少し響く。前の版は高い音が長く鳴り続けて、電子音のように聞こえた"""
+    n = int(.06 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    click = _band(rng.normal(0, 1, n), 1500 * pitch, 7500) * np.exp(-t / .0016)
+    body = _band(rng.normal(0, 1, n), 120, 700) * np.exp(-t / .006)
+    s = click / (np.abs(click).max() + 1e-9) + .3 * body / (np.abs(body).max() + 1e-9)
+    if ring:      # 牌どうしが当たる音（少しだけ響く）
+        s += ring * (np.sin(2 * math.pi * 3200 * pitch * t) + .6 * np.sin(2 * math.pi * 4350 * pitch * t)) * np.exp(-t / .006)
+    s[:int(.0004 * SR)] *= np.linspace(0, 1, int(.0004 * SR))
+    return s / np.abs(s).max() * vol
 
 
 def tap(vol=.35):
     """牌を持ち上げる小さな音"""
-    return clack(vol, .8) * _env(int(.12 * SR), .001, .02)
+    return clack(vol, .85, seed=11)
 
 
 def slide(dur=.45, vol=.25):
@@ -69,13 +80,13 @@ def bell(freqs, dur=1.2, vol=.22, gap=.0):
     return out * vol / max(1, len(freqs) ** .5)
 
 
-SOUNDS = {"clack": lambda: clack(), "clack2": lambda: _two(), "tap": tap, "slide": slide, "pop": pop, "tick": tick,
+SOUNDS = {"clack": lambda: clack(), "clackt": lambda: clack(ring=.35), "clack2": lambda: _two(), "tap": tap, "slide": slide, "pop": pop, "tick": tick,
           "line": lambda: pop(.22), "whoosh": whoosh, "chime": lambda: bell([1047, 1319, 1568], 1.4, .26, .07),
           "jingle": lambda: bell([784, 988, 1175, 1568], 1.6, .3, .09)}
 
 
 def _two():
-    a = clack(.8); b = clack(.75, 1.04); o = int(.028 * SR); s = np.zeros(len(a) + o); s[:len(a)] += a; s[o:o + len(b)] += b
+    a = clack(.8, ring=.25); b = clack(.7, 1.05, seed=9, ring=.25); o = int(.028 * SR); s = np.zeros(len(a) + o); s[:len(a)] += a; s[o:o + len(b)] += b
     return s
 
 
