@@ -1,5 +1,5 @@
 /* 符と点数の計算ツール（点数早見表の記事 blog-score-table.html・2026-10-26〜）
-   符＝副底20＋あがり方＋待ち＋雀頭＋面子 → 10の位に切り上げ。点数＝基本点（符×2^(翻+2)、2,000で満貫）から。
+   符＝副底20＋アガリ方＋待ち＋雀頭＋面子 → 10の位に切り上げ。点数＝基本点（符×2^(翻+2)、2,000で満貫）から。
    点数は tools/score_sheet.py（早見表の画像）と同じ式。node tools/fu_calc_test.js で早見表のデータと突き合わせる */
 (function () {
   'use strict';
@@ -65,8 +65,8 @@
   var hanOpts = '';
   for (var h = 1; h <= 13; h++) hanOpts += '<option value="' + h + '"' + (h === 2 ? ' selected' : '') + '>' + (h === 13 ? '13翻以上' : h + '翻') + '</option>';
   root.innerHTML =
-    '<div class="fc-row"><span class="fc-l">あがった人</span>' + seg('fc-who', [['子', 'ko'], ['親', 'oya']]) + '</div>' +
-    '<div class="fc-row"><span class="fc-l">あがり方</span>' + seg('fc-how', [['ロン', 'ron'], ['ツモ', 'tsumo']]) + '</div>' +
+    '<div class="fc-row"><span class="fc-l">アガった人</span>' + seg('fc-who', [['子', 'ko'], ['親', 'oya']]) + '</div>' +
+    '<div class="fc-row"><span class="fc-l">アガリ方</span>' + seg('fc-how', [['ロン', 'ron'], ['ツモ', 'tsumo']]) + '</div>' +
     '<div class="fc-row"><span class="fc-l">鳴き</span>' + seg('fc-naki', [['門前（鳴きなし）', '1'], ['鳴きあり', '0']]) + '</div>' +
     '<div class="fc-row"><span class="fc-l">手の形</span>' + seg('fc-form', [['ふつう', 'normal'], ['平和', 'pinfu'], ['七対子', 'chitoi']]) + '</div>' +
     '<div class="fc-detail">' +

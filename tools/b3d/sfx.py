@@ -197,12 +197,12 @@ SOUNDS["clackt"] = _D3
 SOUNDS["clack2"] = lambda: _mix((0, _D3()), (int(.028 * SR), .85 * _modes([], [], [], click=1.0, click_band=(500, 10000), seed=37)))
 
 
-def _slide3(dur=.45, vol=.25):
+def _slide3(dur=.45, vol=.14):      # すべらせる音は少し小さく（2026-11-14 ユーザーの指定。.25 → .14）
     """すべらせる音（今のまま）の最後の「止まる音」を候補3に"""
     n = int(dur * SR); rng = np.random.default_rng(3); x = rng.normal(0, 1, n)
     x = np.convolve(x, np.ones(6) / 6, "same") - np.convolve(x, np.ones(60) / 60, "same")
     t = np.arange(n) / n; s = x * np.sin(math.pi * t) ** 1.5 * vol
-    c = .7 * _D3(); s[-len(c):] += c
+    c = .6 * _D3(); s[-len(c):] += c
     return s
 
 

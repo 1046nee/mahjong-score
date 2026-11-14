@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """役の出やすさランキング・役満の出やすさの1枚の表（2026-11-13〜）。見た目は役一覧表（hai_sheets.py）とそろえる。
 
-数字の出どころ: 天鳳 鳳凰卓 東南戦 赤あり 2023年 168,778戦（あがり 1,511,570回）の和了役統計
+数字の出どころ: 天鳳 鳳凰卓 東南戦 赤あり 2023年 168,778戦（アガリ 1,511,570回）の和了役統計
   （koba::blog「天鳳鳳凰卓統計(2023年)」https://blog.kobalab.net/entry/2024/11/04/215201 の表の回数）。
-  出現率＝その役がついたあがりの回数 ÷ あがりの回数。翻牌（役牌）はダブ東なら2回と数えた数字。四喜和は大四喜と小四喜の合計。
+  出現率＝その役がついたアガリの回数 ÷ アガリの回数。翻牌（役牌）はダブ東なら2回と数えた数字。四喜和は大四喜と小四喜の合計。
 出力（assets/hai/）: mahjong-yaku-ranking.png / -web.png / .pdf、mahjong-yakuman-ranking.png / -web.png / .pdf
 実行: python tools/yaku_rate_sheet.py
 """
@@ -13,8 +13,8 @@ from hai_sheets import CSS, FONT, SHEET2_CSS, YAKU, ex_tiles, naki_chip, check, 
 from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
 
 GAMES, WINS = 168778, 1511570
-SRC = "天鳳 鳳凰卓 2023年 168,778半荘・あがり1,511,570回の集計（koba::blog）"
-# 役の名前（hai_sheets の YAKU と同じ字）→ あがりの回数
+SRC = "天鳳 鳳凰卓 2023年 168,778半荘・アガリ1,511,570回の集計（koba::blog）"
+# 役の名前（hai_sheets の YAKU と同じ字）→ アガリの回数
 COUNT = {"立直": 627241, "役牌": 593823, "門前清自摸和": 377504, "断么九": 332470, "平和": 306891, "一発": 120275,
          "混一色": 68803, "一盃口": 59460, "三色同順": 56173, "七対子": 43426, "対々和": 22370, "一気通貫": 21947,
          "混全帯么九": 12515, "三暗刻": 9329, "清一色": 7990, "海底摸月": 6963, "河底撈魚": 6457, "純全帯么九": 4274,
@@ -23,7 +23,7 @@ YAKUMAN = {"四暗刻": 556, "国士無双": 289, "大三元": 243, "四喜和":
            "緑一色": 10, "九蓮宝燈": 10, "天和": 6, "四槓子": 1}
 INFO = {name: (yomi, m, n, ex) for _, items in YAKU for name, yomi, m, n, cond, ex in items}
 INFO["四喜和"] = ("スーシーホー", 13, 13, INFO["小四喜"][3])
-WHY = {"天和": "親が配牌の時点であがっている", "地和": "子が最初のツモであがる"}
+WHY = {"天和": "親が配牌の時点でアガっている", "地和": "子が最初のツモでアガる"}
 
 
 def pct(c): return c / WINS * 100
@@ -85,20 +85,20 @@ def ranking_sheet(url):
         w = max(1.5, (c / mx) ** .5 * 100) * .7       # 棒は平方根の長さ（低い役も見えるように）
         return (f'<div class="r{" top" if k <= 5 else ""}" style="--c:{col}"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div>'
                 f'<div class="hn"><b>{h}</b><small>{sub}</small></div><div class="rt"><div class="bar"><div class="b" style="width:{w:.1f}%"></div>'
-                f'<span class="v">{pct_s(c)}</span></div><span class="o">あがり{once(c)}</span></div></div>')
+                f'<span class="v">{pct_s(c)}</span></div><span class="o">アガリ{once(c)}</span></div></div>')
     half = (len(items) + 1) // 2
-    hd = '<div class="hd"><span>順位</span><span>役</span><span>翻</span><span>出現率（あがりのうち）</span></div>'
+    hd = '<div class="hd"><span>順位</span><span>役</span><span>翻</span><span>出現率（アガリのうち）</span></div>'
     left = "".join(row(k, nm, c) for k, (nm, c) in enumerate(items[:half], 1))
     right = "".join(row(k, nm, c) for k, (nm, c) in enumerate(items[half:], half + 1))
     lg = "".join(f'<span style="--c:{GROUP_COLOR[g]}"><i></i>{"役満" if g == 13 else f"{g}翻"}</span>' for g in (1, 2, 3, 6, 13))
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}{RANK_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; }}
 </style></head><body>
-<header><h1>麻雀 役の出やすさランキング<small>あがりのうち、その役がつく割合（一般役26役＋役満11役）</small></h1>{logo_html()}</header>
-<div class="pts"><div>いちばん出る役<b>リーチ</b>あがりの約4割</div><div>いちばん出る役満<b>四暗刻</b>あがり{once(YAKUMAN["四暗刻"])}</div><div>いちばん出ない役<b>四槓子</b>151万回のあがりで1回</div></div>
+<header><h1>麻雀 役の出やすさランキング<small>アガリのうち、その役がつく割合（一般役26役＋役満11役）</small></h1>{logo_html()}</header>
+<div class="pts"><div>いちばん出る役<b>リーチ</b>アガリの約4割</div><div>いちばん出る役満<b>四暗刻</b>アガリ{once(YAKUMAN["四暗刻"])}</div><div>いちばん出ない役<b>四槓子</b>151万回のアガリで1回</div></div>
 <div class="lg">{lg}</div>
 <div class="cols2"><section class="rk">{hd}{left}</section><section class="rk">{hd}{right}</section></div>
-<p class="note">出現率＝その役がついたあがりの回数 ÷ あがりの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計。ドラは役ではないので入れていない。<br>データ: {SRC}</p>
+<p class="note">出現率＝その役がついたアガリの回数 ÷ アガリの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計。ドラは役ではないので入れていない。<br>データ: {SRC}</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール</span></footer></body></html>"""
 
 
@@ -135,15 +135,15 @@ def ranking_sheet_hai(url):
         w = max(1.5, (c / mx) ** .5 * 100) * .55
         rows += (f'<div class="r3{" top" if k <= 5 else ""}" style="--c:{col}"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div>'
                  f'<div class="hn"><b>{h}</b><small>{sub}</small></div><div class="tl">{tl}</div>'
-                 f'<div class="rt"><div class="b" style="width:{w:.1f}%"></div><span class="v">{pct_s(c)}</span><span class="o">あがり{once(c)}</span></div></div>')
+                 f'<div class="rt"><div class="b" style="width:{w:.1f}%"></div><span class="v">{pct_s(c)}</span><span class="o">アガリ{once(c)}</span></div></div>')
     lg = "".join(f'<span style="--c:{GROUP_COLOR[g]}"><i></i>{"役満" if g == 13 else f"{g}翻"}</span>' for g in (1, 2, 3, 6, 13))
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}{RANK_CSS}{HAI_CSS}
 body {{ padding: 20px 28px 16px; }} header {{ margin-bottom: 7px; padding: 8px 12px 8px 16px; }} .lg {{ margin-bottom: 6px; }}
 </style></head><body>
-<header><h1>麻雀 役の出やすさランキング<small>あがりのうち、その役がつく割合（一般役26役＋役満11役・牌の例つき）</small></h1>{logo_html()}</header>
-<div class="lg">{lg}<span><i style="background:#E75620;width:16px;border-radius:3px"></i>あがり牌</span></div>
-<section class="rk3"><div class="hd"><span>順位</span><span>役</span><span>翻</span><span>形の例</span><span>出現率（あがりのうち）</span></div>{rows}</section>
-<p class="note">出現率＝その役がついたあがりの回数 ÷ あがりの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計（例は小四喜）。データ: {SRC}</p>
+<header><h1>麻雀 役の出やすさランキング<small>アガリのうち、その役がつく割合（一般役26役＋役満11役・牌の例つき）</small></h1>{logo_html()}</header>
+<div class="lg">{lg}<span><i style="background:#E75620;width:16px;border-radius:3px"></i>アガリ牌</span></div>
+<section class="rk3"><div class="hd"><span>順位</span><span>役</span><span>翻</span><span>形の例</span><span>出現率（アガリのうち）</span></div>{rows}</section>
+<p class="note">出現率＝その役がついたアガリの回数 ÷ アガリの回数（有効数字3桁）。役牌はダブ東などを2回と数えた数字。四喜和は大四喜と小四喜の合計（例は小四喜）。データ: {SRC}</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>翻数は一般的なルール・牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 
@@ -176,14 +176,14 @@ def yakuman_sheet(url):
         tiles = ex_tiles(ex, url, avail=236, wmax=16) if ex else f'<span class="sit">{WHY[name]}</span>'
         g = GAMES / c
         rows += (f'<div class="r2"><div class="no">{k}</div><div class="nm"><b>{name}</b><small>{yomi}</small></div><div>{tiles}</div>'
-                 f'<div class="fq"><b>{round(g):,}<small>半荘に1回</small></b><span>あがり{once(c)}・{c:,}回</span></div></div>')
+                 f'<div class="fq"><b>{round(g):,}<small>半荘に1回</small></b><span>アガリ{once(c)}・{c:,}回</span></div></div>')
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{FONT}<style>{CSS}{LOGO_CSS}{SHEET2_CSS}{MAN_CSS}
 body {{ padding: 24px 30px 20px; }} header {{ margin-bottom: 10px; padding: 9px 12px 9px 16px; background: #E25A1C; }} header h1 small {{ color: #FFE7D6; }}
 </style></head><body>
-<header><h1>麻雀 役満の出やすさランキング<small>卓のだれかが その役満をあがるのは 何半荘に1回か</small></h1>{logo_html()}</header>
+<header><h1>麻雀 役満の出やすさランキング<small>卓のだれかが その役満をアガるのは 何半荘に1回か</small></h1>{logo_html()}</header>
 <div class="big"><div>役満が出るのは<b>{round(GAMES / total):,}半荘に1回</b>（どれか1つ）</div><div>いちばん出る役満<b>四暗刻</b>{round(GAMES / YAKUMAN["四暗刻"]):,}半荘に1回</div><div>いちばん出ない役満<b>四槓子</b>16.8万半荘で1回だけ</div></div>
 <section class="mk"><div class="hd"><span>順位</span><span>役満</span><span>形の例</span><span>出る回数</span></div>{rows}</section>
-<p class="note">「○半荘に1回」＝4人の卓で、だれか1人がその役満をあがる目安。四喜和は大四喜と小四喜の合計（例は小四喜）。<br>データ: {SRC}</p>
+<p class="note">「○半荘に1回」＝4人の卓で、だれか1人がその役満をアガる目安。四喜和は大四喜と小四喜の合計（例は小四喜）。<br>データ: {SRC}</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 
 

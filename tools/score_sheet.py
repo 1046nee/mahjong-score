@@ -80,7 +80,7 @@ def t(code, yoko=False):
 
 
 def tl(*codes):
-    """牌の並び。"y:xx" は横向き、"!xx" はあがり牌（オレンジの下地）"""
+    """牌の並び。"y:xx" は横向き、"!xx" はアガリ牌（オレンジの下地）"""
     out = ""
     for c in codes:
         if c == "→":
@@ -102,7 +102,7 @@ FU_MENTSU = [
     ("明槓<small>大明槓・加槓</small>", tl("y:m6", "m6", "m6", "m6"), "8", "16"),
     ("暗槓", tl("back", "m6", "m6", "back"), "16", "32"),
 ]
-# 待ちの符: 名前, 形→あがり牌, 符
+# 待ちの符: 名前, 形→アガリ牌, 符
 FU_MACHI = [
     ("両面", tl("s3", "s4", "→", "!s5"), "0"),
     ("シャンポン", tl("p5", "p5", "z1", "z1", "→", "!z1"), "0"),
@@ -122,7 +122,7 @@ def fu_html():
     w = "".join(f'<tr><th>{a}</th><td class="sh">{b}</td><td class="{"p" if c != "0" else ""}">{c}</td></tr>' for a, b, c in FU_MACHI)
     two = ('<div class="two">'
            f'<table class="mz"><thead><tr><th>面子</th><th>形</th><th>二〜八</th><th>一九字</th></tr></thead><tbody>{m}</tbody></table>'
-           f'<table class="mc"><thead><tr><th>待ち</th><th>形→あがり</th><th>符</th></tr></thead><tbody>{w}</tbody></table></div>')
+           f'<table class="mc"><thead><tr><th>待ち</th><th>形→アガリ</th><th>符</th></tr></thead><tbody>{w}</tbody></table></div>')
     notes = ('<ul><li><b>決まった符</b>：ピンフのツモ<b>20符</b>・七対子<b>25符</b>（切り上げない）・鳴いて符のないロン<b>30符</b></li>'
              '<li>シャンポン待ちを<b>ロン</b>でそろえた刻子は<b>明刻</b>あつかい（ツモなら暗刻）</li>'
              '<li>待ちが2通りに取れるときは、符の高いほうで数えてよい</li></ul>')
