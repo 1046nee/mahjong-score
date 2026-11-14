@@ -259,12 +259,17 @@ def bubble(d, tx, k):
         import math as _m
         ang = _m.atan2(ty_ - cy, tx_ - cx); nx, ny = -_m.sin(ang), _m.cos(ang)
         bx, by_ = cx + _m.cos(ang) * (w / 2 - 70), cy + _m.sin(ang) * (h / 2 - 30)      # しっぽの付け根（ふちの少し内がわ）
-        def shape(g, col):      # g＝外へ広げる幅（白い枠は B、オレンジは 0）
-            dr.rounded_rectangle((X(-g), X(-g), X(w + g), X(h + g)), radius=(h / 2 + g) * Q, fill=col)
-            half = 30 + g * 1.6
-            pts = [(bx + nx * half, by_ + ny * half), (bx - nx * half, by_ - ny * half), (tx_ + _m.cos(ang) * g * 1.8, ty_ + _m.sin(ang) * g * 1.8)]
-            dr.polygon([(X(px), X(py)) for px, py in pts], fill=col)
-        shape(B, (255, 255, 255, 255)); shape(0, (231, 86, 32, 255))
+        # オレンジの形（丸い四角＋しっぽ）を1枚の型にして、白い枠はその型を同じ幅だけ外へ太らせて作る。
+        # （前は白い形とオレンジの形を別々に描いていて、細長いしっぽの下のふちだけ白が付かなかった＝2026-11-14 確かめて直した）
+        half = 34; R = B * Q
+        tri = [(X(bx + nx * half), X(by_ + ny * half)), (X(bx - nx * half), X(by_ - ny * half)), (X(tx_), X(ty_))]
+        m = Image.new("L", im.size, 0); dm = ImageDraw.Draw(m)
+        dm.rounded_rectangle((X(0), X(0), X(w), X(h)), radius=h / 2 * Q, fill=255); dm.polygon(tri, fill=255)
+        wm = Image.new("L", im.size, 0); dw = ImageDraw.Draw(wm)      # 白い枠＝型をどこも同じ幅 R だけ外へ（角は丸く）
+        dw.rounded_rectangle((X(0) - R, X(0) - R, X(w) + R, X(h) + R), radius=h / 2 * Q + R, fill=255); dw.polygon(tri, fill=255)
+        dw.line(tri + [tri[0]], fill=255, width=2 * R, joint="curve")
+        for px, py in tri: dw.ellipse((px - R, py - R, px + R, py + R), fill=255)
+        im.paste((255, 255, 255, 255), (0, 0), wm); im.paste((231, 86, 32, 255), (0, 0), m)
         l, t, r, b_ = dr.textbbox((0, 0), "「" + tx + "」", font=ft)
         dr.text((X(cx) - (r - l) / 2 - l, X(cy) - 4 * Q - (b_ - t) / 2 - t), "「" + tx + "」", font=ft, fill=(255, 255, 255, 255))
         _bub[tx] = (im.resize((im.width // Q, im.height // Q), Image.LANCZOS), w, h, pad)
