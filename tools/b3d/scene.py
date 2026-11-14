@@ -373,7 +373,7 @@ RIVERS = ([["z3", "s1", "s9"], ["z4", "p9", "m1", "s9"], ["z1", "p1", "s2", "z6"
           [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]])   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
 # ---- 台本で動かす場面（2026-11-13）: 大明槓・加槓・リーチ・ツモあがり・ロンあがり・流局。牌姿と席は Notion の「3D動画の出演表」が正 ----
 S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku")
-RINSHAN = "s1"          # 嶺上牌の絵（暗槓＝一索）
+RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
 NEXT_CODE = "back"      # 次にツモる牌の絵（ツモあがりで使う）
 RIVER_DY, RIVER_PITCH, WANPAI_DY = 0.0, TL + .003, 0.0      # 河の位置・段の間隔・王牌の位置（流局は河が3段になるので詰める）
 TSUMO14 = False         # 手牌の右端の1枚（ツモった牌）を少し離して置く
@@ -460,7 +460,7 @@ def build_tiles():
                 if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
                     named["dora"] = tile(DORA, (x, WY + WANPAI_DY, Z + TT), r, "lie"); continue
                 code = {(BRK + 1, 1): RINSHAN, (BRK + 4, 1): "p2"}.get((k, lv), "back") if i == 0 else "back"
-                if (i, k) == nxt and lv == 1: code = NEXT_CODE   # 伏せた牌でも、めくる・取る牌は絵を持たせる（嶺上牌＝一索・カンドラ表示牌＝二筒）
+                if (i, k) == nxt and lv == 1: code = NEXT_CODE   # 伏せた牌でも、めくる・取る牌は絵を持たせる（嶺上牌＝四筒・カンドラ表示牌＝二筒）
                 t = tile(code, (x, WY + (WANPAI_DY if (i == 0 and k > BRK) else 0), Z + lv * TT), r, "down")
                 if (i, k) == nxt and lv == 1: named["next"] = t
                 if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
