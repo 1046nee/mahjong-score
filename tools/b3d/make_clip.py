@@ -293,7 +293,20 @@ _bub = {}
 #   吹き出しは頭の右下（卓の左手前の上）に置き、しっぽを左上へ＝手前の選手の顔の前（頭の右のふち）へ向ける。対面の顔・見出しのカードにかからない
 BUB_C = (640, 1045)          # 吹き出しの真ん中（2026-11-14 ユーザーの指定: 右へ。ふちが手前の選手の頭にかからない所＝しっぽの先だけが頭のふちに触れる）
 BUB_TIP = (-330, -125)       # しっぽの先（真ん中からのずれ。手前の選手の顔の前を指す）
-BUB_POS = {"3900": ((560, 1200), (-60, 300)), "400・700": ((560, 1200), (-60, 300))}     # 言葉ごとの吹き出しの場所（真ん中, しっぽの先のずれ）。無ければ BUB_C・BUB_TIP
+BUB_POS = {"3900": ((560, 1110), (-60, 300)), "400・700": ((560, 1110), (-60, 300))}     # 言葉ごとの吹き出しの場所（真ん中, しっぽの向き）。無ければ BUB_FACE に向けて置く
+# しっぽはできるだけ短く（2026-11-14 ユーザーの指定）。しっぽの長さ＝ふちから TAIL_L。肩ごしの画角では、しっぽの先を手前の選手の顔の前（BUB_FACE）に合わせ、
+# 吹き出しの本体はそこから BUB_TIP の向きの逆へ置く（前の真ん中 BUB_C から先を指す形と同じ向き）
+TAIL_L = 46
+BUB_FACE = (445, 905)      # 手前の選手の頭の右のふち（顔の前）。吹き出しの本体は頭にかけない
+def _bub_geom(tx, w, h):
+    """吹き出しの真ん中と、しっぽの先（真ん中からのずれ）"""
+    import math as _m
+    c0, v = BUB_POS.get(tx, (None, BUB_TIP))
+    L_ = _m.hypot(*v); dx, dy = v[0] / L_, v[1] / L_
+    t = min((w / 2) / max(abs(dx), 1e-6), (h / 2) / max(abs(dy), 1e-6))      # 真ん中からふちまで（その向きで）
+    tip = (dx * (t + TAIL_L), dy * (t + TAIL_L))
+    c = c0 if c0 else (BUB_FACE[0] - tip[0], BUB_FACE[1] - tip[1])
+    return c, tip
 def bubble(d, tx, k):
     """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定。これから使う吹き出しもすべて）。
     ふちがぎざぎざにならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
@@ -303,7 +316,7 @@ def bubble(d, tx, k):
         w = max(400, tmp.textlength("「" + tx + "」", font=font(96)) + 100); h = 160; B = 9; pad = 240
         im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
         X = lambda v: (v + pad) * Q
-        tip = BUB_POS.get(tx, (BUB_C, BUB_TIP))[1]
+        tip = _bub_geom(tx, w, h)[1]
         cx, cy = w / 2, h / 2; tx_, ty_ = cx + tip[0], cy + tip[1]
         import math as _m
         ang = _m.atan2(ty_ - cy, tx_ - cx); nx, ny = -_m.sin(ang), _m.cos(ang)
@@ -321,11 +334,10 @@ def bubble(d, tx, k):
         im.paste((255, 255, 255, 255), (0, 0), wm); im.paste((231, 86, 32, 255), (0, 0), m)
         l, t, r, b_ = dr.textbbox((0, 0), "「" + tx + "」", font=ft)
         dr.text((X(cx) - (r - l) / 2 - l, X(cy) - 4 * Q - (b_ - t) / 2 - t), "「" + tx + "」", font=ft, fill=(255, 255, 255, 255))
-        _bub[tx] = (im.resize((im.width // Q, im.height // Q), Image.LANCZOS), w, h, pad)
-    im, w, h, pad = _bub[tx]
+        _bub[tx] = (im.resize((im.width // Q, im.height // Q), Image.LANCZOS), w, h, pad, _bub_geom(tx, w, h)[0])
+    im, w, h, pad, c_ = _bub[tx]
     if sc_ < .999: im = im.resize((max(1, int(im.width * sc_)), max(1, int(im.height * sc_))), Image.LANCZOS)
     if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
-    c_ = BUB_POS.get(tx, (BUB_C, BUB_TIP))[0]
     d._image.alpha_composite(im, (int(c_[0] - (w / 2 + pad) * sc_), int(c_[1] - (h / 2 + pad) * sc_)))
 
 def summary(d, sc, k):
