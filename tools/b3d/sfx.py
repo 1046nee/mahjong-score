@@ -111,7 +111,9 @@ TILE_EVENTS = {
     "pon": [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")],     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
-PRE_EVENTS = {"pon": [(1.6, "pop"), (3.1, "pop")], "chi": [(1.6, "pop"), (3.1, "pop")]}
+# 2026-11-14 ユーザーの指定「牌が浮き上がる時や、だれかが牌を切った時にポンッ」を、9本すべてに。浮き上がる＝1.6秒（どの動画も）・他家が切る＝3.1秒（鳴く・ロンの動画だけ）
+PRE_EVENTS = {n: [(1.6, "pop")] + ([(3.1, "pop")] if n in ("pon", "chi", "daiminkan", "ron") else [])
+              for n in ("pon", "chi", "kan", "daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku")}
 FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0)}
 PAUSE = .7
 

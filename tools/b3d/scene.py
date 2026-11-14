@@ -417,6 +417,7 @@ if S2:
         HANDS[0] = ["m1", "m2", "m3", "p4", "p5", "s3", "s4", "s5", "s6", "s7", "m9", "m9", "z3", "s8"]
         TSUMO14 = True
         RIVERS = auto_rivers([6, 6, 6, 6], HANDS[0] + [DORA], ban=("p3", "p6"))
+        RIVERS = [[{"s4": "p9", "s8": "p8"}.get(c, c) for c in rv] for rv in RIVERS]      # 河の四索→九筒・八索→八筒（2026-11-14 ユーザーの指定）
     elif SCENE == "tsumo":      # ツモあがり: 七萬・八萬の両面。六萬をツモる
         HANDS[0] = ["m2", "m3", "m4", "p3", "p4", "p5", "s6", "s7", "s8", "m7", "m8", "p9", "p9"]
         NEXT_CODE = "m6"
@@ -1241,7 +1242,10 @@ def s2_build():
         nx = P("next"); xt = P("hk12").x + HP + .03
         mv["next"] = [(2.0, 2.8, (xt, LY, Z), LIE, .08)]                             # 山から取って、手牌の右に表向きで置く（手牌には入れない）
         for k in range(13): mv[f"hk{k}"] = [(3.5, 4.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
-        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y)), (2.8, A(xt, LY)), (3.4, A(.05, HY - .01, .02)), (4.3, A(.05, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
+        # 手牌は両手で、左端と右端を持って倒す（2026-11-14 ユーザーの指定。ロンと同じ）
+        xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y)), (2.8, A(xt, LY)), (3.4, A(xr, HY - .01, .02)), (4.3, A(xr, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
+        arms_l[0] = [(0, L0), (2.9, L0), (3.4, A(xl, HY - .01, .02)), (4.3, A(xl, LY)), (4.9, L0), (DUR, L0)]
         px = lambda t: .03 + .10 * (seg(t, 1.5, 2.1) - seg(t, 3.0, 3.5))
         cxa = (P("hk0").x + xt) / 2
         focus = [Vector((xt - .02, LY, .77)), OVER(cxa, .03)]
@@ -1264,8 +1268,10 @@ def s2_build():
             for k in range(13):
                 x = x0o + k * HP
                 mv[f"h{i_}k{k}"] = [(a_, a_ + .6, seat_w(i_, (x, LY, Z if open_ else Z + TT)), seat_r(i_, LIE if open_ else DOWN), .015)]
-            Ri = Vector(ARMS[i_]["R"]["rest"])
-            arms[i_] = [(0, Ri), (a_ - .5, Ri), (a_, (.05, HY - .04, hz + .02)), (a_ + .6, (.05, LY - .03, hz)), (a_ + .75, Ri), (DUR, Ri)]
+            Ri = Vector(ARMS[i_]["R"]["rest"]); Li = Vector(ARMS[i_]["L"]["rest"])      # 倒すのも伏せるのも両手で、手牌の両端を持つ（2026-11-14 ユーザーの指定）
+            xe = x0o + 12 * HP + .006; xs = x0o - .006
+            arms[i_] = [(0, Ri), (a_ - .5, Ri), (a_, (xe, HY - .04, hz + .02)), (a_ + .6, (xe, LY - .03, hz)), (a_ + .75, Ri), (DUR, Ri)]
+            arms_l[i_] = [(0, Li), (a_ - .5, Li), (a_, (xs, HY - .04, hz + .02)), (a_ + .6, (xs, LY - .03, hz)), (a_ + .75, Li), (DUR, Li)]
         # ノーテン罰符: テンパイ2人・ノーテン2人 → ノーテンの人が1500点ずつ払う（下家→自家・上家→対面）
         for g, giver, recv in (("a", 1, 0), ("b", 3, 2)):
             for n_, nm in enumerate(("bou1" + g, "bou5" + g)):
@@ -1274,7 +1280,9 @@ def s2_build():
                 mv[nm] = [(6.5, 7.3, en, seat_r(recv, LIE), .03)]
             Ri = Vector(ARMS[giver]["R"]["rest"])      # 受け取る人は、払う人から見てどちらも左どなり。腕が届く所まで送る
             arms[giver] = arms[giver][:-1] + [(6.0, Ri), (6.5, (0, -.29, hz)), (7.3, (-.15, -.30, hz)), (7.9, Ri), (DUR, Ri)]
-        arms[0] = [(0, R), (1.0, R), (1.5, A(.05, HY - .01, .02)), (2.3, A(.05, LY)), (2.9, R), (DUR, R)]
+        xl, xr = P("hk0").x - .006, P(hand[-1]).x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+        arms[0] = [(0, R), (1.0, R), (1.5, A(xr, HY - .01, .02)), (2.3, A(xr, LY)), (2.9, R), (DUR, R)]
+        arms_l[0] = [(0, L0), (1.0, L0), (1.5, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
         WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)                  # 卓の全体を引きで上から（4人の手牌が入り、対面の手牌が上の白いカードにかからない。2026-11-14 ユーザーの指定）
         focus = [OVER(xc), WIDE, WIDE]
         views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0), (2.9, 3.6, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]

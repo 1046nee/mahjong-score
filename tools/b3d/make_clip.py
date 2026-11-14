@@ -46,12 +46,12 @@ SCRIPTS = {
         (3.9, "そろうのは {刻子|コーツ}", "同じ牌3枚"),
         (4.4, "だれの捨て牌でもポンできる"),
     ])),
-    "kan": dict(title="カンの方法", kicker="麻雀の所作", sub="暗槓（アンカン）編", steps=[
+    "kan": dict(title="カンの方法", kicker="麻雀の所作", sub="暗槓編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "4枚を表向きに倒して見せ、外側の2枚を裏返す", 7, 47, 1.6, [], ""),
         ("副露", "フーロ", "4枚を卓の右に寄せる", 48, 67, 1.4, [], ""),
         ("カンドラ", "カンドラ", "ドラ表示牌のとなりを1枚めくる", 68, 87, 1.6, [], ""),
-        ("嶺上牌", "リンシャンハイ", "王牌の端から1枚取ってくる", 88, 112, 1.4, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から1枚取ってくる", 88, 112, 1.4, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 113, 132, 1.4, [], ""),
     ], tail=(133, 142, 2.4),
     pre=dict(head="カンできるとき", hold=1.8, concl=True, lines=[
@@ -61,13 +61,13 @@ SCRIPTS = {
         (3.7, "自分で引いた4枚目なら、暗槓できる"),
     ])),
     # ここから下は、scene.py の「台本で動かす場面」（S2T の間の時刻からコマを計算: 間 n の止めるコマ＝(時刻＋n×0.7＋0.58)×12）
-    "daiminkan": dict(title="カンの方法", kicker="麻雀の所作", sub="大明槓（ダイミンカン）編", steps=[
+    "daiminkan": dict(title="カンの方法", kicker="麻雀の所作", sub="大明槓編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。人が切った牌で4枚目をそろえる", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "手牌の同じ牌3枚を倒して、みんなに見せる", 7, 32, 1.6, [], ""),
         ("回収", "かいしゅう", "他家（ターチャ）が切った牌を取ってくる", 33, 61, 1.4, [], ""),
         ("副露", "フーロ", "取った牌を横向きに。下家から鳴いたら右に置く", 62, 84, 1.6, [], ""),
         ("カンドラ", "カンドラ", "ドラ表示牌のとなりを1枚めくる", 85, 105, 1.6, [], ""),
-        ("嶺上牌", "リンシャンハイ", "王牌の端から1枚取ってくる", 106, 131, 1.4, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から1枚取ってくる", 106, 131, 1.4, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 132, 150, 1.4, [], ""),
     ], tail=(151, 165, 2.4),
     pre=dict(head="大明槓できるとき", hold=1.8, concl=True, lines=[
@@ -76,11 +76,11 @@ SCRIPTS = {
         (3.9, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (4.4, "だれの捨て牌でも大明槓できる"),
     ])),
-    "kakan": dict(title="カンの方法", kicker="麻雀の所作", sub="加槓（カカン）編", steps=[
+    "kakan": dict(title="カンの方法", kicker="麻雀の所作", sub="加槓編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("加槓", "カカン", "ポンした牌の横向きの1枚に、横向きで重ねる", 7, 36, 1.8, [], ""),
         ("カンドラ", "カンドラ", "ドラ表示牌のとなりを1枚めくる", 37, 57, 1.6, [], ""),
-        ("嶺上牌", "リンシャンハイ", "王牌の端から1枚取ってくる", 58, 83, 1.4, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から1枚取ってくる", 58, 83, 1.4, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 84, 102, 1.4, [], ""),
     ], tail=(103, 117, 2.4),
     pre=dict(head="加槓できるとき", hold=2.0, concl=True, lines=[
@@ -102,8 +102,8 @@ SCRIPTS = {
     "tsumo": dict(title="ツモアガリの方法", kicker="麻雀の所作", sub="4つの手順で覚える", steps=[
         ("ツモ", "ツモ", "山から取ったアガリ牌を、手牌の横に置く。手牌には入れない", 0, 42, 1.6, [], ""),
         ("発声", "はっせい", "「ツモ」と声に出す", 43, 49, 2.0, [], "ツモ"),
-        ("開示", "かいじ", "手牌を倒して、みんなに見せる", 50, 68, 2.0, [], ""),
-        ("申告", "しんこく", "役と点数を言う「ツモ・平和、400・700」", 69, 71, 2.6, [], ""),
+        ("開示", "かいじ", "両手で手牌の両端を持って、手牌を倒す", 50, 68, 2.0, [], ""),
+        ("申告", "しんこく", "点数だけを言う。役はツモ・ピンフ、子の2翻20符で400・700", 69, 71, 2.6, [], "400・700"),     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）
     ], tail=(72, 79, 2.4),
     pre=dict(head="ツモアガリできるとき", hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
@@ -123,9 +123,9 @@ SCRIPTS = {
         (4.4, "だれの捨て牌でもロンできる"),
     ])),
     "ryukyoku": dict(title="流局のしかた", kicker="麻雀の所作", sub="4つの手順で覚える", steps=[
-        ("流局", "りゅうきょく", "最後の牌を切ってもロンがなく、王牌14枚が残ってツモ番がない", 0, 6, 2.2, [], ""),
-        ("テンパイ", "テンパイ", "あと1枚でアガれる人は「テンパイ」と言って手牌を倒す", 7, 36, 2.0, [], "テンパイ"),
-        ("ノーテン", "ノーテン", "親から順に。テンパイでない人は「ノーテン」と言って伏せる", 37, 86, 2.0, [], ""),
+        ("流局", "りゅうきょく", "アガリが出ないまま、この局はおしまい", 0, 6, 2.2, [], ""),     # 前置きのカードと同じことを言わない（2026-11-14 ユーザーの指定）
+        ("テンパイ", "テンパイ", "あと1枚でアガれる人は、両手で手牌を倒して見せる", 7, 36, 2.0, [], ""),     # 流局のテンパイ・ノーテンは声に出さない（2026-11-14 ユーザーの指定）
+        ("ノーテン", "ノーテン", "ほかの人も順に。テンパイなら倒し、ノーテンなら両手で伏せる", 37, 86, 2.0, [], ""),
         ("点棒", "てんぼう", "ノーテンの人がテンパイの人へ払う（場に3000点）", 87, 113, 2.2, [], ""),
     ], tail=(114, 125, 2.4),
     pre=dict(head="流局になるとき", hold=2.0, concl=True, lines=[
@@ -175,12 +175,12 @@ def headline(d, i, s, k):
     d.rounded_rectangle((40, y, W - 40, y + 250), radius=44, fill=(255, 255, 255, 240))
     d.ellipse((76, y + 34, 76 + 104, y + 34 + 104), fill=ORANGE)
     text_c(d, 76 + 52, y + 34 + 50, str(i + 1), font(72), WHITE)
-    d.text((204, y + 22), s[0], font=font(88), fill=INK)
-    l, t, r, b = d.textbbox((204, y + 22), s[0], font=font(88))
+    fn = fit(d, s[0], 88, W - 80 - 204 - d.textlength(s[1], font=font(38, 700)) - 30)
+    d.text((204, y + 22 + (88 - fn.size) // 2), s[0], font=fn, fill=INK)
+    l, t, r, b = d.textbbox((204, y + 22 + (88 - fn.size) // 2), s[0], font=fn)
     d.text((r + 22, y + 74), s[1], font=font(38, 700), fill=GREEN)
-    ft = font(40, 800); tx = s[2]
-    while d.textlength(tx, font=ft) > W - 80 - 72 and ft.size > 30: ft = font(ft.size - 2, 800)
-    d.text((76, y + 164), tx, font=ft, fill=INK)
+    ft = fit(d, s[2], 40, W - 80 - 72, 800)
+    ruby_draw(d, 76, y + 168, s[2], ft, INK, 20, rfill=GREEN)
 
 def title_card(d, sc, t, dur):
     """入りの題名。少し遅れて下から入り、本題に入る直前に消える"""
@@ -188,13 +188,13 @@ def title_card(d, sc, t, dur):
     if a <= 0: return
     A = lambda v: int(v * a)
     y = 230 + int((1 - k) * 40)      # 上に置く（真ん中だと卓と選手が隠れる）
-    d.rounded_rectangle((70, y, W - 70, y + 400), radius=60, fill=(12, 20, 22, A(215)))
+    d.rounded_rectangle((70, y, W - 70, y + 420), radius=60, fill=(12, 20, 22, A(215)))
     kt = sc.get("kicker", ""); ft = font(46, 800)
     kw = d.textlength(kt, font=ft) + 72
     d.rounded_rectangle((W / 2 - kw / 2, y + 44, W / 2 + kw / 2, y + 44 + 78), radius=39, fill=(231, 86, 32, A(255)))
     text_c(d, W / 2, y + 44 + 37, kt, ft, (255, 255, 255, A(255)))
-    text_c(d, W / 2, y + 222, sc["title"], font(150), (255, 255, 255, A(255)))
-    text_c(d, W / 2, y + 338, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)))
+    text_c(d, W / 2, y + 205, sc["title"], fit(d, sc["title"], 150, W - 140 - 90), (255, 255, 255, A(255)))     # 長い題名（ロンアガリの方法）は、カードに入るまで小さく
+    ruby_c(d, W / 2, y + 362, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)), 22)
     text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
 def _rich(d, x, y, tx, size, maxw):
@@ -215,6 +215,48 @@ def _rich(d, x, y, tx, size, maxw):
     return x
 
 
+# ルビ（2026-11-14 ユーザーの指定「暗槓とかにルビを振って」）。画面に出す字（題名の下・見出しの説明・確認カード・字幕）で、この語には上に小さく読みを付ける。
+# 読みはサイトの記事のルビ（tools/add_ruby.py の READ）と同じ
+RUBY = {"暗槓": "アンカン", "大明槓": "ダイミンカン", "加槓": "カカン", "明槓": "ミンカン", "槍槓": "チャンカン", "嶺上牌": "リンシャンパイ", "王牌": "ワンパイ",
+        "門前": "メンゼン", "供託": "キョウタク", "連荘": "レンチャン", "荒牌平局": "ホワンパイピンチュー", "罰符": "バップ", "海底牌": "ハイテイハイ", "河底牌": "ホウテイハイ"}
+def ruby_parts(tx):
+    """文 → [(字, 読み or None, 用語か)]。{語|読み}・{語} は用語（確認カードの緑の字）。ふつうの字の中の RUBY の語にも読みを付ける"""
+    import re as _re
+    out = []
+    for m in _re.findall(r"([^{}]+)|\{\s*([^|}]+?)\s*(?:\|([^}]+))?\}", tx):
+        if m[0]:
+            pat = "(" + "|".join(sorted(map(_re.escape, RUBY), key=len, reverse=True)) + ")"
+            for piece in _re.split(pat, m[0]):
+                if piece: out.append((piece, RUBY.get(piece), False))
+        else: out.append((m[1], m[2] or RUBY.get(m[1]), True))
+    return out
+def ruby_w(d, tx, ft, fk=None):
+    return sum(d.textlength(p, font=(fk if (t and fk) else ft)) for p, r, t in ruby_parts(tx))
+def ruby_draw(d, x, y, tx, ft, fill, rsize=22, fk=None, tfill=None, rfill=None):
+    """左上 (x, y) から書く。読みは字の上に（y から rsize+6 だけ上）。書き終えた右の x を返す"""
+    for p, r, t in ruby_parts(tx):
+        f = fk if (t and fk) else ft; c = (tfill if (t and tfill) else fill)
+        d.text((x, y), p, font=f, fill=c); w = d.textlength(p, font=f)
+        if r:
+            rf = font(rsize, 800); rw = d.textlength(r, font=rf)
+            if rw > w + 8:      # 読みが字より長いときは、字の幅に収まるまで小さく
+                rf = font(max(14, int(rsize * (w + 8) / rw)), 800); rw = d.textlength(r, font=rf)
+            l_, t_, r_, b_ = d.textbbox((x, y), p, font=f)
+            d.text((x + w / 2 - rw / 2, t_ - rf.size - 6), r, font=rf, fill=rfill or c)
+        x += w
+    return x
+def ruby_c(d, cx, cy, tx, ft, fill, rsize=22, rfill=None):
+    """真ん中 (cx, cy) にそろえて書く（text_c のルビつき版）"""
+    import re as _re
+    plain = "".join(p for p, r, t in ruby_parts(tx))
+    l, t, r, b = d.textbbox((0, 0), plain, font=ft)
+    ruby_draw(d, cx - (r - l) / 2 - l, cy - (b - t) / 2 - t, tx, ft, fill, rsize, rfill=rfill)
+def fit(d, tx, size, maxw, wght=900):
+    """幅 maxw に入るまで字を小さくした font（題名・見出しのはみ出し止め。2026-11-14 ユーザーの指摘）"""
+    while ruby_w(d, tx, font(size, wght)) > maxw and size > 24: size -= 2
+    return font(size, wght)
+
+
 CARD_BORDER = ((231, 86, 32), 8)     # 確認カードの枠（色, 太さ）＝オレンジ8px（2026-11-14 ユーザーの判断。None＝枠なし）
 def pre_card(d, pre, t):
     """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える。
@@ -229,20 +271,21 @@ def pre_card(d, pre, t):
     ft = font(46, 800); lw = d.textlength("確認", font=ft) + 60
     d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
     text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
-    d.text((76 + lw + 24, y + 22), pre["head"], font=font(76), fill=INK)
+    hf = fit(d, pre["head"], 76, W - 40 - 36 - (76 + lw + 24))
+    ruby_draw(d, 76 + lw + 24, y + 26 + (76 - hf.size) // 2, pre["head"], hf, INK, 22, rfill=GREEN)
     for n, ln in enumerate([ln for ln in pre["lines"] if t >= ln[0]]):
         yy = y + 146 + 26 + n * RH; ex = ln[2] if len(ln) > 2 else None
         if CB and n == len(pre["lines"]) - 1:      # 結論の1行は、緑の帯に白い字（2026-11-14 ユーザーの判断・案B）
             by = yy + 6; d.rounded_rectangle((70, by, W - 70, by + CH), radius=22, fill=GREEN)
-            import re as _re
-            text_c(d, W / 2, by + CH / 2 - 2, _re.sub(r"\{\s*([^|}]+?)\s*(?:\|[^}]*)?\}", r"\1", ln[1]), font(48, 900), WHITE); continue
+            bt = "".join(p for p, r, t in ruby_parts(ln[1])); hr = any(r for p, r, t in ruby_parts(ln[1]))
+            ruby_c(d, W / 2, by + CH / 2 - 2 + (9 if hr else 0), ln[1].replace("{ ", "{").replace(" }", "}"), fit(d, bt, 48, W - 180), WHITE, 20); continue
         d.ellipse((80, yy + 14, 102, yy + 36), fill=GREEN)
-        exw = (22 + d.textlength("＝" + ex, font=font(32, 800))) if ex else 0
+        exw = (22 + ruby_w(d, "＝" + ex, font(32, 800))) if ex else 0
         x = _rich(d, 122, yy, ln[1], 42, W - 60 - 122 - exw)
         if ex:
-            x += 22; d.text((x, yy + 9), "＝" + ex, font=font(32, 800), fill=(95, 110, 106))
+            x += 22; ruby_draw(d, x, yy + 9, "＝" + ex, font(32, 800), (95, 110, 106), 17)
     if NT and t >= NT[0]:
-        text_c(d, W / 2, y + hgt - 44, NT[1], font(32, 800), (95, 110, 106))
+        ruby_c(d, W / 2, y + hgt - 40, NT[1], fit(d, NT[1], 32, W - 140, 800), (95, 110, 106), 16)
 
 _bub = {}
 # 吹き出しの場所（2026-11-14 ユーザーの指定「口や顔あたりから出るように。対面の顔が隠れないように」）:
@@ -250,7 +293,7 @@ _bub = {}
 #   吹き出しは頭の右下（卓の左手前の上）に置き、しっぽを左上へ＝手前の選手の顔の前（頭の右のふち）へ向ける。対面の顔・見出しのカードにかからない
 BUB_C = (640, 1045)          # 吹き出しの真ん中（2026-11-14 ユーザーの指定: 右へ。ふちが手前の選手の頭にかからない所＝しっぽの先だけが頭のふちに触れる）
 BUB_TIP = (-330, -125)       # しっぽの先（真ん中からのずれ。手前の選手の顔の前を指す）
-BUB_POS = {"3900": ((560, 1200), (-60, 300))}     # 言葉ごとの吹き出しの場所（真ん中, しっぽの先のずれ）。無ければ BUB_C・BUB_TIP
+BUB_POS = {"3900": ((560, 1200), (-60, 300)), "400・700": ((560, 1200), (-60, 300))}     # 言葉ごとの吹き出しの場所（真ん中, しっぽの先のずれ）。無ければ BUB_C・BUB_TIP
 def bubble(d, tx, k):
     """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定。これから使う吹き出しもすべて）。
     ふちがぎざぎざにならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
@@ -334,9 +377,10 @@ def subtitle(d, tx, k):
         c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rows = [tx[:c], tx[c:]]
         while max(d.textlength(r_, font=ft) for r_ in rows) > maxw and ft.size > 34: ft = font(ft.size - 2, 800)
     # 暗い帯に白い字（前と同じ色・同じ透け方）。角だけ丸めない（2026-11-13 ユーザーの指定「変えるのは角丸を四角角にするだけ」。白いカードにしたのは行きすぎだった）
-    h = 46 + 64 * len(rows); y = 1560 - h // 2
+    hr = any(r for p, r, t in ruby_parts(tx)); LH = 84 if hr else 64; top = 24 if hr else 0      # 読みを付ける行は、行の間を広げる
+    h = 46 + top + LH * len(rows); y = 1560 - h // 2
     d.rectangle((50, y, W - 50, y + h), fill=(12, 20, 22, int(a * .86)))
-    for n, r_ in enumerate(rows): text_c(d, W / 2, y + 23 + 32 + n * 64, r_, ft, (255, 255, 255, a))
+    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + top + (LH - 64) + 32 + n * LH, r_, ft, (255, 255, 255, a), 20)
 
 
 def sfx_events(sc, name, seq, fps, bub_at={}):
@@ -390,11 +434,14 @@ def main():
         for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
         t = 0.0; starts[f"step{i + 1}"] = len(seq) / fps + .25
-        # 発声の手順は、最初のコマで止めたまま見せる（2026-11-14 ユーザーの指定「①が始まる瞬間に画面が少し動くと見にくい。視点を固定」）
-        fr = [s[3]] * (s[4] - s[3] + 1) if s[0] == "発声" else range(s[3], s[4] + 1)
+        # 発声と、①（流局など）の手順は、最初のコマで止めたまま見せる（2026-11-14 ユーザーの指定「①で画角が少しでも動くのはいらない。止めた絵で説明」）。
+        # 次の手順は、止めたコマのすぐ後から動かす（止めた所から先のコマを飛ばすと、絵が飛ぶ）。ツモアガリの①ツモは、山から取る動きそのものなので止めない
+        frozen = s[0] == "発声" or (i == 0 and s[0] != "ツモ")
+        a0 = sc["steps"][i - 1][3] + 1 if i and (sc["steps"][i - 1][0] == "発声" or (i == 1 and sc["steps"][0][0] != "ツモ")) else s[3]
+        fr = [s[3]] * (s[4] - s[3] + 1) if frozen else range(a0, s[4] + 1)
         for f in fr: seq.append((f, i, t, False)); t += 1 / fps
         nd = max(need(f"step{i + 1}") + .25, (BUB_AT.get(f"step{i + 1}", .25) + 1.0) if s[7] else 0)     # 吹き出しが出てから1秒は見せる
-        for _ in range(max(int(s[5] * fps), int(nd * fps) - (s[4] - s[3] + 1))): seq.append((s[4], i, t, True)); t += 1 / fps
+        for _ in range(max(int(s[5] * fps), int(nd * fps) - len(fr))): seq.append((s[3] if frozen else s[4], i, t, True)); t += 1 / fps
     f0, f1, hold = sc["tail"]; t = 0.0; starts["tail"] = len(seq) / fps + .9
     for f in range(f0, f1 + 1): seq.append((f, -1, t, False)); t += 1 / fps
     for _ in range(max(int(hold * fps), int((need("tail") + .9) * fps) - (f1 - f0 + 1))): seq.append((f1, -1, t, True)); t += 1 / fps
@@ -408,7 +455,8 @@ def main():
             cache.clear(); cache[f] = Image.open(f if isinstance(f, str) else frames[min(f, len(frames) - 1)]).convert("RGBA").resize((W, H), Image.LANCZOS)
         im = cache[f].copy(); ov = Image.new("RGBA", (W, H), (0, 0, 0, 0)); d = ImageDraw.Draw(ov)
         # 前置きの前後は、絵を重ねてつなぐ（カメラは選手の目に飛ぶので、動かすと体の中を通る）
-        if n and i != seq[n - 1][1] and (i == -4 or seq[n - 1][1] == -4): fade = [cache_prev, 0]
+        # ①へは重ねずに切りかえる（重ねると、カメラが少し動いたように見える。2026-11-14 ユーザーの指摘「①で画角が少し動く」）
+        if n and i != seq[n - 1][1] and i == -4: fade = [cache_prev, 0]
         if fade and fade[1] < 6:
             fade[1] += 1; im = Image.blend(fade[0], im, fade[1] / 7)
         cache_prev = cache[f]
