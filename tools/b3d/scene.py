@@ -297,6 +297,12 @@ def tile_mesh(code):
     bm = bmesh.new(); bm.from_mesh(me)
     ed = [e for e in bm.edges if len(e.link_faces) == 2 and e.calc_face_angle(0) > math.radians(45)]
     bmesh.ops.bevel(bm, geom=ed, offset=TILE_R, offset_type="OFFSET", segments=3, profile=.5, affect="EDGES", clamp_overlap=True)
+    # 丸めた所の色は高さで決め直す（bevel は となりの面の色を引き継ぐので、表の絵の面の縁が背の青や絵の端の色になった。2026-11-14 ユーザーの指摘「牌の枠が青い」）
+    for f in bm.faces:
+        cz = f.calc_center_median().z
+        if cz < zb - 1e-6: f.material_index = 0                                   # 背の層
+        elif f.normal.z > .999 and cz > TT - 1e-5 and f.material_index == 2: pass   # 表の絵の面
+        else: f.material_index = 1                                                # 白
     bm.to_mesh(me); bm.free()
     me.shade_smooth(); me.set_sharp_from_angle(angle=math.radians(40))      # 丸めた所はなめらか・平らな面はそのまま
     me.update()
