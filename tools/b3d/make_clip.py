@@ -332,6 +332,27 @@ def subtitle(d, tx, k):
     for n, r_ in enumerate(rows): text_c(d, W / 2, y + 23 + 32 + n * 64, r_, ft, (255, 255, 255, a))
 
 
+def sfx_events(sc, name, seq, fps):
+    """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
+    import sfx
+    ev = []; first = {}
+    for n, (f, i, t, held) in enumerate(seq):
+        sec = n / fps
+        if n == 0 or i != seq[n - 1][1]:          # 場面が変わった瞬間
+            if i == -2: ev.append((sec + .05, "whoosh"))
+            elif i >= 0: ev.append((sec, "tick"))
+            elif i == -1: ev.append((sec + .9, "chime"))
+            elif i == -3: ev.append((sec + .3, "jingle"))
+            if i >= 0 and sc["steps"][i][7]: ev.append((sec + .25, "pop"))
+            if i == -4:
+                for row in sc["pre"]["lines"]: ev.append((sec + row[0], "line"))
+        if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
+    for t, snd in sfx.TILE_EVENTS.get(name, []):
+        fr = sfx.frame_of(name, t, fps)
+        if fr in first: ev.append((first[fr], snd))
+    return ev
+
+
 def main():
     a = sys.argv[1:]
     fps = int(a[a.index("--fps") + 1]) if "--fps" in a else 12
@@ -406,6 +427,14 @@ def main():
             with wave.open(wp) as wf: pcm = array.array("h", wf.readframes(wf.getnframes()))
             o = int(starts[seg] * sr)
             for k_ in range(min(len(pcm), total - o)): buf[o + k_] = max(-32768, min(32767, buf[o + k_] + pcm[k_]))
+        if "--sfx" in a:     # 効果音（2026-11-14〜・sfx.py）。声の下に、牌の当たる音・吹き出し・手順の音などを足す
+            import numpy as np, sfx
+            ev = sfx_events(sc, name, seq, fps)
+            fx = sfx.render(ev, len(seq) / fps, sr)[:total]
+            v = np.frombuffer(buf.tobytes(), dtype=np.int16).astype(float) / 32768
+            m = v + fx[:len(v)] * .8
+            m = m / max(1.0, np.abs(m).max() / .98)
+            buf = array.array("h", (m * 32767).astype(np.int16).tobytes())
         mix = os.path.join(tmp, "voice.wav")
         with wave.open(mix, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr); wf.writeframes(buf.tobytes())
         subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"), "-i", mix,
