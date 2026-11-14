@@ -303,8 +303,17 @@ def tile_mesh(code):
         if cz < zb - 1e-6: f.material_index = 0                                   # 背の層
         elif f.normal.z > .999 and cz > TT - 1e-5 and f.material_index == 2: pass   # 表の絵の面
         else: f.material_index = 1                                                # 白
+    # 面の向き（法線）は、面の広さで重みをつけて決める。ただの smooth だと、広い平らな面が丸めた面のほうへ引っぱられて、
+    #   背の青と白の境目に段があるように見えた（形は平らにつながっている。2026-11-14 ユーザーの指摘「段差がないように」）
+    bm.normal_update()
+    vn = []
+    for v in bm.verts:
+        n = Vector((0, 0, 0))
+        for f in v.link_faces: n += f.normal * f.calc_area() ** 2
+        vn.append(n.normalized())
     bm.to_mesh(me); bm.free()
-    me.shade_smooth(); me.set_sharp_from_angle(angle=math.radians(40))      # 丸めた所はなめらか・平らな面はそのまま
+    me.shade_smooth()
+    me.normals_split_custom_set_from_vertices(vn)
     me.update()
     _tile_mesh[code] = me
     return me
