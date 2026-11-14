@@ -259,6 +259,7 @@ def empty(name, parent=None):
 # ---------------- 牌 ----------------
 TS = 1.1                                 # 牌の大きさの倍率（本物は1.0）。河に6枚＋リーチの横向き1枚を並べても、となりの河にかからない大きさ（2026-11-14 ユーザーの指定。1.2 だと、河の6枚目が左右の人の河の所まで出た）
 TW, TL, TT = 0.024 * TS, 0.032 * TS, 0.017 * TS      # 幅・長さ・厚み（m）
+TILE_R = .0011 * TS                      # 辺と角の丸み（本物で約1mm）
 HP = TW + .0006                          # 手牌のとなりとの間隔
 HX0 = -6 * HP - .03                      # 席0の手牌（13枚）の左端の中心
 RP = TW + .003                           # 河のとなりとの間隔
@@ -290,6 +291,14 @@ def tile_mesh(code):
         if poly.index == 9:
             for li, co in zip(poly.loop_indices, [(0, 0), (1, 0), (1, 1), (0, 1)]):
                 uv.data[li].uv = co
+    # 辺と角を少しだけ丸める（2026-11-14 ユーザーの指定「本物の牌は、各辺や角がほんの少し丸みを帯びている」）。
+    #   直角の辺だけ（背の層と白の境目は平らなので丸めない）。3段の丸みにして、なめらかに見せる
+    import bmesh
+    bm = bmesh.new(); bm.from_mesh(me)
+    ed = [e for e in bm.edges if len(e.link_faces) == 2 and e.calc_face_angle(0) > math.radians(45)]
+    bmesh.ops.bevel(bm, geom=ed, offset=TILE_R, offset_type="OFFSET", segments=3, profile=.5, affect="EDGES", clamp_overlap=True)
+    bm.to_mesh(me); bm.free()
+    me.shade_smooth(); me.set_sharp_from_angle(angle=math.radians(40))      # 丸めた所はなめらか・平らな面はそのまま
     me.update()
     _tile_mesh[code] = me
     return me
