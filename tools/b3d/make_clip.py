@@ -216,6 +216,7 @@ def _rich(d, x, y, tx, size, maxw):
     return x
 
 
+CARD_BORDER = None     # 確認カードの枠（色, 太さ）。None＝枠なし
 def pre_card(d, pre, t):
     """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える。
     行は (時刻, 文) か (時刻, 文, 用語の説明)。文の {語|ルビ} は用語。説明は行の右に灰色で「＝同じ牌2枚」のように（2026-11-14 ユーザーの指定: 具体の牌の例はやめて抽象で。難しい用語には簡単な説明。最後の1行は緑の帯＝全部の動画）"""
@@ -224,6 +225,8 @@ def pre_card(d, pre, t):
     hgt = 146 + RH * (len(pre["lines"]) - (1 if CB else 0)) + (CH + 50 if CB else 18) + NH
     y = H - 80 - hgt + int((1 - k) * 30)
     d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, fill=(255, 255, 255, int(242 * k)))
+    if CARD_BORDER:      # カードの枠（色, 太さ）
+        c_, w_ = CARD_BORDER; d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, outline=c_ + (int(255 * k),), width=w_)
     ft = font(46, 800); lw = d.textlength("確認", font=ft) + 60
     d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
     text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
