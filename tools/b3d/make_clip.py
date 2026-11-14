@@ -27,7 +27,7 @@ SCRIPTS = {
         ("副露", "フーロ", "取った牌を横向きにして付け、卓の右に寄せる", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, ["s3"], ""),
     ], tail=(106, 120, 2.4),
-    pre=dict(head="チーできるとき", hold=1.8, lines=[
+    pre=dict(head="チーできるとき", hold=1.8, concl=True, lines=[
         (0.3, "手牌に {搭子|ターツ} がある", "四萬 五萬・四萬 六萬"),
         (3.4, "上家が{ つながる牌 }を切った → チー"),
         (3.9, "そろうのは {順子|シュンツ}", "四萬 五萬 六萬"),
@@ -40,7 +40,7 @@ SCRIPTS = {
         ("副露", "フーロ", "取った牌を横向きに。対面から鳴いたら真ん中に置く", 62, 84, 1.6, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, [], ""),
     ], tail=(106, 120, 2.4),
-    pre=dict(head="ポンできるとき", hold=1.8, lines=[
+    pre=dict(head="ポンできるとき", hold=1.8, concl=True, lines=[
         (0.3, "手牌に {対子|トイツ} がある", "發 發"),
         (3.4, "他家が{ 同じ牌 }を切った → ポン"),
         (3.9, "そろうのは {刻子|コーツ}", "發 發 發"),
@@ -220,14 +220,19 @@ def _rich(d, x, y, tx, size, maxw):
 def pre_card(d, pre, t):
     """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える。
     行は (時刻, 文) か (時刻, 文, 例)。文の {語|ルビ} は用語。例は行の右に小さく「例：」＋牌の名前（オレンジ）（2026-11-14 ユーザーの指定。ポンとチーで同じ形）"""
-    k = min(1, t * 4); RH = 92; y = H - 80 - (146 + RH * len(pre["lines"]) + 18) + int((1 - k) * 30)
-    d.rounded_rectangle((40, y, W - 40, y + 146 + RH * len(pre["lines"]) + 18), radius=44, fill=(255, 255, 255, int(242 * k)))
+    k = min(1, t * 4); RH = 92; CB = pre.get("concl"); CH = 96
+    hgt = 146 + RH * (len(pre["lines"]) - (1 if CB else 0)) + (CH + 50 if CB else 18)
+    y = H - 80 - hgt + int((1 - k) * 30)
+    d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, fill=(255, 255, 255, int(242 * k)))
     ft = font(46, 800); lw = d.textlength("確認", font=ft) + 60
     d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
     text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
     d.text((76 + lw + 24, y + 22), pre["head"], font=font(76), fill=INK)
     for n, ln in enumerate([ln for ln in pre["lines"] if t >= ln[0]]):
         yy = y + 146 + 26 + n * RH; ex = ln[2] if len(ln) > 2 else None
+        if CB and n == len(pre["lines"]) - 1:      # 結論の1行は、緑の帯に白い字（2026-11-14 ユーザーの判断・案B）
+            by = yy + 6; d.rounded_rectangle((70, by, W - 70, by + CH), radius=22, fill=GREEN)
+            text_c(d, W / 2, by + CH / 2 - 2, ln[1], font(48, 900), WHITE); continue
         d.ellipse((80, yy + 14, 102, yy + 36), fill=GREEN)
         exw = (26 + d.textlength("例：", font=font(32, 800)) + d.textlength(ex, font=font(32, 900))) if ex else 0
         x = _rich(d, 122, yy, ln[1], 42, W - 60 - 122 - exw)
