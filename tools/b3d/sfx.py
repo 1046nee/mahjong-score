@@ -6,7 +6,8 @@
   - 牌を持ち上げる＝小さな「コッ」／卓の上をすべらせる＝「シャッ」から「カチッ」
   - 吹き出し（ポン・カン…）が出る＝「ポンッ」とはじける音
   - 手順の番号が進む＝小さな「ピッ」／前置きのカードの行が出る＝やわらかい「ポッ」
-  - タイトル＝風切り音／まとめのカード＝きれいな和音／締め＝短いジングル
+  - タイトル＝強く打ちつける「タンッ」／前置きの結論の1行（緑の帯）＝「タンッ」／まとめのカード＝きれいな和音／締め＝牌をかき混ぜる「ジャラッ」
+  - 吹き出しは「〇〇と声に出します。」を言い終わってから出し、そのとき「ポンッ」と鳴らす（make_clip.py の BUB_AT）
 牌の当たる時刻は scene.py の動き（もとの時刻 t）から決める。止める間（FREEZE・PAUSE）をはさんだ実際の時刻 → コマ番号は frame_of() で変える
 """
 import math, random
@@ -25,18 +26,33 @@ def _band(x, lo, hi):
     return np.fft.irfft(X, len(x))
 
 
-def clack(vol=.9, pitch=1.0, seed=7, ring=0.0):
-    """牌が当たる音（2026-11-14 実際の牌の音に合わせて作り直した）。
-    実際の音は、ピークから1〜10ミリ秒で消える、とても短い「パチッ」。中心は2〜5kHz、下に200〜600Hzの「コッ」という胴の音、
-    牌どうしが当たるときだけ3kHzあたりが少し響く。前の版は高い音が長く鳴り続けて、電子音のように聞こえた"""
-    n = int(.06 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
-    click = _band(rng.normal(0, 1, n), 1500 * pitch, 7500) * np.exp(-t / .0016)
-    body = _band(rng.normal(0, 1, n), 120, 700) * np.exp(-t / .006)
-    s = click / (np.abs(click).max() + 1e-9) + .3 * body / (np.abs(body).max() + 1e-9)
-    if ring:      # 牌どうしが当たる音（少しだけ響く）
-        s += ring * (np.sin(2 * math.pi * 3200 * pitch * t) + .6 * np.sin(2 * math.pi * 4350 * pitch * t)) * np.exp(-t / .006)
+def clack(vol=.9, pitch=1.0, seed=7, ring=.22, body=.12):
+    """牌が当たる音（2026-11-14 ユーザーが送った2本目の実際の音に合わせて作り直した）。
+    実際の音は、力の大半が3,000〜12,000Hzの高い所にある、2〜5ミリ秒で消える鋭い「パチッ」。そのあと3,200Hzあたりが小さく50ミリ秒ほど響く。
+    低い「コッ」はほとんど無い（1本目に合わせた版は低い音が多すぎて、こもって聞こえた）"""
+    n = int(.08 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    click = _band(rng.normal(0, 1, n), 3000 * pitch, 11500) * np.exp(-t / .0012)
+    s = click / (np.abs(click).max() + 1e-9)
+    if body:
+        b = _band(rng.normal(0, 1, n), 150, 700) * np.exp(-t / .004); s += body * b / (np.abs(b).max() + 1e-9)
+    if ring:      # 牌のかたい胴が少しだけ響く
+        s += ring * (np.sin(2 * math.pi * 3220 * pitch * t) + .5 * np.sin(2 * math.pi * 7400 * pitch * t)) * np.exp(-t / .014)
     s[:int(.0004 * SR)] *= np.linspace(0, 1, int(.0004 * SR))
     return s / np.abs(s).max() * vol
+
+
+def slap(vol=1.0):
+    """強く打ちつける「タンッ」（タイトル・結論の1行）。鋭い音に、低い胴の音を足す"""
+    return clack(vol, .95, seed=21, ring=.3, body=.45)
+
+
+def jara(vol=.8):
+    """牌をかき混ぜる「ジャラッ」（締め）。短い牌の音を、ばらばらの間で8回"""
+    rng = np.random.default_rng(13); out = np.zeros(int(.6 * SR)); o = 0
+    for i in range(8):
+        c = clack(vol * (1 - i * .07), 0.9 + rng.random() * .25, seed=40 + i, ring=.15)
+        out[o:o + len(c)] += c[:len(out) - o]; o += int((.035 + rng.random() * .04) * SR)
+    return out / np.abs(out).max() * vol
 
 
 def tap(vol=.35):
@@ -80,13 +96,13 @@ def bell(freqs, dur=1.2, vol=.22, gap=.0):
     return out * vol / max(1, len(freqs) ** .5)
 
 
-SOUNDS = {"clack": lambda: clack(), "clackt": lambda: clack(ring=.35), "clack2": lambda: _two(), "tap": tap, "slide": slide, "pop": pop, "tick": tick,
+SOUNDS = {"clack": lambda: clack(), "clackt": lambda: clack(ring=.35), "slap": slap, "jara": jara, "clack2": lambda: _two(), "tap": tap, "slide": slide, "pop": pop, "tick": tick,
           "line": lambda: pop(.22), "whoosh": whoosh, "chime": lambda: bell([1047, 1319, 1568], 1.4, .26, .07),
           "jingle": lambda: bell([784, 988, 1175, 1568], 1.6, .3, .09)}
 
 
 def _two():
-    a = clack(.8, ring=.25); b = clack(.7, 1.05, seed=9, ring=.25); o = int(.028 * SR); s = np.zeros(len(a) + o); s[:len(a)] += a; s[o:o + len(b)] += b
+    a = clack(.8); b = clack(.7, 1.05, seed=9); o = int(.028 * SR); s = np.zeros(len(a) + o); s[:len(a)] += a; s[o:o + len(b)] += b
     return s
 
 

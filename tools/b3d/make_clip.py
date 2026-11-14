@@ -332,20 +332,21 @@ def subtitle(d, tx, k):
     for n, r_ in enumerate(rows): text_c(d, W / 2, y + 23 + 32 + n * 64, r_, ft, (255, 255, 255, a))
 
 
-def sfx_events(sc, name, seq, fps):
+def sfx_events(sc, name, seq, fps, bub_at={}):
     """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
     import sfx
     ev = []; first = {}
     for n, (f, i, t, held) in enumerate(seq):
         sec = n / fps
         if n == 0 or i != seq[n - 1][1]:          # 場面が変わった瞬間
-            if i == -2: ev.append((sec + .05, "whoosh"))
+            if i == -2: ev.append((sec + .05, "slap"))
             elif i >= 0: ev.append((sec, "tick"))
             elif i == -1: ev.append((sec + .9, "chime"))
-            elif i == -3: ev.append((sec + .3, "jingle"))
-            if i >= 0 and sc["steps"][i][7]: ev.append((sec + .25, "pop"))
+            elif i == -3: ev.append((sec + .3, "jara"))
+            if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
             if i == -4:
-                for row in sc["pre"]["lines"]: ev.append((sec + row[0], "line"))
+                ls = sc["pre"]["lines"]
+                for k, row in enumerate(ls): ev.append((sec + row[0], "slap" if sc["pre"].get("concl") and k == len(ls) - 1 else "line"))
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
     for t, snd in sfx.TILE_EVENTS.get(name, []):
         fr = sfx.frame_of(name, t, fps)
@@ -359,13 +360,16 @@ def main():
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = SCRIPTS[name]
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
-    VO = {}
+    VO = {}; BUB_AT = {}     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）
     if "--voice" in a:
         import wave, narration
         vtmp = tempfile.mkdtemp()
         for seg, tx in narration.lines(name):
             wp = os.path.join(vtmp, seg + ".wav"); narration.synth(tx, wp)
             with wave.open(wp) as wf: VO[seg] = (wp, wf.getnframes() / wf.getframerate(), tx, wf.getframerate())
+            if seg.startswith("step") and "声に出します。" in tx:     # 吹き出しは「〇〇と声に出します。」を言い終わってから（2026-11-14 ユーザーの指定・全部の動画の決まり）
+                wb = os.path.join(vtmp, seg + "_b.wav"); narration.synth(tx[:tx.index("声に出します。") + 7], wb)
+                with wave.open(wb) as wf: BUB_AT[seg] = .25 + wf.getnframes() / wf.getframerate() + .05
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
     src, out = a[0], a[1]
@@ -383,7 +387,8 @@ def main():
     for i, s in enumerate(sc["steps"]):
         t = 0.0; starts[f"step{i + 1}"] = len(seq) / fps + .25
         for f in range(s[3], s[4] + 1): seq.append((f, i, t, False)); t += 1 / fps
-        for _ in range(max(int(s[5] * fps), int((need(f"step{i + 1}") + .25) * fps) - (s[4] - s[3] + 1))): seq.append((s[4], i, t, True)); t += 1 / fps
+        nd = max(need(f"step{i + 1}") + .25, (BUB_AT.get(f"step{i + 1}", .25) + 1.0) if s[7] else 0)     # 吹き出しが出てから1秒は見せる
+        for _ in range(max(int(s[5] * fps), int(nd * fps) - (s[4] - s[3] + 1))): seq.append((s[4], i, t, True)); t += 1 / fps
     f0, f1, hold = sc["tail"]; t = 0.0; starts["tail"] = len(seq) / fps + .9
     for f in range(f0, f1 + 1): seq.append((f, -1, t, False)); t += 1 / fps
     for _ in range(max(int(hold * fps), int((need("tail") + .9) * fps) - (f1 - f0 + 1))): seq.append((f1, -1, t, True)); t += 1 / fps
@@ -410,7 +415,8 @@ def main():
         elif i >= 0:
             s = sc["steps"][i]
             rail(d, sc["steps"], i); headline(d, i, s, t)
-            if s[7] and t > .25: bubble(d, s[7], t - .25)
+            bt = BUB_AT.get(f"step{i + 1}", .25)
+            if s[7] and t > bt: bubble(d, s[7], t - bt)
             if f"step{i + 1}" in VO and .25 <= t <= .25 + VO[f"step{i + 1}"][1] + .3: subtitle(d, VO[f"step{i + 1}"][2], t - .25)
         else:
             rail(d, sc["steps"], len(sc["steps"]), done_all=True)
@@ -429,7 +435,7 @@ def main():
             for k_ in range(min(len(pcm), total - o)): buf[o + k_] = max(-32768, min(32767, buf[o + k_] + pcm[k_]))
         if "--sfx" in a:     # 効果音（2026-11-14〜・sfx.py）。声の下に、牌の当たる音・吹き出し・手順の音などを足す
             import numpy as np, sfx
-            ev = sfx_events(sc, name, seq, fps)
+            ev = sfx_events(sc, name, seq, fps, BUB_AT)
             fx = sfx.render(ev, len(seq) / fps, sr)[:total]
             v = np.frombuffer(buf.tobytes(), dtype=np.int16).astype(float) / 32768
             m = v + fx[:len(v)] * .8
