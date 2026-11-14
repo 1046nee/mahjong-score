@@ -22,6 +22,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      # ページの重さの点検（1ページで送る量が上限をこえたらデプロイ中止。Hosting の転送量を増やしすぎないため。2026-11-14〜）
+      - name: ページの重さの点検（失敗したらデプロイ中止）
+        run: python3 tools/weight_test.py
       # 主要動線のスモークテスト（グループ作成→URL共有→自動参加→点数入力→結果表示）。
       # 失敗したらここでジョブが止まり、壊れたコードは本番にデプロイされない
       - name: スモークテスト（失敗したらデプロイ中止）

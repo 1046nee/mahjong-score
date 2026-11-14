@@ -269,6 +269,16 @@
   「ユーザー間で金銭のやり取りを行う場合は…法令を遵守の上行ってください」は前段の
   「金銭のやり取りを仲介・助長する機能は含みません」と矛盾し、承知のうえで免責していると読める（2026-08-26に削除）
 
+## 送る量をおさえる（Hosting の転送量）
+Firebase は Blaze（使った分だけ払う。2026-11-14〜）。Hosting は月10GBまで無料で、こえた分は1GBごとに費用がかかる。**広まったページの重さ×見た人数**がそのまま費用になるので、作るときに軽くしておく。
+- **上限（tools/weight_test.py。CI がデプロイ前に実行）**: 1ページ 1200KB・1ファイル 600KB・動画 1600KB。数えるのは HTML（gzip）＋そのページが読みこむ自分のサイトの画像・動画・JS・CSS。lazy の画像も数える（広まったときの最悪の量）。押した先の PNG・PDF は数えない
+- 上限をこえてよいページは weight_test.py の `ALLOW` に理由つきで書く（今は index.html＝アプリ本体＋使い方の動画、blog.html＝全記事の一覧）。増やす前に軽くできないかを先に考える
+- **画像の決まり**: 記事の中で見せる画像は WebP。表は make_webp.py（ロスレス・幅1588）、画面の写真は WebP の quality 80（JPEG の半分以下になる）、サムネは make_thumbs.py。大きな PNG・PDF は「押した先」にだけ置く。画面の最初に見えない画像は `loading="lazy"`
+- **動画の決まり**: ページに埋めるのは短く・CRF 28 前後・`preload="metadata"` か `none`。SNS 用の動画（3D・ショート）はサイトに置かない（素材リポジトリと各 SNS に置く）
+- **アプリ（index.html）**: 外から読むライブラリは CDN のまま（自分のサイトから配らない）。画像を足すときはスプライトか SVG
+- SNS で広める予定の記事は、公開前に `python tools/weight_test.py --top 20` でそのページの重さを見る（めやす 700KB 以下）
+- **ユーザーがコンソールでやること**: Hosting の「リリースの保存数」を10前後にする（古い版がストレージにたまる。10GB をこえると費用）／Google Cloud の「予算とアラート」で月の予算と通知メールを設定する
+
 ## 落とし穴
 - 2026-10-22 自動デプロイが「Permission denied to get service [firebasehosting.googleapis.com]」(403) で失敗。firebase-tools 15.34.1 から、サービスアカウントに serviceusage.services.get（ロール「Service Usage ユーザー」）が要るようになったため。デプロイに使うサービスアカウント firebase-adminsdk-fbsvc@mahjong-score-2e8aa.iam.gserviceaccount.com に、Google Cloud の IAM で「Service Usage ユーザー」のロールを足して解決（同日。github-action-… という名前のアカウントは無い）。デプロイ失敗の原因はジョブのログ（GitHub Actions）で確かめる
 - **firebase.json の ignore は `**/.*` だけでは隠しフォルダの中身（.git/config 等）が公開された**。`**/.*/**` も必須。CIの checkout は `persist-credentials: false`（トークンを .git/config に残さない）。セキュリティのヘッダー（nosniff・frame-ancestors・Permissions-Policy 等）は firebase.json の headers（2026-10-15）
