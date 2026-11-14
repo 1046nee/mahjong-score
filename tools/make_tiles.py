@@ -4,7 +4,7 @@
 - yakitori.svg / yakitori-ura.svg … 焼き鳥カードの表・裏（横長の札。起家札と同じ大きさ・向き）
 - chicha.svg / chicha-ura.svg … 起家札の表（東）・裏（南）。オレンジの札に黒い字
 - 麻雀グッズ（マイページのアイコン）: tenbo（白い1,000点棒）・tb100/tb5000/tb10000・ct100〜ct10000/cttobi（カラーの点棒）・tb100x5（100点棒5本の束）・
-  dice（5の目）・d1〜d4/d6・chip-r/b/g/o/k（チップ）・haiyose（牌寄せ）・taku/taku-top（全自動卓）・sidetable・oshibori・oolong
+  dice（5の目）・d1〜d4/d6・chip-r/b/g/o/k（チップ）・haiyose（牌寄せ）・tenbako（点箱）・taku/taku-top（全自動卓）・sidetable・oshibori・oolong
 - <code>-yoko.svg  … 横向き（チー・ポン・カンで鳴いた牌）。絵だけ左に倒し、緑の背は下のまま
 実行: python tools/make_tiles.py
 """
@@ -29,7 +29,7 @@ for ura in (False, True):
     io.open(os.path.join(d, "chicha" + ("-ura" if ura else "") + ".svg"), "w", encoding="utf-8", newline="\n").write(tiles.chicha_svg(ura))
     n += 1
 # 麻雀グッズ（マイページのアイコンに使う。2026-10-27）。tenbo＝白い1,000点棒・dice＝5の目（最初からある名前なので変えない）
-goods = {"tenbo": tiles.tenbo_svg(1000), "dice": tiles.dice_svg(5), "tb100x5": tiles.tenbo_bundle_svg(), "haiyose": tiles.haiyose_svg()}
+goods = {"tenbo": tiles.tenbo_svg(1000), "dice": tiles.dice_svg(5), "tb100x5": tiles.tenbo_bundle_svg(), "haiyose": tiles.haiyose_svg(), "tenbako": tiles.tenbako_svg()}
 for v in (100, 5000, 10000):
     goods[f"tb{v}"] = tiles.tenbo_svg(v)
 for v in (100, 500, 1000, 5000, 10000, "tobi"):

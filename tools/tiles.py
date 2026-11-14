@@ -314,8 +314,18 @@ def chip_svg(c):
     return out + "</svg>"
 
 
+def tenbako_svg():
+    """点箱（点棒をしまう引き出し・2026-11-14 麻雀の道具図鑑）。上から見た引き出しに、カラーの点棒が5列並ぶ"""
+    g = '<rect x="4" y="18" width="112" height="44" rx="6" fill="#2B3634"/><rect x="4" y="12" width="112" height="44" rx="6" fill="#3E4A48"/>'
+    for i, c in enumerate(("#E02424", "#F5C400", "#1F6FD1", "#16A05A", "#F2F2EE")):
+        g += f'<rect x="{12 + i * 20.5}" y="18" width="17" height="32" rx="3" fill="#1C2423"/>'
+        for k in range(3):
+            g += f'<rect x="{14 + i * 20.5}" y="{21 + k * 9}" width="13" height="6" rx="3" fill="{c}"/>'
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 64">' + g + "</svg>"
+
+
 def haiyose_svg():
-    """牌寄せ（山を押してまっすぐにそろえる長い板。市販の「牌プッシュPRO」をもとにデフォルメ。2026-10-27）。
+    """牌寄せ（三麻で、だれも座らない席の山を前に寄せて取りやすくする板。卓に取り付ける自動の押出機もある＝2026-11-14 ユーザーの指摘。絵は市販の「牌プッシュPRO」をもとにデフォルメ。2026-10-27）。
     上から見た形: 奥に裏向きの山（4幢）、手前に取っ手つきの長い板が山にぴったり当たり、下の線で押している動きを出す"""
     out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 -1 112 74">'
     for i in range(4):  # 山（裏向きの牌。上の面と手前の厚み）

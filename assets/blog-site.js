@@ -44,6 +44,9 @@ const READ_ICON = {
   more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
 };
 const BLOG_POSTS = [
+  { url: '/blog-mahjong-dougu.html', cat: 'beginner', date: '2026.11.14', tag: '図鑑',
+    title: '【保存版】【図鑑】麻雀の道具図鑑｜牌・点棒・焼き鳥マークまで名前と読み方を1枚に',
+    desc: '牌34種と赤牌・花牌・白ポッチ・金牌、白とカラーの点棒と黒棒、サイコロ・起家マーク・焼き鳥マーク・チップ・点箱・牌寄せを名前と読み方つきで。' },
   { url: '/blog-yaku-ranking.html', cat: 'rules', date: '2026.11.13', tag: 'ルール',
     title: '【データで見る】麻雀の役の出やすさランキング｜リーチは41.5%・四暗刻は2,720回に1回',
     desc: '天鳳の鳳凰卓のあがり151万回から、全37役の出やすさを有効数字3桁で。役満が何半荘に1回出るかも。' },
