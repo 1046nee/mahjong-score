@@ -108,7 +108,7 @@ def _two():
 
 # 牌の音の時刻（scene.py の「もとの時刻 t」と、その時の音）。scene.py の動きを変えたら、ここもそろえる
 TILE_EVENTS = {
-    "pon": [(2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (5.0, "slide"), (6.5, "clack")],
+    "pon": [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")],     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
 PRE_EVENTS = {"pon": [(1.6, "pop"), (3.1, "pop")], "chi": [(1.6, "pop"), (3.1, "pop")]}
