@@ -168,3 +168,24 @@ CAND_DA = {   # 打牌（マットの上に置く・河に切る）
     "4": ("牌が響いてマットで止まる", lambda: _mix((0, _modes([2900, 4600, 7100], [1, .6, .4], [4, 3, 2], n_ms=50)), (0, .6 * _felt(5)))),
     "5": ("角が当たってから倒れる", lambda: _mix((0, .45 * clack(1.0, 1.1, seed=51, ring=.1, body=0)), (int(.018 * SR), _mix((0, clack(1.0, ring=.1, body=0)), (0, .7 * _felt(5, 250, 1000)))))),
 }
+
+
+def _fit(noise_band, noise_ms, rings, tail=None, seed=61, n_ms=80):
+    """送ってもらった実際の音を測った値で作る牌どうしの音（2026-11-14）。
+    実際の音: 2,800〜5,000Hzに集まった、2ミリ秒ほどで消える音のかたまり＋3,250Hzあたりが8ミリ秒ほど響く（7,300Hzも少し）。
+    音そのものは使わず、測った「高さ・強さ・消える速さ」だけを使って作る"""
+    n = int(n_ms / 1000 * SR); t = np.arange(n) / SR; rng = np.random.default_rng(seed)
+    nz = _band(rng.normal(0, 1, n), *noise_band) * np.exp(-t / (noise_ms / 1000)); s = nz / np.abs(nz).max()
+    for f, a, d in rings: s += a * np.sin(2 * math.pi * f * t + rng.random() * 6.28) * np.exp(-t / (d / 1000))
+    if tail: f, a, d = tail; s += a * np.sin(2 * math.pi * f * t) * np.exp(-t / (d / 1000))
+    s[:int(.0003 * SR)] *= np.linspace(0, 1, int(.0003 * SR))
+    return s / np.abs(s).max()
+
+
+CAND_TT2 = {
+    "F": ("実際の音に合わせた音（基本）", lambda: _fit((2600, 5200), 2.0, [(3250, .5, 8), (7300, .22, 4), (3870, .3, 2)])),
+    "G": ("F＋かすかな余韻", lambda: _fit((2600, 5200), 2.0, [(3234, .35, 8), (3275, .35, 8), (7300, .2, 4)], tail=(3250, .1, 25))),
+    "H": ("少し低め（2本目の別の音）", lambda: _fit((2500, 5000), 2.2, [(2840, .3, 4), (2985, .3, 4), (3375, .45, 3), (7350, .3, 4)], seed=63)),
+}
+SOUNDS["clack"] = lambda: CAND_DA["3"][1]()      # 打牌の音は候補3（強いパシッ）に決定（2026-11-14 ユーザーの判断）
+SOUNDS["tap"] = lambda: .4 * CAND_DA["3"][1]()
