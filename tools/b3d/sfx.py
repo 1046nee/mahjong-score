@@ -108,7 +108,7 @@ def _two():
 
 # 牌の音の時刻（scene.py の「もとの時刻 t」と、その時の音）。scene.py の動きを変えたら、ここもそろえる
 TILE_EVENTS = {
-    "pon": [(2.0, "clack2"), (2.9, "tap"), (3.8, "clack"), (5.0, "slide"), (6.5, "clack")],
+    "pon": [(2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (5.0, "slide"), (6.5, "clack")],
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
 PRE_EVENTS = {"pon": [(1.6, "pop"), (3.1, "pop")], "chi": [(1.6, "pop"), (3.1, "pop")]}
@@ -189,3 +189,5 @@ CAND_TT2 = {
 }
 SOUNDS["clack"] = lambda: CAND_DA["3"][1]()      # 打牌の音は候補3（強いパシッ）に決定（2026-11-14 ユーザーの判断）
 SOUNDS["tap"] = lambda: .4 * CAND_DA["3"][1]()
+SOUNDS["clack2"] = lambda: _mix((0, CAND_TT2["H"][1]()), (int(.028 * SR), .85 * _fit((2500, 5000), 2.2, [(2840, .3, 4), (2985, .3, 4), (3375, .45, 3), (7350, .3, 4)], seed=65)))
+SOUNDS["clackt"] = lambda: CAND_TT2["H"][1]()      # 牌どうしの音は候補H に決定（2026-11-14 ユーザーの判断。録音が届いたら差しかえる）
