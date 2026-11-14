@@ -28,10 +28,10 @@ SCRIPTS = {
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, ["s3"], ""),
     ], tail=(106, 120, 2.4),
     pre=dict(head="チーできるとき", hold=1.8, lines=[
-        (0.3, "手牌に 四萬・五萬 がある"),
-        (1.6, "六萬が来れば 四五六 の順子になる"),
-        (3.4, "上家（左の人）が 六萬 を切った → チーできる"),
-        (3.9, "チーできるのは、上家の捨て牌だけ"),
+        (0.3, "手牌に {搭子|ターツ} がある", "四萬 五萬・四萬 六萬"),
+        (3.4, "上家が{ つながる牌 }を切った → チー"),
+        (3.9, "そろうのは {順子|シュンツ}", "四萬 五萬 六萬"),
+        (4.4, "上家の捨て牌だけチーできる"),
     ])),
     "pon": dict(title="ポンの方法", kicker="麻雀の所作", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「ポン」と声に出す。チーより優先される", 0, 6, 2.2, [], "ポン"),
@@ -41,10 +41,10 @@ SCRIPTS = {
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, [], ""),
     ], tail=(106, 120, 2.4),
     pre=dict(head="ポンできるとき", hold=1.8, lines=[
-        (0.3, "手牌に対子（同じ牌が2枚）がある"),
-        (3.4, "他家がもう1枚同じ牌を切った → ポンできる"),
-        (3.9, "ポンは、だれの捨て牌でもできる"),
-        (4.4, "副露の横向きの牌の位置で、だれから鳴いたかわかる"),
+        (0.3, "手牌に {対子|トイツ} がある", "發 發"),
+        (3.4, "他家が{ 同じ牌 }を切った → ポン"),
+        (3.9, "そろうのは {刻子|コーツ}", "發 發 發"),
+        (4.4, "だれの捨て牌でもポンできる"),
     ])),
     "kan": dict(title="カンの方法", kicker="麻雀の所作", sub="暗槓（アンカン）編", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
@@ -199,21 +199,41 @@ def title_card(d, sc, t, dur):
     text_c(d, W / 2, y + 338, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)))
     text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
+def _rich(d, x, y, tx, size, maxw):
+    """確認のカードの1行。{語|ルビ} と {語} は用語（緑の太字。ルビは字の上に小さく）。幅に入るまで字を小さくする"""
+    import re as _re
+    parts = [(m[0], None, None) if m[0] else (None, m[1], m[2] or None) for m in _re.findall(r"([^{}]+)|\{([^|}]+)(?:\|([^}]+))?\}", tx)]
+    while True:
+        f, fk = font(size, 800), font(size, 900)
+        w = sum(d.textlength(p[0], font=f) if p[0] else d.textlength(p[1], font=fk) for p in parts)
+        if w <= maxw or size <= 24: break
+        size -= 1
+    for plain, term, rb in parts:
+        if plain: d.text((x, y), plain, font=f, fill=INK); x += d.textlength(plain, font=f); continue
+        d.text((x, y), term, font=fk, fill=GREEN); tw = d.textlength(term, font=fk)
+        if rb:
+            rf = font(21, 800); d.text((x + tw / 2 - d.textlength(rb, font=rf) / 2, y - 27), rb, font=rf, fill=GREEN)
+        x += tw
+    return x
+
+
 def pre_card(d, pre, t):
-    """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える"""
-    k = min(1, t * 4); y = 1250 + int((1 - k) * 30)
-    rows = [tx for (ts, tx) in pre["lines"] if t >= ts]
-    d.rounded_rectangle((40, y, W - 40, y + 150 + 92 * len(pre["lines"])), radius=44, fill=(255, 255, 255, int(240 * k)))
+    """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える。
+    行は (時刻, 文) か (時刻, 文, 例)。文の {語|ルビ} は用語。例は行の右に小さく「例：」＋牌の名前（オレンジ）（2026-11-14 ユーザーの指定。ポンとチーで同じ形）"""
+    k = min(1, t * 4); RH = 92; y = H - 80 - (146 + RH * len(pre["lines"]) + 18) + int((1 - k) * 30)
+    d.rounded_rectangle((40, y, W - 40, y + 146 + RH * len(pre["lines"]) + 18), radius=44, fill=(255, 255, 255, int(242 * k)))
     ft = font(46, 800); lw = d.textlength("確認", font=ft) + 60
     d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
     text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
     d.text((76 + lw + 24, y + 22), pre["head"], font=font(76), fill=INK)
-    for n, tx in enumerate(rows):
-        ft = font(40, 800)
-        while d.textlength(tx, font=ft) > W - 80 - 130 and ft.size > 20: ft = font(ft.size - 1, 800)      # カードからはみ出さない（2026-11-13 ユーザーの指摘。前は28で止めていて、長い行が右へはみ出した）
-        yy = y + 150 + n * 92
-        d.ellipse((80, yy + 14, 80 + 22, yy + 14 + 22), fill=GREEN)
-        d.text((120, yy), tx, font=ft, fill=INK if n < len(rows) - 1 or n == 0 else GREEN)
+    for n, ln in enumerate([ln for ln in pre["lines"] if t >= ln[0]]):
+        yy = y + 146 + 26 + n * RH; ex = ln[2] if len(ln) > 2 else None
+        d.ellipse((80, yy + 14, 102, yy + 36), fill=GREEN)
+        exw = (26 + d.textlength("例：", font=font(32, 800)) + d.textlength(ex, font=font(32, 900))) if ex else 0
+        x = _rich(d, 122, yy, ln[1], 42, W - 60 - 122 - exw)
+        if ex:
+            x += 26; f = font(32, 800); d.text((x, yy + 9), "例：", font=f, fill=(85, 98, 95)); x += d.textlength("例：", font=f)
+            d.text((x, yy + 9), ex, font=font(32, 900), fill=ORANGE)
 
 _bub = {}
 def bubble(d, tx, k):
