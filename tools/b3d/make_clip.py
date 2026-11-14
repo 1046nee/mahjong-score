@@ -387,7 +387,9 @@ def main():
         for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
         t = 0.0; starts[f"step{i + 1}"] = len(seq) / fps + .25
-        for f in range(s[3], s[4] + 1): seq.append((f, i, t, False)); t += 1 / fps
+        # 発声の手順は、最初のコマで止めたまま見せる（2026-11-14 ユーザーの指定「①が始まる瞬間に画面が少し動くと見にくい。視点を固定」）
+        fr = [s[3]] * (s[4] - s[3] + 1) if s[0] == "発声" else range(s[3], s[4] + 1)
+        for f in fr: seq.append((f, i, t, False)); t += 1 / fps
         nd = max(need(f"step{i + 1}") + .25, (BUB_AT.get(f"step{i + 1}", .25) + 1.0) if s[7] else 0)     # 吹き出しが出てから1秒は見せる
         for _ in range(max(int(s[5] * fps), int(nd * fps) - (s[4] - s[3] + 1))): seq.append((s[4], i, t, True)); t += 1 / fps
     f0, f1, hold = sc["tail"]; t = 0.0; starts["tail"] = len(seq) / fps + .9
