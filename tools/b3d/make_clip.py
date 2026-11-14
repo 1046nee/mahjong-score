@@ -241,28 +241,37 @@ def pre_card(d, pre, t):
             d.text((x, yy + 9), ex, font=font(32, 900), fill=ORANGE)
 
 _bub = {}
+# 吹き出しの場所（2026-11-14 ユーザーの指定「口や顔あたりから出るように。対面の顔が隠れないように」）:
+#   ①発声のカメラ（肩ごし・どの動画も同じ画角）では、手前の選手の頭が左（x 0〜350・y 480〜960）、対面の顔が上の真ん中（x 600〜900・y 470〜800）。
+#   吹き出しは頭の右下（卓の左手前の上）に置き、しっぽを左上へ＝手前の選手の顔の前（頭の右のふち）へ向ける。対面の顔・見出しのカードにかからない
+BUB_C = (410, 1035)          # 吹き出しの真ん中
+BUB_TIP = (-215, -150)       # しっぽの先（真ん中からのずれ）
 def bubble(d, tx, k):
-    """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定「オレンジの吹き出しを白枠で囲うように綺麗に。これから使う吹き出しもすべて」）。
-    しっぽだけ枠が無い・ふちがぎざぎざ、にならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
+    """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定。これから使う吹き出しもすべて）。
+    ふちがぎざぎざにならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
     a = min(1, k * 5); sc_ = .8 + .2 * a
     if tx not in _bub:
         Q = 3; ft = font(96 * Q); tmp = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
-        w = max(420, tmp.textlength("「" + tx + "」", font=font(96)) + 110); h = 170; B = 9; pad = 30; tail = 78
-        im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + tail + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
+        w = max(400, tmp.textlength("「" + tx + "」", font=font(96)) + 100); h = 160; B = 9; pad = 240
+        im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
         X = lambda v: (v + pad) * Q
+        cx, cy = w / 2, h / 2; tx_, ty_ = cx + BUB_TIP[0], cy + BUB_TIP[1]
+        import math as _m
+        ang = _m.atan2(ty_ - cy, tx_ - cx); nx, ny = -_m.sin(ang), _m.cos(ang)
+        bx, by_ = cx + _m.cos(ang) * (w / 2 - 70), cy + _m.sin(ang) * (h / 2 - 30)      # しっぽの付け根（ふちの少し内がわ）
         def shape(g, col):      # g＝外へ広げる幅（白い枠は B、オレンジは 0）
             dr.rounded_rectangle((X(-g), X(-g), X(w + g), X(h + g)), radius=(h / 2 + g) * Q, fill=col)
-            bx0, bx1, tipx, tipy = w / 2 - 152, w / 2 - 84, w / 2 - 196, h + tail - 6      # しっぽ（左下へ）
-            dr.polygon([(X(bx0 - g * 1.5), X(h - 14)), (X(bx1 + g * 1.9), X(h - 14)), (X(tipx - g * 1.25), X(tipy + g * 1.9))], fill=col)
+            half = 30 + g * 1.6
+            pts = [(bx + nx * half, by_ + ny * half), (bx - nx * half, by_ - ny * half), (tx_ + _m.cos(ang) * g * 1.8, ty_ + _m.sin(ang) * g * 1.8)]
+            dr.polygon([(X(px), X(py)) for px, py in pts], fill=col)
         shape(B, (255, 255, 255, 255)); shape(0, (231, 86, 32, 255))
         l, t, r, b_ = dr.textbbox((0, 0), "「" + tx + "」", font=ft)
-        dr.text((X(w / 2) - (r - l) / 2 - l, X(h / 2) - 4 * Q - (b_ - t) / 2 - t), "「" + tx + "」", font=ft, fill=(255, 255, 255, 255))
+        dr.text((X(cx) - (r - l) / 2 - l, X(cy) - 4 * Q - (b_ - t) / 2 - t), "「" + tx + "」", font=ft, fill=(255, 255, 255, 255))
         _bub[tx] = (im.resize((im.width // Q, im.height // Q), Image.LANCZOS), w, h, pad)
     im, w, h, pad = _bub[tx]
     if sc_ < .999: im = im.resize((max(1, int(im.width * sc_)), max(1, int(im.height * sc_))), Image.LANCZOS)
     if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
-    cx, cy = W / 2, 1060
-    d._image.alpha_composite(im, (int(cx - (w / 2 + pad) * sc_), int(cy - (h / 2 + pad) * sc_)))
+    d._image.alpha_composite(im, (int(BUB_C[0] - (w / 2 + pad) * sc_), int(BUB_C[1] - (h / 2 + pad) * sc_)))
 
 def summary(d, sc, k):
     a = int(240 * min(1, k * 3))
