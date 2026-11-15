@@ -209,3 +209,35 @@ def _slide3(dur=.45, vol=.14):      # すべらせる音は少し小さく（202
 
 
 SOUNDS["slide"] = _slide3
+
+
+# ---- 録音した本物の牌の音（2026-11-15 ユーザーが録音して送った音）----
+# 音の素材は公開しないので、素材リポジトリ（まじゃすこ素材/3d/sfx/）に置く。無い環境では、上の作った音のまま。
+#   tt1〜4＝牌と牌が当たる音（録音の最初の方の、1回ずつの音）・da1〜4＝打牌（最後の方の1回ずつの音）
+#   flop2＝手牌の2枚を倒す音（2回当たる）・taosu＝手牌をまとめて倒す音
+import os, wave as _wave
+REC = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "まじゃすこ素材", "3d", "sfx")
+_rc = {}; _turn = {}
+def _rec(name):
+    if name not in _rc:
+        with _wave.open(os.path.join(REC, name + ".wav")) as wf:
+            assert wf.getframerate() == SR, name
+            _rc[name] = np.frombuffer(wf.readframes(wf.getnframes()), np.int16).astype(float) / 32768
+    return _rc[name].copy()
+def _pick(kind, n=4):
+    """同じ音が続かないように、4つを順に使う"""
+    k = _turn.get(kind, 0); _turn[kind] = k + 1
+    return _rec(f"{kind}{k % n + 1}")
+if os.path.isdir(REC):
+    SOUNDS["clack"] = lambda: .9 * _pick("da")                 # 打牌・河に置く
+    SOUNDS["clackt"] = lambda: .8 * _pick("tt")                # 牌と牌が当たる（横に付ける・寄せる）
+    SOUNDS["tap"] = lambda: .3 * _pick("tt")                   # 牌を掴む
+    SOUNDS["clack2"] = lambda: .85 * _rec("flop2")             # 2枚を倒す
+    SOUNDS["taosu"] = lambda: .85 * _rec("taosu")              # 手牌をまとめて倒す・伏せる
+    def _slide_rec(dur=.45, vol=.14):
+        n = int(dur * SR); rng = np.random.default_rng(3); x = rng.normal(0, 1, n)
+        x = np.convolve(x, np.ones(6) / 6, "same") - np.convolve(x, np.ones(60) / 60, "same")
+        t = np.arange(n) / n; s = x * np.sin(math.pi * t) ** 1.5 * vol
+        c = .6 * _pick("tt"); s[-len(c):] += c[:len(s)]
+        return s
+    SOUNDS["slide"] = _slide_rec
