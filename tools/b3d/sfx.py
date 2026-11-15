@@ -107,14 +107,23 @@ def _two():
 
 
 # 牌の音の時刻（scene.py の「もとの時刻 t」と、その時の音）。scene.py の動きを変えたら、ここもそろえる
-TILE_EVENTS = {
-    "pon": [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")],     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
+_NAKI = [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")]     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
+TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒す・taosu＝手牌をまとめて倒す/伏せる・clackt＝牌と牌が当たる・clack＝打牌
+    "pon": _NAKI, "chi": _NAKI,
+    "kan": [(1.5, "tap"), (2.0, "clack2"), (2.55, "clackt"), (3.5, "slide"), (3.9, "tap"), (4.5, "clackt"), (5.0, "tap"), (5.9, "clackt"), (6.5, "tap"), (7.3, "clack")],
+    "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
+    "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
+    "riichi": [(1.5, "tap"), (2.4, "clack"), (3.8, "tap"), (4.3, "tap"), (4.8, "clackt")],
+    "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu")],
+    "ron": [(1.5, "tap"), (2.3, "taosu")],
+    "ryukyoku": [(1.5, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (5.8, "taosu"), (7.3, "tap")],
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
 # 2026-11-14 ユーザーの指定「牌が浮き上がる時や、だれかが牌を切った時にポンッ」を、9本すべてに。浮き上がる＝1.6秒（どの動画も）・他家が切る＝3.1秒（鳴く・ロンの動画だけ）
 PRE_EVENTS = {n: [(1.6, "pop")] + ([(3.1, "pop")] if n in ("pon", "chi", "daiminkan", "ron") else [])
               for n in ("pon", "chi", "kan", "daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku")}
-FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0)}
+FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0), "kan": (2.0, 2.6, 3.55, 4.5, 5.9),     # scene.py の FREEZE・S2T とそろえる
+          "daiminkan": (2.1, 3.8, 5.0, 6.1, 7.5), "kakan": (2.4, 3.5, 4.9), "riichi": (2.4, 3.8), "tsumo": (2.9, 4.4), "ron": (2.4, 3.2), "ryukyoku": (2.4, 5.9, 7.4)}
 PAUSE = .7
 
 
@@ -233,7 +242,7 @@ if os.path.isdir(REC):
     SOUNDS["clackt"] = lambda: .8 * _pick("tt")                # 牌と牌が当たる（横に付ける・寄せる）
     SOUNDS["tap"] = lambda: .3 * _pick("tt")                   # 牌を掴む
     SOUNDS["clack2"] = lambda: .85 * _rec("flop2")             # 2枚を倒す
-    SOUNDS["taosu"] = lambda: .85 * _rec("taosu")              # 手牌をまとめて倒す・伏せる
+    SOUNDS["taosu"] = lambda: .85 * _rec("flop2")             # 手牌をまとめて倒す・伏せる＝2枚を倒す音と同じ（2026-11-15 ユーザーの判断）
     def _slide_rec(dur=.45, vol=.14):
         n = int(dur * SR); rng = np.random.default_rng(3); x = rng.normal(0, 1, n)
         x = np.convolve(x, np.ones(6) / 6, "same") - np.convolve(x, np.ones(60) / 60, "same")
