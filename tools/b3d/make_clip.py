@@ -298,15 +298,25 @@ BUB_POS = {"3900": ((560, 1110), (-60, 300)), "400・700": ((560, 1110), (-60, 3
 # 吹き出しの本体はそこから BUB_TIP の向きの逆へ置く（前の真ん中 BUB_C から先を指す形と同じ向き）
 TAIL_L = 46
 BUB_FACE = (445, 905)      # 手前の選手の頭の右のふち（顔の前）。吹き出しの本体は頭にかけない
+# 肩ごしの吹き出しは、左のふちを固定（BUB_L）して、言葉が長いほど右へのばす。しっぽは左寄りの上のふちから、左上の顔の前へ短く出す。
+# しっぽの出っぱり（ふちから先まで、縦に）は「3900」と同じ約45px（2026-11-14 ユーザーの指定「ポンもリーチも、しっぽの長さと左をそろえる」）
+BUB_L, BUB_Y = 383, 1030     # 吹き出しの左のふちの x・真ん中の y（しっぽの先が BUB_FACE に来る位置）
+BUB_U = (-.45, -.89)         # しっぽの向き（左上）
 def _bub_geom(tx, w, h):
-    """吹き出しの真ん中と、しっぽの先（真ん中からのずれ）"""
+    """吹き出しの真ん中と、しっぽの付け根・先（真ん中からのずれ）"""
     import math as _m
-    c0, v = BUB_POS.get(tx, (None, BUB_TIP))
-    L_ = _m.hypot(*v); dx, dy = v[0] / L_, v[1] / L_
-    t = min((w / 2) / max(abs(dx), 1e-6), (h / 2) / max(abs(dy), 1e-6))      # 真ん中からふちまで（その向きで）
-    tip = (dx * (t + TAIL_L), dy * (t + TAIL_L))
-    c = c0 if c0 else (BUB_FACE[0] - tip[0], BUB_FACE[1] - tip[1])
-    return c, tip
+    if tx in BUB_POS:
+        c, v = BUB_POS[tx]
+        L_ = _m.hypot(*v); dx, dy = v[0] / L_, v[1] / L_
+        t = min((w / 2) / max(abs(dx), 1e-6), (h / 2) / max(abs(dy), 1e-6))      # 真ん中からふちまで（その向きで）
+        tip = (dx * (t + TAIL_L), dy * (t + TAIL_L))
+        ang = _m.atan2(dy, dx); base = (_m.cos(ang) * (w / 2 - 70), _m.sin(ang) * (h / 2 - 30))
+        return c, base, tip
+    c = (BUB_L + w / 2, BUB_Y)
+    base = (100 - w / 2, -h / 2 + 30)                       # 左のふちから100px・上のふちの少し内がわ
+    k = (h / 2 + 45 + base[1]) / -BUB_U[1]                  # 上のふちから約45px 出す
+    tip = (base[0] + BUB_U[0] * k, base[1] + BUB_U[1] * k)
+    return c, base, tip
 def bubble(d, tx, k):
     """発声の吹き出し。オレンジの地を、しっぽまで白い枠でぐるりと囲む（2026-11-13 ユーザーの指定。これから使う吹き出しもすべて）。
     ふちがぎざぎざにならないように、3倍の大きさで「白い形 → 少し小さいオレンジの形」を描いてから縮める"""
@@ -316,11 +326,11 @@ def bubble(d, tx, k):
         w = max(400, tmp.textlength("「" + tx + "」", font=font(96)) + 100); h = 160; B = 9; pad = 240
         im = Image.new("RGBA", (int((w + pad * 2) * Q), int((h + pad * 2) * Q)), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
         X = lambda v: (v + pad) * Q
-        tip = _bub_geom(tx, w, h)[1]
+        _, base, tip = _bub_geom(tx, w, h)
         cx, cy = w / 2, h / 2; tx_, ty_ = cx + tip[0], cy + tip[1]
         import math as _m
-        ang = _m.atan2(ty_ - cy, tx_ - cx); nx, ny = -_m.sin(ang), _m.cos(ang)
-        bx, by_ = cx + _m.cos(ang) * (w / 2 - 70), cy + _m.sin(ang) * (h / 2 - 30)      # しっぽの付け根（ふちの少し内がわ）
+        bx, by_ = cx + base[0], cy + base[1]      # しっぽの付け根（ふちの少し内がわ）
+        ang = _m.atan2(ty_ - by_, tx_ - bx); nx, ny = -_m.sin(ang), _m.cos(ang)
         # オレンジの形（丸い四角＋しっぽ）を1枚の型にして、白い枠はその型を同じ幅だけ外へ太らせて作る。
         # （前は白い形とオレンジの形を別々に描いていて、細長いしっぽの下のふちだけ白が付かなかった＝2026-11-14 確かめて直した）
         half = 34; R = B * Q
