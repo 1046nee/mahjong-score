@@ -178,7 +178,8 @@ def sheet(sec_index, title, out, keep=(None, 0, 1, 2), cat1=None):
         if row[0] == "SUB":
             if open_: cards += "</div>"
             dark = "枚形" in row[1]
-            cards += f'<div class="grp{" dk" if dark else ""}"><div class="gh">{row[1]}</div>'; open_ = True; continue
+            pips = f"<em class='pips'>{'<i></i>' * int(row[1][0])}</em>" if dark else ""     # 4枚形・7枚形の牌の数の目印（一覧の札と同じ）
+            cards += f'<div class="grp{" dk" if dark else ""}"><div class="gh">{pips}{row[1]}</div>'; open_ = True; continue
         if row[0] == "SUB2":
             cards += f'<div class="sub2">{row[1]}</div>'; continue
         name, yomi, hand, txt = row
@@ -195,7 +196,8 @@ def sheet(sec_index, title, out, keep=(None, 0, 1, 2), cat1=None):
 .leg { font-size: 11px; font-weight: 800; color: #4C5B58; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; } .leg .sol { width: 18px; height: 11px; background: #1F2A28; border-radius: 2px; display: inline-block; }
 .leg .dot { width: 18px; height: 11px; background: #E9A3A3; border: 0; border-radius: 2px; display: inline-block; margin-left: 10px; }
 .grp { border: 2px solid #177083; border-radius: 8px; background: #F4F9F8; padding: 0 6px 1px; margin-bottom: 10px; } .grp.dk { border-color: #1F2A28; background: #F3F4F4; }
-.grp .gh { margin: 0 -6px 6px; background: #177083; color: #fff; font-size: 13.5px; font-weight: 900; padding: 3px 12px; border-radius: 6px 6px 0 0; } .grp.dk .gh { background: #1F2A28; }
+.grp .gh { margin: 0 -6px 6px; background: #177083; color: #fff; font-size: 13.5px; font-weight: 900; padding: 3px 12px; border-radius: 6px 6px 0 0; } .grp.dk .gh { background: #1F2A28; display: flex; align-items: center; }
+.grp .gh .pips { display: inline-flex; gap: 2px; margin-right: 8px; } .grp .gh .pips i { width: 6px; height: 9px; border-radius: 1.5px; background: #fff; }
 .grp .card:last-child { margin-bottom: 5px; }
 .k47 { display: inline-block; font-size: 11.5px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 4px; padding: 0 6px; margin: 0 2px; }
 .sub2 { font-size: 11.5px; font-weight: 900; color: #1F2A28; margin: 6px 0 4px 2px; border-left: 4px solid #1F2A28; padding-left: 6px; }
