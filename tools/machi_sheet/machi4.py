@@ -4,6 +4,7 @@ from base import *
 import machi3 as M
 import os as _os, re
 DESC = _os.environ.get("DESC") is not None      # 説明の列は出さない（2026-11-16 ユーザーの判断。DESC=1 で出す）
+K47 = _os.environ.get("K47", "#1F2A28")      # 4枚形・7枚形の札と、解説のその枠の色
 PAT = _os.environ.get("NOPAT") is None       # 形の名前の下に枚数の並びを出すか（試し）
 ALL = []
 for t, sub, m, rows in M.SECS:
@@ -45,7 +46,7 @@ th.rh em.pt { display: block; font-style: normal; font-family: "Roboto Mono", "N
 header h1 { white-space: nowrap; } header .legend { flex-shrink: 0; white-space: nowrap; }
 .lvchain { display: inline-flex; align-items: center; gap: 4px; vertical-align: 7px; margin-left: 12px; background: #fff; border-radius: 8px; padding: 5px 7px; letter-spacing: 0; }
 .lvchain i { font-style: normal; font-size: 11px; font-weight: 900; line-height: 1; color: #fff; border-radius: 4px; padding: 4px 6px; } .lvchain i.l1 { background: #E25A1C; } .lvchain i.l3 { background: #177083; } .lvchain i.l4 { background: #6A4BB0; }
-.lvchain b { color: #9AA8A5; font-size: 11px; font-weight: 900; line-height: 1; }
+.lvchain b { color: #9CC9CF; font-size: 10px; font-weight: 900; line-height: 1; }
 .k47b { display: inline-block; font-size: 12px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 5px; padding: 3px 7px; line-height: 1.35; }
 .k47 { display: inline-block; margin-top: 3px; font-size: 11.5px; font-weight: 900; color: #fff; background: #1F2A28; border-radius: 4px; padding: 1px 6px; }      /* 星は左上に横並び。名前はセルの真ん中のまま、上に少し余白をとって重ならない */
 .lv { position: absolute; left: 5px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; border-radius: 4px; color: #fff; font-style: normal; font-size: 10.5px; font-weight: 900; line-height: 17px; text-align: center; }
@@ -120,8 +121,8 @@ td.g2 { background: #E4F3EC; color: #177083; text-align: center; font-size: 11px
 td.tx { font-size: 10.5px; letter-spacing: -.03em; padding: 4px 5px; } th.rh { font-size: 12px; padding: 13px 2px 2px; } th.rh .ln { font-size: 10px; letter-spacing: -.05em; }
 tr.gtop td, tr.gtop th { border-top: 5px double #1F2A28 !important; } tbody tr.gtop:first-child td, tbody tr.gtop:first-child th { border-top: 2px solid #1F2A28; } tr.btop td, tr.btop th { border-top: 2px solid #1F2A28 !important; } tr.ctop td, tr.ctop th { border-top: 1.5px solid #8FA29D !important; }      /* 別々の形とつながった形の境 */
 tbody tr.ssr { height: 20px; } td.ss2 { background: #F4F7F6; color: #4C5B58; font-size: 11px; font-weight: 900; padding: 1px 10px; border-top: 1px dashed #8FA29D; }"""
-    LVCHAIN = "<span class='lvchain'><i class='l1'>初心者</i><b>＞</b><i class='l3'>脱初心者</i><b>＞</b><i class='l4'>中級者</i></span>"
-    render(page("待ちの形の一覧" + LVCHAIN, "1面子1雀頭（4枚形）・2面子1雀頭（7枚形）を作る形と、待ちの枚数", f"脱初心者の<br><span>{len(ALL)}形</span>", html, css), out)
+    LVCHAIN = "<span class='lvchain'><i class='l1'>初心者</i><b>▶</b><i class='l3'>脱初心者</i><b>▶</b><i class='l4'>中級者</i></span>"
+    render(page("待ちの形の一覧" + LVCHAIN, "1面子1雀頭（4枚形）・2面子1雀頭（7枚形）を作る形と、待ちの枚数", f"脱初心者の<br><span>{len(ALL)}形</span>", html, css + f".k47b {{ background: {K47}; }}"), out)
 def sheet_B1(out):
     ks = sorted([r for r in ALL if r["kihon"]], key=lambda r: -r["n"])
     body = "".join(row(r, big=True) for r in ks)

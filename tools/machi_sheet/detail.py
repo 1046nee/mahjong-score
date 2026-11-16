@@ -76,6 +76,7 @@ def top_view(hand, ws, km):
 import os as _os, itertools as _it
 _CNT = _it.count()
 BOX = _os.environ.get("BOX", "solid")      # 点線なし・薄めの塗りに決定（2026-11-16 ユーザーの判断）
+K47 = _os.environ.get("K47", "#1F2A28")      # 4枚形・7枚形の札と、解説のその枠の色
 HAND = _os.environ.get("HAND", "#1F2A28")      # 横から見た図の手にある牌は黒（2026-11-16 ユーザーの指定）
 DUAL = _os.environ.get("DUAL", "half"); NUM = _os.environ.get("NUM", "split")      # 2つの待ち方を持つ数字は、数字そのものを左右で2色に（2026-11-16 ユーザーの判断）
 SW = _os.environ.get("SW", "1.2"); DA = _os.environ.get("DA", "2.5 1.5")      # 点線の太さと、点と間の長さ（点線の版のとき）
@@ -212,7 +213,7 @@ def sheet(sec_index, title, out, keep=(None, 0, 1, 2), cat1=None):
 .row { display: flex; align-items: flex-end; gap: 2px; } .gap { display: inline-block; width: 8px; } .dt { display: inline-flex; align-items: center; justify-content: center; border: 2px dashed; border-radius: 4px; background: #fff; }
 .dt img { opacity: .75; } .exs { margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 14px; } .ex { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 900; color: var(--c); } .ex b { background: var(--c); color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 3px; }
 .ex.two span { color: #1F2A28; } .ex.two em { font-style: normal; font-size: 10px; font-weight: 700; color: #6B7A77; } .leg .ex { font-size: 10px; } .leg .ex b { font-size: 10px; padding: 0 5px; }"""
-    render(page(title, f"アガると{m}面子＋1雀頭 ／ 待ちの牌がどこに来るか", f"{len(rows)}形を<br><span>図で解説</span>", body, css), out)
+    render(page(title, f"アガると{m}面子＋1雀頭 ／ 待ちの牌がどこに来るか", f"{len(rows)}形を<br><span>図で解説</span>", body, css + f".grp.dk {{ border-color: {K47}; }} .grp.dk .gh {{ background: {K47}; }} .sub2 {{ border-left-color: {K47}; }}"), out)
 M3_KIHON = M3.KIHON
 def M4pat(hand):
     """数字ごとの枚数の並び（一覧と同じ。抜けた数字は0・字牌はX・辺張は端を付ける）"""
