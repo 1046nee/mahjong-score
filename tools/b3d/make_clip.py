@@ -407,10 +407,32 @@ def outro_card(im, t, dur):
     im.alpha_composite(ov)
 
 
+SUB_MIN = 38      # 字幕の字の、いちばん小さい大きさ（1行に入れるために小さくしてよい所まで）
+def sub_units(tx):
+    """字幕に出す単位: 1文ずつ（「。」まで）。1行に入らない長い文だけ、「、」の所で1行に入る長さに分ける（2026-11-16 ユーザーの指定「2行・3行を一気に出さない」）"""
+    import re as _re
+    dd = ImageDraw.Draw(Image.new("RGBA", (8, 8))); ft = font(SUB_MIN, 800); maxw = W - 2 * 90     # 字を SUB_MIN まで小さくすれば1行に入る文は、分けない
+    out = []
+    for sen in [x for x in _re.findall(r"[^。]+。?", tx) if x.strip()]:
+        if dd.textlength(sen, font=ft) <= maxw: out.append(sen); continue
+        cur = ""
+        for part in _re.findall(r"[^、]+、?", sen):
+            if cur and dd.textlength(cur + part, font=ft) > maxw: out.append(cur); cur = part
+            else: cur += part
+        if cur: out.append(cur)
+    return out
+
+def sub_at(d, units, t):
+    """時刻 t（声が出てからの秒）に出す1文"""
+    for a_, b_, sen in units:
+        if t < b_ or (a_, b_, sen) == units[-1]:
+            subtitle(d, sen, t - a_); return
+
 def subtitle(d, tx, k):
     """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
     ft = font(46, 800); a = int(235 * min(1, k * 6)); maxw = W - 2 * 90
     rows = [tx]
+    while d.textlength(tx, font=ft) > maxw and ft.size > SUB_MIN: ft = font(ft.size - 2, 800)      # まず字を小さくして1行に
     if d.textlength(tx, font=ft) > maxw:      # 2行に分けるときは、真ん中にいちばん近い「、」「。」の後ろで切る（字の途中で折ると読みにくい）
         cuts = [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"] or [len(tx) // 2]
         c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rows = [tx[:c], tx[c:]]
@@ -454,7 +476,7 @@ def main():
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = SCRIPTS[name]
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
-    VO = {}; BUB_AT = {}     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）
+    VO = {}; BUB_AT = {}; SUBS = {}     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）・SUBS＝字幕の1文ずつの (出す, 消す, 文)
     if "--voice" in a:
         import wave, narration
         vtmp = tempfile.mkdtemp()
@@ -465,6 +487,13 @@ def main():
             if seg.startswith("step") and key:     # 吹き出しは「〇〇と声に出します。」「〇〇と申告します。」を言い終わってから（2026-11-14 ユーザーの指定・全部の動画の決まり）
                 wb = os.path.join(vtmp, seg + "_b.wav"); narration.synth(tx[:tx.index(key) + len(key)], wb)
                 with wave.open(wb) as wf: BUB_AT[seg] = .25 + wf.getnframes() / wf.getframerate() + .05
+            if seg.startswith("step") or seg == "tail":     # 字幕は1文ずつ出す（2026-11-16 ユーザーの指定）。文ごとに声の長さを測って、出す時刻を決める
+                units = []
+                for j, sen in enumerate(sub_units(tx)):
+                    wu = os.path.join(vtmp, f"{seg}_u{j}.wav"); narration.synth(sen, wu)
+                    with wave.open(wu) as wf: units.append((sen, wf.getnframes() / wf.getframerate()))
+                sc_ = VO[seg][1] / max(1e-6, sum(u[1] for u in units)); t_ = 0.0; SUBS[seg] = []
+                for sen, du in units: SUBS[seg].append((t_, t_ + du * sc_, sen)); t_ += du * sc_
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
     src, out = a[0], a[1]
@@ -518,11 +547,11 @@ def main():
             rail(d, sc["steps"], i); headline(d, i, s, t)
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
-            if f"step{i + 1}" in VO and .25 <= t <= .25 + VO[f"step{i + 1}"][1] + .3: subtitle(d, VO[f"step{i + 1}"][2], t - .25)
+            if f"step{i + 1}" in VO and .25 <= t <= .25 + VO[f"step{i + 1}"][1] + .3: sub_at(d, SUBS[f"step{i + 1}"], t - .25)
         else:
             rail(d, sc["steps"], len(sc["steps"]), done_all=True)
             if t > .9: summary(d, sc, t - .9)
-            if "tail" in VO and .9 <= t <= .9 + VO["tail"][1] + .3: subtitle(d, VO["tail"][2], t - .9)
+            if "tail" in VO and .9 <= t <= .9 + VO["tail"][1] + .3: sub_at(d, SUBS["tail"], t - .9)
         Image.alpha_composite(im, ov).convert("RGB").save(os.path.join(tmp, f"f{n:04d}.png"))
     ff = shutil.which("ffmpeg")
     if not ff:
