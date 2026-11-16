@@ -155,7 +155,7 @@ def explain(hand, ws, km):
         xs = [nm(CODES.index(w)) for w, _ in ws if t in km[w]]
         if xs: out.append(f'<span class="ex" style="--c:{col}"><b>{t}</b>{"・".join(xs)}</span>')
     return "".join(out)
-def sheet(sec_index, title, out, keep=(None, 0, 1, 2)):
+def sheet(sec_index, title, out, keep=(None, 0, 1, 2), cat1=None):
     """keep＝載せる区分（None＝面子と雀頭が別々の形・0/1/2＝つながった形の暗刻の数）。2面子1雀頭は2枚に分ける（2026-11-16 ユーザーの指定）"""
     t, sub, m, rows = M3.SECS[sec_index]
     cards = ""
@@ -168,6 +168,7 @@ def sheet(sec_index, title, out, keep=(None, 0, 1, 2)):
         seq += [("SUB", lab_)]
         if k_ == 1 and len(xs) > 3:
             for c_ in M3.CAT1:
+                if cat1 and c_ not in cat1: continue
                 ys = [r for r in xs if M3.cat1(r[2]) == c_]
                 if ys: seq += [("SUB2", c_)] + ys
         else: seq += xs
@@ -220,4 +221,9 @@ def M4pat(hand):
     return t + (" " if t and z else "") + z
 if sys.argv[2] == "1": sheet(0, "1面子1雀頭を作る形（4枚形）", sys.argv[1])
 elif sys.argv[2] == "2a": sheet(1, "2面子1雀頭を作る形（7枚形）①", sys.argv[1], keep=(None, 0, 2))
-else: sheet(1, "2面子1雀頭を作る形（7枚形）②", sys.argv[1], keep=(1,))
+elif sys.argv[2] == "2b": sheet(1, "2面子1雀頭を作る形（7枚形）②", sys.argv[1], keep=(1,))
+# Instagram（1080×1350）用: 1枚に入るよう、区分ごとに分けて描く（2026-11-16）
+elif sys.argv[2] == "ig1a": sheet(0, "1面子1雀頭を作る形（4枚形）①", sys.argv[1], keep=(None,))
+elif sys.argv[2] == "ig1b": sheet(0, "1面子1雀頭を作る形（4枚形）②", sys.argv[1], keep=(0, 1))
+elif sys.argv[2] == "ig2b": sheet(1, "2面子1雀頭を作る形（7枚形）②", sys.argv[1], keep=(1,), cat1=("空なし",))
+elif sys.argv[2] == "ig2c": sheet(1, "2面子1雀頭を作る形（7枚形）③", sys.argv[1], keep=(1,), cat1=("空あり", "4枚を使う"))
