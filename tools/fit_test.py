@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """狭い画面（320/360/390px）と大きな数字（-12,300点・+1,000超のスコア）で、数字が欠けないか・横にはみ出さないか・
 見出しの左右が重ならないか・ボタンの文字が折れていないかを確かめる（マイページ・結果のシート・推移の点・仲間ページの順位とメンバー）。
+推移のグラフの単位「試合」と、横に広い画面（844×390・1280×800）でグラフの高さが変わらず横に広がることも見る。
 スタブのFirebase（tools/smoke_test・account_test と同じ）。本番には触らない。
 
 2026-10-02: 点数の欄の最低点数（-12,300）が欠けた・320px で期間のボタンが縦に折れた・成績カードの見出しが重なった、の再発防止。
@@ -105,6 +106,28 @@ def main():
             # 推移の点
             pg.evaluate("document.querySelector('#mp-stats .sp-hit').dispatchEvent(new MouseEvent('click', { bubbles: true }))")
             allbad += [f"[{width}] 推移の点: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
+            # 推移の単位「試合」（1点＝1試合。2026-11-16〜）: 点の数＝試合数（15）・点を押したカードもはみ出さない
+            pg.evaluate("setSparkUnit('g', document.querySelector('#mp-stats .sp-unit button'))")
+            pg.wait_for_timeout(250)
+            if not pg.evaluate("() => { const n = document.querySelectorAll('#mp-stats circle.dot').length; return n === 15 && document.querySelector('#mp-stats .mc-trend-h small').textContent.includes('15試合'); }"):
+                allbad.append(f"[{width}] 推移の「試合」: 点の数が試合数と合わない")
+            pg.evaluate("() => { const h = document.querySelectorAll('#mp-stats .sp-hit'); h[h.length - 1].dispatchEvent(new MouseEvent('click', { bubbles: true })); }")
+            allbad += [f"[{width}] 推移の「試合」の点: {b}" for b in pg.evaluate(CHECK_JS, NUM_SEL)]
+            if not pg.evaluate("() => (document.querySelector('#mp-stats .sp-pop:not([hidden])') || {}).innerText.includes('試合目')"):
+                allbad.append(f"[{width}] 推移の「試合」の点: カードに「n試合目」が無い")
+            pg.evaluate("setSparkUnit('d', document.querySelector('#mp-stats .sp-unit button'))")
+            # 横に広い画面（スマホの横向き・PC）: グラフの高さはそのまま（140px以下）で、横に見える範囲が広がる（2026-11-16〜）
+            if width == 390:
+                for ww, hh in ((844, 390), (1280, 800)):
+                    pg.set_viewport_size({"width": ww, "height": hh})
+                    pg.wait_for_timeout(500)
+                    r = pg.evaluate("() => { const row = document.querySelector('#mp-stats .mc-spark-row'); return [Math.round(row.getBoundingClientRect().height), Number(row.dataset.v), document.documentElement.scrollWidth > innerWidth + 1]; }")
+                    if r[0] > 140 or r[1] <= 300 or r[2]:
+                        allbad.append(f"[{ww}x{hh}] 推移のグラフ: 高さ{r[0]}px・見える幅{r[1]}・ページのはみ出し{r[2]}（高さ140以下・幅300より大のはず）")
+                pg.set_viewport_size({"width": width, "height": 760})
+                pg.wait_for_timeout(400)
+                if pg.evaluate("Number(document.querySelector('#mp-stats .mc-spark-row').dataset.v)") != 270:
+                    allbad.append("[390] 推移のグラフ: 幅を戻しても見える幅が 270 に戻らない")
             # 仲間ページ（長い名前で作って試合を入れる）
             pg.evaluate("openCreateCircle(); document.getElementById('cc-name').value = 'とても長い名前の仲間ページ（はみ出しの確認用）'; document.getElementById('cc-me').value = 'むにぃ';")
             pg.evaluate("runCreateCircle()")

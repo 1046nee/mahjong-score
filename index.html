@@ -9239,7 +9239,7 @@ function initLpSpark() {
       const list = all.filter(x => kind === 'all' || (kind === 'team') === x.tm), keep = sparkUnit;
       sparkUnit = unit;
       const box = document.createElement('div');
-      box.innerHTML = miniSparkHtml(list, 4, list.reduce((a, x) => a + x.sc, 0));
+      box.innerHTML = miniSparkHtml(list, 4, list.reduce((a, x) => a + x.sc, 0), 270);
       const count = sparkUnitCount(list); sparkUnit = keep;
       box.querySelectorAll('.sp-pop, .sp-ring, .sp-lab').forEach(x => x.remove());
       box.querySelectorAll('*').forEach(x => [...x.attributes].forEach(a => { if (/^on|^data-|^role$|^aria-/.test(a.name)) x.removeAttribute(a.name); }));
@@ -15945,11 +15945,14 @@ function mpStatsInnerHtml(np, m, withMore, scopeLabel) {
 // 高さはどの日数でも同じ（目盛り 30:98 を幅10%・グラフ Wp:98 を幅 Wp/270×90% にして、両方の高さがそろう）
 // 推移のグラフの単位（日｜月｜年）。1点＝その日／月／年の合計。年にすると1年ごとのプラス・マイナスがひと目でわかる（2026-10-07）
 const SPARK_UNIT_KEY = 'mahjong-spark-unit';
-let sparkUnit = (() => { try { const v = localStorage.getItem(SPARK_UNIT_KEY); return ['d', 'm', 'y'].includes(v) ? v : 'd'; } catch (e) { return 'd'; } })();
-const SPARK_UNITS = [['y', '年'], ['m', '月'], ['d', '日']]; // 左から年・月・日（2026-10-07 ユーザー要望）
+let sparkUnit = (() => { try { const v = localStorage.getItem(SPARK_UNIT_KEY); return ['d', 'm', 'y', 'g'].includes(v) ? v : 'd'; } catch (e) { return 'd'; } })();
+// 左から年・月・日（2026-10-07 ユーザー要望）・試合（1点＝1試合。2026-11-16 ユーザー要望「試合ごとの細かい成績も1つずつ見たい」）
+const SPARK_UNITS = [['y', '年'], ['m', '月'], ['d', '日'], ['g', '試合']];
 // 1試合の記録 → 単位ごとのまとまりの鍵・見出し（下の目盛り）・カードの札
-function sparkBucket(d) {
+// 試合の単位の鍵は「日の鍵#通し番号」（日の鍵で前方一致するので、日⇔試合の切り替えで選んだ点を引き継げる）。x＝その試合の記録・i＝何番目か
+function sparkBucket(d, x, i) {
   const y = d.getFullYear(), m = d.getMonth() + 1;
+  if (sparkUnit === 'g') return { k: `${ymdLocal(d)}#${String(i || 0).padStart(5, '0')}`, tick: `${m}/${d.getDate()}`, label: `${fmtDay(d.getTime())}・${(Number(x && x.o) || 0) + 1}試合目` };
   if (sparkUnit === 'y') return { k: String(y), tick: `${y}年`, label: `${y}年` };
   if (sparkUnit === 'm') return { k: `${y}-${String(m).padStart(2, '0')}`, tick: `${m}月`, label: `${y}年${m}月` };
   return { k: ymdLocal(d), tick: `${m}/${d.getDate()}`, label: null };
@@ -15963,7 +15966,7 @@ function trendHtml(hist, np, score) {
   const ks = Object.keys(trendReg); if (ks.length > 40) ks.slice(0, ks.length - 40).forEach(k => delete trendReg[k]);
   return `<span class="mc-trend" data-tr="${id}"><span class="mc-trend-h"><small>通算スコアの推移（${sparkUnitCount(hist)}）</small>${sparkUnitSegHtml()}</span>${miniSparkHtml(hist, np, score)}</span>`;
 }
-function sparkUnitCount(h) { const n = new Set(h.map(x => sparkBucket(new Date(x.t)).k)).size; return sparkUnit === 'y' ? `${n}年` : sparkUnit === 'm' ? `${n}か月` : `${n}日`; }
+function sparkUnitCount(h) { const n = new Set(h.map((x, i) => sparkBucket(new Date(x.t), x, i).k)).size; return sparkUnit === 'y' ? `${n}年` : sparkUnit === 'm' ? `${n}か月` : sparkUnit === 'g' ? `${n}試合` : `${n}日`; }
 function sparkUnitSegHtml() {
   return `<span class="sp-unit" role="tablist" aria-label="グラフの単位">${SPARK_UNITS.map(([k, l]) =>
     `<button type="button" role="tab" class="${sparkUnit === k ? 'on' : ''}" aria-selected="${sparkUnit === k}" onclick="event.stopPropagation();setSparkUnit('${jsq(k)}',this)">${l}</button>`).join('')}</span>`;
@@ -15980,17 +15983,24 @@ function setSparkUnit(u, el) {
   if (pop && pop.dataset.rid) { const reg = sparkReg[pop.dataset.rid], d = reg && reg.days[+pop.dataset.i]; if (d) keep = d.k; }
   sparkUnit = u;
   try { localStorage.setItem(SPARK_UNIT_KEY, u); } catch (e) {}
-  const tr = el && el.closest('.mc-trend[data-tr]'), t = tr && trendReg[tr.dataset.tr];
-  if (t) { // グラフのカードだけ差し替える
-    const box = document.createElement('div'); box.innerHTML = trendHtml(t.hist, t.np, t.score);
-    const nt = box.firstElementChild; tr.replaceWith(nt);
-    const sc = nt.querySelector('.mc-scroll');
-    if (sc) { sc.removeAttribute('data-end'); sc.scrollLeft = sc.scrollWidth; } // 右端へ送るのはここで済ませる（あとから右端へ戻されないように）
-    if (keep) sparkSelectKeyIn(nt, keep);
-    return;
-  }
+  const tr = el && el.closest('.mc-trend[data-tr]');
+  if (tr && trendReg[tr.dataset.tr]) { redrawTrendCard(tr, keep, true); return; } // グラフのカードだけ差し替える
   rerenderStatsFrom(el);
   if (keep && hostSel) setTimeout(() => sparkSelectKey(hostSel, keep), 30);
+}
+// 推移のカードだけ描き直す（単位を変えたとき・画面の幅が変わったとき）。keep＝選んでいた点の鍵。toEnd＝右端（最新）へ送る
+function redrawTrendCard(tr, keep, toEnd) {
+  const t = trendReg[tr.dataset.tr];
+  if (!t) return;
+  if (keep === undefined) { const pop = tr.parentElement && tr.parentElement.querySelector('.sp-pop:not([hidden])'); keep = null; if (pop && pop.dataset.rid) { const reg = sparkReg[pop.dataset.rid], d = reg && reg.days[+pop.dataset.i]; if (d) keep = d.k; } }
+  const sc0 = tr.querySelector('.mc-scroll'), atEnd = toEnd || !sc0 || sc0.hasAttribute('data-end') || sc0.dataset.atEnd !== '0';
+  const w = tr.querySelector('.mc-spark-row') && tr.querySelector('.mc-spark-row').getBoundingClientRect().width;
+  if (w) sparkRowW = w;
+  const box = document.createElement('div'); box.innerHTML = trendHtml(t.hist, t.np, t.score);
+  const nt = box.firstElementChild; tr.replaceWith(nt);
+  const sc = nt.querySelector('.mc-scroll');
+  if (sc) { sc.removeAttribute('data-end'); if (atEnd) sc.scrollLeft = sc.scrollWidth; sc.dataset.atEnd = atEnd ? '1' : '0'; } // 右端へ送るのはここで済ませる（あとから右端へ戻されないように）
+  if (keep) sparkSelectKeyIn(nt, keep);
 }
 function sparkSelectKey(hostSel, k) { const h = document.querySelector(hostSel); if (h) sparkSelectKeyIn(h, k); }
 function sparkSelectKeyIn(root, k) {
@@ -16020,19 +16030,44 @@ function sparkSelectKeyIn(root, k) {
   }
 }
 // 試合が無いときのグラフ: 試合があるときと同じ大きさ・同じ目盛り（+100・0・-100）の空のグラフに、説明を重ねる（形を崩さない。2026-10-08）
+// 横に広い画面（PC・スマホの横向き）では、グラフの高さはそのままで、横に見える範囲を広げて点を多く出す（2026-11-16 ユーザー要望）。
+// V＝スクロールの枠に見える横の幅（グラフの単位）。行の幅が SPARK_BASE_W（幅430のスマホの縦）以下なら今までどおり 270。
+// 描いたあとで行の幅を測り、合っていなければ推移のカードだけ描き直す（fitSparkRows）。目盛りの欄の幅は 30/(30+V) にして、目盛りとグラフの高さをそろえる
+const SPARK_BASE_W = 370;
+let sparkRowW = 0; // 最後に測った推移の行の幅（px）
+function sparkVisOf(w) { return Math.max(270, Math.round(270 * (w || 0) / SPARK_BASE_W)); }
+function sparkRowStyle(V) { return [`width:${(3000 / (30 + V)).toFixed(3)}%`, `width:${(100 * V / (30 + V)).toFixed(3)}%`]; }
+function fitSparkRows() {
+  document.querySelectorAll('.mc-trend[data-tr]').forEach(tr => {
+    const row = tr.querySelector('.mc-spark-row');
+    if (!row || !row.offsetParent) return;
+    const w = row.getBoundingClientRect().width;
+    if (!w) return;
+    sparkRowW = w;
+    const want = sparkVisOf(w), cur = Number(row.dataset.v) || 270;
+    if (Math.abs(want - cur) / cur >= 0.05) { redrawTrendCard(tr); return; }
+    const sc = row.querySelector('.mc-scroll');
+    if (sc && !sc.hasAttribute('data-end') && sc.dataset.atEnd !== '0') sc.scrollLeft = sc.scrollWidth;
+  });
+}
+let sparkResizeT = null;
+window.addEventListener('resize', () => { clearTimeout(sparkResizeT); sparkResizeT = setTimeout(fitSparkRows, 180); });
+// 右端（最新）を見ているか（data-at-end）。指で戻したら外れる。幅が変わったあとも、右端を見ていたなら右端に戻す
+document.addEventListener('scroll', e => { const el = e.target; if (el && el.classList && el.classList.contains('mc-scroll')) el.dataset.atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4 ? '1' : '0'; }, true);
 function emptySparkHtml(msg) {
   const H = 98, T = 10, B = 26, y = v => T + (H - T - B) * (1 - (v + 100) / 200);
   const ticks = [100, 0, -100];
   const grid = ticks.map(v => `<line x1="0" x2="270" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${v === 0 ? '#AEBBB8' : '#E3E9E8'}" stroke-width="1"${v === 0 ? ' stroke-dasharray="4 4"' : ''}/>`).join('');
   const axis = ticks.map(v => `<text x="27" y="${(y(v) + 3).toFixed(1)}" text-anchor="end" class="tk">${v > 0 ? '+' : ''}${v}</text>`).join('');
-  return `<span class="mc-spark-row sp-empty-row"><svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
-    <span class="mc-scroll"><svg class="mc-spark" viewBox="0 0 270 ${H}" style="width:100%" aria-hidden="true">${grid}</svg></span><span class="sp-empty-msg">${msg}</span></span>`;
+  const V = sparkVisOf(sparkRowW), [aw, sw] = sparkRowStyle(V);
+  return `<span class="mc-spark-row sp-empty-row" data-v="${V}"><svg class="mc-axis" viewBox="0 0 30 ${H}" style="${aw}" aria-hidden="true">${axis}</svg>
+    <span class="mc-scroll" style="${sw}"><svg class="mc-spark" viewBox="0 0 ${V} ${H}" style="width:100%" aria-hidden="true">${grid.replace(/x2="270"/g, `x2="${V}"`)}</svg></span><span class="sp-empty-msg">${msg}</span></span>`;
 }
-function miniSparkHtml(h, np = 4, endVal = null) {
+function miniSparkHtml(h, np = 4, endVal = null, V = sparkVisOf(sparkRowW)) {
   if (!h.length) return emptySparkHtml('まだ試合がありません');
   const byDay = [];
-  h.forEach(x => {
-    const d = new Date(x.t), bk = sparkBucket(d);
+  h.forEach((x, xi) => {
+    const d = new Date(x.t), bk = sparkBucket(d, x, xi);
     let b = byDay[byDay.length - 1];
     if (!b || b.k !== bk.k) byDay.push(b = { k: bk.k, d, tick: bk.tick, label: bk.label, sc: 0, items: [] });
     b.sc += Number(x.sc) || 0;
@@ -16048,7 +16083,7 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   const thisYear = new Date().getFullYear();
   const showYears = sparkUnit !== 'y' && days.some(d => d.d.getFullYear() !== thisYear); // 年の単位では目盛りが年なので出さない
   const H = 98, T = showYears ? 21 : 10, B = 26, SP = 28, PL = 6, PR = 16;
-  const Wp = Math.max(270, PL + n * SP + PR);
+  const Wp = Math.max(V, PL + n * SP + PR);
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
   const lo0 = Math.min(...ys), hi0 = Math.max(...ys);
@@ -16075,7 +16110,8 @@ function miniSparkHtml(h, np = 4, endVal = null) {
   sparkReg[rid] = { np, days, vals: ys.slice(1), Wp };
   const keys = Object.keys(sparkReg); if (keys.length > 40) keys.slice(0, keys.length - 40).forEach(k => delete sparkReg[k]);
   const hits = days.map((d, i) => `<rect class="sp-hit" data-i="${i}" x="${(x(i + 1) - SP / 2).toFixed(1)}" y="0" width="${SP}" height="${H}"/>`).join('');
-  const dates = days.map((d, i) => `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.tick}</text>`).join('');
+  // 試合の単位では、日付はその日の最初の試合の下だけ（毎回出すと同じ日付が並ぶ）
+  const dates = days.map((d, i) => sparkUnit === 'g' && i > 0 && days[i - 1].k.slice(0, 10) === d.k.slice(0, 10) ? '' : `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.tick}</text>`).join('');
   // 年の見出し（スコアの推移のグラフは全部この見せ方）: 年ごとの区間（左端の年も含む）の最初に、上の帯へ年。年の切り替わりには縦の点線。
   // 見出しは必ず自分の区間に収める（入らなければ「2025年」→「2025」→「'25」）＝隣の年と重ならない。
   let years = '';
@@ -16096,9 +16132,10 @@ function miniSparkHtml(h, np = 4, endVal = null) {
     }).join('');
   }
   setTimeout(scrollSparksEnd, 0);
-  return `<span class="mc-spark-row" role="img" aria-label="${sparkUnit === 'y' ? '年' : sparkUnit === 'm' ? '月' : '打った日'}ごとの通算スコアの推移（${n}）。最後は${fmtScore(end)}">
-    <svg class="mc-axis" viewBox="0 0 30 ${H}" aria-hidden="true">${axis}</svg>
-    <span class="mc-scroll" data-end="1"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / 270 * 100).toFixed(3)}%" aria-hidden="true"
+  const [aw, sw] = sparkRowStyle(V);
+  return `<span class="mc-spark-row" data-v="${V}" role="img" aria-label="${sparkUnit === 'y' ? '年' : sparkUnit === 'm' ? '月' : sparkUnit === 'g' ? '試合' : '打った日'}ごとの通算スコアの推移（${n}）。最後は${fmtScore(end)}">
+    <svg class="mc-axis" viewBox="0 0 30 ${H}" style="${aw}" aria-hidden="true">${axis}</svg>
+    <span class="mc-scroll" data-end="1" style="${sw}"><svg class="mc-spark" viewBox="0 0 ${Wp} ${H}" style="width:${(Wp / V * 100).toFixed(3)}%" aria-hidden="true"
       data-rid="${rid}" onclick="sparkTap(event,'${jsq(rid)}')" onpointerdown="sparkPress(event,'${jsq(rid)}')" oncontextmenu="event.preventDefault()">${grid}
     <g class="mc-line"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</g>${years}<circle class="sp-ring" r="6.5" cx="-20" cy="-20"/>${dates}<g class="sp-lab" transform="translate(-200,-200)"><rect rx="4" ry="4" height="13"/><text text-anchor="middle" y="9.6"></text></g>${hits}</svg></span></span>
     <span class="sp-pop" id="pop-${rid}" hidden></span>`;
@@ -16237,11 +16274,14 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
       rankSum += gr.avgRank; n++;
     });
     const cnts = cnt.map((c, i) => `<span class="sp-c ${rkCls(i + 1, np)}">${i + 1}着<b>${fmtCnt(c)}<small>回</small></b></span>`).join('');
+    // 試合の単位（1点＝1試合）: その試合の終了時の点数（着順の回数・平均着順は1試合では同じことの繰り返しになるので出さない。2026-11-16）
+    let oneRaw = null;
+    if (sparkUnit === 'g' && gDay.rounds.length === 1) { const r = gDay.rounds[0], k = roundMembers(r, s).indexOf(me), v = k >= 0 ? Number((r.points || [])[k]) : NaN; if (Number.isFinite(v)) oneRaw = v; }
     const tot = gameTotals(gDay), played = playedFlags(gDay);
     const rank = me != null && played[me] ? 1 + played.reduce((a, p, i) => a + (p && tot[i] > tot[me] ? 1 : 0), 0) : null;
     const nP = played.filter(Boolean).length;
     // 2日以上にわたるゲームは、この日が何日目か（2026-10-08）。年・月の単位のときは出さない
-    const days = gameDaysList(g), dI = days.indexOf(day.k);
+    const days = gameDaysList(g), dI = days.indexOf(day.k.slice(0, 10));
     const multi = sparkUnit === 'd' && days.length > 1 && dI >= 0;
     // ゲーム全体（全日）の成績も並べる（2026-10-08）: 何日目の成績かがわかるように、上は「n日目」、下は「ゲーム全体（全n日）」
     let whole = '';
@@ -16255,19 +16295,19 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
       }
     }
     const dayTag = multi ? `<em class="sp-dn">${dI + 1}日目</em>` : ''; // 試合名の横（下の行に入れると2行になりカードが高くなった。2026-10-08）
-    return `${moHead}${whole}<button type="button" class="sp-g k${(g.settings && g.settings.numPlayers) === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="event.stopPropagation();openResultSheet('${jsq(e.gid)}',{day:'${jsq(day.k)}',me:${me == null ? 'null' : Number(me)},self:${self},member:${ctx.member ? `'${jsq(ctx.member)}'` : 'null'},spark:${ctx.sel ? `{sel:'${jsq(ctx.sel)}',k:'${jsq(day.k)}'}` : 'null'}})">
+    return `${moHead}${whole}<button type="button" class="sp-g k${(g.settings && g.settings.numPlayers) === 3 ? 3 : 4}${isTeamGame(g) ? ' tm' : ''}" onclick="event.stopPropagation();openResultSheet('${jsq(e.gid)}',{day:'${jsq(sparkUnit === 'g' || sparkUnit === 'd' ? day.k.slice(0, 10) : day.k)}',me:${me == null ? 'null' : Number(me)},self:${self},member:${ctx.member ? `'${jsq(ctx.member)}'` : 'null'},spark:${ctx.sel ? `{sel:'${jsq(ctx.sel)}',k:'${jsq(day.k)}'}` : 'null'}})">
       <span class="sp-body"><span class="sp-left">
         <span class="sp-top">${gameKindHtml(g)}<span class="sp-gn">${esc(g.name || '')}</span>${dayTag}</span>
-        <span class="sp-meta"><span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span></span></span>
+        <span class="sp-meta">${oneRaw != null ? `<span class="nw">終了時の点数 ${oneRaw.toLocaleString()}点</span>` : `<span class="nw">${n}試合</span> ・ <span class="nw">平均着順 ${n ? (rankSum / n).toFixed(2) : '—'}</span>`}</span></span>
       <span class="sp-right">${rank ? `<span class="sp-rank${rank <= 3 ? ' r' + rank : ''}"><span class="sp-md">${rank <= 3 ? medalSvg(rank, 18, false) : ''}</span>${rank}位<small>/${nP}人</small></span>
         <b class="sp-big ${scoreCls(tot[me])}">${ptsHtml(tot[me])}</b>` : '<span class="sp-rank nil">—</span>'}</span>
       <span class="sp-ch">${ico('chevron', 14)}</span></span>
-      <span class="sp-cnts">${cnts}</span>
+      ${oneRaw != null ? '' : `<span class="sp-cnts">${cnts}</span>`}
       ${oppLineHtml(gDay, me)}</button>`;
   }).join('');
   // 日付の横にも「n日目」（その日のゲームが1つで、2日以上にわたるとき）
   const one = byG.size === 1 ? resultGameById([...byG.keys()][0]) : null;
-  const oDays = one ? gameDaysList(one) : [], oI = oDays.indexOf(day.k);
+  const oDays = one ? gameDaysList(one) : [], oI = sparkUnit === 'g' ? -1 : oDays.indexOf(day.k);
   // まとめ: 複数のゲームなら合計（ゲーム数・試合数・合計スコア）、1ゲームで2日以上ならゲーム全体の成績
   const nR = day.items.length, sum = day.items.reduce((a, x) => a + (Number(x.sc) || 0), 0);
   const mid = byG.size > 1 ? `<span class="sp-line sp-tot"><b>合計</b><small>${gamesRoundsText(byG.size, nR)}</small><b class="sp-lsc ${scoreCls(sum)}">${ptsHtml(sum)}</b></span>` : wholeTop;
@@ -16276,10 +16316,11 @@ function sparkPopHtml(day, np, self = true, ctx = {}, navOf = () => '') {
 }
 // 推移のグラフを右端（最新の日）までスクロールしておく（描いた直後・表示されてから）
 function scrollSparksEnd() {
+  fitSparkRows();
   document.querySelectorAll('.mc-scroll[data-end]').forEach(el => {
     if (!el.scrollWidth) return; // まだ見えていない（あとで表示されたときにもう一度）
     el.scrollLeft = el.scrollWidth;
-    el.removeAttribute('data-end');
+    el.removeAttribute('data-end'); el.dataset.atEnd = '1';
   });
 }
 // 個人の成績の「四麻｜三麻」に合わせて、マイページ・自分の成績・仲間ページを画面ごと三麻の青にする
