@@ -783,6 +783,11 @@ button.mr-row { cursor: pointer; }
 .mr-sum { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #5F6E6B; line-height: 1.55; margin-top: 2px; min-width: 0; }
 .mr-st { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mr-ops { flex: none; display: inline-flex; align-items: center; gap: 3px; } .mr-ops .ico { display: block; }
+.er-src .seg { margin-top: 2px; }
+#e-myrules { margin-top: 8px; }
+.er-pick { display: flex; align-items: center; gap: 10px; width: 100%; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 8px 10px; margin: 0 0 6px; text-align: left; font: inherit; color: #1F2A28; cursor: pointer; }
+.er-pick.on { border-color: var(--pc); box-shadow: 0 0 0 1px var(--pc) inset; }
+.er-pick .gk { width: 26px; height: 26px; margin-top: 0; } .er-pick .gk svg { width: 26px; height: 26px; }
 .mr-del { display: block; margin: 14px auto 0; padding: 8px 12px; background: none; border: none; color: #C62828; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }   /* 削除は編集の画面の下（一覧のカードを2行のまま・名前と要約を広く。2026-11-16） */
 .mr-g { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; background: #5F6E6B; color: #fff; font-size: 9.5px; font-weight: 900; line-height: 1; }
 .mr-acts { display: flex; gap: 6px; flex-shrink: 0; }
@@ -13923,8 +13928,9 @@ function settingsFormHtml(name, s) {
     <div class="field"><label>メンバー</label>
       <div id="e-members"></div>
     </div>
-    <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">${ico('warn', 14, 'ico-in')}持ち点・返し点・ウマを変更すると、<b>過去の試合もすべて新しいルールで再計算</b>されます。入力済みの点数はそのまま残ります。</div>
-    ${ruleFieldsHtml('e', s.startPoints, s.returnPoints)}
+    <div style="background:#fff8e6;border:1px solid #f2e3b3;border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:#8a6d1a;line-height:1.7">${ico('warn', 14, 'ico-in')}ルールの変更は、<b>これまでの試合にも反映</b>されます</div>
+    ${editRuleSrcHtml(n)}
+    <div id="e-rule-pts">${ruleFieldsHtml('e', s.startPoints, s.returnPoints)}</div>
     <div class="field"><label>ウマ</label>
       <select id="e-uma" onchange="document.getElementById('e-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOpts}</select>
       <div id="e-uma-custom" style="display:${umaKey==='custom'?'block':'none'};margin-top:6px">
@@ -13944,7 +13950,7 @@ function settingsFormHtml(name, s) {
         </div>
         <div class="chips-hint" style="margin-top:6px;margin-bottom:0">チップは点数入力の「チップ」で、試合ごとに入れます。</div>
       </div>
-      ${gOptHtml('e', s)}
+      <div id="e-g-opt">${gOptHtml('e', s)}</div>
       <label class="opt-check" style="margin-top:8px">
         <input type="checkbox" id="e-yakitori" ${s.yakitori ? 'checked' : ''}> 焼き鳥あり${ico('yakitori', 18, 'ico-in')}（マークのみ・スコアに影響なし）
       </label>
@@ -13977,6 +13983,44 @@ function settingsFormHtml(name, s) {
         <div class="chips-hint" style="margin-top:8px;margin-bottom:0">名前を押すと次のチームへ移ります</div>
       </div>
     </div>`;
+}
+// ルールの決め方: 「自分で決める」（下の欄をそのまま）か「マイルールから」（保存したルールを選ぶと下の欄に入る。入れたあとも変えられる）。
+// ログインしているときだけ。試合形式（四麻・三麻）は変えられないので、同じ形式のマイルールだけを出す（2026-11-16 ユーザーの指定）
+function editRuleSrcHtml(n) {
+  if (!loginAvailable() || !currentUser) return '';
+  const list = myRuleList().filter(([, r]) => r.numPlayers === n);
+  const picks = list.length ? list.map(([id, r]) => `<button type="button" class="er-pick" data-id="${esc(id)}" onclick="applyRuleToEdit('${jsq(id)}')">${ruleKindHtml(r.numPlayers)}<span class="mr-main"><b>${esc(r.name)}</b><small class="mr-sum"><span class="mr-st">${esc(ruleSummary(r))}</span>${ruleOptsHtml(r)}</small></span></button>`).join('')
+    : `<div class="mr-note" style="margin:8px 0 0">${n === 3 ? '三麻' : '四麻'}のマイルールはまだありません。マイページの設定の「マイルール」から作れます。</div>`;
+  return `<div class="field er-src"><label>ルールの決め方</label><div class="seg sm" role="tablist" aria-label="ルールの決め方">
+      <button type="button" role="tab" class="on" aria-selected="true" onclick="setEditRuleSrc('self',this)">自分で決める</button>
+      <button type="button" role="tab" aria-selected="false" onclick="setEditRuleSrc('my',this)">マイルールから</button></div>
+    <div id="e-myrules" hidden>${picks}</div></div>`;
+}
+function setEditRuleSrc(k, el) {
+  el.parentElement.querySelectorAll('button').forEach(b => { const on = b === el; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  const box = document.getElementById('e-myrules'); if (box) box.hidden = k !== 'my';
+}
+// マイルールの中身を、設定の編集の欄に入れる（保存は「保存する」を押したとき）
+function applyRuleToEdit(id) {
+  const r = myRules[id];
+  if (!r) return;
+  document.getElementById('e-rule-pts').innerHTML = ruleFieldsHtml('e', r.startPoints, r.returnPoints);
+  const k = umaKeyOf(r.uma, r.numPlayers), sel = document.getElementById('e-uma');
+  sel.value = k; document.getElementById('e-uma-custom').style.display = k === 'custom' ? 'block' : 'none';
+  r.uma.forEach((v, i) => { const el = document.getElementById('e-uma-c-' + i); if (el) el.value = v; });
+  document.getElementById('e-bonus').checked = r.bonusEnabled;
+  document.getElementById('e-bonus-fields').style.display = r.bonusEnabled ? 'block' : 'none';
+  document.getElementById('e-start-chips').value = String(r.startChips);
+  const g = document.getElementById('e-g-opt'); if (g) g.innerHTML = gOptHtml('e', r);
+  document.getElementById('e-yakitori').checked = r.yakitori;
+  document.getElementById('e-chombo').checked = r.chombo;
+  document.getElementById('e-chombo-fields').style.display = r.chombo ? 'block' : 'none';
+  const pk = ['0', '10', '20', '30', '50'].includes(String(r.chomboPenalty)) ? String(r.chomboPenalty) : 'custom';
+  document.getElementById('e-chombo-pen').value = pk;
+  document.getElementById('e-chombo-pen-custom-wrap').style.display = pk === 'custom' ? 'block' : 'none';
+  document.getElementById('e-chombo-pen-c').value = pk === 'custom' ? String(r.chomboPenalty) : '';
+  document.querySelectorAll('#e-myrules .er-pick').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  showToast(`「${r.name}」のルールを入れました。保存するとこのゲームに使います`, 3500);
 }
 // 設定変更モーダルのチーム編成（idはeditMembersStateの位置。保存時はそのまま新indexになる）
 let editTeams = null;

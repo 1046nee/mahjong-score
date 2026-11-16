@@ -766,6 +766,21 @@ def main():
         pm2.wait_for_function(SAFE % "Object.keys(myRules).length === 4", timeout=10000)
         results.append(("[12i] 別の端末でログインすると、アカウントのマイルールが出る（マイページの設定にも入口）", True,
                         pm2.evaluate("() => { openMpMenu(); return document.getElementById('form-modal-body').innerText.includes('マイルール'); }")))
+        # ゲーム設定を編集: 「マイルールから」で同じ形式のルールを選ぶと欄に入り、保存するとゲームに使われる（2026-11-16〜）
+        pm2.evaluate("closeFormModal(); quickStart(3)")
+        pm2.wait_for_function(SAFE % "document.querySelector('#view-game').classList.contains('active') && activeGame && activeGame.settings.numPlayers === 3", timeout=10000)
+        r12m = pm2.evaluate("""() => { openGameEdit(); const segs = [...document.querySelectorAll('#form-modal-body .er-src .seg button')];
+          if (segs.length !== 2) return 'タブが無い'; segs[1].click(); const picks = [...document.querySelectorAll('#e-myrules .er-pick')];
+          const ids = picks.map(b => b.dataset.id); if (!ids.length || ids.some(id => myRules[id].numPlayers !== 3)) return '三麻のルールだけのはず ' + ids.length;
+          const r = myRules[ids[0]]; picks[0].click();
+          const ok = readStart('e') === r.startPoints && readReturn('e') === r.returnPoints && document.getElementById('e-bonus').checked === r.bonusEnabled && document.getElementById('e-start-chips').value === String(r.startChips);
+          const note = document.querySelector('#form-modal-body').innerText.includes('これまでの試合にも反映');
+          return ok && note ? r.startChips : '欄に入らない'; }""")
+        pm2.evaluate("saveGameEdit()")
+        pm2.wait_for_timeout(800)
+        results.append(("[12m] ゲーム設定を編集の「マイルールから」で、同じ形式（三麻）のルールを欄に入れて保存できる", True,
+                        isinstance(r12m, int) and pm2.evaluate("(c) => activeGame.settings.bonusEnabled === true && activeGame.settings.startChips === c", r12m)))
+        pm2.evaluate("leaveGame()")
         # 幅320で一覧・編集の画面がはみ出さない
         pm2.set_viewport_size({"width": 320, "height": 700})
         over = pm2.evaluate("""() => { const out = []; const chk = n => { const b = document.getElementById('form-modal-body'); if (b.scrollWidth > b.clientWidth + 1) out.push(n + ' 横にはみ出し');
