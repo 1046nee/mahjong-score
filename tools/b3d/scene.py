@@ -374,9 +374,10 @@ RIVERS = ([["z3", "s1", "s9"], ["z4", "p9", "m1", "s9"], ["z1", "p1", "s2", "z6"
 if SCENE == "kan":   # 暗槓の自分の河の一索を九索に（2026-11-14 ユーザーの指定。嶺上牌も四筒に変えた）
     RIVERS[0] = ["z7", "z2", "s9"]
 # ---- 台本で動かす場面（2026-11-13）: 大明槓・加槓・リーチ・ツモあがり・ロンあがり・流局。牌姿と席は Notion の「3D動画の出演表」が正 ----
-S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku")
+S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai")
 RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
 NEXT_CODE = "back"      # 次にツモる牌の絵（ツモあがりで使う）
+NEXT2_CODE = "back"     # その次にツモる牌（同じ幢の下段。ツモと打牌の動画の2回目のツモ）
 RIVER_DY, RIVER_PITCH, WANPAI_DY = 0.0, TL + .003, 0.0      # 河の位置・段の間隔・王牌の位置（流局は河が3段になるので詰める）
 TSUMO14 = False         # 手牌の右端の1枚（ツモった牌）を少し離して置く
 MELD0 = []              # はじめから晒してある牌（加槓のポン）
@@ -428,6 +429,11 @@ if S2:
         CALL_SEAT = 1
         if "--taken" not in sys.argv: TAKEN = .75
         RIVERS = auto_rivers([9, 9, 8, 8], HANDS[0] + [DORA], ban=("p5", "p8", "p5r"), last={1: "p5r"})
+    elif SCENE == "dahai":      # ツモと打牌（2026-11-16）: 四索をツモって白を切る → 四索を三索のとなりに入れる → 西をツモ切り。河は6枚あって、切った牌は2段目へ
+        HANDS[0] = ["m1", "m2", "m3", "p4", "p5", "p6", "s2", "s3", "s7", "s8", "z1", "z1", "z5"]
+        NEXT_CODE = "s4"; NEXT2_CODE = "z3"
+        if "--taken" not in sys.argv: TAKEN = .3
+        RIVERS = auto_rivers([6, 6, 6, 5], HANDS[0] + [DORA, "s4", "z3"], ban=("z5", "z3"))
     elif SCENE == "ryukyoku":   # 流局: 自家（六索・七索の両面）と対面がテンパイ、下家と上家がノーテン
         HANDS[0] = ["m3", "m4", "m5", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "s7", "z7", "z7"]
         OPEN_HANDS = {2: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
@@ -454,6 +460,8 @@ def build_tiles():
     order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
     taken = set(order[:round(len(order) * TAKEN)])
     nxt = order[round(len(order) * TAKEN)] if round(len(order) * TAKEN) < len(order) else None      # 次にツモる幢
+    if SCENE == "dahai":      # ツモと打牌: 次にツモる幢は、左の山の、自分に近い端（手をのばしやすい所）
+        taken = set(order[:BRK + 2]); nxt = order[BRK + 2]
     WALL.update(n=n, x0=x0, WP=WP, BRK=BRK)
     for i, r in enumerate(roots):
         for k in range(n):
@@ -463,9 +471,11 @@ def build_tiles():
                 if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
                     named["dora"] = tile(DORA, (x, WY + WANPAI_DY, Z + TT), r, "lie"); continue
                 code = {(BRK + 1, 1): RINSHAN, (BRK + 4, 1): "p2"}.get((k, lv), "back") if i == 0 else "back"
+                if (i, k) == nxt and lv == 0 and NEXT2_CODE != "back": code = NEXT2_CODE
                 if (i, k) == nxt and lv == 1: code = NEXT_CODE   # 伏せた牌でも、めくる・取る牌は絵を持たせる（嶺上牌＝四筒・カンドラ表示牌＝二筒）
                 t = tile(code, (x, WY + (WANPAI_DY if (i == 0 and k > BRK) else 0), Z + lv * TT), r, "down")
                 if (i, k) == nxt and lv == 1: named["next"] = t
+                if (i, k) == nxt and lv == 0 and NEXT2_CODE != "back": named["next2"] = t
                 if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
                 if i == 0 and k == BRK + 4 and lv == 1: named["kandora"] = t       # カンドラ表示牌になる牌（ドラ表示牌の左となり・上段）
         # 河（6枚で折り返す）
@@ -1052,7 +1062,7 @@ FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
     FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.4 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
 S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.4, 3.8), 5.8),
-       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
+       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
        "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
 def warp(t):
@@ -1077,6 +1087,7 @@ def anim_setup():
             o.parent = None; o.location = (l.x * math.cos(a) - l.y * math.sin(a), l.x * math.sin(a) + l.y * math.cos(a), l.z); o.rotation_euler = (e.x, e.y, e.z + a)
         if "called" in NAMED: to_world(NAMED["called"], CALL_SEAT)
         if "next" in NAMED: to_world(NAMED["next"], NAMED["next"].parent.name and int(NAMED["next"].parent.name[-1]))
+        if "next2" in NAMED: to_world(NAMED["next2"], NAMED["next2"].parent.name and int(NAMED["next2"].parent.name[-1]))
         for i_ in (1, 2, 3):
             for k_ in range(13): to_world(NAMED[f"h{i_}k{k_}"], i_)
         s2_sticks()
@@ -1288,6 +1299,21 @@ def s2_build():
         pay_stick(mv, arms, show, 3, "pay3", 5.5, (-.10, -.258), hz)
         pay_stick(mv, arms, show, 2, "pay2", 5.4, (.01, -.262), hz, far=True)
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
+    elif SCENE == "dahai":      # ツモと打牌（2026-11-16）
+        h12 = P("hk12"); xt = h12.x + HP + .03; ST = (xt, h12.y, h12.z)                  # ツモった牌は、手牌の右に少し離して立てる
+        nx = P("next"); nx2 = P("next2")
+        S_ = (math.pi / 2, 0, 2 * math.pi); L_ = (0, 0, 2 * math.pi)      # 左の山の牌は向きが席3（z＝270度）。360度へ回すと、90度だけ回って手前を向く
+        mv["next"] = [(2.0, 2.8, ST, S_, .06), (4.9, 5.6, tuple(P("hk8")), S_, .03)]      # ④ 三索のとなりに入れる
+        mv["hk12"] = [(3.4, 4.2, slot(n0), LIE, .06)]                                  # ② 白を切る（河は6枚あるので2段目の1枚目）
+        for k in range(8, 12): mv[f"hk{k}"] = [(4.8, 5.4, (P(f"hk{k}").x + HP, P(f"hk{k}").y, P(f"hk{k}").z), STAND, 0)]     # 入れる所をあける
+        mv["next2"] = [(6.2, 7.0, ST, S_, .06), (7.3, 8.1, slot(n0 + 1), L_, .06)]   # ⑤ 西をツモ切り
+        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y, .02)), (2.8, A(xt, HY + .01, .02)), (3.0, A(h12.x, HY + .01, .02)), (3.4, A(h12.x, HY + .01, .02)),
+                   (4.2, A(slot(n0)[0], slot(n0)[1])), (4.6, A(xt, HY + .01, .02)), (4.9, A(xt, HY + .01, .02)), (5.6, A(P("hk8").x, HY + .01, .02)), (6.0, R),
+                   (6.2, A(nx2.x, nx2.y, .02)), (7.0, A(xt, HY + .01, .02)), (7.3, A(xt, HY + .01, .02)), (8.1, A(slot(n0 + 1)[0], slot(n0 + 1)[1])), (8.7, R), (DUR, R)]
+        rv = (Vector((RX0 + 2.5 * RP, RY + RIVER_DY - .5 * RIVER_PITCH, .77)), Vector((-.01, -.17, .50)), 42)      # 河の2段が入る所
+        focus = [Vector((xt - .02, HY, .77)), rv, (Vector((P("hk6").x, HY, .77)), Vector((0, -.17, .52)), 36), rv]
+        views = []                                                                      # 最後に右の角へ寄らない（晒した牌が無い）
+        pre = dict(lift=["hk12"], call=False, cam2=None)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
