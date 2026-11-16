@@ -748,7 +748,10 @@ def main():
                         pm.evaluate("() => document.getElementById('s-myrule-btn').style.display !== 'none' && numPlayers === 3 && readStart('s') === 35000 && readReturn('s') === 35000"
                                     " && JSON.stringify(getUmaArray()) === '[10,0,-10]' && document.getElementById('s-bonus').checked && document.getElementById('s-start-chips').value === '30'")))
         # 削除
-        pm.evaluate("(id) => { confirmDeleteMyRule(id); document.getElementById('confirm-modal-ok').click(); }", id2)
+        results.append(("[12k] 一覧のカードは2行（名前・要約）で高さがそろい、削除は編集の画面の下", True,
+                        pm.evaluate("(id) => { openMyRules('start'); const hs = [...document.querySelectorAll('#form-modal-body .mr-row')].map(r => Math.round(r.getBoundingClientRect().height));"
+                                    " const noDel = !document.querySelector('#form-modal-body .mr-row .round-del-btn'); openMyRuleEdit(id); return new Set(hs).size === 1 && noDel && !!document.querySelector('#form-modal-body .mr-del'); }", id2)))
+        pm.evaluate("(id) => { openMyRuleEdit(id); document.querySelector('#form-modal-body .mr-del').click(); document.getElementById('confirm-modal-ok').click(); }", id2)
         pm.wait_for_function("(a) => !JSON.parse(localStorage.getItem('__smoke_db')).users[a[0]].rulePresets[a[1]]", arg=[U4, id2], timeout=10000)
         results.append(("[12h] 削除するとアカウントからも消える", True, pm.evaluate("(id) => !myRules[id] && Object.keys(myRules).length === 4", id2)))
         # 別の端末で同じアカウントにログインすると、同じマイルールが出る

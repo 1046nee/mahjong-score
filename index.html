@@ -775,12 +775,16 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .qs-btn.qs-my { background: #66716F; }   /* マイルール（灰色・同じ大きさのカード。2026-11-16 ユーザーの指定） */
 .qs-btn.qs-my .qs-n { display: grid; place-items: center; }
 .mr-lead { font-size: 13px; color: #4C5B58; line-height: 1.8; margin: 0 0 12px; }
-.mr-row { display: flex; align-items: center; gap: 8px; width: 100%; background: #fff; border: 1.5px solid #DCE6E3; border-left: 5px solid #177083; border-radius: 12px; padding: 10px 10px 10px 12px; margin: 0 0 8px; text-align: left; font: inherit; color: #1F2A28; }
-.mr-row.n3 { border-left-color: #4261AA; }
+.mr-row { display: flex; align-items: center; gap: 10px; width: 100%; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 10px 10px 10px 12px; margin: 0 0 8px; text-align: left; font: inherit; color: #1F2A28; }   /* 左の色の帯はやめた（2026-11-16 ユーザーの指定）。四麻・三麻は左のアイコン */
+.mr-row .gk { margin-top: 0; }
 button.mr-row { cursor: pointer; }
 .mr-main { flex: 1; min-width: 0; background: none; border: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
-.mr-main b { display: block; font-size: 15px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
-.mr-main small { display: block; font-size: 11.5px; color: #5F6E6B; line-height: 1.55; margin-top: 2px; }
+.mr-main b { display: block; font-size: 15px; font-weight: 800; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-sum { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #5F6E6B; line-height: 1.55; margin-top: 2px; min-width: 0; }
+.mr-st { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-ops { flex: none; display: inline-flex; align-items: center; gap: 3px; } .mr-ops .ico { display: block; }
+.mr-del { display: block; margin: 14px auto 0; padding: 8px 12px; background: none; border: none; color: #C62828; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }   /* 削除は編集の画面の下（一覧のカードを2行のまま・名前と要約を広く。2026-11-16） */
+.mr-g { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; background: #5F6E6B; color: #fff; font-size: 9.5px; font-weight: 900; line-height: 1; }
 .mr-acts { display: flex; gap: 6px; flex-shrink: 0; }
 .mr-tpl .mb-chev { flex-shrink: 0; color: #9AA8A5; }
 .mr-add { margin-top: 6px; } .mr-add small { font-size: 12px; font-weight: 700; opacity: .75; margin-left: 4px; }
@@ -10372,10 +10376,10 @@ const MY_RULE_MAX = 5, MY_RULE_NAME_LEN = 20;
 const MY_RULE_KEY = 'mahjong-my-rules:';
 // ひな形（新しく作るときに選ぶ）。プロのルールは持ち点・返し点・ウマだけをまねる（一発・裏ドラなどはアプリの外の決めごと）
 const RULE_TEMPLATES = [
-  { name: '四麻（いつもの）', note: '25,000点持ち・30,000点返し・ウマ10-30', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
-  { name: '三麻（いつもの）', note: '35,000点持ち・35,000点返し・ウマ10-0-10', r: { numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] } },
-  { name: 'Mリーグルール', note: '25,000点持ち・30,000点返し・ウマ10-30（1位は+50）', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
-  { name: '最高位戦ルール', note: '30,000点持ち・30,000点返し（オカなし）・ウマ10-30', r: { numPlayers: 4, startPoints: 30000, returnPoints: 30000, uma: [30, 10, -10, -30] } }
+  { name: '四麻（いつもの）', note: '25,000/30,000点・ウマ10-30', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
+  { name: '三麻（いつもの）', note: '35,000点・オカなし・ウマ10-0-10', r: { numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] } },
+  { name: 'Mリーグルール', note: '25,000/30,000点・ウマ10-30（1位+50）', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
+  { name: '最高位戦ルール', note: '30,000点・オカなし・ウマ10-30', r: { numPlayers: 4, startPoints: 30000, returnPoints: 30000, uma: [30, 10, -10, -30] } }
 ];
 let myRules = {}; // id → ルール
 function myRuleKey() { return MY_RULE_KEY + (myUid() || ''); }
@@ -10427,19 +10431,32 @@ function dropMyRule(id) {
   delete myRules[id]; storeMyRulesLocal();
   if (currentUser) db.ref(`users/${myUid()}/rulePresets/${id}`).remove().catch(() => {});
 }
+// ウマの書き方: 決まった形はそのまま（10-30）。カスタムも上下対称なら同じ書き方（[40,15,-15,-40] → 15-40・三麻 [20,0,-20] → 20-0-20）。それ以外は +40/+10/-20/-30
 function umaLabelOf(uma, n) {
   const k = umaKeyOf(uma, n);
   if (k === '0') return 'ウマなし';
-  return 'ウマ' + (k !== 'custom' ? k : uma.map(x => (x > 0 ? '+' : '') + x).join('/'));
+  if (k !== 'custom') return 'ウマ' + k;
+  const u = uma.map(Number);
+  if (n === 4 && u[0] === -u[3] && u[1] === -u[2] && u[0] >= u[1] && u[1] >= 0) return `ウマ${u[1]}-${u[0]}`;
+  if (n === 3 && u[1] === 0 && u[0] === -u[2] && u[0] > 0) return `ウマ${u[0]}-0-${u[0]}`;
+  return 'ウマ' + u.map(x => (x > 0 ? '+' : '') + x).join('/');
 }
+// 一覧の1行の要約。四麻・三麻は左のアイコンで見せるので書かない。オプション（チップ・G・焼き鳥・チョンボ）は右の小さなアイコン（ruleOptsHtml）
+// ＝ルールの中身が増えてもカードは2行のまま（名前と要約はそれぞれ1行・入らなければ「…」。2026-11-16 ユーザーの指定）
 function ruleSummary(r) {
-  const t = [r.numPlayers === 3 ? '三麻' : '四麻', `${r.startPoints.toLocaleString()}点持ち`, r.returnPoints === r.startPoints ? 'オカなし' : `${r.returnPoints.toLocaleString()}点返し`, umaLabelOf(r.uma, r.numPlayers)];
-  if (r.bonusEnabled) t.push('チップあり');
-  if (RATE_FEATURE && r.rate > 0) t.push('レートあり');
-  if (r.yakitori) t.push('焼き鳥');
-  if (r.chombo) t.push('チョンボ');
-  return t.join('・');
+  const pts = r.returnPoints === r.startPoints ? `${r.startPoints.toLocaleString()}点・オカなし` : `${r.startPoints.toLocaleString()}/${r.returnPoints.toLocaleString()}点`;
+  return `${pts}・${umaLabelOf(r.uma, r.numPlayers)}`;
 }
+function ruleOptsHtml(r) {
+  const o = [];
+  if (r.bonusEnabled) o.push(['chip', 'チップあり']);
+  if (RATE_FEATURE && r.rate > 0) o.push(['G', 'レートあり（G）']);
+  if (r.yakitori) o.push(['yakitori', '焼き鳥あり']);
+  if (r.chombo) o.push(['chombo', 'チョンボあり']);
+  if (!o.length) return '';
+  return `<span class="mr-ops" aria-label="${o.map(x => x[1]).join('・')}">${o.map(([k, l]) => k === 'G' ? `<b class="mr-g" title="${l}">G</b>` : `<span title="${l}">${ico(k, 14)}</span>`).join('')}</span>`;
+}
+function ruleKindHtml(n) { return `<span class="gk k${n}" role="img" aria-label="${n === 3 ? '三麻' : '四麻'}">${kindSvg(n)}</span>`; }
 // 一覧。how＝'start'（押すとその設定ですぐはじめる）・'setup'（ゲームを作る画面の欄に入れる）・'manage'（マイページから。押すと編集）
 let myRuleHow = 'start';
 function openMyRules(how) {
@@ -10458,16 +10475,16 @@ function openMyRules(how) {
   }
   const list = myRuleList();
   const lead = myRuleHow === 'setup' ? '選んだルールを、この画面の欄に入れます。' : myRuleHow === 'manage' ? `よく使うルールを${MY_RULE_MAX}つまで保存できます。` : '選ぶだけで、そのルールですぐはじめられます。メンバー名はあとから変えられます。';
-  const rows = list.map(([id, r]) => `<div class="mr-row${r.numPlayers === 3 ? ' n3' : ''}">
-      <button type="button" class="mr-main" onclick="pickMyRule('${jsq(id)}')"><b>${esc(r.name)}</b><small>${esc(ruleSummary(r))}</small></button>
-      <div class="mr-acts"><button type="button" class="edit-tab" onclick="openMyRuleEdit('${jsq(id)}')">編集</button><button type="button" class="round-del-btn" onclick="confirmDeleteMyRule('${jsq(id)}')">削除</button></div>
+  const rows = list.map(([id, r]) => `<div class="mr-row">${ruleKindHtml(r.numPlayers)}
+      <button type="button" class="mr-main" onclick="pickMyRule('${jsq(id)}')"><b>${esc(r.name)}</b><small class="mr-sum"><span class="mr-st">${esc(ruleSummary(r))}</span>${ruleOptsHtml(r)}</small></button>
+      <div class="mr-acts"><button type="button" class="edit-tab" onclick="openMyRuleEdit('${jsq(id)}')">編集</button></div>
     </div>`).join('');
   const full = list.length >= MY_RULE_MAX;
   body.innerHTML = `<div class="sheet-body">${myRuleHow === 'start' ? sheetBackMark('closeFormModal();openQuickStart()', '人数を選ぶ画面へ') : ''}
     <div class="mr-lead">${lead}</div>
     ${rows || '<div class="mr-empty">まだ保存したルールはありません。<br>下の「＋ 新しいルールを作る」から作れます。</div>'}
     <button type="button" class="auto-btn sub mr-add" ${full ? 'disabled' : ''} onclick="openMyRuleTemplates()">＋ 新しいルールを作る<small>${list.length}/${MY_RULE_MAX}</small></button>
-    ${full ? `<div class="mr-note">保存できるのは${MY_RULE_MAX}つまでです。使わないルールを削除すると作れます。</div>` : ''}
+    ${full ? `<div class="mr-note">保存できるのは${MY_RULE_MAX}つまでです。使わないルールを「編集」から削除すると作れます。</div>` : ''}
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -10522,7 +10539,7 @@ function openMyRuleTemplates() {
   document.getElementById('form-modal-title').textContent = '新しいルール';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${sheetBackMark('openMyRules()', 'マイルールへ')}
     <div class="mr-lead">もとにするルールを選んでください。選んだあとで、名前や中身を変えられます。</div>
-    ${RULE_TEMPLATES.map((t, i) => `<button type="button" class="mr-row mr-tpl${t.r.numPlayers === 3 ? ' n3' : ''}" onclick="openMyRuleEdit(null, ${i})"><span class="mr-main"><b>${esc(t.name)}</b><small>${esc(t.note)}</small></span><span class="mb-chev">${ico('chevron', 14)}</span></button>`).join('')}
+    ${RULE_TEMPLATES.map((t, i) => `<button type="button" class="mr-row mr-tpl" onclick="openMyRuleEdit(null, ${i})">${ruleKindHtml(t.r.numPlayers)}<span class="mr-main"><b>${esc(t.name)}</b><small class="mr-sum"><span class="mr-st">${esc(t.note)}</span></small></span><span class="mb-chev">${ico('chevron', 14)}</span></button>`).join('')}
     <div class="mr-note">プロのルールは、持ち点・返し点・ウマだけをそろえます（一発・裏ドラなどは打つ前に決めてください）。</div>
     <button class="sheet-close" onclick="openMyRules()">戻る</button></div>`;
   document.getElementById('form-modal').classList.add('open');
@@ -10562,7 +10579,8 @@ function renderMyRuleEdit() {
         <div id="r-chombo-pen-cw" style="display:${pk === 'custom' ? 'block' : 'none'};margin-top:6px"><input type="number" id="r-chombo-pen-c" value="${pk === 'custom' ? r.chomboPenalty : ''}" placeholder="40"></div></div></div>
     </div>
     <button type="button" class="confirm-btn" onclick="saveMyRuleEdit()">${ruleEditId ? '保存する' : 'このルールを保存'}</button>
-    <button class="sheet-close" onclick="${ruleEditId ? 'openMyRules()' : 'openMyRuleTemplates()'}">キャンセル</button></div>`;
+    <button class="sheet-close" onclick="${ruleEditId ? 'openMyRules()' : 'openMyRuleTemplates()'}">キャンセル</button>
+    ${ruleEditId ? `<button type="button" class="mr-del" onclick="confirmDeleteMyRule('${jsq(ruleEditId)}')">このルールを削除</button>` : ''}</div>`;
   document.getElementById('form-modal').classList.add('open');
 }
 // 画面の欄から読む（false＝足りない所があって知らせた）
@@ -16082,7 +16100,8 @@ function miniSparkHtml(h, np = 4, endVal = null, V = sparkVisOf(sparkRowW)) {
   // 年の見出し: 今年以外の日が1つでもあれば、上の目盛りの線の上に帯を空けて年を出す（線と文字が重ならない。高さ H は同じ）。全部今年なら出さない
   const thisYear = new Date().getFullYear();
   const showYears = sparkUnit !== 'y' && days.some(d => d.d.getFullYear() !== thisYear); // 年の単位では目盛りが年なので出さない
-  const H = 98, T = showYears ? 21 : 10, B = 26, SP = 28, PL = 6, PR = 16;
+  // 1点の幅: 日は下に毎回「11/16」が入るので 28。月（「10月」）は 20、試合は日付をその日の最初だけ出すので 16 に詰める（2026-11-16 ユーザーの指定）。年は点が少ないので 28 のまま
+  const H = 98, T = showYears ? 21 : 10, B = 26, SP = sparkUnit === 'g' ? 16 : sparkUnit === 'm' ? 20 : 28, PL = 6, PR = 16;
   const Wp = Math.max(V, PL + n * SP + PR);
   // 目盛りは100の倍数だけ。縦の範囲を100の倍数まで広げて、上下に必ず目盛りが来るようにする
   let step = 100;
@@ -16110,8 +16129,15 @@ function miniSparkHtml(h, np = 4, endVal = null, V = sparkVisOf(sparkRowW)) {
   sparkReg[rid] = { np, days, vals: ys.slice(1), Wp };
   const keys = Object.keys(sparkReg); if (keys.length > 40) keys.slice(0, keys.length - 40).forEach(k => delete sparkReg[k]);
   const hits = days.map((d, i) => `<rect class="sp-hit" data-i="${i}" x="${(x(i + 1) - SP / 2).toFixed(1)}" y="0" width="${SP}" height="${H}"/>`).join('');
-  // 試合の単位では、日付はその日の最初の試合の下だけ（毎回出すと同じ日付が並ぶ）
-  const dates = days.map((d, i) => sparkUnit === 'g' && i > 0 && days[i - 1].k.slice(0, 10) === d.k.slice(0, 10) ? '' : `<text x="${x(i + 1).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.tick}</text>`).join('');
+  // 試合の単位では、日付はその日の最初の試合の下だけ（毎回出すと同じ日付が並ぶ）。前の日付と近すぎて重なるときは出さない（1日1試合が続くとき）
+  let lastDx = -1e9;
+  const dates = days.map((d, i) => {
+    if (sparkUnit === 'g' && i > 0 && days[i - 1].k.slice(0, 10) === d.k.slice(0, 10)) return '';
+    const cx = x(i + 1);
+    if (sparkUnit === 'g' && cx - lastDx < 30) return '';
+    lastDx = cx;
+    return `<text x="${cx.toFixed(1)}" y="${H - 6}" text-anchor="middle" class="dt">${d.tick}</text>`;
+  }).join('');
   // 年の見出し（スコアの推移のグラフは全部この見せ方）: 年ごとの区間（左端の年も含む）の最初に、上の帯へ年。年の切り替わりには縦の点線。
   // 見出しは必ず自分の区間に収める（入らなければ「2025年」→「2025」→「'25」）＝隣の年と重ならない。
   let years = '';
