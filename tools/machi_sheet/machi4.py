@@ -4,7 +4,7 @@ from base import *
 import machi3 as M
 import os as _os, re
 DESC = _os.environ.get("DESC") is not None      # 説明の列は出さない（2026-11-16 ユーザーの判断。DESC=1 で出す）
-K47 = _os.environ.get("K47", "#1F2A28")      # 4枚形・7枚形の札と、解説のその枠の色
+K47 = _os.environ.get("K47", "#4A5452")      # 4枚形・7枚形の札と、解説のその枠の色＝濃いグレー（線は黒のまま。2026-11-16 ユーザーの指定）
 PAT = _os.environ.get("NOPAT") is None       # 形の名前の下に枚数の並びを出すか（試し）
 ALL = []
 for t, sub, m, rows in M.SECS:

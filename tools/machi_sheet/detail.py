@@ -76,7 +76,7 @@ def top_view(hand, ws, km):
 import os as _os, itertools as _it
 _CNT = _it.count()
 BOX = _os.environ.get("BOX", "solid")      # 点線なし・薄めの塗りに決定（2026-11-16 ユーザーの判断）
-K47 = _os.environ.get("K47", "#1F2A28")      # 4枚形・7枚形の札と、解説のその枠の色
+K47 = _os.environ.get("K47", "#4A5452")      # 4枚形・7枚形の札と、解説のその枠の色＝濃いグレー（線は黒のまま。2026-11-16 ユーザーの指定）
 HAND = _os.environ.get("HAND", "#1F2A28")      # 横から見た図の手にある牌は黒（2026-11-16 ユーザーの指定）
 DUAL = _os.environ.get("DUAL", "half"); NUM = _os.environ.get("NUM", "split")      # 2つの待ち方を持つ数字は、数字そのものを左右で2色に（2026-11-16 ユーザーの判断）
 SW = _os.environ.get("SW", "1.2"); DA = _os.environ.get("DA", "2.5 1.5")      # 点線の太さと、点と間の長さ（点線の版のとき）
