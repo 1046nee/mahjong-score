@@ -1171,18 +1171,22 @@ def seat_w(i, p):
 def seat_r(i, rot):
     return (rot[0], rot[1], rot[2] + i * math.pi / 2)
 def s2_sticks():
-    """点棒（千点棒＝赤い点1つ・五百点棒＝緑の点5つ）。リーチの供託と、流局のノーテン罰符で使う"""
+    """点棒。カラーの点棒（2026-11-16 ユーザーの指定。色と点の模様はサイトの道具図鑑と同じ tools/table_art.py の tenbo_color）:
+    100＝白に灰色の点8つ・500＝緑に白い点5つ・1,000＝青に白い点1つ・5,000＝黄に白い点（1つ＋まわりに4つ）。リーチの供託・流局のノーテン罰符・ツモとロンの支払いで使う"""
+    COL = {100: ("#F2F2EE", "#9EA3A3"), 500: ("#16A05A", "#FFFFFF"), 1000: ("#1F6FD1", "#FFFFFF"), 5000: ("#F5C400", "#FFFFFF")}
     def stick(name, kind):
-        o = box(name, (.066, .0075, .0045), (0, -.6, TOP - .05), mat("stick", "#FBF8EE", .3), bevel=.0012)
-        if kind == 1000: sphere(name + "d", .0024, (0, 0, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
-        elif kind == 5000:      # 5,000点棒＝赤い点1つのまわりに小さな赤い点4つ（サイトの点棒の絵と同じ模様）
-            sphere(name + "d", .0021, (0, 0, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
+        body, dc = COL[kind]
+        o = box(name, (.066, .0075, .0045), (0, -.6, TOP - .05), mat(f"stick{kind}", body, .3), bevel=.0012)
+        dm = mat(f"stickdot{kind}", dc, .4)
+        if kind == 1000: sphere(name + "d", .0024, (0, 0, .0018), dm, (1, 1, .4), o)
+        elif kind == 5000:
+            sphere(name + "d", .0021, (0, 0, .0018), dm, (1, 1, .4), o)
             for k, (dx, dy) in enumerate(((-.0042, -.0019), (-.0042, .0019), (.0042, -.0019), (.0042, .0019))):
-                sphere(f"{name}d{k}", .0011, (dx, dy, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
-        elif kind == 100:       # 100点棒＝黒い点8つ（2段×4）
-            for k in range(8): sphere(f"{name}d{k}", .0009, ((k % 4 - 1.5) * .0034, (k // 4 - .5) * .0026, .0018), mat("stick_ink", "#1F2A28", .4), (1, 1, .4), o)
+                sphere(f"{name}d{k}", .0011, (dx, dy, .0018), dm, (1, 1, .4), o)
+        elif kind == 100:
+            for k in range(8): sphere(f"{name}d{k}", .0009, ((k % 4 - 1.5) * .0034, (k // 4 - .5) * .0026, .0018), dm, (1, 1, .4), o)
         else:
-            for k in range(5): sphere(f"{name}d{k}", .0014, ((k - 2) * .0045, 0, .002), mat("stick_green", "#2C8A4B", .4), (1, 1, .4), o)
+            for k in range(5): sphere(f"{name}d{k}", .0012, ((k - 2) * .0045, 0, .0018), dm, (1, 1, .4), o)
         NAMED[name] = o
     if SCENE == "riichi": stick("bou", 1000)
     if SCENE == "tsumo":      # ツモの支払い（2026-11-16）: 親（対面）＝1,000点・子（下家・上家）＝500点ずつ
