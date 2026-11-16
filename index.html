@@ -1000,6 +1000,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .g-row { margin: 0 0 10px; }
 .g-row .g-lbl { display: block; font-size: 12px; font-weight: 700; color: #5F6E6B; margin: 0 0 4px; }
 .g-seg button { padding: 0 1px; font-size: 12px; letter-spacing: -.03em; }
+@media (max-width: 359px) { #s-g-fields, #e-g-fields { margin-left: 0 !important; } }   /* 幅320では左の字下げをやめて、5つのタブ（カスタム・1,000G）が欠けないように */
 .chip-step input::-webkit-inner-spin-button, .chip-step input::-webkit-outer-spin-button, .g-custom input::-webkit-inner-spin-button, .g-custom input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .chip-step input, .g-custom input { -moz-appearance: textfield; }
 .g-custom { align-items: center; gap: 6px; margin-top: 6px; }
@@ -10531,7 +10532,8 @@ function gRateLabel(s) {
   return `スコア1pt＝${Number(s.rate).toLocaleString()}G${s.bonusEnabled ? `・チップ1枚＝${(Number(s.chipRate) || 0).toLocaleString()}G` : ''}`;
 }
 // ゲームを作る画面（p='s'）と設定の変更（p='e'）で同じ欄。値はタブで選ぶ（カスタムは数字を入れる）
-const G_RATE_OPTS = [50, 100], G_CHIP_OPTS = [100, 300, 500, 1000];
+const G_RATE_OPTS = [10, 30, 50, 100], G_CHIP_OPTS = [100, 300, 500, 1000];
+const G_RATE_DEF = 50;   // スコアの既定は 50G（並びは小さい順。2026-11-16 ユーザーの指定で 10G・30G を足した）
 function gSegHtml(p, key, label, opts, val) {
   const custom = !opts.includes(val);
   return `<div class="g-row"><span class="g-lbl">${label}</span>
@@ -10548,7 +10550,7 @@ function pickG(p, key, v) {
 function gOptHtml(p, s) {
   if (!RATE_FEATURE) return '';
   const on = gOn(s);
-  const rate = Number(s && s.rate) > 0 ? Number(s.rate) : G_RATE_OPTS[0];
+  const rate = Number(s && s.rate) > 0 ? Number(s.rate) : G_RATE_DEF;
   const chip = on ? (Number(s.chipRate) || 0) : (s && Number(s.chipRate) > 1 ? Number(s.chipRate) : G_CHIP_OPTS[0]);
   return `<label class="opt-check" style="margin-top:14px">
       <input type="checkbox" id="${p}-g" ${on ? 'checked' : ''} onchange="document.getElementById('${p}-g-fields').style.display=this.checked?'block':'none'"> レートあり（G）

@@ -176,6 +176,25 @@ with sync_playwright() as p:
             res.append(r16); print(*r16)
             pg2.locator("#gshot").screenshot(path=f"{SP}/g_w{w}_{'c' if chips else 'n'}.png")
             pg2.close()
+    # 17 タブ（スコア 10G・30G・50G・100G・カスタム／チップ 5つ）が幅320で1行に入り、はみ出さない（2026-11-16 10G・30G を足した）
+    pg3 = b.new_page(viewport={"width": 320, "height": 900})
+    pg3.goto(BASE); pg3.wait_for_timeout(2000)
+    bad = pg3.evaluate("""() => { showView('setup'); const box = document.getElementById('s-g-opt'); if (!box) return ['欄が無い'];
+      const cb = document.getElementById('s-g'); cb.checked = true; cb.onchange();
+      setSetupOptions(true);
+      const out = [];
+      if (!(document.getElementById('s-g-rate-seg').getBoundingClientRect().width > 0)) out.push('欄が見えていない');
+      ['rate', 'chip'].forEach(k => { const seg = document.getElementById('s-g-' + k + '-seg'); if (!seg) { out.push(k + ' 無し'); return; }
+        const bs = [...seg.querySelectorAll('button')]; const tops = new Set(bs.map(x => Math.round(x.getBoundingClientRect().top)));
+        if (tops.size > 1) out.push(k + ' 2行'); const sr = seg.getBoundingClientRect();
+        bs.forEach(x => { const r = x.getBoundingClientRect(); if (r.width > 0 && (r.right > sr.right + 1 || x.scrollWidth > x.clientWidth + 1)) out.push(k + ' はみ出し ' + x.textContent); });
+        if (sr.right > document.documentElement.clientWidth) out.push(k + ' 画面の外'); });
+      const labels = [...document.querySelectorAll('#s-g-rate-seg button')].map(x => x.textContent).join(',');
+      if (labels !== '10G,30G,50G,100G,カスタム') out.push('並び ' + labels);
+      if (document.getElementById('s-g-rate').value !== '50') out.push('既定 ' + document.getElementById('s-g-rate').value);
+      return out; }""")
+    r17 = ["PASS" if not bad else "FAIL", "17 幅320・スコアのタブ（10G〜100G・カスタム）が1行に入る・既定は50G", str(bad)]
+    res.append(r17); print(*r17); pg3.close()
     print("errors", errs)
     b.close()
 fails = [r for r in res if r[0] != "PASS"]
