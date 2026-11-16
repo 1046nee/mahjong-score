@@ -374,7 +374,7 @@ RIVERS = ([["z3", "s1", "s9"], ["z4", "p9", "m1", "s9"], ["z1", "p1", "s2", "z6"
 if SCENE == "kan":   # 暗槓の自分の河の一索を九索に（2026-11-14 ユーザーの指定。嶺上牌も四筒に変えた）
     RIVERS[0] = ["z7", "z2", "s9"]
 # ---- 台本で動かす場面（2026-11-13）: 大明槓・加槓・リーチ・ツモあがり・ロンあがり・流局。牌姿と席は Notion の「3D動画の出演表」が正 ----
-S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai")
+S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai", "furiten")
 RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
 NEXT_CODE = "back"      # 次にツモる牌の絵（ツモあがりで使う）
 NEXT2_CODE = "back"     # その次にツモる牌（同じ幢の下段。ツモと打牌の動画の2回目のツモ）
@@ -434,6 +434,11 @@ if S2:
         NEXT_CODE = "s4"; NEXT2_CODE = "z3"
         if "--taken" not in sys.argv: TAKEN = .3
         RIVERS = auto_rivers([6, 6, 6, 5], HANDS[0] + [DORA, "s4", "z3"], ban=("z5", "z3"))
+    elif SCENE == "furiten":    # フリテン（2026-11-16）: 四索・七索の両面待ち。七索を前に自分で切っている → 下家の四索はロンできない → 四索をツモってツモアガリ
+        HANDS[0] = ["m2", "m3", "m4", "p5", "p6", "p7", "m6", "m7", "m8", "s5", "s6", "z6", "z6"]
+        NEXT_CODE = "s4"; CALL_SEAT = 1
+        RIVERS = auto_rivers([6, 6, 5, 5], HANDS[0] + [DORA, "s4", "s7"], ban=("s4", "s7"), last={1: "s4"})
+        RIVERS[0][3] = "s7"
     elif SCENE == "ryukyoku":   # 流局: 自家（六索・七索の両面）と対面がテンパイ、下家と上家がノーテン
         HANDS[0] = ["m3", "m4", "m5", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "s7", "z7", "z7"]
         OPEN_HANDS = {2: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
@@ -460,7 +465,7 @@ def build_tiles():
     order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
     taken = set(order[:round(len(order) * TAKEN)])
     nxt = order[round(len(order) * TAKEN)] if round(len(order) * TAKEN) < len(order) else None      # 次にツモる幢
-    if SCENE == "dahai":      # ツモと打牌: 次にツモる幢は、左の山の、自分に近い端（手をのばしやすい所）
+    if SCENE in ("dahai", "furiten"):      # ツモと打牌・フリテン: 次にツモる幢は、左の山の、自分に近い端（手をのばしやすい所）
         taken = set(order[:BRK + 2]); nxt = order[BRK + 2]
     WALL.update(n=n, x0=x0, WP=WP, BRK=BRK)
     for i, r in enumerate(roots):
@@ -486,6 +491,7 @@ def build_tiles():
             if last and STEP >= 3: continue
             t = tile(c, (gx, gy, Z), r, "lie")
             if last: named["called"] = t
+            if SCENE == "furiten" and i == 0 and c == "s7": named["fu7"] = t      # フリテン: 自分で切った待ちの牌（持ち上げて見せる）
         # 手牌
         if i == 0:
             hand = list(HANDS[0])
@@ -1062,7 +1068,7 @@ FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
     FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.4 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
 S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.4, 3.8), 5.8),
-       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
+       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0), "furiten": ((1.5, 2.4, 4.2, 7.0), 7.8),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
        "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
 def warp(t):
@@ -1314,6 +1320,26 @@ def s2_build():
         focus = [Vector((xt - .02, HY, .77)), rv, (Vector((P("hk6").x, HY, .77)), Vector((0, -.17, .52)), 36), rv]
         views = []                                                                      # 最後に右の角へ寄らない（晒した牌が無い）
         pre = dict(lift=["hk12"], call=False, cam2=None)
+    elif SCENE == "furiten":    # フリテン（2026-11-16）
+        f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った七索を少し浮かせる
+        c = P("called"); c0 = seat_w(1, (0, -.30, Z)); NAMED["called"]["p0"] = list(c0); show["called"] = 3.3      # ③ 下家が四索を切る（それまでは河に無い）
+        mv["called"] = [(3.4, 4.0, tuple(c), NAMED["called"]["r0"], .03)]
+        Ri = Vector(ARMS[1]["R"]["rest"])
+        cl = Vector((c.x * math.cos(-math.pi / 2) - c.y * math.sin(-math.pi / 2), c.x * math.sin(-math.pi / 2) + c.y * math.cos(-math.pi / 2), 0))
+        arms[1] = [(0, Ri), (3.0, Ri), (3.4, (0, -.30, hz)), (4.0, (cl.x, cl.y - .02, hz)), (4.5, Ri), (DUR, Ri)]
+        nx = P("next"); xt = P("hk12").x + HP + .03
+        mv["next"] = [(4.8, 5.6, (xt, LY, Z), (0, 0, 2 * math.pi), .08)]                # ④ 四索をツモって、手牌の横に表向きで置く
+        for k in range(13): mv[f"hk{k}"] = [(6.0, 6.8, (P(f"hk{k}").x, LY, Z), LIE, .015)]
+        xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+        arms[0] = [(0, R), (4.4, R), (4.8, A(nx.x, nx.y, .02)), (5.6, A(xt, LY)), (5.9, A(xr, HY - .01, .02)), (6.8, A(xr, LY)), (7.4, R), (DUR, R)]
+        arms_l[0] = [(0, L0), (5.5, L0), (5.9, A(xl, HY - .01, .02)), (6.8, A(xl, LY)), (7.4, L0), (DUR, L0)]
+        cxa = (P("hk0").x + xt) / 2
+        focus = [(Vector((xc - .01, HY, .79)), Vector((0, -.30, .20)), 21),                       # ① 手牌（立てた牌の表が読めるように、手前の低い所から）
+                 (Vector((f7.x, f7.y, .77)), Vector((-.01, -.17, .50)), 40),               # ② 自分の河
+                 (Vector((c.x - .02, c.y, .77)), Vector((-.06, -.20, .55)), 40),           # ③ 下家の河
+                 OVER(cxa, .03)]                                                            # ④ 倒した手牌とツモった牌
+        views = [(5.8, 6.8, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0)]
+        pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
