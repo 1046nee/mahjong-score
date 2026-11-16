@@ -158,6 +158,7 @@
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
 ## 公開済み記事一覧（16記事＋お知らせ6本＋更新履歴）
+- **blog-machi-katachi.html（2026-11-16）**: 待ちの形一覧（23形）。1枚の表と解説3枚は `python3.13 tools/machi_sheet.py`（tools/machi_sheet/ の machi4.py＝一覧・detail.py＝解説。待ちの牌と枚数は machi3.py が計算で出す＝手で書かない。見た目の決まりは docs/image-tools.md「Xに出す1枚の表」）→ assets/hai/machi-katachi-ichiran / -4mai / -7mai-1 / -7mai-2。本文の待ちと枚数は表と同じ値にそろえる
 - **blog-naki-tejun.html（2026-11-11）**: ポン・チーの手順。**手順は番号つきの5つの言葉＝①発声→②開示→③回収→④副露→⑤打牌で書く**（2026-11-12 ユーザーの依頼。言葉の意味は docs/video-3d.md「手順の見せ方」。動画も同じ言葉）。上から見た卓の図5枚（`tools/make_naki_article.py` の `board(step)` が SVG を作る。記事を直すときはこのスクリプトを直して実行）。団体の決まりは Mリーグ（m-league.jp/about/）・協会の競技規定・最高位戦の競技規定PDF・RMUのルールで確認。連盟（競技ルールのページに本文が出ない）と麻将連合は未確認＝確かめられたら表に足す
 - **お知らせ（検索に載せる・2026-10-13）**: news/nakama-page.html（仲間ページ）／news/mypage-stats.html（マイページと成績）／news/kiroku-kakutei.html（記録の確定）。実画面は `/assets/screens/*.jpg`（見本のデータ・スタブで撮影。キャプションに「名前と数字は見本のデータです」）
 - **更新履歴のページは置かない**（2026-10-22 ユーザーの判断で非公開。/changelog.html は /news/ へ301。アプリの変更はお知らせ（/news/）で伝える）
@@ -284,3 +285,4 @@
 - 表の中の牌の絵が縮んで罫線と重なった（漢字の記事の数字の表・2026-10-30）。狭い画面で表の幅を合わせる仕組みが table-layout を auto に戻し、flex の中の img が縮んでセルが21pxになっていた。表の中の牌は `flex: none`（blog.css）。牌の幅を `calc(… vw)` で決めるときは `max-width` ではなく `min(…, 28px)` で上限を入れる（max-width は別のルールに負けて、PCで牌が巨大になった）
 - サムネイルの表（grid）は、行の数と中身の数を合わせる（点数早見表の絵が5行のうち2行空だった）
 - 手牌（`.hand`）の牌は `flex: none`。付けないと、槓子で枠に入らないときに牌が縮んで重なる。1行に入らなければ鳴いた牌をまとめて次の行へ送る（2026-11-05）
+- 記事を足すときは **blog_cats.py → build_post_lists.js の順**。サムネが無くて build_post_lists.js が止まったあと blog_cats.py だけ流すと、テーマの一覧（rules/index.html など）に全記事のカードが入り、1ページの量が1,200KBをこえた（2026-11-16）。止まったら絵を作って、2つを順に流し直す

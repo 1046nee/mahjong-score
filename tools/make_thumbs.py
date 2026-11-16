@@ -205,7 +205,8 @@ THUMBS = [
  T("blog-rule-wakareme", "#7C5CFF", lambda: row_center(["z1", "z1"], 44, 54, 6) + bubble(54, 150, 92, 52, "2符", 30) + bubble(174, 150, 92, 52, "4符", 30) + '<text x="160" y="186" text-anchor="middle" font-size="30" font-weight="900" fill="#fff" ' + F + '>?</text>' + sparkle(262, 48, 13) + sparkle(56, 52, 9)),
  T("blog-local-yaku", "#FF5C8A", lambda: row_center(["p2", "p3", "p4", "p5", "p6"], 70, 46, 3) + sparkle(250, 50, 14) + sparkle(64, 196, 9) + '<text x="160" y="214" text-anchor="middle" font-size="22" font-weight="900" fill="#fff" ' + F + '>ローカル役満</text>'),
  T("blog-mahjong-kanji", "#FFC233", lambda: bubble(40, 46, 104, 96, "混", 64) + bubble(176, 46, 104, 96, "清", 64, "#1F2A28", "#fff") + '<text x="160" y="206" text-anchor="middle" font-size="22" font-weight="900" fill="#1F2A28" ' + F + '>字でつながる</text>'),
- T("blog-machi-dojo", "#22B573", lambda: row_center(["s2", "s3", "s4", "s5"], 92, 46, 3) + bubble(214, 18, 72, 62, "?", 44, "#fff", "#E75620")),
+ T("blog-machi-katachi", "#7C3AED", lambda: row_center(["p2", "p2", "p2", "p3", "p4", "p5", "p6"], 100, 38, 2) + bubble(196, 20, 108, 58, "17枚", 30, "#FFD23F") + sparkle(40, 48, 10)),
+T("blog-machi-dojo", "#22B573", lambda: row_center(["s2", "s3", "s4", "s5"], 92, 46, 3) + bubble(214, 18, 72, 62, "?", 44, "#fff", "#E75620")),
  T("blog-mahjong-yougoshu", "#8A5CF6", lambda: card(74, 36, 172, 168, "#fff", 12) + '<rect x="74" y="36" width="24" height="168" rx="10" fill="#6D3FE0"/>' + "".join(f'<rect x="246" y="{52 + i * 30}" width="22" height="24" rx="5" fill="{c}"/><text x="257" y="{70 + i * 30}" text-anchor="middle" font-size="13" font-weight="900" fill="#fff" {F}>{t}</text>' for i, (t, c) in enumerate([("あ", "#FF5C8A"), ("か", "#FFC233"), ("さ", "#22B573"), ("た", "#2F6BFF"), ("な", "#E75620")])) + lines(114, 70, 7, 112, 18)),
  T("blog-dantai-rekishi", "#29B6F6", lambda: '<line x1="40" y1="120" x2="280" y2="120" stroke="#fff" stroke-width="6" stroke-linecap="round"/>' + "".join(f'<circle cx="{x}" cy="120" r="16" fill="{c}" stroke="#fff" stroke-width="5"/><text x="{x}" y="{88 if i % 2 == 0 else 168}" text-anchor="middle" font-size="15" font-weight="900" fill="#fff" {F}>{y}</text>' for i, (x, c, y) in enumerate([(52, "#4261AA", "1976"), (108, "#177083", "1981"), (164, "#B7791F", "1997"), (220, "#E25A1C", "2001"), (272, "#6B46C1", "2007")]))),
  T("blog-mahjong-yougo", "#14B8A6", lambda: row_center(["z1", "z2", "z3", "z4"], 50, 44, 4) + card(70, 140, 180, 56, "#fff", 12) + '<text x="160" y="178" text-anchor="middle" font-size="26" font-weight="900" fill="#0F766E" ' + F + '>正式名称</text>'),
@@ -274,7 +275,8 @@ def raster(names):
     from playwright.sync_api import sync_playwright
     from PIL import Image
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        try: b = p.chromium.launch()
+        except Exception: b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium")  # クラウドの環境（入っている版がちがう）
         pg = b.new_page(viewport={"width": W, "height": H}, device_scale_factor=SCALE)
         for name in names:
             src = os.path.join(OUT, name + ".svg")

@@ -241,6 +241,16 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://majasco.jp/blog-machi-katachi.html</loc>
+    <image:image><image:loc>https://majasco.jp/assets/hai/machi-katachi-ichiran.png</image:loc></image:image>
+    <image:image><image:loc>https://majasco.jp/assets/hai/machi-katachi-4mai.png</image:loc></image:image>
+    <image:image><image:loc>https://majasco.jp/assets/hai/machi-katachi-7mai-1.png</image:loc></image:image>
+    <image:image><image:loc>https://majasco.jp/assets/hai/machi-katachi-7mai-2.png</image:loc></image:image>
+    <lastmod>2026-11-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://majasco.jp/blog-yaku-ranking.html</loc>
     <image:image><image:loc>https://majasco.jp/assets/hai/mahjong-yaku-ranking.png</image:loc></image:image>
     <image:image><image:loc>https://majasco.jp/assets/hai/mahjong-yaku-ranking-hai.png</image:loc></image:image>

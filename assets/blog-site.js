@@ -44,6 +44,9 @@ const READ_ICON = {
   more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
 };
 const BLOG_POSTS = [
+  { url: '/blog-machi-katachi.html', cat: 'rules', date: '2026.11.16', tag: '図解',
+    title: '【保存版】麻雀の待ちの形一覧｜両面8枚から最大17枚待ちまで23形を図解',
+    desc: '1面子1雀頭（4枚形）と2面子1雀頭（7枚形）に分けた23形を1枚の表に。初心者が覚える8形から中級者の形まで、待ちの牌と枚数を図で。' },
   { url: '/blog-mahjong-dougu.html', cat: 'beginner', date: '2026.11.14', tag: '図鑑',
     title: '【保存版】【図鑑】麻雀の道具図鑑｜牌・点棒・焼き鳥マークまで名前と読み方を1枚に',
     desc: '牌34種と赤牌・花牌・白ポッチ・金牌、白とカラーの点棒と黒棒、サイコロ・起家マーク・焼き鳥マーク・チップ・点箱・牌寄せを名前と読み方つきで。' },
