@@ -708,7 +708,7 @@ def main():
         login_as(pm, U4)
         pm.wait_for_timeout(300)
         # ひな形（Mリーグ）から作る: 名前・チップ・レート30Gを入れて保存
-        pm.evaluate("""() => { openMyRules('start'); openMyRuleTemplates(); openMyRuleEdit(null, 2);
+        pm.evaluate("""() => { openMyRules('start'); openMyRuleTemplates(); openMyRuleEdit(null, 0);
           document.getElementById('r-name').value = '金曜のMリーグ';
           document.getElementById('r-bonus').checked = true; document.getElementById('r-start-chips').value = '30';
           const g = document.getElementById('r-g'); if (g) { g.checked = true; g.onchange(); pickG('r', 'rate', 30); }
@@ -721,7 +721,7 @@ def main():
                         and r0.get("returnPoints") == 30000 and r0.get("uma") == [30, 10, -10, -30] and r0.get("bonusEnabled") is True
                         and r0.get("startChips") == 30 and r0.get("rate") == 30 and len(rp[0][0]) == 8))
         # 2つ目（最高位戦）→ 1つ目を三麻に変える
-        pm.evaluate("() => { openMyRuleTemplates(); openMyRuleEdit(null, 3); saveMyRuleEdit(); }")
+        pm.evaluate("() => { openMyRuleTemplates(); openMyRuleEdit(null, 0); document.getElementById('r-name').value = '最高位戦ルール'; setStartMode('r', '30000'); setRetMode('r', 'off'); saveMyRuleEdit(); }")
         id1 = rp[0][0]
         pm.evaluate("(id) => { openMyRuleEdit(id); setRuleDraftN(3); saveMyRuleEdit(); }", id1)
         pm.wait_for_function("(a) => { const d = JSON.parse(localStorage.getItem('__smoke_db')); const r = d.users[a[0]].rulePresets; return Object.keys(r).length === 2 && r[a[1]].numPlayers === 3; }", arg=[U4, id1], timeout=10000)
@@ -754,6 +754,9 @@ def main():
         pm.evaluate("(id) => { openMyRuleEdit(id); document.querySelector('#form-modal-body .mr-del').click(); document.getElementById('confirm-modal-ok').click(); }", id2)
         pm.wait_for_function("(a) => !JSON.parse(localStorage.getItem('__smoke_db')).users[a[0]].rulePresets[a[1]]", arg=[U4, id2], timeout=10000)
         results.append(("[12h] 削除するとアカウントからも消える", True, pm.evaluate("(id) => !myRules[id] && Object.keys(myRules).length === 4", id2)))
+        results.append(("[12l] 新しいルールのひな形は四麻・三麻の2つを横に並べる・要約は持ち点/返し点（オカなしと書かない）", True,
+                        pm.evaluate("() => { openMyRuleTemplates(); const b = [...document.querySelectorAll('#form-modal-body .mr-tpl')]; const ok = b.length === 2 && Math.abs(b[0].getBoundingClientRect().top - b[1].getBoundingClientRect().top) < 1"
+                                    " && b[1].innerText.includes('35,000/35,000点') && !document.getElementById('form-modal-body').innerText.includes('オカなし'); openMyRules('start'); return ok && !document.getElementById('form-modal-body').innerText.includes('オカなし'); }")))
         # 別の端末で同じアカウントにログインすると、同じマイルールが出る
         m2 = new_ctx(seed_db=db_of(pm))
         pm2 = new_page(m2)
@@ -767,7 +770,7 @@ def main():
         pm2.set_viewport_size({"width": 320, "height": 700})
         over = pm2.evaluate("""() => { const out = []; const chk = n => { const b = document.getElementById('form-modal-body'); if (b.scrollWidth > b.clientWidth + 1) out.push(n + ' 横にはみ出し');
             b.querySelectorAll('button, input, select').forEach(e => { const r = e.getBoundingClientRect(), br = b.getBoundingClientRect(); if (r.width > 0 && r.right > br.right + 1) out.push(n + ' ' + (e.id || e.textContent.trim().slice(0, 10))); }); };
-          openMyRules('start'); chk('一覧'); openMyRuleTemplates(); chk('ひな形'); openMyRuleEdit(null, 2); const g = document.getElementById('r-g'); if (g) { g.checked = true; g.onchange(); } chk('編集'); return out; }""")
+          openMyRules('start'); chk('一覧'); openMyRuleTemplates(); chk('ひな形'); openMyRuleEdit(null, 0); const g = document.getElementById('r-g'); if (g) { g.checked = true; g.onchange(); } chk('編集'); return out; }""")
         results.append(("[12j] 幅320で一覧・ひな形・編集の画面がはみ出さない", True, not over or over))
         pm2.close(); pm.close()
         br.close()

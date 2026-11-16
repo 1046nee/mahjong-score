@@ -786,7 +786,11 @@ button.mr-row { cursor: pointer; }
 .mr-del { display: block; margin: 14px auto 0; padding: 8px 12px; background: none; border: none; color: #C62828; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }   /* 削除は編集の画面の下（一覧のカードを2行のまま・名前と要約を広く。2026-11-16） */
 .mr-g { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; background: #5F6E6B; color: #fff; font-size: 9.5px; font-weight: 900; line-height: 1; }
 .mr-acts { display: flex; gap: 6px; flex-shrink: 0; }
-.mr-tpl .mb-chev { flex-shrink: 0; color: #9AA8A5; }
+.mr-tpls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }   /* 四麻と三麻を横に並べる（2026-11-16 ユーザーの指定） */
+.mr-tpl { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; background: #fff; border: 1.5px solid #DCE6E3; border-radius: 12px; padding: 14px 8px 12px; font: inherit; color: #1F2A28; cursor: pointer; text-align: center; }
+.mr-tpl .gk { width: 34px; height: 34px; margin: 0 0 2px; } .mr-tpl .gk svg { width: 34px; height: 34px; }
+.mr-tpl b { font-size: 16px; font-weight: 800; line-height: 1.3; }
+.mr-tpl small { font-size: 11.5px; color: #5F6E6B; line-height: 1.55; white-space: nowrap; }
 .mr-add { margin-top: 6px; } .mr-add small { font-size: 12px; font-weight: 700; opacity: .75; margin-left: 4px; }
 .mr-empty { font-size: 13px; color: #6B7A77; line-height: 1.8; text-align: center; padding: 14px 0; }
 .mr-note { font-size: 11.5px; color: #6B7A77; line-height: 1.7; margin: 2px 0 10px; }
@@ -10375,11 +10379,10 @@ async function quickStart(n) {
 const MY_RULE_MAX = 5, MY_RULE_NAME_LEN = 20;
 const MY_RULE_KEY = 'mahjong-my-rules:';
 // ひな形（新しく作るときに選ぶ）。プロのルールは持ち点・返し点・ウマだけをまねる（一発・裏ドラなどはアプリの外の決めごと）
+// ひな形は四麻・三麻の2つ（アプリの初期値と同じ）。プロのルールのひな形はやめた（2026-11-16 ユーザーの指定）
 const RULE_TEMPLATES = [
-  { name: '四麻（いつもの）', note: '25,000/30,000点・ウマ10-30', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
-  { name: '三麻（いつもの）', note: '35,000点・オカなし・ウマ10-0-10', r: { numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] } },
-  { name: 'Mリーグルール', note: '25,000/30,000点・ウマ10-30（1位+50）', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
-  { name: '最高位戦ルール', note: '30,000点・オカなし・ウマ10-30', r: { numPlayers: 4, startPoints: 30000, returnPoints: 30000, uma: [30, 10, -10, -30] } }
+  { name: '四麻', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
+  { name: '三麻', r: { numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] } }
 ];
 let myRules = {}; // id → ルール
 function myRuleKey() { return MY_RULE_KEY + (myUid() || ''); }
@@ -10444,7 +10447,7 @@ function umaLabelOf(uma, n) {
 // 一覧の1行の要約。四麻・三麻は左のアイコンで見せるので書かない。オプション（チップ・G・焼き鳥・チョンボ）は右の小さなアイコン（ruleOptsHtml）
 // ＝ルールの中身が増えてもカードは2行のまま（名前と要約はそれぞれ1行・入らなければ「…」。2026-11-16 ユーザーの指定）
 function ruleSummary(r) {
-  const pts = r.returnPoints === r.startPoints ? `${r.startPoints.toLocaleString()}点・オカなし` : `${r.startPoints.toLocaleString()}/${r.returnPoints.toLocaleString()}点`;
+  const pts = `${r.startPoints.toLocaleString()}/${r.returnPoints.toLocaleString()}点`; // 持ち点/返し点（同じでも「オカなし」とは書かない。2026-11-16 ユーザーの指定）
   return `${pts}・${umaLabelOf(r.uma, r.numPlayers)}`;
 }
 function ruleOptsHtml(r) {
@@ -10538,9 +10541,8 @@ function openMyRuleTemplates() {
   if (myRuleList().length >= MY_RULE_MAX) return;
   document.getElementById('form-modal-title').textContent = '新しいルール';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${sheetBackMark('openMyRules()', 'マイルールへ')}
-    <div class="mr-lead">もとにするルールを選んでください。選んだあとで、名前や中身を変えられます。</div>
-    ${RULE_TEMPLATES.map((t, i) => `<button type="button" class="mr-row mr-tpl" onclick="openMyRuleEdit(null, ${i})">${ruleKindHtml(t.r.numPlayers)}<span class="mr-main"><b>${esc(t.name)}</b><small class="mr-sum"><span class="mr-st">${esc(t.note)}</span></small></span><span class="mb-chev">${ico('chevron', 14)}</span></button>`).join('')}
-    <div class="mr-note">プロのルールは、持ち点・返し点・ウマだけをそろえます（一発・裏ドラなどは打つ前に決めてください）。</div>
+    <div class="mr-lead">四麻か三麻を選んでください。選んだあとで、名前や中身を変えられます。</div>
+    <div class="mr-tpls">${RULE_TEMPLATES.map((t, i) => `<button type="button" class="mr-tpl" onclick="openMyRuleEdit(null, ${i})">${ruleKindHtml(t.r.numPlayers)}<b>${esc(t.name)}</b><small>${t.r.startPoints.toLocaleString()}/${t.r.returnPoints.toLocaleString()}点<br>${esc(umaLabelOf(t.r.uma, t.r.numPlayers))}</small></button>`).join('')}</div>
     <button class="sheet-close" onclick="openMyRules()">戻る</button></div>`;
   document.getElementById('form-modal').classList.add('open');
 }
@@ -10549,7 +10551,7 @@ let ruleEditId = null, ruleDraft = null;
 function openMyRuleEdit(id, tpl) {
   ruleEditId = id;
   if (id && myRules[id]) ruleDraft = Object.assign({}, myRules[id]);
-  else { const t = RULE_TEMPLATES[tpl || 0]; ruleDraft = cleanRule(Object.assign({ name: t.name.replace(/（いつもの）$/, '') }, t.r)); }
+  else { const t = RULE_TEMPLATES[tpl || 0]; ruleDraft = cleanRule(Object.assign({ name: t.name }, t.r)); }
   renderMyRuleEdit();
 }
 function renderMyRuleEdit() {
