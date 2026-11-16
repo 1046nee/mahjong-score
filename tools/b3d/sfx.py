@@ -114,8 +114,8 @@ TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒�
     "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.2, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
     "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
     "riichi": [(1.5, "tap"), (2.4, "clack"), (3.8, "tap"), (4.3, "tap"), (4.8, "clackt")],
-    "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu")],
-    "ron": [(1.5, "tap"), (2.3, "taosu")],
+    "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
+    "ron": [(1.5, "tap"), (2.3, "taosu"), (5.8, "tap"), (7.5, "tap")],
     "ryukyoku": [(1.5, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (5.8, "taosu"), (7.3, "tap")],
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒

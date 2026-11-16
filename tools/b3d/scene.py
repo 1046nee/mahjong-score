@@ -418,11 +418,11 @@ if S2:
         TSUMO14 = True
         RIVERS = auto_rivers([6, 6, 6, 6], HANDS[0] + [DORA], ban=("p3", "p6"))
         RIVERS = [[{"s4": "p9", "s8": "p8"}.get(c, c) for c in rv] for rv in RIVERS]      # 河の四索→九筒・八索→八筒（2026-11-14 ユーザーの指定）
-    elif SCENE == "tsumo":      # ツモあがり: 七萬・八萬の両面。六萬をツモる
-        HANDS[0] = ["m2", "m3", "m4", "p3", "p4", "p5", "s6", "s7", "s8", "m7", "m8", "p9", "p9"]
-        NEXT_CODE = "m6"
+    elif SCENE == "tsumo":      # ツモあがり: 六萬・八萬の嵌張。七萬をツモる＝メンゼンツモ・タンヤオ、子の2翻30符で500・1000（2026-11-16 ユーザーの指定）
+        HANDS[0] = ["m2", "m3", "m4", "p3", "p4", "p5", "s6", "s7", "s8", "m6", "m8", "s2", "s2"]
+        NEXT_CODE = "m7"
         if "--taken" not in sys.argv: TAKEN = .9
-        RIVERS = auto_rivers([9, 9, 9, 9], HANDS[0] + [DORA, "m6"], ban=("m6", "m9"))
+        RIVERS = auto_rivers([9, 9, 9, 9], HANDS[0] + [DORA, "m7"], ban=("m7",))
     elif SCENE == "ron":        # ロンあがり: 六筒・七筒の両面。下家（席1）が切った赤五筒でロン（2026-11-14 ユーザーの指定で八筒から。役はタンヤオ・ピンフ・赤1＝子の3翻30符3900点）
         HANDS[0] = ["m6", "m7", "m8", "p2", "p3", "p4", "s5", "s5", "s6", "s7", "s8", "p6", "p7"]
         CALL_SEAT = 1
@@ -1052,7 +1052,8 @@ FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
     FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.4 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
 S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.4, 3.8), 5.8),
-       "tsumo": ((2.9, 4.4), 5.3), "ron": ((2.4, 3.2), 4.8), "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
+       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
+       "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
 def warp(t):
     """実際の時刻 → もとの動きの時刻（間のあいだは進まない）"""
@@ -1174,12 +1175,37 @@ def s2_sticks():
     def stick(name, kind):
         o = box(name, (.066, .0075, .0045), (0, -.6, TOP - .05), mat("stick", "#FBF8EE", .3), bevel=.0012)
         if kind == 1000: sphere(name + "d", .0024, (0, 0, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
+        elif kind == 5000:      # 5,000点棒＝赤い点1つのまわりに小さな赤い点4つ（サイトの点棒の絵と同じ模様）
+            sphere(name + "d", .0021, (0, 0, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
+            for k, (dx, dy) in enumerate(((-.0042, -.0019), (-.0042, .0019), (.0042, -.0019), (.0042, .0019))):
+                sphere(f"{name}d{k}", .0011, (dx, dy, .0018), mat("stick_red", "#D2302F", .4), (1, 1, .4), o)
+        elif kind == 100:       # 100点棒＝黒い点8つ（2段×4）
+            for k in range(8): sphere(f"{name}d{k}", .0009, ((k % 4 - 1.5) * .0034, (k // 4 - .5) * .0026, .0018), mat("stick_ink", "#1F2A28", .4), (1, 1, .4), o)
         else:
             for k in range(5): sphere(f"{name}d{k}", .0014, ((k - 2) * .0045, 0, .002), mat("stick_green", "#2C8A4B", .4), (1, 1, .4), o)
         NAMED[name] = o
     if SCENE == "riichi": stick("bou", 1000)
+    if SCENE == "tsumo":      # ツモの支払い（2026-11-16）: 親（対面）＝1,000点・子（下家・上家）＝500点ずつ
+        stick("pay2", 1000); stick("pay1", 500); stick("pay3", 500)
+    if SCENE == "ron":        # ロンの支払い（2026-11-16 ユーザーの指定）: 下家が5,000点棒で払い、自分が1,000点棒1本と100点棒1本で返す
+        stick("pay5k", 5000); stick("ret1k", 1000); stick("ret100", 100)
     if SCENE == "ryukyoku":
         for g in ("a", "b"): stick("bou1" + g, 1000); stick("bou5" + g, 500)
+def pay_stick(mv, arms, show, giver, nm, t0, dst0, hz, far=False):
+    """点棒を払う。giver の前（席の座標 (0, -.262)）に出して、手で自分（席0）の前の dst0 へ送る。
+    far＝向かいの席: 手は卓の真ん中の手前までのばし、点棒はそこから卓の上をすべらせる"""
+    Z = TOP + .0005
+    st = seat_w(giver, (0, -.262, Z))
+    NAMED[nm]["p0"] = list(st); NAMED[nm]["r0"] = list(seat_r(giver, LIE)); show[nm] = t0 - .3
+    Ri = Vector(ARMS[giver]["R"]["rest"]); DUR = ANIM_DUR
+    if far:
+        mid = seat_w(giver, (0, -.16, Z))
+        mv[nm] = [(t0, t0 + .5, mid, seat_r(giver, LIE), 0), (t0 + .5, t0 + 1.0, (dst0[0], dst0[1], Z), LIE, .01)]
+        arms[giver] = [(0, Ri), (t0 - .4, Ri), (t0, (0, -.262, hz)), (t0 + .5, (0, -.16, hz)), (t0 + 1.0, Ri), (DUR, Ri)]
+    else:
+        mv[nm] = [(t0, t0 + .8, (dst0[0], dst0[1], Z), LIE, .03)]
+        lx = .15 if giver == 3 else -.15      # 受け取る人（席0）は、下家から見て左どなり・上家から見て右どなり
+        arms[giver] = [(0, Ri), (t0 - .4, Ri), (t0, (0, -.29, hz)), (t0 + .8, (lx, -.30, hz)), (t0 + 1.3, Ri), (DUR, Ri)]
 S2C = {}
 def hide_tree(o, v=True):
     o.hide_render = v
@@ -1249,7 +1275,14 @@ def s2_build():
         px = lambda t: .03 + .10 * (seg(t, 1.5, 2.1) - seg(t, 3.0, 3.5))
         cxa = (P("hk0").x + xt) / 2
         focus = [Vector((xt - .02, LY, .77)), OVER(cxa, .03)]
-        views = [(3.5, 4.4, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0)]
+        WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)
+        RECV = (Vector((0, -.27, .77)), Vector((0, -.17, .62)), 30)       # 届いた点棒が読める所まで寄る（自分の前を上から）
+        views = [(3.5, 4.4, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0), (4.8, 5.4, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
+                 (6.6, 7.2, tuple(RECV[0] + RECV[1]), tuple(RECV[0]), 30.0)]
+        # 支払い: 下家・上家（子）は500点棒を、自分のとなりまで手で送る。対面（親）は1,000点棒を、卓の上をすべらせて自分の前へ
+        pay_stick(mv, arms, show, 1, "pay1", 5.3, (.12, -.258), hz)      # 3本を自分の前に並べる（寄った画角に入るように）
+        pay_stick(mv, arms, show, 3, "pay3", 5.5, (-.10, -.258), hz)
+        pay_stick(mv, arms, show, 2, "pay2", 5.4, (.01, -.262), hz, far=True)
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
@@ -1259,7 +1292,17 @@ def s2_build():
         L0 = Vector(ARMS[0]["L"]["rest"])
         arms_l[0] = [(0, L0), (1.0, L0), (1.5, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
         focus = [OVER(xc), OVER(xc)]
-        views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0)]
+        WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)
+        RECV = (Vector((.25, -.23, .77)), Vector((-.06, -.14, .50)), 32)    # 自分と下家のあいだ（点棒のやりとりの所）を上から
+        views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0), (4.3, 4.9, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
+                 (5.8, 6.4, tuple(RECV[0] + RECV[1]), tuple(RECV[0]), 32.0)]
+        # 支払い: 下家が5,000点棒を自分のとなりまで送る → 自分が、おつりの1,000点棒と100点棒を下家のとなりへ返す（2026-11-16 ユーザーの指定）
+        pay_stick(mv, arms, show, 1, "pay5k", 5.0, (.262, -.29), hz)
+        st = (.30, -.37, Z)                                   # 自分の点箱（卓の手前のふち）から出す
+        for n_, nm in enumerate(("ret1k", "ret100")):
+            NAMED[nm]["p0"] = [st[0], st[1] - n_ * .014, Z]; NAMED[nm]["r0"] = list(LIE); show[nm] = 6.3
+            mv[nm] = [(6.8, 7.5, seat_w(1, (-.17, -.29 - n_ * .014, Z)), seat_r(1, LIE), .02)]      # 受け取った5,000点棒と並ばないよう、下家の前寄りへ
+        arms[0] = arms[0][:-1] + [(6.3, R), (6.8, (st[0], st[1] + .01, hz)), (7.5, seat_w(1, (-.17, -.29, hz))), (8.0, R), (DUR, R)]
         pre = dict(lift=["hk11", "hk12"], call=True, cam2=None)
     elif SCENE == "ryukyoku":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
