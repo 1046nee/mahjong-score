@@ -229,4 +229,5 @@ elif sys.argv[2] == "2b": sheet(1, "2面子1雀頭を作る形（7枚形）②",
 elif sys.argv[2] == "ig1a": sheet(0, "1面子1雀頭を作る形（4枚形）①", sys.argv[1], keep=(None,))
 elif sys.argv[2] == "ig1b": sheet(0, "1面子1雀頭を作る形（4枚形）②", sys.argv[1], keep=(0, 1))
 elif sys.argv[2] == "ig2b": sheet(1, "2面子1雀頭を作る形（7枚形）②", sys.argv[1], keep=(1,), cat1=("空なし",))
-elif sys.argv[2] == "ig2c": sheet(1, "2面子1雀頭を作る形（7枚形）③", sys.argv[1], keep=(1,), cat1=("空あり", "4枚を使う"))
+elif sys.argv[2] == "ig2c": sheet(1, "2面子1雀頭を作る形（7枚形）③", sys.argv[1], keep=(1,), cat1=("空あり",))
+elif sys.argv[2] == "ig2d": sheet(1, "2面子1雀頭を作る形（7枚形）④", sys.argv[1], keep=(1,), cat1=("4枚を使う",))   # 4枚を使う形が5つになり、③と1枚では小さすぎた（2026-11-16）

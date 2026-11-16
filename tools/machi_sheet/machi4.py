@@ -111,7 +111,7 @@ def sheet_A(out):
         hd = '<th colspan="2">分け方</th><th>形</th><th>牌の例</th><th>待ち</th><th>枚数</th>'
     html = f"""<table><colgroup>{cg}</colgroup>
 <thead><tr>{hd}</tr></thead><tbody>{body}</tbody></table>
-<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（8形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（4形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（11形）</span><br>
+<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（8形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（4形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（14形）</span><br>
 <span class="k47">4枚形</span>・<span class="k47">7枚形</span>＝同じ色の牌だけでつながった形（アガると1面子＋1雀頭／2面子＋1雀頭）。<br>
 名前の決まっていない形は、部品を左から「＋」でつないで表した（<b>空</b>＝1つ飛んだ数字。例: 暗刻＋空＋延べ単＝二二二・四五六七）。<br>
 </div>"""
