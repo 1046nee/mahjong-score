@@ -129,6 +129,55 @@
         "$other": {
           ".validate": false
         },
+        "rulePresets": {
+          "$pid": {
+            ".validate": "$pid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{8}$/) && newData.hasChildren(['name', 'numPlayers', 'startPoints', 'returnPoints', 'uma'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20"
+            },
+            "numPlayers": {
+              ".validate": "newData.isNumber() && (newData.val() === 3 || newData.val() === 4)"
+            },
+            "startPoints": {
+              ".validate": "newData.isNumber() && newData.val() >= 100 && newData.val() <= 10000000"
+            },
+            "returnPoints": {
+              ".validate": "newData.isNumber() && newData.val() >= 100 && newData.val() <= 10000000"
+            },
+            "uma": {
+              "$i": {
+                ".validate": "$i.matches(/^[0-3]$/) && newData.isNumber() && newData.val() >= -1000 && newData.val() <= 1000"
+              }
+            },
+            "rate": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+            },
+            "chipRate": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000"
+            },
+            "bonusEnabled": {
+              ".validate": "newData.isBoolean()"
+            },
+            "startChips": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+            },
+            "yakitori": {
+              ".validate": "newData.isBoolean()"
+            },
+            "chombo": {
+              ".validate": "newData.isBoolean()"
+            },
+            "chomboPenalty": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000"
+            },
+            "at": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
         "circleHidden": {
           "$cid": {
             ".validate": "$cid.matches(/^[A-HJ-NP-Za-hj-km-np-z2-9]{10}$/) && newData.val() === true"

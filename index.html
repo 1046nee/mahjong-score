@@ -772,6 +772,21 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .qs-btn { display: flex; align-items: center; gap: 13px; width: 100%; border: none; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; text-align: left; color: #fff; }
 .qs-btn.qs-4 { background: var(--pc); }
 .qs-btn.qs-3 { background: #4261AA; }
+.qs-btn.qs-my { background: #66716F; }   /* マイルール（灰色・同じ大きさのカード。2026-11-16 ユーザーの指定） */
+.qs-btn.qs-my .qs-n { display: grid; place-items: center; }
+.mr-lead { font-size: 13px; color: #4C5B58; line-height: 1.8; margin: 0 0 12px; }
+.mr-row { display: flex; align-items: center; gap: 8px; width: 100%; background: #fff; border: 1.5px solid #DCE6E3; border-left: 5px solid #177083; border-radius: 12px; padding: 10px 10px 10px 12px; margin: 0 0 8px; text-align: left; font: inherit; color: #1F2A28; }
+.mr-row.n3 { border-left-color: #4261AA; }
+button.mr-row { cursor: pointer; }
+.mr-main { flex: 1; min-width: 0; background: none; border: none; padding: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.mr-main b { display: block; font-size: 15px; font-weight: 800; line-height: 1.4; overflow-wrap: anywhere; }
+.mr-main small { display: block; font-size: 11.5px; color: #5F6E6B; line-height: 1.55; margin-top: 2px; }
+.mr-acts { display: flex; gap: 6px; flex-shrink: 0; }
+.mr-tpl .mb-chev { flex-shrink: 0; color: #9AA8A5; }
+.mr-add { margin-top: 6px; } .mr-add small { font-size: 12px; font-weight: 700; opacity: .75; margin-left: 4px; }
+.mr-empty { font-size: 13px; color: #6B7A77; line-height: 1.8; text-align: center; padding: 14px 0; }
+.mr-note { font-size: 11.5px; color: #6B7A77; line-height: 1.7; margin: 2px 0 10px; }
+.mr-edit .confirm-btn { width: 100%; margin-top: 8px; }
 .qs-btn:active { transform: scale(0.985); }
 .qs-btn .qs-n { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.18); text-align: center; line-height: 42px; font-size: 20px; font-weight: 900; }
 .qs-btn .qs-n small { font-size: 11px; font-weight: 700; margin-left: 1px; }
@@ -1000,7 +1015,7 @@ body.sanma-mode .form-modal-box .confirm-btn { background: #4261AA; }
 .g-row { margin: 0 0 10px; }
 .g-row .g-lbl { display: block; font-size: 12px; font-weight: 700; color: #5F6E6B; margin: 0 0 4px; }
 .g-seg button { padding: 0 1px; font-size: 12px; letter-spacing: -.03em; }
-@media (max-width: 359px) { #s-g-fields, #e-g-fields { margin-left: 0 !important; } }   /* 幅320では左の字下げをやめて、5つのタブ（カスタム・1,000G）が欠けないように */
+@media (max-width: 359px) { #s-g-fields, #e-g-fields, #r-g-fields { margin-left: 0 !important; } }   /* 幅320では左の字下げをやめて、5つのタブ（カスタム・1,000G）が欠けないように */
 .chip-step input::-webkit-inner-spin-button, .chip-step input::-webkit-outer-spin-button, .g-custom input::-webkit-inner-spin-button, .g-custom input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .chip-step input, .g-custom input { -moz-appearance: textfield; }
 .g-custom { align-items: center; gap: 6px; margin-top: 6px; }
@@ -4213,7 +4228,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">ルール設定</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="card-title" style="margin-bottom:0">ルール設定</div>
+        <button type="button" class="edit-tab" id="s-myrule-btn" style="display:none" onclick="openMyRules('setup')">マイルールから</button></div>
       <div class="rule-grid">
         <div class="rule-pts" id="s-rule-pts"></div>
         <div class="field">
@@ -4552,6 +4568,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <button type="button" class="qs-btn qs-3" onclick="quickStart(3)">
       <span class="qs-n">3<small>人</small></span>
       <span class="qs-t"><b>三麻ではじめる</b><small>35,000点持ち・ウマ10-0-10</small></span>
+    </button>
+    <button type="button" class="qs-btn qs-my" onclick="openMyRules('start')">
+      <span class="qs-n"><svg class="ico" width="22" height="22" aria-hidden="true" focusable="false"><use href="#i-gear"/></svg></span>
+      <span class="qs-t"><b>マイルールではじめる</b><small id="qs-my-sub">保存したルールから選ぶ</small></span>
     </button>
     <button type="button" class="qs-detail" onclick="closeQuickStart();showView('setup')">メンバー名やルールを先に決める ›</button>
     <div class="qs-note">※ 三麻・四麻だけは、あとから変更できません</div>
@@ -5343,6 +5363,7 @@ function confirmSignOut() {
 }
 async function signOutAccount() {
   try { await authApi.signOut(); } catch (e) {}
+  myRules = {}; renderSetupMyRuleBtn();
   // この端末をアカウントのリストから切り離す（ログアウト後に書き込み続けない）
   myListId = null;
   try { localStorage.removeItem(MYLIST_KEY); } catch (e) {}
@@ -5458,7 +5479,7 @@ function initAuth() {
     else if (!user && (act === 'view-history' || act === 'view-mystats')) showView('login', true);
     renderAccountCard();
     renderMyListCard();
-    if (user) { attachAccount(user); resumePendingJoin(); loadMyAvatar(); loadMyName(); }
+    if (user) { attachAccount(user); resumePendingJoin(); loadMyAvatar(); loadMyName(); loadMyRules(); }
     // 招待リンクを開いた時点ではログイン状態がまだ分からない。分かった時点で参加の続きをする
     if (document.getElementById('view-join').classList.contains('active')) { renderJoin(); if (user) doJoin(); }
     // 仲間のリンクで結果を開いている途中にログインが分かった → そのまま参加
@@ -10013,6 +10034,7 @@ function initSetupForm() {
   setMatchType(false);
   renderMembers();
   renderPlayerOptions(); onUmaChange();
+  renderSetupMyRuleBtn();
 }
 // ---- プレイヤー名の保存 ----
 // 保存済みの名前はdatalistに入れておき、入力欄タップで候補から選ぶか自由入力できる
@@ -10310,7 +10332,12 @@ async function createGame(name, settings, opts = {}) {
 // 「LPからすぐ点数入力にたどり着けない」ことが利用のハードルになっていたため、
 // 人数を選ぶ1タップだけで対局を作れるようにした（2026-08-26）。
 // 設定はセットアップ画面の初期値と完全に同じ値を使う（あとから設定画面と食い違わないように）
-function openQuickStart() { document.getElementById('quick-start').classList.add('open'); }
+function openQuickStart() {
+  // マイルールのカードの小さい字: ログインしていれば保存した数、していなければログインで使えること
+  const sub = document.getElementById('qs-my-sub');
+  if (sub) sub.textContent = loginAvailable() && currentUser ? (myRuleList().length ? `保存したルールから選ぶ（${myRuleList().length}/${MY_RULE_MAX}）` : `よく使うルールを${MY_RULE_MAX}つまで保存できます`) : 'Googleでログインすると使えます';
+  document.getElementById('quick-start').classList.add('open');
+}
 function closeQuickStart() { document.getElementById('quick-start').classList.remove('open'); }
 // 仮のプレイヤー名 A・B・C…（27人目以降はAA・AB…。702人まで一意）
 function placeholderNames(n) {
@@ -10336,6 +10363,254 @@ async function quickStart(n) {
     chomboPenalty: 20,
     teamMode: false
   }, { toGame: true, saveNames: false });
+}
+// ---- マイルール（よく使うルールを名前をつけて保存。ログインした人だけ・5つまで。2026-11-16〜） ----
+// 保存は users/{uid}/rulePresets/{id}（本人だけが読み書き）。この端末にも控える（ルールを貼る前・通信できないときも自分の画面では使える）。
+// 決めるのは「対局日とメンバー名」以外＝試合形式・持ち点・返し点・ウマ・チップ・レート（G）・焼き鳥・チョンボ。チーム戦はメンバーで決まるので入れない。
+// はじめる画面（人数の2択）の下の灰色のカード・ゲームを作る画面の「ルール設定」・マイページの設定から開く
+const MY_RULE_MAX = 5, MY_RULE_NAME_LEN = 20;
+const MY_RULE_KEY = 'mahjong-my-rules:';
+// ひな形（新しく作るときに選ぶ）。プロのルールは持ち点・返し点・ウマだけをまねる（一発・裏ドラなどはアプリの外の決めごと）
+const RULE_TEMPLATES = [
+  { name: '四麻（いつもの）', note: '25,000点持ち・30,000点返し・ウマ10-30', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
+  { name: '三麻（いつもの）', note: '35,000点持ち・35,000点返し・ウマ10-0-10', r: { numPlayers: 3, startPoints: 35000, returnPoints: 35000, uma: [10, 0, -10] } },
+  { name: 'Mリーグルール', note: '25,000点持ち・30,000点返し・ウマ10-30（1位は+50）', r: { numPlayers: 4, startPoints: 25000, returnPoints: 30000, uma: [30, 10, -10, -30] } },
+  { name: '最高位戦ルール', note: '30,000点持ち・30,000点返し（オカなし）・ウマ10-30', r: { numPlayers: 4, startPoints: 30000, returnPoints: 30000, uma: [30, 10, -10, -30] } }
+];
+let myRules = {}; // id → ルール
+function myRuleKey() { return MY_RULE_KEY + (myUid() || ''); }
+// 形を整える（足りない値は既定値・おかしな値は弾く）。保存・読み込みの両方で通す
+function cleanRule(v) {
+  if (!v || typeof v !== 'object') return null;
+  const n = Number(v.numPlayers) === 3 ? 3 : Number(v.numPlayers) === 4 ? 4 : 0;
+  if (!n) return null;
+  const num = (x, lo, hi, d) => { const k = Number(x); return Number.isFinite(k) && k >= lo && k <= hi ? k : d; };
+  const raw = Array.isArray(v.uma) ? v.uma : (v.uma && typeof v.uma === 'object' ? Object.keys(v.uma).sort().map(k => v.uma[k]) : []);
+  const uma = Array.from({ length: n }, (_, i) => num(raw[i], -1000, 1000, 0));
+  const st = Math.round(num(v.startPoints, 100, 10000000, n === 3 ? 35000 : 25000));
+  return {
+    name: String(v.name || '').trim().slice(0, MY_RULE_NAME_LEN) || 'マイルール',
+    numPlayers: n, startPoints: st, returnPoints: Math.round(num(v.returnPoints, 100, 10000000, st)), uma,
+    rate: Math.round(num(v.rate, 0, 10000000, 0)), chipRate: Math.round(num(v.chipRate, 0, 10000000, 1)),
+    bonusEnabled: v.bonusEnabled === true, startChips: Math.round(num(v.startChips, 0, 100000, 20)),
+    yakitori: v.yakitori === true, chombo: v.chombo === true, chomboPenalty: Math.abs(num(v.chomboPenalty, -10000, 10000, 20)),
+    at: typeof v.at === 'string' ? v.at.slice(0, 40) : new Date().toISOString()
+  };
+}
+function myRuleList() { return Object.entries(myRules).sort((a, b) => String(a[1].at).localeCompare(String(b[1].at))); }
+function storeMyRulesLocal() { try { localStorage.setItem(myRuleKey(), JSON.stringify(myRules)); } catch (e) {} }
+function loadMyRulesLocal() {
+  myRules = {};
+  try { const o = JSON.parse(localStorage.getItem(myRuleKey()) || '{}'); Object.entries(o || {}).forEach(([k, v]) => { const r = cleanRule(v); if (r && /^[A-Za-z0-9]{8}$/.test(k)) myRules[k] = r; }); } catch (e) {}
+}
+// ログインしたとき: アカウントの値を正にする。アカウントに無く、この端末に控えがあれば上げる
+async function loadMyRules() {
+  if (!currentUser) return;
+  loadMyRulesLocal();
+  try {
+    const v = (await db.ref(`users/${myUid()}/rulePresets`).once('value')).val();
+    if (v && typeof v === 'object') {
+      const o = {};
+      Object.entries(v).forEach(([k, x]) => { const r = cleanRule(x); if (r && /^[A-Za-z0-9]{8}$/.test(k)) o[k] = r; });
+      myRules = o; storeMyRulesLocal();
+    } else if (Object.keys(myRules).length) db.ref(`users/${myUid()}/rulePresets`).set(myRules).catch(() => {});
+  } catch (e) { /* ルールを貼る前は読めない。この端末の控えで使う */ }
+  renderSetupMyRuleBtn();
+}
+// 字は database.rules.json の $pid と同じ（I・O・i・l・o を使わない）
+function newRuleId() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'; let s = ''; for (let i = 0; i < 8; i++) s += a[Math.floor(Math.random() * a.length)]; return s; }
+function putMyRule(id, r) {
+  myRules[id] = r; storeMyRulesLocal();
+  if (currentUser) db.ref(`users/${myUid()}/rulePresets/${id}`).set(r).catch(() => {});
+}
+function dropMyRule(id) {
+  delete myRules[id]; storeMyRulesLocal();
+  if (currentUser) db.ref(`users/${myUid()}/rulePresets/${id}`).remove().catch(() => {});
+}
+function umaLabelOf(uma, n) {
+  const k = umaKeyOf(uma, n);
+  if (k === '0') return 'ウマなし';
+  return 'ウマ' + (k !== 'custom' ? k : uma.map(x => (x > 0 ? '+' : '') + x).join('/'));
+}
+function ruleSummary(r) {
+  const t = [r.numPlayers === 3 ? '三麻' : '四麻', `${r.startPoints.toLocaleString()}点持ち`, r.returnPoints === r.startPoints ? 'オカなし' : `${r.returnPoints.toLocaleString()}点返し`, umaLabelOf(r.uma, r.numPlayers)];
+  if (r.bonusEnabled) t.push('チップあり');
+  if (RATE_FEATURE && r.rate > 0) t.push('レートあり');
+  if (r.yakitori) t.push('焼き鳥');
+  if (r.chombo) t.push('チョンボ');
+  return t.join('・');
+}
+// 一覧。how＝'start'（押すとその設定ですぐはじめる）・'setup'（ゲームを作る画面の欄に入れる）・'manage'（マイページから。押すと編集）
+let myRuleHow = 'start';
+function openMyRules(how) {
+  if (how) myRuleHow = how;
+  closeQuickStart();
+  document.getElementById('form-modal-title').textContent = 'マイルール';
+  const body = document.getElementById('form-modal-body');
+  if (!loginAvailable() || !currentUser) {
+    body.innerHTML = `<div class="sheet-body">
+      <div class="mr-lead">よく使うルール（持ち点・ウマ・チップ・レートなど）に名前をつけて${MY_RULE_MAX}つまで保存し、選ぶだけではじめられます。<br>Googleでログインすると使えます。</div>
+      ${IN_LINE_APP ? '<div class="acct-warn">LINEの中ではGoogleにログインできません。下のボタンでSafari・Chromeに移ってから押してください。</div>' : ''}
+      <button type="button" class="google-btn" onclick="closeFormModal();signInWithGoogle()">${IN_LINE_APP ? 'Safari・Chromeで開く' : googleBtnInner('Googleでログイン')}</button>
+      <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+    document.getElementById('form-modal').classList.add('open');
+    return;
+  }
+  const list = myRuleList();
+  const lead = myRuleHow === 'setup' ? '選んだルールを、この画面の欄に入れます。' : myRuleHow === 'manage' ? `よく使うルールを${MY_RULE_MAX}つまで保存できます。` : '選ぶだけで、そのルールですぐはじめられます。メンバー名はあとから変えられます。';
+  const rows = list.map(([id, r]) => `<div class="mr-row${r.numPlayers === 3 ? ' n3' : ''}">
+      <button type="button" class="mr-main" onclick="pickMyRule('${jsq(id)}')"><b>${esc(r.name)}</b><small>${esc(ruleSummary(r))}</small></button>
+      <div class="mr-acts"><button type="button" class="edit-tab" onclick="openMyRuleEdit('${jsq(id)}')">編集</button><button type="button" class="round-del-btn" onclick="confirmDeleteMyRule('${jsq(id)}')">削除</button></div>
+    </div>`).join('');
+  const full = list.length >= MY_RULE_MAX;
+  body.innerHTML = `<div class="sheet-body">${myRuleHow === 'start' ? sheetBackMark('closeFormModal();openQuickStart()', '人数を選ぶ画面へ') : ''}
+    <div class="mr-lead">${lead}</div>
+    ${rows || '<div class="mr-empty">まだ保存したルールはありません。<br>下の「＋ 新しいルールを作る」から作れます。</div>'}
+    <button type="button" class="auto-btn sub mr-add" ${full ? 'disabled' : ''} onclick="openMyRuleTemplates()">＋ 新しいルールを作る<small>${list.length}/${MY_RULE_MAX}</small></button>
+    ${full ? `<div class="mr-note">保存できるのは${MY_RULE_MAX}つまでです。使わないルールを削除すると作れます。</div>` : ''}
+    <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+function pickMyRule(id) {
+  const r = myRules[id];
+  if (!r) return;
+  if (myRuleHow === 'manage') { openMyRuleEdit(id); return; }
+  closeFormModal();
+  if (myRuleHow === 'setup') { applyRuleToSetup(r); return; }
+  startWithRule(r);
+}
+// 選んだルールで、すぐゲームを作る（メンバーは仮名のA・B・C…。クイックスタートと同じ）
+async function startWithRule(r) {
+  const n = r.numPlayers;
+  const rate = RATE_FEATURE ? r.rate : 0;
+  track('my_rule_start', { num_players: n });
+  await createGame(todayStr(), {
+    playerNames: placeholderNames(n), numPlayers: n,
+    startPoints: r.startPoints, returnPoints: r.returnPoints, uma: r.uma.slice(0, n),
+    rate, bonusEnabled: r.bonusEnabled, chipRate: rate > 0 ? r.chipRate : 1, startChips: r.startChips,
+    yakitori: r.yakitori, chombo: r.chombo, chomboPenalty: r.chomboPenalty, teamMode: false
+  }, { toGame: true, saveNames: false });
+}
+// ゲームを作る画面の欄に入れる（メンバー名・ゲーム名・対局日はそのまま）
+function applyRuleToSetup(r) {
+  setGameMode(r.numPlayers);
+  document.getElementById('s-rule-pts').innerHTML = ruleFieldsHtml('s', r.startPoints, r.returnPoints);
+  const k = umaKeyOf(r.uma, r.numPlayers);
+  document.getElementById('s-uma').value = k; onUmaChange();
+  if (k === 'custom') r.uma.forEach((v, i) => { const el = document.getElementById('uma-c-' + i); if (el) el.value = v; });
+  document.getElementById('s-bonus').checked = r.bonusEnabled;
+  document.getElementById('s-start-chips').value = String(r.startChips);
+  onBonusOptChange();
+  const gOpt = document.getElementById('s-g-opt');
+  if (gOpt) gOpt.innerHTML = gOptHtml('s', r);
+  document.getElementById('s-yakitori').checked = r.yakitori;
+  document.getElementById('s-chombo').checked = r.chombo;
+  const pk = ['0', '10', '20', '30', '50'].includes(String(r.chomboPenalty)) ? String(r.chomboPenalty) : 'custom';
+  document.getElementById('s-chombo-pen').value = pk;
+  document.getElementById('s-chombo-pen-custom').value = pk === 'custom' ? String(r.chomboPenalty) : '';
+  onChomboOptChange(); onChomboPenChange();
+  if (r.bonusEnabled || r.yakitori || r.chombo || (RATE_FEATURE && r.rate > 0)) setSetupOptions(true);
+  showToast(`「${r.name}」のルールを入れました`);
+}
+// ゲームを作る画面の「ルール設定」の右のボタン（ログインしているときだけ）
+function renderSetupMyRuleBtn() {
+  const el = document.getElementById('s-myrule-btn');
+  if (el) el.style.display = loginAvailable() && currentUser ? '' : 'none';
+}
+function openMyRuleTemplates() {
+  if (myRuleList().length >= MY_RULE_MAX) return;
+  document.getElementById('form-modal-title').textContent = '新しいルール';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${sheetBackMark('openMyRules()', 'マイルールへ')}
+    <div class="mr-lead">もとにするルールを選んでください。選んだあとで、名前や中身を変えられます。</div>
+    ${RULE_TEMPLATES.map((t, i) => `<button type="button" class="mr-row mr-tpl${t.r.numPlayers === 3 ? ' n3' : ''}" onclick="openMyRuleEdit(null, ${i})"><span class="mr-main"><b>${esc(t.name)}</b><small>${esc(t.note)}</small></span><span class="mb-chev">${ico('chevron', 14)}</span></button>`).join('')}
+    <div class="mr-note">プロのルールは、持ち点・返し点・ウマだけをそろえます（一発・裏ドラなどは打つ前に決めてください）。</div>
+    <button class="sheet-close" onclick="openMyRules()">戻る</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+// 編集の画面。id＝null なら新しく作る（tpl＝ひな形の番号）
+let ruleEditId = null, ruleDraft = null;
+function openMyRuleEdit(id, tpl) {
+  ruleEditId = id;
+  if (id && myRules[id]) ruleDraft = Object.assign({}, myRules[id]);
+  else { const t = RULE_TEMPLATES[tpl || 0]; ruleDraft = cleanRule(Object.assign({ name: t.name.replace(/（いつもの）$/, '') }, t.r)); }
+  renderMyRuleEdit();
+}
+function renderMyRuleEdit() {
+  const r = ruleDraft, n = r.numPlayers;
+  const umaKey = umaKeyOf(r.uma, n);
+  const pk = ['0', '10', '20', '30', '50'].includes(String(r.chomboPenalty)) ? String(r.chomboPenalty) : 'custom';
+  document.getElementById('form-modal-title').textContent = ruleEditId ? 'マイルールの編集' : '新しいルール';
+  document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body mr-edit${n === 3 ? ' sanma' : ''}">${sheetBackMark(ruleEditId ? 'openMyRules()' : 'openMyRuleTemplates()', '戻る')}
+    <div class="field"><label>ルールの名前</label><input type="text" id="r-name" value="${esc(r.name)}" maxlength="${MY_RULE_NAME_LEN}" placeholder="例: 金曜日の四麻"></div>
+    <div class="field"><label>試合形式</label><div class="toggle-group">
+      <button type="button" class="toggle-btn${n === 4 ? ' active' : ''}" onclick="setRuleDraftN(4)">四麻（4人麻雀）</button>
+      <button type="button" class="toggle-btn${n === 3 ? ' active' : ''}" onclick="setRuleDraftN(3)">三麻（3人麻雀）</button></div></div>
+    ${ruleFieldsHtml('r', r.startPoints, r.returnPoints)}
+    <div class="field"><label>ウマ</label>
+      <select id="r-uma" onchange="document.getElementById('r-uma-custom').style.display=this.value==='custom'?'block':'none'">${umaOptionsFor(n).map(([v, l]) => `<option value="${v}" ${v === umaKey ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <div id="r-uma-custom" style="display:${umaKey === 'custom' ? 'block' : 'none'};margin-top:6px"><div class="custom-uma-grid">
+        ${Array.from({ length: n }, (_, i) => `<div class="field"><label>${i + 1}位</label><input type="number" id="r-uma-c-${i}" value="${r.uma[i] ?? 0}"></div>`).join('')}</div></div></div>
+    <div class="field"><label>オプション</label>
+      <label class="opt-check" style="margin-top:2px"><input type="checkbox" id="r-bonus" ${r.bonusEnabled ? 'checked' : ''} onchange="document.getElementById('r-bonus-fields').style.display=this.checked?'block':'none'"> チップあり${ico('chip', 18, 'ico-in')}</label>
+      <div id="r-bonus-fields" style="display:${r.bonusEnabled ? 'block' : 'none'};margin:4px 0 0 26px"><div class="field" style="margin:0"><label>持ちチップ（枚）</label><input type="number" id="r-start-chips" value="${r.startChips}" placeholder="20"></div></div>
+      ${gOptHtml('r', r)}
+      <label class="opt-check" style="margin-top:8px"><input type="checkbox" id="r-yakitori" ${r.yakitori ? 'checked' : ''}> 焼き鳥あり${ico('yakitori', 18, 'ico-in')}</label>
+      <label class="opt-check" style="margin-top:8px"><input type="checkbox" id="r-chombo" ${r.chombo ? 'checked' : ''} onchange="document.getElementById('r-chombo-fields').style.display=this.checked?'block':'none'"> チョンボあり${ico('chombo', 18, 'ico-in')}</label>
+      <div id="r-chombo-fields" style="display:${r.chombo ? 'block' : 'none'};margin:4px 0 0 26px"><div class="field" style="margin-bottom:0"><label>チョンボ罰符</label>
+        <select id="r-chombo-pen" onchange="document.getElementById('r-chombo-pen-cw').style.display=this.value==='custom'?'block':'none'">
+          ${[['0', '0（マークのみ）'], ['10', '−10pts'], ['20', '−20pts'], ['30', '−30pts'], ['50', '−50pts'], ['custom', 'カスタム']].map(([v, l]) => `<option value="${v}" ${v === pk ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <div id="r-chombo-pen-cw" style="display:${pk === 'custom' ? 'block' : 'none'};margin-top:6px"><input type="number" id="r-chombo-pen-c" value="${pk === 'custom' ? r.chomboPenalty : ''}" placeholder="40"></div></div></div>
+    </div>
+    <button type="button" class="confirm-btn" onclick="saveMyRuleEdit()">${ruleEditId ? '保存する' : 'このルールを保存'}</button>
+    <button class="sheet-close" onclick="${ruleEditId ? 'openMyRules()' : 'openMyRuleTemplates()'}">キャンセル</button></div>`;
+  document.getElementById('form-modal').classList.add('open');
+}
+// 画面の欄から読む（false＝足りない所があって知らせた）
+function readMyRuleForm() {
+  const n = ruleDraft.numPlayers;
+  const gv = readGOpt('r');
+  if (gv === false) return false;
+  const uk = document.getElementById('r-uma').value;
+  const uma = uk === 'custom' ? Array.from({ length: n }, (_, i) => Number(document.getElementById('r-uma-c-' + i).value) || 0) : umaArrayFor(uk, n);
+  const pv = document.getElementById('r-chombo-pen').value;
+  return cleanRule({
+    name: document.getElementById('r-name').value, numPlayers: n,
+    startPoints: readStart('r'), returnPoints: readReturn('r'), uma,
+    rate: gv ? gv.rate : 0, chipRate: gv ? gv.chipRate : 1,
+    bonusEnabled: document.getElementById('r-bonus').checked, startChips: Number(document.getElementById('r-start-chips').value) || 0,
+    yakitori: document.getElementById('r-yakitori').checked, chombo: document.getElementById('r-chombo').checked,
+    chomboPenalty: pv === 'custom' ? Math.abs(Number(document.getElementById('r-chombo-pen-c').value) || 0) : Number(pv),
+    at: ruleDraft.at
+  });
+}
+// 試合形式を変えたら、持ち点・ウマはその人数の初期値に戻す（ほかの欄は入れたまま）
+function setRuleDraftN(n) {
+  if (ruleDraft.numPlayers === n) return;
+  const cur = readMyRuleForm() || ruleDraft;
+  const t = RULE_TEMPLATES[n === 3 ? 1 : 0].r;
+  ruleDraft = Object.assign({}, cur, { numPlayers: n, startPoints: t.startPoints, returnPoints: t.returnPoints, uma: t.uma.slice() });
+  renderMyRuleEdit();
+}
+function saveMyRuleEdit() {
+  if (!document.getElementById('r-name').value.trim()) { showToast('ルールの名前を入れてください'); document.getElementById('r-name').focus(); return; }
+  const r = readMyRuleForm();
+  if (!r) return;
+  if (!ruleEditId && myRuleList().length >= MY_RULE_MAX) { showToast(`保存できるのは${MY_RULE_MAX}つまでです`); return; }
+  if (!ruleEditId) r.at = new Date().toISOString();
+  putMyRule(ruleEditId || newRuleId(), r);
+  showToast(`「${r.name}」を保存しました`);
+  openMyRules();
+}
+function confirmDeleteMyRule(id) {
+  const r = myRules[id];
+  if (!r) return;
+  closeFormModal();
+  document.getElementById('confirm-modal-title').textContent = 'マイルールの削除';
+  document.getElementById('confirm-modal-desc').textContent = `「${r.name}」を削除します。このルールで作ったゲームはそのまま残ります。`;
+  const ok = document.getElementById('confirm-modal-ok');
+  ok.textContent = '削除する';
+  ok.onclick = () => { closeConfirmModal(); dropMyRule(id); showToast('削除しました'); openMyRules(); };
+  document.getElementById('confirm-modal').classList.add('open');
 }
 function copyShareUrl() {
   const url = document.getElementById('share-url').value;
@@ -16620,7 +16895,8 @@ function openMpMenu() {
   document.getElementById('form-modal-title').textContent = 'アカウント';
   document.getElementById('form-modal-body').innerHTML = `<div class="sheet-body">${who ? `<div class="acct-who"><b>${esc(who)}</b>${mail ? `<small>${esc(mail)}</small>` : ''}<small>Googleでログイン中</small></div>` : ''}<div class="mn-group">${
     menuBtnHtml('phoneAdd', 'ホーム画面に追加', 'アプリのように1タップで開けます', 'closeFormModal();showInstallHelp()')}
-    ${menuBtnHtml('person', 'アイコンと名前', esc(myLabel()) + '・牌や麻雀グッズの絵と色', 'openMyAvatarEdit()')}</div>
+    ${menuBtnHtml('person', 'アイコンと名前', esc(myLabel()) + '・牌や麻雀グッズの絵と色', 'openMyAvatarEdit()')}
+    ${menuBtnHtml('gear', 'マイルール', `よく使うルールを${MY_RULE_MAX}つまで保存`, "openMyRules('manage')")}</div>
     <div class="mn-group">${menuBtnHtml('person', 'ログアウト', '記録はアカウントに残ります', 'closeFormModal();confirmSignOut()', 'danger')}</div>
     <button class="sheet-close" onclick="closeFormModal()">閉じる</button></div>`;
   document.getElementById('form-modal').classList.add('open');

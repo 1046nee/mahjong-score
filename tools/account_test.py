@@ -13,6 +13,7 @@ Googleログインは本物のアカウントが要るので通せない。fireb
   [7] ログインしていない人は、閲覧リンクで結果だけ見られる（招待・設定のボタンは出ない）
   [8] LINEの中で招待リンクを開いたら「Safari・Chromeで開く」と参加コードを出す
   [9] 未ログインで招待リンク→「Googleでログインして参加」→ログインから戻ると自動で参加が完了する
+  [12] マイルール: 未ログインはログインの案内・ひな形から作る・編集・5つまで・選んで直行・ゲームを作る画面に入れる・削除・別の端末
 本物のルール（database.rules.json）でどうなるかはここでは分からない（スタブにはルールが無い）。
 ルールは tools/circle_rules_test.py で本番のデータベースに対して確かめる。
 
@@ -689,6 +690,83 @@ def main():
         results.append(("[11d] 見るだけのリンクは入力の入口なしで結果が見られ、その端末の試合の一覧には残らない", True,
                         pw.evaluate("(v) => !document.querySelector('#view-watch .fab') && !document.getElementById('watch-body').innerText.includes('行をタップすると点数を修正') && (appState.games || []).length === 0 && location.hash === '#v=' + v && document.getElementById('watch-title').textContent === '金曜会1'", vid)))
         pw.close()
+
+        # ---- 12. マイルール（よく使うルールを5つまで保存。ログインした人だけ。2026-11-16〜） ----
+        mctx = new_ctx()
+        pm = new_page(mctx)
+        pm.goto(app, wait_until="load")
+        pm.wait_for_timeout(600)
+        pm.evaluate("openQuickStart()")
+        results.append(("[12a] はじめるの2択の下に灰色のマイルールのカード（未ログインはログインの案内）", True,
+                        pm.evaluate("() => { const b = document.querySelector('#quick-start .qs-my'); const q4 = document.querySelector('#quick-start .qs-4');"
+                                    " return !!b && Math.abs(b.offsetHeight - q4.offsetHeight) <= 1 && b.offsetWidth === q4.offsetWidth && getComputedStyle(b).backgroundColor === 'rgb(102, 113, 111)'"
+                                    " && document.getElementById('qs-my-sub').textContent.includes('ログイン'); }")))
+        pm.evaluate("openMyRules('start')")
+        results.append(("[12b] 未ログインで開くと「Googleでログイン」を出す", True,
+                        pm.evaluate("!!document.querySelector('#form-modal-body .google-btn') && !document.querySelector('#form-modal-body .mr-add')")))
+        pm.evaluate("closeFormModal()")
+        login_as(pm, U4)
+        pm.wait_for_timeout(300)
+        # ひな形（Mリーグ）から作る: 名前・チップ・レート30Gを入れて保存
+        pm.evaluate("""() => { openMyRules('start'); openMyRuleTemplates(); openMyRuleEdit(null, 2);
+          document.getElementById('r-name').value = '金曜のMリーグ';
+          document.getElementById('r-bonus').checked = true; document.getElementById('r-start-chips').value = '30';
+          const g = document.getElementById('r-g'); if (g) { g.checked = true; g.onchange(); pickG('r', 'rate', 30); }
+          saveMyRuleEdit(); }""")
+        pm.wait_for_function("() => { const d = JSON.parse(localStorage.getItem('__smoke_db')); return d.users && d.users['%s'] && d.users['%s'].rulePresets; }" % (U4, U4), timeout=10000)
+        rp = list((db_of(pm)["users"][U4]["rulePresets"] or {}).items())
+        r0 = rp[0][1] if rp else {}
+        results.append(("[12c] ひな形から作ると、名前・持ち点・ウマ・チップ・レートがアカウントに保存される", True,
+                        len(rp) == 1 and r0.get("name") == "金曜のMリーグ" and r0.get("numPlayers") == 4 and r0.get("startPoints") == 25000
+                        and r0.get("returnPoints") == 30000 and r0.get("uma") == [30, 10, -10, -30] and r0.get("bonusEnabled") is True
+                        and r0.get("startChips") == 30 and r0.get("rate") == 30 and len(rp[0][0]) == 8))
+        # 2つ目（最高位戦）→ 1つ目を三麻に変える
+        pm.evaluate("() => { openMyRuleTemplates(); openMyRuleEdit(null, 3); saveMyRuleEdit(); }")
+        id1 = rp[0][0]
+        pm.evaluate("(id) => { openMyRuleEdit(id); setRuleDraftN(3); saveMyRuleEdit(); }", id1)
+        pm.wait_for_function("(a) => { const d = JSON.parse(localStorage.getItem('__smoke_db')); const r = d.users[a[0]].rulePresets; return Object.keys(r).length === 2 && r[a[1]].numPlayers === 3; }", arg=[U4, id1], timeout=10000)
+        r1 = db_of(pm)["users"][U4]["rulePresets"][id1]
+        results.append(("[12d] 編集で三麻にすると、持ち点・ウマは三麻の初期値・ほかの欄（名前・チップ）はそのまま", True,
+                        r1.get("startPoints") == 35000 and r1.get("returnPoints") == 35000 and r1.get("uma") == [10, 0, -10]
+                        and r1.get("name") == "金曜のMリーグ" and r1.get("bonusEnabled") is True))
+        # 5つまで
+        pm.evaluate("() => { for (let i = 0; i < 4; i++) { openMyRuleTemplates(); openMyRuleEdit(null, 0); document.getElementById('r-name').value = 'ルール' + i; saveMyRuleEdit(); } }")
+        results.append(("[12e] 保存は5つまで（6つ目は作れない・作るボタンが押せない）", True,
+                        pm.evaluate("() => { openMyRules('manage'); return Object.keys(myRules).length === 5 && document.querySelector('#form-modal-body .mr-add').disabled && document.querySelectorAll('#form-modal-body .mr-row').length === 5; }")))
+        # 選ぶとその設定ですぐはじめる
+        id2 = pm.evaluate("Object.entries(myRules).find(([k, r]) => r.name === '最高位戦ルール')[0]")
+        pm.evaluate("(id) => { closeFormModal(); openQuickStart(); openMyRules('start'); pickMyRule(id); }", id2)
+        pm.wait_for_function(SAFE % "document.querySelector('#view-game').classList.contains('active') && activeGame", timeout=10000)
+        st = pm.evaluate("activeGame.settings")
+        results.append(("[12f] マイルールを選ぶと、そのルール・仮名のメンバーでゲーム画面へ直行", True,
+                        st.get("numPlayers") == 4 and st.get("startPoints") == 30000 and st.get("returnPoints") == 30000
+                        and st.get("uma") == [30, 10, -10, -30] and st.get("playerNames") == ["A", "B", "C", "D"] and st.get("teamMode") is False))
+        pm.evaluate("leaveGame()")
+        # ゲームを作る画面の欄に入れる
+        pm.evaluate("(id) => { showView('setup'); openMyRules('setup'); pickMyRule(id); }", id1)
+        results.append(("[12g] ゲームを作る画面の「マイルールから」で欄に入る（三麻・持ち点・ウマ・チップ）", True,
+                        pm.evaluate("() => document.getElementById('s-myrule-btn').style.display !== 'none' && numPlayers === 3 && readStart('s') === 35000 && readReturn('s') === 35000"
+                                    " && JSON.stringify(getUmaArray()) === '[10,0,-10]' && document.getElementById('s-bonus').checked && document.getElementById('s-start-chips').value === '30'")))
+        # 削除
+        pm.evaluate("(id) => { confirmDeleteMyRule(id); document.getElementById('confirm-modal-ok').click(); }", id2)
+        pm.wait_for_function("(a) => !JSON.parse(localStorage.getItem('__smoke_db')).users[a[0]].rulePresets[a[1]]", arg=[U4, id2], timeout=10000)
+        results.append(("[12h] 削除するとアカウントからも消える", True, pm.evaluate("(id) => !myRules[id] && Object.keys(myRules).length === 4", id2)))
+        # 別の端末で同じアカウントにログインすると、同じマイルールが出る
+        m2 = new_ctx(seed_db=db_of(pm))
+        pm2 = new_page(m2)
+        pm2.goto(app, wait_until="load")
+        pm2.wait_for_timeout(500)
+        login_as(pm2, U4)
+        pm2.wait_for_function(SAFE % "Object.keys(myRules).length === 4", timeout=10000)
+        results.append(("[12i] 別の端末でログインすると、アカウントのマイルールが出る（マイページの設定にも入口）", True,
+                        pm2.evaluate("() => { openMpMenu(); return document.getElementById('form-modal-body').innerText.includes('マイルール'); }")))
+        # 幅320で一覧・編集の画面がはみ出さない
+        pm2.set_viewport_size({"width": 320, "height": 700})
+        over = pm2.evaluate("""() => { const out = []; const chk = n => { const b = document.getElementById('form-modal-body'); if (b.scrollWidth > b.clientWidth + 1) out.push(n + ' 横にはみ出し');
+            b.querySelectorAll('button, input, select').forEach(e => { const r = e.getBoundingClientRect(), br = b.getBoundingClientRect(); if (r.width > 0 && r.right > br.right + 1) out.push(n + ' ' + (e.id || e.textContent.trim().slice(0, 10))); }); };
+          openMyRules('start'); chk('一覧'); openMyRuleTemplates(); chk('ひな形'); openMyRuleEdit(null, 2); const g = document.getElementById('r-g'); if (g) { g.checked = true; g.onchange(); } chk('編集'); return out; }""")
+        results.append(("[12j] 幅320で一覧・ひな形・編集の画面がはみ出さない", True, not over or over))
+        pm2.close(); pm.close()
         br.close()
     srv.shutdown()
 
