@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """待ち当て5問（7枚形）の問題の画像（1080×1350。XとInstagramで共用。2026-11-17 ユーザーの指定）。
 答えは載せない（答えはリプ欄で）。答えの確かめは machi3.py の waits（下の assert）。
-出力: まじゃすこ素材/x/machi/quiz-7mai.png（画像の元は公開リポジトリに入れない）
-実行: python tools/machi_sheet/quiz.py
+出力: まじゃすこ素材/x/machi/quiz-7mai-sou.png ／ -man.png ／ -pin.png（画像の元は公開リポジトリに入れない）
+実行: python tools/machi_sheet/quiz.py（3枚とも）
 """
 import io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -10,23 +10,26 @@ from base import ROOT, T, TEAL, ORANGE, INK
 from sheet_logo import LOGO_CSS, logo_html
 import machi3 as M
 
-# (手, 答えの数字, 答えの枚数)（2026-11-17 ユーザーの指定）
-QS = [("2345567", "258", 9), ("2223444", "12345", 13), ("2222344", "134", 9), ("2333345", "1245", 13), ("2223334", "2345", 9)]
-SUIT = "s"      # 索子（2026-11-17 ユーザーの指定）
-for h, a, n in QS:
-    w = M.waits([SUIT + c for c in h], 2, 1)
-    assert "".join(c[1] for c, _ in w) == a and sum(x for _, x in w) == n, (h, w)
+# 色ごとの5問 (手, 答えの数字, 答えの枚数)（2026-11-17 ユーザーの指定。3日とも形が重ならない。4枚使いは萬子・筒子に2問ずつ。
+# 萬子は四萬から・筒子は五筒からの手。筒子のQ1 1・2・2・1・1 は表に載っていない形＝表には足さない）
+SETS = {
+    "sou": ("s", "索子", [("2345567", "258", 9), ("2223444", "12345", 13), ("2222344", "134", 9), ("2333345", "1245", 13), ("2223334", "2345", 9)]),   # 11/17
+    "man": ("m", "萬子", [("4455566", "456", 5), ("4446678", "569", 10), ("4555566", "3467", 13), ("4444666", "5", 4), ("4445678", "35689", 17)]),   # 11/18
+    "pin": ("p", "筒子", [("5667789", "69", 5), ("5556677", "5678", 9), ("5557999", "678", 11), ("5555667", "467", 9), ("5556666", "47", 8)]),     # 11/19
+}
+for suit, _, qs in SETS.values():
+    for h, a, n in qs:
+        w = M.waits([suit + c for c in h], 2, 1)
+        assert "".join(c[1] for c, _ in w) == a and sum(x for _, x in w) == n, (h, w)
+DIR = os.path.join(ROOT, "まじゃすこ素材", "x", "machi")
 
-OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "machi", "quiz-7mai")
-KAN = "〇一二三四五六七八九"
+
+def tile(code, w): return f'<img src="{T}/{code}.svg" style="width:{w}px">'
 
 
-def tile(c, w): return f'<img src="{T}/{SUIT}{c}.svg" style="width:{w}px">'
-
-
-def html():
+def html(suit, sname, QS):
     rows = "".join(
-        f'<div class="q"><b>Q{i}</b><span class="hand">{"".join(tile(c, 46) for c in h)}</span>'
+        f'<div class="q"><b>Q{i}</b><span class="hand">{"".join(tile(suit + c, 46) for c in h)}</span>'
         f'<span class="ask">何待ち？</span></div>' for i, (h, _, _) in enumerate(QS, 1))
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=block" rel="stylesheet">
@@ -46,7 +49,7 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; justify-content: space-between; font-size: 11px; color: #6E7F7B; font-weight: 700; }}
 footer b {{ color: {TEAL}; }}
 </style></head><body>
-<header><h1>待ち当て 5問<small>2面子1雀頭を作る形（7枚形）・全部索子</small></h1>{logo_html()}</header>
+<header><h1>待ち当て 5問<small>2面子1雀頭を作る形（7枚形）・全部{sname}</small></h1>{logo_html()}</header>
 <p class="lead">待ちの牌を<em>全部</em>言えたら正解</p>
 {rows}
 <p class="note">全問正解なら中級者。答えはリプ欄に。</p>
@@ -56,14 +59,18 @@ footer b {{ color: {TEAL}; }}
 
 def main():
     from playwright.sync_api import sync_playwright
-    io.open(OUT + ".html", "w", encoding="utf-8").write(html())
     with sync_playwright() as pw:
-        b = pw.chromium.launch(); pg = b.new_page(viewport={"width": 540, "height": 675}, device_scale_factor=2)
+      b = pw.chromium.launch()
+      for key, (suit, sname, qs) in SETS.items():
+        OUT = os.path.join(DIR, f"quiz-7mai-{key}")
+        io.open(OUT + ".html", "w", encoding="utf-8").write(html(suit, sname, qs))
+        pg = b.new_page(viewport={"width": 540, "height": 675}, device_scale_factor=2)
         pg.goto("file:///" + OUT.replace("\\", "/") + ".html"); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         over = pg.evaluate("document.querySelector('.note').getBoundingClientRect().bottom > document.querySelector('footer').getBoundingClientRect().top")
         assert not over, "下にはみ出す"
-        pg.screenshot(path=OUT + ".png"); b.close()
-    os.remove(OUT + ".html"); print(OUT + ".png")
+        pg.screenshot(path=OUT + ".png"); pg.close()
+        os.remove(OUT + ".html"); print(OUT + ".png")
+      b.close()
 
 
 if __name__ == "__main__":
