@@ -13,6 +13,7 @@ for t, sub, m, rows in M.SECS:
         ALL.append(dict(name=name, yomi=yomi, hand=hand, txt=txt, m=m, w=[c for c, _ in w], n=n, kihon=name in M.KIHON,
                         honor=any(c[0] == "z" for c in hand), ank=M.n_ank(hand)))
 MAXN = max(r["n"] for r in ALL)
+NLV = {k: sum(1 for r in ALL if M.level(r["name"]) in ((1, 2) if k == 1 else (k,))) for k in (1, 3, 4)}      # 段階ごとの形の数（手で書かない）
 def bar(n): return f'<div class="bar2"><i style="width:{n / MAXN * 100:.0f}%"></i></div>'
 def pat(hand):
     """形を「数字ごとの枚数の並び」で（例: 三面張＝11111 XX・暗刻＋延べ単＝31111）。抜けている数字は 0、字牌は X（2026-11-16 ユーザーの案）"""
@@ -111,7 +112,7 @@ def sheet_A(out):
         hd = '<th colspan="2">分け方</th><th>形</th><th>牌の例</th><th>待ち</th><th>枚数</th>'
     html = f"""<table><colgroup>{cg}</colgroup>
 <thead><tr>{hd}</tr></thead><tbody>{body}</tbody></table>
-<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（8形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（4形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（15形）</span><br>
+<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（{NLV[1]}形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（{NLV[3]}形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（{NLV[4]}形）</span><br>
 <span class="k47">4枚形</span>・<span class="k47">7枚形</span>＝同じ色の牌だけでつながった形（アガると1面子＋1雀頭／2面子＋1雀頭）。<br>
 名前の決まっていない形は、部品を左から「＋」でつないで表した（<b>空</b>＝1つ飛んだ数字。例: 暗刻＋空＋延べ単＝二二二・四五六七）。<br>
 </div>"""
@@ -131,7 +132,7 @@ def sheet_B1(out):
 <div class="tip"><b>形をよくする</b>　嵌張・辺張は、となりの牌を引いて両面に変えると待ちが2倍（4枚→8枚）。リーチの前に形を整えるとアガりやすい。<br>
 <b>亜両面</b>は両面と同じ待ちの種類でも、手の中に1枚使っているので、両面より2枚少ない。</div>
 <p class="note">例は筒子と東。枚数は、形の中の牌を除いた残り（場に見えている牌は数えない）。応用の形は、もう1枚の「応用の形」で</p>"""
-    render(page("待ちの形　基本の8形", "まずはこれだけ。待ちの枚数が多い順", "まず覚える<br><span>8形</span>", html, CSS.replace("tbody tr { height: 44px; }", "tbody tr { height: 54px; }")), out)
+    render(page(f"待ちの形　基本の{NLV[1]}形", "まずはこれだけ。待ちの枚数が多い順", f"まず覚える<br><span>{NLV[1]}形</span>", html, CSS.replace("tbody tr { height: 44px; }", "tbody tr { height: 54px; }")), out)
 def sheet_B2(out):
     global ROWH
     os_ = sorted([r for r in ALL if not r["kihon"]], key=lambda r: (-r["n"], r["m"]))
@@ -143,6 +144,6 @@ def sheet_B2(out):
 <thead><tr><th></th><th>形</th><th>牌の例</th><th>待ち</th><th>枚数</th><th>形</th><th>説明</th></tr></thead><tbody>{body}</tbody></table>
 <div class="tip"><b>読み方</b>　名前は、部品を左から「＋」でつないだもの（<b>空</b>＝1つ飛んだ数字）。<em class="tg t1">4枚形</em>はアガると1面子＋1雀頭、<em class="tg t2">7枚形</em>はアガると2面子＋1雀頭になる形。</div>
 <p class="note">例は筒子と東。枚数は、形の中の牌を除いた残り（場に見えている牌は数えない）。待ちと枚数は計算で出した</p>"""
-    render(page("待ちの形　応用の15形", "暗刻が入ると待ちが広がる。待ちの枚数が多い順", "脱初心者の<br><span>15形</span>", html, CSS + "td.tx { font-size: 11px; letter-spacing: -.03em; }"), out)
+    render(page(f"待ちの形　応用の{NLV[4]}形", "暗刻が入ると待ちが広がる。待ちの枚数が多い順", f"脱初心者の<br><span>{NLV[4]}形</span>", html, CSS + "td.tx { font-size: 11px; letter-spacing: -.03em; }"), out)
 k = sys.argv[2]
 {"A": sheet_A, "B1": sheet_B1, "B2": sheet_B2}[k](sys.argv[1])
