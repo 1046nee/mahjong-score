@@ -111,10 +111,12 @@ PATDEF = ('<defs>'
   '<pattern id="hp3" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="3" fill="#fff"/><rect width="1.3" height="3" fill="#1F2A28"/></pattern>'
   '<pattern id="hp4" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="3" fill="#fff"/><circle cx="1.5" cy="1.5" r=".8" fill="#1F2A28"/></pattern>'
   '</defs>')
-def side_view(hand, ws, km):
-    """横から見た図: 横＝数字（1〜9。字牌があれば東も）・縦＝枚数（0〜4）。手の牌は灰色の実線、待ちの残りは待ち方の色の点線"""
+def side_view(hand, ws, km, scale=1.25):
+    """横から見た図: 横＝数字（1〜9。字牌があれば東も）・縦＝枚数（0〜4）。手の牌は斜め線、待ちの残りは待ち方の色。
+    色は手の数牌の色に合わせる（萬子・索子でも使える。待ち当ての正解の画像・2026-11-17〜）"""
     c = cnt(hand); wset = {CODES.index(w): w for w, n in ws}
-    cols = [9 + k for k in range(9)] + ([27] if any(h[0] == "z" for h in hand) or any(w[0] == "z" for w, _ in ws) else [])
+    base = next(CODES.index(h) for h in hand if h[0] != "z") // 9 * 9
+    cols = [base + k for k in range(9)] + ([27] if any(h[0] == "z" for h in hand) or any(w[0] == "z" for w, _ in ws) else [])
     CW, RH, X0, Y0 = 24, 8, 16, 4      # 縦を低く（カードの縦幅を詰める。2026-11-16 ユーザーの指定）
     W = X0 + CW * 10 + 8 + 4; H = Y0 + RH * 4 + 15      # 東の列が無い形も同じ幅（図の位置をそろえる）
     XE = X0 + CW * len(cols) + (8 if len(cols) > 9 else 0)
@@ -123,7 +125,7 @@ def side_view(hand, ws, km):
         y = Y0 + RH * 4 - r * RH; g += f'<line x1="{X0}" y1="{y}" x2="{XE}" y2="{y}" stroke="#DDE5E3" stroke-width="1"/><text x="{X0 - 5}" y="{y + 3}" font-size="7" font-weight="800" fill="#8A9A97" text-anchor="end">{r}</text>'
     for k, t in enumerate(cols):
         x = X0 + CW * k + (8 if t == 27 else 0)
-        lab = "東" if t == 27 else str(t - 8)
+        lab = "東" if t == 27 else str(t - base + 1)
         ks = km[wset[t]] if t in wset else None; col = TCOL[ks[0]] if ks else None
         if ks:      # 待ちになる数字には、すべて下に待ち方の色の線（2つなら左右で2色。2026-11-16 ユーザーの指定）
             if len(ks) == 1: g += f'<rect x="{x + 3}" y="{H - 1.5}" width="{CW - 6}" height="2" fill="{TCOL[ks[0]]}"/>'
@@ -147,8 +149,8 @@ def side_view(hand, ws, km):
                 else:      # 左半分と右半分を、2つの待ち方の色に
                     hw = (CW - 5) / 2
                     g += box(x + 2.5, y + 1.5, CW - 5, RH - 3, [TCOL[ks[0]], TCOL[ks[1]]])
-    return f'<svg viewBox="0 0 {W} {H}" style="width:{W * 1.25}px">{PATDEF}{g}</svg>'
-def nm(i): return "東" if i == 27 else f"{i - 8}"
+    return f'<svg viewBox="0 0 {W} {H}" style="width:{W * scale}px">{PATDEF}{g}</svg>'
+def nm(i): return "東" if i == 27 else f"{i % 9 + 1}"
 def explain(hand, ws, km):
     """待ち方ごとに、その待ち方でアガれる牌を並べる（例: 両面 2・5　双碰 2・東）。2つの待ち方を持つ牌は、両方の待ち方に出す（2026-11-16 ユーザーの指定）"""
     out = []
@@ -222,7 +224,8 @@ def M4pat(hand):
     if ns and (ns[0] == 1 or ns[-1] == 9) and len(ns) == 2 and ns[-1] - ns[0] == 1: t = "端" + t
     z = "X" * sum(1 for c in hand if c[0] == "z")
     return t + (" " if t and z else "") + z
-if sys.argv[2] == "1": sheet(0, "1面子1雀頭を作る形（4枚形）", sys.argv[1])
+if __name__ != "__main__": pass      # 待ち当ての正解の画像（quiz.py）から横から見た図だけを使う
+elif sys.argv[2] == "1": sheet(0, "1面子1雀頭を作る形（4枚形）", sys.argv[1])
 elif sys.argv[2] == "2a": sheet(1, "2面子1雀頭を作る形（7枚形）①", sys.argv[1], keep=(None, 0, 2))
 elif sys.argv[2] == "2b": sheet(1, "2面子1雀頭を作る形（7枚形）②", sys.argv[1], keep=(1,))
 # Instagram（1080×1350）用: 1枚に入るよう、区分ごとに分けて描く（2026-11-16）

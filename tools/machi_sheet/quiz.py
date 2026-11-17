@@ -72,16 +72,19 @@ def shape_name(hand):
 
 
 def html_ans(suit, sname, QS):
+    """正解の画像: 1問1行。横から見た図（手の牌＝斜め線・待ちの残り＝待ち方の色。解説の表と同じ描き方）＋待ち方ごとの待ち＋形の名前＋枚数（2026-11-17 ユーザーの指定）"""
+    import detail as D
     rows = ""
     for i, (h, _, _) in enumerate(QS, 1):
         hand = [suit + c for c in h]
-        w = M.waits(hand, 2, 1)
-        n = sum(x for _, x in w)
+        ws = M.waits(hand, 2, 1)
+        km = {w: D.kinds(hand, w, 2) for w, _ in ws}
+        n = sum(x for _, x in ws)
         pat = "".join(map(str, M.pattern(hand)))
-        rows += (f'<div class="q"><b>Q{i}</b><div class="body"><div class="top"><span class="hand">{"".join(tile(c, 25) for c in hand)}</span>'
-                 f'<span class="nm">{shape_name(hand)}<small>{pat}</small></span></div>'
-                 f'<div class="ans"><span class="wl">待ち</span><span class="wt">{"".join(tile(c, 25) for c, _ in w)}</span>'
-                 f'<span class="wn">{len(w)}種<em>{n}</em>枚</span></div></div></div>')
+        rows += (f'<div class="q"><b>Q{i}</b><div class="body"><div class="sv">{D.side_view(hand, ws, km, scale=1.22)}</div>'
+                 f'<div class="exs">{D.explain(hand, ws, km)}</div></div>'
+                 f'<div class="rt"><span class="nm">{shape_name(hand)}</span><small class="pt">{pat}</small><span class="wn">{len(ws)}種<em>{n}</em>枚</span></div></div>')
+    leg = "".join(f'<span class="lg" style="--c:{c}"><i></i>{t}</span>' for t, c in D.TYPES)
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=block" rel="stylesheet">
 <style>* {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -91,24 +94,25 @@ header {{ display: flex; align-items: center; justify-content: space-between; ba
 header h1 {{ font-size: 30px; font-weight: 900; line-height: 1.15; letter-spacing: .02em; }} header h1 i {{ font-style: normal; color: #FFE68A; }}
 header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 3px; letter-spacing: 0; }}
 {LOGO_CSS} .logo-pill img {{ height: 30px; }}
-.lead {{ margin: 12px 2px 8px; font-size: 14px; font-weight: 900; }} .lead em {{ font-style: normal; color: {ORANGE}; }}
-.q {{ display: flex; align-items: center; gap: 8px; background: #fff; border: 2px solid #1F2A28; padding: 6px 10px; margin-top: -2px; }} .q:first-of-type {{ margin-top: 12px; }}
-.q > b {{ width: 40px; flex: none; font-size: 22px; font-weight: 900; color: {TEAL}; }}
-.body {{ flex: 1; min-width: 0; }}
-.top, .ans {{ display: flex; align-items: center; gap: 8px; }} .ans {{ margin-top: 5px; }}
-.hand, .wt {{ display: flex; gap: 1px; }} .hand img, .wt img {{ display: block; }}
-.nm {{ margin-left: auto; text-align: right; font-size: 12.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; }}
-.nm small {{ display: block; font-size: 11px; color: #5E6B69; letter-spacing: .1em; }}
-.wl {{ font-size: 12px; font-weight: 900; color: #fff; background: {ORANGE}; border-radius: 4px; padding: 3px 7px; }}
-.wt {{ background: #FDE3D5; border-radius: 5px; padding: 3px; }}
-.wn {{ margin-left: auto; font-size: 14px; font-weight: 900; white-space: nowrap; }} .wn em {{ font-style: normal; font-size: 24px; color: {ORANGE}; margin-left: 4px; }}
-.note {{ margin-top: 10px; font-size: 12.5px; font-weight: 700; line-height: 1.6; }} .note .or {{ color: {ORANGE}; }}
+.legend {{ display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin: 8px 2px 6px; font-size: 11.5px; font-weight: 900; }}
+.lg {{ display: inline-flex; align-items: center; gap: 4px; color: var(--c); }} .lg i {{ width: 16px; height: 9px; border-radius: 2px; background: var(--c); opacity: .5; }}
+.lg.hd {{ color: {INK}; }} .lg.hd i {{ opacity: 1; background: repeating-linear-gradient(45deg, #1F2A28 0 1.4px, #fff 1.4px 3.2px); border: 1px solid #1F2A28; }}
+.q {{ display: flex; align-items: center; gap: 4px; background: #fff; border: 2px solid #1F2A28; padding: 4px 8px 5px; margin-top: -2px; }}
+.q > b {{ width: 32px; flex: none; font-size: 21px; font-weight: 900; color: {TEAL}; }}
+.body {{ flex: 1; min-width: 0; }} .sv svg {{ display: block; }}
+.exs {{ display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 1px; }}
+.rt {{ flex: none; width: 96px; text-align: right; line-height: 1.2; }}
+.rt .nm {{ display: block; font-size: 11px; font-weight: 900; color: #33403D; }} .rt .pt {{ display: block; font-size: 10px; font-weight: 900; color: #6B7A77; letter-spacing: .1em; }}
+.ex {{ display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 900; color: var(--c); }} .ex b {{ background: var(--c); color: #fff; font-size: 10.5px; padding: 1px 6px; border-radius: 3px; }}
+.wn {{ display: block; margin-top: 4px; font-size: 12px; font-weight: 900; white-space: nowrap; }} .wn em {{ font-style: normal; font-size: 26px; color: {ORANGE}; margin-left: 3px; }}
+.note {{ margin-top: 6px; font-size: 12px; font-weight: 700; line-height: 1.6; }} .note .or {{ color: {ORANGE}; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; justify-content: space-between; font-size: 11px; color: #6E7F7B; font-weight: 700; }}
 footer b {{ color: {TEAL}; }}
 </style></head><body>
 <header><h1>待ち当て 5問 <i>正解</i><small>2面子1雀頭を作る形（7枚形）・全部{sname}</small></h1>{logo_html()}</header>
+<div class="legend"><span class="lg hd"><i></i>手にある牌</span>{leg}</div>
 {rows}
-<p class="note">枚数は、手で使っている牌を除いた<b class="or">残りの枚数</b>。並びが同じなら、どの色でも同じ待ち。</p>
+<p class="note">横から見た図は、横＝数字・縦＝枚数。色の箱が<b class="or">残りの待ちの牌</b>（2色は2通りの待ち方）。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全32形の表は「麻雀の待ちの形一覧」</span></footer>
 </body></html>"""
 
