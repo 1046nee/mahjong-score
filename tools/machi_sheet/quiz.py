@@ -82,7 +82,7 @@ def html_ans(suit, sname, QS):
         n = sum(x for _, x in ws)
         pat = "".join(map(str, M.pattern(hand)))
         # 牌の絵（問題と同じ手）と横から見た図を両方（2026-11-17 ユーザーの指定）
-        rows += (f'<div class="q"><b>Q{i}</b><div class="body"><div class="hand">{"".join(tile(c, 21) for c in hand)}</div><div class="sv">{D.side_view(hand, ws, km, scale=1.08)}</div></div>'
+        rows += (f'<div class="q"><b>Q{i}</b><div class="body"><div class="hand">{"".join(tile(c, 20) for c in hand)}<span class="wl">待ち</span><span class="wt">{"".join(tile(c, 20) for c, _ in ws)}</span></div><div class="sv">{D.side_view(hand, ws, km, scale=1.08)}</div></div>'
                  f'<div class="rt"><span class="nm">{shape_name(hand)}</span><span class="pw"><small class="pt">{pat}</small><span class="wn">{len(ws)}種<em>{n}</em>枚</span></span>'
                  f'<div class="exs">{D.explain(hand, ws, km)}</div></div></div>')
     leg = "".join(f'<span class="lg" style="--c:{c}"><i></i>{t}</span>' for t, c in D.TYPES)
@@ -102,13 +102,15 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .q {{ display: flex; align-items: center; gap: 4px; background: #fff; border: 2px solid #1F2A28; padding: 4px 8px 5px; margin-top: -2px; }}
 .q > b {{ width: 32px; flex: none; font-size: 21px; font-weight: 900; color: {TEAL}; }}
 .body {{ flex: none; min-width: 0; }} .sv svg {{ display: block; }}
-.hand {{ display: flex; gap: 1px; margin: 1px 0 1px 20px; }} .hand img {{ display: block; }}
+.hand {{ display: flex; align-items: center; gap: 1px; margin: 1px 0 1px 20px; }} .hand img {{ display: block; }}
+.wl {{ margin: 0 4px 0 9px; font-size: 11px; font-weight: 900; color: #fff; background: {ORANGE}; border-radius: 4px; padding: 2px 6px; white-space: nowrap; }}
+.wt {{ display: flex; gap: 1px; background: #FDE3D5; border-radius: 4px; padding: 2px; }}
 .rt {{ flex: 1; min-width: 0; text-align: right; line-height: 1.2; }}
 .rt .nm {{ display: block; font-size: 11px; font-weight: 900; color: #33403D; }}
 .pw {{ display: flex; align-items: baseline; justify-content: flex-end; gap: 6px; }} .rt .pt {{ font-size: 10px; font-weight: 900; color: #6B7A77; letter-spacing: .08em; }}
 .exs {{ display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px 7px; margin-top: 3px; }}
 .ex {{ display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 900; color: var(--c); }} .ex b {{ background: var(--c); color: #fff; font-size: 10.5px; padding: 1px 6px; border-radius: 3px; }}
-.wn {{ font-size: 12px; font-weight: 900; white-space: nowrap; }} .wn em {{ font-style: normal; font-size: 24px; color: {ORANGE}; margin-left: 2px; }}
+.wn {{ font-size: 11px; font-weight: 900; white-space: nowrap; color: #33403D; }} .wn em {{ font-style: normal; font-size: 13px; color: {ORANGE}; margin-left: 2px; }}   /* 枚数は小さく（待ちの牌の絵を主に。2026-11-17 ユーザーの指定） */
 .note {{ margin-top: 6px; font-size: 12px; font-weight: 700; line-height: 1.6; }} .note .or {{ color: {ORANGE}; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; justify-content: space-between; font-size: 11px; color: #6E7F7B; font-weight: 700; }}
 footer b {{ color: {TEAL}; }}
