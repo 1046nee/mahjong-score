@@ -26,6 +26,7 @@ Blender（bpy）で作る、対局の所作を説明する動画の土台。ふ�
 - 横向きの牌の位置（左＝上家・中＝対面・右＝下家）を、チー（左）・ポン（中）・大明槓（右）で1つずつ見せる
 
 ## 作り方
+- **字幕と牌姿の一覧**: `python tools/b3d/subs_dump.py > out.md`（bpy なしで動く）。画面に出る字幕の1枚ずつの区切り・字の大きさ・読みと、各話の自分の手牌・河・鳴く牌・切る牌を Markdown で出す。Notion の運用ハブの「3D動画の字幕と牌姿（麻雀の所作）」に貼っている（2026-11-17 ユーザーの依頼）。台本・牌姿を変えたら書き出し直して Notion も更新。動画の中で切る牌（CUT）は手で書いているので、牌姿を変えたら直す
 - 牌の絵: `python tools/b3d/make_tile_tex.py <フォルダ>`（まじゃすこの牌 assets/tiles/*.svg の表の面を PNG に）
 - 場面と書き出し: `<bpyの入ったpython> tools/b3d/scene.py --tex <牌の絵> --out <出力> --theme dark|green --cams wide,mid,hand,top,meld --size 720x1280 --samples 64 [--step 0〜5] [--save]`
   - bpy は `pip install bpy`（Python 3.13・約430MB）。この環境は GPU が無いので Cycles の CPU（720×1280・64サンプルで1枚 80〜120秒）。EEVEE は使えない
