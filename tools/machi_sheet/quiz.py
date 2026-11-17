@@ -10,17 +10,18 @@ from base import ROOT, T, TEAL, ORANGE, INK
 from sheet_logo import LOGO_CSS, logo_html
 import machi3 as M
 
-# (手, 答えの数字, 答えの枚数) 易しい順（2026-11-17 ユーザーの指定）
-QS = [("2345567", "258", 9), ("2233344", "234", 5), ("2222344", "134", 9), ("2333345", "1245", 13), ("2223456", "13467", 17)]
+# (手, 答えの数字, 答えの枚数)（2026-11-17 ユーザーの指定）
+QS = [("2345567", "258", 9), ("2223444", "12345", 13), ("2222344", "134", 9), ("2333345", "1245", 13), ("2223334", "2345", 9)]
+SUIT = "s"      # 索子（2026-11-17 ユーザーの指定）
 for h, a, n in QS:
-    w = M.waits(M.P(h), 2, 1)
+    w = M.waits([SUIT + c for c in h], 2, 1)
     assert "".join(c[1] for c, _ in w) == a and sum(x for _, x in w) == n, (h, w)
 
 OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "machi", "quiz-7mai")
 KAN = "〇一二三四五六七八九"
 
 
-def tile(c, w): return f'<img src="{T}/p{c}.svg" style="width:{w}px">'
+def tile(c, w): return f'<img src="{T}/{SUIT}{c}.svg" style="width:{w}px">'
 
 
 def html():
@@ -45,8 +46,8 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; justify-content: space-between; font-size: 11px; color: #6E7F7B; font-weight: 700; }}
 footer b {{ color: {TEAL}; }}
 </style></head><body>
-<header><h1>待ち当て 5問<small>2面子1雀頭を作る形（7枚形）・全部筒子</small></h1>{logo_html()}</header>
-<p class="lead">待ちの牌を<em>全部</em>言えたら正解。易しい順です</p>
+<header><h1>待ち当て 5問<small>2面子1雀頭を作る形（7枚形）・全部索子</small></h1>{logo_html()}</header>
+<p class="lead">待ちの牌を<em>全部</em>言えたら正解</p>
 {rows}
 <p class="note">全問正解なら中級者。答えはリプ欄に。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全32形の表は「麻雀の待ちの形一覧」</span></footer>
