@@ -16,22 +16,7 @@ D = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
 
 
 def rows(tx):
-    """make_clip.subtitle と同じ折り方: まず字を小さくして1行に、入らなければ「、」「。」で2〜3行に"""
-    ft = MC.font(46, 800); maxw = MC.W - 2 * 90; rs = [tx]
-    while D.textlength(tx, font=ft) > maxw and ft.size > MC.SUB_MIN: ft = MC.font(ft.size - 2, 800)
-    if D.textlength(tx, font=ft) > maxw:
-        cuts = [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"] or [len(tx) // 2]
-        c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rs = [tx[:c], tx[c:]]
-        if max(D.textlength(r_, font=ft) for r_ in rs) > maxw:
-            best = None
-            for c1 in cuts:
-                for c2 in cuts:
-                    if c2 <= c1: continue
-                    r3 = [tx[:c1], tx[c1:c2], tx[c2:]]; w_ = max(D.textlength(r_, font=ft) for r_ in r3)
-                    if best is None or w_ < best[0]: best = (w_, r3)
-            if best: rs = best[1]
-        while max(D.textlength(r_, font=ft) for r_ in rs) > maxw and ft.size > 34: ft = MC.font(ft.size - 2, 800)
-    return rs, ft.size
+    rs, ft = MC.sub_rows(D, tx); return rs, ft.size      # make_clip の字幕と同じ折り方
 
 
 def rub(t): return "".join(p + (f"（{r}）" if r else "") for p, r, _ in MC.ruby_parts(t))
@@ -66,7 +51,7 @@ def main():
           "字幕が出るのは手順とまとめだけ。入り・確認・締めは声とカード（字幕なし）。", ""]
     for name in N.NARR:
         g = scene(name)
-        title = TITLE.get(name) or N.NARR[name]["intro"].split("を、")[0].split("。")[0]
+        title = TITLE.get(name) or MC.SCRIPTS[name]["title"]
         md += [f"## {title}（{name}）", "", "| | |", "|---|---|", f"| 自分の手牌（左から） | {'・'.join(jp(c) for c in g['HANDS'][0])} |"]
         if g["MELD0"]: md.append(f"| 晒してある牌 | {'・'.join(jp(c) for c in g['MELD0'])} |")
         md.append(f"| 自分の河（左から） | {'・'.join(jp(c) for c in g['RIVERS'][0])} |")

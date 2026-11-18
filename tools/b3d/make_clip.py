@@ -441,7 +441,7 @@ def sub_units(tx):
     for sen in [x for x in _re.findall(r"[^。]+。?", tx) if x.strip()]:
         if dd.textlength(sen, font=ft) <= maxw: out.append(sen); continue
         cur = ""
-        for part in _re.findall(r"[^、]+、?", sen):
+        for part in _re.findall(r"(?:[^、]|、(?=と))+、?", sen):      # 「チー、と声に出します」の「、と」では分けない（「チー、」だけが1枚になった。2026-11-18）
             if cur and dd.textlength(cur + part, font=ft) > maxw: out.append(cur); cur = part
             else: cur += part
         if cur: out.append(cur)
@@ -453,13 +453,15 @@ def sub_at(d, units, t):
         if t < b_ or (a_, b_, sen) == units[-1]:
             subtitle(d, sen, t - a_); return
 
-def subtitle(d, tx, k):
-    """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
-    ft = font(46, 800); a = int(235 * min(1, k * 6)); maxw = W - 2 * 90
+def sub_rows(d, tx):
+    """字幕の1枚を、字の大きさと行に分ける（subtitle と tools/b3d/subs_dump.py が使う）"""
+    ft = font(46, 800); maxw = W - 2 * 90
     rows = [tx]
     while d.textlength(tx, font=ft) > maxw and ft.size > SUB_MIN: ft = font(ft.size - 2, 800)      # まず字を小さくして1行に
     if d.textlength(tx, font=ft) > maxw:      # 2行に分けるときは、真ん中にいちばん近い「、」「。」の後ろで切る（字の途中で折ると読みにくい）
-        cuts = [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"] or [len(tx) // 2]
+        cuts = ([k + 1 for k, ch in enumerate(tx[:-1]) if ch in "、。"]
+                or [k + 1 for k, ch in enumerate(tx[:-1]) if ch in "にをはがで" and tx[k + 1] not in "、。"]      # 「、」が無い文は助詞の後ろで（「ボ／ーナス」と語の途中で折れた。2026-11-18）
+                or [len(tx) // 2])
         c = min(cuts, key=lambda k: abs(k - len(tx) / 2)); rows = [tx[:c], tx[c:]]
         if max(d.textlength(r_, font=ft) for r_ in rows) > maxw:      # 2行に入らない長い文は、「、」「。」の所で3行に（喰い替えの説明で、はみ出した）
             best = None
@@ -470,6 +472,12 @@ def subtitle(d, tx, k):
                     if best is None or w_ < best[0]: best = (w_, rs)
             if best: rows = best[1]
         while max(d.textlength(r_, font=ft) for r_ in rows) > maxw and ft.size > 34: ft = font(ft.size - 2, 800)
+    return rows, ft
+
+
+def subtitle(d, tx, k):
+    """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
+    a = int(235 * min(1, k * 6)); rows, ft = sub_rows(d, tx)
     # 暗い帯に白い字（前と同じ色・同じ透け方）。角だけ丸めない（2026-11-13 ユーザーの指定「変えるのは角丸を四角角にするだけ」。白いカードにしたのは行きすぎだった）
     hr = any(r for p, r, t in ruby_parts(tx)); LH = 84 if hr else 64; top = 24 if hr else 0      # 読みを付ける行は、行の間を広げる
     h = 46 + top + LH * len(rows); y = 1560 - h // 2
