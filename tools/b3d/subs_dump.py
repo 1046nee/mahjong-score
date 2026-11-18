@@ -55,7 +55,7 @@ SEGN = {"intro": "入り", "pre": "確認", "tail": "まとめ", "outro": "締�
 
 
 def scene(name):
-    g = {"arg": lambda n, dflt: name if n == "--scene" else dflt, "sys": type("S", (), {"argv": []}), "TAKEN": .5, "DORA": "m8", "TL": .03, "math": math}
+    g = {"arg": lambda n, dflt: name if n == "--scene" else dflt, "sys": type("S", (), {"argv": []}), "TAKEN": .5, "DORA": "m8", "TL": .03, "math": math, "SCENE": name}
     exec(SEG, g)
     return g
 
@@ -75,7 +75,7 @@ def main():
         if g["NEXT_CODE"] != "back": md.append(f"| ツモる牌 | {jp(g['NEXT_CODE'])}" + (f"、次に {jp(g['NEXT2_CODE'])}" if g["NEXT2_CODE"] != "back" else "") + " |")
         if name in ("kan", "daiminkan", "kakan"): md.append(f"| 嶺上牌 | {jp(g['RINSHAN'])} |")
         for k_, h_ in g["OPEN_HANDS"].items(): md.append(f"| {SEAT[k_]}の手牌（倒す） | {'・'.join(jp(c) for c in h_)} |")
-        md += [f"| 動画の中で切る牌 | {CUT.get(name, '')} |", "| ドラ表示牌 | 八萬 |", "", "| 場面 | 字幕（1行＝1枚） | 字の大きさ |", "|---|---|---|"]
+        md += [f"| 動画の中で切る牌 | {CUT.get(name, '')} |", f"| ドラ表示牌 | {jp(g['DORA'])} |", "", "| 場面 | 字幕（1行＝1枚） | 字の大きさ |", "|---|---|---|"]
         for sg, tx in N.lines(name):
             lab = SEGN.get(sg, sg.replace("step", "手順"))
             if sg.startswith("step") or sg == "tail":

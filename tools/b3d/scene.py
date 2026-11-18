@@ -373,6 +373,8 @@ RIVERS = ([["z3", "s1", "s9"], ["z4", "p9", "m1", "s9"], ["z1", "p1", "s2", "z6"
           [["z7", "z2", "s1"], ["z4", "p9", "m2"], ["s9", "z6", "p1"], ["z1", "m9", "z3", "m6"]])   # 席3（上家）の最後の六萬をチーする。枚数は巡目に合わせる（自分が3枚なら、上家は4枚目を切ったところ・ほかは3枚）。字牌と端の牌から切る、ふつうの序盤の河に
 if SCENE == "kan":   # 暗槓の自分の河の一索を九索に（2026-11-14 ユーザーの指定。嶺上牌も四筒に変えた）
     RIVERS[0] = ["z7", "z2", "s9"]
+    if "--dora" not in sys.argv: DORA = "p8"      # ドラ表示牌は八筒（2026-11-18 ユーザーが Notion で指定）
+    RIVERS[3][0] = "z4"      # 上家の河の東を北に（手牌に東が4枚あるので、東が5枚見えていた。2026-11-18 気づいて直した）
 # ---- 台本で動かす場面（2026-11-13）: 大明槓・加槓・リーチ・ツモあがり・ロンあがり・流局。牌姿と席は Notion の「3D動画の出演表」が正 ----
 S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai", "furiten")
 RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
@@ -382,8 +384,16 @@ RIVER_DY, RIVER_PITCH, WANPAI_DY = 0.0, TL + .003, 0.0      # 河の位置・段
 TSUMO14 = False         # 手牌の右端の1枚（ツモった牌）を少し離して置く
 MELD0 = []              # はじめから晒してある牌（加槓のポン）
 OPEN_HANDS = {}         # ほかの席の手牌の絵（流局で倒す人）
+# 自分の河とドラ表示牌（2026-11-18 ユーザーが Notion「3D動画の字幕と牌姿」で指定。ほかの3人の河は auto_rivers が、これと合わせて同じ牌4枚までに作る）
+OWN0 = {"daiminkan": ["m9", "z2", "z3", "p2"], "kakan": ["m9", "z2", "s1", "z6", "s1"], "riichi": ["z7", "z2", "z2", "z6", "p8", "p9"],
+        "tsumo": ["z3", "z2", "z2", "p9", "p8", "z5", "s3", "z1", "s9"], "ron": ["z2", "z2", "m1", "m1", "p9", "s6", "s8", "m9", "z6"],
+        "dahai": ["m9", "z2", "z2", "z6", "p8", "s8"], "furiten": ["s9", "z2", "z2", "s7", "m4", "p7"]}
+DORA2 = {"daiminkan": "s1", "kakan": "m1", "riichi": "s4", "tsumo": "m3", "furiten": "m7"}
+if SCENE in DORA2 and "--dora" not in sys.argv: DORA = DORA2[SCENE]
 def auto_rivers(ns, used, ban=(), last=None):
-    """ふつうの河を作る: 字牌・端の牌から先に切り、同じ牌は全体で4枚まで。used＝見えている牌（手牌など）・ban＝河に出さない牌（待ち・鳴く牌）"""
+    """ふつうの河を作る: 字牌・端の牌から先に切り、同じ牌は全体で4枚まで。used＝見えている牌（手牌など）・ban＝河に出さない牌（待ち・鳴く牌）。
+    OWN0 にある場面は、自分の河をそれに置きかえる（ほかの河はそれも数に入れて作る）"""
+    used = list(used) + OWN0.get(SCENE, [])
     cnt = {}
     for c in used: cnt[c] = cnt.get(c, 0) + 1
     for c in (last or {}).values(): cnt[c] = cnt.get(c, 0) + 1
@@ -403,6 +413,7 @@ def auto_rivers(ns, used, ban=(), last=None):
                 cnt[c] = cnt.get(c, 0) + 1; rv.append(c); break
         out.append(rv)
     for seat, c in (last or {}).items(): out[seat][-1] = c
+    if SCENE in OWN0: out[0] = list(OWN0[SCENE])
     return out
 if S2:
     CALL_SEAT = -1
@@ -419,7 +430,7 @@ if S2:
         TSUMO14 = True
         RIVERS = auto_rivers([6, 6, 6, 6], HANDS[0] + [DORA], ban=("p3", "p6"))
         RIVERS = [[{"s4": "p9", "s8": "p8"}.get(c, c) for c in rv] for rv in RIVERS]      # 河の四索→九筒・八索→八筒（2026-11-14 ユーザーの指定）
-    elif SCENE == "tsumo":      # ツモあがり: 六萬・八萬の嵌張。七萬をツモる＝メンゼンツモ・タンヤオ、子の2翻30符で500・1000（2026-11-16 ユーザーの指定）
+    elif SCENE == "tsumo":      # ツモあがり: 六萬・八萬の嵌張。七萬をツモる＝メンゼンツモ・タンヤオ・ドラ1（ドラ表示牌は三萬）、子の3翻30符で1000・2000（2026-11-16 ユーザーの指定・2026-11-18 ドラ1に）
         HANDS[0] = ["m2", "m3", "m4", "p3", "p4", "p5", "s6", "s7", "s8", "m6", "m8", "s2", "s2"]
         NEXT_CODE = "m7"
         if "--taken" not in sys.argv: TAKEN = .9
@@ -1206,8 +1217,8 @@ def s2_sticks():
             for k in range(5): sphere(f"{name}d{k}", .0012, ((k - 2) * .0045, 0, .0018), dm, (1, 1, .4), o)
         NAMED[name] = o
     if SCENE == "riichi": stick("bou", 1000)
-    if SCENE == "tsumo":      # ツモの支払い（2026-11-16）: 親（対面）＝1,000点・子（下家・上家）＝500点ずつ
-        stick("pay2", 1000); stick("pay1", 500); stick("pay3", 500)
+    if SCENE == "tsumo":      # ツモの支払い: ドラ1で1000・2000（2026-11-18 ユーザーの指定）＝親（対面）が1,000点棒2本・子（下家・上家）が1,000点棒1本ずつ
+        stick("pay2", 1000); stick("pay2b", 1000); stick("pay1", 1000); stick("pay3", 1000)
     if SCENE == "ron":        # ロンの支払い（2026-11-16 ユーザーの指定）: 下家が5,000点棒で払い、自分が1,000点棒1本と100点棒1本で返す
         stick("pay5k", 5000); stick("ret1k", 1000); stick("ret100", 100)
     if SCENE == "ryukyoku":
@@ -1300,10 +1311,11 @@ def s2_build():
         RECV = (Vector((0, -.27, .77)), Vector((0, -.17, .62)), 30)       # 届いた点棒が読める所まで寄る（自分の前を上から）
         views = [(3.5, 4.4, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0), (4.8, 5.4, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
                  (6.6, 7.2, tuple(RECV[0] + RECV[1]), tuple(RECV[0]), 30.0)]
-        # 支払い: 下家・上家（子）は500点棒を、自分のとなりまで手で送る。対面（親）は1,000点棒を、卓の上をすべらせて自分の前へ
+        # 支払い: 下家・上家（子）は1,000点棒を、自分のとなりまで手で送る。対面（親）は1,000点棒2本を、卓の上をすべらせて自分の前へ
         pay_stick(mv, arms, show, 1, "pay1", 5.3, (.12, -.258), hz)      # 3本を自分の前に並べる（寄った画角に入るように）
         pay_stick(mv, arms, show, 3, "pay3", 5.5, (-.10, -.258), hz)
         pay_stick(mv, arms, show, 2, "pay2", 5.4, (.01, -.262), hz, far=True)
+        pay_stick(mv, arms, show, 2, "pay2b", 5.45, (.01, -.270), hz, far=True)      # 親の2本目（1000・2000 の親の分＝2,000点）
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
     elif SCENE == "dahai":      # ツモと打牌（2026-11-16）
         h12 = P("hk12"); xt = h12.x + HP + .03; ST = (xt, h12.y, h12.z)                  # ツモった牌は、手牌の右に少し離して立てる
