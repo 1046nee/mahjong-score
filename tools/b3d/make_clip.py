@@ -104,7 +104,7 @@ SCRIPTS = {
         ("ツモ", "ツモ", "山から取ったアガリ牌を、手牌の横に置く。手牌には入れない", 0, 42, 1.6, [], ""),
         ("発声", "はっせい", "「ツモ」と声に出す", 43, 49, 2.0, [], "ツモ"),
         ("開示", "かいじ", "両手で手牌の両端を持って、手牌を倒す", 50, 68, 2.0, [], ""),
-        ("申告", "しんこく", "点数だけを言う。役はメンゼンツモ・タンヤオ・ドラ1、子の3翻30符で1000・2000", 69, 73, 2.6, [], "1000・2000"),     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）。500・1000のアガリ（2026-11-16）
+        ("申告", "しんこく", "点数だけを言う。役はメンゼンツモ・タンヤオ・ドラ1、子の3翻30符で1000・2000", 69, 73, 2.6, [], "1000・2000", "※ドラ表示牌が三萬なので、ドラは四萬。手牌に1枚でドラ1"),     # ドラ表示牌を見せる（画角は scene.py の DV。2026-11-18 ユーザーの指定）     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）。500・1000のアガリ（2026-11-16）
         ("支払い", "しはらい", "親は2,000点、子は1,000点ずつ、アガった人に払う", 74, 103, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
     ], tail=(104, 105, 2.4),
     pre=dict(head="ツモアガリできるとき", hold=2.0, concl=True, lines=[
@@ -461,18 +461,33 @@ def outro_card(im, t, dur):
 
 
 SUB_MIN = 38      # 字幕の字の、いちばん小さい大きさ（1行に入れるために小さくしてよい所まで）
+SUB_FIT = 44      # 字幕の1枚を詰めるときの字の大きさ
 def sub_units(tx):
-    """字幕に出す単位: 1文ずつ（「。」まで）。1行に入らない長い文だけ、「、」の所で1行に入る長さに分ける（2026-11-16 ユーザーの指定「2行・3行を一気に出さない」）"""
+    """字幕に出す単位（1枚＝1行）。「。」ごとに機械的には切らない（2026-11-18 ユーザーの指定「長くなっていたらいい感じの場所で区切る」）:
+    1. 字を42にすれば1行に入る文は分けない。長い文は「、」の所で、1行に入る長さに分ける（「チー、と声に出します」の「、と」では分けない）
+    2. 「最後に、」のような短すぎる切れはしは、字を SUB_MIN まで小さくして、となりと1枚に
+    3. 短い文は、文がまるごと入るときだけ前の1枚に足す（「〜します。ポンが優先なので、」のように、次の文の頭だけが前の1枚に残らない）"""
     import re as _re
-    dd = ImageDraw.Draw(Image.new("RGBA", (8, 8))); ft = font(SUB_MIN, 800); maxw = W - 2 * 90     # 字を SUB_MIN まで小さくすれば1行に入る文は、分けない
-    out = []
+    dd = ImageDraw.Draw(Image.new("RGBA", (8, 8))); fF = font(SUB_FIT, 800); fM = font(SUB_MIN, 800); maxw = W - 2 * 90
+    wd = lambda x, f=fF: dd.textlength(x, font=f)
+    pieces = []      # (文, 文のまるごとか)
     for sen in [x for x in _re.findall(r"[^。]+。?", tx) if x.strip()]:
-        if dd.textlength(sen, font=ft) <= maxw: out.append(sen); continue
-        cur = ""
-        for part in _re.findall(r"(?:[^、]|、(?=と))+、?", sen):      # 「チー、と声に出します」の「、と」では分けない（「チー、」だけが1枚になった。2026-11-18）
-            if cur and dd.textlength(cur + part, font=ft) > maxw: out.append(cur); cur = part
-            else: cur += part
-        if cur: out.append(cur)
+        if wd(sen, font(42, 800)) <= maxw: pieces.append((sen, True)); continue      # 少し小さい字で1行に入る文は、分けない
+        parts = _re.findall(r"(?:[^、]|、(?=と))+、?", sen); cur = []; chunks = []
+        for part in parts:
+            if cur and wd("".join(cur) + part) > maxw: chunks.append("".join(cur)); cur = [part]
+            else: cur.append(part)
+        if cur: chunks.append("".join(cur))
+        k = 0
+        while k < len(chunks) - 1:      # 短すぎる切れはしは、小さい字でとなりと1枚に
+            if (wd(chunks[k]) < maxw * .35 or wd(chunks[k + 1]) < maxw * .35) and wd(chunks[k] + chunks[k + 1], fM) <= maxw:
+                chunks[k:k + 2] = [chunks[k] + chunks[k + 1]]
+            else: k += 1
+        pieces += [(c, len(chunks) == 1) for c in chunks]
+    out = []
+    for c, whole in pieces:
+        if out and whole and out[-1].endswith("。") and wd(out[-1] + c) <= maxw: out[-1] += c
+        else: out.append(c)
     return out
 
 def sub_at(d, units, t):
