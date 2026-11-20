@@ -18,11 +18,11 @@ OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "rule-hikaku")
 LEFT = [
     ("##", "試合と点数"),
     ("試合形式", [("半荘", "MJ"), ("東風", "J")], "雀魂は東風・半荘を選ぶ"),
-    ("持ち点／返し点", [("25,000／30,000", "M"), ("25,000／25,000", "J"), ("30,000／30,000", "")], ""),
+    ("持ち点／返し点", [("25,000／30,000", "M"), ("25,000／25,000", "J")], ""),
     ("ウマ", [("10-30", "M"), ("10-20", ""), ("5-15", "J"), ("なし", "")], ""),
     ("同点のとき", [("同着", "M"), ("上家取り", "J")], "上家取り＝起家に近い人が上"),
     ("終了時の供託", [("トップ", "MJ"), ("誰も取らない", ""), ("出した人に", "")], "流局で終わったとき"),
-    ("チョンボ", [("罰符なし", ""), ("スコアから引く", "M"), ("満貫払い", ""), ("2,000オール", ""), ("供託1,000点", "")], "M＝−20pt。雀魂はチョンボがない"),
+    ("チョンボ", [("罰符なし", ""), ("スコアから引く", "M"), ("満貫払い", ""), ("供託1,000点", "")], "M＝−20pt。雀魂はチョンボがない"),
     ("チップ・祝儀", [("なし", "MJ"), ("一発・裏・赤", ""), ("役満", "")], ""),
     ("焼き鳥", [("なし", "MJ"), ("あり", "")], ""),
     ("##", "鳴き・アガリ"),
@@ -33,7 +33,7 @@ LEFT = [
     ("2人が同時にロン", [("頭ハネ", "M"), ("ダブロン", "J")], ""),
     ("3人が同時にロン", [("頭ハネ", "M"), ("トリロン", "J"), ("流局", "")], ""),
     ("連荘", [("テンパイ連荘", "MJ"), ("アガリ連荘だけ", "")], ""),
-    ("アガリやめ", [("あり", "J"), ("なし", "")], "Mは規定なし"),
+    ("アガリやめ", [("あり", "J"), ("なし", "M")], ""),
 ]
 RIGHT = [
     ("##", "リーチとトビ"),
@@ -121,11 +121,11 @@ i.bj img {{ width: 100%; height: 100%; display: block; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 15px; font-weight: 900; color: #fff; background: #177083; margin: 9px -8px 4px; padding: 4px 12px; letter-spacing: .03em; }}
 .colw h2:first-child {{ margin-top: -2px; border-radius: 6px 6px 0 0; }}
-.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 4.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
+.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 5.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
 h2 + .it {{ border-top: 0; }}
 .it.same {{ background: #E3F4EC; border-top-color: transparent; }}
 .it.diff {{ background: #FFE6D6; border: 2px solid #E75620; border-top-color: #E75620; padding: 2.5px 4px; }}
-.it.diff + .it, .it.same + .it {{ border-top-color: transparent; }} .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff {{ margin-top: 3px; }}
+.it.diff + .it:not(.diff), .it.same + .it:not(.diff) {{ border-top-color: transparent; }}      /* 違う行の上の線は消さない（オレンジの枠が切れた。2026-11-20 ユーザーの指摘） */ .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff {{ margin-top: 3px; }}
 .it > b {{ font-size: 13.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; display: flex; align-items: flex-start; gap: 5px; }}
 .it > b em {{ display: block; width: fit-content; font-style: normal; font-size: 10.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 4px; padding: 0 6px; margin-top: 2px; letter-spacing: .05em; }}
 .it.diff > b {{ color: #B23A0E; }}
