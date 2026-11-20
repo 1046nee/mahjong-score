@@ -6,7 +6,8 @@
 リーチ後のカン: ツモった牌で、待ちや面子構成が変わらない暗槓だけできる。ツモ牌以外のカン（送りカン）・待ちが変わる・面子が変わるはできない。役が変わるだけならよい（2026-11-20 ユーザーの指定）。
 例の手は tools/machi_sheet/machi3.py の waits で待ちを確かめた。
 出力: まじゃすこ素材/x/naki/naki-matome.png（1588×2246）
-実行: python tools/naki_sheet.py
+Instagram用（1080×1350・2枚。2026-11-20〜）: まじゃすこ素材/ig/naki/1.png・2.png。X用の1枚を、区分の間のすき間で2枚に分ける（どちらにも上の見出しと下の行）
+実行: python tools/naki_sheet.py ／ Instagram用: python tools/naki_sheet.py --ig（先にX用を作っておく）
 """
 import io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -285,5 +286,46 @@ def render():
         b.close()
 
 
+IG_W, IG_H = 1080, 1350
+
+
+def ig():
+    """X用の1枚（naki-matome.png）を Instagram 用の 1080×1350 の2枚に分ける。
+    縦長の1枚を縮めると字が読めないので、区分（見出しの帯のついた箱）の間のすき間で切り、どの枚にも上の見出しと下の行を付ける。
+    区分の並びはそのまま、2枚の高さが近くなるところで分ける"""
+    from PIL import Image
+    import numpy as np
+    src = Image.open(os.path.join(OUT, "naki-matome.png")).convert("RGB")
+    a = np.asarray(src).astype(int); bg = tuple(int(v) for v in a[3, 3])
+    blank = (np.abs(a[:, 40:src.width - 40] - a[3, 3]).sum(2) < 8).all(1)
+    runs, st = [], None      # 地の色だけの行が続くところ（区分の間のすき間）
+    for y, v in enumerate(blank):
+        if v and st is None: st = y
+        if not v and st is not None:
+            if y - st >= 6: runs.append((st, y))
+            st = None
+    if st is not None: runs.append((st, len(blank)))
+    secs = []      # 箱（すき間とすき間の間）。最初＝上の見出し・最後＝下の行
+    for (s0, e0), (s1, _) in zip(runs, runs[1:]):
+        secs.append((e0, s1))
+    head_sec, body, foot = secs[0], secs[1:-1], secs[-1]
+    head = (0, head_sec[1] + 18)
+    foot = (foot[0] - 14, src.height)
+    hh = head[1] - head[0] + foot[1] - foot[0]
+    best = min(range(1, len(body)), key=lambda k: max(body[k - 1][1] - body[0][0], body[-1][1] - body[k][0]))
+    pages = [body[:best], body[best:]]
+    out = os.path.join(ROOT, "まじゃすこ素材", "ig", "naki"); os.makedirs(out, exist_ok=True)
+    for n, ps in enumerate(pages, 1):
+        parts = [head, (ps[0][0], ps[-1][1] + 14), foot]
+        hgt = sum(y1 - y0 for y0, y1 in parts)
+        im = Image.new("RGB", (src.width, hgt), bg); y = 0
+        for y0, y1 in parts: im.paste(src.crop((0, y0, src.width, y1)), (0, y)); y += y1 - y0
+        k = min(IG_W / im.width, IG_H / im.height)
+        im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
+        pg = Image.new("RGB", (IG_W, IG_H), bg); pg.paste(im, ((IG_W - im.width) // 2, (IG_H - im.height) // 2))
+        pg.save(os.path.join(out, f"{n}.png")); print(os.path.join(out, f"{n}.png"), im.size)
+
+
 if __name__ == "__main__":
-    render()
+    if "--ig" in sys.argv: ig()
+    else: render()
