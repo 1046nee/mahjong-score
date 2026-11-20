@@ -152,13 +152,13 @@ table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 1px 6px; border-bot
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
-.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 42px; }}
-.kt .lv {{ margin-top: 13px; }}
+.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 42px; align-items: flex-end !important; }}
+.kt .lv {{ margin-bottom: 5px; }}
 .kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 6px 9px; font-size: 11px; font-weight: 700; line-height: 1.5; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
-.kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-top: 11px; }} .kt > b:has(ruby) {{ padding-top: 0; }}
+.kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-bottom: 2px; }}
 .kt > .hd {{ margin-left: auto; align-self: flex-end; }}
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
@@ -228,7 +228,7 @@ def body():
     def kk(naki_lab, naki, cut, ok, kind, tx):
         cls = "okb" if ok else ""
         return (f'<div class="kkr"><span class="fg"><i class="tg">{naki_lab}</i>{hand(naki, 23)}</span><em>→</em>'
-                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"○ 切ってよい" if ok else "× 切れない"}</i>{hand(cut, 27)}</span>'
+                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"○ 切ってよい" if ok else "× 切れない"}</i>{hand(cut, 23)}</span>'
                 f'<span class="cap2"><b class="{cls}">{kind}</b>{tx}</span></div>')
     kuikae = f"""<div class="kk4">
 {kk("六萬をチー", "y:m6 m4 m5", "x:m6", False, "同じ牌", "鳴いた六萬と同じ牌")}
