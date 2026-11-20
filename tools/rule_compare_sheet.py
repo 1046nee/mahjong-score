@@ -17,30 +17,30 @@ OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "rule-hikaku")
 # 選択肢の印: "M"＝Mリーグ・"J"＝雀魂。項目は (名前, [(選択肢, 印), ...], 補足)
 LEFT = [
     ("##", "試合と点数"),
-    ("試合形式", [("半荘", "MJ"), ("東風", "J"), ("今日は何試合", "")], "雀魂は東風・半荘を選ぶ"),
+    ("試合形式", [("半荘", "MJ"), ("東風", "J")], "雀魂は東風・半荘を選ぶ"),
     ("持ち点／返し点", [("25,000／30,000", "M"), ("25,000／25,000", "J"), ("30,000／30,000", "")], ""),
-    ("ウマ", [("10-30", "M"), ("10-20", ""), ("5-15", "J"), ("なし", "")], "Mはオカ込み+50/+10/−10/−30"),
-    ("同点のとき", [("分け合う", "M"), ("上家取り", "J"), ("再戦", "")], "上家取り＝起家に近い人が上"),
-    ("終わったときの供託", [("トップ", "MJ"), ("誰も取らない", ""), ("出した人に", "")], "流局で終わったとき"),
-    ("チョンボ", [("罰符なし", ""), ("スコアから引く", "M"), ("満貫払い", ""), ("2,000オール", ""), ("供託1,000点", "")], "M＝−20pt。雀魂はゲームが止める"),
+    ("ウマ", [("10-30", "M"), ("10-20", ""), ("5-15", "J"), ("なし", "")], ""),
+    ("同点のとき", [("同着", "M"), ("上家取り", "J")], "上家取り＝起家に近い人が上"),
+    ("終了時の供託", [("トップ", "MJ"), ("誰も取らない", ""), ("出した人に", "")], "流局で終わったとき"),
+    ("チョンボ", [("罰符なし", ""), ("スコアから引く", "M"), ("満貫払い", ""), ("2,000オール", ""), ("供託1,000点", "")], "M＝−20pt。雀魂はチョンボがない"),
     ("チップ・祝儀", [("なし", "MJ"), ("一発・裏・赤", ""), ("役満", "")], ""),
     ("焼き鳥", [("なし", "MJ"), ("あり", "")], ""),
     ("##", "鳴き・アガリ"),
-    ("赤ドラ", [("なし", ""), ("3枚", "MJ"), ("4枚", "")], ""),
+    ("赤ドラ", [("なし", ""), ("3枚", "MJ")], ""),
     ("喰いタン", [("あり", "MJ"), ("なし", "")], ""),
     ("後付け", [("あり", "MJ"), ("なし", "")], ""),
     ("喰い替え", [("禁止", "MJ"), ("あり", "")], "同じ牌・スジ"),
     ("2人が同時にロン", [("頭ハネ", "M"), ("ダブロン", "J")], ""),
     ("3人が同時にロン", [("頭ハネ", "M"), ("トリロン", "J"), ("流局", "")], ""),
     ("連荘", [("テンパイ連荘", "MJ"), ("アガリ連荘だけ", "")], ""),
-    ("アガリやめ・テンパイやめ", [("あり", "J"), ("なし", "")], "Mは規定なし"),
+    ("アガリやめ", [("あり", "J"), ("なし", "")], "Mは規定なし"),
 ]
 RIGHT = [
     ("##", "リーチとトビ"),
-    ("ツモ番がないリーチ", [("できる", "M"), ("できない", "")], "雀魂は確かめられず"),
-    ("0点・マイナスのリーチ", [("できる", ""), ("1,000点未満は不可", "J")], "Mは規定なし"),
+    ("ツモ番がないリーチ", [("できる", "M"), ("できない", "J")], ""),
+    ("0点・マイナスのリーチ", [("できる", "M"), ("1,000点未満は不可", "J")], ""),
     ("トビ", [("なし", "M"), ("0点未満で終了", "J"), ("0点で終了", "")], ""),
-    ("トビ賞", [("なし", "M"), ("あり", "")], "雀魂は確かめられず"),
+    ("トビ賞", [("なし", "MJ"), ("あり", "")], ""),
     ("##", "ローカル役・途中流局"),
     ("流し満貫", [("なし", "M"), ("満貫", "J")], ""),
     ("途中流局", [("なし", "M"), ("あり", "J")], "九種九牌・四風連打・四家立直・四開槓"),
@@ -48,10 +48,10 @@ RIGHT = [
     ("##", "役満"),
     ("形でダブル役満", [("なし", "M"), ("あり", "J")], "四暗刻単騎・国士13面・純正九蓮・大四喜"),
     ("役満が2つ重なる", [("2倍", "MJ"), ("1倍", "")], ""),
-    ("数え役満", [("なし", "M"), ("あり", "")], "雀魂は確かめられず"),
+    ("数え役満", [("なし", "M"), ("あり", "J")], ""),
     ("国士で暗槓をロン", [("できない", "M"), ("できる", "J")], ""),
     ("##", "カン"),
-    ("カンドラをめくる時", [("すぐ", "M"), ("暗槓すぐ・明槓は打牌後", "J")], ""),
+    ("カンドラのタイミング", [("すぐ", "M"), ("暗槓すぐ・明槓は打牌後", "J")], ""),
     ("パオ", [("なし", ""), ("大三元・大四喜", "J"), ("＋四槓子", "M")], ""),
     ("リーチ後のカン", [("面子が変わらない暗槓のみ", "M"), ("待ちが変わらない暗槓のみ", "")], "雀魂は確かめられず"),
 ]
@@ -88,7 +88,7 @@ def col(items):
             c = SEC_COLS[next(_sec) % len(SEC_COLS)]
             out += f'<h2 style="background:{c}">{it[1]}</h2>'; continue
         name, opts, note = it
-        # 選んでいる方で色を分ける（Mリーグだけ＝金・雀魂だけ＝紫・両方＝半分ずつ）
+        # 選んでいる方で色を分ける（Mリーグだけ＝薄い赤・雀魂だけ＝紫・両方＝半分ずつ）
         chips = "".join(f'<span class="op{" m" * ("M" in m and "J" not in m)}{" j" * ("J" in m and "M" not in m)}{" mj" * ("M" in m and "J" in m)}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
         out += f'<div class="it"><b><i class="cb" style="border-color:{c}"></i>{name}</b><div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>'
     return out
@@ -107,24 +107,24 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.9; white-space: nowrap; margin-left: auto; margin-right: 10px; }}
 .legend i {{ margin-right: 3px; }}
 {LOGO_CSS}
-i.bm, i.bj {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 3px; flex: none; }}
-i.bm img {{ height: 16px; width: auto; display: block; }}
-i.bj {{ border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px #fff; }} i.bj img {{ width: 17px; height: 17px; display: block; }}
-.legend i.bm, .legend i.bj {{ width: 22px; height: 22px; vertical-align: -6px; }} .legend i.bm {{ background: #fff; border-radius: 50%; }} .legend i.bm img {{ height: 16px; }} .legend i.bj img {{ width: 22px; height: 22px; }}
+i.bm, i.bj {{ --d: 17px; font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: var(--d); height: var(--d); border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.3px rgba(0,0,0,.12); margin-left: 4px; flex: none; }}
+i.bm img {{ height: 72%; width: auto; display: block; }}
+i.bj img {{ width: 100%; height: 100%; display: block; }}
+.legend i.bm, .legend i.bj {{ --d: 22px; vertical-align: -6px; margin-left: 0; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 6px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 14.5px; font-weight: 900; color: #fff; background: #177083; margin: 8px -8px 2px; padding: 3px 10px; }}
 .colw h2:first-child {{ margin-top: -2px; border-radius: 4px 4px 0 0; }}
-.it {{ display: grid; grid-template-columns: 124px 1fr; column-gap: 6px; align-items: center; padding: 6px 0; border-top: 1.5px solid #DCE7E4; }}
+.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 7.5px 0; border-top: 1.5px solid #DCE7E4; }}
 h2 + .it {{ border-top: 0; }}
-.it > b {{ font-size: 13px; font-weight: 900; line-height: 1.25; display: flex; align-items: flex-start; gap: 5px; }}
+.it > b {{ font-size: 13.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; display: flex; align-items: flex-start; gap: 5px; }}
 i.cb {{ flex: none; width: 13px; height: 13px; border: 2.2px solid #177083; border-radius: 4px; margin-top: 1px; background: #fff; }}
 .ops {{ display: flex; flex-wrap: wrap; gap: 3px; }}
-.op {{ font-size: 11.5px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 1px 7px 1px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
+.op {{ font-size: 12px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 1px 7px 1px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
 .op.m {{ border-color: #E07A7F; color: #1F2A28; background: #FDECEC; }}
 .op.j {{ border-color: #A47FE6; color: #1F2A28; background: #F1E8FD; }}
 .op.mj {{ border-color: #8C7BC0; color: #1F2A28; background: linear-gradient(90deg, #FDECEC 50%, #F1E8FD 50%); }}
-.it > small {{ grid-column: 2; font-size: 10.5px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
+.it > small {{ grid-column: 2; white-space: nowrap; font-size: 11px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
 .note {{ font-size: 11px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 7px; }}
 .note b {{ color: #E75620; }}
 footer {{ position: absolute; left: 24px; right: 24px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
@@ -132,7 +132,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><h1>打つ前に決める ルールチェックシート<small>Mリーグと雀魂は、どれを選んでいる？</small></h1>
 <div class="legend">{badge("M")} Mリーグ<br>{badge("J")} 雀魂（段位戦）</div>{logo_html()}</header>
-<div class="grid"><div class="colw">{col(LEFT)}</div><div class="colw">{col(RIGHT)}</div></div>
+<div class="grid"><div class="colw" style="--nw:124px">{col(LEFT)}</div><div class="colw" style="--nw:158px">{col(RIGHT)}</div></div>
 <p class="note"><b>□にチェックして、仲間内のルールを決めよう。</b>Mリーグは公式サイトの公式戦ルール、雀魂はWikipedia「雀魂」の段位戦のルールなどによる（2026年11月）。印が無い所は、規定がないか確かめられなかった所。ゲームのルールは変わることがある。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>決めたルールで打ったら、スコアはまじゃすこで</span></footer>
 </body></html>"""
@@ -146,6 +146,12 @@ def render():
         b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         h = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
+        bad = pg.evaluate("""[...document.querySelectorAll('.it')].flatMap(it => {const o=[]; const b=it.querySelector('b'), ops=it.querySelector('.ops'), sm=it.querySelector('small');
+          if (b.scrollWidth > b.clientWidth + 1 || b.getBoundingClientRect().right > ops.getBoundingClientRect().left) o.push('名前:'+b.textContent);
+          [...ops.children].forEach(c => { if (c.getBoundingClientRect().height > 24) o.push('札の中で改行:'+c.textContent); });
+          if (sm && sm.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('補足:'+b.textContent);
+          if (ops.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('はみ出し:'+b.textContent); return o;})""")
+        print("改行・はみ出し", bad); assert not bad, bad
         print("余白", round(h)); pg.screenshot(path=os.path.join(OUT, "rule-check.png")); b.close()
     os.remove(hp)
 
