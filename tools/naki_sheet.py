@@ -97,7 +97,7 @@ table.ok td {{ font-size: 19px; line-height: 1.2; }}
 td.x {{ color: #C92F42; }} td.o {{ color: #177083; background: #E4F3EC; }}
 .tip {{ font-size: 11px; font-weight: 700; line-height: 1.5; color: #33403D; margin-top: 5px; }}
 .tip b {{ color: #E75620; }}
-.grp {{ display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }}
+.grp {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }}
 .grp div {{ border-radius: 6px; padding: 4px 7px; font-size: 10.5px; font-weight: 700; line-height: 1.5; }} 
 .grp div b {{ display: inline; font-size: 12.5px; font-weight: 900; }} .grp div p {{ margin-top: 2px; }}
 .g1 {{ background: #E4F3EC; }} .g1 b {{ color: #177083; }}
@@ -128,7 +128,7 @@ ul.li li b {{ font-weight: 900; }}
 .rk > b.o {{ background: #177083; }} .rk > b.x {{ background: #C92F42; }}
 .rk > span {{ font-size: 11px; font-weight: 700; line-height: 1.45; }}
 .rk > span strong {{ font-weight: 900; display: block; font-size: 12px; }}
-.k5 {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }}
+.k5 {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }}
 .kc {{ border: 1.5px solid #D5E2DF; border-radius: 6px; padding: 5px 6px; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }}
 .kc > b {{ font-size: 15px; font-weight: 900; }}
 .kc > span {{ font-size: 10px; font-weight: 700; color: #4F5C5A; }}
@@ -151,6 +151,17 @@ table.jt th.o {{ background: #177083; }} table.jt th.x {{ background: #C92F42; }
 table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 3px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
+.kc {{ position: relative; }}
+.kt {{ display: flex; align-items: flex-end; gap: 4px; width: 100%; min-height: 50px; padding-top: 4px; }}
+.kt .lv {{ position: absolute; top: 6px; left: 7px; }}
+.kn {{ background: #FFF5EF; border: 1.5px solid #F4C9B3; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
+.kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
+.kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
+.kt > b {{ font-size: 18px; font-weight: 900; padding-bottom: 1px; white-space: nowrap; }}
+.kt > .hd {{ margin-left: auto; }}
+.kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
+.kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
+.kc u.rx {{ background: #FBE9EC; color: #C92F42; }} .kc u.ro {{ background: #E4F3EC; color: #177083; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -174,13 +185,14 @@ def body():
     kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌を<b>「チー」「ポン」「カン」と声をかけてもらい</b>、面子（3枚1組）をそろえること。
 もらった牌は横向きにして、手牌の右に表向きで並べる（晒す）</p>
 <div class="k5">
-  <div class="kc">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}<span>上家（左の人）からだけ。つながった3枚（順子）</span></div>
-  <div class="kc">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}<span>だれからでも。同じ牌3枚（刻子）</span></div>
-  <div class="kc">{lv(1)}<b>暗槓</b>{hand("d z1 z1 d", 20)}<span>人からもらわない。自分で4枚そろえる</span></div>
-  <div class="kc">{lv(2)}<b>大明槓</b>{hand("z2 z2 z2 y:z2", 19)}<span>手の3枚＋人が捨てた4枚目</span></div>
-  <div class="kc">{lv(1)}<b>加槓</b>{hand("z7 k:z7 z7", 20)}<span>ポンに、自分で引いた4枚目を足す</span></div>
-</div>
-<p class="tip">横向き＝もらった牌（左＝上家・真ん中＝対面・右＝下家）。カンしたら、カンドラをめくり嶺上牌をツモる</p>"""
+  <div class="kc"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc"><div class="kt">{lv(1)}<b>暗槓</b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）を揃える<br>人から貰わない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
+  <div class="kc"><div class="kt">{lv(2)}<b>大明槓</b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚を揃える<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
+  <div class="kc"><div class="kt">{lv(1)}<b>加槓</b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は人から貰わない＝鳴きではない</em>ので、暗槓だけはリーチできる</p>
+  <p>横向き＝貰った牌（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり嶺上牌をツモる</p></div>
+</div>"""
     riichi = f"""<table class="ok"><colgroup><col><col><col><col><col></colgroup>
 <tr><th>チー</th><th>ポン</th><th class="g">暗槓</th><th>大明槓</th><th>加槓</th></tr>
 <tr><td class="x">×</td><td class="x">×</td><td class="o">○</td><td class="x">×</td><td class="x">×</td></tr>
@@ -202,7 +214,6 @@ def body():
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
         ("o", "できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
-        ("x", "送りカン", f'{base} {seq("55556", "p")} z1 z1', "m9", "ツモった九萬を残して、五筒4枚をカン"),
         ("x", "待ちが変わる", f'{base} z1 z1 {seq("2223", "p")} p4', "p2", "二筒をカンすると、東待ちが消える"),
         ("x", "面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
     ]
@@ -224,10 +235,7 @@ def body():
 </div>"""
     return f"""
 <section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
-<div class="two">
-<section><h2>{lv(1)}鳴いたら、リーチできる？→できない</h2><div class="in">{riichi}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
-</div>
 <section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
 <section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
 <section><h2>鳴く？　鳴かない？　かんたん判断表<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>"""
