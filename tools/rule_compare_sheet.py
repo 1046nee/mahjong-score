@@ -57,17 +57,29 @@ RIGHT = [
 ]
 
 
-def badge(k): return {"M": '<i class="bm">M</i>', "J": '<i class="bj">雀</i>'}[k]
+# 印はまじゃすこで描いたアイコン（公式のロゴは使わない＝商標で、提携しているように見えるため。2026-11-20）。
+# Mリーグ＝プロのリーグ→紺の丸に金のトロフィー。雀魂＝オンライン（スマホ）の麻雀→紫の丸にスマホと牌
+ICON_M = ('<svg viewBox="0 0 24 24"><path d="M7 4h10v4.5a5 5 0 0 1-10 0z" fill="#F2C94C"/><path d="M7 5.5H4.6a2.6 2.6 0 0 0 2.6 4M17 5.5h2.4a2.6 2.6 0 0 1-2.6 4" stroke="#F2C94C" stroke-width="1.8" fill="none"/>'
+          '<rect x="10.8" y="13" width="2.4" height="3.6" fill="#F2C94C"/><rect x="7.8" y="16.4" width="8.4" height="2.8" rx="1" fill="#F2C94C"/></svg>')
+ICON_J = ('<svg viewBox="0 0 24 24"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.4" fill="#fff"/><rect x="8.2" y="5.2" width="7.6" height="12.4" rx=".8" fill="#6A3FBF"/>'
+          '<rect x="9.8" y="7.4" width="4.4" height="6.2" rx=".9" fill="#fff"/><circle cx="12" cy="10.5" r="1.2" fill="#E0457B"/><circle cx="12" cy="19.3" r=".8" fill="#6A3FBF"/></svg>')
+def badge(k): return {"M": f'<i class="bm" title="Mリーグ">{ICON_M}</i>', "J": f'<i class="bj" title="雀魂">{ICON_J}</i>'}[k]
+SEC_COLS = ["#177083", "#4261AA", "#6B4FA0", "#C2416B", "#2E8B57"]      # 区分ごとに見出しの色を変える（少しポップに。2026-11-20 ユーザーの指定）
+
+
+_sec = iter(range(100))
 
 
 def col(items):
-    out = ""
+    out, c = "", SEC_COLS[0]
     for it in items:
         if it[0] == "##":
-            out += f'<h2>{it[1]}</h2>'; continue
+            c = SEC_COLS[next(_sec) % len(SEC_COLS)]
+            out += f'<h2 style="background:{c}">{it[1]}</h2>'; continue
         name, opts, note = it
-        chips = "".join(f'<span class="op{" on" if m else ""}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
-        out += f'<div class="it"><b><i class="cb"></i>{name}</b><div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>'
+        # 選んでいる方で色を分ける（Mリーグだけ＝金・雀魂だけ＝紫・両方＝半分ずつ）
+        chips = "".join(f'<span class="op{" m" * ("M" in m and "J" not in m)}{" j" * ("J" in m and "M" not in m)}{" mj" * ("M" in m and "J" in m)}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
+        out += f'<div class="it"><b><i class="cb" style="border-color:{c}"></i>{name}</b><div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>'
     return out
 
 
@@ -84,8 +96,10 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.9; white-space: nowrap; margin-left: auto; margin-right: 10px; }}
 .legend i {{ margin-right: 3px; }}
 {LOGO_CSS}
-i.bm, i.bj {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; border-radius: 50%; font-size: 10px; font-weight: 900; color: #fff; margin-left: 3px; vertical-align: 1px; }}
-i.bm {{ background: #1F2A28; }} i.bj {{ background: #4261AA; }}
+i.bm, i.bj {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; margin-left: 3px; flex: none; box-shadow: 0 0 0 1.5px #fff; }}
+i.bm svg, i.bj svg {{ width: 13px; height: 13px; display: block; }}
+i.bm {{ background: #1F2A50; }} i.bj {{ background: #7B4FD0; }}
+.legend i.bm, .legend i.bj {{ width: 22px; height: 22px; vertical-align: -6px; }} .legend i svg {{ width: 17px; height: 17px; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 6px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 14.5px; font-weight: 900; color: #fff; background: #177083; margin: 8px -8px 2px; padding: 3px 10px; }}
@@ -93,10 +107,12 @@ h2 {{ font-size: 14.5px; font-weight: 900; color: #fff; background: #177083; mar
 .it {{ display: grid; grid-template-columns: 124px 1fr; column-gap: 6px; align-items: center; padding: 6px 0; border-top: 1.5px solid #DCE7E4; }}
 h2 + .it {{ border-top: 0; }}
 .it > b {{ font-size: 13px; font-weight: 900; line-height: 1.25; display: flex; align-items: flex-start; gap: 5px; }}
-i.cb {{ flex: none; width: 12px; height: 12px; border: 2px solid #177083; border-radius: 3px; margin-top: 1px; }}
+i.cb {{ flex: none; width: 13px; height: 13px; border: 2.2px solid #177083; border-radius: 4px; margin-top: 1px; background: #fff; }}
 .ops {{ display: flex; flex-wrap: wrap; gap: 3px; }}
-.op {{ font-size: 11.5px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 2px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
-.op.on {{ border-color: #177083; color: #1F2A28; background: #E4F3EC; }}
+.op {{ font-size: 11.5px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 1px 7px 1px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
+.op.m {{ border-color: #D9AE2E; color: #1F2A28; background: #FFF4CF; }}
+.op.j {{ border-color: #A47FE6; color: #1F2A28; background: #F1E8FD; }}
+.op.mj {{ border-color: #8C7BC0; color: #1F2A28; background: linear-gradient(90deg, #FFF4CF 50%, #F1E8FD 50%); }}
 .it > small {{ grid-column: 2; font-size: 10.5px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
 .note {{ font-size: 11px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 7px; }}
 .note b {{ color: #E75620; }}
