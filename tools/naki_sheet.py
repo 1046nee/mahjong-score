@@ -64,7 +64,7 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .legend .lv {{ border: 1.5px solid #fff; }}
 {LOGO_CSS}
 i.lv {{ font-style: normal; display: inline-block; color: #fff; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 5px; line-height: 1.6; margin-right: 5px; vertical-align: 1px; white-space: nowrap; }}
-section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 8px; overflow: hidden; }}
+section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 7px; overflow: hidden; }}
 section > h2 .lv {{ border: 1.5px solid #fff; }}
 section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: baseline; gap: 8px; }}
 section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-left: auto; }}
@@ -122,7 +122,7 @@ ul.li li b {{ font-weight: 900; }}
 .kkr em {{ font-style: normal; font-weight: 900; color: #8A9A97; }}
 .kkr span {{ font-size: 10.5px; font-weight: 700; line-height: 1.4; color: #33403D; }}
 /* リーチ後のカン */
-.rk {{ display: grid; grid-template-columns: 92px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
+.rk {{ display: grid; grid-template-columns: 84px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
 .rk:first-child {{ border-top: 0; }}
 .rk > b {{ font-size: 12.5px; font-weight: 900; text-align: center; border-radius: 5px; padding: 3px 0; color: #fff; }}
 .rk > b.o {{ background: #177083; }} .rk > b.x {{ background: #C92F42; }}
@@ -135,20 +135,20 @@ ul.li li b {{ font-weight: 900; }}
 .two > section {{ margin-bottom: 7px; }}
 .three {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }}
 .kk4 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; margin-top: 3px; }}
-.kk4 .kkr {{ border-top: 0; padding: 5px 0; }}
+.kk4 .kkr {{ border-top: 0; padding: 3px 0; }}
 .kk4 .kkr span b {{ color: #C92F42; margin-right: 4px; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
 .tl em.cap {{ position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 3px; line-height: 1.35; white-space: nowrap; }}
-.rk {{ padding-top: 13px !important; padding-bottom: 2px !important; }}
-.rk > span.rtx {{ display: flex; align-items: center; gap: 8px; }}
+.rk {{ padding-top: 12px !important; padding-bottom: 0 !important; }}
+.rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
 .kk4 .kkr span b.okb {{ color: #177083; }}
 .judge {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: start; }}
 table.jt {{ width: 100%; border-collapse: collapse; }}
 table.jt th {{ font-size: 13px; font-weight: 900; color: #fff; padding: 3px 8px; text-align: left; }}
 table.jt th.o {{ background: #177083; }} table.jt th.x {{ background: #C92F42; }}
-table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 3px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
+table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 2px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
@@ -157,6 +157,7 @@ table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align
 .kn {{ background: #FFF5EF; border: 1.5px solid #F4C9B3; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
+.kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
 .kt > b {{ font-size: 18px; font-weight: 900; padding-bottom: 1px; white-space: nowrap; }}
 .kt > .hd {{ margin-left: auto; }}
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
@@ -182,16 +183,16 @@ def body():
     import importlib.util
     spec = importlib.util.spec_from_file_location("machi3", os.path.join(HERE, "machi_sheet", "machi3.py"))
     sys.path.insert(0, os.path.join(HERE, "machi_sheet")); M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
-    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌を<b>「チー」「ポン」「カン」と声をかけてもらい</b>、面子（3枚1組）をそろえること。
-もらった牌は横向きにして、手牌の右に表向きで並べる（晒す）</p>
+    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。
+もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
 <div class="k5">
   <div class="kc"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
   <div class="kc"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b>暗槓</b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）を揃える<br>人から貰わない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
-  <div class="kc"><div class="kt">{lv(2)}<b>大明槓</b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚を揃える<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b>加槓</b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
-  <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は人から貰わない＝鳴きではない</em>ので、暗槓だけはリーチできる</p>
-  <p>横向き＝貰った牌（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり嶺上牌をツモる</p></div>
+  <div class="kc"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
+  <div class="kc"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
+  <div class="kc"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は人からもらわない＝鳴きではない</em>ので、暗槓だけはリーチできる</p>
+  <p>横向き＝もらった牌（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり嶺上牌をツモる</p></div>
 </div>"""
     riichi = f"""<table class="ok"><colgroup><col><col><col><col><col></colgroup>
 <tr><th>チー</th><th>ポン</th><th class="g">暗槓</th><th>大明槓</th><th>加槓</th></tr>
@@ -210,7 +211,7 @@ def body():
 <div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("x:m3", 19)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
 <div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("o:m9", 19)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
 </div>"""
-    W = 16
+    W = 20
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
         ("o", "できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
@@ -221,7 +222,7 @@ def body():
     for k, lab, h, tsumo, tx in rk:
         ws = [c for c, _ in M.waits(h.split(), 4, 1)]
         rkh += (f'<div class="rk"><b class="{k}">{lab}</b>{hand(h + " | t:" + tsumo, W)}'
-                f'<span class="rtx"><i class="wt">待ち{hand(" ".join(ws), 12)}</i><span>{tx}</span></span></div>')
+                f'<span class="rtx"><i class="wt">待ち{hand(" ".join(ws), 14)}</i><span>{tx}</span></span></div>')
     rows_o = [(1, "役牌の対子がある", "ポンで役がつく"), (1, "あと1〜2回の鳴きでテンパイ", "役もあるなら"), (1, "鳴いても満貫以上ある", "早くアガり切る"),
               (2, "終盤・他家の親を流したい", "早さを優先"), (2, "オーラスでトップを守りたい", "安くても終わらせる"), (2, "他家の一発を消したい", ""), (2, "海底（最後のツモ）をずらしたい", ""),
               (2, "同巡のフリテンを解消したい", ""), (3, "ツモ番を飛ばす・チーさせない", ""), (3, "安全牌に困る人にツモ番を回す", ""), (3, "親のテンパイのためにツモ番を回す", "")]
