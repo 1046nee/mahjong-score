@@ -140,7 +140,7 @@ ul.li li b {{ font-weight: 900; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
 .tl em.cap {{ position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 800; color: #C2622F; line-height: 1.2; white-space: nowrap; }}
-.rk {{ padding-top: 3px !important; padding-bottom: 0 !important; }}
+.rk {{ padding-top: 5px !important; padding-bottom: 0 !important; }} .rk > .hd {{ align-self: end; margin-bottom: 3px; }}      /* 牌を下にそろえ、上の「ツモ」の字が上の線に重ならないようにする（2026-11-20 ユーザーの指摘） */
 .rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
 .kk4 .kkr span b.okb {{ color: #177083; }}
@@ -243,9 +243,9 @@ def body():
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
         ("o", "○ できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
+        ("x", "× ツモ牌以外をカン", f'{seq("23", "m")} {seq("444456", "s")} {seq("12355", "p")}', "s7", "七索をツモって四索をカン→ツモった牌でないのでできない"),      # 2026-11-20 ユーザーの指定の牌姿
         ("x", "× 待ちが変わる", f'{base} z1 z1 {seq("2222", "p")} p4', "p5", "五筒を残して二筒をカン→三筒待ちが三・六筒待ちに"),      # 2026-11-20 ユーザーの指定の牌姿
         ("x", "× 面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
-        ("x", "× ツモ牌以外をカン", f'{seq("23", "m")} {seq("444456", "s")} {seq("12355", "p")}', "s7", "七索をツモって四索をカン→ツモった牌でないのでできない"),      # 2026-11-20 ユーザーの指定の牌姿
     ]
     rkh = ""
     for k, lab, h, tsumo, tx in rk:
