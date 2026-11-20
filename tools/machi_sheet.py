@@ -4,6 +4,7 @@
 作ったら python tools/make_webp.py（記事の中は WebP）。記事は blog-machi-katachi。
 決めごと（2026-11-16 ユーザーの指定）は docs/image-tools.md「Xに出す1枚の表」と、machi_sheet/ の各スクリプトのコメントに。
   待ちと枚数は手で書かず計算（machi_sheet/machi3.py の waits）。形の一覧・段階（初心者・脱初心者・中級者）・名前は machi3.py の SECS・LV1〜LV3
+7枚形だけの一覧（Xの1枚。2026-11-20〜）: python3.13 tools/machi_sheet/machi4.py まじゃすこ素材/x/machi/machi-7mai-ichiran A7
 実行: python tools/machi_sheet.py ／ Instagram用（1080×1350・8枚。まじゃすこ素材/ig/machi/）: python tools/machi_sheet.py --ig
 """
 import os, subprocess, sys

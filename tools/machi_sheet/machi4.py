@@ -71,10 +71,12 @@ td.kd { text-align: center; } td.rk { text-align: center; font-size: 17px; font-
 """
 TEAL_, ORG, BLU = "#177083", "#E25A1C", "#4261AA"
 top = max(ALL, key=lambda r: r["n"]); low = min(ALL, key=lambda r: r["n"])
-def sheet_A(out):
-    """カテゴリーは行を足さず、左の2列にまとめる（2026-11-16 ユーザーの指定）: 1列目＝何面子何雀頭（縦書き）・2列目＝形の分け方"""
+def sheet_A(out, only=None):
+    """only=2 で2面子1雀頭（7枚形）だけの1枚（Xの画像。2026-11-20 ユーザーの指定）。カテゴリーは行を足さず、左の2列にまとめる（2026-11-16 ユーザーの指定）: 1列目＝何面子何雀頭（縦書き）・2列目＝形の分け方"""
     body = ""
-    for t, sub, m, rows in M.SECS:
+    AL = [r for r in ALL if only is None or r["m"] == only]
+    NL = {k: sum(1 for r in AL if M.level(r["name"]) in ((1, 2) if k == 1 else (k,))) for k in (1, 3, 4)}
+    for t, sub, m, rows in [x for x in M.SECS if only is None or x[2] == only]:
         rs = [r for r in ALL if r["m"] == m]
         sep = [r for r in rs if r["honor"]]
         blocks = [("面子と雀頭が<br>別々の形", "雀頭は字牌でも", sep, "sep")]
@@ -112,8 +114,8 @@ def sheet_A(out):
         hd = '<th colspan="2">分け方</th><th>形</th><th>牌の例</th><th>待ち</th><th>枚数</th>'
     html = f"""<table><colgroup>{cg}</colgroup>
 <thead><tr>{hd}</tr></thead><tbody>{body}</tbody></table>
-<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（{NLV[1]}形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（{NLV[3]}形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（{NLV[4]}形）</span><br>
-<span class="k47">4枚形</span>・<span class="k47">7枚形</span>＝同じ色の牌だけでつながった形（アガると1面子＋1雀頭／2面子＋1雀頭）。<br>
+<div class="tip"><b>左上の札＝覚える段階</b>　<span class="fb"><i class="st2 l1">初心者</i>まず覚える（{NL[1]}形）</span>　<span class="fb3"><i class="st2 l3">脱初心者</i>次に覚える（{NL[3]}形）</span>　<span class="fb4"><i class="st2 l4">中級者</i>余裕があれば（{NL[4]}形）</span><br>
+{'<span class="k47">4枚形</span>・<span class="k47">7枚形</span>＝同じ色の牌だけでつながった形（アガると1面子＋1雀頭／2面子＋1雀頭）。' if only is None else '<span class="k47">7枚形</span>＝同じ色の牌だけでつながった7枚の形（アガると2面子＋1雀頭）。'}<br>
 名前の決まっていない形は、部品を左から「＋」でつないで表した（<b>空</b>＝1つ飛んだ数字。例: 暗刻＋空＋延べ単＝二二二・四五六七）。<br>
 </div>"""
     css = CSS + """
@@ -123,7 +125,8 @@ td.tx { font-size: 10.5px; letter-spacing: -.03em; padding: 4px 5px; } th.rh { f
 tr.gtop td, tr.gtop th { border-top: 5px double #1F2A28 !important; } tbody tr.gtop:first-child td, tbody tr.gtop:first-child th { border-top: 2px solid #1F2A28; } tr.btop td, tr.btop th { border-top: 2px solid #1F2A28 !important; } tr.ctop td, tr.ctop th { border-top: 1.5px solid #8FA29D !important; }      /* 別々の形とつながった形の境 */
 tbody tr.ssr { height: 20px; } td.ss2 { background: #F4F7F6; color: #4C5B58; font-size: 11px; font-weight: 900; padding: 1px 10px; border-top: 1px dashed #8FA29D; }"""
     LVCHAIN = "<span class='lvchain'><i class='l1'>初心者</i><b>▶</b><i class='l3'>脱初心者</i><b>▶</b><i class='l4'>中級者</i></span>"
-    render(page("待ちの形の一覧" + LVCHAIN, "1面子1雀頭（4枚形）・2面子1雀頭（7枚形）を作る形と、待ちの枚数", f"脱初心者の<br><span>{len(ALL)}形</span>", html, css + f".k47b {{ background: {K47}; }}"), out)
+    title, sub = ("待ちの形の一覧", "1面子1雀頭（4枚形）・2面子1雀頭（7枚形）を作る形と、待ちの枚数") if only is None else ("7枚形の待ちの一覧", "2面子1雀頭を作る形と、待ちの枚数")
+    render(page(title + LVCHAIN, sub, f"{'脱初心者の' if only is None else '7枚形'}<br><span>{len(AL)}形</span>", html, css + f".k47b {{ background: {K47}; }}"), out)
 def sheet_B1(out):
     ks = sorted([r for r in ALL if r["kihon"]], key=lambda r: -r["n"])
     body = "".join(row(r, big=True) for r in ks)
@@ -146,4 +149,4 @@ def sheet_B2(out):
 <p class="note">例は筒子と東。枚数は、形の中の牌を除いた残り（場に見えている牌は数えない）。待ちと枚数は計算で出した</p>"""
     render(page(f"待ちの形　応用の{NLV[4]}形", "暗刻が入ると待ちが広がる。待ちの枚数が多い順", f"脱初心者の<br><span>{NLV[4]}形</span>", html, CSS + "td.tx { font-size: 11px; letter-spacing: -.03em; }"), out)
 k = sys.argv[2]
-{"A": sheet_A, "B1": sheet_B1, "B2": sheet_B2}[k](sys.argv[1])
+{"A": sheet_A, "A7": lambda o: sheet_A(o, 2), "B1": sheet_B1, "B2": sheet_B2}[k](sys.argv[1])
