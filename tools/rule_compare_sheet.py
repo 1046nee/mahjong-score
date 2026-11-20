@@ -107,13 +107,14 @@ header {{ display: flex; align-items: center; justify-content: space-between; ba
 header h1 {{ font-size: 25px; font-weight: 900; line-height: 1.15; }}
 header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
 header h1 small b {{ color: #FFD0B5; }}
-.legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.9; white-space: nowrap; margin-left: auto; margin-right: 10px; }}
+.legend {{ font-size: 11.5px; font-weight: 800; white-space: nowrap; margin-left: auto; margin-right: 12px; display: flex; flex-direction: column; gap: 6px; }} .legend > span {{ display: flex; align-items: center; gap: 6px; }}      /* 2つのアイコンが上下で重なっていた（2026-11-20 ユーザーの指摘） */
 .legend i {{ margin-right: 3px; }}
 {LOGO_CSS}
 i.bm, i.bj {{ --d: 17px; font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: var(--d); height: var(--d); border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.3px rgba(0,0,0,.12); margin-left: 4px; flex: none; }}
 i.bm img {{ height: 72%; width: auto; display: block; }}
+i.bm + i.bj {{ margin-left: 6px; }}      /* 2つ並ぶとき白い縁どうしが重ならない間 */
 i.bj img {{ width: 100%; height: 100%; display: block; }}
-.legend i.bm, .legend i.bj {{ --d: 22px; vertical-align: -6px; margin-left: 0; }}
+.legend i.bm, .legend i.bj {{ --d: 22px; margin: 0; }}
 .key {{ display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 800; color: #4F5C5A; margin: 0 2px 5px; }}
 .key .op {{ font-size: 10.5px; padding: 0 7px; }} .key .sw {{ display: inline-flex; align-items: center; gap: 5px; }}
 .key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFE1CE; border: 2.5px solid #E75620; box-shadow: 0 0 0 2px rgba(231, 86, 32, .2); }} .key .ssw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #E3F4EC; border: 1.5px solid #7CC3A6; }}
@@ -145,7 +146,7 @@ footer {{ position: absolute; left: 24px; right: 24px; bottom: 7px; display: fle
 footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><h1>打つ前に決める ルールチェックシート<small>Mリーグと雀魂は、どれを選んでいる？　<b>ルールが違うのは{N_DIFF}項目</b></small></h1>
-<div class="legend">{badge("M")} Mリーグ<br>{badge("J")} 雀魂（段位戦）</div>{logo_html()}</header>
+<div class="legend"><span>{badge("M")}Mリーグ</span><span>{badge("J")}雀魂（段位戦）</span></div>{logo_html()}</header>
 <div class="key"><span class="sw"><i class="dsw"></i>ルールが違う＝要チェック</span><span class="sw"><i class="ssw"></i>同じ</span><span class="sw"><span class="op mj">両方</span></span><span class="sw"><span class="op m">Mリーグだけ</span></span><span class="sw"><span class="op j">雀魂だけ</span></span><span class="sw"><span class="op">どちらでもない</span></span></div>
 <div class="grid"><div class="colw" style="--nw:124px">{col(LEFT)}</div><div class="colw" style="--nw:158px">{col(RIGHT)}</div></div>
 <p class="note"><b>□にチェックして、仲間内のルールを決めよう。</b>Mリーグは公式サイトの公式戦ルール、雀魂はWikipedia「雀魂」の段位戦のルールなどによる（2026年11月）。印が無い所は、規定がないか確かめられなかった所。ゲームのルールは変わることがある。</p>
@@ -167,6 +168,14 @@ def render():
           if (sm && sm.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('補足:'+b.textContent);
           if (ops.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('はみ出し:'+b.textContent); return o;})""")
         print("改行・はみ出し", bad); assert not bad, bad
+        ov = pg.evaluate("""(() => { const sel = 'i.bm, i.bj, .op, .it > b, .it > b em, .legend > span, .key > span, h2, header h1, .logo-pill';
+          const els = [...document.querySelectorAll(sel)]; const out = [];
+          const r = e => { const b = e.getBoundingClientRect(); const s = e.matches('i.bm, i.bj') ? 2.3 : 0; return {l: b.left - s, r: b.right + s, t: b.top - s, b: b.bottom + s}; };
+          for (let i = 0; i < els.length; i++) for (let j = i + 1; j < els.length; j++) {
+            const a = els[i], c = els[j]; if (a.contains(c) || c.contains(a)) continue;
+            const x = r(a), y = r(c); if (x.l < y.r - .5 && y.l < x.r - .5 && x.t < y.b - .5 && y.t < x.b - .5) out.push((a.className || a.tagName) + ':' + a.textContent.slice(0, 8) + ' × ' + (c.className || c.tagName) + ':' + c.textContent.slice(0, 8)); }
+          return out; })()""")
+        print("重なり", ov); assert not ov, ov
         print("余白", round(h)); pg.screenshot(path=os.path.join(OUT, "rule-check.png")); b.close()
     os.remove(hp)
 
