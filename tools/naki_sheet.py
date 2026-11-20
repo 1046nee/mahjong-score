@@ -208,7 +208,7 @@ def body(ig_one=False):
     import importlib.util
     spec = importlib.util.spec_from_file_location("machi3", os.path.join(HERE, "machi_sheet", "machi3.py"))
     sys.path.insert(0, os.path.join(HERE, "machi_sheet")); M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
-    KW = 16 if ig_one else 20
+    KW = 14 if ig_one else 20
     lead = ('<p class="lead"><b>鳴き</b>＝人が捨てた牌に<b>「チー」「ポン」「カン」</b>と声をかけてもらい、面子をそろえること。もらった牌は横向きで右端に晒す</p>'
             if ig_one else "")
     kinds = f"""{lead}<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。<br>もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
@@ -322,6 +322,11 @@ i.tg { font-size: 8.5px !important; }
 i.lv { width: 14px !important; height: 14px !important; font-size: 9px !important; margin-right: 3px !important; }
 footer { left: 14px !important; right: 14px !important; bottom: 5px !important; font-size: 9px !important; }
 .kc u { margin-top: 0 !important; padding: 0 5px !important; } .kt { height: 26px !important; } section { margin-bottom: 3px !important; } .rk { padding-top: 2px !important; } .kk4 .kkr { padding-top: 1px !important; }
+/* カードの頭: ルビと加槓の重ねた牌がカードの外に出ないよう高さをとる。頭文字の札は名前の字の高さの真ん中にそろえる（2026-11-20 ユーザーの指摘） */
+.kc { padding-top: 2px !important; } .kt { height: 36px !important; } .kt > b { font-size: 15px !important; padding-bottom: 3px !important; line-height: 1.2 !important; }
+.kt .lv { width: 16px !important; height: 16px !important; font-size: 10px !important; margin-bottom: 4.5px !important; }
+.kt > b ruby rt { font-size: 8px !important; line-height: 1 !important; }
+.lead { margin-bottom: 3px !important; padding: 2px 7px !important; } section > h2 { padding: 2.5px 10px !important; } .in { padding: 3px 8px 3px !important; }
 """
 
 
@@ -335,10 +340,11 @@ def ig_one():
         hp = os.path.join(out, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html)
         pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         h = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - Math.max(...[...document.querySelectorAll('section')].map(s => s.getBoundingClientRect().bottom))")
-        over = pg.evaluate("[...document.querySelectorAll('.rk > span.rtx > span, .kc > span, table.jt td')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent)")
+        over = pg.evaluate("[...document.querySelectorAll('.rk > span.rtx > span, .kc > span, table.jt td')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent)"
+                           " .concat([...document.querySelectorAll('.kc')].filter(c => [...c.querySelectorAll('img, rt, b')].some(e => e.getBoundingClientRect().top < c.getBoundingClientRect().top + 1)).map(c => 'カードの上に出る:' + c.textContent.slice(0, 6)))")
         print("余白", round(h), "はみ出し", over)
         pg.screenshot(path=os.path.join(out, "1.png")); b.close(); os.remove(hp)
-        assert h >= 0, "下にはみ出す"
+        assert h >= 0 and not over, "はみ出す"
 
 
 if __name__ == "__main__":
