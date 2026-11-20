@@ -18,7 +18,7 @@ OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "naki")
 LV = {1: ("初心者", "#E75620"), 2: ("中級者", "#177083"), 3: ("上級者", "#6B4FA0")}
 
 
-def lv(n): return f'<i class="lv" style="background:{LV[n][1]}">{LV[n][0]}</i>'
+def lv(n): return f'<i class="lv" style="background:{LV[n][1]}">{LV[n][0][0]}</i>'      # 頭文字1字（初・中・上）。色で段階を見せる（2026-11-20 ユーザーの指定）
 
 
 def t(code, w=24, yoko=False, mark="", hl=False):
@@ -61,9 +61,9 @@ header h1 {{ font-size: 28px; font-weight: 900; line-height: 1.1; }}
 header h1 em {{ font-style: normal; display: inline-block; background: #E75620; border-radius: 6px; font-size: 15px; padding: 1px 8px; margin-left: 8px; vertical-align: 5px; }}
 header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
 .legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.8; text-align: right; white-space: nowrap; }}
-.legend .lv {{ border: 1.5px solid #fff; }}
+.legend .lv {{ border: 1.5px solid #fff; margin: 0 2px 0 6px; vertical-align: -3px; }}
 {LOGO_CSS}
-i.lv {{ font-style: normal; display: inline-block; color: #fff; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 5px; line-height: 1.6; margin-right: 5px; vertical-align: 1px; white-space: nowrap; }}
+i.lv {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; color: #fff; font-size: 11px; font-weight: 900; border-radius: 4px; padding: 0; line-height: 1; margin-right: 5px; vertical-align: 1px; white-space: nowrap; }}
 section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 7px; overflow: hidden; }}
 section > h2 .lv {{ border: 1.5px solid #fff; }}
 section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: baseline; gap: 8px; }}
@@ -74,7 +74,7 @@ section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-le
 .gap {{ width: 8px; }}
 .stk {{ display: inline-flex; flex-direction: column; gap: 1px; }}
 .tl {{ position: relative; display: inline-block; }}
-.tl.hl img {{ outline: 3px solid #E75620; outline-offset: 1px; border-radius: 3px; }}
+.tl.hl img {{ outline: 2px solid #F2B08F; outline-offset: 1px; border-radius: 3px; }}
 .tl i {{ position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 24px; font-weight: 900; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }}
 .tl i.m1 {{ color: #C92F42; }} .tl i.m2 {{ color: #177083; }}
 /* 鳴きの種類 */
@@ -122,7 +122,7 @@ ul.li li b {{ font-weight: 900; }}
 .kkr em {{ font-style: normal; font-weight: 900; color: #8A9A97; }}
 .kkr span {{ font-size: 10.5px; font-weight: 700; line-height: 1.4; color: #33403D; }}
 /* リーチ後のカン */
-.rk {{ display: grid; grid-template-columns: 84px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
+.rk {{ display: grid; grid-template-columns: 98px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
 .rk:first-child {{ border-top: 0; }}
 .rk > b {{ font-size: 12.5px; font-weight: 900; text-align: center; border-radius: 5px; padding: 3px 0; color: #fff; }}
 .rk > b.o {{ background: #177083; }} .rk > b.x {{ background: #C92F42; }}
@@ -139,7 +139,7 @@ ul.li li b {{ font-weight: 900; }}
 .kk4 .kkr span b {{ color: #C92F42; margin-right: 4px; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
-.tl em.cap {{ position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 3px; line-height: 1.35; white-space: nowrap; }}
+.tl em.cap {{ position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 800; color: #C2622F; line-height: 1.2; white-space: nowrap; }}
 .rk {{ padding-top: 12px !important; padding-bottom: 0 !important; }}
 .rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
@@ -152,8 +152,8 @@ table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 2px 6px; border-bot
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
-.kt {{ display: flex; align-items: flex-end; gap: 4px; width: 100%; min-height: 50px; padding-top: 4px; }}
-.kt .lv {{ position: absolute; top: 6px; left: 7px; }}
+.kt {{ display: flex; align-items: flex-end; gap: 4px; width: 100%; }}
+.kt .lv {{ align-self: flex-end; margin-bottom: 4px; }}
 .kn {{ background: #FFF5EF; border: 1.5px solid #F4C9B3; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
@@ -169,7 +169,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 
 
 def page(no, sub, body):
-    legend = f'<div class="legend">覚える段階<br>{lv(1)}{lv(2)}{lv(3)}</div>'
+    legend = f'<div class="legend">覚える段階<br>{lv(1)}初心者 {lv(2)}中級者 {lv(3)}上級者</div>'
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">
 <style>{CSS}</style></head><body>
@@ -191,8 +191,8 @@ def body():
   <div class="kc"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
   <div class="kc"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
   <div class="kc"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
-  <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は人からもらわない＝鳴きではない</em>ので、暗槓だけはリーチできる</p>
-  <p>横向き＝もらった牌（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり嶺上牌をツモる</p></div>
+  <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は鳴きではない</em>ので、リーチできる</p>
+  <p>横向き＝もらった牌<br>（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり<br>嶺上牌をツモる</p></div>
 </div>"""
     riichi = f"""<table class="ok"><colgroup><col><col><col><col><col></colgroup>
 <tr><th>チー</th><th>ポン</th><th class="g">暗槓</th><th>大明槓</th><th>加槓</th></tr>
@@ -206,17 +206,17 @@ def body():
 <div class="g4">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
 </div>"""
     kuikae = f"""<div class="kk4">
-<div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("x:m6", 19)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
-<div class="kkr">{hand("p5 y:p5r p5", 19)}<em>→</em>{hand("x:p5", 19)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("x:m3", 19)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("o:m9", 19)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m6", 23)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
+<div class="kkr">{hand("p5 y:p5r p5", 23)}<em>→</em>{hand("x:p5", 23)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m3", 23)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("o:m9", 23)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
 </div>"""
     W = 20
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
-        ("o", "できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
-        ("x", "待ちが変わる", f'{base} z1 z1 {seq("2223", "p")} p4', "p2", "二筒をカンすると、東待ちが消える"),
-        ("x", "面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
+        ("o", "○ できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
+        ("x", "× 待ちが変わる", f'{base} z1 z1 {seq("2223", "p")} p4', "p2", "二筒をカンすると、東待ちが消える"),
+        ("x", "× 面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
     ]
     rkh = ""
     for k, lab, h, tsumo, tx in rk:
