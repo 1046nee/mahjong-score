@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """打つ前に決めるルールのチェックシート（A4縦1枚。SNSの投稿用。2026-11-20 ユーザーの依頼）。
-2列に、事前に決めておきたい項目を並べ、選択肢ごとに「M」（Mリーグ）と「雀」（雀魂・段位戦）の札で、どちらがどれを選んでいるかを見せる。
+2列に、事前に決めておきたい項目を並べ、選択肢ごとにMリーグのロゴと雀魂のアイコンの印で、どちらがどれを選んでいるかを見せる。
 比べる表ではなく、チェックシート。文字・選択肢はぎゅっと詰めてよい（ユーザーの指定）。
 出典: Mリーグ＝公式サイト m-league.jp/about の公式戦ルール（2026-11-20 に確認）。雀魂＝Wikipedia「雀魂」の段位戦のルールと、blog-yakuman-rules の表。
 確かめられなかったもの・規定がないものは札を付けず、項目の右に小さく書く。
@@ -57,13 +57,24 @@ RIGHT = [
 ]
 
 
-# 印はまじゃすこで描いたアイコン（公式のロゴは使わない＝商標で、提携しているように見えるため。2026-11-20）。
-# Mリーグ＝プロのリーグ→紺の丸に金のトロフィー。雀魂＝オンライン（スマホ）の麻雀→紫の丸にスマホと牌
-ICON_M = ('<svg viewBox="0 0 24 24"><path d="M7 4h10v4.5a5 5 0 0 1-10 0z" fill="#F2C94C"/><path d="M7 5.5H4.6a2.6 2.6 0 0 0 2.6 4M17 5.5h2.4a2.6 2.6 0 0 1-2.6 4" stroke="#F2C94C" stroke-width="1.8" fill="none"/>'
-          '<rect x="10.8" y="13" width="2.4" height="3.6" fill="#F2C94C"/><rect x="7.8" y="16.4" width="8.4" height="2.8" rx="1" fill="#F2C94C"/></svg>')
-ICON_J = ('<svg viewBox="0 0 24 24"><rect x="6.5" y="2.8" width="11" height="18.4" rx="2.4" fill="#fff"/><rect x="8.2" y="5.2" width="7.6" height="12.4" rx=".8" fill="#6A3FBF"/>'
-          '<rect x="9.8" y="7.4" width="4.4" height="6.2" rx=".9" fill="#fff"/><circle cx="12" cy="10.5" r="1.2" fill="#E0457B"/><circle cx="12" cy="19.3" r=".8" fill="#6A3FBF"/></svg>')
-def badge(k): return {"M": f'<i class="bm" title="Mリーグ">{ICON_M}</i>', "J": f'<i class="bj" title="雀魂">{ICON_J}</i>'}[k]
+# 印は本物のロゴ・アイコン（2026-11-20 ユーザーの判断で使う。元の画像は非公開の素材リポジトリ まじゃすこ素材/x/rule-hikaku/src/ だけに置く）。
+# Mリーグ＝公式ロゴのマーク部分（文字は切る）。雀魂＝アプリのアイコンの顔の部分を丸く切る
+SRC = os.path.join(OUT, "src")
+def _uri(im):
+    import base64; buf = io.BytesIO(); im.save(buf, "PNG"); return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+def _icons():
+    from PIL import Image
+    m = Image.open(os.path.join(SRC, "mleague.png")).convert("RGBA").crop((338, 28, 689, 474))
+    px = m.load()                                                     # 白い地は透かす（色の札の上に白い四角が出ないように）
+    for y in range(m.height):
+        for x in range(m.width):
+            r, g, b_, al = px[x, y]
+            if min(r, g, b_) > 235: px[x, y] = (255, 255, 255, 0)
+    m = m.resize((round(m.width * 96 / m.height), 96), Image.LANCZOS)
+    j = Image.open(os.path.join(SRC, "jantama.jpg")).convert("RGB").crop((125, 125, 405, 405)).resize((96, 96), Image.LANCZOS)
+    return _uri(m), _uri(j)
+ICON_M, ICON_J = _icons()
+def badge(k): return {"M": f'<i class="bm" title="Mリーグ"><img src="{ICON_M}"></i>', "J": f'<i class="bj" title="雀魂"><img src="{ICON_J}"></i>'}[k]
 SEC_COLS = ["#177083", "#4261AA", "#6B4FA0", "#C2416B", "#2E8B57"]      # 区分ごとに見出しの色を変える（少しポップに。2026-11-20 ユーザーの指定）
 
 
@@ -96,10 +107,10 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.9; white-space: nowrap; margin-left: auto; margin-right: 10px; }}
 .legend i {{ margin-right: 3px; }}
 {LOGO_CSS}
-i.bm, i.bj {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; margin-left: 3px; flex: none; box-shadow: 0 0 0 1.5px #fff; }}
-i.bm svg, i.bj svg {{ width: 13px; height: 13px; display: block; }}
-i.bm {{ background: #1F2A50; }} i.bj {{ background: #7B4FD0; }}
-.legend i.bm, .legend i.bj {{ width: 22px; height: 22px; vertical-align: -6px; }} .legend i svg {{ width: 17px; height: 17px; }}
+i.bm, i.bj {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; margin-left: 3px; flex: none; }}
+i.bm img {{ height: 16px; width: auto; display: block; }}
+i.bj {{ border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 1.5px #fff; }} i.bj img {{ width: 17px; height: 17px; display: block; }}
+.legend i.bm, .legend i.bj {{ width: 22px; height: 22px; vertical-align: -6px; }} .legend i.bm {{ background: #fff; border-radius: 50%; }} .legend i.bm img {{ height: 16px; }} .legend i.bj img {{ width: 22px; height: 22px; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 6px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 14.5px; font-weight: 900; color: #fff; background: #177083; margin: 8px -8px 2px; padding: 3px 10px; }}
@@ -110,9 +121,9 @@ h2 + .it {{ border-top: 0; }}
 i.cb {{ flex: none; width: 13px; height: 13px; border: 2.2px solid #177083; border-radius: 4px; margin-top: 1px; background: #fff; }}
 .ops {{ display: flex; flex-wrap: wrap; gap: 3px; }}
 .op {{ font-size: 11.5px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 1px 7px 1px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
-.op.m {{ border-color: #D9AE2E; color: #1F2A28; background: #FFF4CF; }}
+.op.m {{ border-color: #E07A7F; color: #1F2A28; background: #FDECEC; }}
 .op.j {{ border-color: #A47FE6; color: #1F2A28; background: #F1E8FD; }}
-.op.mj {{ border-color: #8C7BC0; color: #1F2A28; background: linear-gradient(90deg, #FFF4CF 50%, #F1E8FD 50%); }}
+.op.mj {{ border-color: #8C7BC0; color: #1F2A28; background: linear-gradient(90deg, #FDECEC 50%, #F1E8FD 50%); }}
 .it > small {{ grid-column: 2; font-size: 10.5px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
 .note {{ font-size: 11px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 7px; }}
 .note b {{ color: #E75620; }}
