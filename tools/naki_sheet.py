@@ -64,7 +64,7 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 .legend .lv {{ border: 1.5px solid #fff; margin: 0 2px 0 6px; vertical-align: -3px; }}
 {LOGO_CSS}
 i.lv {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; color: #fff; font-size: 11px; font-weight: 900; border-radius: 4px; padding: 0; line-height: 1; margin-right: 5px; vertical-align: 1px; white-space: nowrap; }}
-section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 7px; overflow: hidden; }}
+section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 5px; overflow: hidden; }}
 section > h2 .lv {{ border: 1.5px solid #fff; }}
 section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: baseline; gap: 8px; }}
 section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-left: auto; }}
@@ -135,12 +135,12 @@ ul.li li b {{ font-weight: 900; }}
 .two > section {{ margin-bottom: 7px; }}
 .three {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }}
 .kk4 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; margin-top: 3px; }}
-.kk4 .kkr {{ border-top: 0; padding: 5px 0 2px; }}
+.kk4 .kkr {{ border-top: 0; padding: 3px 0 1px; }}
 .kk4 .kkr span b {{ color: #C92F42; margin-right: 4px; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
 .tl em.cap {{ position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 800; color: #C2622F; line-height: 1.2; white-space: nowrap; }}
-.rk {{ padding-top: 11px !important; padding-bottom: 0 !important; }}
+.rk {{ padding-top: 10px !important; padding-bottom: 0 !important; }}
 .rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
 .kk4 .kkr span b.okb {{ color: #177083; }}
@@ -148,13 +148,13 @@ i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; d
 table.jt {{ width: 100%; border-collapse: collapse; }}
 table.jt th {{ font-size: 13px; font-weight: 900; color: #fff; padding: 3px 8px; text-align: left; }}
 table.jt th.o {{ background: #177083; }} table.jt th.x {{ background: #C92F42; }}
-table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 2px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
+table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 1px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
-.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 43px; }}
+.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 42px; }}
 .kt .lv {{ margin-top: 13px; }}
-.kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
+.kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 6px 9px; font-size: 11px; font-weight: 700; line-height: 1.5; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
@@ -176,6 +176,13 @@ section {{ border-width: 2.5px !important; }}
 .kk4 {{ border-top: 0; }}
 .kk4 .kkr:nth-child(n+3) {{ border-top: 1.5px dashed #C5D6D2 !important; }}
 .rk {{ border-top: 1.5px solid #D5E2DF !important; }} .rk:first-child {{ border-top: 0 !important; }}
+.fg {{ display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }}
+i.tg {{ font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: #5E6B69; border-radius: 3px; padding: 0 5px; line-height: 1.5; white-space: nowrap; }}
+i.tg.tng {{ background: #C92F42; }} i.tg.tok {{ background: #177083; }}
+.kkr .fg em, .kkr > em {{ align-self: flex-end; margin-bottom: 8px; }}
+.kkr span.cap2 {{ font-size: 10.5px; font-weight: 700; line-height: 1.45; color: #33403D; display: flex; flex-direction: column; }}
+.kkr span.cap2 b {{ font-size: 12px; color: #C92F42; }} .kkr span.cap2 b.okb {{ color: #177083; }}
+.kkr .fg .tl i {{ display: none; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -217,11 +224,17 @@ def body():
 <div class="c2">{lv(2)}<b>一・九・字牌の鳴き</b><p>役なしになりやすい</p></div>
 <div class="c2">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
 </div>"""
+    # 鳴いた形と切る牌に、それぞれ札を付ける（矢印の右が切る牌だと伝わらないため。2026-11-20 ユーザーの指摘）
+    def kk(naki_lab, naki, cut, ok, kind, tx):
+        cls = "okb" if ok else ""
+        return (f'<div class="kkr"><span class="fg"><i class="tg">{naki_lab}</i>{hand(naki, 23)}</span><em>→</em>'
+                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"切ってよい" if ok else "切れない"}</i>{hand(cut, 27)}</span>'
+                f'<span class="cap2"><b class="{cls}">{kind}</b>{tx}</span></div>')
     kuikae = f"""<div class="kk4">
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m6", 27)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
-<div class="kkr">{hand("p5 y:p5r p5", 23)}<em>→</em>{hand("x:p5", 27)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m3", 27)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("o:m9", 27)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
+{kk("六萬をチー", "y:m6 m4 m5", "x:m6", False, "同じ牌", "鳴いた六萬と同じ牌")}
+{kk("赤五筒をポン", "p5 y:p5r p5", "x:p5", False, "同じ牌", "赤でも黒でも同じ五筒")}
+{kk("六萬をチー", "y:m6 m4 m5", "x:m3", False, "スジ", "三萬でも三四五萬が作れる")}
+{kk("六萬をチー", "y:m6 m4 m5", "o:m9", True, "切れる", "九萬では面子が作れない")}
 </div>"""
     W = 20
     base = f'{seq("123", "m")} {seq("789", "s")}'
