@@ -55,7 +55,7 @@ def seq(s, suit):
 CSS = f"""
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 html, body {{ width: 794px; height: 1123px; }}
-body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 15px 28px 20px; position: relative; font-feature-settings: "palt"; }}
+body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 12px 28px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 8px 16px; margin-bottom: 9px; }}
 header h1 {{ font-size: 28px; font-weight: 900; line-height: 1.1; }}
 header h1 em {{ font-style: normal; display: inline-block; background: #E75620; border-radius: 6px; font-size: 15px; padding: 1px 8px; margin-left: 8px; vertical-align: 5px; }}
@@ -66,7 +66,7 @@ header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #
 i.lv {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; color: #fff; font-size: 11px; font-weight: 900; border-radius: 4px; padding: 0; line-height: 1; margin-right: 5px; vertical-align: 1px; white-space: nowrap; }}
 section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; margin-bottom: 5px; overflow: hidden; }}
 section > h2 .lv {{ border: 1.5px solid #fff; }}
-section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: baseline; gap: 8px; }}
+section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: center; gap: 8px; }} section > h2 .lv {{ margin-right: 0; }}
 section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-left: auto; }}
 .in {{ padding: 6px 12px 7px; }}
 .hd {{ display: inline-flex; align-items: flex-end; gap: 1px; flex: none; }}
@@ -111,7 +111,7 @@ ul.li {{ list-style: none; }}
 ul.li li {{ font-size: 12px; font-weight: 700; line-height: 1.45; padding: 4px 0; white-space: nowrap; border-top: 1px solid #E3ECEA; }}
 ul.li li:first-child {{ border-top: 0; }}
 ul.li li b {{ font-weight: 900; }}
-.lead {{ font-size: 12px; font-weight: 800; line-height: 1.5; margin-bottom: 6px; background: #EEF6F3; border-left: 4px solid #177083; padding: 4px 8px; }}
+.lead {{ font-size: 12px; font-weight: 800; line-height: 1.5; margin-bottom: 5px; background: #EEF6F3; border-left: 4px solid #177083; padding: 4px 8px; }}
 .lead b {{ color: #E75620; }}
 /* 喰い替え */
 .kk {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }}
@@ -153,12 +153,12 @@ table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
 .kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 42px; align-items: flex-end !important; }}
-.kt .lv {{ margin-bottom: 5px; }}
+.kt .lv {{ margin-bottom: 12px; }}
 .kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 6px 9px; font-size: 11px; font-weight: 700; line-height: 1.5; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
-.kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-bottom: 2px; }}
+.kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-bottom: 9px; }}
 .kt > .hd {{ margin-left: auto; align-self: flex-end; }}
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
@@ -183,7 +183,10 @@ i.tg.tng {{ background: #C92F42; }} i.tg.tok {{ background: #177083; }}
 .kkr span.cap2 {{ font-size: 10.5px; font-weight: 700; line-height: 1.45; color: #33403D; display: flex; flex-direction: column; }}
 .kkr span.cap2 b {{ font-size: 12px; color: #C92F42; }} .kkr span.cap2 b.okb {{ color: #177083; }}
 .kkr .fg .tl i {{ display: none; }}
-footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
+/* 頭文字の札と、となりの文字の高さをそろえる（2026-11-20 ユーザーの指摘） */
+.grp > div > .lv, table.jt td .lv, .legend .lv {{ vertical-align: middle; position: relative; top: -1.5px; }} .grp > div > .lv {{ top: -2.7px; }}
+table.jt td {{ line-height: 1.75; }}
+footer {{ position: absolute; left: 28px; right: 28px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
 
