@@ -163,16 +163,19 @@ table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
 .kc u.rx {{ background: #FBE9EC; color: #C92F42; }} .kc u.ro {{ background: #E4F3EC; color: #177083; }}
-/* 段階の色（初＝オレンジ・中＝青・上＝紫）。段階に関係ない所は、まじゃすこの緑 */
-.c1 {{ background: #FFF4EE !important; border: 1.5px solid #F2BFA4 !important; }} .c1 b {{ color: #C2410C; }}
-.c2 {{ background: #EEF2FB !important; border: 1.5px solid #AFC0E6 !important; }} .c2 b {{ color: #2F4E99; }}
-.c3 {{ background: #F3EFF9 !important; border: 1.5px solid #C9BCE3 !important; }}
-.kc.c1 .kt > b, .kc.c2 .kt > b {{ color: #1F2A28; }}
-.grp > div {{ border-radius: 6px; }}
-tr.c1 td {{ background: #FFF4EE; }} tr.c2 td {{ background: #EEF2FB; }} tr.c3 td {{ background: #F3EFF9; }}
-tr.c1, tr.c2, tr.c3 {{ border: 0 !important; }}
-section.s1 {{ border-color: #E75620; background: #FFF9F5; }} section.s1 > h2 {{ background: #E75620; }}
-section.s2 {{ border-color: #4261AA; background: #F7F9FD; }} section.s2 > h2 {{ background: #4261AA; }}
+/* 段階の色は札と細い線だけ（全面に色を敷くとカラフルすぎた。2026-11-20 ユーザーの指摘）。地は白、仕切りははっきりした線 */
+.c1, .c2, .c3 {{ background: #fff !important; border: 1.5px solid #C5D6D2 !important; border-left-width: 5px !important; }}
+.c1 {{ border-left-color: #E75620 !important; }} .c2 {{ border-left-color: #4261AA !important; }} .c3 {{ border-left-color: #6B4FA0 !important; }}
+.c1 b, .c2 b, .c3 b {{ color: #1F2A28; }}
+.grp > div {{ border-radius: 5px; }}
+tr.c1 td, tr.c2 td, tr.c3 td {{ background: #fff; }}
+table.jt td {{ border-bottom: 1.5px solid #D5E2DF !important; }}
+table.jt {{ border: 1.5px solid #C5D6D2; }}
+section.s1, section.s2 {{ border-color: #177083; background: #fff; }}
+section {{ border-width: 2.5px !important; }}
+.kk4 {{ border-top: 0; }}
+.kk4 .kkr:nth-child(n+3) {{ border-top: 1.5px dashed #C5D6D2 !important; }}
+.rk {{ border-top: 1.5px solid #D5E2DF !important; }} .rk:first-child {{ border-top: 0 !important; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -247,8 +250,8 @@ def body():
     return f"""
 <section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
-<section class="s1"><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
-<section class="s2"><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
+<section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
+<section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
 <section><h2>鳴く？　鳴かない？　かんたん判断表<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>"""
 
 
