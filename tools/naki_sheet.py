@@ -152,14 +152,14 @@ table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 2px 6px; border-bot
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
-.kt {{ display: flex; align-items: flex-end; gap: 4px; width: 100%; }}
-.kt .lv {{ align-self: flex-end; margin-bottom: 4px; }}
+.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 44px; }}
+.kt .lv {{ margin-top: 15px; }}
 .kn {{ background: #FFF5EF; border: 1.5px solid #F4C9B3; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
-.kt > b {{ font-size: 18px; font-weight: 900; padding-bottom: 1px; white-space: nowrap; }}
-.kt > .hd {{ margin-left: auto; }}
+.kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-top: 11px; }} .kt > b:has(ruby) {{ padding-top: 0; }}
+.kt > .hd {{ margin-left: auto; }} .kt > .hd.top {{ align-items: flex-start; }}
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
 .kc u.rx {{ background: #FBE9EC; color: #C92F42; }} .kc u.ro {{ background: #E4F3EC; color: #177083; }}
@@ -190,7 +190,7 @@ def body():
   <div class="kc"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
   <div class="kc"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
   <div class="kc"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kc"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20).replace('class="hd"', 'class="hd top"', 1)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
   <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は鳴きではない</em>ので、リーチできる</p>
   <p>横向き＝もらった牌<br>（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり<br>嶺上牌をツモる</p></div>
 </div>"""
