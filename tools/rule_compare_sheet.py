@@ -75,23 +75,24 @@ def _icons():
     return _uri(m), _uri(j)
 ICON_M, ICON_J = _icons()
 def badge(k): return {"M": f'<i class="bm" title="Mリーグ"><img src="{ICON_M}"></i>', "J": f'<i class="bj" title="雀魂"><img src="{ICON_J}"></i>'}[k]
-SEC_COLS = ["#177083", "#4261AA", "#6B4FA0", "#C2416B", "#2E8B57"]      # 区分ごとに見出しの色を変える（少しポップに。2026-11-20 ユーザーの指定）
-
-
-_sec = iter(range(100))
+# 色は3つの意味だけに絞る（2026-11-20 ユーザーの指定「違う所を目立たせる・色をいい感じに」）:
+#   オレンジの行＝Mリーグと雀魂でルールが違う項目（それぞれ別の選択肢に印がある）／緑の札＝両方同じ／紺の札＝Mリーグだけ・紫の札＝雀魂だけ
+def is_diff(opts): return any("M" in m and "J" not in m for _, m in opts) and any("J" in m and "M" not in m for _, m in opts)
+N_DIFF = 0
 
 
 def col(items):
-    out, c = "", SEC_COLS[0]
+    out = ""
     for it in items:
         if it[0] == "##":
-            c = SEC_COLS[next(_sec) % len(SEC_COLS)]
-            out += f'<h2 style="background:{c}">{it[1]}</h2>'; continue
+            out += f'<h2>{it[1]}</h2>'; continue
         name, opts, note = it
-        # 選んでいる方で色を分ける（Mリーグだけ＝薄い赤・雀魂だけ＝紫・両方＝半分ずつ）
+        d = is_diff(opts)
         chips = "".join(f'<span class="op{" m" * ("M" in m and "J" not in m)}{" j" * ("J" in m and "M" not in m)}{" mj" * ("M" in m and "J" in m)}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
-        out += f'<div class="it"><b><i class="cb" style="border-color:{c}"></i>{name}</b><div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>'
+        out += (f'<div class="it{" diff" * d}"><b><i class="cb"></i><span>{name}{"<em>ちがう</em>" if d else ""}</span></b>'
+                f'<div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>')
     return out
+N_DIFF = sum(1 for it in LEFT + RIGHT if it[0] != "##" and is_diff(it[1]))
 
 
 def html():
@@ -101,9 +102,10 @@ def html():
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 html, body {{ width: 794px; height: 1123px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 24px 18px; position: relative; font-feature-settings: "palt"; }}
-header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; margin-bottom: 8px; }}
+header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; margin-bottom: 7px; }}
 header h1 {{ font-size: 25px; font-weight: 900; line-height: 1.15; }}
 header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
+header h1 small b {{ color: #FFD0B5; }}
 .legend {{ font-size: 11.5px; font-weight: 800; line-height: 1.9; white-space: nowrap; margin-left: auto; margin-right: 10px; }}
 .legend i {{ margin-right: 3px; }}
 {LOGO_CSS}
@@ -111,27 +113,35 @@ i.bm, i.bj {{ --d: 17px; font-style: normal; display: inline-flex; align-items: 
 i.bm img {{ height: 72%; width: auto; display: block; }}
 i.bj img {{ width: 100%; height: 100%; display: block; }}
 .legend i.bm, .legend i.bj {{ --d: 22px; vertical-align: -6px; margin-left: 0; }}
+.key {{ display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 800; color: #4F5C5A; margin: 0 2px 7px; }}
+.key .op {{ font-size: 10.5px; padding: 0 7px; }} .key .sw {{ display: inline-flex; align-items: center; gap: 5px; }}
+.key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFF0E6; border: 1.5px solid #F3B48F; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
-.colw {{ background: #fff; border: 2px solid #177083; border-radius: 6px; padding: 2px 8px 6px; }}
-h2 {{ font-size: 14.5px; font-weight: 900; color: #fff; background: #177083; margin: 8px -8px 2px; padding: 3px 10px; }}
-.colw h2:first-child {{ margin-top: -2px; border-radius: 4px 4px 0 0; }}
-.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 7.5px 0; border-top: 1.5px solid #DCE7E4; }}
+.colw {{ background: #fff; border: 1.5px solid #C5D6D2; border-radius: 8px; padding: 2px 8px 6px; }}
+h2 {{ font-size: 14px; font-weight: 900; color: #177083; margin: 8px 0 0; padding: 3px 2px 3px; border-bottom: 2.5px solid #177083; display: flex; align-items: center; gap: 6px; }}
+h2::before {{ content: ""; width: 8px; height: 8px; border-radius: 2px; background: #177083; }}
+.colw h2:first-child {{ margin-top: 2px; }}
+.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 6.5px 6px; margin: 0 -6px; border-top: 1px solid #E3ECEA; }}
 h2 + .it {{ border-top: 0; }}
+.it.diff {{ background: #FFF0E6; border-radius: 6px; border-top-color: transparent; }} .it.diff + .it {{ border-top-color: transparent; }} .it.diff + .it.diff {{ margin-top: 3px; }}
 .it > b {{ font-size: 13.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; display: flex; align-items: flex-start; gap: 5px; }}
-i.cb {{ flex: none; width: 13px; height: 13px; border: 2.2px solid #177083; border-radius: 4px; margin-top: 1px; background: #fff; }}
+.it > b em {{ display: block; width: fit-content; font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 5px; margin-top: 2px; letter-spacing: .05em; }}
+i.cb {{ flex: none; width: 13px; height: 13px; border: 2px solid #8FA9A3; border-radius: 3px; margin-top: 1px; background: #fff; }}
+.it.diff i.cb {{ border-color: #E75620; }}
 .ops {{ display: flex; flex-wrap: wrap; gap: 3px; }}
-.op {{ font-size: 12px; font-weight: 800; border: 1.5px solid #CAD8D5; border-radius: 12px; padding: 1px 7px 1px 8px; color: #4F5C5A; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
-.op.m {{ border-color: #E07A7F; color: #1F2A28; background: #FDECEC; }}
-.op.j {{ border-color: #A47FE6; color: #1F2A28; background: #F1E8FD; }}
-.op.mj {{ border-color: #8C7BC0; color: #1F2A28; background: linear-gradient(90deg, #FDECEC 50%, #F1E8FD 50%); }}
+.op {{ font-size: 12px; font-weight: 800; border: 1.5px solid #D5E0DD; border-radius: 12px; padding: 1px 7px 1px 8px; color: #6B7A77; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
+.op.m {{ border-color: #3E4C66; color: #1F2A28; background: #E9EDF4; }}
+.op.j {{ border-color: #8B6AD6; color: #1F2A28; background: #F1EBFC; }}
+.op.mj {{ border-color: #2E8B6E; color: #1F2A28; background: #E2F3EC; }}
 .it > small {{ grid-column: 2; white-space: nowrap; font-size: 11px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
 .note {{ font-size: 11px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 7px; }}
 .note b {{ color: #E75620; }}
 footer {{ position: absolute; left: 24px; right: 24px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
-<header><h1>打つ前に決める ルールチェックシート<small>Mリーグと雀魂は、どれを選んでいる？</small></h1>
+<header><h1>打つ前に決める ルールチェックシート<small>Mリーグと雀魂は、どれを選んでいる？　<b>ルールが違うのは{N_DIFF}項目</b></small></h1>
 <div class="legend">{badge("M")} Mリーグ<br>{badge("J")} 雀魂（段位戦）</div>{logo_html()}</header>
+<div class="key"><span class="sw"><i class="dsw"></i>オレンジの行＝Mリーグと雀魂でルールが違う</span><span class="sw"><span class="op mj">両方</span></span><span class="sw"><span class="op m">Mリーグだけ</span></span><span class="sw"><span class="op j">雀魂だけ</span></span><span class="sw"><span class="op">どちらでもない</span></span></div>
 <div class="grid"><div class="colw" style="--nw:124px">{col(LEFT)}</div><div class="colw" style="--nw:158px">{col(RIGHT)}</div></div>
 <p class="note"><b>□にチェックして、仲間内のルールを決めよう。</b>Mリーグは公式サイトの公式戦ルール、雀魂はWikipedia「雀魂」の段位戦のルールなどによる（2026年11月）。印が無い所は、規定がないか確かめられなかった所。ゲームのルールは変わることがある。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>決めたルールで打ったら、スコアはまじゃすこで</span></footer>
