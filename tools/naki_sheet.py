@@ -15,7 +15,7 @@ from sheet_logo import LOGO_CSS, logo_html  # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 T = "file:///" + os.path.join(ROOT, "assets", "tiles").replace("\\", "/")
 OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "naki")
-LV = {1: ("初心者", "#E75620"), 2: ("中級者", "#177083"), 3: ("上級者", "#6B4FA0")}
+LV = {1: ("初心者", "#E75620"), 2: ("中級者", "#4261AA"), 3: ("上級者", "#6B4FA0")}      # 段階の色。中級者は青（緑はまじゃすこの地の色＝段階に関係ない所に使う。2026-11-20 ユーザーの指定）
 
 
 def lv(n): return f'<i class="lv" style="background:{LV[n][1]}">{LV[n][0][0]}</i>'      # 頭文字1字（初・中・上）。色で段階を見せる（2026-11-20 ユーザーの指定）
@@ -68,7 +68,7 @@ section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; marg
 section > h2 .lv {{ border: 1.5px solid #fff; }}
 section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: baseline; gap: 8px; }}
 section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-left: auto; }}
-.in {{ padding: 7px 12px 8px; }}
+.in {{ padding: 6px 12px 7px; }}
 .hd {{ display: inline-flex; align-items: flex-end; gap: 1px; flex: none; }}
 .hd img {{ display: block; }}
 .gap {{ width: 8px; }}
@@ -111,7 +111,7 @@ ul.li {{ list-style: none; }}
 ul.li li {{ font-size: 12px; font-weight: 700; line-height: 1.45; padding: 4px 0; white-space: nowrap; border-top: 1px solid #E3ECEA; }}
 ul.li li:first-child {{ border-top: 0; }}
 ul.li li b {{ font-weight: 900; }}
-.lead {{ font-size: 12px; font-weight: 800; line-height: 1.5; margin-bottom: 6px; background: #FFF5EF; border-left: 4px solid #E75620; padding: 4px 8px; }}
+.lead {{ font-size: 12px; font-weight: 800; line-height: 1.5; margin-bottom: 6px; background: #EEF6F3; border-left: 4px solid #177083; padding: 4px 8px; }}
 .lead b {{ color: #E75620; }}
 /* 喰い替え */
 .kk {{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }}
@@ -153,8 +153,8 @@ table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
 .kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 44px; }}
-.kt .lv {{ margin-top: 15px; }}
-.kn {{ background: #FFF5EF; border: 1.5px solid #F4C9B3; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
+.kt .lv {{ margin-top: 13px; }}
+.kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
@@ -163,6 +163,16 @@ table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
 .kc u.rx {{ background: #FBE9EC; color: #C92F42; }} .kc u.ro {{ background: #E4F3EC; color: #177083; }}
+/* 段階の色（初＝オレンジ・中＝青・上＝紫）。段階に関係ない所は、まじゃすこの緑 */
+.c1 {{ background: #FFF4EE !important; border: 1.5px solid #F2BFA4 !important; }} .c1 b {{ color: #C2410C; }}
+.c2 {{ background: #EEF2FB !important; border: 1.5px solid #AFC0E6 !important; }} .c2 b {{ color: #2F4E99; }}
+.c3 {{ background: #F3EFF9 !important; border: 1.5px solid #C9BCE3 !important; }}
+.kc.c1 .kt > b, .kc.c2 .kt > b {{ color: #1F2A28; }}
+.grp > div {{ border-radius: 6px; }}
+tr.c1 td {{ background: #FFF4EE; }} tr.c2 td {{ background: #EEF2FB; }} tr.c3 td {{ background: #F3EFF9; }}
+tr.c1, tr.c2, tr.c3 {{ border: 0 !important; }}
+section.s1 {{ border-color: #E75620; background: #FFF9F5; }} section.s1 > h2 {{ background: #E75620; }}
+section.s2 {{ border-color: #4261AA; background: #F7F9FD; }} section.s2 > h2 {{ background: #4261AA; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -186,11 +196,11 @@ def body():
     kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。
 もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
 <div class="k5">
-  <div class="kc"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
-  <div class="kc"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
-  <div class="kc"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20).replace('class="hd"', 'class="hd top"', 1)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
+  <div class="kc c2"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20).replace('class="hd"', 'class="hd top"', 1)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
   <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は鳴きではない</em>ので、リーチできる</p>
   <p>横向き＝もらった牌<br>（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり<br>嶺上牌をツモる</p></div>
 </div>"""
@@ -200,10 +210,10 @@ def body():
 </table>
 <p class="tip">暗槓は<b>鳴きではない</b>ので、リーチできる</p>"""
     yaku = f"""<div class="grp">
-<div class="g1">{lv(1)}<b>役牌のポン</b><p>ポンだけで役がつく</p></div>
-<div class="g2">{lv(1)}<b>二〜八だけの鳴き</b><p>喰いタンが残る</p></div>
-<div class="g3">{lv(2)}<b>一・九・字牌の鳴き</b><p>役なしになりやすい</p></div>
-<div class="g4">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
+<div class="c1">{lv(1)}<b>役牌のポン</b><p>ポンだけで役がつく</p></div>
+<div class="c1">{lv(1)}<b>二〜八だけの鳴き</b><p>喰いタンが残る</p></div>
+<div class="c2">{lv(2)}<b>一・九・字牌の鳴き</b><p>役なしになりやすい</p></div>
+<div class="c2">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
 </div>"""
     kuikae = f"""<div class="kk4">
 <div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m6", 23)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
@@ -228,7 +238,7 @@ def body():
               (2, "同巡のフリテンを解消したい", ""), (3, "ツモ番を飛ばす・チーさせない", ""), (3, "安全牌に困る人にツモ番を回す", ""), (3, "親のテンパイのためにツモ番を回す", "")]
     rows_x = [(1, "鳴くと役が無くなる", "アガれない"), (1, "リーチの方が高い・待ちがいい", ""), (1, "鳴くと点数が下がりすぎる", "食い下がり"),
               (1, "他家のリーチから降りたい", ""), (1, "狙いを読まれたくない", "晒した牌で読まれる")]
-    tr = lambda rows: "".join(f'<tr><td>{lv(n)}{a}</td></tr>' for n, a, b in rows)
+    tr = lambda rows: "".join(f'<tr class="c{n}"><td>{lv(n)}{a}</td></tr>' for n, a, b in rows)
     naku = f"""<div class="judge">
 <table class="jt"><tr><th class="o">○ 鳴く</th></tr>{tr(rows_o[:5])}</table>
 <table class="jt"><tr><th class="o">○ 鳴く（駆け引き）</th></tr>{tr(rows_o[5:])}</table>
@@ -237,8 +247,8 @@ def body():
     return f"""
 <section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
-<section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
-<section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
+<section class="s1"><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
+<section class="s2"><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
 <section><h2>鳴く？　鳴かない？　かんたん判断表<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>"""
 
 
