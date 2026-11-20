@@ -55,7 +55,7 @@ def seq(s, suit):
 CSS = f"""
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 html, body {{ width: 794px; height: 1123px; }}
-body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 18px 28px 20px; position: relative; font-feature-settings: "palt"; }}
+body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 15px 28px 20px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 8px 16px; margin-bottom: 9px; }}
 header h1 {{ font-size: 28px; font-weight: 900; line-height: 1.1; }}
 header h1 em {{ font-style: normal; display: inline-block; background: #E75620; border-radius: 6px; font-size: 15px; padding: 1px 8px; margin-left: 8px; vertical-align: 5px; }}
@@ -75,8 +75,8 @@ section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-le
 .stk {{ display: inline-flex; flex-direction: column; gap: 1px; }}
 .tl {{ position: relative; display: inline-block; }}
 .tl.hl img {{ outline: 2px solid #F2B08F; outline-offset: 1px; border-radius: 3px; }}
-.tl i {{ position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 24px; font-weight: 900; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }}
-.tl i.m1 {{ color: #C92F42; }} .tl i.m2 {{ color: #177083; }}
+.tl i {{ position: absolute; top: -9px; right: -13px; width: 19px; height: 19px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; font-weight: 900; color: #fff !important; border: 1.5px solid #fff; }}
+.tl i.m1 {{ background: #C92F42; }} .tl i.m2 {{ background: #177083; }}
 /* 鳴きの種類 */
 .kinds {{ display: grid; grid-template-columns: 1fr 1fr 2.55fr; gap: 7px; }}
 .kind {{ border: 1.5px solid #D5E2DF; border-radius: 6px; padding: 6px 8px; }}
@@ -119,7 +119,7 @@ ul.li li b {{ font-weight: 900; }}
 .kkc > b {{ font-size: 14px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 4px; }}
 .kkr {{ display: flex; align-items: center; gap: 6px; padding: 7px 0; border-top: 1px dashed #D5E2DF; }}
 .kkr:first-of-type {{ border-top: 0; }}
-.kkr em {{ font-style: normal; font-weight: 900; color: #8A9A97; }}
+.kkr em {{ font-style: normal; font-weight: 900; color: #8A9A97; margin-right: 4px; }}
 .kkr span {{ font-size: 10.5px; font-weight: 700; line-height: 1.4; color: #33403D; }}
 /* リーチ後のカン */
 .rk {{ display: grid; grid-template-columns: 98px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
@@ -135,12 +135,12 @@ ul.li li b {{ font-weight: 900; }}
 .two > section {{ margin-bottom: 7px; }}
 .three {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }}
 .kk4 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; margin-top: 3px; }}
-.kk4 .kkr {{ border-top: 0; padding: 3px 0; }}
+.kk4 .kkr {{ border-top: 0; padding: 5px 0 2px; }}
 .kk4 .kkr span b {{ color: #C92F42; margin-right: 4px; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
 .tl em.cap {{ position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 800; color: #C2622F; line-height: 1.2; white-space: nowrap; }}
-.rk {{ padding-top: 12px !important; padding-bottom: 0 !important; }}
+.rk {{ padding-top: 11px !important; padding-bottom: 0 !important; }}
 .rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
 .kk4 .kkr span b.okb {{ color: #177083; }}
@@ -152,14 +152,14 @@ table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 2px 6px; border-bot
 table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
 .kc > span {{ line-height: 1.4; }}
 .kc {{ position: relative; }}
-.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 44px; }}
+.kt {{ display: flex; align-items: flex-start; gap: 4px; width: 100%; height: 43px; }}
 .kt .lv {{ margin-top: 13px; }}
 .kn {{ background: #EEF6F3; border: 1.5px solid #9CC9C0; border-radius: 6px; padding: 7px 9px; font-size: 11px; font-weight: 700; line-height: 1.55; }}
 .kn b {{ font-size: 13.5px; font-weight: 900; color: #C92F42; display: block; margin-bottom: 2px; }}
 .kn em {{ font-style: normal; font-weight: 900; color: #E75620; }}
 .kt > b ruby {{ ruby-align: start; }} .kt > b ruby rt {{ font-size: 9.5px; font-weight: 800; color: #177083; ruby-align: start; text-align: left; }}
 .kt > b {{ font-size: 18px; font-weight: 900; white-space: nowrap; line-height: 1.2; padding-top: 11px; }} .kt > b:has(ruby) {{ padding-top: 0; }}
-.kt > .hd {{ margin-left: auto; }} .kt > .hd.top {{ align-items: flex-start; }}
+.kt > .hd {{ margin-left: auto; align-self: flex-end; }}
 .kc > span {{ font-size: 11.5px !important; line-height: 1.5 !important; color: #1F2A28 !important; font-weight: 800 !important; }}
 .kc u {{ text-decoration: none; font-size: 10.5px; font-weight: 900; border-radius: 4px; padding: 0 6px; margin-top: 2px; }}
 .kc u.rx {{ background: #FBE9EC; color: #C92F42; }} .kc u.ro {{ background: #E4F3EC; color: #177083; }}
@@ -196,14 +196,13 @@ def body():
     import importlib.util
     spec = importlib.util.spec_from_file_location("machi3", os.path.join(HERE, "machi_sheet", "machi3.py"))
     sys.path.insert(0, os.path.join(HERE, "machi_sheet")); M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
-    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。
-もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
+    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。<br>もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
 <div class="k5">
   <div class="kc c1"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
   <div class="kc c1"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
   <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
   <div class="kc c2"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
-  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20).replace('class="hd"', 'class="hd top"', 1)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
   <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は鳴きではない</em>ので、リーチできる</p>
   <p>横向き＝もらった牌<br>（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり<br>嶺上牌をツモる</p></div>
 </div>"""
@@ -219,10 +218,10 @@ def body():
 <div class="c2">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
 </div>"""
     kuikae = f"""<div class="kk4">
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m6", 23)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
-<div class="kkr">{hand("p5 y:p5r p5", 23)}<em>→</em>{hand("x:p5", 23)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m3", 23)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("o:m9", 23)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m6", 27)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
+<div class="kkr">{hand("p5 y:p5r p5", 23)}<em>→</em>{hand("x:p5", 27)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("x:m3", 27)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 23)}<em>→</em>{hand("o:m9", 27)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
 </div>"""
     W = 20
     base = f'{seq("123", "m")} {seq("789", "s")}'
