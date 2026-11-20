@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """麻雀「鳴き（副露）のまとめ」（A4縦1枚。SNSの投稿用。2026-11-20 ユーザーの依頼・同日に1枚へまとめ直し）。
-並び: 鳴きって、なに？（初心者向けの説明と、チー・ポン・暗槓・大明槓・加槓を1列）→ リーチできる？→できない／役は残る？ → 喰い替え（4例。赤五はポンの例）→ リーチ後のカン（できる1・できない3。待ちとツモ牌の札つき）→ 鳴く？鳴かない？かんたん判断表（一番下）。
+並び: 鳴きって、なに？（初心者向けの説明と、チー・ポン・暗槓・大明槓・加槓を1列）→ リーチできる？→できない／役は残る？ → 喰い替え（4例。赤五はポンの例）→ リーチ後のカン（できる1・できない3。ツモ牌以外・待ち・面子。待ちとツモ牌の札つき）→ 鳴く？鳴かない？かんたん判断表（一番下）。
 覚える段階は項目ごとに札（初心者＝オレンジ・中級者＝緑・上級者＝紫）。文は1行に収まる短さにする（2026-11-20 ユーザーの指定）。
 牌の並べ方: チーは鳴いた牌を一番左に横向き。ポンは対面から＝真ん中、大明槓は下家から＝右を横向き。加槓は横向きの牌に重ねる。
-リーチ後のカン: 面子の組み方が変わる暗槓（送りカン・待ちが変わるを含む）はできない。役が変わるだけならよい（2026-11-20 ユーザーの指摘で「役が変わる」の禁止を消した）。
+リーチ後のカン: ツモった牌で、待ちや面子構成が変わらない暗槓だけできる。ツモ牌以外のカン（送りカン）・待ちが変わる・面子が変わるはできない。役が変わるだけならよい（2026-11-20 ユーザーの指定）。
 例の手は tools/machi_sheet/machi3.py の waits で待ちを確かめた。
 出力: まじゃすこ素材/x/naki/naki-matome.png（1588×2246）
 実行: python tools/naki_sheet.py
@@ -68,7 +68,7 @@ section {{ background: #fff; border: 2px solid #177083; border-radius: 6px; marg
 section > h2 .lv {{ border: 1.5px solid #fff; }}
 section > h2 {{ background: #177083; color: #fff; font-size: 15.5px; font-weight: 900; padding: 4px 12px; display: flex; align-items: center; gap: 8px; }} section > h2 .lv {{ margin-right: 0; }}
 section > h2 small {{ font-size: 11px; font-weight: 700; opacity: .92; margin-left: auto; }}
-.in {{ padding: 6px 12px 7px; }}
+.in {{ padding: 4px 12px 5px; }}
 .hd {{ display: inline-flex; align-items: flex-end; gap: 1px; flex: none; }}
 .hd img {{ display: block; }}
 .gap {{ width: 8px; }}
@@ -122,7 +122,7 @@ ul.li li b {{ font-weight: 900; }}
 .kkr em {{ font-style: normal; font-weight: 900; color: #8A9A97; margin-right: 4px; }}
 .kkr span {{ font-size: 10.5px; font-weight: 700; line-height: 1.4; color: #33403D; }}
 /* リーチ後のカン */
-.rk {{ display: grid; grid-template-columns: 98px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
+.rk {{ display: grid; grid-template-columns: 124px auto 1fr; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #E3ECEA; }}
 .rk:first-child {{ border-top: 0; }}
 .rk > b {{ font-size: 12.5px; font-weight: 900; text-align: center; border-radius: 5px; padding: 3px 0; color: #fff; }}
 .rk > b.o {{ background: #177083; }} .rk > b.x {{ background: #C92F42; }}
@@ -140,7 +140,7 @@ ul.li li b {{ font-weight: 900; }}
 table.ok {{ table-layout: fixed; }}
 .tl {{ vertical-align: bottom; }}
 .tl em.cap {{ position: absolute; left: 50%; top: -13px; transform: translateX(-50%); font-style: normal; font-size: 9px; font-weight: 800; color: #C2622F; line-height: 1.2; white-space: nowrap; }}
-.rk {{ padding-top: 10px !important; padding-bottom: 0 !important; }}
+.rk {{ padding-top: 3px !important; padding-bottom: 0 !important; }}
 .rk > span.rtx {{ display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }} .rk > span.rtx > span {{ font-size: 11.5px; }}
 i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
 .kk4 .kkr span b.okb {{ color: #177083; }}
@@ -185,7 +185,7 @@ i.tg.tng {{ background: #C92F42; }} i.tg.tok {{ background: #177083; }}
 .kkr .fg .tl i {{ display: none; }}
 /* 頭文字の札と、となりの文字の高さをそろえる（2026-11-20 ユーザーの指摘） */
 .grp > div > .lv, table.jt td .lv, .legend .lv {{ vertical-align: middle; position: relative; top: -1.5px; }} .grp > div > .lv {{ top: -2.7px; }}
-table.jt td {{ line-height: 1.75; }}
+table.jt td {{ line-height: 1.45; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -239,12 +239,13 @@ def body():
 {kk("六萬をチー", "y:m6 m4 m5", "x:m3", False, "スジ", "三萬でも三四五萬が作れる")}
 {kk("六萬をチー", "y:m6 m4 m5", "o:m9", True, "切れる", "九萬では面子が作れない")}
 </div>"""
-    W = 20
+    W = 18
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
         ("o", "○ できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
         ("x", "× 待ちが変わる", f'{base} z1 z1 {seq("2222", "p")} p4', "p5", "五筒を残して二筒をカン→三筒待ちが三・六筒待ちに"),      # 2026-11-20 ユーザーの指定の牌姿
         ("x", "× 面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
+        ("x", "× ツモ牌以外をカン", f'{seq("23", "m")} {seq("444456", "s")} {seq("12355", "p")}', "s7", "七索をツモって四索をカン→ツモった牌でないのでできない"),      # 2026-11-20 ユーザーの指定の牌姿
     ]
     rkh = ""
     for k, lab, h, tsumo, tx in rk:
@@ -266,7 +267,7 @@ def body():
 <section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
 <section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
-<section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
+<section><h2>{lv(2)}リーチのあとのカン<small>ツモった牌で、待ちや面子構成が変わらない暗槓だけ</small></h2><div class="in">{rkh}</div></section>
 <section><h2>鳴く？　鳴かない？　かんたん判断表<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>"""
 
 
