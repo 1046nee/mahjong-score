@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Mリーグの実戦の7枚形（三索の暗刻＋四五六＋八）に、一〜八のどれを引くと待ちがいちばん広がるかの順位の画像
 （Xのリプ用。1080×1350。2026-11-20 ユーザーの依頼。実戦は筒子だったが、画像は索子で作る＝ユーザーの指定）。
-列は待ちの形の一覧と同じ: 牌姿・横から見た図（字牌の列なし）・待ち・枚数。切る牌・ツモ切りは書かない（ユーザーの指定）。
+待ち方の色の説明（両面・嵌張…）は小さく（2026-11-20 ユーザーの指定）。列は待ちの形の一覧と同じ: 牌姿・横から見た図（字牌の列なし）・待ち・枚数。切る牌・ツモ切りは書かない（ユーザーの指定）。
 引いたあとは、いちばん枚数が多くなる1枚を切った形を出す（同じ枚数ならツモ切り）。
 枚数＝4−自分の手にある枚数−切った牌（切った牌が待ちなら1枚減る。その待ちはフリテン）。待ちは machi3.waits で出す。
 出力: まじゃすこ素材/x/machi/reply-333456-2.png
@@ -70,8 +70,8 @@ header h1 small {{ display: block; font-size: 11.5px; font-weight: 700; color: #
 .base {{ display: flex; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 12px; font-weight: 900; }}
 .base .tl {{ display: flex; gap: 1px; }} .base img {{ display: block; }} .base em {{ font-style: normal; color: #5E6B69; font-size: 11.5px; }}
 .base .lab {{ color: #fff; background: #5E6B69; border-radius: 4px; padding: 1px 7px; font-size: 11px; }}
-.legend {{ display: flex; flex-wrap: wrap; align-items: center; gap: 3px 9px; margin: 0 2px 4px; font-size: 10.5px; font-weight: 900; }}
-.lg {{ display: inline-flex; align-items: center; gap: 4px; color: var(--c); }} .lg i {{ width: 15px; height: 8px; border-radius: 2px; background: var(--c); opacity: .5; }}
+.legend {{ display: flex; flex-wrap: wrap; align-items: center; gap: 3px 8px; margin: 0 2px 5px; font-size: 8.5px; font-weight: 800; }}
+.lg {{ display: inline-flex; align-items: center; gap: 4px; color: var(--c); }} .lg i {{ width: 11px; height: 6px; border-radius: 2px; background: var(--c); opacity: .5; }}
 .lg.hd {{ color: {INK}; }} .lg.hd i {{ opacity: 1; background: repeating-linear-gradient(45deg, #1F2A28 0 1.4px, #fff 1.4px 3.2px); border: 1px solid #1F2A28; }}
 .lg.go {{ color: #6B7A77; }} .lg.go i {{ opacity: 1; background: #C9D2D0; }}
 table {{ width: 100%; border-collapse: collapse; background: #fff; }}
