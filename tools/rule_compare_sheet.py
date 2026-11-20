@@ -90,7 +90,7 @@ def col(items):
         name, opts, note = it
         d = is_diff(opts); sm = not d and is_same(opts)
         chips = "".join(f'<span class="op{" m" * ("M" in m and "J" not in m)}{" j" * ("J" in m and "M" not in m)}{" mj" * ("M" in m and "J" in m)}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
-        out += (f'<div class="it{" diff" * d}{" same" * sm}"><b><i class="cb"></i><span>{name}{"<em>ちがう</em>" if d else ""}</span></b>'
+        out += (f'<div class="it{" diff" * d}{" same" * sm}"><b><i class="cb"></i><span>{name}{"<em><i>!</i>違う・要チェック</em>" if d else ""}</span></b>'
                 f'<div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>')
     return out
 N_DIFF = sum(1 for it in LEFT + RIGHT if it[0] != "##" and is_diff(it[1]))
@@ -116,18 +116,20 @@ i.bj img {{ width: 100%; height: 100%; display: block; }}
 .legend i.bm, .legend i.bj {{ --d: 22px; vertical-align: -6px; margin-left: 0; }}
 .key {{ display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 800; color: #4F5C5A; margin: 0 2px 5px; }}
 .key .op {{ font-size: 10.5px; padding: 0 7px; }} .key .sw {{ display: inline-flex; align-items: center; gap: 5px; }}
-.key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFE6D6; border: 2px solid #E75620; }} .key .ssw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #E3F4EC; border: 1.5px solid #9FD3BE; }}
+.key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFE1CE; border: 2.5px solid #E75620; box-shadow: 0 0 0 2px rgba(231, 86, 32, .2); }} .key .ssw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #E3F4EC; border: 1.5px solid #7CC3A6; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 15px; font-weight: 900; color: #fff; background: #177083; margin: 9px -8px 4px; padding: 4px 12px; letter-spacing: .03em; }}
 .colw h2:first-child {{ margin-top: -2px; border-radius: 6px 6px 0 0; }}
 .it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 5.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
 h2 + .it {{ border-top: 0; }}
-.it.same {{ background: #E3F4EC; border-top-color: transparent; }}
-.it.diff {{ background: #FFE6D6; border: 2px solid #E75620; border-top-color: #E75620; padding: 2.5px 4px; }}
-.it.diff + .it:not(.diff), .it.same + .it:not(.diff) {{ border-top-color: transparent; }}      /* 違う行の上の線は消さない（オレンジの枠が切れた。2026-11-20 ユーザーの指摘） */ .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff {{ margin-top: 3px; }}
+.it.same {{ background: #E3F4EC; border: 1.5px solid #7CC3A6; padding: 4px 4.5px; }}      /* 同じ行も枠で囲う（2026-11-20 ユーザーの指定） */
+.it.diff {{ background: #FFE1CE; border: 3px solid #E75620; padding: 2.5px 3px; box-shadow: 0 0 0 3px rgba(231, 86, 32, .2); }}      /* 違う行＝要チェック: 太い枠＋外の光＋「!」の札（2026-11-20 ユーザーの指定） */
+.it.diff + .it:not(.diff), .it.same + .it:not(.diff) {{ border-top-color: transparent; }}      /* 違う行の上の線は消さない（オレンジの枠が切れた。2026-11-20 ユーザーの指摘） */ .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff, .it.diff + .it.diff {{ margin-top: 6px; }}
 .it > b {{ font-size: 13.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; display: flex; align-items: flex-start; gap: 5px; }}
-.it > b em {{ display: block; width: fit-content; font-style: normal; font-size: 10.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 4px; padding: 0 6px; margin-top: 2px; letter-spacing: .05em; }}
+.it > b em {{ display: flex; align-items: center; gap: 3px; width: fit-content; font-style: normal; font-size: 10px; font-weight: 900; color: #fff; background: #E75620; border-radius: 4px; padding: 0 6px 0 2px; margin-top: 2px; }}
+.it > b em i {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: #fff; color: #E75620; font-size: 10px; font-weight: 900; }}
+.it.diff i.cb {{ border-width: 2.5px; }}
 .it.diff > b {{ color: #B23A0E; }}
 i.cb {{ flex: none; width: 13px; height: 13px; border: 2px solid #177083; border-radius: 3px; margin-top: 1px; background: #fff; }}
 .it.diff i.cb {{ border-color: #E75620; }}
@@ -144,7 +146,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><h1>打つ前に決める ルールチェックシート<small>Mリーグと雀魂は、どれを選んでいる？　<b>ルールが違うのは{N_DIFF}項目</b></small></h1>
 <div class="legend">{badge("M")} Mリーグ<br>{badge("J")} 雀魂（段位戦）</div>{logo_html()}</header>
-<div class="key"><span class="sw"><i class="dsw"></i>ルールが違う</span><span class="sw"><i class="ssw"></i>同じ</span><span class="sw"><span class="op mj">両方</span></span><span class="sw"><span class="op m">Mリーグだけ</span></span><span class="sw"><span class="op j">雀魂だけ</span></span><span class="sw"><span class="op">どちらでもない</span></span></div>
+<div class="key"><span class="sw"><i class="dsw"></i>ルールが違う＝要チェック</span><span class="sw"><i class="ssw"></i>同じ</span><span class="sw"><span class="op mj">両方</span></span><span class="sw"><span class="op m">Mリーグだけ</span></span><span class="sw"><span class="op j">雀魂だけ</span></span><span class="sw"><span class="op">どちらでもない</span></span></div>
 <div class="grid"><div class="colw" style="--nw:124px">{col(LEFT)}</div><div class="colw" style="--nw:158px">{col(RIGHT)}</div></div>
 <p class="note"><b>□にチェックして、仲間内のルールを決めよう。</b>Mリーグは公式サイトの公式戦ルール、雀魂はWikipedia「雀魂」の段位戦のルールなどによる（2026年11月）。印が無い所は、規定がないか確かめられなかった所。ゲームのルールは変わることがある。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>決めたルールで打ったら、スコアはまじゃすこで</span></footer>
