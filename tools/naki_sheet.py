@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """麻雀「鳴き（副露）のまとめ」（A4縦1枚。SNSの投稿用。2026-11-20 ユーザーの依頼・同日に1枚へまとめ直し）。
-並び: 鳴きの3種類（チー・ポン・暗槓・大明槓・加槓を1列）→ リーチできる？／役は残る？ → 鳴く？鳴かない？（得と損もここに）→ 喰い替え（4例）→ リーチ後のカン（できる1・できない3）。
+並び: 鳴きって、なに？（初心者向けの説明と、チー・ポン・暗槓・大明槓・加槓を1列）→ リーチできる？→できない／役は残る？ → 喰い替え（4例。赤五はポンの例）→ リーチ後のカン（できる1・できない3。待ちとツモ牌の札つき）→ 鳴く？鳴かない？かんたん判断表（一番下）。
 覚える段階は項目ごとに札（初心者＝オレンジ・中級者＝緑・上級者＝紫）。文は1行に収まる短さにする（2026-11-20 ユーザーの指定）。
 牌の並べ方: チーは鳴いた牌を一番左に横向き。ポンは対面から＝真ん中、大明槓は下家から＝右を横向き。加槓は横向きの牌に重ねる。
 リーチ後のカン: 面子の組み方が変わる暗槓（送りカン・待ちが変わるを含む）はできない。役が変わるだけならよい（2026-11-20 ユーザーの指摘で「役が変わる」の禁止を消した）。
@@ -25,9 +25,12 @@ def t(code, w=24, yoko=False, mark="", hl=False):
     """牌1枚。yoko＝横向き（鳴いた牌）・mark＝重ねる印（✕・○）・hl＝ツモった牌の枠"""
     h = round(w * 1.33)
     src = f"{T}/{code}{'-yoko' if yoko else ''}.svg"
-    img = f'<img src="{src}" style="{f"width:{h}px" if yoko else f"height:{h}px"}">'
+    # 縦の絵は viewBox 62×89、横の絵は 82×69。縦は高さ h（89 の分）なので、横は幅を h×82/89 にすると同じ大きさになる
+    # （幅を h にしていたら横向きの牌だけ約8%大きく見えた。2026-11-20 ユーザーの指摘）
+    img = f'<img src="{src}" style="{f"width:{h * 82 / 89:.1f}px" if yoko else f"height:{h}px"}">'
     cls = "tl" + (" hl" if hl else "")
-    return f'<span class="{cls}">{img}{f"<i class=m{1 if mark == chr(10005) else 2}>{mark}</i>" if mark else ""}</span>'
+    cap = '<em class="cap">ツモ</em>' if hl else ""
+    return f'<span class="{cls}">{cap}{img}{f"<i class=m{1 if mark == chr(10005) else 2}>{mark}</i>" if mark else ""}</span>'
 
 
 def hand(spec, w=24):
@@ -134,6 +137,20 @@ ul.li li b {{ font-weight: 900; }}
 .kk4 {{ display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; margin-top: 3px; }}
 .kk4 .kkr {{ border-top: 0; padding: 5px 0; }}
 .kk4 .kkr span b {{ color: #C92F42; margin-right: 4px; }}
+table.ok {{ table-layout: fixed; }}
+.tl {{ vertical-align: bottom; }}
+.tl em.cap {{ position: absolute; left: 50%; top: -15px; transform: translateX(-50%); font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: #E75620; border-radius: 3px; padding: 0 3px; line-height: 1.35; white-space: nowrap; }}
+.rk {{ padding-top: 13px !important; padding-bottom: 2px !important; }}
+.rk > span.rtx {{ display: flex; align-items: center; gap: 8px; }}
+i.wt {{ font-style: normal; font-size: 10px; font-weight: 900; color: #5E6B69; display: inline-flex; align-items: center; gap: 4px; }}
+.kk4 .kkr span b.okb {{ color: #177083; }}
+.judge {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; align-items: start; }}
+table.jt {{ width: 100%; border-collapse: collapse; }}
+table.jt th {{ font-size: 13px; font-weight: 900; color: #fff; padding: 3px 8px; text-align: left; }}
+table.jt th.o {{ background: #177083; }} table.jt th.x {{ background: #C92F42; }}
+table.jt td {{ font-size: 11.5px; font-weight: 800; padding: 3px 6px; border-bottom: 1px solid #E3ECEA; white-space: nowrap; }}
+table.jt td.why {{ font-size: 10px; font-weight: 700; color: #5E6B69; text-align: right; }}
+.kc > span {{ line-height: 1.4; }}
 footer {{ position: absolute; left: 28px; right: 28px; bottom: 12px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
 footer b {{ color: #177083; font-weight: 900; }}
 """
@@ -151,16 +168,20 @@ def page(no, sub, body):
 
 
 def body():
-    kinds = f"""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("machi3", os.path.join(HERE, "machi_sheet", "machi3.py"))
+    sys.path.insert(0, os.path.join(HERE, "machi_sheet")); M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
+    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌を<b>「チー」「ポン」「カン」と声をかけてもらい</b>、面子（3枚1組）をそろえること。
+もらった牌は横向きにして、手牌の右に表向きで並べる（晒す）</p>
 <div class="k5">
-  <div class="kc">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}<span>上家からだけ。順子</span></div>
-  <div class="kc">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}<span>だれからでも。刻子</span></div>
-  <div class="kc">{lv(1)}<b>暗槓</b>{hand("d z1 z1 d", 20)}<span>自分で4枚。両端を伏せる</span></div>
-  <div class="kc">{lv(2)}<b>大明槓</b>{hand("z2 z2 z2 y:z2", 19)}<span>人が切った4枚目でカン</span></div>
-  <div class="kc">{lv(1)}<b>加槓</b>{hand("z7 k:z7 z7", 20)}<span>ポンに4枚目を重ねる</span></div>
+  <div class="kc">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}<span>上家（左の人）からだけ。つながった3枚（順子）</span></div>
+  <div class="kc">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}<span>だれからでも。同じ牌3枚（刻子）</span></div>
+  <div class="kc">{lv(1)}<b>暗槓</b>{hand("d z1 z1 d", 20)}<span>人からもらわない。自分で4枚そろえる</span></div>
+  <div class="kc">{lv(2)}<b>大明槓</b>{hand("z2 z2 z2 y:z2", 19)}<span>手の3枚＋人が捨てた4枚目</span></div>
+  <div class="kc">{lv(1)}<b>加槓</b>{hand("z7 k:z7 z7", 20)}<span>ポンに、自分で引いた4枚目を足す</span></div>
 </div>
-<p class="tip">横向き＝人からもらった牌（左＝上家・真ん中＝対面・右＝下家）。カンしたら、カンドラをめくって嶺上牌をツモる</p>"""
-    riichi = f"""<table class="ok">
+<p class="tip">横向き＝もらった牌（左＝上家・真ん中＝対面・右＝下家）。カンしたら、カンドラをめくり嶺上牌をツモる</p>"""
+    riichi = f"""<table class="ok"><colgroup><col><col><col><col><col></colgroup>
 <tr><th>チー</th><th>ポン</th><th class="g">暗槓</th><th>大明槓</th><th>加槓</th></tr>
 <tr><td class="x">×</td><td class="x">×</td><td class="o">○</td><td class="x">×</td><td class="x">×</td></tr>
 </table>
@@ -171,52 +192,45 @@ def body():
 <div class="g3">{lv(2)}<b>一・九・字牌の鳴き</b><p>役なしになりやすい</p></div>
 <div class="g4">{lv(2)}<b>大明槓</b><p>手が進まずドラが増える</p></div>
 </div>"""
-    naku = f"""<div class="three">
-<div><h3 class="ok">鳴いた方がいいとき</h3><ul class="li">
-<li>{lv(1)}役牌の対子がある</li>
-<li>{lv(1)}あと1〜2回の鳴きでテンパイ</li>
-<li>{lv(1)}鳴いても満貫以上ある</li>
-<li>{lv(2)}終盤・他家の親を流したい</li>
-<li>{lv(2)}オーラスでトップを守りたい</li></ul></div>
-<div><h3 class="ok">鳴くと得すること</h3><ul class="li">
-<li>{lv(2)}他家の一発を消す</li>
-<li>{lv(2)}同じ巡目のフリテンを解消</li>
-<li>{lv(2)}海底（最後のツモ）をずらす</li>
-<li>{lv(3)}ツモ番を飛ばす・チーさせない</li>
-<li>{lv(3)}安全牌に困る人にツモ番を回す</li>
-<li>{lv(3)}親のテンパイのために回す</li></ul></div>
-<div><h3 class="ng">鳴かない方がいい・損</h3><ul class="li">
-<li>{lv(1)}鳴くと役が無くなる</li>
-<li>{lv(1)}リーチの方が高い・待ちがいい</li>
-<li>{lv(1)}リーチできず点数が下がる</li>
-<li>{lv(1)}鳴いた牌は切れなくなる</li>
-<li>{lv(1)}手牌が短くなり降りにくい</li>
-<li>{lv(1)}狙いを読まれやすい</li></ul></div>
-</div>"""
     kuikae = f"""<div class="kk4">
 <div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("x:m6", 19)}<span><b>同じ牌</b>六萬をチー→六萬は切れない</span></div>
-<div class="kkr">{hand("y:p5r p4 p6", 19)}<em>→</em>{hand("x:p5", 19)}<span><b>同じ牌</b>赤五筒をチー→黒い五筒も切れない</span></div>
+<div class="kkr">{hand("p5 y:p5r p5", 19)}<em>→</em>{hand("x:p5", 19)}<span><b>同じ牌</b>赤五筒をポン→黒い五筒も切れない</span></div>
 <div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("x:m3", 19)}<span><b>スジ</b>四五萬で六萬をチー→三萬は切れない</span></div>
-<div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("o:m9", 19)}<span><b>切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
+<div class="kkr">{hand("y:m6 m4 m5", 19)}<em>→</em>{hand("o:m9", 19)}<span><b class="okb">切れる</b>四五萬で六萬をチー→九萬は切れる</span></div>
 </div>"""
     W = 16
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
-        ("o", "できる", f'{seq("123", "m")} {seq("456", "p")} {seq("789", "s")} z1 z1 z1 z2 | t:z1', "東をカンしても南待ちのまま"),
-        ("x", "送りカン", f'{base} {seq("55556", "p")} z1 z1 | t:m9', "九萬を残して、五筒4枚をカン"),
-        ("x", "待ちが変わる", f'{base} z1 z1 {seq("2223", "p")} p4 | t:p2', "二筒をカンすると東待ちが消える"),
-        ("x", "面子が変わる", f'{base} {seq("1112444", "p")} | t:p4', "四筒を順子や雀頭に使えなくなる"),
+        ("o", "できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
+        ("x", "送りカン", f'{base} {seq("55556", "p")} z1 z1', "m9", "ツモった九萬を残して、五筒4枚をカン"),
+        ("x", "待ちが変わる", f'{base} z1 z1 {seq("2223", "p")} p4', "p2", "二筒をカンすると、東待ちが消える"),
+        ("x", "面子が変わる", f'{base} {seq("1112444", "p")}', "p4", "四筒をカンすると、三筒のカンチャン待ちがなくなる"),
     ]
-    rkh = "".join(f'<div class="rk"><b class="{k}">{lab}</b>{hand(h, W)}<span>{tx}</span></div>' for k, lab, h, tx in rk)
+    rkh = ""
+    for k, lab, h, tsumo, tx in rk:
+        ws = [c for c, _ in M.waits(h.split(), 4, 1)]
+        rkh += (f'<div class="rk"><b class="{k}">{lab}</b>{hand(h + " | t:" + tsumo, W)}'
+                f'<span class="rtx"><i class="wt">待ち{hand(" ".join(ws), 12)}</i><span>{tx}</span></span></div>')
+    rows_o = [(1, "役牌の対子がある", "ポンで役がつく"), (1, "あと1〜2回の鳴きでテンパイ", "役もあるなら"), (1, "鳴いても満貫以上ある", "早くアガり切る"),
+              (2, "終盤・他家の親を流したい", "早さを優先"), (2, "オーラスでトップを守りたい", "安くても終わらせる"), (2, "他家の一発を消したい", ""), (2, "海底（最後のツモ）をずらしたい", ""),
+              (2, "同巡のフリテンを解消したい", ""), (3, "ツモ番を飛ばす・チーさせない", ""), (3, "安全牌に困る人にツモ番を回す", ""), (3, "親のテンパイのためにツモ番を回す", "")]
+    rows_x = [(1, "鳴くと役が無くなる", "アガれない"), (1, "リーチの方が高い・待ちがいい", ""), (1, "鳴くと点数が下がりすぎる", "食い下がり"),
+              (1, "他家のリーチから降りたい", ""), (1, "狙いを読まれたくない", "晒した牌で読まれる")]
+    tr = lambda rows: "".join(f'<tr><td>{lv(n)}{a}</td></tr>' for n, a, b in rows)
+    naku = f"""<div class="judge">
+<table class="jt"><tr><th class="o">○ 鳴く</th></tr>{tr(rows_o[:5])}</table>
+<table class="jt"><tr><th class="o">○ 鳴く（駆け引き）</th></tr>{tr(rows_o[5:])}</table>
+<table class="jt"><tr><th class="x">× 鳴かない</th></tr>{tr(rows_x)}</table>
+</div>"""
     return f"""
-<section><h2>鳴きは3種類（チー・ポン・カン）<small>人が切った牌をもらって面子を作る</small></h2><div class="in">{kinds}</div></section>
+<section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
 <div class="two">
-<section><h2>{lv(1)}鳴いたら、リーチできる？</h2><div class="in">{riichi}</div></section>
+<section><h2>{lv(1)}鳴いたら、リーチできる？→できない</h2><div class="in">{riichi}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
 </div>
-<section><h2>鳴く？　鳴かない？<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>
 <section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
-<section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>"""
+<section><h2>{lv(2)}リーチのあとのカン<small>面子の組み方が変わらない暗槓だけ（役が変わるのはよい）</small></h2><div class="in">{rkh}</div></section>
+<section><h2>鳴く？　鳴かない？　かんたん判断表<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in">{naku}</div></section>"""
 
 
 def render():
