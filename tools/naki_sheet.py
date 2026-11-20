@@ -6,8 +6,9 @@
 リーチ後のカン: ツモった牌で、待ちや面子構成が変わらない暗槓だけできる。ツモ牌以外のカン（送りカン）・待ちが変わる・面子が変わるはできない。役が変わるだけならよい（2026-11-20 ユーザーの指定）。
 例の手は tools/machi_sheet/machi3.py の waits で待ちを確かめた。
 出力: まじゃすこ素材/x/naki/naki-matome.png（1588×2246）
-Instagram用（1080×1350・2枚。2026-11-20〜）: まじゃすこ素材/ig/naki/1.png・2.png。X用の1枚を、区分の間のすき間で2枚に分ける（どちらにも上の見出しと下の行）
-実行: python tools/naki_sheet.py ／ Instagram用: python tools/naki_sheet.py --ig（先にX用を作っておく）
+Instagram用（1080×1350・1枚。2026-11-20 ユーザーの指定で2枚→1枚）: まじゃすこ素材/ig/naki/1.png。幅664の紙に組み直し（IG_CSS で詰める）、
+  「鳴いても、役は残る？」は一番下の判断表の上に1行で入れる。説明の文は1行に短く
+実行: python tools/naki_sheet.py ／ Instagram用: python tools/naki_sheet.py --ig
 """
 import io, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -203,17 +204,20 @@ def page(no, sub, body):
 </body></html>"""
 
 
-def body():
+def body(ig_one=False):
     import importlib.util
     spec = importlib.util.spec_from_file_location("machi3", os.path.join(HERE, "machi_sheet", "machi3.py"))
     sys.path.insert(0, os.path.join(HERE, "machi_sheet")); M = importlib.util.module_from_spec(spec); spec.loader.exec_module(M)
-    kinds = f"""<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。<br>もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
+    KW = 16 if ig_one else 20
+    lead = ('<p class="lead"><b>鳴き</b>＝人が捨てた牌に<b>「チー」「ポン」「カン」</b>と声をかけてもらい、面子をそろえること。もらった牌は横向きで右端に晒す</p>'
+            if ig_one else "")
+    kinds = f"""{lead}<p class="lead"><b>鳴き（副露・フーロ）</b>＝ほかの人が捨てた牌に<b>「チー」「ポン」「カン」と声をかけて牌をもらい</b>、面子（3枚1組／4枚1組）をそろえること。<br>もらった牌は横向きにして、手牌の右端に表向きで並べる（晒す）。<b>だれから牌をもらったか</b>が、ゲームの進行で大事になる</p>
 <div class="k5">
-  <div class="kc c1"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", 20)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
-  <div class="kc c1"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", 20)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
-  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", 20)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
-  <div class="kc c2"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", 20)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
-  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", 20)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b>チー</b>{hand("y:m6 m4 m5", KW)}</div><span>つながった3枚（順子）を作る<br>上家（左の人）からだけ鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b>ポン</b>{hand("z6 y:z6 z6", KW)}</div><span>同じ牌3枚（刻子）を作る<br>だれからでも鳴ける</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>暗槓<rt>アンカン</rt></ruby></b>{hand("d z1 z1 d", KW)}</div><span>自分で同じ牌4枚（槓子）をそろえる<br>人からもらわない（＝鳴きではない）</span><u class="ro">リーチ ○</u></div>
+  <div class="kc c2"><div class="kt">{lv(2)}<b><ruby>大明槓<rt>ダイミンカン</rt></ruby></b>{hand("z2 z2 z2 y:z2", KW)}</div><span>自分で同じ牌3枚をそろえる<br>その後、人が捨てた4枚目を鳴く</span><u class="rx">リーチ ×</u></div>
+  <div class="kc c1"><div class="kt">{lv(1)}<b><ruby>加槓<rt>カカン</rt></ruby></b>{hand("z7 k:z7 z7", KW)}</div><span>まずポンをする<br>その後、自分で引いた4枚目を足す</span><u class="rx">リーチ ×</u></div>
   <div class="kn"><b>鳴いたら、リーチできない</b><p><em>暗槓は鳴きではない</em>ので、リーチできる</p>
   <p>横向き＝もらった牌<br>（左＝上家・真ん中＝対面・右＝下家）</p><p>カンしたら、カンドラをめくり<br>嶺上牌をツモる</p></div>
 </div>"""
@@ -231,8 +235,8 @@ def body():
     # 鳴いた形と切る牌に、それぞれ札を付ける（矢印の右が切る牌だと伝わらないため。2026-11-20 ユーザーの指摘）
     def kk(naki_lab, naki, cut, ok, kind, tx):
         cls = "okb" if ok else ""
-        return (f'<div class="kkr"><span class="fg"><i class="tg">{naki_lab}</i>{hand(naki, 23)}</span><em>→</em>'
-                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"○ 切ってよい" if ok else "× 切れない"}</i>{hand(cut, 23)}</span>'
+        return (f'<div class="kkr"><span class="fg"><i class="tg">{naki_lab}</i>{hand(naki, 19 if ig_one else 23)}</span><em>→</em>'
+                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"○ 切ってよい" if ok else "× 切れない"}</i>{hand(cut, 19 if ig_one else 23)}</span>'
                 f'<span class="cap2"><b class="{cls}">{kind}</b>{tx}</span></div>')
     kuikae = f"""<div class="kk4">
 {kk("六萬をチー", "y:m6 m4 m5", "x:m6", False, "同じ牌", "鳴いた六萬と同じ牌")}
@@ -240,7 +244,7 @@ def body():
 {kk("六萬をチー", "y:m6 m4 m5", "x:m3", False, "スジ", "三萬でも三四五萬が作れる")}
 {kk("六萬をチー", "y:m6 m4 m5", "o:m9", True, "切れる", "九萬では面子が作れない")}
 </div>"""
-    W = 18
+    W = 15 if ig_one else 18
     base = f'{seq("123", "m")} {seq("789", "s")}'
     rk = [
         ("o", "○ できる", f'{seq("123", "m")} {seq("456", "p")} {seq("6789", "s")} z1 z1 z1', "z1", "東をカンしても、六・九索待ちのまま"),
@@ -264,6 +268,14 @@ def body():
 <table class="jt"><tr><th class="o">○ 鳴く（駆け引き）</th></tr>{tr(rows_o[5:])}</table>
 <table class="jt"><tr><th class="x">× 鳴かない</th></tr>{tr(rows_x)}</table>
 </div>"""
+    if ig_one:      # Instagram の1枚（1080×1350）。「役は残る？」は一番下の判断表に入れる（2026-11-20 ユーザーの指定）
+        kinds = kinds.split('<p class="lead">', 2)
+        kinds = kinds[0] + '<p class="lead">' + kinds[1] + kinds[2].split("</p>", 1)[1]
+        return f"""
+<section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
+<section><h2>{lv(1)}喰い替えは禁止<small>鳴いた形で同じ面子を作れる牌は切れない</small></h2><div class="in">{kuikae}</div></section>
+<section><h2>{lv(2)}リーチのあとのカン<small>ツモった牌で、待ちや面子が変わらない暗槓だけ</small></h2><div class="in">{rkh}</div></section>
+<section><h2>鳴く？　鳴かない？<small>鳴くと早くなるが、点数が下がり役も消えやすい</small></h2><div class="in"><p class="yq">鳴いても、役は残る？</p>{yaku}<div style="height:5px"></div>{naku}</div></section>"""
     return f"""
 <section><h2>鳴きって、なに？<small>チー・ポン・カンの3種類（カンは3つ）</small></h2><div class="in">{kinds}</div></section>
 <section><h2>鳴いても、役は残る？<small>役が無いとアガれない</small></h2><div class="in">{yaku}</div></section>
@@ -286,46 +298,49 @@ def render():
         b.close()
 
 
-IG_W, IG_H = 1080, 1350
+IG_CSS = """
+html, body { width: 664px !important; height: 830px !important; }
+body { padding: 10px 14px 16px !important; }
+header { padding: 4px 12px !important; margin-bottom: 5px !important; } header h1 { font-size: 21px !important; } header h1 small { display: none !important; }
+.legend { font-size: 10px !important; line-height: 1.6 !important; } .logo-pill { transform: scale(.85); transform-origin: right center; }
+section { margin-bottom: 4px !important; border-width: 2px !important; } section > h2 { font-size: 13.5px !important; padding: 3px 10px !important; } section > h2 small { font-size: 9.5px !important; }
+.in { padding: 3px 8px 4px !important; }
+.lead { font-size: 10.5px !important; margin-bottom: 4px !important; padding: 3px 7px !important; }
+.k5 { gap: 4px !important; } .kc { padding: 3px 5px !important; gap: 1px !important; }
+.kt { height: 28px !important; } .kt > b { font-size: 14.5px !important; padding-bottom: 6px !important; } .kt .lv { margin-bottom: 8px !important; } .kt > b ruby rt { font-size: 8px !important; }
+.kc > span { font-size: 9.5px !important; line-height: 1.32 !important; } .kc u { font-size: 9px !important; }
+.kn { padding: 2px 6px !important; font-size: 9px !important; line-height: 1.32 !important; } .kn b { font-size: 11.5px !important; }
+.kk4 { gap: 1px 8px !important; } .kkr { padding: 2px 0 0 !important; gap: 4px !important; } .kkr span.cap2 { font-size: 9px !important; } .kkr span.cap2 b { font-size: 10.5px !important; }
+i.tg { font-size: 8.5px !important; }
+.rk { grid-template-columns: 108px auto 1fr !important; gap: 5px !important; padding-top: 3px !important; } .rk > b { font-size: 10.5px !important; padding: 2px 0 !important; }
+.rk > span.rtx > span { font-size: 9.5px !important; white-space: nowrap; } i.wt { font-size: 9px !important; }
+.yq { font-size: 11.5px; font-weight: 900; color: #177083; margin: 1px 0 3px; }
+.grp { gap: 4px !important; } .grp div { padding: 2px 5px !important; font-size: 9px !important; line-height: 1.35 !important; white-space: nowrap; } .grp div b { font-size: 10.5px !important; } .grp div p { margin-top: 0 !important; display: inline; margin-left: 4px; }
+.yq { display: none; } .grp { grid-template-columns: auto repeat(4, 1fr) !important; align-items: center; } .grp::before { content: "鳴いても\A役は残る？"; white-space: pre; font-size: 10px; line-height: 1.25; font-weight: 900; color: #177083; }
+.grp div p { display: block !important; margin-left: 0 !important; }
+.judge { gap: 5px !important; } table.jt th { font-size: 11px !important; padding: 2px 6px !important; } table.jt td { font-size: 9.8px !important; padding: 0 4px !important; line-height: 1.26 !important; }
+i.lv { width: 14px !important; height: 14px !important; font-size: 9px !important; margin-right: 3px !important; }
+footer { left: 14px !important; right: 14px !important; bottom: 5px !important; font-size: 9px !important; }
+.kc u { margin-top: 0 !important; padding: 0 5px !important; } .kt { height: 26px !important; } section { margin-bottom: 3px !important; } .rk { padding-top: 2px !important; } .kk4 .kkr { padding-top: 1px !important; }
+"""
 
 
-def ig():
-    """X用の1枚（naki-matome.png）を Instagram 用の 1080×1350 の2枚に分ける。
-    縦長の1枚を縮めると字が読めないので、区分（見出しの帯のついた箱）の間のすき間で切り、どの枚にも上の見出しと下の行を付ける。
-    区分の並びはそのまま、2枚の高さが近くなるところで分ける"""
-    from PIL import Image
-    import numpy as np
-    src = Image.open(os.path.join(OUT, "naki-matome.png")).convert("RGB")
-    a = np.asarray(src).astype(int); bg = tuple(int(v) for v in a[3, 3])
-    blank = (np.abs(a[:, 40:src.width - 40] - a[3, 3]).sum(2) < 8).all(1)
-    runs, st = [], None      # 地の色だけの行が続くところ（区分の間のすき間）
-    for y, v in enumerate(blank):
-        if v and st is None: st = y
-        if not v and st is not None:
-            if y - st >= 6: runs.append((st, y))
-            st = None
-    if st is not None: runs.append((st, len(blank)))
-    secs = []      # 箱（すき間とすき間の間）。最初＝上の見出し・最後＝下の行
-    for (s0, e0), (s1, _) in zip(runs, runs[1:]):
-        secs.append((e0, s1))
-    head_sec, body, foot = secs[0], secs[1:-1], secs[-1]
-    head = (0, head_sec[1] + 18)
-    foot = (foot[0] - 14, src.height)
-    hh = head[1] - head[0] + foot[1] - foot[0]
-    best = min(range(1, len(body)), key=lambda k: max(body[k - 1][1] - body[0][0], body[-1][1] - body[k][0]))
-    pages = [body[:best], body[best:]]
+def ig_one():
+    """Instagram 用の1枚（1080×1350。2026-11-20 ユーザーの指定で2枚→1枚）。幅640の紙に組み直して、1.6875倍で撮る"""
+    from playwright.sync_api import sync_playwright
+    html = page(0, "", body(ig_one=True)).replace("</style>", IG_CSS.replace("{{", "{").replace("}}", "}") + "</style>")
     out = os.path.join(ROOT, "まじゃすこ素材", "ig", "naki"); os.makedirs(out, exist_ok=True)
-    for n, ps in enumerate(pages, 1):
-        parts = [head, (ps[0][0], ps[-1][1] + 14), foot]
-        hgt = sum(y1 - y0 for y0, y1 in parts)
-        im = Image.new("RGB", (src.width, hgt), bg); y = 0
-        for y0, y1 in parts: im.paste(src.crop((0, y0, src.width, y1)), (0, y)); y += y1 - y0
-        k = min(IG_W / im.width, IG_H / im.height)
-        im = im.resize((round(im.width * k), round(im.height * k)), Image.LANCZOS)
-        pg = Image.new("RGB", (IG_W, IG_H), bg); pg.paste(im, ((IG_W - im.width) // 2, (IG_H - im.height) // 2))
-        pg.save(os.path.join(out, f"{n}.png")); print(os.path.join(out, f"{n}.png"), im.size)
+    with sync_playwright() as p:
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 664, "height": 830}, device_scale_factor=1080 / 664)
+        hp = os.path.join(out, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html)
+        pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
+        h = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - Math.max(...[...document.querySelectorAll('section')].map(s => s.getBoundingClientRect().bottom))")
+        over = pg.evaluate("[...document.querySelectorAll('.rk > span.rtx > span, .kc > span, table.jt td')].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent)")
+        print("余白", round(h), "はみ出し", over)
+        pg.screenshot(path=os.path.join(out, "1.png")); b.close(); os.remove(hp)
+        assert h >= 0, "下にはみ出す"
 
 
 if __name__ == "__main__":
-    if "--ig" in sys.argv: ig()
+    if "--ig" in sys.argv: ig_one()
     else: render()
