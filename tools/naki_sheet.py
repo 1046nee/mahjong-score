@@ -228,7 +228,7 @@ def body():
     def kk(naki_lab, naki, cut, ok, kind, tx):
         cls = "okb" if ok else ""
         return (f'<div class="kkr"><span class="fg"><i class="tg">{naki_lab}</i>{hand(naki, 23)}</span><em>→</em>'
-                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"切ってよい" if ok else "切れない"}</i>{hand(cut, 27)}</span>'
+                f'<span class="fg"><i class="tg {"tok" if ok else "tng"}">{"○ 切ってよい" if ok else "× 切れない"}</i>{hand(cut, 27)}</span>'
                 f'<span class="cap2"><b class="{cls}">{kind}</b>{tx}</span></div>')
     kuikae = f"""<div class="kk4">
 {kk("六萬をチー", "y:m6 m4 m5", "x:m6", False, "同じ牌", "鳴いた六萬と同じ牌")}
