@@ -111,14 +111,16 @@ PATDEF = ('<defs>'
   '<pattern id="hp3" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="3" fill="#fff"/><rect width="1.3" height="3" fill="#1F2A28"/></pattern>'
   '<pattern id="hp4" width="3" height="3" patternUnits="userSpaceOnUse"><rect width="3" height="3" fill="#fff"/><circle cx="1.5" cy="1.5" r=".8" fill="#1F2A28"/></pattern>'
   '</defs>')
-def side_view(hand, ws, km, scale=1.25):
+def side_view(hand, ws, km, scale=1.25, gone=None, honor=True):
     """横から見た図: 横＝数字（1〜9。字牌があれば東も）・縦＝枚数（0〜4）。手の牌は斜め線、待ちの残りは待ち方の色。
-    色は手の数牌の色に合わせる（萬子・索子でも使える。待ち当ての正解の画像・2026-11-17〜）"""
+    色は手の数牌の色に合わせる（萬子・索子でも使える。待ち当ての正解の画像・2026-11-17〜）
+    gone＝{牌: 枚数} 切ってもう無い牌（灰色の箱。待ちの残りから引く）。honor=False で東の列の場所を詰める（2026-11-20 ツモ比べの画像）"""
+    gone = {CODES.index(k): v for k, v in (gone or {}).items()}
     c = cnt(hand); wset = {CODES.index(w): w for w, n in ws}
     base = next(CODES.index(h) for h in hand if h[0] != "z") // 9 * 9
     cols = [base + k for k in range(9)] + ([27] if any(h[0] == "z" for h in hand) or any(w[0] == "z" for w, _ in ws) else [])
     CW, RH, X0, Y0 = 24, 8, 16, 4      # 縦を低く（カードの縦幅を詰める。2026-11-16 ユーザーの指定）
-    W = X0 + CW * 10 + 8 + 4; H = Y0 + RH * 4 + 15      # 東の列が無い形も同じ幅（図の位置をそろえる）
+    W = X0 + CW * (10 if honor else 9) + (8 if honor else 0) + 4; H = Y0 + RH * 4 + 15      # 東の列が無い形も同じ幅（図の位置をそろえる）
     XE = X0 + CW * len(cols) + (8 if len(cols) > 9 else 0)
     g = ""
     for r in range(5):
@@ -141,8 +143,11 @@ def side_view(hand, ws, km, scale=1.25):
         for r in range(c[t]):
             y = Y0 + RH * 4 - (r + 1) * RH
             g += hand_box(x + 2, y + 1, CW - 4, RH - 2)
+        for r in range(c[t], c[t] + gone.get(t, 0)):
+            y = Y0 + RH * 4 - (r + 1) * RH
+            g += f'<rect x="{x + 2.5}" y="{y + 1.5}" width="{CW - 5}" height="{RH - 3}" rx="2.5" fill="#C9D2D0"/>'
         if ks:
-            for r in range(c[t], 4):
+            for r in range(c[t] + gone.get(t, 0), 4):
                 y = Y0 + RH * 4 - (r + 1) * RH
                 if len(ks) == 1:
                     g += box(x + 2.5, y + 1.5, CW - 5, RH - 3, [col])
