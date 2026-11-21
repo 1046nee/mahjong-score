@@ -4,7 +4,7 @@
 比べる表ではなく、チェックシート。文字・選択肢はぎゅっと詰めてよい（ユーザーの指定）。
 出典: Mリーグ＝公式サイト m-league.jp/about の公式戦ルール（2026-11-20 に確認）。雀魂＝Wikipedia「雀魂」の段位戦のルールと、blog-yakuman-rules の表。
 確かめられなかったもの・規定がないものは札を付けず、項目の右に小さく書く。
-出力: まじゃすこ素材/x/rule-hikaku/rule-check.png（1588×2246）
+出力: まじゃすこ素材/x/rule-hikaku/rule-check.png（1588×2382＝縦横2:3。項目が増えたのでA4から縦に伸ばした。2026-11-21）
 実行: python tools/rule_compare_sheet.py
 """
 import io, os, sys
@@ -18,6 +18,7 @@ OUT = os.path.join(ROOT, "まじゃすこ素材", "x", "rule-hikaku")
 LEFT = [
     ("##", "試合と点数"),
     ("試合形式", [("半荘", "MJ"), ("東風", "J")], "雀魂は東風・半荘を選ぶ"),
+    ("西入（延長）", [("なし", "M"), ("あり", "J")], "雀魂はトップが30,000点未満のとき"),
     ("持ち点／返し点", [("25,000／30,000", "M"), ("25,000／25,000", "J")], ""),
     ("ウマ", [("10-30", "M"), ("10-20", ""), ("5-15", "J"), ("なし", "")], ""),
     ("同点のとき", [("同着", "M"), ("上家取り", "J")], "上家取り＝起家に近い人が上"),
@@ -53,7 +54,12 @@ RIGHT = [
     ("##", "カン"),
     ("カンドラのタイミング", [("すぐ", "M"), ("暗槓すぐ・明槓は打牌後", "J")], ""),
     ("パオ", [("なし", ""), ("大三元・大四喜", "J"), ("＋四槓子", "M")], ""),
-    ("リーチ後のカン", [("面子が変わらない暗槓のみ", "MJ"), ("待ちが変わらない暗槓のみ", "")], "")      # 雀魂もMリーグと同じ（2026-11-20 ユーザーの指摘）,
+    ("リーチ後のカン", [("面子が変わらない暗槓のみ", "MJ"), ("待ちが変わらない暗槓のみ", "")], ""),      # 雀魂もMリーグと同じ（2026-11-20 ユーザーの指摘）
+    # 2026-11-21 ユーザーの指摘で足した（連風牌）。ほかの抜け（切り上げ満貫・西入）も確かめて足した。
+    # 出典: Mリーグ公式サイト（連風牌の対子も2符・30符6翻だけ切り上げ・西入の規定なし）、Wikipedia「雀魂」（連風牌の雀頭は4符・30符4飜は切り上げない・トップが30,000点未満なら西入）
+    ("##", "符と満貫"),
+    ("連風牌の雀頭", [("2符", "M"), ("4符", "J")], "場風＝自風の牌（東場の東家の東）"),
+    ("切り上げ満貫", [("なし", "MJ"), ("あり", "")], "30符4翻・60符3翻を満貫にするか"),
 ]
 
 
@@ -77,6 +83,7 @@ ICON_M, ICON_J = _icons()
 def badge(k): return {"M": f'<i class="bm" title="Mリーグ"><img src="{ICON_M}"></i>', "J": f'<i class="bj" title="雀魂"><img src="{ICON_J}"></i>'}[k]
 # 色は3つの意味だけに絞る（2026-11-20 ユーザーの指定「違う所を目立たせる・色をいい感じに」）:
 #   オレンジの行＝Mリーグと雀魂でルールが違う項目（それぞれ別の選択肢に印がある）／緑の札＝両方同じ／紺の札＝Mリーグだけ・紫の札＝雀魂だけ
+def is_one(opts): return any(m for _, m in opts)
 def is_same(opts): return any("M" in m and "J" in m for _, m in opts)
 def is_diff(opts): return any("M" in m and "J" not in m for _, m in opts) and any("J" in m and "M" not in m for _, m in opts)
 N_DIFF = 0
@@ -88,9 +95,9 @@ def col(items):
         if it[0] == "##":
             out += f'<h2>{it[1]}</h2>'; continue
         name, opts, note = it
-        d = is_diff(opts); sm = not d and is_same(opts)
+        d = is_diff(opts); sm = not d and is_same(opts); one = not d and not sm and is_one(opts)
         chips = "".join(f'<span class="op{" m" * ("M" in m and "J" not in m)}{" j" * ("J" in m and "M" not in m)}{" mj" * ("M" in m and "J" in m)}">{t}{"".join(badge(k) for k in m)}</span>' for t, m in opts)
-        out += (f'<div class="it{" diff" * d}{" same" * sm}"><b><i class="cb"></i><span>{name}{"<em><i>!</i>違う・要チェック</em>" if d else ""}</span></b>'
+        out += (f'<div class="it{" diff" * d}{" same" * sm}{" one" * one}"><b><i class="cb"></i><span>{name}{"<em><i>!</i>違う・要チェック</em>" if d else ""}</span></b>'
                 f'<div class="ops">{chips}</div>{f"<small>{note}</small>" if note else ""}</div>')
     return out
 N_DIFF = sum(1 for it in LEFT + RIGHT if it[0] != "##" and is_diff(it[1]))
@@ -101,7 +108,7 @@ def html():
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1123px; }}
+html, body {{ width: 794px; height: 1191px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 10px 24px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; margin-bottom: 7px; }}
 header h1 {{ font-size: 25px; font-weight: 900; line-height: 1.15; }}
@@ -120,13 +127,14 @@ i.bj img {{ width: 100%; height: 100%; display: block; }}
 .key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFE1CE; border: 2.5px solid #E75620; box-shadow: 0 0 0 2px rgba(231, 86, 32, .2); }} .key .ssw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #E3F4EC; border: 1.5px solid #7CC3A6; }}
 .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 2px 8px 6px; }}
-h2 {{ font-size: 15px; font-weight: 900; color: #fff; background: #177083; margin: 9px -8px 4px; padding: 4px 12px; letter-spacing: .03em; }}
+h2 {{ font-size: 15px; font-weight: 900; color: #fff; background: #177083; margin: 7px -8px 4px; padding: 3px 12px; letter-spacing: .03em; }}
 .colw h2:first-child {{ margin-top: -2px; border-radius: 6px 6px 0 0; }}
-.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 5.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
+.it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 4.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
 h2 + .it {{ border-top: 0; }}
+.it.one {{ background: #F3F6F5; border: 1.5px solid #C5D3CF; padding: 4px 4.5px; }}      /* 片方の規定だけの行（チョンボ）も囲う（2026-11-21 ユーザーの指摘） */
 .it.same {{ background: #E3F4EC; border: 1.5px solid #7CC3A6; padding: 4px 4.5px; }}      /* 同じ行も枠で囲う（2026-11-20 ユーザーの指定） */
 .it.diff {{ background: #FFE1CE; border: 3px solid #E75620; padding: 2.5px 3px; box-shadow: 0 0 0 3px rgba(231, 86, 32, .2); }}      /* 違う行＝要チェック: 太い枠＋外の光＋「!」の札（2026-11-20 ユーザーの指定） */
-.it.diff + .it:not(.diff), .it.same + .it:not(.diff) {{ border-top-color: transparent; }}      /* 違う行の上の線は消さない（オレンジの枠が切れた。2026-11-20 ユーザーの指摘） */ .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff, .it.diff + .it.diff {{ margin-top: 6px; }}
+.it.diff + .it:not(.diff), .it.same + .it:not(.diff), .it.one + .it:not(.diff) {{ border-top-color: transparent; }}      /* 違う行の上の線は消さない（オレンジの枠が切れた。2026-11-20 ユーザーの指摘） */ .it.diff + .it, .it.same + .it.same, .it + .it.diff, .it.same + .it.diff, .it.diff + .it.diff, .it.one, .it.one + .it {{ margin-top: 4.5px; }}
 .it > b {{ font-size: 13.5px; font-weight: 900; line-height: 1.25; white-space: nowrap; display: flex; align-items: flex-start; gap: 5px; }}
 .it > b em {{ display: flex; align-items: center; gap: 3px; width: fit-content; font-style: normal; font-size: 10px; font-weight: 900; color: #fff; background: #E75620; border-radius: 4px; padding: 0 6px 0 2px; margin-top: 2px; }}
 .it > b em i {{ font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: 12px; height: 12px; border-radius: 50%; background: #fff; color: #E75620; font-size: 10px; font-weight: 900; }}
@@ -135,7 +143,7 @@ h2 + .it {{ border-top: 0; }}
 i.cb {{ flex: none; width: 13px; height: 13px; border: 2px solid #177083; border-radius: 3px; margin-top: 1px; background: #fff; }}
 .it.diff i.cb {{ border-color: #E75620; }}
 .ops {{ display: flex; flex-wrap: wrap; gap: 3px; }}
-.op {{ font-size: 12px; font-weight: 800; border: 1.5px solid #D5E0DD; border-radius: 12px; padding: 1px 7px 1px 8px; color: #6B7A77; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
+.op {{ font-size: 12px; font-weight: 800; border: 1.5px solid #D5E0DD; border-radius: 12px; padding: 0 7px 0 8px; color: #6B7A77; background: #fff; white-space: nowrap; display: inline-flex; align-items: center; }}
 .op.m {{ border-color: #2F3B57; color: #fff; background: #3E4C66; }}
 .op.j {{ border-color: #6E4CC4; color: #fff; background: #7E5AD2; }}
 .op.mj {{ border-color: #1F7A5C; color: #fff; background: #23866A; }}
@@ -159,7 +167,7 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1191}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         h = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
         bad = pg.evaluate("""[...document.querySelectorAll('.it')].flatMap(it => {const o=[]; const b=it.querySelector('b'), ops=it.querySelector('.ops'), sm=it.querySelector('small');
