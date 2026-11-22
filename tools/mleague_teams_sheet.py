@@ -68,7 +68,8 @@ def html():
 html, body {{ width: 794px; height: 1123px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 22px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; }}
-header h1 {{ font-size: 27px; font-weight: 900; line-height: 1.15; }} header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
+header .ml {{ flex: none; background: #fff; border-radius: 8px; width: 74px; height: 62px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }} header .ml img {{ max-height: 54px; max-width: 64px; display: block; }}
+header h1 {{ flex: 1; font-size: 27px; font-weight: 900; line-height: 1.15; }} header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
 {LOGO_CSS}
 .legend {{ display: flex; flex-wrap: nowrap; gap: 9px; align-items: center; background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 7px 10px; margin: 8px 0; font-size: 10.5px; white-space: nowrap; font-weight: 800; }}
 .legend > b {{ font-size: 12.5px; font-weight: 900; color: #177083; margin-right: 2px; }}
@@ -89,7 +90,7 @@ h2 {{ font-size: 17.5px; font-weight: 900; line-height: 1.2; white-space: nowrap
 .note {{ font-size: 10.5px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 8px; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }} footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
-<header><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体</small></h1>{logo_html()}</header>
+<header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の所属団体</b>{leg}</div>
 <div class="grid">{cards}</div>
 <p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）による。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
