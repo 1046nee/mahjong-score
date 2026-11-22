@@ -174,7 +174,7 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .sub {{ display: flex; align-items: center; gap: 2px; }} .sub em.ag {{ margin-left: 9px; }}
 u.tr {{ text-decoration: none; display: inline-flex; align-items: center; gap: 0; font-size: 8.5px; letter-spacing: -.08em; font-weight: 900; color: #8A6A00; white-space: nowrap; }} u.tr svg {{ width: 10px; height: 10px; }}
 u.tr sup {{ font-size: 8px; margin-left: 1px; vertical-align: 3px; line-height: 0; }}
-u.tr.now {{ background: #FFF1C2; border: 1px solid #D4A017; border-radius: 6px; padding: 0 4px 0 2px; }}
+
 .pp u.tr {{ margin-left: 2px; }}
 .dl em.hd {{ font-style: normal; font-size: 9.5px; font-weight: 800; color: #33403D; white-space: nowrap; margin-top: 2px; }}
 .dl em.ti {{ font-style: normal; font-size: 9.5px; font-weight: 900; color: #8A6A00; text-align: center; line-height: 1.3; background: #FFF8E1; border-radius: 6px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }} .dl em.ti svg {{ width: 11px; height: 11px; vertical-align: -1px; margin-right: 1px; }} .dl em.ti span {{ font-weight: 700; color: #8A7A55; font-size: 8.5px; }}
