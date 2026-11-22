@@ -80,7 +80,7 @@ TROPHY = '<svg viewBox="0 0 24 24"><path d="M7 3h10v5.5a5 5 0 0 1-10 0z" fill="#
 def trophy(n):
     if n not in WON: return ""
     t, k = WON[n]
-    return f'<u class="tr{" now" * (n in NOW)}">{TROPHY}{"現" if n in NOW else ""}{t}{f"×{k}" if k > 1 else ""}</u>'
+    return f'<u class="tr{" now" * (n in NOW)}">{TROPHY}{"現" if n in NOW else ""}{t}×{k}</u>'
 NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / 雷電": "2018年から入れ替わりなし", "EARTH JETS": "2025年の参入から同じ4人"}
 
 
