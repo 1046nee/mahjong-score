@@ -5,7 +5,7 @@
 チームと選手・団体は tools/video_topics2.py の TEAMS（Mリーグ公式サイト・2026年10月に確認）。参入と優勝は blog-mleague-history と同じ。
 ロゴはユーザーから受け取った画像（2026-11-22 ユーザーの判断で使う）。元の画像は非公開の素材リポジトリ まじゃすこ素材/x/mleague-teams/src/ だけに置く。
 ロゴが無いチームは、チーム名の頭文字の丸で代わりにする（受け取ったら src/ に置けば出る）。
-出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×2824。過去の所属選手を足して縦に伸ばした）
+出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×2832。過去の所属選手を足して縦に伸ばした）
 実行: python3.13 tools/mleague_teams_sheet.py
 """
 import base64, io, os, sys
@@ -43,6 +43,11 @@ PAST = {
     "BEAST X": [("猿川真寿", "連盟", 2023, 2025, ""), ("菅原千瑛", "連盟", 2023, 2025, "")],
     "U-NEXT Pirates": [("小林剛", "麻将連合", 2018, 2026, ""), ("石橋伸洋", "最高位戦", 2018, 2022, ""), ("朝倉康心", "最高位戦", 2018, 2022, "復帰")],
 }
+# チームカラー（ロゴの色から。2026-11-22 ユーザーの指定でカードを色分け）: (主の色, 2つ目の色)
+TCOL = {"EARTH JETS": ("#1E7A3C", "#D7262E"), "赤坂ドリブンズ": ("#B5123B", "#C9D920"), "EX風林火山": ("#D7262E", "#1F1F1F"),
+        "KADOKAWAサクラナイツ": ("#E58FAA", "#1F1F1F"), "KONAMI麻雀格闘倶楽部": ("#E50012", "#1F1F1F"), "渋谷ABEMAS": ("#B49A5E", "#1F1F1F"),
+        "セガサミーフェニックス": ("#E8541E", "#F2A81D"), "TEAM RAIDEN / 雷電": ("#F5C400", "#1F1F1F"), "BEAST X": ("#13294B", "#C5A54E"),
+        "U-NEXT Pirates": ("#1E8FD0", "#1F1F1F")}
 NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / 雷電": "2018年から入れ替わりなし", "EARTH JETS": "2025年の参入から同じ4人"}
 
 
@@ -74,7 +79,8 @@ def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
     pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b>{n}</b><i>{d}</i></span>' for n, d in players)
-    return (f'<div class="tm"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
+    c1, c2 = TCOL[team]
+    return (f'<div class="tm" style="--t1:{c1};--t2:{c2}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
 
 
@@ -87,7 +93,7 @@ def html():
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1412px; }}
+html, body {{ width: 794px; height: 1416px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 22px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; }}
 header .ml {{ flex: none; background: #fff; border-radius: 8px; width: 74px; height: 62px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }} header .ml img {{ max-height: 54px; max-width: 64px; display: block; }}
@@ -97,12 +103,12 @@ header h1 {{ flex: 1; font-size: 27px; font-weight: 900; line-height: 1.15; }} h
 .legend > b {{ font-size: 12.5px; font-weight: 900; color: #177083; margin-right: 2px; }}
 .dl {{ display: inline-flex; align-items: center; gap: 5px; }} .dl i {{ font-style: normal; color: #fff; background: var(--c); border-radius: 4px; padding: 1px 7px; font-weight: 900; }} .dl b {{ color: var(--c); font-weight: 900; }}
 .grid {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }}
-.tm {{ display: flex; gap: 8px; min-width: 0; align-items: center; background: #fff; border: 2px solid #C5D6D2; border-radius: 10px; padding: 16px 10px; }}
+.tm {{ display: flex; gap: 8px; min-width: 0; align-items: center; position: relative; overflow: hidden; background: linear-gradient(135deg, color-mix(in srgb, var(--t1) 16%, #fff) 0%, #fff 55%); border: 3px solid var(--t1); box-shadow: inset 0 7px 0 var(--t2); border-radius: 10px; padding: 18px 10px 14px; }}
 .lg {{ flex: none; width: 84px; height: 96px; display: flex; align-items: center; justify-content: center; }}
 .lg img {{ max-width: 84px; max-height: 96px; display: block; }}
 .ph {{ width: 78px; height: 78px; border-radius: 50%; background: #E3ECEA; color: #5E6B69; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
 .bd {{ flex: 1; min-width: 0; }}
-h2 {{ font-size: 17.5px; font-weight: 900; line-height: 1.2; white-space: nowrap; }}
+h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font-weight: 900; line-height: 1.2; white-space: nowrap; }}
 .in {{ font-size: 11px; font-weight: 700; color: #5E6B69; margin: 3px 0 8px; white-space: nowrap; display: flex; align-items: center; }} .in em {{ font-style: normal; margin: 0 2px; }}
 .win {{ margin-left: 6px; font-size: 10px; font-weight: 900; color: #8A6A00; background: #FFF1C2; border: 1.5px solid #D4A017; border-radius: 9px; padding: 0 6px; }}
 .pls {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 5px; }}
@@ -131,7 +137,7 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1412}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1416}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/").lstrip("/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         gap = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
         over = pg.evaluate("[...document.querySelectorAll('.tm h2, .in, .pl, .pl b')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > e.closest('.tm').getBoundingClientRect().right - 2).map(e => e.textContent)")
