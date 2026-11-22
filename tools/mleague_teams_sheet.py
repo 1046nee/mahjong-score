@@ -84,6 +84,18 @@ def card(team, players):
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
 
 
+# カードのチームカラーの出し方（2026-11-22 ユーザーの指定「2色以上あるなら交互に・表現を変えてみて」）。STYLE=stripe|band|split で試せる
+STYLE = os.environ.get("STYLE", "stripe")      # stripe に決定（2026-11-22 ユーザーの判断・案A）
+TM_CSS = {
+    # 枠を2色の斜めのしま（交互）に
+    "stripe": ".tm { border: 6px solid transparent; background: linear-gradient(135deg, color-mix(in srgb, var(--t1) 14%, #fff) 0%, #fff 55%) padding-box, repeating-linear-gradient(135deg, var(--t1) 0 14px, var(--t2) 14px 28px) border-box; padding: 14px 7px 11px !important; } .tm .lg { width: 80px !important; }",
+    # 上に2色が交互に並ぶ帯（市松の1列）＋主の色の枠
+    "band": ".tm { border: 3px solid var(--t1); background: linear-gradient(180deg, color-mix(in srgb, var(--t1) 12%, #fff) 0%, #fff 60%); padding-top: 24px !important; } .tm::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: repeating-linear-gradient(90deg, var(--t1) 0 26px, var(--t2) 26px 52px); }",
+    # ロゴの側を2色の斜めの帯で塗り分け（ロゴは白い丸に）＋主の色の枠
+    "split": ".tm { border: 3px solid var(--t1); background: linear-gradient(90deg, transparent 0 96px, #fff 96px), linear-gradient(160deg, var(--t1) 0 50%, var(--t2) 50% 100%); padding-left: 6px !important; } .tm .lg { width: 84px; height: 84px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px #fff; } .tm .lg img { max-width: 64px !important; max-height: 64px !important; }",
+}
+
+
 def html():
     cnt = {k: sum(1 for _, ps in TEAMS for _, d in ps if d == k) for k in DANTAI}
     leg = "".join(f'<span class="dl" style="--c:{c}"><i>{k}</i>{full}<b>{cnt[k]}人</b></span>' for k, (c, full) in DANTAI.items() if cnt[k])
@@ -103,7 +115,8 @@ header h1 {{ flex: 1; font-size: 27px; font-weight: 900; line-height: 1.15; }} h
 .legend > b {{ font-size: 12.5px; font-weight: 900; color: #177083; margin-right: 2px; }}
 .dl {{ display: inline-flex; align-items: center; gap: 5px; }} .dl i {{ font-style: normal; color: #fff; background: var(--c); border-radius: 4px; padding: 1px 7px; font-weight: 900; }} .dl b {{ color: var(--c); font-weight: 900; }}
 .grid {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }}
-.tm {{ display: flex; gap: 8px; min-width: 0; align-items: center; position: relative; overflow: hidden; background: linear-gradient(135deg, color-mix(in srgb, var(--t1) 16%, #fff) 0%, #fff 55%); border: 3px solid var(--t1); box-shadow: inset 0 7px 0 var(--t2); border-radius: 10px; padding: 18px 10px 14px; }}
+.tm {{ display: flex; gap: 8px; min-width: 0; align-items: center; position: relative; overflow: hidden; border-radius: 10px; padding: 18px 10px 14px; }}
+{TM_CSS[STYLE]}
 .lg {{ flex: none; width: 84px; height: 96px; display: flex; align-items: center; justify-content: center; }}
 .lg img {{ max-width: 84px; max-height: 96px; display: block; }}
 .ph {{ width: 78px; height: 78px; border-radius: 50%; background: #E3ECEA; color: #5E6B69; font-size: 20px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
