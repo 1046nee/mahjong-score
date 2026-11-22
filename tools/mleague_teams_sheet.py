@@ -135,7 +135,7 @@ def html():
     # 所属団体のカード: 5つの団体を同じ幅の升に並べ、1行に収める（札＋人数／正式名。2026-11-22 ユーザーの指定）
     full = {"連盟": "日本プロ麻雀連盟", "最高位戦": "最高位戦日本プロ麻雀協会", "協会": "日本プロ麻雀協会", "RMU": "RMU", "麻将連合": "麻将連合"}
     leg = "".join(f'<span class="dl" style="--c:{c}"><span class="t"><i>{k}</i><b>{f"{cnt[k]}人" if cnt[k] else "過去のみ"}</b></span><small>{full[k]}</small><em class="hd">{HEAD[k][0]} {HEAD[k][1]}</em><em class="ti">{TROPHY}{TITLE[k][0]}<br>{TITLE[k][1]}<span>（{TITLE[k][2]}）</span></em></span>' for k, (c, _) in DANTAI.items())
-    cards = "".join(card(t, ps) for t, ps in TEAMS)
+    cards = "".join(card(t, ps) for t, ps in sorted(TEAMS, key=lambda x: INFO[x[0]][2]))      # 参入の古いチームから（同じ年は公式サイトの並び。2026-11-22 ユーザーの指定）
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
 <style>
@@ -185,7 +185,7 @@ footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: fle
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の<br>所属団体<small>代表・<br>最高タイトルと<br>今の保持者</small></b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（×は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。チームの並びは公式サイトのチーム一覧の順、選手は年齢の高い順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（×は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。チームの並びは参入の古い順（同じ年は公式サイトの並び）、選手は年齢の高い順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
