@@ -5,7 +5,7 @@
 チームと選手・団体は tools/video_topics2.py の TEAMS（Mリーグ公式サイト・2026年10月に確認）。参入と優勝は blog-mleague-history と同じ。
 ロゴはユーザーから受け取った画像（2026-11-22 ユーザーの判断で使う）。元の画像は非公開の素材リポジトリ まじゃすこ素材/x/mleague-teams/src/ だけに置く。
 ロゴが無いチームは、チーム名の頭文字の丸で代わりにする（受け取ったら src/ に置けば出る）。
-出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×2940。過去の所属選手を足して縦に伸ばした）
+出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×3120。過去の所属選手を足して縦に伸ばした）
 実行: python3.13 tools/mleague_teams_sheet.py
 """
 import base64, io, os, sys
@@ -65,12 +65,26 @@ def age(n):
     if n not in BIRTH: return ""
     y, m, d = map(int, BIRTH[n].split("-")); ty, tm, td = map(int, AGE_AT.split("-"))
     return f'<em class="ag">{ty - y - ((tm, td) < (m, d))}</em>'
+# 団体の代表と最高タイトル・今の保持者（2026-11-22 ユーザーの指定。Wikipedia の各団体の記事と、各団体の公式サイトのタイトルの歴代表で確認）
+HEAD = {"連盟": ("会長", "森山茂和"), "最高位戦": ("代表", "新津潔"), "協会": ("代表理事", "鍛冶田良一"), "RMU": ("代表", "多井隆晴"), "麻将連合": ("代表", "忍田幸夫")}
+TITLE = {"連盟": ("鳳凰位", "白鳥翔", "第42期"), "最高位戦": ("最高位", "牧野伸彦", "第50期"), "協会": ("雀王", "西村雄一郎", "第24期"), "RMU": ("令昭位", "小川光", "第17期"), "麻将連合": ("将王", "石原真人", "第23期")}
+# 最高タイトルを取ったことがある選手（今と過去のMリーガー）→ (タイトル, 回数)。歴代の保持者の表から
+WON = {"前原雄大": ("鳳凰位", 4), "瀬戸熊直樹": ("鳳凰位", 3), "藤崎智": ("鳳凰位", 2), "勝又健志": ("鳳凰位", 1), "佐々木寿人": ("鳳凰位", 3), "HIRO柴田": ("鳳凰位", 1),
+       "白鳥翔": ("鳳凰位", 2), "村上淳": ("最高位", 3), "石橋伸洋": ("最高位", 1), "近藤誠一": ("最高位", 4), "醍醐大": ("最高位", 1), "鈴木優": ("最高位", 1),
+       "竹内元太": ("最高位", 2), "石井一馬": ("最高位", 1), "鈴木たろう": ("雀王", 4), "堀慎吾": ("雀王", 1), "渋川難波": ("雀王", 1), "浅井堂岐": ("雀王", 1),
+       "仲林圭": ("雀王", 2), "多井隆晴": ("令昭位", 1), "小林剛": ("将王", 4)}
+NOW = {v[1] for v in TITLE.values()}
+TROPHY = '<svg viewBox="0 0 24 24"><path d="M7 3h10v5.5a5 5 0 0 1-10 0z" fill="#D4A017"/><path d="M7 4.5H4.3a2.7 2.7 0 0 0 2.9 4.3M17 4.5h2.7a2.7 2.7 0 0 1-2.9 4.3" stroke="#D4A017" stroke-width="1.8" fill="none"/><rect x="10.8" y="13" width="2.4" height="4" fill="#D4A017"/><rect x="7.6" y="17" width="8.8" height="3.2" rx="1" fill="#B8860B"/></svg>'
+def trophy(n):
+    if n not in WON: return ""
+    t, k = WON[n]
+    return f'<u class="tr{" now" * (n in NOW)}">{TROPHY}{"現" if n in NOW else ""}{t}{f"<sup>{k}</sup>" if k > 1 else ""}</u>'
 NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / 雷電": "2018年から入れ替わりなし", "EARTH JETS": "2025年の参入から同じ4人"}
 
 
 def past_html(team):
     if team in NOPAST: return f'<div class="past"><b>過去</b><span class="none">{NOPAST[team]}</span></div>'
-    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{sx(n)}{n}<i>{d}</i><small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
+    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{sx(n)}{n}<i>{d}</i>{trophy(n)}<small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
     return f'<div class="past"><b>過去</b><div class="pps">{xs}</div></div>'
 
 
@@ -95,7 +109,7 @@ def logo(key, name):
 def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
-    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span>{age(n)}</b><i>{d}</i></span>' for n, d in players)
+    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span><span class="sub">{age(n)}{trophy(n)}</span></b><i>{d}</i></span>' for n, d in players)
     c1, c2 = TCOL[team]
     return (f'<div class="tm" style="--t1:{c1};--t2:{c2}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
@@ -117,19 +131,20 @@ def html():
     cnt = {k: sum(1 for _, ps in TEAMS for _, d in ps if d == k) for k in DANTAI}
     # 所属団体のカード: 5つの団体を同じ幅の升に並べ、1行に収める（札＋人数／正式名。2026-11-22 ユーザーの指定）
     full = {"連盟": "日本プロ麻雀連盟", "最高位戦": "最高位戦日本プロ麻雀協会", "協会": "日本プロ麻雀協会", "RMU": "RMU", "麻将連合": "麻将連合"}
-    leg = "".join(f'<span class="dl" style="--c:{c}"><span class="t"><i>{k}</i><b>{f"{cnt[k]}人" if cnt[k] else "過去のみ"}</b></span><small>{full[k]}</small></span>' for k, (c, _) in DANTAI.items())
+    leg = "".join(f'<span class="dl" style="--c:{c}"><span class="t"><i>{k}</i><b>{f"{cnt[k]}人" if cnt[k] else "過去のみ"}</b></span><small>{full[k]}</small><em class="hd">{HEAD[k][0]} {HEAD[k][1]}</em><em class="ti">{TROPHY}{TITLE[k][0]}<br>{TITLE[k][1]}<span>（{TITLE[k][2]}）</span></em></span>' for k, (c, _) in DANTAI.items())
     cards = "".join(card(t, ps) for t, ps in TEAMS)
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1470px; }}
+html, body {{ width: 794px; height: 1560px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 22px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; }}
 header .ml {{ flex: none; background: #fff; border-radius: 8px; width: 74px; height: 62px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }} header .ml img {{ max-height: 54px; max-width: 64px; display: block; }}
 header h1 {{ flex: 1; font-size: 27px; font-weight: 900; line-height: 1.15; }} header h1 small {{ display: block; font-size: 12.5px; font-weight: 700; color: #DDF0EC; margin-top: 4px; }}
 {LOGO_CSS}
 .legend {{ display: grid; grid-template-columns: auto repeat(5, minmax(0, 1fr)); gap: 6px; align-items: center; background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 7px 10px; margin: 8px 0; font-size: 11px; font-weight: 800; }}
+.legend > b small {{ display: block; font-size: 9px; color: #5E6B69; font-weight: 700; margin-top: 3px; line-height: 1.3; }}
 .legend > b {{ font-size: 12.5px; font-weight: 900; color: #177083; margin-right: 2px; line-height: 1.25; }}
 .dl {{ display: flex; flex-direction: column; align-items: center; gap: 2px; border-left: 1.5px solid #DCE7E4; padding-left: 6px; }} .dl .t {{ display: flex; align-items: center; gap: 5px; }} .dl small {{ font-size: 9px; font-weight: 700; color: #5E6B69; white-space: nowrap; letter-spacing: -.03em; }} .dl i {{ font-style: normal; color: #fff; background: var(--c); border-radius: 4px; padding: 1px 7px; font-weight: 900; }} .dl b {{ color: var(--c); font-weight: 900; }}
 .grid {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }}
@@ -153,14 +168,21 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .pp {{ display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #33403D; white-space: nowrap; }}
 .pp i {{ font-style: normal; font-size: 9px; font-weight: 900; color: #fff; background: var(--c); border-radius: 3px; padding: 0 4px; line-height: 1.45; }}      /* 過去の選手も団体を文字と色で */ .pp small {{ font-size: 9.5px; font-weight: 700; color: #6B7A77; margin-left: 2px; }}
 .pl b {{ display: flex; flex-direction: column; line-height: 1.2; }} em.ag {{ font-style: normal; font-size: 10px; font-weight: 800; color: #6B7A77; margin-left: 12px; line-height: 1.1; }}      /* 年齢は名前の下に小さく（横に並べると札に入らない） */ em.ag::after {{ content: "歳"; font-size: 8.5px; }}
+.sub {{ display: flex; align-items: center; gap: 3px; }} .sub em.ag {{ margin-left: 11px; }}
+u.tr {{ text-decoration: none; display: inline-flex; align-items: center; gap: 0; font-size: 8.5px; letter-spacing: -.05em; font-weight: 900; color: #8A6A00; white-space: nowrap; }} u.tr svg {{ width: 11px; height: 11px; }}
+u.tr sup {{ font-size: 8px; margin-left: 1px; vertical-align: 3px; line-height: 0; }}
+u.tr.now {{ background: #FFF1C2; border: 1px solid #D4A017; border-radius: 6px; padding: 0 4px 0 2px; }}
+.pp u.tr {{ margin-left: 2px; }}
+.dl em.hd {{ font-style: normal; font-size: 9.5px; font-weight: 800; color: #33403D; white-space: nowrap; margin-top: 2px; }}
+.dl em.ti {{ font-style: normal; font-size: 9.5px; font-weight: 900; color: #8A6A00; text-align: center; line-height: 1.3; background: #FFF8E1; border-radius: 6px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }} .dl em.ti svg {{ width: 11px; height: 11px; vertical-align: -1px; margin-right: 1px; }} .dl em.ti span {{ font-weight: 700; color: #8A7A55; font-size: 8.5px; }}
 u.sx {{ text-decoration: none; font-weight: 900; margin-right: 1px; font-size: .9em; }} u.sx.f {{ color: #D9487D; }} u.sx.m {{ color: #2F8FD8; }}
 .note {{ font-size: 10.5px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 8px; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }} footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
-<div class="legend"><b>選手の<br>所属団体</b>{leg}</div>
+<div class="legend"><b>選手の<br>所属団体<small>代表・<br>最高タイトルと<br>今の保持者</small></b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（右上の数字は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
@@ -170,7 +192,7 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1470}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1560}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/").lstrip("/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         gap = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
         over = pg.evaluate("[...document.querySelectorAll('.tm h2, .in, .pl, .pl b')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > e.closest('.tm').getBoundingClientRect().right - 2).map(e => e.textContent)")
