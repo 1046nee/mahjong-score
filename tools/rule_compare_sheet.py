@@ -4,7 +4,7 @@
 比べる表ではなく、チェックシート。文字・選択肢はぎゅっと詰めてよい（ユーザーの指定）。
 出典: Mリーグ＝公式サイト m-league.jp/about の公式戦ルール（2026-11-20 に確認）。雀魂＝Wikipedia「雀魂」の段位戦のルールと、blog-yakuman-rules の表。
 確かめられなかったもの・規定がないものは札を付けず、項目の右に小さく書く。
-出力: まじゃすこ素材/x/rule-hikaku/rule-check.png（1588×2382＝縦横2:3。項目が増えたのでA4から縦に伸ばした。2026-11-21）
+出力: まじゃすこ素材/x/rule-hikaku/rule-check.png（1588×2676。項目が増えたので縦に伸ばした。2026-11-22）
 実行: python tools/rule_compare_sheet.py
 """
 import io, os, sys
@@ -23,7 +23,6 @@ LEFT = [
     ("ウマ", [("10-30", "M"), ("10-20", ""), ("5-15", "J"), ("なし", "")], ""),
     ("同点のとき", [("同着", "M"), ("上家取り", "J")], "上家取り＝起家に近い人が上"),
     ("終了時の供託", [("トップ", "MJ"), ("誰も取らない", ""), ("出した人に", "")], "流局で終わったとき"),
-    ("チョンボ", [("罰符なし", ""), ("スコアから引く", "M"), ("満貫払い", ""), ("供託1,000点", "")], "M＝−20pt。雀魂はチョンボがない"),
     ("チップ・祝儀", [("なし", "MJ"), ("一発・裏・赤", ""), ("役満", "")], ""),
     ("焼き鳥", [("なし", "MJ"), ("あり", "")], ""),
     ("##", "鳴き・アガリ"),
@@ -35,6 +34,12 @@ LEFT = [
     ("3人が同時にロン", [("頭ハネ", "M"), ("トリロン", "J"), ("流局", "")], ""),
     ("連荘", [("テンパイ連荘", "MJ"), ("アガリ連荘だけ", "")], ""),
     ("アガリやめ", [("あり", "J"), ("なし", "M")], ""),
+    # ミスの罰（2026-11-22 ユーザーの指定）。Mリーグ公式サイト: 少牌・多牌・空ポン・空チー・錯ポン・錯チー・発声間違い＝アガリ放棄、
+    # 誤ロン・誤ツモで手牌を公開＝チョンボ（−20pt・局をやり直す）。雀魂はゲームが止めるので起きない
+    ("##", "ミスの罰<small>雀魂はゲームが止めるので起きない</small>"),
+    ("少牌・多牌", [("アガリ放棄", "M"), ("罰符", ""), ("注意だけ", "")], ""),
+    ("誤ポン・誤チー", [("アガリ放棄", "M"), ("1,000点", ""), ("注意だけ", "")], "晒し間違い・空ポン・空チーも"),
+    ("チョンボ", [("スコアから引く", "M"), ("満貫払い", ""), ("罰符なし", "")], "誤ロン・誤ツモ。M＝−20pt"),
 ]
 RIGHT = [
     ("##", "リーチとトビ"),
@@ -46,6 +51,8 @@ RIGHT = [
     ("流し満貫", [("なし", "M"), ("満貫", "J")], ""),
     ("途中流局", [("なし", "M"), ("あり", "J")], "九種九牌・四風連打・四家立直・四開槓"),
     ("人和", [("なし", "MJ"), ("満貫", ""), ("役満", "")], "雀魂は友人戦で設定"),
+    ("三連刻などの役", [("なし", "MJ"), ("あり", "")], "ローカル役。あるなら役ごとに決める"),      # 2026-11-22 ユーザーの指定。Mリーグの役の一覧に無い・雀魂の段位戦にも無い
+    ("5枚目待ちのテンパイ", [("ノーテン", "M"), ("テンパイ", "")], "4枚とも自分で使う牌を待つ形"),      # 流局時。Mリーグ「自己の手牌・副露牌でアガリ牌が消去されている場合は認められない」
     ("##", "役満"),
     ("形でダブル役満", [("なし", "M"), ("あり", "J")], "四暗刻単騎・国士13面・純正九蓮・大四喜"),
     ("役満が2つ重なる", [("2倍", "MJ"), ("1倍", "")], ""),
@@ -59,7 +66,7 @@ RIGHT = [
     # 出典: Mリーグ公式サイト（連風牌の対子も2符・西入の規定なし。切り上げ満貫はあり＝ユーザーの指摘）、Wikipedia「雀魂」（連風牌の雀頭は4符・30符4飜は切り上げない・トップが30,000点未満なら西入）
     ("##", "符と満貫"),
     ("連風牌の雀頭", [("2符", "M"), ("4符", "J")], "場風＝自風の牌（東場の東家の東）"),
-    ("切り上げ満貫", [("あり", "M"), ("なし", "J")], "30符4翻・60符3翻を満貫にするか")      # Mリーグはあり（2026-11-21 ユーザーの指摘）,
+    ("切り上げ満貫", [("あり", "M"), ("なし", "J")], "30符4翻・60符3翻を満貫にするか"),      # Mリーグはあり（2026-11-21 ユーザーの指摘）
 ]
 
 
@@ -108,7 +115,7 @@ def html():
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1191px; }}
+html, body {{ width: 794px; height: 1338px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 10px 24px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; margin-bottom: 7px; }}
 header h1 {{ font-size: 25px; font-weight: 900; line-height: 1.15; }}
@@ -125,9 +132,10 @@ i.bj img {{ width: 100%; height: 100%; display: block; }}
 .key {{ display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 800; color: #4F5C5A; margin: 0 2px 5px; }}
 .key .op {{ font-size: 10.5px; padding: 0 7px; }} .key .sw {{ display: inline-flex; align-items: center; gap: 5px; }}
 .key .dsw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #FFE1CE; border: 2.5px solid #E75620; box-shadow: 0 0 0 2px rgba(231, 86, 32, .2); }} .key .ssw {{ display: inline-block; width: 26px; height: 14px; border-radius: 3px; background: #E3F4EC; border: 1.5px solid #7CC3A6; }}
-.grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
+.grid {{ display: grid; grid-template-columns: minmax(0, 46fr) minmax(0, 54fr); gap: 10px; }}
 .colw {{ background: #fff; border: 2px solid #177083; border-radius: 8px; padding: 2px 8px 6px; }}
 h2 {{ font-size: 15px; font-weight: 900; color: #fff; background: #177083; margin: 7px -8px 4px; padding: 3px 12px; letter-spacing: .03em; }}
+h2 small {{ font-size: 10.5px; font-weight: 700; margin-left: 10px; opacity: .9; letter-spacing: 0; }}
 .colw h2:first-child {{ margin-top: -2px; border-radius: 6px 6px 0 0; }}
 .it {{ display: grid; grid-template-columns: var(--nw) 1fr; column-gap: 6px; align-items: center; padding: 4.5px 6px; margin: 0 -4px; border-top: 1px solid #E3ECEA; border-radius: 6px; }}
 h2 + .it {{ border-top: 0; }}
@@ -148,6 +156,7 @@ i.cb {{ flex: none; width: 13px; height: 13px; border: 2px solid #177083; border
 .op.j {{ border-color: #6E4CC4; color: #fff; background: #7E5AD2; }}
 .op.mj {{ border-color: #1F7A5C; color: #fff; background: #23866A; }}
 .it > small {{ grid-column: 2; white-space: nowrap; font-size: 11px; font-weight: 700; color: #6B7A77; margin-top: 2px; }}
+.house {{ margin-top: 8px; background: #FFF1E8; border: 2.5px solid #E75620; border-radius: 8px; padding: 6px 12px; font-size: 15px; font-weight: 900; color: #1F2A28; text-align: center; }} .house b {{ color: #E75620; }}      /* どこでも役に立つ一言（2026-11-22 ユーザーの指定） */
 .note {{ font-size: 11px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 7px; }}
 .note b {{ color: #E75620; }}
 footer {{ position: absolute; left: 24px; right: 24px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }}
@@ -157,6 +166,7 @@ footer b {{ color: #177083; font-weight: 900; }}
 <div class="legend"><span>{badge("M")}Mリーグ</span><span>{badge("J")}雀魂（段位戦）</span></div>{logo_html()}</header>
 <div class="key"><span class="sw"><i class="dsw"></i>ルールが違う＝要チェック</span><span class="sw"><i class="ssw"></i>同じ</span><span class="sw"><span class="op mj">両方</span></span><span class="sw"><span class="op m">Mリーグだけ</span></span><span class="sw"><span class="op j">雀魂だけ</span></span><span class="sw"><span class="op">どちらでもない</span></span></div>
 <div class="grid"><div class="colw" style="--nw:124px">{col(LEFT)}</div><div class="colw" style="--nw:158px">{col(RIGHT)}</div></div>
+<p class="house">お店で打つときは、まずその店の<b>ハウスルール</b>を確認しよう</p>
 <p class="note"><b>□にチェックして、仲間内のルールを決めよう。</b>Mリーグは公式サイトの公式戦ルール、雀魂はWikipedia「雀魂」の段位戦のルールなどによる（2026年11月）。印が無い所は、規定がないか確かめられなかった所。ゲームのルールは変わることがある。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>決めたルールで打ったら、スコアはまじゃすこで</span></footer>
 </body></html>"""
@@ -167,7 +177,7 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1191}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1338}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         h = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
         bad = pg.evaluate("""[...document.querySelectorAll('.it')].flatMap(it => {const o=[]; const b=it.querySelector('b'), ops=it.querySelector('.ops'), sm=it.querySelector('small');
@@ -175,6 +185,7 @@ def render():
           [...ops.children].forEach(c => { if (c.getBoundingClientRect().height > 24) o.push('札の中で改行:'+c.textContent); });
           if (sm && sm.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('補足:'+b.textContent);
           if (ops.getBoundingClientRect().right > it.getBoundingClientRect().right + 1) o.push('はみ出し:'+b.textContent); return o;})""")
+        bad += pg.evaluate("[...document.querySelectorAll('.colw, .it, .op, .it > small')].filter(e => e.getBoundingClientRect().right > (e.closest('.colw') || document.body).getBoundingClientRect().right + 1 || e.getBoundingClientRect().right > document.body.clientWidth - 20).map(e => '右にはみ出し:' + e.textContent.slice(0, 10))")
         print("改行・はみ出し", bad); assert not bad, bad
         ov = pg.evaluate("""(() => { const sel = 'i.bm, i.bj, .op, .it > b, .it > b em, .legend > span, .key > span, h2, header h1, .logo-pill';
           const els = [...document.querySelectorAll(sel)]; const out = [];
