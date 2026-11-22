@@ -48,12 +48,16 @@ TCOL = {"EARTH JETS": ("#1E7A3C", "#D7262E"), "赤坂ドリブンズ": ("#B5123B
         "KADOKAWAサクラナイツ": ("#E58FAA", "#1F1F1F"), "KONAMI麻雀格闘倶楽部": ("#E50012", "#1F1F1F"), "渋谷ABEMAS": ("#B49A5E", "#1F1F1F"),
         "セガサミーフェニックス": ("#E8541E", "#F2A81D"), "TEAM RAIDEN / 雷電": ("#F5C400", "#1F1F1F"), "BEAST X": ("#13294B", "#C5A54E"),
         "U-NEXT Pirates": ("#1E8FD0", "#1F1F1F")}
+# 女性の選手（今と過去。ほかは男性）。名前の前に ♀・♂ を付ける（2026-11-22 ユーザーの指定）
+FEMALE = {"逢川恵夢", "浅見真紀", "二階堂亜樹", "岡田紗佳", "高宮まり", "伊達朱里紗", "日向藍子", "茅森早香", "佐野ひなこ", "黒沢咲", "中田花奈", "東城りお", "瑞原明奈",
+          "丸山奏子", "二階堂瑠美", "魚谷侑未", "和久津晶", "菅原千瑛"}
+def sx(n): return '<u class="sx f">♀</u>' if n in FEMALE else '<u class="sx m">♂</u>'
 NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / 雷電": "2018年から入れ替わりなし", "EARTH JETS": "2025年の参入から同じ4人"}
 
 
 def past_html(team):
     if team in NOPAST: return f'<div class="past"><b>過去</b><span class="none">{NOPAST[team]}</span></div>'
-    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{n}<i>{d}</i><small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
+    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{sx(n)}{n}<i>{d}</i><small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
     return f'<div class="past"><b>過去</b><div class="pps">{xs}</div></div>'
 
 
@@ -78,7 +82,7 @@ def logo(key, name):
 def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
-    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b>{n}</b><i>{d}</i></span>' for n, d in players)
+    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b>{sx(n)}{n}</b><i>{d}</i></span>' for n, d in players)
     c1, c2 = TCOL[team]
     return (f'<div class="tm" style="--t1:{c1};--t2:{c2}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
@@ -88,7 +92,7 @@ def card(team, players):
 STYLE = os.environ.get("STYLE", "stripe")      # stripe に決定（2026-11-22 ユーザーの判断・案A）
 TM_CSS = {
     # 枠を2色の斜めのしま（交互）に
-    "stripe": ".tm { border: 6px solid transparent; background: linear-gradient(135deg, color-mix(in srgb, var(--t1) 14%, #fff) 0%, #fff 55%) padding-box, repeating-linear-gradient(135deg, var(--t1) 0 14px, var(--t2) 14px 28px) border-box; padding: 14px 7px 11px !important; } .tm .lg { width: 80px !important; }",
+    "stripe": ".tm { border: 6px solid transparent; background: linear-gradient(135deg, color-mix(in srgb, var(--t1) 14%, #fff) 0%, #fff 55%) padding-box, repeating-linear-gradient(135deg, var(--t1) 0 14px, var(--t2) 14px 28px) border-box; padding: 14px 7px 11px !important; } .tm .lg { width: 72px !important; } .tm .lg img { max-width: 72px !important; }",
     # 上に2色が交互に並ぶ帯（市松の1列）＋主の色の枠
     "band": ".tm { border: 3px solid var(--t1); background: linear-gradient(180deg, color-mix(in srgb, var(--t1) 12%, #fff) 0%, #fff 60%); padding-top: 24px !important; } .tm::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 10px; background: repeating-linear-gradient(90deg, var(--t1) 0 26px, var(--t2) 26px 52px); }",
     # ロゴの側を2色の斜めの帯で塗り分け（ロゴは白い丸に）＋主の色の枠
@@ -126,7 +130,7 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .win {{ margin-left: 6px; font-size: 10px; font-weight: 900; color: #8A6A00; background: #FFF1C2; border: 1.5px solid #D4A017; border-radius: 9px; padding: 0 6px; }}
 .pls {{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 5px; }}
 .pl {{ display: flex; align-items: center; justify-content: space-between; gap: 4px; border: 2px solid var(--c); border-radius: 6px; overflow: hidden; background: #fff; }}
-.pl b {{ font-size: 13.5px; font-weight: 900; padding: 4px 0 4px 6px; white-space: nowrap; }}
+.pl b {{ font-size: 13px; font-weight: 900; padding: 4px 0 4px 4px; letter-spacing: -.02em; white-space: nowrap; }}
 .pl i {{ font-style: normal; font-size: 9.5px; font-weight: 900; color: #fff; background: var(--c); padding: 4px 4px; white-space: nowrap; letter-spacing: -.04em; align-self: stretch; display: flex; align-items: center; }}
 .past {{ display: flex; align-items: flex-start; gap: 5px; margin-top: 7px; padding-top: 6px; border-top: 1.5px dashed #D5E0DD; }}
 .past > b {{ flex: none; font-size: 10px; font-weight: 900; color: #fff; background: #8A9A97; border-radius: 4px; padding: 1px 6px; margin-top: 1px; }}
@@ -134,13 +138,14 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .pps {{ display: flex; flex-wrap: wrap; gap: 3px 9px; }}
 .pp {{ display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #33403D; white-space: nowrap; }}
 .pp i {{ font-style: normal; font-size: 9px; font-weight: 900; color: #fff; background: var(--c); border-radius: 3px; padding: 0 4px; line-height: 1.45; }}      /* 過去の選手も団体を文字と色で */ .pp small {{ font-size: 9.5px; font-weight: 700; color: #6B7A77; margin-left: 2px; }}
+u.sx {{ text-decoration: none; font-weight: 900; margin-right: 1px; font-size: .9em; }} u.sx.f {{ color: #D9487D; }} u.sx.m {{ color: #2F8FD8; }}
 .note {{ font-size: 10.5px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 8px; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }} footer b {{ color: #177083; font-weight: 900; }}
 </style></head><body>
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の所属団体</b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
