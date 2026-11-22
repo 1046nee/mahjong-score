@@ -5,7 +5,7 @@
 チームと選手・団体は tools/video_topics2.py の TEAMS（Mリーグ公式サイト・2026年10月に確認）。参入と優勝は blog-mleague-history と同じ。
 ロゴはユーザーから受け取った画像（2026-11-22 ユーザーの判断で使う）。元の画像は非公開の素材リポジトリ まじゃすこ素材/x/mleague-teams/src/ だけに置く。
 ロゴが無いチームは、チーム名の頭文字の丸で代わりにする（受け取ったら src/ に置けば出る）。
-出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×3120。過去の所属選手を足して縦に伸ばした）
+出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×3300。過去の所属選手を足して縦に伸ばした）
 実行: python3.13 tools/mleague_teams_sheet.py
 """
 import base64, io, os, sys
@@ -77,6 +77,17 @@ WON = {"前原雄大": ("鳳凰位", 4), "瀬戸熊直樹": ("鳳凰位", 3), "�
        "仲林圭": ("雀王", 2), "多井隆晴": ("令昭位", 1), "小林剛": ("将王", 4)}
 NOW = {v[1] for v in TITLE.values()}
 TROPHY = '<svg viewBox="0 0 24 24"><path d="M7 3h10v5.5a5 5 0 0 1-10 0z" fill="#D4A017"/><path d="M7 4.5H4.3a2.7 2.7 0 0 0 2.9 4.3M17 4.5h2.7a2.7 2.7 0 0 1-2.9 4.3" stroke="#D4A017" stroke-width="1.8" fill="none"/><rect x="10.8" y="13" width="2.4" height="4" fill="#D4A017"/><rect x="7.6" y="17" width="8.8" height="3.2" rx="1" fill="#B8860B"/></svg>'
+# Mリーグの個人賞の回数（2026-11-22 ユーザーの指定）。記事 blog-mleague-history の歴代の表と同じ（2018-19〜2025-26）
+AWARDS = {"多井隆晴": {"MVP": 1}, "魚谷侑未": {"MVP": 1, "最高スコア": 1}, "佐々木寿人": {"MVP": 1, "最高スコア": 2}, "瑞原明奈": {"MVP": 1},
+          "伊達朱里紗": {"MVP": 1, "最高スコア": 1, "4着回避": 1}, "鈴木優": {"MVP": 1}, "醍醐大": {"MVP": 1}, "下石戟": {"MVP": 1},
+          "黒沢咲": {"最高スコア": 1}, "鈴木たろう": {"最高スコア": 1}, "鈴木大介": {"最高スコア": 1}, "内川幸太郎": {"最高スコア": 1},
+          "日向藍子": {"4着回避": 1}, "白鳥翔": {"4着回避": 1}, "滝沢和典": {"最多トップ": 1}}
+MEDAL = '<svg viewBox="0 0 24 24"><path d="M8 2h3l1 6-3 1zM16 2h-3l-1 6 3 1z" fill="#C92F42"/><circle cx="12" cy="15" r="6.5" fill="#E0A82E"/><circle cx="12" cy="15" r="4.3" fill="#F5CF5C"/></svg>'
+def awards(n):
+    if n not in AWARDS: return ""
+    return '<u class="aw">' + MEDAL + " ".join(f"<span>{k}×{v}</span>" for k, v in AWARDS[n].items()) + "</u>"
+
+
 def trophy(n):
     if n not in WON: return ""
     t, k = WON[n]
@@ -86,7 +97,7 @@ NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / �
 
 def past_html(team):
     if team in NOPAST: return f'<div class="past"><b>過去</b><span class="none">{NOPAST[team]}</span></div>'
-    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{sx(n)}{n}<i>{d}</i>{trophy(n)}<small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
+    xs = "".join(f'<span class="pp" style="--c:{DANTAI[d][0]}">{sx(n)}{n}<i>{d}</i>{trophy(n)}{awards(n)}<small>{y0}〜{str(y1)[2:]}{"・" + to + ("へ" if to != "復帰" else "") if to else ""}</small></span>' for n, d, y0, y1, to in PAST[team])
     return f'<div class="past"><b>過去</b><div class="pps">{xs}</div></div>'
 
 
@@ -112,7 +123,7 @@ def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
     players = sorted(players, key=lambda p: BIRTH.get(p[0], "9999"))      # 年齢の高い順（年齢が非公開の黒沢咲は最後。2026-11-22 ユーザーの指定）
-    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span><span class="sub">{age(n)}{trophy(n)}</span></b><i>{d}</i></span>' for n, d in players)
+    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span><span class="sub">{age(n)}{trophy(n)}</span></b><i>{d}</i>{f'<span class="sub2">{awards(n)}</span>' if n in AWARDS else ""}</span>' for n, d in players)
     c1, c2 = TCOL[team]
     return (f'<div class="tm" style="--t1:{c1};--t2:{c2};--tg:{TGRAD.get(team, c1)}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
@@ -140,7 +151,7 @@ def html():
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1560px; }}
+html, body {{ width: 794px; height: 1650px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 22px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; }}
 header .ml {{ flex: none; background: #fff; border-radius: 8px; width: 74px; height: 62px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }} header .ml img {{ max-height: 54px; max-width: 64px; display: block; }}
@@ -167,8 +178,8 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .past {{ display: flex; align-items: flex-start; gap: 5px; margin-top: 7px; padding-top: 6px; border-top: 1.5px dashed #D5E0DD; }}
 .past > b {{ flex: none; font-size: 10px; font-weight: 900; color: #fff; background: #8A9A97; border-radius: 4px; padding: 1px 6px; margin-top: 1px; }}
 .past .none {{ font-size: 10.5px; font-weight: 700; color: #6B7A77; }}
-.pps {{ display: flex; flex-wrap: wrap; gap: 3px 9px; }}
-.pp {{ display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #33403D; white-space: nowrap; }}
+.pps {{ min-width: 0; display: flex; flex-wrap: wrap; gap: 3px 9px; }}
+.pp {{ display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 3px; font-size: 11px; font-weight: 900; color: #33403D; white-space: nowrap; }}
 .pp i {{ font-style: normal; font-size: 9px; font-weight: 900; color: #fff; background: var(--c); border-radius: 3px; padding: 0 4px; line-height: 1.45; }}      /* 過去の選手も団体を文字と色で */ .pp small {{ font-size: 9.5px; font-weight: 700; color: #6B7A77; margin-left: 2px; }}
 .pl b {{ display: flex; flex-direction: column; line-height: 1.2; }} em.ag {{ font-style: normal; font-size: 10px; font-weight: 800; color: #6B7A77; margin-left: 12px; line-height: 1.1; }}      /* 年齢は名前の下に小さく（横に並べると札に入らない） */ em.ag::after {{ content: "歳"; font-size: 8.5px; }}
 .sub {{ display: flex; align-items: center; gap: 2px; }} .sub em.ag {{ margin-left: 9px; }}
@@ -178,6 +189,8 @@ u.tr sup {{ font-size: 8px; margin-left: 1px; vertical-align: 3px; line-height: 
 .pp u.tr {{ margin-left: 2px; }}
 .dl em.hd {{ font-style: normal; font-size: 9.5px; font-weight: 800; color: #33403D; white-space: nowrap; margin-top: 2px; }}
 .dl em.ti {{ font-style: normal; font-size: 9.5px; font-weight: 900; color: #8A6A00; text-align: center; line-height: 1.3; background: #FFF8E1; border-radius: 6px; padding: 2px 6px; margin-top: 2px; white-space: nowrap; }} .dl em.ti svg {{ width: 11px; height: 11px; vertical-align: -1px; margin-right: 1px; }} .dl em.ti span {{ font-weight: 700; color: #8A7A55; font-size: 8.5px; }}
+.pl {{ flex-wrap: wrap; }} .sub2 {{ flex-basis: 100%; display: flex; padding: 1px 4px 2px 13px; border-top: 1px dashed color-mix(in srgb, var(--c) 35%, #fff); }}      /* 個人賞は札の下の段に、団体の札の下まで使って */
+u.aw {{ text-decoration: none; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0 4px; font-size: 8.5px; font-weight: 900; color: #A8283A; white-space: nowrap; letter-spacing: -.06em; }} u.aw svg {{ width: 10px; height: 10px; }} .pp u.aw {{ margin-left: 3px; }}
 u.sx {{ text-decoration: none; font-weight: 900; margin-right: 1px; font-size: .9em; }} u.sx.f {{ color: #D9487D; }} u.sx.m {{ color: #2F8FD8; }}
 .note {{ font-size: 10.5px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 8px; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }} footer b {{ color: #177083; font-weight: 900; }}
@@ -185,7 +198,7 @@ footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: fle
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の<br>所属団体<small>代表・<br>最高タイトルと<br>今の保持者</small></b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（×は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。チームの並びは参入の古い順（同じ年は公式サイトの並び）、選手は年齢の高い順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
@@ -195,9 +208,9 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1560}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1650}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/").lstrip("/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
-        gap = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
+        gap = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.grid').getBoundingClientRect().bottom")
         over = pg.evaluate("[...document.querySelectorAll('.tm h2, .in, .pl, .pl b')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > e.closest('.tm').getBoundingClientRect().right - 2).map(e => e.textContent)")
         over += pg.evaluate("[...document.querySelectorAll('.tm, .legend')].filter(e => e.getBoundingClientRect().right > document.body.clientWidth - 21 || e.scrollWidth > e.clientWidth + 1).map(e => '右へ:' + e.textContent.slice(0, 8))")
         print("余白", round(gap), "はみ出し", over); pg.screenshot(path=os.path.join(OUT, "mleague-teams.png")); b.close()
