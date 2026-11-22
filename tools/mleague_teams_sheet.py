@@ -5,7 +5,7 @@
 チームと選手・団体は tools/video_topics2.py の TEAMS（Mリーグ公式サイト・2026年10月に確認）。参入と優勝は blog-mleague-history と同じ。
 ロゴはユーザーから受け取った画像（2026-11-22 ユーザーの判断で使う）。元の画像は非公開の素材リポジトリ まじゃすこ素材/x/mleague-teams/src/ だけに置く。
 ロゴが無いチームは、チーム名の頭文字の丸で代わりにする（受け取ったら src/ に置けば出る）。
-出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×2832。過去の所属選手を足して縦に伸ばした）
+出力: まじゃすこ素材/x/mleague-teams/mleague-teams.png（1588×2940。過去の所属選手を足して縦に伸ばした）
 実行: python3.13 tools/mleague_teams_sheet.py
 """
 import base64, io, os, sys
@@ -52,6 +52,19 @@ TCOL = {"EARTH JETS": ("#1E7A3C", "#D7262E"), "赤坂ドリブンズ": ("#B5123B
 FEMALE = {"逢川恵夢", "浅見真紀", "二階堂亜樹", "岡田紗佳", "高宮まり", "伊達朱里紗", "日向藍子", "茅森早香", "佐野ひなこ", "黒沢咲", "中田花奈", "東城りお", "瑞原明奈",
           "丸山奏子", "二階堂瑠美", "魚谷侑未", "和久津晶", "菅原千瑛"}
 def sx(n): return '<u class="sx f">♀</u>' if n in FEMALE else '<u class="sx m">♂</u>'
+# 生年月日（Wikipedia の各選手の記事。2026-11-22 に確認）。年齢は AGE_AT の日の年齢。黒沢咲は非公開なので出さない（2026-11-22 ユーザーの指定）
+BIRTH = {"石井一馬": "1986-02-21", "三浦智博": "1987-04-26", "逢川恵夢": "1987-08-28", "HIRO柴田": "1976-02-16", "園田賢": "1980-11-25", "鈴木たろう": "1973-10-04",
+         "浅見真紀": "1985-08-30", "渡辺太": "1988-07-25", "二階堂亜樹": "1981-11-15", "勝又健志": "1981-03-15", "永井孝典": "1986-08-10", "内川幸太郎": "1981-05-06",
+         "岡田紗佳": "1994-02-19", "堀慎吾": "1984-03-23", "阿久津翔太": "1996-04-23", "尻無濱航": "1992-01-26", "佐々木寿人": "1977-01-12", "高宮まり": "1988-11-08",
+         "伊達朱里紗": "1991-05-10", "滝沢和典": "1979-12-06", "多井隆晴": "1972-03-17", "白鳥翔": "1986-08-27", "松本吉弘": "1992-05-03", "日向藍子": "1988-09-24",
+         "茅森早香": "1982-05-04", "醍醐大": "1976-04-21", "竹内元太": "1986-03-12", "佐野ひなこ": "1994-10-13", "萩原聖人": "1971-08-21", "瀬戸熊直樹": "1970-08-27",
+         "本田朋広": "1983-10-03", "鈴木大介": "1974-07-11", "中田花奈": "1994-08-06", "下石戟": "1987-03-20", "東城りお": "1990-09-18", "瑞原明奈": "1986-11-19",
+         "鈴木優": "1981-09-13", "仲林圭": "1985-09-17", "朝倉康心": "1986-03-04"}
+AGE_AT = os.environ.get("AGE_AT", "2026-11-22")
+def age(n):
+    if n not in BIRTH: return ""
+    y, m, d = map(int, BIRTH[n].split("-")); ty, tm, td = map(int, AGE_AT.split("-"))
+    return f'<em class="ag">{ty - y - ((tm, td) < (m, d))}</em>'
 NOPAST = {"渋谷ABEMAS": "2018年から入れ替わりなし", "TEAM RAIDEN / 雷電": "2018年から入れ替わりなし", "EARTH JETS": "2025年の参入から同じ4人"}
 
 
@@ -82,7 +95,7 @@ def logo(key, name):
 def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
-    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b>{sx(n)}{n}</b><i>{d}</i></span>' for n, d in players)
+    pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span>{age(n)}</b><i>{d}</i></span>' for n, d in players)
     c1, c2 = TCOL[team]
     return (f'<div class="tm" style="--t1:{c1};--t2:{c2}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
             f'<p class="in">{owner}<em>・</em>{since[:4]}年から{win}</p><div class="pls">{pls}</div>{past_html(team)}</div></div>')
@@ -110,7 +123,7 @@ def html():
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700;900&display=block" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-html, body {{ width: 794px; height: 1416px; }}
+html, body {{ width: 794px; height: 1470px; }}
 body {{ font-family: 'Noto Sans JP', sans-serif; color: #1F2A28; background: #EEF6F3; padding: 14px 22px 18px; position: relative; font-feature-settings: "palt"; }}
 header {{ display: flex; align-items: center; justify-content: space-between; background: #177083; color: #fff; border-radius: 8px; padding: 9px 16px; }}
 header .ml {{ flex: none; background: #fff; border-radius: 8px; width: 74px; height: 62px; display: flex; align-items: center; justify-content: center; margin-right: 14px; }} header .ml img {{ max-height: 54px; max-width: 64px; display: block; }}
@@ -139,6 +152,7 @@ h2 {{ color: color-mix(in srgb, var(--t1) 55%, #1F2A28); font-size: 17.5px; font
 .pps {{ display: flex; flex-wrap: wrap; gap: 3px 9px; }}
 .pp {{ display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 900; color: #33403D; white-space: nowrap; }}
 .pp i {{ font-style: normal; font-size: 9px; font-weight: 900; color: #fff; background: var(--c); border-radius: 3px; padding: 0 4px; line-height: 1.45; }}      /* 過去の選手も団体を文字と色で */ .pp small {{ font-size: 9.5px; font-weight: 700; color: #6B7A77; margin-left: 2px; }}
+.pl b {{ display: flex; flex-direction: column; line-height: 1.2; }} em.ag {{ font-style: normal; font-size: 10px; font-weight: 800; color: #6B7A77; margin-left: 12px; line-height: 1.1; }}      /* 年齢は名前の下に小さく（横に並べると札に入らない） */ em.ag::after {{ content: "歳"; font-size: 8.5px; }}
 u.sx {{ text-decoration: none; font-weight: 900; margin-right: 1px; font-size: .9em; }} u.sx.f {{ color: #D9487D; }} u.sx.m {{ color: #2F8FD8; }}
 .note {{ font-size: 10.5px; font-weight: 700; color: #4F5C5A; line-height: 1.55; margin-top: 8px; }}
 footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: flex; justify-content: space-between; font-size: 10px; color: #8A9A97; }} footer b {{ color: #177083; font-weight: 900; }}
@@ -146,7 +160,7 @@ footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: fle
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の<br>所属団体</b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
@@ -156,7 +170,7 @@ def render():
     os.makedirs(OUT, exist_ok=True)
     hp = os.path.join(OUT, "_p.html"); io.open(hp, "w", encoding="utf-8").write(html())
     with sync_playwright() as p:
-        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1416}, device_scale_factor=2)
+        b = p.chromium.launch(); pg = b.new_page(viewport={"width": 794, "height": 1470}, device_scale_factor=2)
         pg.goto("file:///" + hp.replace("\\", "/").lstrip("/")); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         gap = pg.evaluate("document.querySelector('footer').getBoundingClientRect().top - document.querySelector('.note').getBoundingClientRect().bottom")
         over = pg.evaluate("[...document.querySelectorAll('.tm h2, .in, .pl, .pl b')].filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > e.closest('.tm').getBoundingClientRect().right - 2).map(e => e.textContent)")
