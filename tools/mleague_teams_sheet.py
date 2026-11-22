@@ -111,6 +111,7 @@ def logo(key, name):
 def card(team, players):
     key, owner, since, wins = INFO[team]
     win = f'<span class="win">優勝 {len(wins)}回</span>' if wins else ""
+    players = sorted(players, key=lambda p: BIRTH.get(p[0], "9999"))      # 年齢の高い順（年齢が非公開の黒沢咲は最後。2026-11-22 ユーザーの指定）
     pls = "".join(f'<span class="pl" style="--c:{DANTAI[d][0]}"><b><span>{sx(n)}{n}</span><span class="sub">{age(n)}{trophy(n)}</span></b><i>{d}</i></span>' for n, d in players)
     c1, c2 = TCOL[team]
     return (f'<div class="tm" style="--t1:{c1};--t2:{c2};--tg:{TGRAD.get(team, c1)}"><div class="lg">{logo(key, team)}</div><div class="bd"><h2>{team}</h2>'
@@ -184,7 +185,7 @@ footer {{ position: absolute; left: 22px; right: 22px; bottom: 7px; display: fle
 <header><span class="ml">{logo("mleague", "M")}</span><h1>Mリーグ 2026-27 全10チーム40人<small>チームと選手、選手の所属するプロ団体、過去の所属選手</small></h1>{logo_html()}</header>
 <div class="legend"><b>選手の<br>所属団体<small>代表・<br>最高タイトルと<br>今の保持者</small></b>{leg}</div>
 <div class="grid">{cards}</div>
-<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（×は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。並びは公式サイトのチーム一覧の順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
+<p class="note">チームと選手・所属団体は Mリーグ公式サイト（2026年10月時点）、過去の選手は Wikipedia「Mリーグ」と各チームの記事（2026年11月に確認）による。名前の前の♀は女性・♂は男性。トロフィーは所属団体の最高タイトル（鳳凰位・最高位・雀王・令昭位・将王）を取ったことがある選手（×は回数・「現」は今の保持者。取った当時の団体のタイトル）。代表とタイトルは各団体の公式サイトとWikipedia（2026年11月に確認）。名前の右は年齢（2026年11月22日時点・Wikipedia の生年月日による。黒沢咲は非公開）。過去の選手の色は所属団体（Mリーグにいたとき）、年はシーズンの始めの年〜終わりの年。チームの並びは公式サイトのチーム一覧の順、選手は年齢の高い順。団体の色は見分けやすくするためにまじゃすこで付けたもの。</p>
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>全チームの紹介は「Mリーグ2026-27 完全ガイド」</span></footer>
 </body></html>"""
 
