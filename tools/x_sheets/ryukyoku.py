@@ -11,21 +11,25 @@ ROWS = [
 ]
 # Mリーグ・雀魂（段位戦）で採用されているか（2026-11-23 ユーザーの指定）。Mリーグ公式サイト＝途中流局なし・3人同時ロンは頭ハネ。
 # Wikipedia「雀魂」＝九種九牌・四風連打・四家立直・四開槓あり、3人同時ロンはトリロン（三家和にならない）。ルールチェックシートと同じ
-USE = {"荒牌平局": ("○", "○"), "九種九牌": ("×", "○"), "四風連打": ("×", "○"), "四開槓": ("×", "○"), "四家立直": ("×", "○"), "三家和": ("×", "×")}
+# ○×の下に、採用していないときにどうなるかを小さく書く（2026-11-23 ユーザーの指定「三家和はMリーグは頭ハネ・雀魂はトリロンと載せる」）
+USE = {"荒牌平局": ("○", "○"), "九種九牌": ("×|続ける", "○"), "四風連打": ("×|続ける", "○"), "四開槓": ("×|続ける", "○"), "四家立直": ("×|続ける", "○"),
+       "三家和": ("×|頭ハネで<br>1人のアガリ", "×|トリロンで<br>3人ともアガリ")}
 sys.path.insert(0, TOOLS)
 from rule_compare_sheet import badge, ICON_M  # noqa: E402  ロゴ（Mリーグ・雀魂の印。元の画像は非公開の素材リポジトリ）
-def yn(v): return f'<td class="yn {"y" if v == "○" else "n"}">{v}</td>'
+def yn(v):
+    m, _, t = v.partition("|")
+    return f'<td class="yn {"y" if m == "○" else "n"}">{m}{f"<small>{t}</small>" if t else ""}</td>'
 rows = "".join(f'<tr><th class="rh">{a}<small>{b}</small></th><td class="kd {"f" if c == "ふつうの流局" else ""}">{c}</td><td class="tx">{d}<div class="pic">{e}</div></td><td class="mk">{f}</td><td class="tx c">{g}</td>{yn(USE[a][0])}{yn(USE[a][1])}</tr>' for a, b, c, d, e, f, g in ROWS)
 body = f"""
 <div class="bar" style="margin-top:0">6つの流局<small>アガリが出ないまま局が終わること</small></div>
-<table><colgroup><col style="width:112px"><col style="width:80px"><col><col style="width:58px"><col style="width:112px"><col style="width:64px"><col style="width:64px"></colgroup>
+<table><colgroup><col style="width:112px"><col style="width:80px"><col><col style="width:58px"><col style="width:112px"><col style="width:72px"><col style="width:72px"></colgroup>
 <thead><tr><th>名前</th><th>種類</th><th>起きるとき</th><th>ノーテン<br>罰符</th><th>親は</th><th class="lo">{badge("M")}<br>Mリーグ</th><th class="lo">{badge("J")}<br>雀魂</th></tr></thead><tbody>{rows}</tbody></table>
 <div class="tip"><b>途中流局</b>は、山が残っていても局を流す決まり。流れたら<b>本場が1つ増える</b>（積み棒が1本ふえる）。リーチ棒（供託）は場に残って、次にアガった人がもらう。</div>
-<p class="note">途中流局をありにするか、九種九牌を親が流したときに親が続くかは、ルールで違う。右の2列はMリーグの公式戦ルールと雀魂の段位戦（2026年11月）。雀魂は3人同時ロンを3人ともアガリにする（三家和にならない）</p>"""
+<p class="note">途中流局をありにするか、九種九牌を親が流したときに親が続くかは、ルールで違う。右の2列はMリーグの公式戦ルールと雀魂の段位戦（2026年11月）</p>"""
 css = """td.tx { font-size: 12px; } td.c { text-align: center; } .pic { margin-top: 3px; display: flex; align-items: center; gap: 1px; } .mi { font-size: 10.5px; font-weight: 800; color: #6B7A77; margin: 0 4px; }
 td.kd { text-align: center; font-size: 11px; font-weight: 900; color: #4261AA; } td.kd.f { color: #177083; } td.mk { text-align: center; font-size: 14px; font-weight: 900; }
 tbody tr { height: 60px; }
-td.yn { text-align: center; font-size: 22px; font-weight: 900; } td.yn.y { color: #177083; background: #E4F3EC; } td.yn.n { color: #C92F42; }
+td.yn { text-align: center; font-size: 22px; font-weight: 900; line-height: 1.1; padding: 4px 2px; } td.yn small { display: block; font-size: 9.5px; font-weight: 800; color: #4F5C5A; line-height: 1.3; margin-top: 3px; } td.yn.y { color: #177083; background: #E4F3EC; } td.yn.n { color: #C92F42; }
 th.lo { font-size: 10.5px; line-height: 1.5; } th.lo i { --d: 24px; margin: 0 !important; }
 i.bm, i.bj { --d: 17px; font-style: normal; display: inline-flex; align-items: center; justify-content: center; width: var(--d); height: var(--d); border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 0 0 1.5px #fff; flex: none; vertical-align: middle; }
 i.bm img { height: 72%; width: auto; display: block; } i.bj img { width: 100%; height: 100%; display: block; }"""
