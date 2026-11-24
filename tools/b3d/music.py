@@ -111,6 +111,22 @@ WA_INTROS = {
     "G 8音 2回に分けて": [("D4", .5), ("G4", .5), ("A4", 1), ("A4", .5), ("C5", .5), ("D5", .5), ("G5", .5), ("D5", 3)],
     "H 6音 装飾音つき（ツ・タ・タ・ターン）": [("C5", .25), ("D5", .75), ("A4", 1), ("G4", 1), ("A4", .25), ("D5", 3)],
 }
+WA_INTRO = "D 5音 上がりきる"      # 入りは D に決定（2026-11-24 ユーザーの判断）
+# 締めの候補（入りの D と同じ5音の形で、主音の G に落ち着かせる）
+WA_OUTROS = {
+    "1 同じ5音で上がり、主音のGへ": [("D4", 1), ("G4", 1), ("A4", 1), ("C5", 1), ("D5", 1), ("G5", 4)],
+    "2 上がった5音を、下りて主音へ（答え）": [("D5", 1), ("C5", 1), ("A4", 1), ("G4", 4)],
+    "3 入りと同じ5音＋低いGで落とす": [("D4", 1), ("G4", 1), ("A4", 1), ("C5", 1), ("D5", 2), ("G4", 4)],
+}
+def wa_outro(notes):
+    beat = .17; b = np.zeros(int((sum(d for _, d in notes) * beat + 2.4) * SR)); t = .02
+    for i, (n, d) in enumerate(notes):
+        last = i == len(notes) - 1; put(b, koto(hz(n), 2.2 if last else 1.0, .58 if last else .48), t)
+        if last: put(b, koto(hz(n) / 2, 2.2, .3), t); put(b, taiko(.9), t); put(b, pad([hz("G3"), hz("D4"), hz("B4")], 2.2, .1, 1500), t)
+        t += d * beat
+    return b
+
+
 def wa_intro(notes, hits=0):
     beat = .16; head = (.2 + .07 * hits) if hits else .02      # hits=0 で拍子木なし（2026-11-24 ユーザーの指定「最初の拍子木はいらない」）
     b = np.zeros(int((head + sum(d for _, d in notes) * beat + 1.6) * SR))
@@ -141,14 +157,8 @@ def motif(key, end_home):
 
 def pack_wa(kind):
     """和モダン: 拍子木2回 → 琴の4音（陰の音階っぽく、3度を短く）。BGMはゆっくりのビートに琴"""
-    if kind == "intro":
-        b = np.zeros(int(2.4 * SR)); put(b, hyoshigi(), 0); put(b, hyoshigi(.8), .28)
-        for i, n in enumerate(["D4", "G4", "A4", "C5"]): put(b, koto(hz(n), 1.4, .55), .62 + i * .16)
-        put(b, taiko(.8), 1.1); return b
-    if kind == "outro":
-        b = np.zeros(int(3.0 * SR))
-        for i, n in enumerate(["D4", "G4", "A4", "G4"]): put(b, koto(hz(n), 1.6, .55), i * .2)
-        put(b, taiko(.9), .8); put(b, hyoshigi(.7), 1.0); put(b, pad([hz("G3"), hz("D4"), hz("A4")], 2.2, .12, 1500), .8); return b
+    if kind == "intro": return wa_intro(WA_INTROS[WA_INTRO])
+    if kind == "outro": return wa_outro(WA_OUTROS[os.environ.get("WA_OUTRO", "1 同じ5音で上がり、主音のGへ")])
     if kind == "bgm":
         bpm = 86; beat = 60 / bpm; bars = 8; b = np.zeros(int(bars * 4 * beat * SR))
         prog = [("G2", ["G3", "D4", "A4"]), ("Eb2", ["Eb3", "Bb3", "G4"]), ("C2", ["C3", "G3", "D4"]), ("D2", ["D3", "A3", "F#4"])]
@@ -264,5 +274,9 @@ if __name__ == "__main__":
         seq = [wa_intro(v) for v in WA_INTROS.values()]
         gap = np.zeros(int(1.2 * SR)); save(os.path.join(out, "wa-intros.wav"), norm(np.concatenate([np.concatenate([x, gap]) for x in seq]), .85))
         for k, v in WA_INTROS.items(): save(os.path.join(out, f"wa-intro-{k[0]}.wav"), norm(wa_intro(v), .85))
+    if "--wa-outro" in sys.argv:      # 締めの聞き比べ（入りD → 1.2秒 → 締め1、…）
+        gap = np.zeros(int(1.2 * SR)); seq = []
+        for v in WA_OUTROS.values(): seq += [wa_intro(WA_INTROS[WA_INTRO]), gap, wa_outro(v), gap, gap]
+        save(os.path.join(out, "wa-outros.wav"), norm(np.concatenate(seq), .85))
     if "--demo" in sys.argv:
         for k in PACKS: demo(out, sys.argv[sys.argv.index("--demo") + 1], k)
