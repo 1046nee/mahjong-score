@@ -3,7 +3,7 @@ from base import *
 from rule_compare_sheet import badge  # noqa: E402  Mリーグ・雀魂の印（流局の種類と同じ）
 # Mリーグ・雀魂の列（2026-11-24 ユーザーの指定）。Mリーグ＝公式サイト m-league.jp/about の公式戦ルール第7章（2026-11-24 に確認）。
 # フリテンでのロンは公式ルールに名指しが無い。「正当でないアガリを宣言し、手牌を公開」（チョンボ）に当たるので、チョンボと書く。
-# 雀魂はゲームが操作を止めるので、どれも起きない（ロン・リーチ・鳴きのボタンは、できるときにしか出ない）。各表の雀魂の列は1つのます
+# 雀魂はゲームの仕様上、どれも発生しない（「ゲームが止める」とは書かない。2026-11-24 ユーザーの指定。ロン・リーチ・鳴きのボタンは、できるときにしか出ない）。各表の雀魂の列は1つのます
 # Mの値: "c|補足"＝チョンボ・"a|補足"＝アガリ放棄・"y|補足"＝イエローカード・"n|補足"＝規定なし（うっかり手牌を見せたときは名指しが無い。わざとならチョンボ）
 CH = [("誤ロン・誤ツモ", "ゴロン・ゴツモ", "アガっていないのに「ロン」「ツモ」と言って、手牌を倒した", "c|倒す前ならアガリ放棄"),
       ("フリテンでロン", "", "自分の河に待ちの牌があるのに、ロンした", "c|正当でないアガリ"),
@@ -19,7 +19,7 @@ ML = {"c": ("チョンボ", "mc"), "a": ("アガリ放棄", "ma"), "y": ("イエ
 def m(v):
     k, _, t = v.partition("|"); lab, cls = ML[k]
     return f'<td class="ml {cls}">{lab}{f"<small>{t}</small>" if t else ""}</td>'
-def jan(n): return f'<td class="jn" rowspan="{n}">起きない<small>ゲームが<br>止める</small></td>'
+def jan(n): return f'<td class="jn" rowspan="{n}">発生しない<small>ゲームの<br>仕様上</small></td>'
 def rows(items):
     return "".join(f'<tr><th class="rh">{a}<small>{b}</small></th><td class="tx">{c}</td>{m(d)}{jan(len(items)) if i == 0 else ""}</tr>' for i, (a, b, c, d) in enumerate(items))
 ca = "".join(f'<tr><th class="rh">{a}<small>{b}</small></th><td class="tx">{c}</td><td class="tx o2">{d}</td>{m(e)}{jan(len(CA)) if i == 0 else ""}</tr>' for i, (a, b, c, d, e) in enumerate(CA))
@@ -35,7 +35,7 @@ body = f"""
 <table><colgroup><col style="width:140px"><col><col style="width:162px">{COLS}</colgroup><thead><tr><th>反則</th><th>どんなとき</th><th>よくある扱い</th>{HD}</tr></thead><tbody>{ca}</tbody></table>
 <div class="tip"><b>Mリーグのチョンボ</b>は、満貫を払うのではなく<b>スコアから20pt引く</b>（親でも子でも同じ）。その局はやり直しで、積み棒は増えない。イエローカードは1日に2枚で、チョンボと同じ20pt。<br>
 <b>始める前に決めておく</b>　チョンボの払い方（満貫・スコアから引くなど）と、どれをアガリ放棄にするかは、場所やルールでかなり違う。もめないように、最初に確かめておくと安心。</div>
-<p class="note">Mリーグは公式サイトの公式戦ルール（2026年11月）。雀魂はゲームがロン・リーチ・鳴き・打牌を止めるので、これらの反則は起きない</p>"""
+<p class="note">Mリーグは公式サイトの公式戦ルール（2026年11月）。雀魂はゲームの仕様上、これらの反則は発生しない（ロン・リーチ・鳴きのボタンは、できるときにしか出ない）</p>"""
 css = """.bar.red { background: #C92F42; } .bar.blue { background: #4261AA; } .bar.gray { background: #5E6B69; } .bar small { color: #fff; opacity: .92; }
 td.tx { font-size: 12.5px; } td.o2 { color: #B23A0E; font-size: 12px; } tbody tr { height: 44px; } table + .bar { margin-top: 12px; }
 .ah { display: flex; align-items: center; gap: 6px; background: #fff; border: 2px solid #1F2A28; border-bottom: 0; padding: 7px 10px; font-size: 12.5px; font-weight: 900; }      /* アガリ放棄の人ができないこと（2026-11-24 ユーザーの指定）。Mリーグ公式戦ルール第7章第2条1 */
