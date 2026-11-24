@@ -89,6 +89,38 @@ def hyoshigi(v=.9):
     s = (np.sin(2 * math.pi * 1650 * t) + .6 * np.sin(2 * math.pi * 2460 * t) + .3 * np.sin(2 * math.pi * 3900 * t)) * env(n, .0005, .06)
     s += hpf(rng.normal(0, 1, n), 2000) * env(n, .0003, .004) * .8
     return s * v
+def kaka(n=2, v=.9):
+    """拍子木を「カカッ」とテンポよく（2026-11-24 ユーザーの指定）。短く硬い木の音を、少しずつ高くして約70ミリ秒おきに"""
+    gap = .07; b = np.zeros(int((gap * n + .3) * SR))
+    for i in range(n):
+        t = t_(.18); m = len(t); f = 1900 * (1 + .06 * i)
+        s = (np.sin(2 * math.pi * f * t) + .55 * np.sin(2 * math.pi * f * 1.52 * t) + .25 * np.sin(2 * math.pi * f * 2.4 * t)) * env(m, .0003, .025)
+        s += hpf(rng.normal(0, 1, m), 2500) * env(m, .0002, .003) * .9
+        put(b, s * v * (1 if i == n - 1 else .8), i * gap)
+    return b
+
+
+# 和モダンの入りの琴のバリエーション（2026-11-24 ユーザーの指定「いろんなバリエーション・音数を増やした版も」）。(音, 長さの拍) を並べる。1拍＝0.16秒
+WA_INTROS = {
+    "A 4音 上がって止まる（今の形）": [("D4", 1), ("G4", 1), ("A4", 1), ("C5", 3)],
+    "B 4音 跳んで戻る": [("G4", 1), ("D5", 1), ("C5", 1), ("A4", 3)],
+    "C 4音 タタタ・ターン（最後をのばす）": [("D4", .6), ("G4", .6), ("A4", .6), ("D5", 3)],
+    "D 5音 上がりきる": [("D4", 1), ("G4", 1), ("A4", 1), ("C5", 1), ("D5", 3)],
+    "E 6音 駆け上がる": [("D4", .5), ("E4", .5), ("G4", .5), ("A4", .5), ("C5", .5), ("D5", 3)],
+    "F 7音 流して決める": [("D5", .35), ("C5", .35), ("A4", .35), ("G4", .35), ("E4", .35), ("G4", 1), ("D5", 3)],
+    "G 8音 2回に分けて": [("D4", .5), ("G4", .5), ("A4", 1), ("A4", .5), ("C5", .5), ("D5", .5), ("G5", .5), ("D5", 3)],
+    "H 6音 装飾音つき（ツ・タ・タ・ターン）": [("C5", .25), ("D5", .75), ("A4", 1), ("G4", 1), ("A4", .25), ("D5", 3)],
+}
+def wa_intro(notes, hits=2):
+    beat = .16; head = .2 + .07 * hits
+    b = np.zeros(int((head + sum(d for _, d in notes) * beat + 1.6) * SR)); put(b, kaka(hits), 0)
+    t = head
+    for i, (n, d) in enumerate(notes):
+        put(b, koto(hz(n), 1.6 if i == len(notes) - 1 else 1.0, .55 if i == len(notes) - 1 else .48), t); t += d * beat
+    put(b, taiko(.8), t - 3 * beat)      # 最後の音に太鼓を重ねる
+    return b
+
+
 def riser(dur=1.2, v=.3):
     t = t_(dur); n = len(t); x = rng.normal(0, 1, n); y = np.zeros(n)
     for i, (a, b) in enumerate(zip(np.linspace(300, 6000, 8)[:-1], np.linspace(300, 6000, 8)[1:])):
@@ -227,5 +259,9 @@ if __name__ == "__main__":
         for kind in ("intro", "outro", "bgm", "step", "card"):
             save(os.path.join(out, f"{k}-{kind}.wav"), norm(P(kind), .8 if kind != "bgm" else .6))
         print(k, NAMES[k])
+    if "--wa" in sys.argv:      # 和モダンの入りの聞き比べ（A〜H を1.2秒あけて続けて。カカッ×2。最後に カカカッ×3 の版）
+        seq = [wa_intro(v) for v in WA_INTROS.values()] + [wa_intro(WA_INTROS["A 4音 上がって止まる（今の形）"], 3)]
+        gap = np.zeros(int(1.2 * SR)); save(os.path.join(out, "wa-intros.wav"), norm(np.concatenate([np.concatenate([x, gap]) for x in seq]), .85))
+        for k, v in WA_INTROS.items(): save(os.path.join(out, f"wa-intro-{k[0]}.wav"), norm(wa_intro(v), .85))
     if "--demo" in sys.argv:
         for k in PACKS: demo(out, sys.argv[sys.argv.index("--demo") + 1], k)
