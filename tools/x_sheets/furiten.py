@@ -3,8 +3,10 @@ from base import *
 import table_art as A      # tools/ は base が sys.path に入れてある
 def stick(w=70): return f'<svg viewBox="-1 -1 92 13" style="width:{w}px;vertical-align:middle;display:block">{A.tenbo_color(1000, 0, 0, L=90, H=10)}</svg>'
 
-# 例の手（2026-11-24 ユーザーの指定「一四七索待ちにして」）。二三四萬・五六七筒・南南・二三四五六索 → 一・四・七索待ち（machi3.waits で確認）
-HAND = "m2 m3 m4 p5 p6 p7 z2 z2 s2 s3 s4 s5 s6"
+# 例の手（2026-11-24 ユーザーの指定「一四七索待ち」「タンヤオとピンフの役がある待ち」）。二三四萬・八八萬・五六七筒・二三四五六索 → 一・四・七索待ち（machi3.waits で確認）。
+# 四・七索ならタンヤオ・ピンフ、一索だとタンヤオが付かない → 一索を見逃すつじつまが合う。②は二三四萬をチーしたあと（喰いタンだけなので、一索では役が無い）
+HAND = "m2 m3 m4 m8 m8 p5 p6 p7 s2 s3 s4 s5 s6"
+HAND_CHI = "m8 m8 p5 p6 p7 s2 s3 s4 s5 s6 | y:m2 m3 m4"
 wait = "".join(tl(c, 20) for c in "s2 s3 s4 s5 s6".split()) + '<span class="ar">待ち</span>' + tl("s1", 18) + tl("s4", 18) + tl("s7", 18)
 
 # 卓の図（2026-11-24 ユーザーの指定）。自分は下・下家は右・対面は上・上家は左。河は6枚切り（その局の進み方に合わせて5枚の人もいる）。
@@ -23,22 +25,29 @@ def river(seat, spec):
         bd = f'<i class="bd" style="background:{MK[mk][1]};transform:rotate({-r}deg)">{MK[mk][0]}</i>' if mk else ""
         out += f'<span class="rt {mk}">{tl(code, TW)}{bd}</span>'
     return f'<div class="rv" style="left:{x}px;top:{y}px;transform:translate(-50%,-50%) rotate({r}deg)">{out}</div>'
-def taku(no, name, rivers, center, cap, riichi=False):
+def hand_html(spec):
+    out = ""
+    for c in spec.split():
+        if c == "|": out += '<span style="width:4px"></span>'
+        elif c.startswith("y:"): out += f'<img class="t" src="{T}/{c[2:]}-yoko.svg" style="height:{14 * 69 / 62:.1f}px;align-self:flex-end">'
+        else: out += tl(c, 14)
+    return out
+def taku(no, name, rivers, center, cap, riichi=False, hand=HAND):
     seats = f'<b class="st v" style="left:{W - 8}px;top:104px">下家</b><b class="st" style="left:112px;top:3px">対面</b><b class="st v" style="left:8px;top:104px">上家</b>'
     rb = f'<div class="rb">{stick(54)}</div>' if riichi else ""
-    hand = f'<div class="hand">{"".join(tl(c, 14) for c in HAND.split())}</div>'
+    hand = f'<div class="hand">{hand_html(hand)}</div>'
     return (f'<div class="tk"><h3><i>{no}</i>{name}</h3><div class="mat">{seats}{"".join(river(s, v) for s, v in rivers)}{rb}'
             f'<div class="ctr"><div>{center}</div></div>{hand}</div><p class="cap">{cap}</p></div>')
 TAKU = [
     # 下家の6枚目でロンできない（自分・下家は6枚、対面・上家は5枚）
-    taku("1", "捨て牌のフリテン", [("self", "z1 m9 s7:h p1 z5 m1"), ("shimo", "z4 p9 m1 z3 m8 s4:x"), ("toi", "m1 z6 p9 s9 p2"), ("kami", "s9 z3 m8 p3 z7")],
-         "一索・四索<br>が出ても<b>ロン✕</b>", '自分の河に<b class="o">七索</b>がある。一・四・七索待ちなので、<b>一索・四索でもロンできない</b>'),
+    taku("1", "捨て牌のフリテン", [("self", "z1 m9 s1:h p1 z5 m1"), ("shimo", "z4 p9 m1 z3 m9 s4:x"), ("toi", "m1 z6 p9 s9 p2"), ("kami", "s9 z3 m9 p3 z7")],
+         "四索・七索<br>が出ても<b>ロン✕</b>", '自分の河に<b class="o">一索</b>がある。<br>一・四・七索待ちなので、<br><b>四索・七索でもロンできない</b>'),
     # 下家の6枚目の四索を見逃し → 自分の番の前の対面の一索もロンできない（上家は5枚）
-    taku("2", "同巡内フリテン", [("self", "z1 m9 p1 z5 m1 p9"), ("shimo", "z4 p9 m1 z3 m8 s4:m"), ("toi", "m1 z6 p9 s9 p2 s1:x"), ("kami", "s9 z3 m8 p3 z7")],
-         "自分が<br>打牌するまで<b>ロン✕</b>", '下家の<b class="b">四索を見逃した</b>。次に自分が打牌するまでは、対面の一索でも<b>ロンできない</b>'),
+    taku("2", "同巡内フリテン", [("self", "z1 m9 p1 z5 m1 p9"), ("shimo", "z4 p9 m1 z3 m9 s1:m"), ("toi", "m1 z6 p9 s9 p2 s4:x"), ("kami", "s9 z3 m9 p3 z7")],
+         "自分が<br>打牌するまで<b>ロン✕</b>", 'チーしていて、一索では役が無い。<br>下家の<b class="b">一索を見逃した</b>ので、<br>自分が打牌するまで<b>四索もロン✕</b>', hand=HAND_CHI),
     # 自分は5枚目でリーチ → 下家の5枚目の四索を見逃し → 自分が6枚目を切ったあとの上家の一索もロンできない
-    taku("3", "リーチ後のフリテン", [("self", "z1 m9 p1 z5 m1:r p9"), ("shimo", "z4 p9 m1 z3 s4:m m8"), ("toi", "m1 z6 p9 s9 p2 s8"), ("kami", "s9 z3 m8 p3 z7 s1:x")],
-         "この局は<br>ずっと<b>ロン✕</b>", 'リーチのあとに<b class="b">四索を見逃した</b>。自分が打牌したあとも、<b>この局はロンできない</b>', riichi=True),
+    taku("3", "リーチ後のフリテン", [("self", "z1 m9 p1 z5 m1:r p9"), ("shimo", "z4 p9 m1 z3 s1:m m9"), ("toi", "m1 z6 p9 s9 p2 s8"), ("kami", "s9 z3 m9 p3 z7 s4:x")],
+         "この局は<br>ずっと<b>ロン✕</b>", 'リーチのあと、タンヤオの付く<br>四・七索を待って<b class="b">一索を見逃した</b>。<br>この局はもう<b>四索でもロンできない</b>', riichi=True),
 ]
 LEG = "".join(f'<span><i class="bd" style="background:{c};position:static">{t}</i>{lab}</span>' for (t, c), lab in zip(MK.values(), ["自分が切った待ちの牌", "見逃した牌", "ロンできない牌"]))
 ROWS = [
@@ -48,17 +57,17 @@ ROWS = [
 ]
 rows = "".join(f'<tr><th class="rh">{a}<small>{b}</small></th><td class="tx">{c}</td><td class="mk ng">{e}</td><td class="mk ok">{f}</td><td class="tx">{g}</td></tr>' for a, b, c, e, f, g in ROWS)
 body = f"""
-<div class="bar" style="margin-top:0">卓で見る、3つのフリテン<small>例は一・四・七索待ち　{wait}</small></div>
+<div class="bar" style="margin-top:0">卓で見る、3つのフリテン<small>例は一・四・七索待ち（四・七索ならタンヤオ・ピンフ）　{wait}</small></div>
 <div class="tks">{"".join(TAKU)}<div class="leg">{LEG}<span class="hn">いちばん手前は自分の手牌</span></div></div>
 <div class="warn">
-<p><b>捨て牌のフリテン</b>　自分が切った牌が<b>ポン・チーで鳴かれる</b>と、河から無くなるので見逃しやすい。鳴かれた牌も自分の捨て牌なので、フリテンになる。</p>
-<p><b>同巡内フリテン</b>　見逃してから<b>次に自分が打牌するまで</b>はロンできない。間に<b>ポン・チーが入って自分の番が飛ばされても</b>、自分が打牌するまでは続く。自分が新しく打牌したあとなら、ロンできる。</p></div>
+<p><b>捨て牌のフリテン</b>　自分が切った牌が<b>ポン・チーで鳴かれる</b>と、河から無くなるので見逃しやすい。<br>鳴かれた牌も自分の捨て牌なので、フリテンになる。</p>
+<p><b>同巡内フリテン</b>　見逃してから<b>次に自分が打牌するまで</b>はロンできない。自分が新しく打牌したあとなら、ロンできる。<br>間に<b>ポン・チーが入って自分の番が飛ばされても</b>、自分が打牌するまでは続く。</p></div>
 <div class="bar">まとめ</div>
 <table><colgroup><col style="width:104px"><col><col style="width:56px"><col style="width:56px"><col style="width:216px"></colgroup>
 <thead><tr><th>種類</th><th>なるとき</th><th>ロン</th><th>ツモ</th><th>ロンできないのは</th></tr></thead><tbody>{rows}</tbody></table>
-<div class="tip"><b>待ちが2種類以上のとき</b>　どれか1種でも自分の河にあれば、<b>どの待ちでもロンできない</b>（一・四・七索待ちで七索を切っていたら、一索・四索でもロンできない）。<br>
+<div class="tip"><b>待ちが2種類以上のとき</b>　どれか1種でも自分の河にあれば、<b>どの待ちでもロンできない</b>。<br>（一・四・七索待ちで一索を切っていたら、四索・七索でもロンできない）<br>
 <b>どれも、ツモアガリはできる</b>　フリテンで止まるのはロンだけ。</div>
-<p class="note">役が無くてロンできなかったときも、見逃したのと同じ扱い（同巡内フリテン）。フリテンのままロンすると<b>チョンボ</b>になるのがふつう。フリテンの決まりは、Mリーグも雀魂も同じ</p>"""
+<p class="note">役が無くてロンできなかったときも、見逃したのと同じ扱い（同巡内フリテン）。フリテンのままロンすると<b>チョンボ</b>になるのがふつう。<br>フリテンの決まりは、Mリーグも雀魂も同じ</p>"""
 css = f"""td.tx {{ font-size: 12.5px; }} td.tx small {{ display: block; font-size: 10.5px; color: #6B7A77; }}
 td.mk {{ text-align: center; font-size: 26px; font-weight: 900; }} td.ng {{ color: #C92F42; }} td.ok {{ color: #177083; }} .ar {{ font-size: 10.5px; font-weight: 800; color: #DDF0EC; margin: 0 4px; }}
 .bar img.t {{ vertical-align: -6px; }} tbody tr {{ height: 52px; }} .b {{ color: #4261AA; font-weight: 900; }}
