@@ -327,9 +327,14 @@ def ruby_draw(d, x, y, tx, ft, fill, rsize=22, fk=None, tfill=None, rfill=None):
             if rw > w + 8:      # 読みが字より長いときは、字の幅に収まるまで小さく
                 rf = font(max(14, int(rsize * (w + 8) / rw)), 800); rw = d.textlength(r, font=rf)
             l_, t_, r_, b_ = d.textbbox((x, y), p, font=f)
-            d.text((x + w / 2 - rw / 2, t_ - rf.size - 6), r, font=rf, fill=rfill or c)
+            # 読みの字の「下のふち」を、漢字の上のふちから RUBY_GAP だけ上に置く（字の高さで測る。前は字の大きさで置いていて、読みが漢字にかぶった。2026-11-24 ユーザーの指摘）
+            rb = d.textbbox((0, 0), r, font=rf)
+            d.text((x + w / 2 - rw / 2, t_ - RUBY_GAP - rb[3]), r, font=rf, fill=rfill or c)
         x += w
     return x
+RUBY_GAP = 5      # 読みと漢字のすき間（px）
+
+
 def ruby_c(d, cx, cy, tx, ft, fill, rsize=22, rfill=None):
     """真ん中 (cx, cy) にそろえて書く（text_c のルビつき版）"""
     import re as _re
@@ -609,10 +614,12 @@ def subtitle(d, tx, k):
     """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
     a = int(235 * min(1, k * 6)); rows, ft = sub_rows(d, tx)
     # 暗い帯に白い字（前と同じ色・同じ透け方）。角だけ丸めない（2026-11-13 ユーザーの指定「変えるのは角丸を四角角にするだけ」。白いカードにしたのは行きすぎだった）
-    hr = any(r for p, r, t in ruby_parts(tx)); LH = 92 if hr else 64; top = 26 if hr else 0      # 読みを付ける行は、行の間を広げる
-    h = 46 + top + LH * len(rows); y = 1560 - h // 2
+    # 帯の縦幅は、読みがあっても無くても同じ（2026-11-24 ユーザーの指定「読みがあるときだけ上が広すぎる」）。読みは帯の上の余白に入れる。
+    # 2行で2行目に読みがあるときだけ、行の間を読みの分あける
+    hr2 = len(rows) > 1 and any(r for p, r, t in ruby_parts(rows[1])); LH = 82 if hr2 else 64
+    h = 46 + 64 + LH * (len(rows) - 1); y = 1560 - h // 2
     d.rectangle((50, y, W - 50, y + h), fill=(12, 20, 22, int(a * .86)))
-    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + top + (LH - 64) + 32 + n * LH, r_, ft, (255, 255, 255, a), 28)
+    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + 32 + n * LH, r_, ft, (255, 255, 255, a), 24)
 
 
 def sfx_events(sc, name, seq, fps, bub_at={}):
@@ -768,7 +775,7 @@ def main():
         if "--music" in a:     # 音楽（2026-11-24〜・music.py の和モダン）: 入りの琴・BGM・締めのジングル＋余韻
             import numpy as np, music
             v = np.frombuffer(buf.tobytes(), dtype=np.int16).astype(float) / 32768
-            m, sr = music.score(v, sr, bgm_from=2.2, outro_at=max(0, len(seq) / fps - len(music.PACKS["wa"]("outro")) / music.SR - .1))
+            m, sr = music.score(v, sr, bgm_from=2.8, outro_at=max(0, len(seq) / fps - len(music.PACKS["wa"]("outro")) / music.SR - .1))
             buf = array.array("h", (np.clip(m, -1, 1) * 32767).astype(np.int16).tobytes())
         mix = os.path.join(tmp, "voice.wav")
         with wave.open(mix, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr); wf.writeframes(buf.tobytes())

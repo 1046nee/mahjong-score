@@ -153,11 +153,15 @@ def wa_outro(notes, tail=None):
 
 def wa_intro(notes, hits=0):
     beat = .16; head = (.2 + .07 * hits) if hits else .02      # hits=0 で拍子木なし（2026-11-24 ユーザーの指定「最初の拍子木はいらない」）
-    b = np.zeros(int((head + sum(d for _, d in notes) * beat + 1.6) * SR))
+    LAST = 3.0      # 最後の大きい音の長さ（秒）。1.6 → 3.0 にのばした（2026-11-24 ユーザーの指定「入りの大きめの音をもう少し長め」）
+    b = np.zeros(int((head + sum(d for _, d in notes) * beat + LAST) * SR))
     if hits: put(b, kaka(hits), 0)
     t = head
     for i, (n, d) in enumerate(notes):
-        put(b, koto(hz(n), 1.6 if i == len(notes) - 1 else 1.0, .55 if i == len(notes) - 1 else .48), t); t += d * beat
+        last = i == len(notes) - 1
+        put(b, koto(hz(n), LAST if last else 1.0, .55 if last else .48), t)
+        if last: put(b, koto(hz(n) / 2, LAST, .22), t)      # 1オクターブ下を重ねて、のびる音を太く
+        t += d * beat
     put(b, taiko(.8), t - 3 * beat)      # 最後の音に太鼓を重ねる
     return b
 
