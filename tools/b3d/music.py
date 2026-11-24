@@ -182,7 +182,7 @@ def motif(key, end_home):
 def pack_wa(kind):
     """和モダン: 拍子木2回 → 琴の4音（陰の音階っぽく、3度を短く）。BGMはゆっくりのビートに琴"""
     if kind == "intro": return wa_intro(WA_INTROS[WA_INTRO])
-    if kind == "outro": return wa_outro(WA_OUTROS[os.environ.get("WA_OUTRO", "1 同じ5音で上がり、主音のGへ")])
+    if kind == "outro": return wa_outro(WA_OUTROS["1 同じ5音で上がり、主音のGへ"], "trem")      # 締め1＋余韻b（トレモロ）に決定（2026-11-24 ユーザーの判断）
     if kind == "bgm":
         bpm = 86; beat = 60 / bpm; bars = 8; b = np.zeros(int(bars * 4 * beat * SR))
         prog = [("G2", ["G3", "D4", "A4"]), ("Eb2", ["Eb3", "Bb3", "G4"]), ("C2", ["C3", "G3", "D4"]), ("D2", ["D3", "A3", "F#4"])]
@@ -193,8 +193,15 @@ def pack_wa(kind):
                 put(b, kick(.55) if k in (0, 2) else snare(.18), t0 + k * beat)
                 put(b, hat(.05), t0 + k * beat + beat / 2)
             put(b, bass(hz(root), beat * 1.5, .3), t0); put(b, bass(hz(root), beat, .22), t0 + 2.5 * beat)
+            # 琴がふんわり鳴り続ける（2026-11-24 ユーザーの指定「全体も、締めの余韻のように琴がふんわり」）:
+            # 和音の一番上の音を細かく弾き続ける（トレモロ）＋小節の頭で和音を下からさらりと分散。弾く強さを波のように揺らす
+            top = hz(ch[2]) * 2; n16 = int(4 * beat / .085)
+            for i in range(n16):
+                sw = .5 + .5 * math.sin(math.pi * i / n16)
+                put(b, koto(top * (1 if i % 2 == 0 else 1.0006), .35, .05 + .06 * sw), t0 + i * .085)
+            for i, c in enumerate(ch): put(b, koto(hz(c) * 2, 1.2, .14), t0 + i * .06)
             if bar % 2 == 1:      # 2小節に1回、琴でモチーフの頭3音（耳に残す）
-                for i, n in enumerate(["D4", "G4", "A4"]): put(b, koto(hz(n), 1.0, .22), t0 + 2 * beat + i * beat / 2)
+                for i, n in enumerate(["D4", "G4", "A4"]): put(b, koto(hz(n) * 2, 1.0, .2), t0 + 2 * beat + i * beat / 2)
         return b
     if kind == "step": b = np.zeros(int(.6 * SR)); put(b, koto(hz("A4"), .6, .35), 0); put(b, hyoshigi(.25), 0); return b
     if kind == "card": return whoosh(.3, .18)
@@ -276,11 +283,11 @@ def demo(out_dir, mp4, key):
     bgm = P("bgm"); bgm = np.tile(bgm, int(n / len(bgm)) + 1)[:n]
     win = int(.25 * SR); lev = np.sqrt(np.convolve(voice ** 2, np.ones(win) / win, "same")); lev = lev / (lev.max() + 1e-9)
     duck = 1 - .65 * np.clip(lev * 4, 0, 1); duck = np.convolve(duck, np.ones(win) / win, "same")
-    fade = np.ones(n); a, z = int(2.0 * SR), int(4.5 * SR); fade[:a] = 0; fade[a:a + int(1.5 * SR)] = np.linspace(0, 1, int(1.5 * SR))      # 入りの音が鳴り終わってからBGM
+    fade = np.ones(n); a, z = int(2.0 * SR), int(6.5 * SR); fade[:a] = 0; fade[a:a + int(1.5 * SR)] = np.linspace(0, 1, int(1.5 * SR))      # 入りの音が鳴り終わってからBGM
     fade[n - z:] = np.linspace(1, 0, z)
     mix += norm(bgm, .16) * duck * fade
     put(mix, norm(P("intro"), .75), .05)
-    put(mix, norm(P("outro"), .75), dur - 4.6)
+    o = P("outro"); put(mix, norm(o, .75), max(0, dur - len(o) / SR - .1))      # 締めは動画の終わりで鳴り終わるように（余韻つきで長くなった）
     mix = norm(mix, .95)
     wav = os.path.join(out_dir, f"_demo-{key}.wav"); save(wav, mix)
     out = os.path.join(out_dir, f"demo-{key}.mp4")
