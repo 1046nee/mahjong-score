@@ -617,9 +617,10 @@ def subtitle(d, tx, k):
     # 帯の縦幅は、読みがあっても無くても同じ（2026-11-24 ユーザーの指定「読みがあるときだけ上が広すぎる」）。読みは帯の上の余白に入れる。
     # 2行で2行目に読みがあるときだけ、行の間を読みの分あける
     hr2 = len(rows) > 1 and any(r for p, r, t in ruby_parts(rows[1])); LH = 82 if hr2 else 64
-    h = 46 + 64 + LH * (len(rows) - 1); y = 1560 - h // 2
+    PAD = 34      # 帯の上下の余白（23 → 34。2026-11-24 ユーザーの指定「上と下を少しだけ広げる」）
+    h = 2 * PAD + 64 + LH * (len(rows) - 1); y = 1560 - h // 2
     d.rectangle((50, y, W - 50, y + h), fill=(12, 20, 22, int(a * .86)))
-    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + 32 + n * LH, r_, ft, (255, 255, 255, a), 24)
+    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + PAD + 32 + n * LH, r_, ft, (255, 255, 255, a), 24)
 
 
 def sfx_events(sc, name, seq, fps, bub_at={}):
