@@ -118,11 +118,35 @@ WA_OUTROS = {
     "2 上がった5音を、下りて主音へ（答え）": [("D5", 1), ("C5", 1), ("A4", 1), ("G4", 4)],
     "3 入りと同じ5音＋低いGで落とす": [("D4", 1), ("G4", 1), ("A4", 1), ("C5", 1), ("D5", 2), ("G4", 4)],
 }
-def wa_outro(notes):
-    beat = .17; b = np.zeros(int((sum(d for _, d in notes) * beat + 2.4) * SR)); t = .02
+# 締めは1に決定（2026-11-24 ユーザーの判断）。そのあとに琴が少し続く「余韻」の候補（ユーザーの指定「4音のあと、琴のメロディや音がずっと続いているといい」）
+WA_TAILS = {
+    "a 分散和音がころころ続く": "arp",
+    "b 同じ音を細かく弾き続ける（トレモロ）": "trem",
+    "c 下りてくるメロディで答える": "melo",
+    "d メロディ＋分散和音（cとaを重ねる）": "both",
+}
+def wa_tail(kind, t0, b):
+    """主音の G5 が鳴ったあと（t0）に続ける琴。だんだん小さく"""
+    beat = .17
+    if kind in ("arp", "both"):
+        arp = ["G4", "B4", "D5", "G5", "D5", "B4"] * 3 + ["G4"]
+        for i, n in enumerate(arp): put(b, koto(hz(n), .9, .26 * (1 - i / len(arp)) + .05), t0 + .35 + i * beat * .75)
+    if kind == "trem":
+        for i in range(26): put(b, koto(hz("G5") * (1 if i % 2 == 0 else 1.0006), .35, .22 * (1 - i / 26) + .04), t0 + .3 + i * .085)
+        put(b, koto(hz("D5"), 1.4, .2), t0 + .3 + 13 * .085)
+    if kind in ("melo", "both"):
+        mel = [("E5", 1), ("D5", 1), ("B4", 1.5), ("A4", .5), ("G4", 4)]; t = t0 + .5 + (0 if kind == "melo" else .2)
+        for i, (n, d) in enumerate(mel): put(b, koto(hz(n), 1.8 if i == len(mel) - 1 else 1.0, .36 if kind == "melo" else .3), t); t += d * beat * 1.5
+    return b
+
+
+def wa_outro(notes, tail=None):
+    beat = .17; b = np.zeros(int((sum(d for _, d in notes) * beat + (5.4 if tail else 2.4)) * SR)); t = .02
     for i, (n, d) in enumerate(notes):
         last = i == len(notes) - 1; put(b, koto(hz(n), 2.2 if last else 1.0, .58 if last else .48), t)
-        if last: put(b, koto(hz(n) / 2, 2.2, .3), t); put(b, taiko(.9), t); put(b, pad([hz("G3"), hz("D4"), hz("B4")], 2.2, .1, 1500), t)
+        if last:
+            put(b, koto(hz(n) / 2, 2.2, .3), t); put(b, taiko(.9), t); put(b, pad([hz("G3"), hz("D4"), hz("B4")], 4.8 if tail else 2.2, .1, 1500), t)
+            if tail: wa_tail(tail, t, b)
         t += d * beat
     return b
 
@@ -276,7 +300,8 @@ if __name__ == "__main__":
         for k, v in WA_INTROS.items(): save(os.path.join(out, f"wa-intro-{k[0]}.wav"), norm(wa_intro(v), .85))
     if "--wa-outro" in sys.argv:      # 締めの聞き比べ（入りD → 1.2秒 → 締め1、…）
         gap = np.zeros(int(1.2 * SR)); seq = []
-        for v in WA_OUTROS.values(): seq += [wa_intro(WA_INTROS[WA_INTRO]), gap, wa_outro(v), gap, gap]
+        one = WA_OUTROS["1 同じ5音で上がり、主音のGへ"]
+        for v in WA_TAILS.values(): seq += [wa_outro(one, v), gap, gap]
         save(os.path.join(out, "wa-outros.wav"), norm(np.concatenate(seq), .85))
     if "--demo" in sys.argv:
         for k in PACKS: demo(out, sys.argv[sys.argv.index("--demo") + 1], k)
