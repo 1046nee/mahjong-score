@@ -44,6 +44,12 @@ const READ_ICON = {
   more: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="4" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="4" y="13" width="7" height="7" rx="1.6" fill="currentColor"/><rect x="13" y="13" width="7" height="7" rx="1.6" fill="currentColor" opacity=".55"/></svg>',
 };
 const BLOG_POSTS = [
+  { url: '/blog-furiten.html', cat: 'rules', date: '2026.11.24', tag: '図解',
+    title: '【図解】フリテンの3種類｜ロンできないのはいつまで？捨て牌・同巡内・リーチ後',
+    desc: '捨て牌・同巡内・リーチ後の3種類を卓の図で。ロンできない期間、鳴かれた牌の見落とし、解き方と練習問題5問。' },
+  { url: '/blog-ryukyoku.html', cat: 'rules', date: '2026.11.24', tag: '図解',
+    title: '【一覧表】流局の種類6つ｜九種九牌・四風連打はMリーグにない？ルールの違い',
+    desc: '荒牌平局と途中流局5つの条件、ノーテン罰符・親・本場の扱い、Mリーグと雀魂の違いを1枚の表に。' },
   { url: '/blog-machi-katachi.html', cat: 'rules', date: '2026.11.16', tag: '図解',
     title: '【保存版】麻雀の待ちの形一覧｜両面8枚から最大17枚待ちまで32形を図解',
     desc: '1面子1雀頭（4枚形）と2面子1雀頭（7枚形）に分けた32形を1枚の表に。初心者が覚える8形から中級者の形まで、待ちの牌と枚数を図で。' },

@@ -21,6 +21,10 @@ th.rh {{ background: #E9EFEE; color: {INK}; border: 1px solid #8FA29D; font-size
 img.t {{ vertical-align: middle; }}
 body {{ background: #EEF6F3 !important; }} table {{ background: #fff; }} .card {{ background: #fff; }}      /* 紙の地は薄い緑（役の出やすさランキングと同じ）。表の中は白のまま */
 """
+# 記事（公開サイト）に載せる版は環境変数 WEB=1 で作る。Mリーグのロゴ・雀魂の絵は使わず、文字の丸にする（公式の画像は転載しない決まり。2026-11-24）
+#   WEB=1 python tools/x_sheets/chombo.py <絶対パス>/assets/hai/mahjong-chombo
+WEB = bool(os.environ.get("WEB"))
+def text_badge(k): return f'<i style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#fff;color:{INK if k == "M" else BLUE};font-style:normal;font-size:12px;font-weight:900;vertical-align:middle">{ {"M": "M", "J": "雀"}[k] }</i>'
 def page(title, sub, legend, body, css=""):
     return f"""<!doctype html><html lang="ja"><head><meta charset="utf-8">{H.FONT}<style>{H.CSS}{LOGO_CSS}{H.FIT_CSS}{BASE_CSS}{css}</style></head><body>
 <header><h1>{title}<small>{sub}</small></h1><div class="legend">{legend}</div>{logo_html()}</header>

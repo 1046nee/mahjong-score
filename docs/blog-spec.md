@@ -158,6 +158,7 @@
 - OK例: 「符・翻の点数計算は自分で。半荘のスコア集計は、まじゃすこで。」
 
 ## 公開済み記事一覧（16記事＋お知らせ6本＋更新履歴）
+- **blog-furiten.html・blog-ryukyoku.html（2026-11-24・ユーザーの依頼）**: フリテンの3種類・流局の種類。チョンボは新しい記事にせず blog-manner の #agari-houki に足した（#chombo と中身が重なるため）。1枚の表は tools/x_sheets/（furiten・ryukyoku・chombo）。**記事に載せる版は `WEB=1 python tools/x_sheets/<名前>.py <絶対パス>/assets/hai/mahjong-<名前>`**（Mリーグのロゴ・雀魂の絵を文字の印に替える＝公式の画像は転載しない）→ make_webp.py。Mリーグの扱いは m-league.jp/about の第3・5・7章の原文、雀魂は Wikipedia「雀魂」で確かめた。X用の画像と記事の画像は両方作り直す
 - **blog-machi-katachi.html（2026-11-16）**: 待ちの形一覧（32形。4枚使いの 1・4・2／4・1・2／4・2・1 と 暗刻＋4枚（3・4）は2026-11-16、4・0・3／3・2・2／2・3・2／3・0・2・1・1／1・1・1・1・1・2／1・1・1・2・1・1 は2026-11-17 ユーザーの指示で足し、1・1・3・1・1（両面＋暗刻＋両面）は外した。形の数・段階ごとの数は machi3.py の SECS から数える＝表の見出しも手で書かない）。1枚の表と解説3枚は `python3.13 tools/machi_sheet.py`（tools/machi_sheet/ の machi4.py＝一覧・detail.py＝解説。待ちの牌と枚数は machi3.py が計算で出す＝手で書かない。見た目の決まりは docs/image-tools.md「Xに出す1枚の表」）→ assets/hai/machi-katachi-ichiran / -4mai / -7mai-1 / -7mai-2。本文の待ちと枚数は表と同じ値にそろえる
 - **blog-naki-tejun.html（2026-11-11）**: ポン・チーの手順。**手順は番号つきの5つの言葉＝①発声→②開示→③回収→④副露→⑤打牌で書く**（2026-11-12 ユーザーの依頼。言葉の意味は docs/video-3d.md「手順の見せ方」。動画も同じ言葉）。上から見た卓の図5枚（`tools/make_naki_article.py` の `board(step)` が SVG を作る。記事を直すときはこのスクリプトを直して実行）。団体の決まりは Mリーグ（m-league.jp/about/）・協会の競技規定・最高位戦の競技規定PDF・RMUのルールで確認。連盟（競技ルールのページに本文が出ない）と麻将連合は未確認＝確かめられたら表に足す
 - **お知らせ（検索に載せる・2026-10-13）**: news/nakama-page.html（仲間ページ）／news/mypage-stats.html（マイページと成績）／news/kiroku-kakutei.html（記録の確定）。実画面は `/assets/screens/*.jpg`（見本のデータ・スタブで撮影。キャプションに「名前と数字は見本のデータです」）
@@ -249,6 +250,7 @@
 - 麻雀の歴史・起源／オンライン麻雀と対面の違い／点数申告の言い方
 
 ## 落とし穴
+- 記事に節を足す一時スクリプトを2回動かすと、add_ruby.py がふりがなを付けた後の文と一致せず、同じ節が二重に入った（2026-11-24 blog-manner）。「入っているか」は文ではなく id で確かめる。make_thumbs.py・add_ruby.py は関係ない記事も書きかえるので、自分の記事の分だけコミットする
 - 記事に足す画面の写真は WebP（quality 80）で置く。JPEG のままだと1枚100KB超で、15枚ならべた blog-team-league.html が1.4MBになっていた（2026-11-14 に WebP にして 650KB）。公開前に `python tools/weight_test.py`
 - 2026-11-13 に Hosting の転送量が無料枠（月10GB）を超えた。原因は1ページで1〜1.6MBの表の PNG を3枚読ませる記事が広まったこと（1日約6GB）。表は WebP にした（make_webp.py）。LP の操作動画も CRF 28 で作り直して 3.4MB→1.4MB。重い画像を記事に足すときは、送る量を考える
 - **記事の中で見せる1枚の表は、軽い WebP（ロスレス・幅1588）にする**（2026-11-14〜。Firebase Hosting の無料枠＝月10GBを、役の出やすさランキングが広まった日に使い切ったため）。`python tools/make_webp.py` が `assets/(hai|score|rules)/X-web.webp` を作り、記事の `<img>` を差しかえる（PNG の3分の1ほど・見た目は同じ）。画像を押した先の大きな PNG・PDF、og:image・sitemap・JSON-LD は PNG のまま。**表の PNG を作り直したら必ず make_webp.py も実行**（`--check` で漏れを確かめる）。1080 幅も試したが、縮めるとロスレスでは重くなるので作らない

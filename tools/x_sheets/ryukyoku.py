@@ -15,7 +15,8 @@ ROWS = [
 USE = {"荒牌平局": ("○", "○"), "九種九牌": ("×|続ける", "○"), "四風連打": ("×|続ける", "○"), "四開槓": ("×|続ける<br>5回目のカンは<br>できない", "○"), "四家立直": ("×|続ける", "○"),
        "三家和": ("×|頭ハネで<br>1人のアガリ", "×|トリロンで<br>3人ともアガリ")}
 sys.path.insert(0, TOOLS)
-from rule_compare_sheet import badge, ICON_M  # noqa: E402  ロゴ（Mリーグ・雀魂の印。元の画像は非公開の素材リポジトリ）
+from rule_compare_sheet import badge
+if WEB: badge = text_badge  # noqa: E402  ロゴ（Mリーグ・雀魂の印。元の画像は非公開の素材リポジトリ）
 def yn(v):
     m, _, t = v.partition("|")
     return f'<td class="yn {"y" if m == "○" else "n"}">{m}{f"<small>{t}</small>" if t else ""}</td>'
