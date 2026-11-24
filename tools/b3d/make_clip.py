@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """scene.py --anim が書き出したコマ（入り i0000.png〜・本題 f0000.png〜）に、題名と手順の表示をのせて mp4 にする。
-  python tools/b3d/make_clip.py <コマのフォルダ> <出力.mp4> [--fps 12] [--script chi]
+  python tools/b3d/make_clip.py <コマのフォルダ> <出力.mp4> [--script chi]（1秒のコマ数は、フォルダの fps.txt＝scene.py が書く。無ければ12）
 のせるもの（2026-11-12 ユーザーの依頼）:
   0. 入り＝会場を回りこむ絵（scene.py --anim --intro）の上に、動画の題名（「チーの方法」）。3Dの卓の解説動画は、どれもこの入りから始める
   1. 上の帯＝手順の番号の列（済み＝緑・今＝オレンジで大きく・これから＝白い輪）。いま全体のどこかが分かる
@@ -18,7 +18,7 @@ GREEN, ORANGE, INK, WHITE = "#177083", "#E75620", "#1F2A28", "#FFFFFF"
 W, H = 1080, 1920
 NUM = "①②③④⑤⑥⑦⑧"
 
-# 台本: 手順ごとに (名前, 読み, 説明, 最初のコマ, 最後のコマ, 止める秒, 囲む牌, 吹き出し)。コマは scene.py の anim_pose の区切り（12fps）
+# 台本: 手順ごとに (名前, 読み, 説明, 最初のコマ, 最後のコマ, 止める秒, 囲む牌, 吹き出し)。コマの番号は、1秒12コマで数えた番号（もっと細かく書き出したときは、scaled が番号を読みかえる）
 SCRIPTS = {
     "chi": dict(title="チーの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「チー」と声に出す。ポンが優先なので一拍おいてから", 0, 6, 2.2, [], "チー"),     # 肩ごしで顔が見えるうちに止める（カメラが動き出す前）
@@ -104,9 +104,9 @@ SCRIPTS = {
         ("ツモ", "", "山から取ったアガリ牌を、手牌の横に置く。手牌には入れない", 0, 42, 1.6, [], ""),
         ("発声", "はっせい", "「ツモ」と声に出す", 43, 49, 2.0, [], "ツモ"),
         ("開示", "かいじ", "両手で手牌の両端を持って、手牌を倒す", 50, 68, 2.0, [], ""),
-        ("申告", "しんこく", "点数だけを言う\nメンゼンツモ・タンヤオ・ドラ1＝子の3翻30符", 69, 73, 2.6, [], "1000・2000", "※ドラ表示牌が三萬なので、ドラは四萬。手牌に1枚でドラ1"),     # ドラ表示牌を見せる（画角は scene.py の DV。2026-11-18 ユーザーの指定）     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）。500・1000のアガリ（2026-11-16）
-        ("支払い", "しはらい", "親は2,000点、子は1,000点ずつ、アガった人に払う", 74, 103, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
-    ], tail=(104, 105, 2.4),
+        ("申告", "しんこく", "点数だけを言う\nメンゼンツモ・タンヤオ・ドラ1＝子の3翻30符", 69, 75, 2.6, [], "1000・2000", "※ドラ表示牌が三萬なので、ドラは四萬。手牌に1枚でドラ1"),     # ドラ表示牌を見せる（画角は scene.py の DV。2026-11-18 ユーザーの指定）     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）。500・1000のアガリ（2026-11-16）
+        ("支払い", "しはらい", "親は2,000点、子は1,000点ずつ、アガった人に払う", 76, 104, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
+    ], tail=(105, 105, 2.4),
     pre=dict(head="ツモアガリできるとき", hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "自分で{ アガリ牌 }を引いた → ツモ"),
@@ -126,12 +126,12 @@ SCRIPTS = {
         (4.4, "だれの捨て牌でもロンできる"),
     ])),
     "dahai": dict(title="ツモと打牌の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[     # 2026-11-16 ユーザーの依頼（初心者向けの3D動画の5）
-        ("ツモ", "", "自分の番になったら、山の端から1枚取る", 0, 43, 1.6, [], ""),
-        ("打牌", "ダハイ", "いらない牌を1枚、河に表向きで置く", 44, 59, 1.4, [], ""),
-        ("河", "かわ", "河は左から6枚ずつ並べ、7枚目から次の段へ", 60, 70, 2.0, [], ""),
-        ("理牌", "リーパイ", "ツモった牌を、手牌の並びに入れる", 71, 95, 1.6, [], ""),
-        ("ツモ切り", "ツモぎり", "ツモった牌を、そのまま切ることもある", 96, 131, 1.6, [], ""),
-    ], tail=(132, 141, 2.4),
+        ("ツモ", "", "自分の番になったら、山の端から1枚取る", 0, 42, 1.6, [], ""),
+        ("打牌", "ダハイ", "いらない牌を1枚、河に表向きで置く", 43, 59, 1.4, [], ""),
+        ("河", "かわ", "河は左から6枚ずつ並べ、7枚目から次の段へ", 60, 69, 2.0, [], ""),
+        ("理牌", "リーパイ", "ツモった牌を、手牌の並びに入れる", 70, 94, 1.6, [], ""),
+        ("ツモ切り", "ツモぎり", "ツモった牌を、そのまま切ることもある", 95, 130, 1.6, [], ""),
+    ], tail=(131, 141, 2.4),
     pre=dict(head="自分の番の流れ", hold=2.0, concl=True, lines=[
         (0.3, "{上家|カミチャ}が切ったら、自分の番"),
         (1.6, "1枚{ツモ}って、1枚切る"),
@@ -633,12 +633,21 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
     return ev
 
 
+def scaled(sc, fps):
+    """台本のコマの番号（1秒12コマ）→ 書き出したコマの番号。手順の終わりの時刻はそのまま、次の手順はその次のコマから"""
+    k = fps / 12
+    if fps == 12: return sc
+    end = lambda n: int(round(n * k)); beg = lambda n: end(n - 1) + 1 if n else 0
+    st = [s[:3] + (end(s[3]) if s[3] == s[4] else beg(s[3]), end(s[4])) + s[5:] for s in sc["steps"]]
+    return dict(sc, steps=st, tail=(beg(sc["tail"][0]), end(sc["tail"][1]), sc["tail"][2]))
+
+
 def main():
     a = sys.argv[1:]
-    fps = int(a[a.index("--fps") + 1]) if "--fps" in a else 12
+    fpt = os.path.join(a[0], "fps.txt"); fps = int(a[a.index("--fps") + 1]) if "--fps" in a else int(open(fpt).read()) if os.path.exists(fpt) else 12
     mkp = os.path.join(a[0], "marks.json"); MK = json.load(open(mkp)) if os.path.exists(mkp) else []      # 囲む牌の場所（scene.py が作る）
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
-    sc = SCRIPTS[name]
+    sc = scaled(SCRIPTS[name], fps)
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
     VO = {}; BUB_AT = {}; SUBS = {}     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）・SUBS＝字幕の1文ずつの (出す, 消す, 文)
     if "--voice" in a:
@@ -697,8 +706,8 @@ def main():
         # 前置きの前後は、絵を重ねてつなぐ（カメラは選手の目に飛ぶので、動かすと体の中を通る）
         # ①へは重ねずに切りかえる（重ねると、カメラが少し動いたように見える。2026-11-14 ユーザーの指摘「①で画角が少し動く」）
         if n and i != seq[n - 1][1] and i == -4: fade = [cache_prev, 0]
-        if fade and fade[1] < 6:
-            fade[1] += 1; im = Image.blend(fade[0], im, fade[1] / 7)
+        if fade and fade[1] < int(.5 * fps):      # 0.5秒かけて重ねる
+            fade[1] += 1; u = fade[1] / (int(.5 * fps) + 1); im = Image.blend(fade[0], im, u * u * (3 - 2 * u))
         cache_prev = cache[f]
         if i == -4:
             pre_card(d, sc["pre"], t)
@@ -743,11 +752,11 @@ def main():
         mix = os.path.join(tmp, "voice.wav")
         with wave.open(mix, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr); wf.writeframes(buf.tobytes())
         subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"), "-i", mix,
-                        "-vf", "fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-c:a", "aac", "-b:a", "160k", "-shortest", out], check=True)
+                        "-r", str(max(24, fps)), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-c:a", "aac", "-b:a", "160k", "-shortest", out], check=True)
         shutil.rmtree(vtmp)
     else:
         subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"),
-                        "-vf", "fps=24", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", out], check=True)
+                        "-r", str(max(24, fps)), "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", out], check=True)
     shutil.rmtree(tmp); print("ok", out, len(seq), "コマ", round(len(seq) / fps, 1), "秒")
 
 if __name__ == "__main__":

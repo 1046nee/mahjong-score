@@ -19,7 +19,7 @@ SIZE = [int(x) for x in arg("--size", "720x1280").split("x")]
 SAMPLES = int(arg("--samples", "48"))
 FACE = arg("--face", "nm")   # nm＝目・鼻・口（今の決まり。2026-11-12 ユーザーの判断）／eyes＝目だけ
 ANIM = "--anim" in sys.argv      # 動きの試し（チーの5つの手順）。1コマずつ書き出す。途中で止まっても、できたコマは飛ばして続きから
-FPS = int(arg("--fps", "12"))
+FPS = int(arg("--fps", "30"))      # 1秒のコマ数。なめらかに見せるため30（2026-11-24 ユーザーの指定「極力なめらかな映像に」。前は12）
 STEP = 0 if ANIM else int(arg("--step", "4"))   # 鳴きの手順のどこまで進んだか（0=鳴く前 … 5=打牌まで）
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -1076,7 +1076,7 @@ sc.view_settings.view_transform = "Standard"
 os.makedirs(OUT, exist_ok=True)
 if "--save" in sys.argv:
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, f"mleague_base_{THEME}.blend"))
-import time
+import shutil, time
 
 # ---------------- 動きの試し: チーの5つの手順（8秒）----------------
 def ease(x):
@@ -1090,22 +1090,26 @@ ANIM_DUR = 8.0 + 3 * .7      # もとの動き8秒＋見せるための間3回�
 # FREEZE＝もとの時刻（②開示のあと・③回収のあと・④副露のあと）。その間 PAUSE 秒は牌を止め、手だけ手前へ引き、カメラが牌に寄る
 FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
-    FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.4 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
+    FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.6 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
 S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.4, 3.8), 5.8),
        "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0), "furiten": ((1.5, 2.4, 4.2, 7.0), 7.8), "furiten2": ((1.5, 2.9, 4.3, 8.3, 9.7), 10.5), "furiten3": ((1.5, 2.9, 7.4, 10.1, 13.3), 14.1),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
        "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
+SOFT = .1      # 間の前後で、なめらかに止まる・動き出す（秒）。急に止めると、手が途中でかくっと止まって見えた
 def warp(t):
-    """実際の時刻 → もとの動きの時刻（間のあいだは進まない）"""
+    """実際の時刻 → もとの動きの時刻（間のあいだは進まない。間の前後 SOFT 秒で、ゆるやかに止まり、ゆるやかに動き出す）"""
     for f in FREEZE:
-        if t <= f: return t
-        if t <= f + PAUSE: return f
+        if t <= f - SOFT: return t
+        if t <= f + SOFT: x = t - f + SOFT; return f - SOFT + x - x * x / (4 * SOFT)
+        if t <= f + PAUSE - SOFT: return f
+        if t <= f + PAUSE + SOFT: x = t - f - PAUSE + SOFT; return f + x * x / (4 * SOFT)
         t -= PAUSE
     return t
+K_IN, K_OUT = .42, .45      # 間でカメラが寄る・引く秒数（前は .22・.35。速すぎて目が追いにくかった。止めるコマ＝間の始まりから .5秒 より前に寄り終える）
 def pause_k(t, n):
     """n番目の間で、手がどいている度合い（0〜1）"""
     a = FREEZE[n] + n * PAUSE
-    return seg(t, a, a + .22) - seg(t, a + PAUSE - .05, a + PAUSE + .3)
+    return seg(t, a, a + K_IN) - seg(t, a + PAUSE - .05, a + PAUSE - .05 + K_OUT)
 # 手順の区切り（秒）: ①声 0〜1.5 ②晒す 1.5〜2.1 ③取る 2.1〜3.8 ④右端に並べる 3.8〜5.0 ⑤切る 5.0〜6.6
 def anim_setup():
     bpy.context.view_layer.update()
@@ -1140,7 +1144,7 @@ def cam_pose(t, tr, cam, px, focus, pk, views=None):
     c0 = (Vector(CAM["mid"][0]), Vector(CAM["mid"][1]), 38.0)
     c1 = (Vector((-.40 + px * .5, -.62, 1.27)), Vector((.02 + px, -.24, .77)), 33.0)
     c2 = (Vector((MR + .03, -.62, 1.22)), Vector((MR - .07, MY + .015, .77)), 42.0)      # 最後は右の角の晒した牌に寄る
-    ka = seg(t, .4, 1.4); kb = seg(t, ANIM_END - 1.0, ANIM_END)
+    ka = seg(t, .05, 1.45); kb = seg(t, ANIM_END - 1.0, ANIM_END)
     if views is None: views = [(ANIM_END - 1.0, ANIM_END) + c2]      # 途中で画角を変える（時刻a〜b・位置・見る点・レンズ）。無ければ、最後に右の隅へ
     loc = c0[0].lerp(c1[0], ka); tgt = c0[1].lerp(c1[1], ka); lens = c0[2] + (c1[2] - c0[2]) * ka
     loc = loc + Vector((-.42, -.05, .62)) * math.sin(math.pi * ka)
@@ -1187,7 +1191,7 @@ def marks_at(t):
         out[nm] = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
     return out
 
-ANIM_END = 7.8 if SCENE in ("chi", "pon") else 8.2      # もとの時刻で、最後に右の隅へ寄り終える時
+ANIM_END = 7.8 if SCENE in ("chi", "pon") else 8.5      # もとの時刻で、最後に右の隅へ寄り終える時
 if SCENE == "daiminkan": ANIM_END = 10.2
 if SCENE == "kakan": ANIM_END = 7.6
 
@@ -1230,7 +1234,7 @@ def anim_pose_kan(t, cam):
     pk = [pause_k(tr, n) for n in range(len(FREEZE))]
     # ②開示は、表向きに倒した所（間0）から裏返し終わる所（間1）まで、ずっと寄ったまま見せる（間ごとに寄ったり引いたりしない）
     a0, a1 = FREEZE[0], FREEZE[1] + PAUSE
-    pk = [seg(tr, a0, a0 + .22) - seg(tr, a1 + PAUSE - .05, a1 + PAUSE + .3), 0.0] + pk[2:]
+    pk = [seg(tr, a0, a0 + K_IN) - seg(tr, a1 + PAUSE - .05, a1 + PAUSE - .05 + K_OUT), 0.0] + pk[2:]
     w = w + Vector((.085, -.085, .03)) * max(pk)
     pose_body(ARMS[0], w)
     px = .03 + .14 * seg(t, 2.8, 3.5) - .02 * seg(t, 3.6, 3.9) - .08 * seg(t, 5.9, 6.5)
@@ -1358,7 +1362,7 @@ def s2_build():
         WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)
         RECV = (Vector((0, -.27, .77)), Vector((0, -.17, .62)), 30)       # 届いた点棒が読める所まで寄る（自分の前を上から）
         DV = (Vector((cxa, -.26, .77)), Vector((cxa, -.50, 1.42)), 30)      # 倒した手牌と、山のドラ表示牌（三萬）が両方大きく入る所（④申告で「ドラ1」と言う。2026-11-18 ユーザーの指定）
-        views = [(3.5, 4.4, tuple(DV[1]), tuple(DV[0]), 30.0), (4.8, 5.4, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
+        views = [(3.5, 4.4, tuple(DV[1]), tuple(DV[0]), 30.0), (4.95, 5.75, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
                  (6.6, 7.2, tuple(RECV[0] + RECV[1]), tuple(RECV[0]), 30.0)]
         # 支払い: 下家・上家（子）は1,000点棒を、自分のとなりまで手で送る。対面（親）は1,000点棒2本を、卓の上をすべらせて自分の前へ
         pay_stick(mv, arms, show, 1, "pay1", 5.3, (.12, -.258), hz)      # 3本を自分の前に並べる（寄った画角に入るように）
@@ -1400,7 +1404,7 @@ def s2_build():
             arms_l[0] = [(0, L0), (t_open - .5, L0), (t_open - .1, A(xl, HY - .01, .02)), (t_open + .8, A(xl, LY)), (t_open + 1.4, L0), (DUR, L0)]
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
         TABLE = (Vector((0, .065, .77)), Vector((0, -.40, 1.62)), 31.5)
-        focus = [TABLE] * len(FREEZE); views = [(.8, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
+        focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
@@ -1545,7 +1549,7 @@ def anim_pose(t, cam):
     px = .03 + .13 * (seg(t, 3.8, 5.0) - seg(t, 5.2, 5.9)) - .14 * (seg(t, 2.1, 2.9) - seg(t, 3.1, 3.8))      # 手の動きに合わせて、見る点を少し左右に振る
     c1 = (Vector((-.40 + px * .5, -.62, 1.27)), Vector((.02 + px, -.24, .77)), 33.0)   # 手前の選手の左肩の上から（右腕が画面を横切らない・手牌の表が見える）
     c2 = (Vector((MR + .03, -.62, 1.22)), Vector((MR - .07, MY + .015, .77)), 42.0)      # 最後は右の角の晒した牌に寄る
-    ka = seg(t, .4, 1.4); kb = seg(t, 6.8, 7.8)
+    ka = seg(t, .05, 1.45); kb = seg(t, 6.8, 7.8)
     loc = c0[0].lerp(c1[0], ka).lerp(c2[0], kb); tgt = c0[1].lerp(c1[1], ka).lerp(c2[1], kb)
     loc = loc + Vector((-.42, -.05, .62)) * math.sin(math.pi * ka)      # 肩ごしから卓の上へは、手前の選手の頭の上を回りこむ（まっすぐ行くと体の中を通って画面が黒くなる）
     cam.data.lens = (c0[2] + (c1[2] - c0[2]) * ka) * (1 - kb) + c2[2] * kb
@@ -1574,16 +1578,29 @@ def intro_pose(u, cam):
 # ---------------- 締め（アウトロ）: 入りの逆。本題の最後の形のまま、肩ごしから回りながら引いて会場全体に戻る ----------------
 # 3Dの卓の解説動画は、どれもこの締めで終わる（2026-11-12 ユーザーの判断・案A）。ロゴと「麻雀のスコア記録は まじゃすこ で」は make_clip.py がのせる
 OUTRO_DUR = 3.0
+if ANIM:      # コマ数の違う絵が同じフォルダに混ざらないように、コマ数を書いておく（make_clip.py も読む）
+    _fp = os.path.join(OUT, "fps.txt"); _old = open(_fp).read().strip() if os.path.exists(_fp) else ""
+    _pngs = [x for x in os.listdir(OUT) if x[:1] in "fipo" and x[1:5].isdigit() and x.endswith(".png")]
+    if _pngs and _old != str(FPS): print(f"ERROR: {OUT} に、1秒{_old or 12}コマで書き出した絵がある。別のフォルダにするか、--fps をそろえる", flush=True); sys.exit(1)
+    open(_fp, "w").write(str(FPS))
+_LAST = [None, ""]
+def shoot(fp, label, f, cam):
+    """1コマ書き出す。前のコマとまったく同じ絵（止めている間など）なら、書き出さずに写す"""
+    sig = [round(cam.data.lens, 4)]
+    for o in bpy.data.objects: sig += [round(v, 5) for v in (*o.location, *o.rotation_euler, *o.scale)] + [o.hide_render]
+    if not os.path.exists(fp):
+        t0 = time.time()
+        if sig == _LAST[0] and os.path.exists(_LAST[1]): shutil.copyfile(_LAST[1], fp); print(label, f, "同じ絵", flush=True)
+        else: r.filepath = fp; bpy.ops.render.render(write_still=True); print(label, f, round(time.time() - t0, 1), "s", flush=True)
+    _LAST[:] = [sig, fp]
 if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書き出す
     cam = anim_setup(); anim_pose(ANIM_DUR, cam)
     n = int(OUTRO_DUR * FPS)
     only = arg("--frames", "")
     for f in ([int(x) for x in only.split(",")] if only else range(n)):
         fp = os.path.join(OUT, f"o{f:04d}.png")
-        if os.path.exists(fp): continue
         intro_pose(1 - f / (n - 1), cam)
-        r.filepath = fp
-        t0 = time.time(); bpy.ops.render.render(write_still=True); print("OUTRO", f, round(time.time() - t0, 1), "s", flush=True)
+        shoot(fp, "OUTRO", f, cam)
     sys.exit(0)
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
@@ -1635,11 +1652,9 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
     only = arg("--frames", "")
     for f in ([int(x) for x in only.split(",")] if only else range(n)):
         fp = os.path.join(OUT, f"p{f:04d}.png")
-        if os.path.exists(fp): continue
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
         hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
-        r.filepath = fp
-        t0 = time.time(); bpy.ops.render.render(write_still=True); print("PRE", f, round(time.time() - t0, 1), "s", flush=True)
+        shoot(fp, "PRE", f, cam)
     sys.exit(0)
 
 if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 に書き出す（選手や卓は本題の最初の形のまま）
@@ -1649,10 +1664,8 @@ if ANIM and "--intro" in sys.argv:      # 入りのコマだけを i0000.png〜 
     only = arg("--frames", "")
     for f in ([int(x) for x in only.split(",")] if only else range(n)):
         fp = os.path.join(OUT, f"i{f:04d}.png")
-        if os.path.exists(fp): continue
         intro_pose(f / n, cam)
-        r.filepath = fp
-        t0 = time.time(); bpy.ops.render.render(write_still=True); print("INTRO", f, round(time.time() - t0, 1), "s", flush=True)
+        shoot(fp, "INTRO", f, cam)
     sys.exit(0)
 
 if ANIM:
@@ -1682,10 +1695,8 @@ if ANIM:
         if "--fumarks" in sys.argv: print("MARKS", n); sys.exit(0)
     for f in todo:
         fp = os.path.join(OUT, f"f{f:04d}.png")
-        if os.path.exists(fp): continue
         anim_pose(f / FPS, cam)
-        r.filepath = fp
-        t0 = time.time(); bpy.ops.render.render(write_still=True); print("FRAME", f, round(time.time() - t0, 1), "s", flush=True)
+        shoot(fp, "FRAME", f, cam)
     sys.exit(0)
 
 for name in CAMS:
