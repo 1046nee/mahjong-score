@@ -1298,7 +1298,7 @@ def s2_build():
     A = lambda x, y, dz=0.0: (x + .004, y - .026 * TS, hz + dz)            # 手は牌の手前がわに置く（牌の絵が隠れないように）
     n0 = len(RIVERS[0])
     slot = lambda k: (RX0 + (k % 6) * RP, RY + RIVER_DY - (k // 6) * RIVER_PITCH, Z)
-    mv, arms, focus, views, show = {}, {}, [], None, {}; arms_l = {}
+    mv, arms, focus, views, show = {}, {}, [], None, {}; arms_l = {}; table = []      # table＝卓を見せるため、手前の人を消す時間（near_alpha）
     px = lambda t: .03
     hand = [f"hk{k}" for k in range(len(HANDS[0]))]
     xc = (P("hk0").x + P(hand[-1]).x) / 2
@@ -1402,9 +1402,10 @@ def s2_build():
         TABLE = (Vector((0, .065, .77)), Vector((0, -.40, 1.62)), 31.5)
         focus = [TABLE] * len(FREEZE); views = [(.8, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
+        table = [(.5, 1.0, 98, 99)]                             # カメラが卓の上へ上がりきる前に消し、最後まで消したまま
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
-            c = other_cut("called", 3, 3.4)                                              # ③ 上家の四索
+            c = other_cut("called", 3, 3.2)                                              # ③ 上家の四索
             mv["next"] = [(4.8, 5.6, (xt, LY, Z), L_, .08)]                              # ④ 四索をツモって、手牌の横に表向きで置く
             arms[0] = [(0, R), (4.4, R), (4.8, A(nx.x, nx.y, .02)), (5.6, A(xt, LY)), (DUR, R)]; agari(6.0)
         elif SCENE == "furiten2":
@@ -1469,7 +1470,37 @@ def s2_build():
         focus = [OVER(xc), WIDE, WIDE]
         views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0), (2.9, 3.6, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=(Vector((0, -.52, 1.36)), Vector((0, -.1, .77)), 30.0))
-    S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre)
+    S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre, table=table)
+
+# ---- 卓を見せるあいだ、手前の人（席0）を消す（2026-11-24 ユーザーの指定「卓を映したいときは手前の人を透過させたり、その瞬間はいないことにする」）----
+# 頭・胴・袖・椅子は消す。動いている腕（ひじから先）だけ ARM_A の濃さで透かし、休んでいる腕と、止めて見せる間の腕は消す
+ARM_A = .45
+def near_parts():
+    """席0の部品を (体, 右腕, 左腕) に分け、使う材質を「物の色」で透ける形にする（席1〜3の物の色は白＝そのまま）"""
+    if "near" in S2C: return S2C["near"]
+    def tree(o):
+        return [o] + [x for c in o.children for x in tree(c)]
+    arm = {sd: [o for q in ("ua", "fa", "eb", "hand") for o in tree(ARMS[0][sd][q])] for sd in ("R", "L")}
+    na = {o.name for v in arm.values() for o in v}
+    body = [o for o in tree(bpy.data.objects["player0"]) if o.name not in na]
+    for m in {sl.material.name: sl.material for o in body + arm["R"] + arm["L"] for sl in o.material_slots if sl.material}.values():
+        nt = m.node_tree; out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+        if not out.inputs["Surface"].links: continue
+        src = out.inputs["Surface"].links[0].from_socket
+        mix = nt.nodes.new("ShaderNodeMixShader"); tr = nt.nodes.new("ShaderNodeBsdfTransparent"); oi = nt.nodes.new("ShaderNodeObjectInfo")
+        nt.links.new(oi.outputs["Color"], mix.inputs[0]); nt.links.new(tr.outputs[0], mix.inputs[1]); nt.links.new(src, mix.inputs[2]); nt.links.new(mix.outputs[0], out.inputs["Surface"])
+    sc.cycles.transparent_max_bounces = 64      # 重なった部品を光が通りぬける回数（足りないと、透けた所が黒くなる）
+    S2C["near"] = (body, arm["R"], arm["L"]); return S2C["near"]
+def near_alpha(t, hold, wr, wl):
+    """(体, 右腕, 左腕) の濃さ。S2C["table"]＝卓を見せる時間 [(消え始め, 消え終わり, 戻り始め, 戻り終わり)]。hold＝止めて見せている度合い"""
+    k = max([seg(t, a, b) - seg(t, c, d) for a, b, c, d in S2C["table"]] or [0.0])
+    def arm(side, w):
+        mv = min(1.0, (Vector(w) - Vector(ARMS[0][side]["rest"])).length / .10)      # 休みの位置から動いているほど見せる
+        return (1 - k) + k * ARM_A * mv * (1 - hold)
+    return 1 - k, arm("R", wr), arm("L", wl)
+def fade_near(t, hold, wr, wl):
+    for os_, a in zip(near_parts(), near_alpha(t, hold, wr, wl)):
+        for o in os_: o.hide_render = a < .02; o.color = (a, a, a, 1)
 
 def anim_pose_s2(t, cam):
     if not S2C: s2_build()
@@ -1487,8 +1518,9 @@ def anim_pose_s2(t, cam):
     pk = [pause_k(tr, n) for n in range(len(FREEZE))]
     for i, keys in S2C["arms"].items():
         w = hand_path(t, keys)
-        if i == 0: w = w + Vector((.085, -.085, .03)) * max(pk)      # 間のあいだは、手を右手前へ引いて牌を見せる
         wl = hand_path(t, S2C["arms_l"][i]) if i in S2C["arms_l"] else None
+        if i == 0 and S2C["table"]: fade_near(t, max(pk), w, wl if wl is not None else ARMS[0]["L"]["rest"])
+        if i == 0: w = w + Vector((.085, -.085, .03)) * max(pk)      # 間のあいだは、手を右手前へ引いて牌を見せる
         if wl is not None and i == 0: wl = wl + Vector((-.085, -.085, .03)) * max(pk)
         pose_body(ARMS[i], w, wl)
     cam_pose(t, tr, cam, S2C["px"](t), S2C["focus"], pk, S2C["views"])
@@ -1637,7 +1669,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
         fp = os.path.join(OUT, f"p{f:04d}.png")
         if os.path.exists(fp): continue
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
-        hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
+        pre_pose(f / FPS, cam); hide_tree(bpy.data.objects["player0"])      # 消すのは pre_pose のあと（中の anim_pose が、手前の人の濃さを元に戻すため）
         r.filepath = fp
         t0 = time.time(); bpy.ops.render.render(write_still=True); print("PRE", f, round(time.time() - t0, 1), "s", flush=True)
     sys.exit(0)

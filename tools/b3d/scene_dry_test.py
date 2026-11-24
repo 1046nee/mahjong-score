@@ -45,6 +45,8 @@ def load(scene):
 import collections
 for sc in ["furiten","furiten2","furiten3","riichi","dahai","kakan"]:
     ALLT.clear(); g=load(sc); g["pose_body"]=lambda A,w,wl=None: g.setdefault("W",[]).append((A is g["ARMS"][0],w,wl)); cam=MagicMock()
+    g["near_parts"]=lambda: ([],[],[]); na=g["near_alpha"]; NA={}
+    g["near_alpha"]=lambda t,h,wr,wl: NA.setdefault("log",[]).append(na(t,h,wr,wl)) or NA["log"][-1]
     g["anim_setup"]()
     N=g["NAMED"]; d=g["ANIM_DUR"]; nf=int(d*12)
     prev={}; mj=0; worst=None
@@ -57,6 +59,9 @@ for sc in ["furiten","furiten2","furiten3","riichi","dahai","kakan"]:
             prev[k]=(Vector(o.location),o.hide_render)
     print(sc,"frames",nf,"max jump/frame %.3f"%mj,worst)
     if sc.startswith("furiten"):
+        import make_clip as MC
+        lg=NA["log"]; print("  手前の人の濃さ（体・右腕・左腕）止めるコマ:",[tuple(round(v,2) for v in lg[st[4]]) for st in MC.SCRIPTS[sc]["steps"]],"動くコマの腕の最大: %.2f"%max(max(v[1:]) for v in lg[15:]))
+        assert all(max(lg[st[4]])<.02 for st in MC.SCRIPTS[sc]["steps"]),"止めるコマに手前の人が残っている"
         cnt=collections.Counter(o.code for k,o in N.items() if not k.startswith("h1") and o.code!="back")
         vis=sum(g["RIVERS"],[])+g["HANDS"][0]+g["MELD0"]+[g["DORA"]]+[c for c in (g["NEXT_CODE"],g["NEXT2_CODE"]) if c!="back"]
         print("  4枚超:",{k:v for k,v in collections.Counter(vis).items() if v>4})

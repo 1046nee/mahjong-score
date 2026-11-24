@@ -117,7 +117,7 @@ TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒�
     "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
     "ron": [(1.5, "tap"), (2.3, "taosu"), (5.8, "tap"), (7.5, "tap")],
     "dahai": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.2, "clack"), (4.9, "tap"), (5.6, "clackt"), (6.2, "tap"), (7.0, "clackt"), (7.3, "tap"), (8.1, "clack")],
-    "furiten": [(3.4, "tap"), (4.0, "clack"), (4.8, "tap"), (5.6, "clackt"), (5.9, "tap"), (6.8, "taosu")],
+    "furiten": [(3.2, "tap"), (3.8, "clack"), (4.8, "tap"), (5.6, "clackt"), (5.9, "tap"), (6.8, "taosu")],
     "furiten2": [(2.0, "tap"), (2.6, "clack"), (3.4, "tap"), (4.0, "clack"), (4.7, "tap"), (5.3, "clack"), (6.0, "tap"), (6.8, "clackt"), (7.1, "tap"), (7.9, "clack"), (8.8, "tap"), (9.4, "clack")],
     "furiten3": [(2.0, "tap"), (2.6, "clack"), (3.7, "clack"), (4.4, "clack"), (5.2, "tap"), (6.0, "clackt"), (6.3, "tap"), (7.1, "clack"), (8.3, "clack"), (9.0, "clack"), (9.8, "clack"), (11.0, "tap"), (11.8, "clackt"), (12.1, "tap"), (13.0, "taosu")],
     "ryukyoku": [(1.5, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (5.8, "taosu"), (7.3, "tap")],
