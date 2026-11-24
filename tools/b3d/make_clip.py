@@ -622,8 +622,9 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
     for n, (f, i, t, held) in enumerate(seq):
         sec = n / fps
         if n == 0 or i != seq[n - 1][1]:          # 場面が変わった瞬間
-            # 画面の出来事で鳴らすのは、発声の吹き出しだけ（2026-11-14 ユーザーの指定。手順の番号・箇条書き・まとめ・タイトル・締めでは鳴らさない）
+            # 画面の出来事で鳴らすのは、発声の吹き出しと、手順の切りかえ（2026-11-24 ユーザーの指定で足した。琴の「ポロン」）。箇条書き・まとめでは鳴らさない
             if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
+            if i >= 0: ev.append((sec, "kstep"))
             if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
                 for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + t_, snd))
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
@@ -642,6 +643,9 @@ def scaled(sc, fps):
     return dict(sc, steps=st, tail=(beg(sc["tail"][0]), end(sc["tail"][1]), sc["tail"][2]))
 
 
+BUB_GAP = .7      # 吹き出しが出てから次のセリフまでの間（秒）。86BPMの1拍（2026-11-24 ユーザーの指定「一拍あける」）
+
+
 def main():
     a = sys.argv[1:]
     fpt = os.path.join(a[0], "fps.txt"); fps = int(a[a.index("--fps") + 1]) if "--fps" in a else int(open(fpt).read()) if os.path.exists(fpt) else 12
@@ -657,16 +661,28 @@ def main():
             wp = os.path.join(vtmp, seg + ".wav"); narration.synth(tx, wp)
             with wave.open(wp) as wf: VO[seg] = (wp, wf.getnframes() / wf.getframerate(), tx, wf.getframerate())
             key = next((k_ for k_ in ("声に出します。", "申告します。") if k_ in tx), None)
+            gap_at = None
             if seg.startswith("step") and key:     # 吹き出しは「〇〇と声に出します。」「〇〇と申告します。」を言い終わってから（2026-11-14 ユーザーの指定・全部の動画の決まり）
                 wb = os.path.join(vtmp, seg + "_b.wav"); narration.synth(tx[:tx.index(key) + len(key)], wb)
                 with wave.open(wb) as wf: BUB_AT[seg] = .25 + wf.getnframes() / wf.getframerate() + .05
+                rest = tx[tx.index(key) + len(key):].strip()
+                if rest:      # 吹き出しが出たら一拍おいてから次のセリフ（2026-11-24 ユーザーの指定）。前半の声＋無音 BUB_GAP 秒＋残りの声 に作り直す
+                    wr = os.path.join(vtmp, seg + "_r.wav"); narration.synth(rest, wr)
+                    with wave.open(wb) as a_, wave.open(wr) as b_:
+                        sr_ = a_.getframerate(); pa, pb = a_.readframes(a_.getnframes()), b_.readframes(b_.getnframes())
+                    gap_at = len(pa) / 2 / sr_
+                    with wave.open(wp, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr_); wf.writeframes(pa + b"\0\0" * int(BUB_GAP * sr_) + pb)
+                    VO[seg] = (wp, (len(pa) + len(pb)) / 2 / sr_ + BUB_GAP, tx, sr_)
             if seg.startswith("step") or seg == "tail":     # 字幕は1文ずつ出す（2026-11-16 ユーザーの指定）。文ごとに声の長さを測って、出す時刻を決める
                 units = []
                 for j, sen in enumerate(sub_units(tx)):
                     wu = os.path.join(vtmp, f"{seg}_u{j}.wav"); narration.synth(sen, wu)
                     with wave.open(wu) as wf: units.append((sen, wf.getnframes() / wf.getframerate()))
-                sc_ = VO[seg][1] / max(1e-6, sum(u[1] for u in units)); t_ = 0.0; SUBS[seg] = []
-                for sen, du in units: SUBS[seg].append((t_, t_ + du * sc_, sen)); t_ += du * sc_
+                spoken = VO[seg][1] - (BUB_GAP if gap_at is not None else 0)
+                sc_ = spoken / max(1e-6, sum(u[1] for u in units)); t_ = 0.0; SUBS[seg] = []
+                for sen, du in units:
+                    if gap_at is not None and t_ >= gap_at - .15: t_ += BUB_GAP; gap_at = None      # 一拍の間のぶん、後ろの字幕をずらす
+                    SUBS[seg].append((t_, t_ + du * sc_, sen)); t_ += du * sc_
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
     src, out = a[0], a[1]
@@ -749,6 +765,11 @@ def main():
             m = v + fx[:len(v)] * .8
             m = m / max(1.0, np.abs(m).max() / .98)
             buf = array.array("h", (m * 32767).astype(np.int16).tobytes())
+        if "--music" in a:     # 音楽（2026-11-24〜・music.py の和モダン）: 入りの琴・BGM・締めのジングル＋余韻
+            import numpy as np, music
+            v = np.frombuffer(buf.tobytes(), dtype=np.int16).astype(float) / 32768
+            m, sr = music.score(v, sr, bgm_from=2.2, outro_at=max(0, len(seq) / fps - len(music.PACKS["wa"]("outro")) / music.SR - .1))
+            buf = array.array("h", (np.clip(m, -1, 1) * 32767).astype(np.int16).tobytes())
         mix = os.path.join(tmp, "voice.wav")
         with wave.open(mix, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr); wf.writeframes(buf.tobytes())
         subprocess.run([ff, "-loglevel", "error", "-y", "-framerate", str(fps), "-i", os.path.join(tmp, "f%04d.png"), "-i", mix,

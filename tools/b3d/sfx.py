@@ -98,7 +98,13 @@ def bell(freqs, dur=1.2, vol=.22, gap=.0):
 
 SOUNDS = {"clack": lambda: clack(), "clackt": lambda: clack(ring=.35), "slap": slap, "jara": jara, "clack2": lambda: _two(), "tap": tap, "slide": slide, "pop": pop, "tick": tick,
           "line": lambda: pop(.22), "whoosh": whoosh, "chime": lambda: bell([1047, 1319, 1568], 1.4, .26, .07),
-          "jingle": lambda: bell([784, 988, 1175, 1568], 1.6, .3, .09)}
+          "jingle": lambda: bell([784, 988, 1175, 1568], 1.6, .3, .09), "kstep": lambda: _music("step")}
+
+
+def _music(kind):
+    """music.py（44100Hz）の音を、効果音の SR にそろえる"""
+    import music
+    x = music.PACKS["wa"](kind); return np.interp(np.arange(int(len(x) * SR / music.SR)) * music.SR / SR, np.arange(len(x)), x)
 
 
 def _two():

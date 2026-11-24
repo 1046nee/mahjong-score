@@ -203,7 +203,8 @@ def pack_wa(kind):
             if bar % 2 == 1:      # 2小節に1回、琴でモチーフの頭3音（耳に残す）
                 for i, n in enumerate(["D4", "G4", "A4"]): put(b, koto(hz(n) * 2, 1.0, .2), t0 + 2 * beat + i * beat / 2)
         return b
-    if kind == "step": b = np.zeros(int(.6 * SR)); put(b, koto(hz("A4"), .6, .35), 0); put(b, hyoshigi(.25), 0); return b
+    if kind == "step":      # 手順の切りかえ音（2026-11-24 ユーザーの指定）。琴を「ポロン」と2音、短く。拍子木は使わない
+        b = np.zeros(int(.9 * SR)); put(b, koto(hz("D5"), .7, .28), 0); put(b, koto(hz("G5"), .8, .34), .07); return b
     if kind == "card": return whoosh(.3, .18)
 
 
@@ -264,6 +265,21 @@ def pack_pop(kind):
 
 PACKS = {"wa": pack_wa, "stage": pack_stage, "pop": pack_pop}
 NAMES = {"wa": "和モダン", "stage": "対局の緊張感", "pop": "ポップ"}
+
+
+def score(voice, sr, bgm_from, outro_at, key="wa"):
+    """声（＋効果音）の音 voice（sr）に、入り・BGM・締めを足して返す（make_clip.py --music。2026-11-24〜）。
+    入りは0秒、BGMは bgm_from 秒から（入りの琴が鳴り終わるころ）、締めは outro_at 秒に置き、動画の終わりまで。BGMは声の大きさに合わせて下げる"""
+    P = PACKS[key]; n = len(voice); v = np.interp(np.arange(int(n * SR / sr)) * sr / SR, np.arange(n), voice); N = len(v)
+    o = P("outro"); N = max(N, int((outro_at + len(o) / SR + .2) * SR)); v = np.pad(v, (0, N - len(v)))
+    bgm = P("bgm"); bgm = np.tile(bgm, N // len(bgm) + 1)[:N]
+    win = int(.25 * SR); lev = np.sqrt(np.convolve(v ** 2, np.ones(win) / win, "same")); lev /= lev.max() + 1e-9
+    duck = np.convolve(1 - .65 * np.clip(lev * 4, 0, 1), np.ones(win) / win, "same")
+    fade = np.zeros(N); a = int(bgm_from * SR); z = int(outro_at * SR); r = int(1.5 * SR)
+    fade[a:z] = 1; fade[a:a + r] = np.linspace(0, 1, r)[:max(0, min(r, z - a))]; fade[max(a, z - r):z] = np.linspace(1, 0, z - max(a, z - r))
+    mix = v * .95 + norm(bgm, .16) * duck * fade
+    put(mix, norm(P("intro"), .75), .05); put(mix, norm(o, .75), outro_at)
+    return norm(mix, .95), SR
 
 
 def save(path, x):
