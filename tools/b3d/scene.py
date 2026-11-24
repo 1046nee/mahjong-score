@@ -387,7 +387,7 @@ OPEN_HANDS = {}         # ほかの席の手牌の絵（流局で倒す人）
 # 自分の河とドラ表示牌（2026-11-18 ユーザーが Notion「3D動画の字幕と牌姿」で指定。ほかの3人の河は auto_rivers が、これと合わせて同じ牌4枚までに作る）
 OWN0 = {"daiminkan": ["m9", "z2", "z3", "p2"], "kakan": ["m9", "z2", "s1", "z6", "s1"], "riichi": ["z7", "z2", "z2", "z6", "p8", "p9"],
         "tsumo": ["z3", "z2", "z2", "p9", "p8", "z5", "s3", "z1", "s9"], "ron": ["z2", "z2", "m1", "m1", "p9", "s6", "s8", "m9", "z6"],
-        "dahai": ["m9", "z2", "z2", "z6", "p8", "s8"], "furiten": ["s9", "z2", "z2", "s7", "m4", "p7"]}
+        "dahai": ["m9", "z2", "z2", "z6", "p8", "s8"], "furiten": ["s9", "s1", "z2", "z2", "m4", "p7"]}
 DORA2 = {"daiminkan": "s1", "kakan": "m1", "riichi": "s4", "tsumo": "m3", "furiten": "m7"}
 if SCENE in DORA2 and "--dora" not in sys.argv: DORA = DORA2[SCENE]
 def auto_rivers(ns, used, ban=(), last=None):
@@ -445,11 +445,10 @@ if S2:
         NEXT_CODE = "s4"; NEXT2_CODE = "z3"
         if "--taken" not in sys.argv: TAKEN = .3
         RIVERS = auto_rivers([6, 6, 6, 5], HANDS[0] + [DORA, "s4", "z3"], ban=("z5", "z3"))
-    elif SCENE == "furiten":    # フリテン（2026-11-16）: 四索・七索の両面待ち。七索を前に自分で切っている → 下家の四索はロンできない → 四索をツモってツモアガリ
-        HANDS[0] = ["m2", "m3", "m4", "p5", "p6", "p7", "m6", "m7", "m8", "s5", "s6", "z6", "z6"]
+    elif SCENE == "furiten":    # フリテン（2026-11-16）: 一索・四索・七索待ち（四・七索はタンヤオつき。2026-11-24 ユーザーの指定）。一索を序盤に自分で切っている → 下家の四索はロンできない → 四索をツモってツモアガリ
+        HANDS[0] = ["m2", "m3", "m4", "m8", "m8", "p5", "p6", "p7", "s2", "s3", "s4", "s5", "s6"]
         NEXT_CODE = "s4"; CALL_SEAT = 1
-        RIVERS = auto_rivers([6, 6, 5, 5], HANDS[0] + [DORA, "s4", "s7"], ban=("s4", "s7"), last={1: "s4"})
-        RIVERS[0][3] = "s7"
+        RIVERS = auto_rivers([6, 6, 5, 5], HANDS[0] + [DORA, "s4"], ban=("s1", "s4", "s7"), last={1: "s4"})
     elif SCENE == "ryukyoku":   # 流局: 自家（六索・七索の両面）と対面がテンパイ、下家と上家がノーテン
         HANDS[0] = ["m3", "m4", "m5", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "s7", "z7", "z7"]
         OPEN_HANDS = {2: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
@@ -502,7 +501,7 @@ def build_tiles():
             if last and STEP >= 3: continue
             t = tile(c, (gx, gy, Z), r, "lie")
             if last: named["called"] = t
-            if SCENE == "furiten" and i == 0 and c == "s7": named["fu7"] = t      # フリテン: 自分で切った待ちの牌（持ち上げて見せる）
+            if SCENE == "furiten" and i == 0 and c == "s1": named["fu7"] = t      # フリテン: 自分で切った待ちの牌（持ち上げて見せる）
         # 手牌
         if i == 0:
             hand = list(HANDS[0])
@@ -1334,7 +1333,7 @@ def s2_build():
         views = []                                                                      # 最後に右の角へ寄らない（晒した牌が無い）
         pre = dict(lift=["hk12"], call=False, cam2=None)
     elif SCENE == "furiten":    # フリテン（2026-11-16）
-        f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った七索を少し浮かせる
+        f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
         c = P("called"); c0 = seat_w(1, (0, -.30, Z)); NAMED["called"]["p0"] = list(c0); show["called"] = 3.3      # ③ 下家が四索を切る（それまでは河に無い）
         mv["called"] = [(3.4, 4.0, tuple(c), NAMED["called"]["r0"], .03)]
         Ri = Vector(ARMS[1]["R"]["rest"])
@@ -1352,7 +1351,7 @@ def s2_build():
                  (Vector((c.x - .02, c.y, .77)), Vector((-.06, -.20, .55)), 40),           # ③ 下家の河
                  OVER(cxa, .03)]                                                            # ④ 倒した手牌とツモった牌
         views = [(5.8, 6.8, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0)]
-        pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
+        pre = dict(lift=[f"hk{k}" for k in range(8, 13)], call=False, cam2=None)      # 待ちの形＝二三四五六索
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）

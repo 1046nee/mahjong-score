@@ -50,7 +50,7 @@ def main():
           "字幕は1行＝画面に1枚ずつ出る文（声に合わせて切りかわる）。「／」は同じ1枚の中の改行。（ ）は字幕に付く読み。字の大きさは画面の幅1080pxでの大きさ（ふだん46・長い文は38まで小さくする）。",
           "字幕が出るのは手順とまとめだけ。入り・確認・締めは声とカード（字幕なし）。", ""]
     for name in N.NARR:
-        g = scene(name)
+        g = scene(name); MC.first_ruby(name)
         title = TITLE.get(name) or MC.SCRIPTS[name]["title"]
         md += [f"## {title}（{name}）", "", "| | |", "|---|---|", f"| 自分の手牌（左から） | {'・'.join(jp(c) for c in g['HANDS'][0])} |"]
         if g["MELD0"]: md.append(f"| 晒してある牌 | {'・'.join(jp(c) for c in g['MELD0'])} |")
