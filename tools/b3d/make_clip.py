@@ -463,6 +463,50 @@ def bubble(d, tx, k):
     if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
     d._image.alpha_composite(im, (int(c_[0] - (w / 2 + pad) * sc_), int(c_[1] - (h / 2 + pad) * sc_)))
 
+# ---- 囲みと札（2026-11-24 ユーザーの指定: 説明の動画は卓全体を映し、大事な所を囲む）----
+# 手順ごとに (囲む牌の名前＝marks.json, 色, 札の言葉, 札に大きく出す牌, 札の場所)。札の場所: UL・UR＝上の左右／LL・LR＝下の左右／LM・RM＝左右の中ほど。言葉が空なら囲みだけ
+MKC = {"teal": (23, 112, 131), "orange": (231, 86, 32), "blue": (66, 97, 170), "red": (201, 47, 66), "green": (22, 138, 80)}
+WAIT_ = ("hand5", "teal", "待ち", ["s1", "s4", "s7"], "LL")
+MARKS = {
+    "furiten": [[WAIT_], [WAIT_, ("fu7", "orange", "自分が切った", ["s1"], "LR")], [WAIT_, ("fu7", "orange", "自分が切った", ["s1"], "LR"), ("called", "red", "ロンできない", ["s4"], "UL")],
+                [("fu7", "orange", "", [], ""), ("next", "green", "ツモはできる", ["s4"], "LR")]],
+    "furiten2": [[WAIT_, ("meld", "orange", "チーした牌", ["m2", "m3", "m4"], "RM")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("o2", "red", "ロンできない", ["s4"], "UL")],
+                 [WAIT_, ("next", "orange", "自分が打牌", ["z2"], "LM")], [WAIT_, ("o4", "green", "ロンできる", ["s7"], "UR")]],
+    "furiten3": [[WAIT_, ("rk", "orange", "リーチ", ["m1"], "LR"), ("bou", "orange", "", [], "")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("next", "orange", "自分が打牌", ["p9"], "LR")],
+                 [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("o6", "red", "ロンできない", ["s4"], "UL")], [("o1", "blue", "", [], ""), ("next2", "green", "ツモはできる", ["s7"], "LR")]],
+}
+_tim = {}
+def _tile_img(code, h):
+    k = (code, h)
+    if k not in _tim:
+        im = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tiles", code + ".png")).convert("RGBA"); _tim[k] = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+    return _tim[k]
+def draw_marks(d, marks, here):
+    """囲み（白いふち＋色の線）と、牌の絵つきの札・つなぐ線。here＝このコマの牌の場所（まだ切られていない牌は無い）"""
+    todo = [m for m in marks if m[0] in here]; box = {}
+    for nm, col, tx, codes, pos in todo:
+        if not tx: continue
+        TH = 104; ims = [_tile_img(c, TH) for c in codes]; f = font(40)
+        w = max(d.textlength(tx, font=f), sum(i.width + 6 for i in ims)) + 44; h = 74 + TH + 18
+        x, y = {"UL": (24, 690), "UR": (W - 24 - w, 690), "LL": (24, 1296), "LR": (W - 24 - w, 1296), "RM": (W - 24 - w, 1060), "LM": (24, 1050)}[pos]
+        box[nm] = (x, y, w, h, ims, f)
+    for nm, col, tx, codes, pos in todo:      # 線 → 囲み → 札の順に重ねる
+        c = MKC[col]; x0, y0, x1, y1 = here[nm]; P_ = 9
+        if nm in box:
+            x, y, w, h, ims, f = box[nm]; ax = min(max((x0 + x1) / 2, x + 30), x + w - 30); ay = y + h if y + h < y0 else (y if y > y1 else y + h / 2)
+            if ay == y + h / 2: ax = x + w if x + w < x0 else x
+            tx_, ty_ = min(max(ax, x0 - P_), x1 + P_), min(max(ay, y0 - P_), y1 + P_)
+            d.line((ax, ay, tx_, ty_), fill=(255, 255, 255, 255), width=14); d.line((ax, ay, tx_, ty_), fill=c + (255,), width=8)
+        d.rounded_rectangle((x0 - P_ - 4, y0 - P_ - 4, x1 + P_ + 4, y1 + P_ + 4), radius=16, outline=(255, 255, 255, 255), width=14)
+        d.rounded_rectangle((x0 - P_, y0 - P_, x1 + P_, y1 + P_), radius=13, outline=c + (255,), width=7)
+    for nm, (x, y, w, h, ims, f) in box.items():
+        col, tx = next((m[1], m[2]) for m in todo if m[0] == nm); c = MKC[col]
+        d.rounded_rectangle((x, y, x + w, y + h), radius=24, fill=(255, 255, 255, 250), outline=c + (255,), width=7)
+        d.rounded_rectangle((x, y, x + w, y + 66), radius=24, fill=c + (255,)); d.rectangle((x, y + 36, x + w, y + 66), fill=c + (255,))
+        text_c(d, x + w / 2, y + 32, tx, f, WHITE)
+        xx = x + w / 2 - (sum(i.width + 6 for i in ims) - 6) / 2
+        for i in ims: d._image.alpha_composite(i, (int(xx), int(y + 78))); xx += i.width + 6
+
 def summary(d, sc, k):
     a = int(240 * min(1, k * 3))
     n = len(sc["steps"]); y0 = 520
@@ -592,6 +636,7 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
 def main():
     a = sys.argv[1:]
     fps = int(a[a.index("--fps") + 1]) if "--fps" in a else 12
+    mkp = os.path.join(a[0], "marks.json"); MK = json.load(open(mkp)) if os.path.exists(mkp) else []      # 囲む牌の場所（scene.py が作る）
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = SCRIPTS[name]
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
@@ -663,6 +708,9 @@ def main():
             title_card(d, sc, t, len(intro) / fps)
         elif i >= 0:
             s = sc["steps"][i]
+            if name in MARKS:
+                assert MK, "marks.json が無い（scene.py を動かすと、コマと同じフォルダにできる）"
+                draw_marks(d, MARKS[name][i], MK[min(f, len(MK) - 1)])
             rail(d, sc["steps"], i); headline(d, i, s, t)
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)

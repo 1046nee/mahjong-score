@@ -511,7 +511,7 @@ def build_tiles():
             gx = RX0 + (k % 6) * RP; gy = RY + RIVER_DY - (k // 6) * RIVER_PITCH
             last = (i == CALL_SEAT and k == len(rv) - 1)
             if last and STEP >= 3: continue
-            if i == 0 and RIICHI_K >= 0 and k == RIICHI_K: t = tile(c, (gx + (TL - TW) / 2, gy - TL / 2 + TW / 2, Z), r, "lie", rz=math.pi / 2)      # リーチの宣言牌（横向き）
+            if i == 0 and RIICHI_K >= 0 and k == RIICHI_K: t = tile(c, (gx + (TL - TW) / 2, gy - TL / 2 + TW / 2, Z), r, "lie", rz=math.pi / 2); named["rk"] = t      # リーチの宣言牌（横向き）
             else: t = tile(c, (gx, gy, Z), r, "lie")
             if last: named["called"] = t
             if (i, k) in FU_OTHER: named[FU_OTHER[(i, k)]] = t
@@ -1152,6 +1152,40 @@ def cam_pose(t, tr, cam, px, focus, pk, views=None):
         loc = loc.lerp(fp + off, pk[n]); tgt = tgt.lerp(fp, pk[n])
         cam.data.lens += (fz - cam.data.lens) * pk[n]
     cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
+    CAMST[:] = [loc, tgt, cam.data.lens]
+CAMST = []
+def project(p, W_=1080, H_=1920):
+    """卓の座標 → 画面（1080×1920）の場所。カメラの式そのもの（Blender が無くても計算できる）"""
+    loc, tgt, lens = CAMST; f = (tgt - loc).normalized()
+    rx, ry = f.y, -f.x; n_ = math.hypot(rx, ry); R_ = Vector((rx / n_, ry / n_, 0))
+    U = Vector((R_.y * f.z - R_.z * f.y, R_.z * f.x - R_.x * f.z, R_.x * f.y - R_.y * f.x))
+    d = Vector(p) - loc; dot = lambda a, b: a.x * b.x + a.y * b.y + a.z * b.z
+    z = dot(d, f); k = lens / 36 * H_ / z
+    return (W_ / 2 + dot(d, R_) * k, H_ / 2 - dot(d, U) * k)
+def tile_corners(o):
+    """牌の8つの角（卓の座標）"""
+    rx, ry, rz = o.rotation_euler; out = []
+    for x in (-TW / 2, TW / 2):
+        for y in (-TL / 2, TL / 2):
+            for z in (0, TT):
+                a, b, c = x, y, z
+                b, c = b * math.cos(rx) - c * math.sin(rx), b * math.sin(rx) + c * math.cos(rx)
+                a, c = a * math.cos(ry) + c * math.sin(ry), -a * math.sin(ry) + c * math.cos(ry)
+                a, b = a * math.cos(rz) - b * math.sin(rz), a * math.sin(rz) + b * math.cos(rz)
+                out.append(Vector(o.location) + Vector((a, b, c)))
+    return out
+MARK_GROUPS = {"hand5": lambda: [f"hk{k}" for k in range(len(HANDS[0]) - 5, len(HANDS[0]))], "meld": lambda: ["meld0", "meld1", "meld2"]}
+def marks_at(t):
+    """いまのコマで、囲む牌が画面のどこにあるか {名前: [左, 上, 右, 下]}。動いている途中の牌は出さない（anim_pose のあとに呼ぶ）"""
+    w = warp(t); out = {}
+    for nm in ["hand5", "meld", "fu7", "called", "o1", "o2", "o3", "o4", "o5", "o6", "next", "next2", "rk", "bou"]:
+        ns = MARK_GROUPS[nm]() if nm in MARK_GROUPS else [nm]
+        if any(n not in NAMED or NAMED[n].hide_render for n in ns): continue
+        if nm not in ("fu7",) and nm not in MARK_GROUPS and nm in S2C["mv"] and w < S2C["mv"][nm][-1][1] - .02: continue
+        if nm in ("next", "next2") and nm not in S2C["mv"]: continue
+        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n]) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
+        out[nm] = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
+    return out
 
 ANIM_END = 7.8 if SCENE in ("chi", "pon") else 8.2      # もとの時刻で、最後に右の隅へ寄り終える時
 if SCENE == "daiminkan": ANIM_END = 10.2
@@ -1359,34 +1393,26 @@ def s2_build():
             Ri = Vector(ARMS[seat]["R"]["rest"]); ks = arms.get(seat, [(0, Ri), (DUR, Ri)])[:-1]
             arms[seat] = ks + [(t0 - .4, Ri), (t0, (0, -.30, hz)), (t0 + d, (lx, ly - .02, hz)), (t0 + d + .4, Ri), (DUR, Ri)]
             return c
-        def look(c, seat):      # その席の河を見る画角
-            off = {1: (-.06, -.20, .55), 2: (0, -.22, .52), 3: (.06, -.20, .55)}[seat]
-            return (Vector((c.x + {1: -.02, 2: 0, 3: .02}[seat], c.y, .77)), Vector(off), 40)
         def agari(t_open):      # 両手で手牌の両端を持って倒す（t_open から .8秒）
             for k in range(13): mv[f"hk{k}"] = [(t_open, t_open + .8, (P(f"hk{k}").x, LY, Z), LIE, .015)]
             xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
             arms[0] = arms[0][:-1] + [(t_open - .1, A(xr, HY - .01, .02)), (t_open + .8, A(xr, LY)), (t_open + 1.4, R), (DUR, R)]
             arms_l[0] = [(0, L0), (t_open - .5, L0), (t_open - .1, A(xl, HY - .01, .02)), (t_open + .8, A(xl, LY)), (t_open + 1.4, L0), (DUR, L0)]
-        HANDF = (Vector((xc - .01, HY, .79)), Vector((0, -.30, .20)), 21)      # 手牌（立てた牌の表が読めるように、手前の低い所から）
-        OWNR = (Vector((RX0 + 2.5 * RP, RY - .3 * RIVER_PITCH, .77)), Vector((-.01, -.17, .50)), 42)      # 自分の河
-        cxa = (P("hk0").x + xt) / 2
+        # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
+        TABLE = (Vector((0, .065, .77)), Vector((0, -.40, 1.62)), 31.5)
+        focus = [TABLE] * len(FREEZE); views = [(.8, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
             c = other_cut("called", 3, 3.4)                                              # ③ 上家の四索
             mv["next"] = [(4.8, 5.6, (xt, LY, Z), L_, .08)]                              # ④ 四索をツモって、手牌の横に表向きで置く
             arms[0] = [(0, R), (4.4, R), (4.8, A(nx.x, nx.y, .02)), (5.6, A(xt, LY)), (DUR, R)]; agari(6.0)
-            focus = [HANDF, (Vector((f7.x, f7.y, .77)), Vector((-.01, -.17, .50)), 40), look(c, 3), OVER(cxa, .03)]
-            views = [(5.8, 6.8, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0)]
         elif SCENE == "furiten2":
             c1, c2 = other_cut("o1", 1, 2.0), other_cut("o2", 2, 3.4)                    # ② 下家の一索（見逃し）③ 対面の四索
             other_cut("o3", 3, 4.7); ST = (xt, last_.y, last_.z)                         # ④ 上家が切る → 自分が南をツモ切り
             mv["next"] = [(6.0, 6.8, ST, S_, .06), (7.1, 7.9, slot(n0), L_, .06)]
             arms[0] = [(0, R), (5.4, R), (6.0, A(nx.x, nx.y, .02)), (6.8, A(xt, HY + .01, .02)), (7.1, A(xt, HY + .01, .02)), (7.9, A(slot(n0)[0], slot(n0)[1])), (8.5, R), (DUR, R)]
             c4 = other_cut("o4", 1, 8.8)                                                 # ⑤ 下家の七索（ロンできる）
-            mxa = (P("hk0").x + MR) / 2
-            focus = [(Vector((mxa, HY, .78)), Vector((0, -.36, .30)), 19), look(c1, 1), look(c2, 2), OWNR, look(c4, 1)]      # ① 手牌と、チーした二三四萬
-            views = []
             pre["cam2"] = (Vector((MR - .08, -.6, 1.05)), Vector((MR - .08, MY, .78)), 36.0)      # 確認で、チーした牌も見せる
         else:
             NAMED["bou"]["p0"] = [0, -.05, TOP + .012 + .0023]; NAMED["bou"]["r0"] = [0, 0, 0]; show["bou"] = -1      # はじめから出ているリーチ棒
@@ -1397,8 +1423,6 @@ def s2_build():
             nx2 = P("next2"); mv["next2"] = [(11.0, 11.8, (xt, LY, Z), L_, .08)]         # ⑤ 七索をツモる
             arms[0] = [(0, R), (4.6, R), (5.2, A(nx.x, nx.y, .02)), (6.0, A(xt, HY + .01, .02)), (6.3, A(xt, HY + .01, .02)), (7.1, A(s6[0], s6[1])), (7.6, R),
                        (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]; agari(12.2)
-            focus = [(Vector((0, -.14, .77)), Vector((-.01, -.22, .62)), 34), look(c1, 1), OWNR, look(c6, 3), OVER(cxa, .03)]      # ① 自分の河とリーチ棒
-            views = [(12.0, 13.0, tuple(OVER(cxa, .03)[0] + OVER(cxa, .03)[1]), tuple(OVER(cxa, .03)[0]), 36.0)]
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
@@ -1650,6 +1674,12 @@ if ANIM:
             v = world_to_camera_view(sc, cam, Vector((0, -.66, 1.42))); d["head0"] = [round(v.x, 4), round(1 - v.y, 4)]
             out[f] = d
         json.dump(out, open(os.path.join(OUT, "marks.json"), "w")); print("MARKS", n); sys.exit(0)
+    if FU:      # 囲む牌の場所（make_clip.py がのせる）。書き出しと一緒に毎回作る。--fumarks なら、これだけ作って終わる
+        import json
+        mk = []
+        for f in range(n): anim_pose(f / FPS, cam); mk.append(marks_at(f / FPS))
+        json.dump(mk, open(os.path.join(OUT, "marks.json"), "w"))
+        if "--fumarks" in sys.argv: print("MARKS", n); sys.exit(0)
     for f in todo:
         fp = os.path.join(OUT, f"f{f:04d}.png")
         if os.path.exists(fp): continue
