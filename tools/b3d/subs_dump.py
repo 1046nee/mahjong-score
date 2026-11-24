@@ -32,9 +32,9 @@ def jp(c):
 SRC = io.open(os.path.join(R, "scene.py"), encoding="utf-8").read()
 SEG = SRC[SRC.index("HANDS = ["):SRC.index("CALL_K = ")]
 CUT = {"chi": "三索", "pon": "八萬", "kan": "六索（嶺上牌のあと）", "daiminkan": "發（嶺上牌をそのまま）", "kakan": "北（嶺上牌をそのまま）", "riichi": "西（横向き）",
-       "tsumo": "なし（ツモアガリ）", "ron": "なし（ロンアガリ）", "dahai": "白 → 次の番で西をツモ切り", "furiten": "なし（ツモアガリ）", "ryukyoku": "なし（流局）"}
+       "tsumo": "なし（ツモアガリ）", "ron": "なし（ロンアガリ）", "dahai": "白 → 次の番で西をツモ切り", "furiten": "なし（ツモアガリ）", "furiten2": "南をツモ切り", "furiten3": "九筒をツモ切り → 七索でツモアガリ", "ryukyoku": "なし（流局）"}
 CALL = {"chi": "鳴く牌", "pon": "鳴く牌", "daiminkan": "鳴く牌", "ron": "ロンする牌", "furiten": "切られてもロンできない牌"}      # 他家の捨て牌を使う動画だけ
-TITLE = {"kan": "カンの方法（暗槓）", "daiminkan": "カンの方法（大明槓）", "kakan": "カンの方法（加槓）"}
+TITLE = {}
 SEAT = {0: "自家", 1: "下家", 2: "対面", 3: "上家"}
 SEGN = {"intro": "入り", "pre": "確認", "tail": "まとめ", "outro": "締め"}
 

@@ -46,7 +46,7 @@ SCRIPTS = {
         (3.9, "そろうのは {刻子|コーツ}", "同じ牌3枚"),
         (4.4, "だれの捨て牌でもポンできる"),
     ])),
-    "kan": dict(title="カンの方法", kicker="ルールとマナーに沿った正しい手順", sub="暗槓編", steps=[
+    "kan": dict(title="暗槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。6つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "4枚を表向きに倒して見せ、外側の2枚を裏返す", 7, 47, 1.6, [], ""),
         ("配置", "はいち", "4枚を卓の右端に寄せる", 48, 67, 1.4, [], ""),
@@ -61,7 +61,7 @@ SCRIPTS = {
         (3.7, "自分でそろえた4枚なら、暗槓できる"),
     ])),
     # ここから下は、scene.py の「台本で動かす場面」（S2T の間の時刻からコマを計算: 間 n の止めるコマ＝(時刻＋n×0.7＋0.58)×12）
-    "daiminkan": dict(title="カンの方法", kicker="ルールとマナーに沿った正しい手順", sub="大明槓編", steps=[
+    "daiminkan": dict(title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。7つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。人が切った牌で4枚目をそろえる", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "手牌の同じ牌3枚を倒して、みんなに見せる", 7, 32, 1.6, [], ""),
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 33, 61, 1.4, [], ""),
@@ -77,7 +77,7 @@ SCRIPTS = {
         (4.4, "暗槓と違い、{ 鳴き扱い }になる", "{門前|メンゼン}ではなくなる"),
         (4.9, "だれの捨て牌でも大明槓できる"),
     ])),
-    "kakan": dict(title="カンの方法", kicker="ルールとマナーに沿った正しい手順", sub="加槓編", steps=[
+    "kakan": dict(title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。5つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("加槓", "カカン", "ポンした牌の横向きの1枚に、横向きで重ねる", 7, 36, 1.8, [], ""),
         ("カンドラ", "", "ドラ表示牌のとなりをめくる。その次の牌がカンドラ", 37, 57, 1.6, [], ""),
@@ -138,17 +138,43 @@ SCRIPTS = {
         (2.9, "手牌はいつも13枚", "切ったあと"),
         (3.7, "ツモって切る、をくり返す"),
     ])),
-    "furiten": dict(title="フリテンのルール", kicker="知っておきたい麻雀のルール", sub="4つの場面で覚える", steps=[     # 2026-11-16 ユーザーの依頼（初心者向けの3D動画の6）
-        ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),     # ①は手牌に寄ったコマで止める
-        ("河", "かわ", "自分の河に、待ちの一索がある", 25, 46, 2.0, [], ""),
-        ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 47, 76, 2.2, [], "", "※見逃したときも、次に自分が打牌するまでロンできない"),
-        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 77, 118, 2.0, [], ""),
-    ], tail=(119, 127, 2.4),
-    pre=dict(head="フリテンになるとき", hold=2.0, concl=True, lines=[
+    "furiten": dict(title="捨て牌のフリテン", kicker="フリテンは3種類", sub="3種類の1つめ", steps=[
+        ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
+        ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
+        ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
+        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], ""),
+    ], tail=(117, 126, 2.4),
+    pre=dict(head="捨て牌のフリテン", hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
-        (3.7, "自分の河に待ちの牌がある＝フリテン"),
+        (3.7, "待ちが変わるまで、ロンできない"),
+    ])),
+    "furiten2": dict(title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つめ", steps=[
+        ("待ち", "まち", "チーしていて、役はタンヤオだけ。一索では役が無い", 24, 24, 2.2, [], ""),
+        ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
+        ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
+        ("打牌", "ダハイ", "自分が打牌すると、フリテンがなくなる", 76, 131, 2.2, [], "", "※番が飛ばされても、自分が打牌するまでは続く"),
+        ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 156, 2.2, [], ""),
+    ], tail=(157, 167, 2.4),
+    pre=dict(head="同巡内フリテン", hold=2.0, concl=True, lines=[
+        (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
+        (1.6, "アガリ牌が出たのに{ 見逃した }", "役が無いときも"),
+        (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
+        (3.7, "次に自分が打牌するまで、ロンできない"),
+    ])),
+    "furiten3": dict(title="リーチ後のフリテン", kicker="フリテンは3種類", sub="3種類の3つめ", steps=[
+        ("待ち", "まち", "リーチをしている。一索・四索・七索待ち", 24, 24, 2.2, [], ""),
+        ("見逃し", "みのがし", "タンヤオがつく四索・七索を待って、一索を見逃す", 25, 50, 2.2, [], ""),
+        ("打牌", "ダハイ", "自分が打牌しても、フリテンのまま", 51, 112, 2.2, [], ""),
+        ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
+        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], ""),
+    ], tail=(201, 210, 2.4),
+    pre=dict(head="リーチ後のフリテン", hold=2.0, concl=True, lines=[
+        (0.3, "{リーチ}をしている", "待ちを変えられない"),
+        (1.6, "アガリ牌が出たのに{ 見逃した }"),
+        (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
+        (3.7, "その局が終わるまで、ロンできない"),
     ])),
     "ryukyoku": dict(title="流局のしかた", kicker="ルールとマナーに沿った正しい手順", sub="4つの手順で覚える", steps=[
         ("流局", "りゅうきょく", "アガリが出ないまま、この局はおしまい", 0, 6, 2.2, [], ""),     # 前置きのカードと同じことを言わない（2026-11-14 ユーザーの指定）
@@ -211,8 +237,8 @@ def headline(d, i, s, k):
     d.text((r + 22, y + 74), s[1], font=font(38, 700), fill=GREEN)
     for n, ln in enumerate(s[2].split("\n")):
         ft = fit(d, ln, 40, W - 80 - 72, 800)
-        ruby_draw(d, 76, y + 168 + 62 * n + (14 if any(r for p, r, t in ruby_parts(ln)) else 0), ln, ft, INK, 20, rfill=GREEN)
-    if NT: ruby_draw(d, 76, y + 256 + 62 * s[2].count("\n"), NT, fit(d, NT, 36, W - 80 - 72, 800), ORANGE, 18)
+        ruby_draw(d, 76, y + 168 + 62 * n + (20 if any(r for p, r, t in ruby_parts(ln)) else 0), ln, ft, INK, 28, rfill=GREEN)
+    if NT: ruby_draw(d, 76, y + 256 + 62 * s[2].count("\n"), NT, fit(d, NT, 36, W - 80 - 72, 800), ORANGE, 24)
 
 def title_card(d, sc, t, dur):
     """入りの題名。少し遅れて下から入り、本題に入る直前に消える"""
@@ -229,8 +255,9 @@ def title_card(d, sc, t, dur):
     kw = d.textlength(kt, font=ft) + 64
     d.rounded_rectangle((W / 2 - kw / 2, y + 44, W / 2 + kw / 2, y + 44 + 78), radius=39, fill=(231, 86, 32, A(255)))
     text_c(d, W / 2, y + 44 + 37, kt, ft, (255, 255, 255, A(255)))
-    text_c(d, W / 2, y + 222, sc["title"], fit(d, sc["title"], 140, W - 140 - 90), (255, 255, 255, A(255)))     # 長い題名（ロンアガリの方法）は、カードに入るまで小さく
-    ruby_c(d, W / 2, y + 380, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)), 22)
+    tr = any(r for p, r, t_ in ruby_parts(sc["title"]))
+    ruby_c(d, W / 2, y + (252 if tr else 222), sc["title"], fit(d, sc["title"], 132 if tr else 140, W - 140 - 90), (255, 255, 255, A(255)), 44)     # 長い題名（ロンアガリの方法）は、カードに入るまで小さく
+    ruby_c(d, W / 2, y + 384, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)), 22)
     text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
 def _app_icon(sz):
@@ -256,7 +283,7 @@ def _rich(d, x, y, tx, size, maxw):
         if plain: d.text((x, y), plain, font=f, fill=INK); x += d.textlength(plain, font=f); continue
         d.text((x, y), term, font=fk, fill=GREEN); tw = d.textlength(term, font=fk)
         if rb:
-            rf = font(21, 800); d.text((x + tw / 2 - d.textlength(rb, font=rf) / 2, y - 27), rb, font=rf, fill=GREEN)
+            rf = font(27, 800); d.text((x + tw / 2 - d.textlength(rb, font=rf) / 2, y - 31), rb, font=rf, fill=GREEN)
         x += tw
     return x
 
@@ -320,8 +347,8 @@ def pre_card(d, pre, t):
     """前置き（①の前）。下に置く（手牌は画面の真ん中）。説明の行が時間で1行ずつ増える。
     行は (時刻, 文) か (時刻, 文, 用語の説明)。文の {語|ルビ} は用語。説明は行の右に灰色で「＝同じ牌2枚」のように（2026-11-14 ユーザーの指定: 具体の牌の例はやめて抽象で。難しい用語には簡単な説明。最後の1行は緑の帯＝全部の動画）"""
     k = min(1, t * 4); RH = 92; CB = pre.get("concl"); CH = 96
-    NT = pre.get("note"); NH = (84 if any(r for p, r, t_ in ruby_parts(NT[1])) else 56) if NT else 0      # ただし書き（緑の帯の下に、小さな灰色の字。ルビがあるときは高く）
-    HO = 26 if any(r for p, r, t_ in ruby_parts(pre["head"])) else 0      # 題名にルビがあるときは、上の枠から離す
+    NT = pre.get("note"); NH = (92 if any(r for p, r, t_ in ruby_parts(NT[1])) else 56) if NT else 0      # ただし書き（緑の帯の下に、小さな灰色の字。ルビがあるときは高く）
+    HO = 42 if any(r for p, r, t_ in ruby_parts(pre["head"])) else 0      # 題名にルビがあるときは、上の枠から離す
     hgt = 146 + RH * (len(pre["lines"]) - (1 if CB else 0)) + (CH + 50 if CB else 18) + NH + HO
     y = H - 80 - hgt + int((1 - k) * 30)
     d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, fill=(255, 255, 255, int(242 * k)))
@@ -331,20 +358,20 @@ def pre_card(d, pre, t):
     d.rounded_rectangle((76, y + 36, 76 + lw, y + 36 + 76), radius=38, fill=ORANGE)
     text_c(d, 76 + lw / 2, y + 36 + 36, "確認", ft, WHITE)
     hf = fit(d, pre["head"], 76, W - 40 - 36 - (76 + lw + 24))
-    ruby_draw(d, 76 + lw + 24, y + 26 + (76 - hf.size) // 2, pre["head"], hf, INK, 22, rfill=GREEN)
+    ruby_draw(d, 76 + lw + 24, y + 26 + (76 - hf.size) // 2, pre["head"], hf, INK, 36, rfill=GREEN)
     for n, ln in enumerate([ln for ln in pre["lines"] if t >= ln[0]]):
         yy = y + 146 + 26 + n * RH; ex = ln[2] if len(ln) > 2 else None
         if CB and n == len(pre["lines"]) - 1:      # 結論の1行は、緑の帯に白い字（2026-11-14 ユーザーの判断・案B）
             by = yy + 6; d.rounded_rectangle((70, by, W - 70, by + CH), radius=22, fill=GREEN)
             bt = "".join(p for p, r, t in ruby_parts(ln[1])); hr = any(r for p, r, t in ruby_parts(ln[1]))
-            ruby_c(d, W / 2, by + CH / 2 - 2 + (9 if hr else 0), ln[1].replace("{ ", "{").replace(" }", "}"), fit(d, bt, 48, W - 180), WHITE, 20); continue
+            ruby_c(d, W / 2, by + CH / 2 - 2 + (14 if hr else 0), ln[1].replace("{ ", "{").replace(" }", "}"), fit(d, bt, 46 if hr else 48, W - 180), WHITE, 27); continue
         d.ellipse((80, yy + 14, 102, yy + 36), fill=GREEN)
         exw = (22 + ruby_w(d, "＝" + ex, font(32, 800))) if ex else 0
         x = _rich(d, 122, yy, ln[1], 42, W - 60 - 122 - exw)
         if ex:
-            x += 22; ruby_draw(d, x, yy + 9, "＝" + ex, font(32, 800), (95, 110, 106), 17)
+            x += 22; ruby_draw(d, x, yy + 9, "＝" + ex, font(32, 800), (95, 110, 106), 23)
     if NT and t >= NT[0]:
-        ruby_c(d, W / 2, yc + hgt - 40, NT[1], fit(d, NT[1], 32, W - 140, 800), (95, 110, 106), 16)
+        ruby_c(d, W / 2, yc + hgt - 40, NT[1], fit(d, NT[1], 32, W - 140, 800), (95, 110, 106), 23)
 
 BAPPU = [(4, "点数は動かない", ""), (3, "ノーテン1人が、3人に1,000点ずつ", "−3,000 → ＋1,000×3"), (2, "ノーテン2人が、1,500点ずつ", "−1,500×2 → ＋1,500×2"),
          (1, "ノーテン3人が、1,000点ずつ", "−1,000×3 → ＋3,000"), (0, "点数は動かない", "")]
@@ -441,7 +468,7 @@ def summary(d, sc, k):
     n = len(sc["steps"]); y0 = 520
     d.rounded_rectangle((90, y0, W - 90, y0 + 150 + n * 118), radius=50, fill=(255, 255, 255, a))
     st = sc["title"] + (f"（{sc['sub']}）" if sc.get("sub", "").endswith("編") else "")
-    ruby_c(d, W / 2, y0 + 82, st, fit(d, st, 66, W - 260), (23, 112, 131, min(255, a + 15)), 20)
+    ruby_c(d, W / 2, y0 + (90 if any(r for p, r, t_ in ruby_parts(st)) else 78), st, fit(d, st, 66, W - 260), (23, 112, 131, min(255, a + 15)), 32)
     for i, s in enumerate(sc["steps"]):
         y = y0 + 150 + i * 118
         d.ellipse((150, y, 150 + 84, y + 84), fill=(231, 86, 32, min(255, a + 15)))
@@ -538,10 +565,10 @@ def subtitle(d, tx, k):
     """声の字幕（画面の下3分の1）。暗い四角い帯に白い字・2行まで"""
     a = int(235 * min(1, k * 6)); rows, ft = sub_rows(d, tx)
     # 暗い帯に白い字（前と同じ色・同じ透け方）。角だけ丸めない（2026-11-13 ユーザーの指定「変えるのは角丸を四角角にするだけ」。白いカードにしたのは行きすぎだった）
-    hr = any(r for p, r, t in ruby_parts(tx)); LH = 84 if hr else 64; top = 24 if hr else 0      # 読みを付ける行は、行の間を広げる
+    hr = any(r for p, r, t in ruby_parts(tx)); LH = 92 if hr else 64; top = 26 if hr else 0      # 読みを付ける行は、行の間を広げる
     h = 46 + top + LH * len(rows); y = 1560 - h // 2
     d.rectangle((50, y, W - 50, y + h), fill=(12, 20, 22, int(a * .86)))
-    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + top + (LH - 64) + 32 + n * LH, r_, ft, (255, 255, 255, a), 20)
+    for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + 23 + top + (LH - 64) + 32 + n * LH, r_, ft, (255, 255, 255, a), 28)
 
 
 def sfx_events(sc, name, seq, fps, bub_at={}):
