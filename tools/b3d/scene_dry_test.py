@@ -45,8 +45,6 @@ def load(scene):
 import collections
 for sc in ["furiten","furiten2","furiten3","riichi","dahai","kakan"]:
     ALLT.clear(); g=load(sc); g["pose_body"]=lambda A,w,wl=None: g.setdefault("W",[]).append((A is g["ARMS"][0],w,wl)); cam=MagicMock()
-    g["near_parts"]=lambda: ([],[],[]); na=g["near_alpha"]; NA={}
-    g["near_alpha"]=lambda t,h,wr,wl: NA.setdefault("log",[]).append(na(t,h,wr,wl)) or NA["log"][-1]
     g["anim_setup"]()
     N=g["NAMED"]; d=g["ANIM_DUR"]; nf=int(d*12)
     prev={}; mj=0; worst=None
@@ -59,9 +57,20 @@ for sc in ["furiten","furiten2","furiten3","riichi","dahai","kakan"]:
             prev[k]=(Vector(o.location),o.hide_render)
     print(sc,"frames",nf,"max jump/frame %.3f"%mj,worst)
     if sc.startswith("furiten"):
+        # 手前の人の頭が、卓を映す画角で手牌にかからないか（1.5秒から後の全コマ。頭と髪は半径22cmとして計算）。止めるコマでは卓のふちにもかからないこと
         import make_clip as MC
-        lg=NA["log"]; print("  手前の人の濃さ（体・右腕・左腕）止めるコマ:",[tuple(round(v,2) for v in lg[st[4]]) for st in MC.SCRIPTS[sc]["steps"]],"動くコマの腕の最大: %.2f"%max(max(v[1:]) for v in lg[15:]))
-        assert all(max(lg[st[4]])<.02 for st in MC.SCRIPTS[sc]["steps"]),"止めるコマに手前の人が残っている"
+        pj=g["project"]; tops=[]; rest=Vector((.21,-.455,.80)); sh=Vector((.192,-.78,1.075)); last=[rest]
+        def pb(A,w,wl=None):
+            if A is g["ARMS"][0]: last[0]=Vector(w)
+        g["pose_body"]=pb; g["ARMS"][0]["R"]["rest"]=rest; g["S2C"].clear()
+        for k_,o_ in N.items(): o_.location=o_["p0"]; o_.rotation_euler=o_["r0"]
+        for f in range(nf):
+            g["anim_pose"](f/12,cam); d_=last[0]-sh; k=min(max(0,d_.length-.515),.16); u=Vector((d_.x,d_.y,0)).normalized()
+            h=Vector((0,-.73,1.35))+(u*k+Vector((0,0,-.22*k)))*.95; c=g["CAMST"]
+            tops.append(pj(h)[1]-.22*c[2]/36*1920/(c[0]-h).length)
+        hf=max(pj((x,-.355,.76))[1] for x in (-.2,0,.2)); rim=pj((0,-.5,.76))[1]; st_=[st[4] for st in MC.SCRIPTS[sc]["steps"]]
+        print("  頭の上端: いちばん前 %d／止めるコマ %s（手牌の手前 %d・卓のふち %d）"%(min(tops[20:]),[round(tops[f]) for f in st_],hf,rim))
+        assert min(tops[20:])>hf+20 and min(tops[f] for f in st_)>rim,"手前の人の頭が卓にかかる"
         cnt=collections.Counter(o.code for k,o in N.items() if not k.startswith("h1") and o.code!="back")
         vis=sum(g["RIVERS"],[])+g["HANDS"][0]+g["MELD0"]+[g["DORA"]]+[c for c in (g["NEXT_CODE"],g["NEXT2_CODE"]) if c!="back"]
         print("  4枚超:",{k:v for k,v in collections.Counter(vis).items() if v>4})
