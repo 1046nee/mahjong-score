@@ -5,7 +5,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); TOOLS = os.path.dirname(HERE)
 sys.path.insert(0, TOOLS)
 import hai_sheets as H
 from sheet_logo import LOGO_CSS, logo_html
-T = "file://" + os.path.join(ROOT, "assets", "tiles")
+import pathlib
+T = pathlib.Path(ROOT, "assets", "tiles").as_uri()      # Windows でも Linux でも正しい file:// になる（2026-11-24 会社PCで動かすため）
 TEAL, BLUE, ORANGE, INK, RED = "#177083", "#4261AA", "#E25A1C", "#1F2A28", "#C92F42"
 def tl(code, w=26, cls=""): return f'<img class="t {cls}" src="{T}/{code}.svg" style="width:{w}px">'
 BASE_CSS = f"""
@@ -26,12 +27,12 @@ def page(title, sub, legend, body, css=""):
 {body}
 <footer><span>麻雀スコア記録アプリ <b>まじゃすこ</b>　majasco.jp</span><span>牌のイラストは まじゃすこ オリジナル</span></footer></body></html>"""
 def render(html, out):
-    if "/" not in out:      # 名前だけなら素材リポジトリの x/<名前>/ に
+    if "/" not in out and os.sep not in out:      # 名前だけなら素材リポジトリの x/<名前>/ に
         d = os.path.join(ROOT, "まじゃすこ素材", "x", out); os.makedirs(d, exist_ok=True); out = os.path.join(d, out)
     io.open(out + ".html", "w", encoding="utf-8").write(html)
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
-        b = pw.chromium.launch(executable_path="/opt/pw-browsers/chromium"); pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=2)
-        pg.goto("file://" + out + ".html"); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
+        ex = "/opt/pw-browsers/chromium"; b = pw.chromium.launch(**({"executable_path": ex} if os.path.exists(ex) else {})); pg = b.new_page(viewport={"width": 794, "height": 1123}, device_scale_factor=2)
+        pg.goto(pathlib.Path(out + ".html").as_uri()); pg.evaluate("document.fonts.ready"); pg.wait_for_timeout(1200)
         h = pg.evaluate("Math.ceil(document.body.getBoundingClientRect().height)")
         pg.set_viewport_size({"width": 794, "height": h}); pg.screenshot(path=out + ".png", full_page=True); b.close(); print("h", h, out + ".png")

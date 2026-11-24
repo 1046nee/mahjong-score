@@ -1,6 +1,6 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from base import *
-sys.path.insert(0, "/home/user/mahjong-score/tools"); import table_art as A
+import table_art as A      # tools/ は base が sys.path に入れてある
 def stick(): return f'<svg viewBox="-1 -1 92 13" style="width:70px;vertical-align:middle">{A.tenbo_color(1000, 0, 0, L=90, H=10)}</svg>'
 wait = tl("s5", 22) + tl("s6", 22) + '<span class="ar">待ち</span>' + tl("s4", 18) + tl("s7", 18)
 ROWS = [
