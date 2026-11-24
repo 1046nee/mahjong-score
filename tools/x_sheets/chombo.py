@@ -28,7 +28,8 @@ COLS = '<col style="width:108px"><col style="width:72px">'
 body = f"""
 <div class="bar red" style="margin-top:0">チョンボ<small>満貫を払うのがふつう（子は親に4,000・子に2,000、親は4,000ずつ）。その局はやり直し</small></div>
 <table><colgroup><col style="width:140px"><col>{COLS}</colgroup><thead><tr><th>反則</th><th>どんなとき</th>{HD}</tr></thead><tbody>{rows(CH)}</tbody></table>
-<div class="bar blue">アガリ放棄<small>その局はアガれない。ツモと打牌は続ける（流局ではノーテン扱い）</small></div>
+<div class="bar blue">アガリ放棄<small>その局はアガれない。ツモと打牌だけ続ける（流局ではノーテン扱い）</small></div>
+<div class="ah"><span class="lb">アガリ放棄の人は</span><span class="cx">チー ✕</span><span class="cx">ポン ✕</span><span class="cx">カン ✕</span><span class="cx">リーチ ✕</span><span class="co">ツモ・打牌 ○</span><span class="nt">{badge("M")} Mリーグも同じ。破るとチョンボ</span></div>
 <table><colgroup><col style="width:140px"><col>{COLS}</colgroup><tbody>{rows(AH)}</tbody></table>
 <div class="bar gray">場所で扱いが違うもの</div>
 <table><colgroup><col style="width:140px"><col><col style="width:162px">{COLS}</colgroup><thead><tr><th>反則</th><th>どんなとき</th><th>よくある扱い</th>{HD}</tr></thead><tbody>{ca}</tbody></table>
@@ -37,6 +38,9 @@ body = f"""
 <p class="note">Mリーグは公式サイトの公式戦ルール（2026年11月）。雀魂はゲームがロン・リーチ・鳴き・打牌を止めるので、これらの反則は起きない</p>"""
 css = """.bar.red { background: #C92F42; } .bar.blue { background: #4261AA; } .bar.gray { background: #5E6B69; } .bar small { color: #fff; opacity: .92; }
 td.tx { font-size: 12.5px; } td.o2 { color: #B23A0E; font-size: 12px; } tbody tr { height: 44px; } table + .bar { margin-top: 12px; }
+.ah { display: flex; align-items: center; gap: 6px; background: #fff; border: 2px solid #1F2A28; border-bottom: 0; padding: 7px 10px; font-size: 12.5px; font-weight: 900; }      /* アガリ放棄の人ができないこと（2026-11-24 ユーザーの指定）。Mリーグ公式戦ルール第7章第2条1 */
+.ah .lb { color: #4261AA; margin-right: 4px; } .ah .cx, .ah .co { border-radius: 12px; padding: 2px 10px; } .ah .cx { color: #C92F42; background: #FDECEE; } .ah .co { color: #177083; background: #E4F3EC; }
+.ah .nt { margin-left: auto; font-size: 11px; font-weight: 800; color: #4F5C5A; display: inline-flex; align-items: center; gap: 4px; }
 td.ml { text-align: center; font-size: 12.5px; font-weight: 900; line-height: 1.2; padding: 4px 3px; } td.ml small { display: block; font-size: 9.5px; font-weight: 800; color: #4F5C5A; margin-top: 2px; line-height: 1.3; }
 td.mc { color: #C92F42; background: #FDECEE; } td.ma { color: #4261AA; background: #EAF0FB; } td.my { color: #9A6A00; background: #FFF6D6; } td.mn { color: #5E6B69; }
 td.jn { text-align: center; font-size: 13px; font-weight: 900; color: #177083; background: #E4F3EC; line-height: 1.3; } td.jn small { display: block; font-size: 10px; font-weight: 800; color: #4F5C5A; margin-top: 3px; }
