@@ -33,7 +33,7 @@ def hand_html(spec):
         else: out += tl(c, 14)
     return out
 def taku(no, name, rivers, center, cap, riichi=False, hand=HAND):
-    seats = f'<b class="st v" style="left:{W - 8}px;top:104px">下家</b><b class="st" style="left:112px;top:3px">対面</b><b class="st v" style="left:8px;top:104px">上家</b>'
+    seats = f'<b class="st v" style="left:{W - 13}px;top:104px">下家</b><b class="st" style="left:112px;top:3px">対面</b><b class="st v" style="left:13px;top:104px">上家</b>'
     rb = f'<div class="rb">{stick(54)}</div>' if riichi else ""
     hand = f'<div class="hand">{hand_html(hand)}</div>'
     return (f'<div class="tk"><h3><i>{no}</i>{name}</h3><div class="mat">{seats}{"".join(river(s, v) for s, v in rivers)}{rb}'
@@ -41,13 +41,13 @@ def taku(no, name, rivers, center, cap, riichi=False, hand=HAND):
 TAKU = [
     # 下家の6枚目でロンできない（自分・下家は6枚、対面・上家は5枚）
     taku("1", "捨て牌のフリテン", [("self", "z1 m9 s1:h p1 z5 m1"), ("shimo", "z4 p9 m1 z3 m9 s4:x"), ("toi", "m1 z6 p9 s9 p2"), ("kami", "s9 z3 m9 p3 z7")],
-         "四索・七索<br>が出ても<b>ロン✕</b>", '自分の河に<b class="o">一索</b>がある。<br>一・四・七索待ちなので、<br><b>四索・七索でもロンできない</b>'),
-    # 下家の6枚目の四索を見逃し → 自分の番の前の対面の一索もロンできない（上家は5枚）
-    taku("2", "同巡内フリテン", [("self", "z1 m9 p1 z5 m1 p9"), ("shimo", "z4 p9 m1 z3 m9 s1:m"), ("toi", "m1 z6 p9 s9 p2 s4:x"), ("kami", "s9 z3 m9 p3 z7")],
-         "自分が<br>打牌するまで<b>ロン✕</b>", 'チーしていて、一索では役が無い。<br>下家の<b class="b">一索を見逃した</b>ので、<br>自分が打牌するまで<b>四索もロン✕</b>', hand=HAND_CHI),
-    # 自分は5枚目でリーチ → 下家の5枚目の四索を見逃し → 自分が6枚目を切ったあとの上家の一索もロンできない
+         "待ちが<br>変わるまで<b>ロン✕</b>", '自分の河に<b class="o">一索</b>がある。<br>待ちが変わるまで、<br><b>一索・四索・七索でロンできない</b>'),
+    # 下家の6枚目の一索を見逃し → 自分の番の前の対面の四索もロンできない（上家は5枚切ったうち、二萬をチーされたので河は4枚）
+    taku("2", "同巡内フリテン", [("self", "z1 m9 p1 z5 m1 p9"), ("shimo", "z4 p9 m1 z3 m9 s1:m"), ("toi", "m1 z6 p9 s9 p2 s4:x"), ("kami", "s9 z3 m9 p3")],
+         "自分が<br>打牌するまで<b>ロン✕</b>", 'チーしていて、一索では役が無い。<br>下家の<b class="b">一索を見逃した</b>ので、<br><b>四索・七索でもロンできない</b>', hand=HAND_CHI),
+    # 自分は5枚目でリーチ → 下家の5枚目の一索を見逃し → 自分が6枚目を切ったあとの上家の四索もロンできない
     taku("3", "リーチ後のフリテン", [("self", "z1 m9 p1 z5 m1:r p9"), ("shimo", "z4 p9 m1 z3 s1:m m9"), ("toi", "m1 z6 p9 s9 p2 s8"), ("kami", "s9 z3 m9 p3 z7 s4:x")],
-         "この局は<br>ずっと<b>ロン✕</b>", 'リーチのあと、タンヤオの付く<br>四・七索を待って<b class="b">一索を見逃した</b>。<br>この局はもう<b>四索でもロンできない</b>', riichi=True),
+         "この局は<br>ずっと<b>ロン✕</b>", 'リーチのあとに<b class="b">一索を見逃した</b>。<br>この局はもう、<br><b>一索・四索・七索でロンできない</b>', riichi=True),
 ]
 LEG = "".join(f'<span><i class="bd" style="background:{c};position:static">{t}</i>{lab}</span>' for (t, c), lab in zip(MK.values(), ["自分が切った待ちの牌", "見逃した牌", "ロンできない牌"]))
 ROWS = [
@@ -57,7 +57,7 @@ ROWS = [
 ]
 rows = "".join(f'<tr><th class="rh">{a}<small>{b}</small></th><td class="tx">{c}</td><td class="mk ng">{e}</td><td class="mk ok">{f}</td><td class="tx">{g}</td></tr>' for a, b, c, e, f, g in ROWS)
 body = f"""
-<div class="bar" style="margin-top:0">卓で見る、3つのフリテン<small>例は一・四・七索待ち（四・七索ならタンヤオ・ピンフ）　{wait}</small></div>
+<div class="bar" style="margin-top:0">卓で見る、3つのフリテン<small>例は一・四・七索待ち　{wait}</small></div>
 <div class="tks">{"".join(TAKU)}<div class="leg">{LEG}<span class="hn">いちばん手前は自分の手牌</span></div></div>
 <div class="warn">
 <p><b>捨て牌のフリテン</b>　自分が切った牌が<b>ポン・チーで鳴かれる</b>と、河から無くなるので見逃しやすい。<br>鳴かれた牌も自分の捨て牌なので、フリテンになる。</p>
