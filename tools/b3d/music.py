@@ -111,9 +111,10 @@ WA_INTROS = {
     "G 8音 2回に分けて": [("D4", .5), ("G4", .5), ("A4", 1), ("A4", .5), ("C5", .5), ("D5", .5), ("G5", .5), ("D5", 3)],
     "H 6音 装飾音つき（ツ・タ・タ・ターン）": [("C5", .25), ("D5", .75), ("A4", 1), ("G4", 1), ("A4", .25), ("D5", 3)],
 }
-def wa_intro(notes, hits=2):
-    beat = .16; head = .2 + .07 * hits
-    b = np.zeros(int((head + sum(d for _, d in notes) * beat + 1.6) * SR)); put(b, kaka(hits), 0)
+def wa_intro(notes, hits=0):
+    beat = .16; head = (.2 + .07 * hits) if hits else .02      # hits=0 で拍子木なし（2026-11-24 ユーザーの指定「最初の拍子木はいらない」）
+    b = np.zeros(int((head + sum(d for _, d in notes) * beat + 1.6) * SR))
+    if hits: put(b, kaka(hits), 0)
     t = head
     for i, (n, d) in enumerate(notes):
         put(b, koto(hz(n), 1.6 if i == len(notes) - 1 else 1.0, .55 if i == len(notes) - 1 else .48), t); t += d * beat
@@ -260,7 +261,7 @@ if __name__ == "__main__":
             save(os.path.join(out, f"{k}-{kind}.wav"), norm(P(kind), .8 if kind != "bgm" else .6))
         print(k, NAMES[k])
     if "--wa" in sys.argv:      # 和モダンの入りの聞き比べ（A〜H を1.2秒あけて続けて。カカッ×2。最後に カカカッ×3 の版）
-        seq = [wa_intro(v) for v in WA_INTROS.values()] + [wa_intro(WA_INTROS["A 4音 上がって止まる（今の形）"], 3)]
+        seq = [wa_intro(v) for v in WA_INTROS.values()]
         gap = np.zeros(int(1.2 * SR)); save(os.path.join(out, "wa-intros.wav"), norm(np.concatenate([np.concatenate([x, gap]) for x in seq]), .85))
         for k, v in WA_INTROS.items(): save(os.path.join(out, f"wa-intro-{k[0]}.wav"), norm(wa_intro(v), .85))
     if "--demo" in sys.argv:
