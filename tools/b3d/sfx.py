@@ -119,7 +119,7 @@ TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒�
     "kan": [(1.5, "tap"), (2.0, "clack2"), (2.55, "clackt"), (3.5, "slide"), (3.9, "tap"), (4.5, "clackt"), (5.0, "tap"), (5.9, "clackt"), (6.5, "tap"), (7.3, "clack")],
     "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (4.15, "clackt"), (4.3, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
     "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
-    "riichi": [(1.5, "tap"), (2.4, "clack"), (3.2, "tap"), (4.1, "tap"), (4.6, "tap"), (5.1, "clackt")],
+    "riichi": [(1.5, "tap"), (2.4, "clack"), (3.2, "tap"), (4.1, "tap"), (4.6, "tap"), (5.1, "clackt"), (6.4, "taosu"), (7.0, "tap"), (7.7, "clackt")],
     "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
     "ron": [(1.5, "tap"), (2.3, "taosu"), (5.8, "tap"), (7.5, "tap")],
     "dahai": [(2.0, "tap"), (2.8, "clackt"), (3.1, "tap"), (3.7, "clack"), (4.9, "tap"), (5.6, "clackt"), (6.2, "tap"), (6.9, "clackt"), (7.0, "tap"), (7.6, "clack")],      # 2026-11-25 切るのを早め、手を戻す
@@ -136,7 +136,7 @@ PRE_EVENTS["ryukyoku"] = [(1.6, "tap"), (2.4, "clackt"), (3.3, "clack")]      # 
 PRE_EVENTS["kakan"] = [(2.8, "pop")]      # 加槓は明刻を見せてから、4枚目を持ち上げる（scene.py の pre_pose）
 PRE_EVENTS["dahai"] = [(1.5, "clack"), (3.1 + (2.0 - 1.4) * 2.8 / 2.9, "tap"), (3.1 + (2.8 - 1.4) * 2.8 / 2.9, "clackt"), (3.1 + (3.7 - 1.4) * 2.8 / 2.9, "clack")]      # 上家が切る・自分がツモる・切る（scene.py の pre_pose_dahai）
 FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0), "kan": (2.0, 2.6, 3.55, 4.5, 5.9),     # scene.py の FREEZE・S2T とそろえる
-          "daiminkan": (2.1, 3.8, 5.0, 6.1, 7.5), "kakan": (2.4, 3.5, 4.9), "riichi": (2.9, 4.1), "tsumo": (2.9, 4.4), "ron": (2.4, 3.2), "ryukyoku": (2.4, 5.9, 7.4), "dahai": (2.9, 4.4, 5.8, 8.1), "furiten": (1.5, 2.4, 4.2, 7.0), "furiten2": (1.5, 2.9, 4.3, 8.3, 9.7), "furiten3": (1.5, 2.9, 7.4, 10.1, 13.3)}
+          "daiminkan": (2.1, 3.8, 5.0, 6.1, 7.5), "kakan": (2.4, 3.5, 4.9), "riichi": (2.9, 4.1, 7.8), "tsumo": (2.9, 4.4), "ron": (2.4, 3.2), "ryukyoku": (2.4, 5.9, 7.4), "dahai": (2.9, 4.4, 5.8, 8.1), "furiten": (1.5, 2.4, 4.2, 7.0), "furiten2": (1.5, 2.9, 4.3, 8.3, 9.7), "furiten3": (1.5, 2.9, 7.4, 10.1, 13.3)}
 PAUSE = .7
 
 

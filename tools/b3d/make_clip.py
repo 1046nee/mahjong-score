@@ -96,11 +96,12 @@ SCRIPTS = {
         (2.8, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (3.6, "ポンした3枚に足して、加槓できる"),
     ])),
-    "riichi": dict(title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="3つの手順で覚える", steps=[
+    "riichi": dict(title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="4つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
         ("打牌", "ダハイ", "いらない牌を、横向きにして切る", 7, 42, 1.8, [], ""),
-        ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),     # 「待つ」の手順はやめた（2026-11-14 ユーザーの判断）
-    ], tail=(81, 93, 2.4),
+        ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),
+        ("裏ドラ", "うらドラ", "アガったら、ドラ表示牌の下の牌をめくる", 81, 118, 1.8, [], ""),     # 2026-11-25 ユーザーの指定     # 「待つ」の手順はやめた（2026-11-14 ユーザーの判断）
+    ], tail=(119, 135, 2.4),
     pre=dict(head="リーチできるとき", marks={"own": ("orange", "待ち", ["p3", "p6"], "UL")}, ls=[0, 1, 1], hold=2.0, concl=True, lines=[
         (0.3, "{門前|メンゼン}である", "ポン・チー・明槓をしていない"),
         (1.6, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
@@ -149,8 +150,8 @@ SCRIPTS = {
         ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
         ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
-        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], ""),
-    ], tail=(117, 126, 2.4),
+        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], "ツモ"),
+    ], tail=(117, 126, 2.4), bubw={3: "ツモアガリできます"}, bubpos={"ツモ": ((720, 1150), (110, 300))},
     pre=dict(head="捨て牌のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
@@ -176,8 +177,8 @@ SCRIPTS = {
         ("見逃し", "みのがし", "タンヤオがつく四索・七索を待って、一索を見逃す", 25, 50, 2.2, [], ""),
         ("打牌", "ダハイ", "自分が打牌しても、フリテンのまま", 51, 112, 2.2, [], ""),
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
-        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], ""),
-    ], tail=(201, 210, 2.4),
+        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], "ツモ"),
+    ], tail=(201, 210, 2.4), bubw={4: "ツモアガリできます"}, bubpos={"ツモ": ((720, 1150), (110, 300))},
     pre=dict(head="リーチ後のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
@@ -549,7 +550,7 @@ def _tile_img(code, h):
         if os.path.exists(fp): im = Image.open(fp).convert("RGBA"); _tim[k] = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
         else: _tim[k] = tile_img(code, round(h * 3 / 4), h)      # tiles/ に無い牌は、3Dの牌の絵（make_tile_tex.py）
     return _tim[k]
-def draw_marks(d, marks, here):
+def draw_marks(d, marks, here, xon=True):
     """囲み（白いふち＋色の線）と、牌の絵つきの札・つなぐ線。here＝このコマの牌の場所（まだ切られていない牌は無い）"""
     todo = [m for m in marks if m[0] in here]; box = {}
     for nm, col, tx, codes, pos in todo:
@@ -567,7 +568,7 @@ def draw_marks(d, marks, here):
             d.line((ax, ay, tx_, ty_), fill=(255, 255, 255, 255), width=14); d.line((ax, ay, tx_, ty_), fill=c + (255,), width=8)
         d.rounded_rectangle((x0 - P_ - 4, y0 - P_ - 4, x1 + P_ + 4, y1 + P_ + 4), radius=16, outline=(255, 255, 255, 255), width=14)
         d.rounded_rectangle((x0 - P_, y0 - P_, x1 + P_, y1 + P_), radius=13, outline=c + (255,), width=7)
-        if col == "red":      # ロンできない牌には大きな×（2026-11-25 ユーザーの指定）
+        if col == "red" and xon:      # ロンできない牌には大きな×。「ロンできません」を言い終えてから（2026-11-25 ユーザーの指定）
             cx_, cy_ = (x0 + x1) / 2, (y0 + y1) / 2; r_ = max(x1 - x0, y1 - y0) / 2 + 22
             for sg in (1, -1):
                 d.line((cx_ - r_, cy_ - r_ * sg, cx_ + r_, cy_ + r_ * sg), fill=(255, 255, 255, 255), width=20)
@@ -728,6 +729,13 @@ def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
     return ev
 
 
+def say_end(subs, word):
+    """言葉 word を言い終える時刻（声が出てからの秒）"""
+    for t0, t1, sen in subs:
+        if word in sen: return t0 + (t1 - t0) * (sen.index(word) + len(word)) / max(1, len(sen))
+    return None
+
+
 def say_at(subs, word):
     """字幕の文の並び (出す, 消す, 文) から、言葉 word を言い始める時刻（声が出てからの秒）。文の中の位置は字の数で割りふる"""
     for t0, t1, sen in subs:
@@ -874,6 +882,9 @@ def main():
                 for sen, du in units:
                     if gap_at is not None and t_ >= gap_at - .15: t_ += BUB_GAP; gap_at = None      # 一拍の間のぶん、後ろの字幕をずらす
                     SUBS[seg].append((t_, t_ + du * sc_, sen)); t_ += du * sc_
+    for i_, w_ in SCRIPTS[name].get("bubw", {}).items():      # 吹き出しを、その言葉を言い終えた時に（フリテンの「ツモ」）
+        e_ = say_end(SUBS.get(f"step{i_ + 1}", []), w_)
+        if e_ is not None: BUB_AT[f"step{i_ + 1}"] = .25 + e_
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
     src, out = a[0], a[1]; TEX[0] = os.path.join(os.path.dirname(os.path.abspath(src)), "tex")
@@ -902,7 +913,7 @@ def main():
                 for j, sen in enumerate(sens):
                     if pc["xat"] in sen:
                         nx_ = PRE_S[j + 1] if j + 1 < len(PRE_S) else VO["pre"][1]
-                        pc["x_t"] = .6 + PRE_S[j] + (nx_ - PRE_S[j]) * sen.index(pc["xat"]) / len(sen); break
+                        pc["x_t"] = .6 + PRE_S[j] + (nx_ - PRE_S[j]) * (sen.index(pc["xat"]) + len(pc["xat"])) / len(sen); break      # 言い終わってから×（2026-11-25 ユーザーの指定）
             if pc.get("count"): pc["count"] = (pc["count"][0], nl[pc.get("count_line", 2)][0] + .4, pc["count"][2])
             sc = dict(sc, pre=pc)
             beats = [(0.0, 0.0)] + [(a_, so(j)) for a_, j in pc.get("beats", [])]
@@ -966,7 +977,8 @@ def main():
             s = sc["steps"][i]
             if name in MARKS:
                 assert MK, "marks.json が無い（scene.py を動かすと、コマと同じフォルダにできる）"
-                draw_marks(d, MARKS[name][i], MK[min(f, len(MK) - 1)])
+                xe = say_end(SUBS.get(f"step{i + 1}", []), "ロンできません")
+                draw_marks(d, MARKS[name][i], MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe)
             rail(d, sc["steps"], i); headline(d, i, s, t)
             if name.startswith("furiten"): hand_strip(d, name)
             bt = BUB_AT.get(f"step{i + 1}", .25)
