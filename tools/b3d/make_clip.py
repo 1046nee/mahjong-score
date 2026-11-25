@@ -842,11 +842,11 @@ def kuikae_card(d, kk, t, subs):
         if k <= 0: continue
         s_ = _ease_pop(min(1, k)); im = _tile_img(c, int(th * s_))
         yy = y + 300 + (th - im.height) / 2; d._image.alpha_composite(im, (int(x + (int(th * .75) - im.width) / 2), int(yy)))
-        cx, cy = x + th * .375, y + 300 + th / 2; r = 40
-        if k > .6:
-            for sg in (1, -1):
-                d.line((cx - r, cy - r * sg, cx + r, cy + r * sg), fill=(255, 255, 255, 255), width=18)
-                d.line((cx - r, cy - r * sg, cx + r, cy + r * sg), fill=(201, 47, 66, 255), width=10)
+        cx, cy = x + th * .375, y + 300 + th / 2
+        if k > .6:      # 牌の右上に、赤い丸の×（牌の絵は隠さない）
+            bx, by, r = x + th * .75 - 6, y + 300 + 4, 26
+            d.ellipse((bx - r - 4, by - r - 4, bx + r + 4, by + r + 4), fill=(255, 255, 255, 255)); d.ellipse((bx - r, by - r, bx + r, by + r), fill=(201, 47, 66, 255))
+            for sg in (1, -1): d.line((bx - 11, by - 11 * sg, bx + 11, by + 11 * sg), fill=(255, 255, 255, 255), width=7)
         text_c(d, cx, y + 300 + th + 36, lab, font(32, 800), (80, 90, 92, 255))
         x += max(int(th * .75), int(d.textlength(lab, font=font(32, 800)))) + 70
 
