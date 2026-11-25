@@ -1456,7 +1456,7 @@ def s2_build():
             arms[0] = arms[0][:-1] + [(t_open - .1, A(xr, HY - .01, .02)), (t_open + .8, A(xr, LY)), (t_open + 1.4, R), (DUR, R)]
             arms_l[0] = [(0, L0), (t_open - .5, L0), (t_open - .1, A(xl, HY - .01, .02)), (t_open + .8, A(xl, LY)), (t_open + 1.4, L0), (DUR, L0)]
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
-        TABLE = (Vector((0, .00, .77)), Vector((0, -.52, .74)), 24.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
+        TABLE = (Vector((0, .02, .77)), Vector((0, -.40, .92)), 31.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
         focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
