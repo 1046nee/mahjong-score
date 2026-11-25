@@ -345,7 +345,7 @@ if "--tileimgs" in sys.argv:      # 説明のカード・札に出す牌の絵�
         ld = bpy.data.lights.new(f"T{k_}", "AREA"); ld.energy = e_; ld.size = .6
         o_ = bpy.data.objects.new(f"T{k_}", ld); sc.collection.objects.link(o_); o_.location = loc_; o_.rotation_euler = [math.radians(v) for v in rot_]
     cd_ = bpy.data.cameras.new("tc"); cd_.lens = 85; cam_ = bpy.data.objects.new("tc", cd_); sc.collection.objects.link(cam_); sc.camera = cam_
-    cam_.location = (.03, -.20, .13); tg_ = Vector((0, 0, TL / 2 + .002)); cam_.rotation_euler = (tg_ - Vector(cam_.location)).to_track_quat("-Z", "Y").to_euler()      # 少し右上から＝厚みと背の青が見える
+    cam_.location = (0, -.21, TL / 2 + .075); tg_ = Vector((0, 0, TL / 2 + .002)); cam_.rotation_euler = (tg_ - Vector(cam_.location)).to_track_quat("-Z", "Y").to_euler()      # 正面から（斜めにしない。2026-11-25 ユーザーの指定）。少しだけ上から＝上のふちの厚みと背の青がわずかに見える
     codes_ = [f"{s_}{n_}" for s_ in "mps" for n_ in range(1, 10)] + ["m5r", "p5r", "s5r"] + [f"z{n_}" for n_ in range(1, 8)]
     for c_ in codes_:
         if not os.path.exists(os.path.join(TEX, c_ + ".png")): continue
@@ -454,8 +454,9 @@ if S2:
         RIVERS = auto_rivers([5, 5, 5, 5], HANDS[0] + MELD0 + [DORA, "p2", "z4"], ban=("z7", "s5", "s8", "z4"))
     elif SCENE == "riichi":     # リーチ: 八索をツモってテンパイ。西を横向きに切る → 千点棒。三筒・六筒待ち
         HANDS[0] = ["m1", "m2", "m3", "p4", "p5", "s3", "s4", "s5", "s6", "s7", "m9", "m9", "z3", "s8"]
-        TSUMO14 = True
-        RIVERS = auto_rivers([6, 6, 6, 6], HANDS[0] + [DORA], ban=("p3", "p6"))
+        TSUMO14 = True; NEXT2_CODE = "p6"      # ④でツモるアガリ牌（2026-11-25）
+        FU_OTHER = {(1, 5): "o1", (2, 5): "o2", (3, 5): "o3"}      # ④で、ほかの3人が切る牌（それまでは河に無い）
+        RIVERS = auto_rivers([6, 6, 6, 6], HANDS[0] + [DORA, "m6"], ban=("p3", "p6"))
         RIVERS = [[{"s4": "p9", "s8": "p8"}.get(c, c) for c in rv] for rv in RIVERS]      # 河の四索→九筒・八索→八筒（2026-11-14 ユーザーの指定）
     elif SCENE == "tsumo":      # ツモあがり: 六萬・八萬の嵌張。七萬をツモる＝メンゼンツモ・タンヤオ・ドラ1（ドラ表示牌は三萬）、子の3翻30符で1000・2000（2026-11-16 ユーザーの指定・2026-11-18 ドラ1に）
         HANDS[0] = ["m2", "m3", "m4", "p3", "p4", "p5", "s6", "s7", "s8", "m6", "m8", "s2", "s2"]
@@ -1125,9 +1126,9 @@ ANIM_DUR = 8.0 + 3 * .7      # もとの動き8秒＋見せるための間3回�
 FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
     FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.6 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
-S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.9, 4.1, 7.8), 9.2),
+S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.9, 4.1, 9.6, 12.3), 13.0),
        "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0), "furiten": ((1.5, 2.4, 4.2, 7.0), 7.8), "furiten2": ((1.5, 2.9, 4.3, 8.3, 9.7), 11.6), "furiten3": ((1.5, 2.9, 7.4, 10.1, 13.3), 14.1),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
-       "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
+       "ryukyoku": ((2.4, 5.9, 8.1), 9.1)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
 SOFT = .1      # 間の前後で、なめらかに止まる・動き出す（秒）。急に止めると、手が途中でかくっと止まって見えた
 def warp(t):
@@ -1233,6 +1234,7 @@ if SCENE == "kakan": ANIM_END = 7.6
 def anim_pose_kan(t, cam):
     """暗槓: ①発声 → ②開示（4枚を倒し、両端の2枚を伏せる）→ ③副露（右の隅へ）→ ④カンドラをめくる → ⑤嶺上牌を取る → ⑥打牌"""
     tr = t; t = warp(t)
+    if "next" in NAMED: hide_tree(NAMED["next"], True)      # ①の前にツモった牌（scene.py の draw_pose）
     Z = TOP + .0005
     K = [NAMED[f"hk{k}"] for k in range(10, 14)]
     LY = HY + TL / 2
@@ -1380,32 +1382,46 @@ def s2_build():
         mv["bou"] = [(3.2, 4.1, (0, by, TOP + .012 + .0023), LIE, .05)]               # 台の上面（TOP+.012）に乗せる
         mv["hk13"] = [(4.6, 5.1, tuple(t12), STAND, 0)]                               # ツモった牌を手牌に入れる
         # ②で切ったら、止める前に腕を戻す（2026-11-25 ユーザーの指摘「打牌のあと腕が残る」）。千点棒からあとは .3秒ずつ後ろへ
-        # ④ アガったら手牌を倒し（5.7〜6.4）、ドラ表示牌の下の牌（裏ドラ表示牌）を手前へ出して表に返す（7.0〜7.7）（2026-11-25 ユーザーの指定）
+        # ④ 全員が打牌（下家・対面・上家）→ 自分がアガリ牌（六筒）をツモって手牌の右に立てる → 両手で倒す（2026-11-25 ユーザーの指定）
+        for sn_, seat_, t0_ in (("o1", 1, 5.8), ("o2", 2, 6.4), ("o3", 3, 7.0)):
+            c_ = P(sn_); q_ = seat_ * math.pi / 2
+            NAMED[sn_]["p0"] = list(seat_w(seat_, (0, -.30, Z))); show[sn_] = t0_ - .1
+            mv[sn_] = [(t0_, t0_ + .5, tuple(c_), NAMED[sn_]["r0"], .03)]
+            lx_, ly_ = c_.x * math.cos(q_) + c_.y * math.sin(q_), -c_.x * math.sin(q_) + c_.y * math.cos(q_)
+            Ri_ = Vector(ARMS[seat_]["R"]["rest"])
+            arms[seat_] = [(0, Ri_), (t0_ - .4, Ri_), (t0_, (0, -.30, hz)), (t0_ + .5, (lx_, ly_ - .02, hz)), (t0_ + .9, Ri_), (DUR, Ri_)]
+        n2 = P("next2"); xt = t12.x + HP + .03; ST = (xt, t12.y, t12.z)
+        S_ = (math.pi / 2, 0, 2 * math.pi) if NAMED["next2"]["r0"][2] > math.pi else STAND
+        mv["next2"] = [(7.6, 8.3, ST, S_, .06), (8.8, 9.5, (xt, LY, Z), (0, 0, S_[2]), .015)]
         for k_, nm_ in enumerate([f"hk{k}" for k in range(12)] + ["hk13"]):
-            xx = P(f"hk{k_}").x
-            mv[nm_] = mv.get(nm_, []) + [(5.7, 6.4, (xx, LY, Z), LIE, .015)]
-        ur = P("ura"); uy = ur.y - TL - .006
-        mv["ura"] = [(7.0, 7.35, (ur.x, uy, Z), DOWN, .0), (7.35, 7.7, (ur.x, uy, Z), (0, 0, 0), .03)]
-        xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+            mv[nm_] = mv.get(nm_, []) + [(8.8, 9.5, (P(f"hk{k_}").x, LY, Z), LIE, .015)]
+        # ⑤ 裏ドラ: ドラ表示牌と、その下の牌（2枚重ねのまま）を手牌の少し右へ → 上のドラ表示牌を下ろして下の牌のとなりへ → 下の牌を表にめくる
+        dr_ = P("dora"); ur = P("ura"); bx = xt + .075; by_ = LY
+        mv["dora"] = [(10.0, 10.7, (bx, by_, Z + TT), LIE, .04), (10.9, 11.4, (bx + TW + .004, by_, Z), LIE, .02)]
+        mv["ura"] = [(10.0, 10.7, (bx, by_, Z + TT), DOWN, .04), (11.6, 12.1, (bx, by_, Z + TT), LIE, .035)]
+        xl, xr = P("hk0").x - .006, xt + .006; L0 = Vector(ARMS[0]["L"]["rest"])
         arms[0] = [(0, R), (1.0, R), (1.5, A(t12.x, HY + .01, .02)), (2.4, A(sx_, sy_)), (2.85, R), (3.0, R), (3.2, (.27, -.41, hz)), (4.1, A(0, by)), (4.6, A(t13.x, HY + .01, .02)),
-                   (5.1, A(t12.x, HY + .01, .02)), (5.3, R), (5.6, A(xr, HY - .01, .02)), (6.4, A(xr, LY)), (6.6, R), (7.0, A(ur.x, ur.y - .01)), (7.7, A(ur.x, uy)), (8.2, R), (DUR, R)]
-        arms_l[0] = [(0, L0), (5.1, L0), (5.6, A(xl, HY - .01, .02)), (6.4, A(xl, LY)), (6.9, L0), (DUR, L0)]
-        focus = [Vector((sx_, sy_, .77)), (Vector((0, -.12, .77)), Vector((0, -.2, .56)), 42), (Vector((ur.x - .02, uy + .01, .77)), Vector((.24, -.14, .40)), 36)]      # 自分の選手の右前から（前に倒れた体の中に入った）
-        mid = Vector(((P("hk0").x + ur.x) / 2, (HY + uy) / 2, .77))
+                   (5.1, A(t12.x, HY + .01, .02)), (5.5, R), (7.3, R), (7.6, A(n2.x, n2.y, .02)), (8.3, A(xt, HY + .01, .02)), (8.4, R), (8.4, R), (8.8, A(xr, HY - .01, .02)), (9.5, A(xr, LY)),
+                   (9.6, A(dr_.x, dr_.y - .01, .02)), (10.0, A(dr_.x, dr_.y - .01, .02)), (10.7, A(bx, by_, .02)), (10.9, A(bx, by_, .02)), (11.4, A(bx + TW, by_)), (11.6, A(bx, by_, .01)), (12.1, A(bx, by_)), (12.5, R), (DUR, R)]
+        arms_l[0] = [(0, L0), (8.4, L0), (8.8, A(xl, HY - .01, .02)), (9.5, A(xl, LY)), (9.9, L0), (DUR, L0)]
+        BOARD = (Vector((0, -.10, .77)), Vector((0, -.30, .98)), 31)      # 頭より前・上から（頭の中に入って真っ黒になった）      # ④ 4人の河と自分の手牌（全員の打牌が見える）
+        URA = (Vector((bx - .05, by_ + .01, .77)), Vector((-.16, -.26, .50)), 30)      # 手牌と、右の2枚（腕にかくれない引き）      # ⑤ 手牌の右の2枚（自分の選手の右前から）
+        focus = [Vector((sx_, sy_, .77)), (Vector((0, -.12, .77)), Vector((0, -.2, .56)), 42), BOARD, URA]
         views = [(4.6, 5.2, (0, -.50, 1.50), (0, -.09, .77), 34.0),
-                 (5.3, 5.7, tuple(mid + Vector((.24, -.24, .52))), tuple(mid), 30.0),      # 手牌と山の右（ドラ表示牌）
-                 (8.3, 9.0, (0, -.40, 2.0), (0, .06, .77), 30.0)]      # まとめのあいだは引いて、まとめのカードと字幕のあいだに、千点棒・自分の河・手牌（2026-11-25 ユーザーの指定）                  # 最後は、千点棒（卓の中央）を画面の真ん中に、手牌と河も入る画角。③で止めるコマ（76）までに動き終える（2026-11-21 書き出して確かめた。4.6〜5.5 だと止めたとき横からの絵の途中だった）
+                 (5.4, 5.8, tuple(BOARD[0] + BOARD[1]), tuple(BOARD[0]), BOARD[2]),
+                 (9.6, 10.0, tuple(URA[0] + URA[1]), tuple(URA[0]), URA[2]),
+                 (12.4, 13.0, (0, -.40, 2.0), (0, .06, .77), 30.0)]      # まとめのあいだは引いて、千点棒・河・倒した手牌・裏ドラ
         pre = dict(lift=["hk3", "hk4"], call=False, cam2=None)
     elif SCENE == "tsumo":
         nx = P("next"); h12 = P("hk12"); xt = h12.x + HP + .03
         S_ = (math.pi / 2, 0, 2 * math.pi); L_ = (0, 0, 2 * math.pi)      # 左の山の牌は向きが席3（z＝270度）。360度へ回すと、90度だけ回って手前を向く
         # 山から取って、手牌の右に少し離して立てる（手牌には入れない）→ ③でほかの手牌と一緒に倒す（2026-11-25 ユーザーの指定「一度手牌に立ててから倒す」。前は表向きで置いていた）
-        mv["next"] = [(2.0, 2.8, (xt, h12.y, h12.z), S_, .06), (3.5, 4.3, (xt, LY, Z), L_, .015)]
-        for k in range(13): mv[f"hk{k}"] = [(3.5, 4.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
-        # 手牌は両手で、左端と右端を持って倒す（2026-11-14 ユーザーの指定。ロンと同じ）。右手はツモった牌の右
-        xl, xr = P("hk0").x - .006, xt + .006; L0 = Vector(ARMS[0]["L"]["rest"])
-        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y, .02)), (2.8, A(xt, HY + .01, .02)), (3.4, A(xr, HY - .01, .02)), (4.3, A(xr, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
-        arms_l[0] = [(0, L0), (2.9, L0), (3.4, A(xl, HY - .01, .02)), (4.3, A(xl, LY)), (4.9, L0), (DUR, L0)]
+        # ③ まずツモった牌を片手で倒して見せ（3.0〜3.4）、そのあと残りの手牌を両手で倒す（3.7〜4.4）（2026-11-25 ユーザーの指定）
+        mv["next"] = [(2.0, 2.8, (xt, h12.y, h12.z), S_, .06), (3.0, 3.4, (xt, LY, Z), L_, .015)]
+        for k in range(13): mv[f"hk{k}"] = [(3.7, 4.35, (P(f"hk{k}").x, LY, Z), LIE, .015)]
+        xl, xr = P("hk0").x - .006, h12.x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y, .02)), (2.8, A(xt, HY + .01, .02)), (2.95, A(xt, HY - .01, .02)), (3.4, A(xt, LY)), (3.6, A(xr, HY - .01, .02)), (4.35, A(xr, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
+        arms_l[0] = [(0, L0), (3.2, L0), (3.6, A(xl, HY - .01, .02)), (4.35, A(xl, LY)), (4.9, L0), (DUR, L0)]
         px = lambda t: .03 + .10 * (seg(t, 1.5, 2.1) - seg(t, 3.0, 3.5))
         cxa = (P("hk0").x + xt) / 2
         focus = [Vector((xt - .05, HY, .77)), OVER(cxa, .03)]      # ①は立てたツモ牌と手牌の右がわ
@@ -1526,8 +1542,11 @@ def s2_build():
         arms_l[0] = [(0, L0), (1.15, L0), (1.65, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
         WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)                  # 卓の全体を引きで上から（4人の手牌が入り、対面の手牌が上の白いカードにかからない。2026-11-14 ユーザーの指定）
         focus = [WIDE, WIDE, WIDE]      # 4人の手牌がいつも見える引き（2026-11-25 ユーザーの指定）
-        views = [(.2, .85, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
+        PAY = (Vector((.14, -.22, .77)), Vector((.26, -.30, .50)), 30)      # 下家 → 自分の1,500点を一瞬寄って見せる（カードに隠れていた。2026-11-25 ユーザーの指定）
+        views = [(.2, .85, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0), (6.32, 6.6, tuple(PAY[0] + PAY[1]), tuple(PAY[0]), PAY[2]),
+                 (7.4, 7.9, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=(Vector((0, -.52, 1.36)), Vector((0, -.1, .77)), 30.0))
+    if SCENE in DRAWN and "next" in NAMED: show["next"] = 1e9      # ①の前にツモった牌（draw_pose）。山にはもう無い
     S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre)
 
 def anim_pose_s2(t, cam):
@@ -1688,7 +1707,7 @@ def pre_pose_ryukyoku(t, cam):
     w = hand_path(t, [(0, R), (1.0, R), (1.6, A_(w0, .02)), (2.4, A_(ST, .02)), (2.6, A_(ST, .02)), (3.3, A_(dst)), (3.75, R), (PRE_DUR, R)]); pose_body(ARMS[0], w)
     hide_tree(bpy.data.objects["player0"], False)      # 自分の手で取る・切るので、自分の選手を出す（カメラは頭の右前から）
     wx = (wall_x(WALL["BRK"] + 1) + wall_x(WALL["n"] - 1)) / 2
-    c1 = (Vector((.36, -.60, 1.34)), Vector((.06, -.20, .77)), 30.0)      # 手牌・自分の河・山の右の角（海底牌と王牌）
+    c1 = (Vector((.40, -.80, 1.58)), Vector((.03, -.10, .77)), 29.0)      # 手牌の全体・自分の河・山の右の角（下のカードに手牌がかからない。2026-11-25 ユーザーの指摘）      # 手牌・自分の河・山の右の角（海底牌と王牌）
     c2 = (Vector((wx + .12, -.58, 1.10)), Vector((wx, WY, .78)), 34.0)      # 王牌14枚
     kc = seg(t, 3.8, 4.6)
     loc = c1[0].lerp(c2[0], kc); tgt = c1[1].lerp(c2[1], kc); lens = c1[2] + (c2[2] - c1[2]) * kc
@@ -1780,7 +1799,7 @@ def pre_marks(t):
     if SCENE == "kakan": grp = {"own": (["meld0", "meld1", "meld2"], .9), "call": (S2C["pre"]["lift"], 3.2)}
     elif SCENE == "ryukyoku":
         wp = [n for n in NAMED if n.startswith("wp")] + ["dora"]
-        grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.35), "wanpai": (wp, 4.6)}
+        grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.35, 3.8), "wanpai": (wp, 4.6)}      # 王牌に寄ったら河底牌の印は消す（重なった）
     else:
         CALLP = SCENE in ("chi", "pon") or (S2 and S2C["pre"]["call"])
         lift = S2C["pre"]["lift"] if S2 else ["hk11", "hk12"]
@@ -1802,8 +1821,29 @@ def hide_tree(o, v=True):
 # ---------------- ①発声の前: 他家が牌を切る（2026-11-25 ユーザーの指定「他家が切った牌に対して発声する流れに」。チー・ポン・大明槓・ロン） ----------------
 DISC_DUR = 1.8
 DISC_T = 1.3      # 牌が河に着く時刻（make_clip.py が牌の音を鳴らす）
+CLIPCAM = (Vector((0, -.92, 1.30)), Vector((0, .0, .77)), 37.0)      # 他家が切る絵: 自分の真後ろから（自分の選手は消す）
+CLIPCAM_D = (Vector((.46, -.86, 1.58)), Vector((-.02, -.16, .77)), 30.0)      # 自分がツモる絵: 右うしろの高い所から（腕が見える・体にかからない）      # ①の前の絵の画角: 自分の手牌・自分の河・切る人の河が全部入る（2026-11-25 ユーザーの指定「切った牌が何か・手牌や捨て牌が見えるように」）
+DRAWN = {"kan": "hk13", "kakan": "hk10", "riichi": "hk13"}      # ①の前に山からツモる牌（2026-11-25 ユーザーの指定「ツモったら、のセリフには山からツモる絵」）
+def clip_cam(cam, c_=None):
+    loc, tgt, lens = c_ or CLIPCAM; cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = [loc, tgt, lens]
+def draw_pose(t, cam):
+    """自分が山から1枚ツモって、手牌の位置に立てる"""
+    anim_pose(0.0, cam)
+    o = NAMED[DRAWN[SCENE]]; dst = Vector(o["p0"]); dr = Vector(o["r0"]); nx = NAMED["next"]; src = Vector(nx["p0"]) + Vector((0, 0, .002)); sr = Vector(nx["r0"])
+    hide_tree(nx, True)
+    if sr.z - dr.z > math.pi: dr = dr + Vector((0, 0, 2 * math.pi))      # 左の山（270度）からは、近い向きに回す
+    k = seg(t, .6, DISC_T)
+    o.location = src.lerp(dst, k) + Vector((0, 0, .05 * math.sin(math.pi * k))); o.rotation_euler = tuple(sr.lerp(dr, k))
+    R = Vector(ARMS[0]["R"]["rest"]); hz = TOP + TL + .012; A_ = lambda v, dz=0.0: (v.x + .004, v.y - .026 * TS, hz + dz)
+    w = hand_path(t, [(0, R), (.2, R), (.6, A_(src, .02)), (DISC_T, A_(dst, .02)), (DISC_T + .45, R), (DISC_DUR, R)]); pose_body(ARMS[0], w)
+    clip_cam(cam, CLIPCAM_D)
+def clip_marks():
+    """①の前の絵で囲む所: tile＝切られた牌・ツモった牌（動き終えてから）"""
+    nm = "called" if SCENE in ("chi", "pon", "daiminkan", "ron") else DRAWN[SCENE]
+    ps = [project(q) for q in tile_corners(NAMED[nm])]
+    return {"tile": [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]}
 def disc_pose(t, cam):
-    """鳴かれる人が手もとから河へ1枚切る。画角は①発声と同じ肩ごし（吹き出しの場所がずれないように。2026-11-25 ユーザーの指定）"""
+    """鳴かれる人が手もとから河へ1枚切る。画角は CLIPCAM（手牌・自分の河・切る人の河が入る）。発声の吹き出しもこの絵の上に出す"""
     anim_pose(0.0, cam)
     o = NAMED["called"]; dst = Vector(o.location); s_ = CALL_SEAT; q = s_ * math.pi / 2
     lx, ly = dst.x * math.cos(q) + dst.y * math.sin(q), -dst.x * math.sin(q) + dst.y * math.cos(q)      # その席から見た河の場所
@@ -1812,13 +1852,15 @@ def disc_pose(t, cam):
     o.location = seat_w(s_, tuple(p_)); hide_tree(o, t < .55)
     Ri = Vector(ARMS[s_]["R"]["rest"]); hz = TOP + TL + .012
     w = hand_path(t, [(0, Ri), (.3, Ri), (.6, (fr.x, -.29, hz)), (DISC_T, (lx, ly - .02, hz)), (DISC_T + .45, Ri), (DISC_DUR, Ri)]); pose_body(ARMS[s_], w)
-    CAMST[:] = [Vector(cam.location), Vector(CAM["mid"][1]), cam.data.lens]
+    hide_tree(bpy.data.objects["player0"]); clip_cam(cam)
 
 if ANIM and "--disc" in sys.argv:       # ①発声の前の、他家が切るコマを d0000.png〜 に
-    cam = anim_setup(); n = int(DISC_DUR * FPS)
+    cam = anim_setup(); n = int(DISC_DUR * FPS); dm = []
+    pose_ = draw_pose if SCENE in DRAWN else disc_pose
     for f in range(n):
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
-        disc_pose(f / FPS, cam); shoot(os.path.join(OUT, f"d{f:04d}.png"), "DISC", f, cam)
+        pose_(f / FPS, cam); dm.append(clip_marks() if f / FPS >= DISC_T else {}); shoot(os.path.join(OUT, f"d{f:04d}.png"), "DISC", f, cam)
+    import json; json.dump(dm, open(os.path.join(OUT, "dmarks.json"), "w"))
     sys.exit(0)
 
 if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に書き出す

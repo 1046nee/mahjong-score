@@ -20,7 +20,7 @@ CAST = {"chi": "p39,p03,p36,p17", "pon": "p20,p26,p22,p06", "kan": "p24,p30,p01,
         "furiten": "p12,p36,p40,p31", "furiten2": "p32,p07,p04,p25", "furiten3": "p35,p18,p10,p37"}      # 自家,下家,対面,上家
 
 
-DISC = ("chi", "pon", "daiminkan", "ron")      # ①の前に、他家が牌を切るコマ（scene.py --disc）がある動画
+DISC = ("chi", "pon", "daiminkan", "ron", "kan", "kakan", "riichi")      # ①の前に、他家が牌を切る・自分が山からツモるコマ（scene.py --disc）がある動画
 
 
 def arg(k, d):
