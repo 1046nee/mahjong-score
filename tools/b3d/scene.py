@@ -56,10 +56,15 @@ def tex_mat(code):
     path = os.path.join(TEX, code + ".png")
     if os.path.exists(path):
         t = nt.nodes.new("ShaderNodeTexImage"); t.image = bpy.data.images.load(path, check_existing=True)
-        nt.links.new(t.outputs["Color"], p.inputs["Base Color"])
+        # 牌の字が白く飛んで読めなかった（2026-11-25 ユーザーの指摘・全部の動画）。表の明るさを少し落とし（白が Standard で頭打ちにならない）、
+        # 字は濃く（明るさを2乗に近づける＝白はほぼそのまま・色の字は濃くなる）、つやを弱める（上の照明が映りこんで白く光った）
+        g = nt.nodes.new("ShaderNodeGamma"); g.inputs[1].default_value = 1.6
+        mx = nt.nodes.new("ShaderNodeMixRGB"); mx.blend_type = "MULTIPLY"; mx.inputs[0].default_value = 1.0; mx.inputs[2].default_value = (.80, .79, .76, 1)
+        nt.links.new(t.outputs["Color"], g.inputs[0]); nt.links.new(g.outputs[0], mx.inputs[1]); nt.links.new(mx.outputs[0], p.inputs["Base Color"])
     else:
-        p.inputs["Base Color"].default_value = hexc("#FFFDF6")
-    p.inputs["Roughness"].default_value = .25
+        p.inputs["Base Color"].default_value = hexc("#CFCCC4")
+    p.inputs["Roughness"].default_value = .55
+    if "Specular IOR Level" in p.inputs: p.inputs["Specular IOR Level"].default_value = .25
     _mats[name] = m
     return m
 
@@ -282,8 +287,8 @@ def tile_mesh(code):
          (4, 5, 9, 8), (5, 6, 10, 9), (6, 7, 11, 10), (7, 4, 8, 11),               # 白い側面
          (8, 9, 10, 11)]                                                              # 表
     me = bpy.data.meshes.new("tile_" + code); me.from_pydata(V, [], F)
-    me.materials.append(mat("tile_back", BACK, .35)); me.materials.append(mat("tile_white", "#FBF8EE", .3))
-    me.materials.append(tex_mat(code) if code != "back" else mat("tile_white", "#FBF8EE", .3))
+    me.materials.append(mat("tile_back", BACK, .35)); me.materials.append(mat("tile_white", "#E6E2D7", .5))
+    me.materials.append(tex_mat(code) if code != "back" else mat("tile_white", "#E6E2D7", .5))
     for i, poly in enumerate(me.polygons):
         poly.material_index = 0 if i < 5 else (1 if i < 9 else 2)
     uv = me.uv_layers.new(name="UV")
@@ -1353,16 +1358,18 @@ def s2_build():
                  (5.7, 6.4, (0, -.40, 2.0), (0, .06, .77), 30.0)]      # まとめのあいだは引いて、まとめのカードと字幕のあいだに、千点棒・自分の河・手牌（2026-11-25 ユーザーの指定）                  # 最後は、千点棒（卓の中央）を画面の真ん中に、手牌と河も入る画角。③で止めるコマ（76）までに動き終える（2026-11-21 書き出して確かめた。4.6〜5.5 だと止めたとき横からの絵の途中だった）
         pre = dict(lift=["hk3", "hk4"], call=False, cam2=None)
     elif SCENE == "tsumo":
-        nx = P("next"); xt = P("hk12").x + HP + .03
-        mv["next"] = [(2.0, 2.8, (xt, LY, Z), LIE, .08)]                             # 山から取って、手牌の右に表向きで置く（手牌には入れない）
+        nx = P("next"); h12 = P("hk12"); xt = h12.x + HP + .03
+        S_ = (math.pi / 2, 0, 2 * math.pi); L_ = (0, 0, 2 * math.pi)      # 左の山の牌は向きが席3（z＝270度）。360度へ回すと、90度だけ回って手前を向く
+        # 山から取って、手牌の右に少し離して立てる（手牌には入れない）→ ③でほかの手牌と一緒に倒す（2026-11-25 ユーザーの指定「一度手牌に立ててから倒す」。前は表向きで置いていた）
+        mv["next"] = [(2.0, 2.8, (xt, h12.y, h12.z), S_, .06), (3.5, 4.3, (xt, LY, Z), L_, .015)]
         for k in range(13): mv[f"hk{k}"] = [(3.5, 4.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
-        # 手牌は両手で、左端と右端を持って倒す（2026-11-14 ユーザーの指定。ロンと同じ）
-        xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
-        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y)), (2.8, A(xt, LY)), (3.4, A(xr, HY - .01, .02)), (4.3, A(xr, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
+        # 手牌は両手で、左端と右端を持って倒す（2026-11-14 ユーザーの指定。ロンと同じ）。右手はツモった牌の右
+        xl, xr = P("hk0").x - .006, xt + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+        arms[0] = [(0, R), (1.4, R), (2.0, A(nx.x, nx.y, .02)), (2.8, A(xt, HY + .01, .02)), (3.4, A(xr, HY - .01, .02)), (4.3, A(xr, LY)), (4.9, R), (DUR, R)]      # 山へ手をのばすのは、カメラが肩の上を回りこんだあと（早いと、前に倒れた頭がカメラをふさぐ）
         arms_l[0] = [(0, L0), (2.9, L0), (3.4, A(xl, HY - .01, .02)), (4.3, A(xl, LY)), (4.9, L0), (DUR, L0)]
         px = lambda t: .03 + .10 * (seg(t, 1.5, 2.1) - seg(t, 3.0, 3.5))
         cxa = (P("hk0").x + xt) / 2
-        focus = [Vector((xt - .02, LY, .77)), OVER(cxa, .03)]
+        focus = [Vector((xt - .05, HY, .77)), OVER(cxa, .03)]      # ①は立てたツモ牌と手牌の右がわ
         WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)
         RECV = (Vector((0, -.27, .77)), Vector((0, -.17, .62)), 30)       # 届いた点棒が読める所まで寄る（自分の前を上から）
         DV = (Vector((cxa, -.26, .77)), Vector((cxa, -.50, 1.42)), 30)      # 倒した手牌と、山のドラ表示牌（三萬）が両方大きく入る所（④申告で「ドラ1」と言う。2026-11-18 ユーザーの指定）
@@ -1684,7 +1691,7 @@ def pre_pose(t, cam):
     zx = lx - (.06 if SCENE in ("chi", "pon") else .02)        # 使う牌が画面の端に切れないように
     if S2: zx = max(-.12, min(.09, lx))
     zoom = (Vector((zx, -.55, 1.03)), Vector((zx, HY + .03, .78)), 30.0)
-    kz = 0.0 if SCENE == "riichi" else seg(t, 1.2, 2.0)
+    kz = 0.0 if SCENE in ("riichi", "tsumo") else seg(t, 1.2, 2.0)      # テンパイを見せる所は寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
     loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
     if KK:      # 手牌の全体 → ポンした明刻（右の隅）→ ツモった4枚目
         mc = S2C["pre"]["cam2"]; ka_ = seg(t, .3, 1.1); kb_ = seg(t, 2.2, 2.9)
