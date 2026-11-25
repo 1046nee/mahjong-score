@@ -1246,8 +1246,8 @@ def anim_pose_kan(t, cam):
     KD = (dx.x + .075, dx.y - .05, hz - .004)      # カンドラをめくるときの手は、牌の右どなり（真上に置くと、めくった牌が手の中を通った＝2026-11-14 ユーザーの指摘）
     keys = [(0.0, R), (1.0, R), (1.5, (kx, HY + .01, hz + .02)), (2.0, (kx, LY, hz)), (2.8, (kx, LY, hz)), (3.5, ((E[1] + E[2]) / 2, MY, hz)),
             (3.9, KD), (4.5, KD), (5.0, (r0.x, r0.y, hz)), (5.9, (xr, HY + .01, hz + .02)),
-            (6.5, (s0.x, HY + .01, hz + .02)), (7.3, (dst[0], dst[1], hz)), (8.0, R), (ANIM_DUR, R)]
-    w = hand_path(t, keys) + Vector((.004, -.026 * TS, 0)) * (seg(t, 1.0, 1.5) - seg(t, 7.3, 8.0))
+            (6.5, (s0.x, HY + .01, hz + .02)), (7.3, (dst[0], dst[1], hz)), (7.7, R), (ANIM_DUR, R)]      # ⑥の止める絵までに腕を戻す
+    w = hand_path(t, keys) + Vector((.004, -.026 * TS, 0)) * (seg(t, 1.0, 1.5) - seg(t, 7.3, 7.7))
     pk = [pause_k(tr, n) for n in range(len(FREEZE))]
     # ②開示は、表向きに倒した所（間0）から裏返し終わる所（間1）まで、ずっと寄ったまま見せる（間ごとに寄ったり引いたりしない）
     a0, a1 = FREEZE[0], FREEZE[1] + PAUSE
