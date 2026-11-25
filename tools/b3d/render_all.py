@@ -8,7 +8,7 @@
   2. python tools/b3d/render_all.py                 … 全部（下の ORDER の順）
      python tools/b3d/render_all.py pon chi        … 名前を並べると、その動画だけ
      python tools/b3d/render_all.py --preview      … 荒い試し（1秒5コマ・8サンプル）。字幕・声・音楽を先に見るとき
-  出力: まじゃすこ素材/3d/<名前>-30fps.mp4（試しは <名前>-preview5.mp4）。絵は作業フォルダ（--work、既定は ../3d-work）に置き、動画ができたら消す
+  出力: まじゃすこ素材/3d/<名前>-30fps.mp4（試しは <名前>-preview5.mp4）。絵は作業フォルダ（--work、既定は ../3d-work）に置き、本番の動画ができたら消す（試しの絵は残す）
 座る4人は Notion「3D動画の出演表」（2026-11-24 時点）。出演表を変えたら CAST も直す
 """
 import os, subprocess, sys, shutil, glob, urllib.request
@@ -54,7 +54,8 @@ def main():
             print(n, part or ["本題"], flush=True); subprocess.run(base + part, check=True, cwd=ROOT)
         if not vv_ok(): sys.exit("VOICEVOX が止まった。起動してからもう一度（絵はできているので、すぐ終わる）")
         subprocess.run([py, os.path.join(HERE, "make_clip.py"), d, out, "--script", n, "--voice", "--sfx", "--music"], check=True, cwd=ROOT)
-        shutil.rmtree(d, ignore_errors=True); print("できた:", out, flush=True)
+        if not prev: shutil.rmtree(d, ignore_errors=True)      # 試しの絵は残す（字幕や札だけ直すときは make_clip.py をもう一度動かせばよい）
+        print("できた:", out, flush=True)
 
 
 if __name__ == "__main__":
