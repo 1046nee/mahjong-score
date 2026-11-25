@@ -113,11 +113,11 @@ def _two():
 
 
 # 牌の音の時刻（scene.py の「もとの時刻 t」と、その時の音）。scene.py の動きを変えたら、ここもそろえる
-_NAKI = [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (4.15, "clackt"), (4.3, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")]     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
+_NAKI = [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.15, "slide"), (4.45, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")]     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
 TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒す・taosu＝手牌をまとめて倒す/伏せる・clackt＝牌と牌が当たる・clack＝打牌
     "pon": _NAKI, "chi": _NAKI,
     "kan": [(1.5, "tap"), (2.0, "clack2"), (2.55, "clackt"), (3.5, "slide"), (3.9, "tap"), (4.5, "clackt"), (5.0, "tap"), (5.9, "clackt"), (6.5, "tap"), (7.3, "clack")],
-    "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (4.15, "clackt"), (4.3, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
+    "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.15, "slide"), (4.45, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
     "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
     "riichi": [(1.5, "tap"), (2.4, "clack"), (3.2, "tap"), (4.1, "tap"), (4.6, "tap"), (5.1, "clackt"), (6.4, "taosu"), (7.0, "tap"), (7.7, "clackt")],
     "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.4, "tap"), (4.3, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
