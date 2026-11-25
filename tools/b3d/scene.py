@@ -466,12 +466,14 @@ if S2:
             NEXT_CODE = "p9"; NEXT2_CODE = "s7"; RIICHI_K = 4
             RIVERS = [["z1", "m9", "p1", "z5", "m1"], ["z4", "p9", "m1", "z3", "s1", "m9"], ["m1", "z6", "p9", "s9", "p2", "s8"], ["s9", "z3", "m9", "p3", "z7", "s4"]]
             FU_OTHER = {(1, 4): "o1", (2, 4): "o2", (3, 4): "o3", (1, 5): "o4", (2, 5): "o5", (3, 5): "o6"}
-    elif SCENE == "ryukyoku":   # 流局: 自家（六索・七索の両面）と対面がテンパイ、下家と上家がノーテン
+    elif SCENE == "ryukyoku":   # 流局: 自分は南家・親は上家（2026-11-25 ユーザーの指定。最後の海底牌は南家がツモって、河底牌も南家が切る）。上家（親）と自家（六索・七索の両面）がテンパイ、下家と対面がノーテン
         HANDS[0] = ["m3", "m4", "m5", "p5", "p6", "p7", "s2", "s3", "s4", "s6", "s7", "z7", "z7"]
-        OPEN_HANDS = {2: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
+        OPEN_HANDS = {3: ["m1", "m2", "m3", "m7", "m8", "m9", "p1", "p2", "p3", "s9", "s9", "z1", "z1"]}
         if "--taken" not in sys.argv: TAKEN = 1.0
         RIVER_DY, RIVER_PITCH, WANPAI_DY = .012, TL + .0005, -.008
-        RIVERS = auto_rivers([18, 18, 17, 17], HANDS[0] + OPEN_HANDS[2] + [DORA], ban=("s5", "s8", "s9", "z1"))
+        HAITEI = "p9"      # 海底牌（ツモってそのまま切る＝河底牌）
+        # 山の70枚は 東→南→西→北 の順にツモる: 東18・南18・西17・北17。南（自分）の18枚目が海底牌（前置きでツモって切る）
+        RIVERS = auto_rivers([17, 17, 17, 18], HANDS[0] + OPEN_HANDS[3] + [DORA, HAITEI], ban=("s5", "s8", "s9", "z1"))
 CALL_K = len(RIVERS[CALL_SEAT]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
 
 WALL = {}
@@ -491,6 +493,7 @@ def build_tiles():
     BRK = n - 8                                                   # 手前の山の、割れ目の左の幢（右の7幢が王牌）
     order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
     taken = set(order[:round(len(order) * TAKEN)])
+    if SCENE == "ryukyoku": taken = set(order[:-1])      # 最後の幢（下家の山の、王牌のとなり）の下段だけが海底牌として残る
     nxt = order[round(len(order) * TAKEN)] if round(len(order) * TAKEN) < len(order) else None      # 次にツモる幢
     if SCENE == "dahai" or FU:      # ツモと打牌・フリテン: 次にツモる幢は、左の山の、自分に近い端（手をのばしやすい所）
         taken = set(order[:BRK + 2]); nxt = order[BRK + 2]
@@ -500,6 +503,9 @@ def build_tiles():
             if (i, k) in taken: continue
             x = x0 + k * WP + (.007 if (i == 0 and k > BRK) else 0)     # 王牌は割れ目の分だけ右へ
             for lv in range(2):
+                if SCENE == "ryukyoku" and (i, k) == order[-1]:
+                    if lv == 0: named["haitei"] = tile(HAITEI, (x, WY, Z), r, "down")
+                    continue
                 if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
                     named["dora"] = tile(DORA, (x, WY + WANPAI_DY, Z + TT), r, "lie"); continue
                 code = {(BRK + 1, 1): RINSHAN, (BRK + 4, 1): "p2"}.get((k, lv), "back") if i == 0 else "back"
@@ -510,6 +516,7 @@ def build_tiles():
                 if (i, k) == nxt and lv == 0 and NEXT2_CODE != "back": named["next2"] = t
                 if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
                 if i == 0 and k == BRK + 4 and lv == 1: named["kandora"] = t       # カンドラ表示牌になる牌（ドラ表示牌の左となり・上段）
+                if i == 0 and k > BRK: named[f"wp{k}_{lv}"] = t      # 王牌（流局で囲む）
         # 河（6枚で折り返す）
         rv = RIVERS[i]
         for k, c in enumerate(rv):
@@ -1126,6 +1133,7 @@ def anim_setup():
             l = Vector(o.location); a = seat * math.pi / 2; e = o.rotation_euler
             o.parent = None; o.location = (l.x * math.cos(a) - l.y * math.sin(a), l.x * math.sin(a) + l.y * math.cos(a), l.z); o.rotation_euler = (e.x, e.y, e.z + a)
         if "called" in NAMED: to_world(NAMED["called"], CALL_SEAT)
+        if "haitei" in NAMED: to_world(NAMED["haitei"], 1)      # 流局の海底牌（下家の山）を、卓の座標で動かせるように
         for (s_, _), nm_ in FU_OTHER.items(): to_world(NAMED[nm_], s_)
         if "next" in NAMED: to_world(NAMED["next"], NAMED["next"].parent.name and int(NAMED["next"].parent.name[-1]))
         if "next2" in NAMED: to_world(NAMED["next2"], NAMED["next2"].parent.name and int(NAMED["next2"].parent.name[-1]))
@@ -1462,9 +1470,10 @@ def s2_build():
         arms[0] = arms[0][:-1] + [(6.3, R), (6.8, (st[0], st[1] + .01, hz)), (7.5, seat_w(1, (-.17, -.29, hz))), (8.0, R), (DUR, R)]
         pre = dict(lift=["hk11", "hk12"], call=True, cam2=None)
     elif SCENE == "ryukyoku":
-        for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
+        for k in range(13): mv[f"hk{k}"] = [(1.65, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
+        mv["haitei"] = [(-1.0, -.5, slot(n0), LIE, 0)]      # 前置きで切った河底牌は、自分の河の18枚目
         x0o = -6 * HP
-        for i_, a_, open_ in ((1, 3.6, False), (2, 4.4, True), (3, 5.2, False)):      # 下家＝ノーテン（伏せる）→ 対面＝テンパイ（倒す）→ 上家＝ノーテン
+        for i_, a_, open_ in ((3, .9, True), (1, 3.6, False), (2, 4.4, False)):      # 東家から順に（2026-11-25 ユーザーの指定）: 上家（親）＝テンパイ（倒す）→ 自分（②）→ 下家・対面＝ノーテン（伏せる）
             for k in range(13):
                 x = x0o + k * HP
                 mv[f"h{i_}k{k}"] = [(a_, a_ + .6, seat_w(i_, (x, LY, Z if open_ else Z + TT)), seat_r(i_, LIE if open_ else DOWN), .015)]
@@ -1473,19 +1482,19 @@ def s2_build():
             arms[i_] = [(0, Ri), (a_ - .5, Ri), (a_, (xe, HY - .04, hz + .02)), (a_ + .6, (xe, LY - .03, hz)), (a_ + .75, Ri), (DUR, Ri)]
             arms_l[i_] = [(0, Li), (a_ - .5, Li), (a_, (xs, HY - .04, hz + .02)), (a_ + .6, (xs, LY - .03, hz)), (a_ + .75, Li), (DUR, Li)]
         # ノーテン罰符: テンパイ2人・ノーテン2人 → ノーテンの人が1500点ずつ払う（下家→自家・上家→対面）
-        for g, giver, recv in (("a", 1, 0), ("b", 3, 2)):
+        for g, giver, recv, sd in (("a", 1, 0, 1), ("b", 2, 3, -1)):      # 下家 → 自分（下家から見て左どなり）・対面 → 上家（対面から見て右どなり）
             for n_, nm in enumerate(("bou1" + g, "bou5" + g)):
-                st = seat_w(giver, (0, -.262 - n_ * .014, Z)); en = seat_w(recv, (.262, -.29 - n_ * .014, Z))
+                st = seat_w(giver, (0, -.262 - n_ * .014, Z)); en = seat_w(recv, (.262 * sd, -.29 - n_ * .014, Z))
                 NAMED[nm]["p0"] = list(st); NAMED[nm]["r0"] = list(seat_r(giver, LIE)); show[nm] = 6.3
                 mv[nm] = [(6.5, 7.3, en, seat_r(recv, LIE), .03)]
-            Ri = Vector(ARMS[giver]["R"]["rest"])      # 受け取る人は、払う人から見てどちらも左どなり。腕が届く所まで送る
-            arms[giver] = arms[giver][:-1] + [(6.0, Ri), (6.5, (0, -.29, hz)), (7.3, (-.15, -.30, hz)), (7.9, Ri), (DUR, Ri)]
+            Ri = Vector(ARMS[giver]["R"]["rest"])      # 腕が届く所まで送る
+            arms[giver] = arms[giver][:-1] + [(6.0, Ri), (6.5, (0, -.29, hz)), (7.3, (-.15 * sd, -.30, hz)), (7.9, Ri), (DUR, Ri)]
         xl, xr = P("hk0").x - .006, P(hand[-1]).x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
-        arms[0] = [(0, R), (1.0, R), (1.5, A(xr, HY - .01, .02)), (2.3, A(xr, LY)), (2.9, R), (DUR, R)]
-        arms_l[0] = [(0, L0), (1.0, L0), (1.5, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
+        arms[0] = [(0, R), (1.15, R), (1.65, A(xr, HY - .01, .02)), (2.3, A(xr, LY)), (2.9, R), (DUR, R)]
+        arms_l[0] = [(0, L0), (1.15, L0), (1.65, A(xl, HY - .01, .02)), (2.3, A(xl, LY)), (2.9, L0), (DUR, L0)]
         WIDE = (Vector((0, .07, .77)), Vector((0, -.40, 1.62)), 38)                  # 卓の全体を引きで上から（4人の手牌が入り、対面の手牌が上の白いカードにかからない。2026-11-14 ユーザーの指定）
-        focus = [OVER(xc), WIDE, WIDE]
-        views = [(1.5, 2.3, tuple(OVER(xc)[0] + OVER(xc)[1]), tuple(OVER(xc)[0]), 36.0), (2.9, 3.6, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
+        focus = [WIDE, WIDE, WIDE]      # 4人の手牌がいつも見える引き（2026-11-25 ユーザーの指定）
+        views = [(.2, .85, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0)]
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=(Vector((0, -.52, 1.36)), Vector((0, -.1, .77)), 30.0))
     S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre)
 
@@ -1629,7 +1638,28 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
 # 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
-PRE_DUR = 9.6 if SCENE == "dahai" else 5.0      # ツモと打牌は流れを見せるので長い（2026-11-25）
+PRE_DUR = {"dahai": 9.6, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
+def pre_pose_ryukyoku(t, cam):
+    """流局の前置き（2026-11-25 ユーザーの指定「海底牌をツモる・河底牌を切る絵をセリフに合わせて」「王牌が画面に入り、どれかわかるように」）:
+    山の最後の1枚（海底牌）を映す → 自分がツモって（1.0〜2.4）そのまま切る（2.6〜3.3＝河底牌）→ 王牌14枚に寄る（3.8〜4.6）"""
+    anim_pose(0.0, cam)
+    h = NAMED["haitei"]; w0 = Vector(h["p0"]); hk = NAMED["hk12"]["p0"]; ST = Vector((hk[0] + HP + .03, hk[1], hk[2]))
+    dst = Vector(S2C["mv"]["haitei"][0][2]); S_ = (math.pi / 2, 0, 0)
+    k1 = seg(t, 1.6, 2.4); k2 = seg(t, 2.6, 3.3)
+    p_ = w0.lerp(ST, k1) + Vector((0, 0, .06 * math.sin(math.pi * k1))); r_ = Vector(h["r0"]).lerp(Vector(S_), k1)
+    if k2 > 0: p_ = ST.lerp(dst, k2) + Vector((0, 0, .06 * math.sin(math.pi * k2))); r_ = Vector(S_).lerp(Vector((0, 0, 0)), k2)
+    h.location = p_; h.rotation_euler = tuple(r_)
+    for k in range(13):      # 手牌はまだ倒さない
+        o = NAMED[f"hk{k}"]; o.location = o["p0"]; o.rotation_euler = o["r0"]
+    R = Vector(ARMS[0]["R"]["rest"]); hz = TOP + TL + .012; A_ = lambda v, dz=0.0: (v.x + .004, v.y - .026 * TS, hz + dz)
+    w = hand_path(t, [(0, R), (1.0, R), (1.6, A_(w0, .02)), (2.4, A_(ST, .02)), (2.6, A_(ST, .02)), (3.3, A_(dst)), (3.75, R), (PRE_DUR, R)]); pose_body(ARMS[0], w)
+    hide_tree(bpy.data.objects["player0"], False)      # 自分の手で取る・切るので、自分の選手を出す（カメラは頭の右前から）
+    wx = (wall_x(WALL["BRK"] + 1) + wall_x(WALL["n"] - 1)) / 2
+    c1 = (Vector((.36, -.60, 1.34)), Vector((.06, -.20, .77)), 30.0)      # 手牌・自分の河・山の右の角（海底牌と王牌）
+    c2 = (Vector((wx + .12, -.58, 1.10)), Vector((wx, WY, .78)), 34.0)      # 王牌14枚
+    kc = seg(t, 3.8, 4.6)
+    loc = c1[0].lerp(c2[0], kc); tgt = c1[1].lerp(c2[1], kc); lens = c1[2] + (c2[2] - c1[2]) * kc
+    cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = [loc, tgt, lens]
 def pre_pose_dahai(t, cam):
     """ツモと打牌の前置き（2026-11-25 ユーザーの指定）: 上家が牌を切る（0.6〜1.6）→ 自分が1枚ツモって1枚切る（本題の動きを 3.1〜5.9 に）→ 手牌の全体を映して13枚を数える"""
     main = 0.0 if t < 3.1 else min(4.3, 1.4 + (t - 3.1) * (4.3 - 1.4) / 2.8)
@@ -1669,6 +1699,7 @@ def pre_pose(t, cam):
     """手前の選手の目から見る（選手0は消す）。手牌の全体 → 使う牌に寄る（少し持ち上げる）→ チーは上家の河に六萬が来る。
     入りの最後・①の最初とは、make_clip.py が重ねてつなぐ（カメラで体の中を通らないように）"""
     if SCENE == "dahai": return pre_pose_dahai(t, cam)
+    if SCENE == "ryukyoku": return pre_pose_ryukyoku(t, cam)
     anim_pose(0.0, cam)
     CALLP = SCENE in ("chi", "pon") or (S2 and S2C["pre"]["call"])      # だれかが切った牌を使う場面
     if CALLP:
@@ -1713,14 +1744,18 @@ def pre_marks(t):
     """前置きで囲む牌の場所（make_clip.py が囲みと札をのせる。2026-11-25 ユーザーの指定「ターツや相手の牌に、目で見てわかる印」）。
     own＝使う手牌（持ち上げ終えてから）・call＝人が切った牌（河に着いてから）。加槓は own＝ポンした明刻・call＝ツモった4枚目"""
     if SCENE == "kakan": grp = {"own": (["meld0", "meld1", "meld2"], .9), "call": (S2C["pre"]["lift"], 3.2)}
+    elif SCENE == "ryukyoku":
+        wp = [n for n in NAMED if n.startswith("wp")] + ["dora"]
+        grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.35), "wanpai": (wp, 4.6)}
     else:
         CALLP = SCENE in ("chi", "pon") or (S2 and S2C["pre"]["call"])
         lift = S2C["pre"]["lift"] if S2 else ["hk11", "hk12"]
         grp = {"own": (lift, 2.0)}
         if CALLP: grp["call"] = (["called"], 3.75)
     out = {}
-    for key, (ns, t0) in grp.items():
-        if t < t0 or any(NAMED[n].hide_render for n in ns): continue
+    for key, g_ in grp.items():
+        ns, t0 = g_[0], g_[1]
+        if t < t0 or (len(g_) > 2 and t > g_[2]) or any(NAMED[n].hide_render for n in ns): continue
         ps = [project(q) for n in ns for q in tile_corners(NAMED[n])]
         b = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
         if b[0] > 20 and b[2] < 1060 and b[1] > 20 and b[3] < 1900: out[key] = b      # 画面の外は囲まない
@@ -1763,7 +1798,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
         hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
         shoot(fp, "PRE", f, cam)
-    if SCENE in ("chi", "pon", "daiminkan", "ron", "kakan", "riichi", "tsumo") and not only:      # 囲む牌の場所（make_clip.py がのせる）
+    if SCENE in ("chi", "pon", "daiminkan", "ron", "kakan", "riichi", "tsumo", "ryukyoku") and not only:      # 囲む牌の場所（make_clip.py がのせる）
         import json; pm = []
         if S2 and not S2C: s2_build()
         for f in range(n):

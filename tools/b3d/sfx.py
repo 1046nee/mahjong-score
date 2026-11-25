@@ -126,12 +126,13 @@ TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒�
     "furiten": [(3.2, "tap"), (3.8, "clack"), (4.8, "tap"), (5.6, "clackt"), (5.9, "tap"), (6.8, "taosu")],
     "furiten2": [(2.0, "tap"), (2.6, "clack"), (3.4, "tap"), (4.0, "clack"), (4.7, "tap"), (5.3, "clack"), (6.0, "tap"), (6.8, "clackt"), (7.1, "tap"), (7.9, "clack"), (8.8, "tap"), (9.4, "clack")],
     "furiten3": [(2.0, "tap"), (2.6, "clack"), (3.7, "clack"), (4.4, "clack"), (5.2, "tap"), (6.0, "clackt"), (6.3, "tap"), (7.1, "clack"), (8.3, "clack"), (9.0, "clack"), (9.8, "clack"), (11.0, "tap"), (11.8, "clackt"), (12.1, "tap"), (13.0, "taosu")],
-    "ryukyoku": [(1.5, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (5.8, "taosu"), (7.3, "tap")],
+    "ryukyoku": [(1.5, "taosu"), (1.65, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (7.3, "tap")],      # 上家（親）→ 自分 → 下家 → 対面
 }
 # 前置き（scene.py の pre_pose の時刻）: 手牌の2枚が持ち上がる＝1.6秒・切った牌が河に出る＝3.1秒
 # 2026-11-14 ユーザーの指定「牌が浮き上がる時や、だれかが牌を切った時にポンッ」を、9本すべてに。浮き上がる＝1.6秒（どの動画も）・他家が切る＝3.1秒（鳴く・ロンの動画だけ）
 PRE_EVENTS = {n: [(1.6, "pop")] + ([(3.1, "pop")] if n in ("pon", "chi", "daiminkan", "ron") else [])
               for n in ("pon", "chi", "kan", "daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai", "furiten", "furiten2", "furiten3")}
+PRE_EVENTS["ryukyoku"] = [(1.6, "tap"), (2.4, "clackt"), (3.3, "clack")]      # 海底牌をツモる・立てる・切る（scene.py の pre_pose_ryukyoku）
 PRE_EVENTS["kakan"] = [(2.8, "pop")]      # 加槓は明刻を見せてから、4枚目を持ち上げる（scene.py の pre_pose）
 PRE_EVENTS["dahai"] = [(1.5, "clack"), (3.1 + (2.0 - 1.4) * 2.8 / 2.9, "tap"), (3.1 + (2.8 - 1.4) * 2.8 / 2.9, "clackt"), (3.1 + (3.7 - 1.4) * 2.8 / 2.9, "clack")]      # 上家が切る・自分がツモる・切る（scene.py の pre_pose_dahai）
 FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0), "kan": (2.0, 2.6, 3.55, 4.5, 5.9),     # scene.py の FREEZE・S2T とそろえる

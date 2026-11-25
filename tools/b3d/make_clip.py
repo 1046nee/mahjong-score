@@ -185,11 +185,13 @@ SCRIPTS = {
     ])),
     "ryukyoku": dict(title="流局のしかた", kicker="ルールとマナーに沿った正しい手順", sub="4つの手順で覚える", steps=[
         ("流局", "りゅうきょく", "アガリが出ないまま、この局はおしまい", 0, 6, 2.2, [], ""),     # 前置きのカードと同じことを言わない（2026-11-14 ユーザーの指定）
-        ("テンパイ", "", "あと1枚でアガれる人は、両手で手牌を倒して見せる", 7, 36, 2.0, [], ""),     # 流局のテンパイ・ノーテンは声に出さない（2026-11-14 ユーザーの指定）
-        ("ノーテン", "", "テンパイなら倒し、ノーテンなら両手で伏せる。{東家|トンチャ}から順に", 37, 86, 2.0, [], ""),
+        ("テンパイ", "", "あと1枚でアガれる人は、両手で手牌を倒して見せる。{東家|トンチャ}から順に", 7, 36, 2.0, [], ""),     # 流局のテンパイ・ノーテンは声に出さない（2026-11-14 ユーザーの指定）
+        ("ノーテン", "", "テンパイでない人は、両手で手牌を伏せる", 37, 86, 2.0, [], ""),
         ("点棒", "てんぼう", "ノーテンの人がテンパイの人へ払う（場に3,000点）", 87, 113, 2.2, [], ""),
-    ], tail=(114, 125, 2.4), cards={3: "bappu"},     # ④の止めているあいだに、ノーテン罰符の早見表（テンパイ0〜4人。2026-11-18 ユーザーの指定）
-    pre=dict(head="流局になるとき", ls=[0, 1, 2, 2], hold=2.0, concl=True, lines=[
+    ], tail=(114, 125, 2.4), cards={3: "bappu2"},     # ④は、声の文ごとにノーテン罰符の例を切りかえる（2026-11-25 ユーザーの指定）
+    sbeats={3: [(92, "ノーテンの2人が")]},       # 点棒は「ノーテンの2人が」の声で払う
+    pre=dict(head="流局になるとき", ls=[0, 1, 2, 2], beats=[(1.0, 1), (3.8, 2)], hold=2.0, concl=True,
+             marks={"haitei": ("orange", "海底牌", [], "UL"), "houtei": ("blue", "河底牌", [], "UL"), "wanpai": ("green", "王牌 14枚", [], "UR")}, lines=[
         (0.3, "最後の{海底牌|ハイテイハイ}をツモった", "山の最後の1枚"),
         (1.6, "切った{河底牌|ホウテイハイ}にロンがない", "最後の捨て牌"),
         (2.9, "残りは{王牌|ワンパイ}14枚だけ", "ツモれない牌"),
@@ -410,6 +412,57 @@ def bappu_card(d, k, now=2):
         x = 480; ft = fit(d, tx, 40, W - 90 - x, 900)
         d.text((x, y + (RH / 2 - 28 if sub else RH / 2 - 24)), tx, font=ft, fill=(31, 42, 40, A(255)))
         if sub: d.text((x, y + RH / 2 + 16), sub, font=font(28, 700), fill=(95, 110, 106, A(255)))
+
+
+BAPPU2 = [("ノーテン罰符", None, "ノーテンの人が、テンパイの人へ払う"), ("ノーテンの2人が", {0, 3}, "ノーテン2人が、1,500点ずつ払う"),
+          ("テンパイが1人なら", {0}, "ノーテン3人が、1,000点ずつ払う"), ("テンパイが3人なら", {0, 2, 3}, "ノーテン1人が、3人に1,000点ずつ払う"),
+          ("全員テンパイか", "all", "全員同じなら、点数は動かない")]
+SEATP = {0: (0, 1), 1: (1, 0), 2: (0, -1), 3: (-1, 0)}; SEATN = {0: "自分", 1: "下家", 2: "対面", 3: "上家"}
+def bappu_phases(subs):
+    """④の声の、例を切りかえる時刻（その手順が出てからの秒）"""
+    out = []
+    for w, ten, tx in BAPPU2:
+        s_ = say_at(subs, w)
+        if s_ is not None: out.append((.25 + s_ - .1, ten, tx))
+    return out
+def bappu_live(d, t, ph):
+    """ノーテン罰符の例のカード（2026-11-25 ユーザーの指定「話しているセリフに合わせてカードの表示を変える」）。
+    左に卓の図（4人の丸: 緑＝テンパイ・白＝ノーテン、矢印＝払う向き）、右に人数と払い方。声の文が変わるたびに、図と文が入れかわる"""
+    cur = [p for p in ph if t >= p[0]]
+    if not cur: return
+    t0, ten, tx = cur[-1]; k = min(1, (t - ph[0][0]) * 4); a = min(1, (t - t0) * 5); A = lambda v, q=1: int(v * q)
+    y0 = 1060 + int((1 - k) * 30); h = 400
+    d.rounded_rectangle((40, y0, W - 40, y0 + h), radius=40, fill=(255, 255, 255, A(246, k)), outline=(231, 86, 32, A(255, k)), width=7)
+    ruby_c(d, W / 2, y0 + 62, "{ノーテン罰符|ノーテンバップ}＝場に3,000点", font(46), (31, 42, 40, A(255, k)), 22)
+    if ten == "all": ten = set(range(4)) if int(t * 1.25) % 2 == 0 else set()      # 全員テンパイ ⇄ 全員ノーテン を交互に
+    cx, cy, R = 230, y0 + 250, 92
+    d.rounded_rectangle((cx - R + 18, cy - R + 18, cx + R - 18, cy + R - 18), radius=18, fill=(228, 243, 236, A(255, a)))
+    if ten is not None:
+        pays = []
+        nt = [s_ for s_ in range(4) if s_ not in ten]
+        if len(ten) == 2: pays = [(1, 0), (2, 3)]      # この動画の場面（下家→自分・対面→上家）
+        elif len(ten) in (1, 3): pays = [(n_, t_) for n_ in nt for t_ in ten]
+        for g, r_ in pays:      # 払う向きの矢印
+            (gx, gy), (rx, ry) = SEATP[g], SEATP[r_]
+            x1, y1, x2, y2 = cx + gx * R, cy + gy * R, cx + rx * R, cy + ry * R
+            import math as _m
+            L = _m.hypot(x2 - x1, y2 - y1); ux, uy = (x2 - x1) / L, (y2 - y1) / L
+            x1, y1, x2, y2 = x1 + ux * 36, y1 + uy * 36, x2 - ux * 40, y2 - uy * 40
+            d.line((x1, y1, x2, y2), fill=(231, 86, 32, A(255, a)), width=8)
+            d.polygon([(x2 + ux * 14, y2 + uy * 14), (x2 - ux * 10 - uy * 14, y2 - uy * 10 + ux * 14), (x2 - ux * 10 + uy * 14, y2 - uy * 10 - ux * 14)], fill=(231, 86, 32, A(255, a)))
+    for s_ in range(4):
+        px, py = cx + SEATP[s_][0] * R, cy + SEATP[s_][1] * R; on = ten is not None and s_ in ten
+        d.ellipse((px - 30, py - 30, px + 30, py + 30), fill=(23, 112, 131, A(255, a)) if on else (255, 255, 255, A(255, a)), outline=(23, 112, 131, A(255, a)) if on else (170, 182, 179, A(255, a)), width=5)
+        text_c(d, px, py - 2, SEATN[s_][:1], font(28), (255, 255, 255, A(255, a)) if on else (120, 132, 129, A(255, a)))
+    x = 420
+    if ten is not None:
+        text_c(d, x + 100, y0 + 160, "テンパイ", font(30, 800), (95, 110, 106, A(255, a)))
+        n_ = len(ten); text_c(d, x + 100, y0 + 220, f"{n_}人", font(70), (23, 112, 131, A(255, a)))
+    tx_x = x if ten is None else x + 200; aw = W - 80 - tx_x; rows = [tx]
+    if d.textlength(tx, font=font(38, 900)) > aw:      # 長い文は「、」で2行に
+        c_ = tx.find("、") + 1 or len(tx) // 2; rows = [tx[:c_], tx[c_:]]
+    ft = fit(d, max(rows, key=lambda r_: d.textlength(r_, font=font(38, 900))), 38, aw, 900)
+    for j, r_ in enumerate(rows): d.text((tx_x, y0 + 250 - 28 * len(rows) + j * 56), r_, font=ft, fill=(31, 42, 40, A(255, a)))
 
 
 _bub = {}
@@ -642,7 +695,7 @@ def draw_count(d, ps, t, t0, dt, nmax=None):
         text_c(d, x, cy - 1, str(k + 1), font(30), (255, 255, 255, int(255 * a)))
 
 
-def sfx_events(sc, name, seq, fps, bub_at={}):
+def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
     """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
     import sfx
     ev = []; first = {}
@@ -658,6 +711,8 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
                 for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + (next((k / fps for k, x in enumerate(am) if x >= t_), t_) if am else t_), snd))
                 if sc["pre"].get("count"):      # 数える丸が出るたびに小さな音
                     _, c0, cd = sc["pre"]["count"]; ev += [(sec + c0 + k * cd, "tick") for k in range(13)]
+            if i >= 0 and sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in subs_:      # 例が切りかわるたびに「ポン」
+                ev += [(sec + p[0], "pop") for p in bappu_phases(subs_[f"step{i + 1}"])]
             if i >= 0 and i in sc.get("counts", {}):
                 _, c0, cd = sc["counts"][i]; ev += [(sec + c0 + k * cd, "tick") for k in range(7)]
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
@@ -866,6 +921,8 @@ def main():
             if s[7] and t > bt: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
                 key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 7)
+            if sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in SUBS:
+                bappu_live(d, t, bappu_phases(SUBS[f"step{i + 1}"]))
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す
                 card_t0.setdefault(i, t); bappu_card(d, t - card_t0[i])
             kk = sc.get("kuikae")
@@ -890,7 +947,7 @@ def main():
             for k_ in range(min(len(pcm), total - o)): buf[o + k_] = max(-32768, min(32767, buf[o + k_] + pcm[k_]))
         if "--sfx" in a:     # 効果音（2026-11-14〜・sfx.py）。声の下に、牌の当たる音・吹き出し・手順の音などを足す
             import numpy as np, sfx
-            ev = sfx_events(sc, name, seq, fps, BUB_AT)
+            ev = sfx_events(sc, name, seq, fps, BUB_AT, SUBS)
             fx = sfx.render(ev, len(seq) / fps, sr)[:total]
             v = np.frombuffer(buf.tobytes(), dtype=np.int16).astype(float) / 32768
             m = v + fx[:len(v)] * .8
