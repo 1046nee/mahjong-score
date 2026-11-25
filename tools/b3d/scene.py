@@ -1691,7 +1691,7 @@ def pre_pose(t, cam):
     zx = lx - (.06 if SCENE in ("chi", "pon") else .02)        # 使う牌が画面の端に切れないように
     if S2: zx = max(-.12, min(.09, lx))
     zoom = (Vector((zx, -.55, 1.03)), Vector((zx, HY + .03, .78)), 30.0)
-    kz = 0.0 if SCENE in ("riichi", "tsumo") else seg(t, 1.2, 2.0)      # テンパイを見せる所は寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
+    kz = 0.0 if SCENE in ("riichi", "tsumo", "ron") else seg(t, 1.2, 2.0)      # テンパイを見せる所は寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
     loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
     if KK:      # 手牌の全体 → ポンした明刻（右の隅）→ ツモった4枚目
         mc = S2C["pre"]["cam2"]; ka_ = seg(t, .3, 1.1); kb_ = seg(t, 2.2, 2.9)
@@ -1730,6 +1730,30 @@ def hide_tree(o, v=True):
     o.hide_render = v
     for c in o.children: hide_tree(c, v)
 
+# ---------------- ①発声の前: 他家が牌を切る（2026-11-25 ユーザーの指定「他家が切った牌に対して発声する流れに」。チー・ポン・大明槓・ロン） ----------------
+DISC_DUR = 1.8
+DISC_T = 1.3      # 牌が河に着く時刻（make_clip.py が牌の音を鳴らす）
+def disc_pose(t, cam):
+    """鳴かれる人が手もとから河へ1枚切る。画角は前置きと同じ、切る人の河（肩ごしでは小さくて見えなかった）。手前の選手は消す"""
+    anim_pose(0.0, cam); hide_tree(bpy.data.objects["player0"])
+    o = NAMED["called"]; dst = Vector(o.location); s_ = CALL_SEAT; q = s_ * math.pi / 2
+    lx, ly = dst.x * math.cos(q) + dst.y * math.sin(q), -dst.x * math.sin(q) + dst.y * math.cos(q)      # その席から見た河の場所
+    fr = Vector((lx * .5, -.27, dst.z + .04)); k = seg(t, .6, DISC_T)
+    p_ = fr.lerp(Vector((lx, ly, dst.z)), k) + Vector((0, 0, .03 * math.sin(math.pi * k)))
+    o.location = seat_w(s_, tuple(p_)); hide_tree(o, t < .55)
+    Ri = Vector(ARMS[s_]["R"]["rest"]); hz = TOP + TL + .012
+    w = hand_path(t, [(0, Ri), (.3, Ri), (.6, (fr.x, -.29, hz)), (DISC_T, (lx, ly - .02, hz)), (DISC_T + .45, Ri), (DISC_DUR, Ri)]); pose_body(ARMS[s_], w)
+    riv = {3: (Vector((-.11, -.42, 1.00)), Vector((dst.x, dst.y + .04, .77)), 44.0), 2: (Vector((.0, -.34, 1.06)), Vector((.0, dst.y - .02, .77)), 40.0),
+           1: (Vector((.11, -.42, 1.00)), Vector((dst.x, dst.y + .04, .77)), 44.0)}[s_]
+    cam.data.lens = riv[2]; cam.location = riv[0]; cam.rotation_euler = (riv[1] - riv[0]).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = list(riv)
+
+if ANIM and "--disc" in sys.argv:       # ①発声の前の、他家が切るコマを d0000.png〜 に
+    cam = anim_setup(); n = int(DISC_DUR * FPS)
+    for f in range(n):
+        for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
+        disc_pose(f / FPS, cam); shoot(os.path.join(OUT, f"d{f:04d}.png"), "DISC", f, cam)
+    sys.exit(0)
+
 if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に書き出す
     cam = anim_setup()
     n = int(PRE_DUR * FPS)
@@ -1739,7 +1763,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
         hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
         shoot(fp, "PRE", f, cam)
-    if SCENE in ("chi", "pon", "daiminkan", "ron", "kakan") and not only:      # 囲む牌の場所（make_clip.py がのせる）
+    if SCENE in ("chi", "pon", "daiminkan", "ron", "kakan", "riichi", "tsumo") and not only:      # 囲む牌の場所（make_clip.py がのせる）
         import json; pm = []
         if S2 and not S2C: s2_build()
         for f in range(n):

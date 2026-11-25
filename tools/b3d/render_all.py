@@ -20,6 +20,9 @@ CAST = {"chi": "p39,p03,p36,p17", "pon": "p20,p26,p22,p06", "kan": "p24,p30,p01,
         "furiten": "p12,p36,p40,p31", "furiten2": "p32,p07,p04,p25", "furiten3": "p35,p18,p10,p37"}      # 自家,下家,対面,上家
 
 
+DISC = ("chi", "pon", "daiminkan", "ron")      # ①の前に、他家が牌を切るコマ（scene.py --disc）がある動画
+
+
 def arg(k, d):
     a = sys.argv; return a[a.index(k) + 1] if k in a else d
 
@@ -47,7 +50,7 @@ def main():
         d = os.path.join(work, ("p5-" if prev else "") + n); os.makedirs(d, exist_ok=True)
         base = [py, os.path.join(HERE, "scene.py"), "--tex", tex, "--out", d, "--scene", n, "--fps", fps, "--size", "540x960", "--samples", samples,
                 "--roster", os.path.join(assets, "3d", "roster.json"), "--seats", CAST[n], "--anim"]
-        for part in (["--intro"], ["--pre"], [], ["--outro"]):
+        for part in (["--intro"], ["--pre"]) + ((["--disc"],) if n in DISC else ()) + ([], ["--outro"]):
             print(n, part or ["本題"], flush=True); subprocess.run(base + part, check=True, cwd=ROOT)
         if not vv_ok(): sys.exit("VOICEVOX が止まった。起動してからもう一度（絵はできているので、すぐ終わる）")
         subprocess.run([py, os.path.join(HERE, "make_clip.py"), d, out, "--script", n, "--voice", "--sfx", "--music"], check=True, cwd=ROOT)

@@ -101,7 +101,7 @@ SCRIPTS = {
         ("打牌", "ダハイ", "いらない牌を、横向きにして切る", 7, 42, 1.8, [], ""),
         ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),     # 「待つ」の手順はやめた（2026-11-14 ユーザーの判断）
     ], tail=(81, 93, 2.4),
-    pre=dict(head="リーチできるとき", ls=[0, 1, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="リーチできるとき", marks={"own": ("orange", "待ち", ["p3", "p6"], "UL")}, ls=[0, 1, 1], hold=2.0, concl=True, lines=[
         (0.3, "{門前|メンゼン}である", "ポン・チー・明槓をしていない"),
         (1.6, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (2.8, "1,000点棒を出して、リーチできる"),
@@ -111,21 +111,21 @@ SCRIPTS = {
         ("発声", "はっせい", "アガリ牌なら「ツモ」と声に出す", 43, 49, 2.0, [], "ツモ"),
         ("開示", "かいじ", "両手で手牌の両端を持って、ツモった牌と一緒に倒す", 50, 68, 2.0, [], ""),
         ("申告", "しんこく", "同卓者に点数を申告する", 69, 75, 2.6, [], "1000・2000"),      # 役やドラの説明はカードに書かない（2026-11-25 ユーザーの指定）
-        ("支払い", "しはらい", "親は2,000点、子は1,000点ずつ、アガった人に払う", 76, 104, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
+        ("支払い", "しはらい", "ほかの3人が、アガった人に点数を払う", 76, 104, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
     ], tail=(105, 105, 2.4),
-    pre=dict(head="ツモアガリできるとき", ls=[0, 1, 2, 2], hold=2.0, concl=True, lines=[
+    pre=dict(head="ツモアガリできるとき", marks={"own": ("orange", "待ち", ["m7"], "UL")}, ls=[0, 1, 2, 2], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "自分で{ アガリ牌 }を引いた → ツモ"),
         (2.8, "{役|ヤク}が1つ以上ある", "アガるのに必要な形"),
         (3.6, "自分で引いたアガリ牌で、ツモアガリ"),
     ])),
     "ron": dict(title="ロンアガリの方法", kicker="ルールとマナーに沿った正しい手順", sub="4つの手順で覚える", steps=[
-        ("発声", "はっせい", "「ロン」と声に出す。ポン・チーより優先される", 0, 6, 2.2, [], "ロン"),
+        ("発声", "はっせい", "他家がアガリ牌を切ったら「ロン」と声に出す", 0, 6, 2.2, [], "ロン"),
         ("開示", "かいじ", "両手で手牌の両端を持って、手牌を倒す", 7, 36, 2.0, [], ""),
-        ("申告", "しんこく", "点数だけを言う\nタンヤオ・ピンフ・赤1＝子の3翻30符で3,900点", 37, 66, 2.6, [], "3900"),     # 役は言わず点数だけ（2026-11-14 ユーザーの指定）
-        ("支払い", "しはらい", "{下家|シモチャ}が5,000点棒で払い、おつりの1,100点を返す", 67, 114, 2.0, [], ""),     # 下家が5,000点棒・自分が1,000点棒と100点棒で返す（2026-11-16 ユーザーの指定）
+        ("申告", "しんこく", "同卓者に点数を申告する", 37, 66, 2.6, [], "3900"),     # 役は言わず点数だけ（2026-11-14 ユーザーの指定）
+        ("支払い", "しはらい", "ロンされた人だけが、アガった人に点数を払う", 67, 114, 2.0, [], ""),     # 下家が5,000点棒・自分が1,000点棒と100点棒で返す（2026-11-16 ユーザーの指定）
     ], tail=(115, 120, 2.4),
-    pre=dict(head="ロンアガリできるとき", marks={"own": ("orange", "待ちの形", ["p6", "p7"], "UL"), "call": ("blue", "アガリ牌", ["p5r"], "UR")}, ls=[0, 1, 2, 3], beats=[(2.4, 1)], hold=1.8, concl=True, lines=[
+    pre=dict(head="ロンアガリできるとき", marks={"own": ("orange", "待ち", ["p5", "p8"], "UL"), "call": ("blue", "アガリ牌", ["p5r"], "UR")}, ls=[0, 1, 2, 3], beats=[(2.4, 1)], hold=1.8, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (3.4, "{他家|ターチャ}が{ アガリ牌 }を切った → ロン"),
         (3.9, "{役|ヤク}が1つ以上ある", "アガるのに必要な形"),
@@ -652,6 +652,7 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
             # 画面の出来事で鳴らすのは、発声の吹き出しと、手順の切りかえ（2026-11-24 ユーザーの指定で足した。琴の「ポロン」）。箇条書き・まとめでは鳴らさない
             if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
             if i >= 0: ev.append((sec, "kstep"))
+            if i == 0 and isinstance(f, str) and os.path.basename(f).startswith("d"): ev.append((sec + 1.3, "clack"))      # 他家の打牌（scene.py の DISC_T）
             if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
                 am = sc["pre"].get("amap")
                 for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + (next((k / fps for k, x in enumerate(am) if x >= t_), t_) if am else t_), snd))
@@ -780,6 +781,7 @@ def main():
     frames = sorted(glob.glob(os.path.join(src, "f[0-9]*.png")))
     assert frames, "コマが無い: " + src
     intro = sorted(glob.glob(os.path.join(src, "i[0-9]*.png")))
+    disc = sorted(glob.glob(os.path.join(src, "d[0-9]*.png")))
     # 出すコマの並び: (元のコマ, 手順, その手順が出てからの秒, 止めているか)
     seq = []
     starts["intro"] = .5
@@ -815,13 +817,15 @@ def main():
         frozen = s[0] == "発声" or (i == 0 and s[0] != "ツモ")
         a0 = sc["steps"][i - 1][3] + 1 if i and (sc["steps"][i - 1][0] == "発声" or (i == 1 and sc["steps"][0][0] != "ツモ")) else s[3]
         fr = [s[3]] * (s[4] - s[3] + 1) if frozen else list(range(a0, s[4] + 1))
+        hf = s[3] if frozen else s[4]
+        if i == 0 and disc: fr = disc; hf = disc[-1]      # 他家が切ってから発声する（scene.py --disc）。止めるのも、切った牌が河にある絵
         for bf, wd in reversed(sc.get("sbeats", {}).get(i, [])):      # 声のその言葉が出るまで、コマ bf で止めて待つ
             ws = say_at(SUBS.get(f"step{i + 1}", []), wd)
             if ws is not None and bf in fr:
                 k_ = fr.index(bf); fr = fr[:k_ + 1] + [bf] * max(0, int((.25 + ws - .1) * fps) - (k_ + 1)) + fr[k_ + 1:]
         for f in fr: seq.append((f, i, t, False)); t += 1 / fps
         nd = max(need(f"step{i + 1}") + .25, (BUB_AT.get(f"step{i + 1}", .25) + 1.8) if s[7] else 0)     # 吹き出しが出てから1.8秒は見せる（1秒では一瞬で消えて見えた）
-        for _ in range(max(int(s[5] * fps), int(nd * fps) - len(fr))): seq.append((s[3] if frozen else s[4], i, t, True)); t += 1 / fps
+        for _ in range(max(int(s[5] * fps), int(nd * fps) - len(fr))): seq.append((hf, i, t, True)); t += 1 / fps
     f0, f1, hold = sc["tail"]; t = 0.0; starts["tail"] = len(seq) / fps + .9
     for f in range(f0, f1 + 1): seq.append((f, -1, t, False)); t += 1 / fps
     for _ in range(max(int(hold * fps), int((need("tail") + .9) * fps) - (f1 - f0 + 1))): seq.append((f1, -1, t, True)); t += 1 / fps
