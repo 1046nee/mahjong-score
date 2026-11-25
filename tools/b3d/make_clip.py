@@ -24,10 +24,12 @@ SCRIPTS = {
         ("発声", "はっせい", "「チー」と声に出す。ポンが優先なので一拍おいてから", 0, 6, 2.2, [], "チー"),     # 肩ごしで顔が見えるうちに止める（カメラが動き出す前）
         ("開示", "かいじ", "鳴くのに使う{搭子|ターツ}を倒して、みんなに見せる", 7, 31, 1.6, ["m4", "m5"], ""),          # 止める所は、手がどいて真上から寄ったコマ
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 32, 61, 1.4, ["m6"], ""),
-        ("副露", "フーロ", "取った牌を横向きにして付け、卓の右端に寄せる", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
-        ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, ["s3"], "", "※鳴いた牌と同じ牌・反対側のスジの牌は切れない（喰い替え）"),     # 形の上で切れない牌（2026-11-16 ユーザーの指定）
-    ], tail=(106, 120, 2.4),
-    pre=dict(head="チーできるとき", hold=1.8, concl=True, lines=[
+        ("副露", "フーロ", "取った牌を左に横向きで付け、卓の右端に寄せる", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
+        ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 109, 1.4, ["s3"], "", "※鳴いた牌と同じ牌・反対側のスジの牌は切れない（喰い替え）"),     # 形の上で切れない牌（2026-11-16 ユーザーの指定）
+    ], tail=(110, 120, 2.4),
+    sbeats={3: [(67, "卓の右端に寄せます")]},       # ④は、置いた所で止めて「卓の右端に寄せます」の声で寄せる（2026-11-25 ユーザーの指定）
+    kuikae=dict(step=4, at="切れません", meld=["m6", "m4", "m5"], side=0, ng=[("m6", "同じ牌"), ("m3", "反対側のスジ")]),      # 喰い替えの具体例（四萬五萬で六萬をチー）
+    pre=dict(head="チーできるとき", marks={"own": ("orange", "ターツ", ["m4", "m5"], "UR"), "call": ("blue", "上家が切った", ["m6"], "UL")}, ls=[0, 2, 2, 3], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {搭子|ターツ} がある", "あと1枚で順子になる2枚"),
         (3.4, "{上家|カミチャ}が{ つながる牌 }を切った → チー"),
         (3.9, "そろうのは {順子|シュンツ}", "数がつながった3枚"),
@@ -37,54 +39,58 @@ SCRIPTS = {
         ("発声", "はっせい", "「ポン」と声に出す。チーより優先される", 0, 6, 2.2, [], "ポン"),
         ("開示", "かいじ", "鳴くのに使う{対子|トイツ}を倒して、みんなに見せる", 7, 31, 1.6, [], ""),
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 32, 61, 1.4, [], ""),
-        ("副露", "フーロ", "取った牌を横向きに。{対面|トイメン}から鳴いたら真ん中に置く", 62, 84, 1.6, [], ""),
-        ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 105, 1.4, [], "", "※鳴いた牌と同じ牌は切れない（喰い替え）"),
-    ], tail=(106, 120, 2.4),
-    pre=dict(head="ポンできるとき", hold=1.8, concl=True, lines=[
+        ("副露", "フーロ", "{対面|トイメン}から鳴いたら真ん中に横向きで付け、右端に寄せる", 62, 84, 1.6, [], ""),
+        ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 109, 1.4, [], "", "※鳴いた牌と同じ牌は切れない（喰い替え）"),
+    ], tail=(110, 120, 2.4),
+    sbeats={3: [(67, "卓の右端に寄せます")]},
+    kuikae=dict(step=4, at="切れません", meld=["z6", "z6", "z6"], side=1, ng=[("z6", "同じ牌")]),      # 發をポン
+    pre=dict(head="ポンできるとき", marks={"own": ("orange", "トイツ", ["z6", "z6"], "UL"), "call": ("blue", "対面が切った", ["z6"], "UR")}, ls=[0, 2, 2, 3], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {対子|トイツ} がある", "同じ牌2枚"),
         (3.4, "{他家|ターチャ}が{ 同じ牌 }を切った → ポン"),
         (3.9, "そろうのは {刻子|コーツ}", "同じ牌3枚"),
         (4.4, "だれの捨て牌でもポンできる"),
     ])),
-    "kan": dict(title="暗槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。6つの手順で覚える", steps=[
+    "kan": dict(title="暗槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="6つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "4枚を表向きに倒して見せ、外側の2枚を裏返す", 7, 47, 1.6, [], ""),
         ("配置", "はいち", "4枚を卓の右端に寄せる", 48, 67, 1.4, [], ""),
-        ("カンドラ", "", "ドラ表示牌のとなりをめくる。その次の牌がカンドラ", 68, 87, 1.6, [], ""),
-        ("嶺上牌", "リンシャンパイ", "王牌の端から、カン専用の牌を1枚ツモる", 88, 112, 1.4, [], ""),
+        ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 68, 87, 1.6, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から、嶺上牌を1枚ツモる", 88, 112, 1.4, [], ""),
         ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 113, 132, 1.4, [], ""),
     ], tail=(133, 142, 2.4),
-    pre=dict(head="暗槓できるとき", hold=1.8, concl=True, lines=[
+    sbeats={1: [(32, "外側の2枚を裏返します")]},     # ②は表向きに倒した所で止め、「外側の2枚を裏返します」の声で裏返す（2026-11-25 ユーザーの指定）
+    pre=dict(head="暗槓できるとき", ls=[0, 0, 1, 1], hold=1.8, concl=True, lines=[
         (0.3, "手牌の中だけで{ 同じ牌4枚 }", "自分でツモってそろえた"),
         (1.6, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (2.9, "鳴き扱いにならない", "{門前|メンゼン}のまま"),
         (3.7, "自分でそろえた4枚なら、暗槓できる"),
     ])),
     # ここから下は、scene.py の「台本で動かす場面」（S2T の間の時刻からコマを計算: 間 n の止めるコマ＝(時刻＋n×0.7＋0.58)×12）
-    "daiminkan": dict(title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。7つの手順で覚える", steps=[
+    "daiminkan": dict(title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="7つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。人が切った牌で4枚目をそろえる", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "手牌の同じ牌3枚を倒して、みんなに見せる", 7, 32, 1.6, [], ""),
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 33, 61, 1.4, [], ""),
-        ("副露", "フーロ", "取った牌を横向きに。{下家|シモチャ}から鳴いたら右に置く", 62, 84, 1.6, [], ""),
-        ("カンドラ", "", "ドラ表示牌のとなりをめくる。その次の牌がカンドラ", 85, 105, 1.6, [], ""),
-        ("嶺上牌", "リンシャンパイ", "王牌の端から、カン専用の牌を1枚ツモる", 106, 131, 1.4, [], ""),
-        ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 132, 150, 1.4, [], ""),
-    ], tail=(151, 165, 2.4),
-    pre=dict(head="大明槓できるとき", hold=1.8, concl=True, lines=[
+        ("副露", "フーロ", "{下家|シモチャ}から鳴いたら右に横向きで付け、右端に寄せる", 62, 84, 1.6, [], ""),
+        ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 85, 105, 1.6, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から、嶺上牌を1枚ツモる", 106, 131, 1.4, [], ""),
+        ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 132, 154, 1.4, [], ""),
+    ], tail=(155, 165, 2.4),
+    sbeats={3: [(67, "卓の右端に寄せます")]},
+    pre=dict(head="大明槓できるとき", marks={"own": ("orange", "アンコ", ["z5", "z5", "z5"], "UL"), "call": ("blue", "下家が切った", ["z5"], "UR")}, ls=[0, 2, 2, 3, 4], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {暗刻|アンコ} がある", "同じ牌3枚"),
         (3.4, "{他家|ターチャ}が{ 4枚目 }を切った → カン"),
         (3.9, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (4.4, "暗槓と違い、{ 鳴き扱い }になる", "{門前|メンゼン}ではなくなる"),
         (4.9, "だれの捨て牌でも大明槓できる"),
     ])),
-    "kakan": dict(title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="カンは3種類。5つの手順で覚える", steps=[
+    "kakan": dict(title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("加槓", "カカン", "ポンした牌の横向きの1枚に、横向きで重ねる", 7, 36, 1.8, [], ""),
-        ("カンドラ", "", "ドラ表示牌のとなりをめくる。その次の牌がカンドラ", 37, 57, 1.6, [], ""),
-        ("嶺上牌", "リンシャンパイ", "王牌の端から、カン専用の牌を1枚ツモる", 58, 83, 1.4, [], ""),
-        ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 84, 102, 1.4, [], ""),
-    ], tail=(103, 117, 2.4),
-    pre=dict(head="加槓できるとき", hold=2.0, concl=True, lines=[
+        ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 37, 57, 1.6, [], ""),
+        ("嶺上牌", "リンシャンパイ", "王牌の端から、嶺上牌を1枚ツモる", 58, 83, 1.4, [], ""),
+        ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 84, 106, 1.4, [], ""),
+    ], tail=(107, 117, 2.4),
+    pre=dict(head="加槓できるとき", ls=[0, 2, 2, 2], beats=[(1.4, 2)], marks={"own": ("orange", "ミンコ", ["z7", "z7", "z7"], "UR"), "call": ("blue", "4枚目", ["z7"], "UL")}, hold=2.0, concl=True, lines=[
         (0.3, "ポンした {明刻|ミンコ} がある", "人の牌でそろえた同じ牌3枚"),
         (1.6, "自分で{ 4枚目 }を引いた → カン"),
         (2.8, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
@@ -92,10 +98,10 @@ SCRIPTS = {
     ])),
     "riichi": dict(title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="3つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
-        ("打牌", "ダハイ", "いらない牌を、横向きにして切る", 7, 36, 1.8, [], ""),
-        ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 37, 76, 1.8, [], ""),     # 「待つ」の手順はやめた（2026-11-14 ユーザーの判断）
-    ], tail=(77, 85, 2.4),
-    pre=dict(head="リーチできるとき", hold=2.0, concl=True, lines=[
+        ("打牌", "ダハイ", "いらない牌を、横向きにして切る", 7, 42, 1.8, [], ""),
+        ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),     # 「待つ」の手順はやめた（2026-11-14 ユーザーの判断）
+    ], tail=(81, 93, 2.4),
+    pre=dict(head="リーチできるとき", ls=[0, 1, 1], hold=2.0, concl=True, lines=[
         (0.3, "{門前|メンゼン}である", "ポン・チー・明槓をしていない"),
         (1.6, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (2.8, "1,000点棒を出して、リーチできる"),
@@ -107,7 +113,7 @@ SCRIPTS = {
         ("申告", "しんこく", "点数だけを言う\nメンゼンツモ・タンヤオ・ドラ1＝子の3翻30符", 69, 75, 2.6, [], "1000・2000", "※ドラ表示牌が三萬なので、ドラは四萬。手牌に1枚でドラ1"),     # ドラ表示牌を見せる（画角は scene.py の DV。2026-11-18 ユーザーの指定）     # 役は言わず点数だけ・両手で倒す（2026-11-14 ユーザーの指定。ロンと同じ）。500・1000のアガリ（2026-11-16）
         ("支払い", "しはらい", "親は2,000点、子は1,000点ずつ、アガった人に払う", 76, 104, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
     ], tail=(105, 105, 2.4),
-    pre=dict(head="ツモアガリできるとき", hold=2.0, concl=True, lines=[
+    pre=dict(head="ツモアガリできるとき", ls=[0, 1, 2, 2], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "自分で{ アガリ牌 }を引いた → ツモ"),
         (2.8, "{役|ヤク}が1つ以上ある", "アガるのに必要な形"),
@@ -119,7 +125,7 @@ SCRIPTS = {
         ("申告", "しんこく", "点数だけを言う\nタンヤオ・ピンフ・赤1＝子の3翻30符で3,900点", 37, 66, 2.6, [], "3900"),     # 役は言わず点数だけ（2026-11-14 ユーザーの指定）
         ("支払い", "しはらい", "{下家|シモチャ}が5,000点棒で払い、おつりの1,100点を返す", 67, 114, 2.0, [], ""),     # 下家が5,000点棒・自分が1,000点棒と100点棒で返す（2026-11-16 ユーザーの指定）
     ], tail=(115, 120, 2.4),
-    pre=dict(head="ロンアガリできるとき", hold=1.8, concl=True, lines=[
+    pre=dict(head="ロンアガリできるとき", marks={"own": ("orange", "待ちの形", ["p6", "p7"], "UL"), "call": ("blue", "アガリ牌", ["p5r"], "UR")}, ls=[0, 1, 2, 3], beats=[(2.4, 1)], hold=1.8, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (3.4, "{他家|ターチャ}が{ アガリ牌 }を切った → ロン"),
         (3.9, "{役|ヤク}が1つ以上ある", "アガるのに必要な形"),
@@ -132,11 +138,12 @@ SCRIPTS = {
         ("理牌", "リーパイ", "ツモった牌を、手牌の並びに入れる", 70, 94, 1.6, [], ""),
         ("ツモ切り", "ツモぎり", "ツモった牌を、そのまま切ることもある", 95, 130, 1.6, [], ""),
     ], tail=(131, 141, 2.4),
-    pre=dict(head="自分の番の流れ", hold=2.0, concl=True, lines=[
-        (0.3, "{上家|カミチャ}が切ったら、自分の番"),
-        (1.6, "1枚{ツモ}って、1枚切る"),
-        (2.9, "手牌はいつも13枚", "切ったあと"),
-        (3.7, "ツモって切る、をくり返す"),
+    counts={2: ("riv", .3, .3)},      # ③河: 自分の河に「1・2・3…7」を順に出す（2026-11-25 ユーザーの指定「説明は、セリフだけでなく見て分かる演出を」）
+    pre=dict(head="自分の番の流れ", ls=[0, 1, 2, 2], beats=[(3.1, 1), (5.9, 2)], hold=2.0, concl=True, count=("hand", 6.6, .2), lines=[      # 前置きの絵（scene.py の pre_pose_dahai）に合わせた時刻
+        (0.5, "{上家|カミチャ}が切ったら、自分の番"),
+        (3.1, "1枚{ツモ}って、1枚切る"),
+        (6.2, "手牌はいつも13枚", "切ったあと"),
+        (9.2, "ツモって切る、をくり返す"),
     ])),
     "furiten": dict(title="捨て牌のフリテン", kicker="フリテンは3種類", sub="3種類の1つめ", steps=[
         ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
@@ -144,7 +151,7 @@ SCRIPTS = {
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], ""),
     ], tail=(117, 126, 2.4),
-    pre=dict(head="捨て牌のフリテン", hold=2.0, concl=True, lines=[
+    pre=dict(head="捨て牌のフリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -157,7 +164,7 @@ SCRIPTS = {
         ("打牌", "ダハイ", "自分が打牌すると、フリテンがなくなる", 76, 131, 2.2, [], "", "※番が飛ばされても、自分が打牌するまでは続く"),
         ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 156, 2.2, [], ""),
     ], tail=(157, 167, 2.4),
-    pre=dict(head="同巡内フリテン", hold=2.0, concl=True, lines=[
+    pre=dict(head="同巡内フリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "アガリ牌が出たのに{ 見逃した }", "役が無いときも"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -170,7 +177,7 @@ SCRIPTS = {
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], ""),
     ], tail=(201, 210, 2.4),
-    pre=dict(head="リーチ後のフリテン", hold=2.0, concl=True, lines=[
+    pre=dict(head="リーチ後のフリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -182,7 +189,7 @@ SCRIPTS = {
         ("ノーテン", "", "テンパイなら倒し、ノーテンなら両手で伏せる。{東家|トンチャ}から順に", 37, 86, 2.0, [], ""),
         ("点棒", "てんぼう", "ノーテンの人がテンパイの人へ払う（場に3,000点）", 87, 113, 2.2, [], ""),
     ], tail=(114, 125, 2.4), cards={3: "bappu"},     # ④の止めているあいだに、ノーテン罰符の早見表（テンパイ0〜4人。2026-11-18 ユーザーの指定）
-    pre=dict(head="流局になるとき", hold=2.0, concl=True, lines=[
+    pre=dict(head="流局になるとき", ls=[0, 1, 2, 2], hold=2.0, concl=True, lines=[
         (0.3, "最後の{海底牌|ハイテイハイ}をツモった", "山の最後の1枚"),
         (1.6, "切った{河底牌|ホウテイハイ}にロンがない", "最後の捨て牌"),
         (2.9, "残りは{王牌|ワンパイ}14枚だけ", "ツモれない牌"),
@@ -484,7 +491,9 @@ _tim = {}
 def _tile_img(code, h):
     k = (code, h)
     if k not in _tim:
-        im = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "tiles", code + ".png")).convert("RGBA"); _tim[k] = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+        fp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tiles", code + ".png")
+        if os.path.exists(fp): im = Image.open(fp).convert("RGBA"); _tim[k] = im.resize((round(im.width * h / im.height), h), Image.LANCZOS)
+        else: _tim[k] = tile_img(code, round(h * 3 / 4), h)      # tiles/ に無い牌は、3Dの牌の絵（make_tile_tex.py）
     return _tim[k]
 def draw_marks(d, marks, here):
     """囲み（白いふち＋色の線）と、牌の絵つきの札・つなぐ線。here＝このコマの牌の場所（まだ切られていない牌は無い）"""
@@ -514,12 +523,12 @@ def draw_marks(d, marks, here):
 
 def summary(d, sc, k):
     a = int(240 * min(1, k * 3))
-    n = len(sc["steps"]); y0 = 520
-    d.rounded_rectangle((90, y0, W - 90, y0 + 150 + n * 118), radius=50, fill=(255, 255, 255, a))
+    n = len(sc["steps"]); y0 = 520 if n <= 5 else 420; RH = min(118, (1400 - y0 - 150) // n)      # 下の字幕（1490〜）に重ならない（2026-11-25 大明槓の7つで重なった）
+    d.rounded_rectangle((90, y0, W - 90, y0 + 150 + n * RH), radius=50, fill=(255, 255, 255, a))
     st = sc["title"] + (f"（{sc['sub']}）" if sc.get("sub", "").endswith("編") else "")
     ruby_c(d, W / 2, y0 + (90 if any(r for p, r, t_ in ruby_parts(st)) else 78), st, fit(d, st, 66, W - 260), (23, 112, 131, min(255, a + 15)), 32)
     for i, s in enumerate(sc["steps"]):
-        y = y0 + 150 + i * 118
+        y = y0 + 150 + i * RH
         d.ellipse((150, y, 150 + 84, y + 84), fill=(231, 86, 32, min(255, a + 15)))
         text_c(d, 192, y + 40, str(i + 1), font(56), WHITE)
         d.text((264, y - 6), s[0], font=font(66), fill=INK)
@@ -623,6 +632,16 @@ def subtitle(d, tx, k):
     for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + PAD + 32 + n * LH, r_, ft, (255, 255, 255, a), 24)
 
 
+def draw_count(d, ps, t, t0, dt, nmax=None):
+    """牌の上に「1・2・3…」の丸を順に出す（ps＝牌の場所 [x, 上のふち] の並び・t0 から dt 秒おきに1つずつ）"""
+    for k, (x, y) in enumerate(ps[:nmax] if nmax else ps):
+        a = (t - t0 - k * dt) / .12
+        if a <= 0: break
+        a = min(1, a); r = 24; cy = y - 34 - int((1 - a) * 14)
+        d.ellipse((x - r, cy - r, x + r, cy + r), fill=(231, 86, 32, int(255 * a)), outline=(255, 255, 255, int(255 * a)), width=4)
+        text_c(d, x, cy - 1, str(k + 1), font(30), (255, 255, 255, int(255 * a)))
+
+
 def sfx_events(sc, name, seq, fps, bub_at={}):
     """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
     import sfx
@@ -634,12 +653,65 @@ def sfx_events(sc, name, seq, fps, bub_at={}):
             if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
             if i >= 0: ev.append((sec, "kstep"))
             if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
-                for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + t_, snd))
+                am = sc["pre"].get("amap")
+                for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + (next((k / fps for k, x in enumerate(am) if x >= t_), t_) if am else t_), snd))
+                if sc["pre"].get("count"):      # 数える丸が出るたびに小さな音
+                    _, c0, cd = sc["pre"]["count"]; ev += [(sec + c0 + k * cd, "tick") for k in range(13)]
+            if i >= 0 and i in sc.get("counts", {}):
+                _, c0, cd = sc["counts"][i]; ev += [(sec + c0 + k * cd, "tick") for k in range(7)]
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
     for t, snd in sfx.TILE_EVENTS.get(name, []):
         fr = sfx.frame_of(name, t, fps)
         if fr in first: ev.append((first[fr], snd))
     return ev
+
+
+def say_at(subs, word):
+    """字幕の文の並び (出す, 消す, 文) から、言葉 word を言い始める時刻（声が出てからの秒）。文の中の位置は字の数で割りふる"""
+    for t0, t1, sen in subs:
+        if word in sen: return t0 + (t1 - t0) * sen.index(word) / max(1, len(sen))
+    return None
+
+
+def tile_img(code, w, h):
+    """牌の表の絵（scene.py と同じ make_tile_tex.py の絵）"""
+    k = (code, w, h)
+    if k not in _tiles:
+        if not os.path.isdir(TEX[0]):
+            TEX[0] = tempfile.mkdtemp(); subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "make_tile_tex.py"), TEX[0]], check=True)
+        _tiles[k] = Image.open(os.path.join(TEX[0], code + ".png")).convert("RGBA").resize((w, h), Image.LANCZOS)
+    return _tiles[k]
+_tiles = {}; TEX = [""]
+
+
+def kuikae_card(d, kk, t):
+    """喰い替えの具体例（2026-11-25 ユーザーの指定「具体的に画面で見せる」）。鳴いた形と、そのあと切れない牌に×"""
+    a = min(1, t * 4); A = lambda v: int(v * a); y = 930 + int((1 - a) * 24); h = 470
+    d.rounded_rectangle((60, y, W - 60, y + h), radius=40, fill=(255, 255, 255, A(245)), outline=(231, 86, 32, A(255)), width=6)
+    text_c(d, W / 2, y + 52, "喰い替えの例", font(44, 800), (231, 86, 32, A(255)))
+    tw, th = 74, 99
+    def row(codes, x0, yy, side=None):
+        x = x0
+        for n, c in enumerate(codes):
+            im = _tile_img(c, th)
+            if n == side: im = im.rotate(90, expand=True)
+            if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
+            d._image.alpha_composite(im, (int(x), int(yy + (th - im.size[1]))))
+            x += im.size[0] + 6
+        return x
+    text_c(d, 210, y + 170, "鳴いた形", font(36, 800), (23, 112, 131, A(255)))
+    meld = kk["meld"]; mw = sum(tw + 6 for _ in meld) + (th - tw)
+    row(meld, 330, y + 120, side=kk.get("side"))
+    text_c(d, 210, y + 330, "切れない", font(36, 800), (201, 47, 66, A(255)))
+    x = 330
+    for c, lab in kk["ng"]:
+        im = _tile_img(c, th)
+        if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
+        yy = y + 262; d._image.alpha_composite(im, (x, yy))
+        cx, cy = x + tw / 2, yy + th / 2; r = 34
+        for s_ in (1, -1): d.line((cx - r, cy - r * s_, cx + r, cy + r * s_), fill=(201, 47, 66, A(235)), width=10)
+        text_c(d, cx, yy + th + 32, lab, font(30, 800), (80, 90, 92, A(255)))
+        x += max(tw, int(d.textlength(lab, font=font(30, 800)))) + 60
 
 
 def scaled(sc, fps):
@@ -648,7 +720,8 @@ def scaled(sc, fps):
     if fps == 12: return sc
     end = lambda n: int(round(n * k)); beg = lambda n: end(n - 1) + 1 if n else 0
     st = [s[:3] + (end(s[3]) if s[3] == s[4] else beg(s[3]), end(s[4])) + s[5:] for s in sc["steps"]]
-    return dict(sc, steps=st, tail=(beg(sc["tail"][0]), end(sc["tail"][1]), sc["tail"][2]))
+    sb = {i: [(end(f), w) for f, w in v] for i, v in sc.get("sbeats", {}).items()}
+    return dict(sc, steps=st, tail=(beg(sc["tail"][0]), end(sc["tail"][1]), sc["tail"][2]), sbeats=sb)
 
 
 BUB_GAP = .7      # 吹き出しが出てから次のセリフまでの間（秒）。86BPMの1拍（2026-11-24 ユーザーの指定「一拍あける」）
@@ -658,10 +731,13 @@ def main():
     a = sys.argv[1:]
     fpt = os.path.join(a[0], "fps.txt"); fps = int(a[a.index("--fps") + 1]) if "--fps" in a else int(open(fpt).read()) if os.path.exists(fpt) else 12
     mkp = os.path.join(a[0], "marks.json"); MK = json.load(open(mkp)) if os.path.exists(mkp) else []      # 囲む牌の場所（scene.py が作る）
+    cp_ = os.path.join(a[0], "count.json"); CNT = json.load(open(cp_)) if os.path.exists(cp_) else []      # 数える丸の場所（ツモと打牌）
+    pp_ = os.path.join(a[0], "pcount.json"); PCNT = json.load(open(pp_)) if os.path.exists(pp_) else []
+    pm_ = os.path.join(a[0], "pmarks.json"); PMK = json.load(open(pm_)) if os.path.exists(pm_) else []
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = scaled(SCRIPTS[name], fps)
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
-    VO = {}; BUB_AT = {}; SUBS = {}     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）・SUBS＝字幕の1文ずつの (出す, 消す, 文)
+    VO = {}; BUB_AT = {}; SUBS = {}; PRE_S = []      # PRE_S＝前置きの声の、文ごとの始まり（声が出てからの秒）     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）・SUBS＝字幕の1文ずつの (出す, 消す, 文)
     if "--voice" in a:
         import wave, narration
         vtmp = tempfile.mkdtemp(); first_ruby(name)
@@ -681,6 +757,13 @@ def main():
                     gap_at = len(pa) / 2 / sr_
                     with wave.open(wp, "wb") as wf: wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr_); wf.writeframes(pa + b"\0\0" * int(BUB_GAP * sr_) + pb)
                     VO[seg] = (wp, (len(pa) + len(pb)) / 2 / sr_ + BUB_GAP, tx, sr_)
+            if seg == "pre":     # 前置きの文ごとの時刻（カードの行と絵を、声に合わせる。2026-11-25 ユーザーの指定「セリフと映像を合わせる」）
+                import re as _re2; us = []
+                for j, sen in enumerate([x for x in _re2.split("(?<=。)", tx) if x]):
+                    wu = os.path.join(vtmp, f"pre_s{j}.wav"); narration.synth(sen, wu)
+                    with wave.open(wu) as wf: us.append(wf.getnframes() / wf.getframerate())
+                k_ = VO[seg][1] / max(1e-6, sum(us)); acc = 0.0; PRE_S.clear()
+                for du in us: PRE_S.append(acc * k_); acc += du
             if seg.startswith("step") or seg == "tail":     # 字幕は1文ずつ出す（2026-11-16 ユーザーの指定）。文ごとに声の長さを測って、出す時刻を決める
                 units = []
                 for j, sen in enumerate(sub_units(tx)):
@@ -693,7 +776,7 @@ def main():
                     SUBS[seg].append((t_, t_ + du * sc_, sen)); t_ += du * sc_
     need = lambda seg, pad=.35: (VO[seg][1] + pad) if seg in VO else 0.0
     starts = {}      # 声を鳴らし始める時刻（秒）
-    src, out = a[0], a[1]
+    src, out = a[0], a[1]; TEX[0] = os.path.join(os.path.dirname(os.path.abspath(src)), "tex")
     frames = sorted(glob.glob(os.path.join(src, "f[0-9]*.png")))
     assert frames, "コマが無い: " + src
     intro = sorted(glob.glob(os.path.join(src, "i[0-9]*.png")))
@@ -704,14 +787,38 @@ def main():
     pre = sorted(glob.glob(os.path.join(src, "p[0-9]*.png")))       # 前置き（scene.py --anim --pre）。手牌を映して、なぜ鳴けるかを見せる
     if pre and sc.get("pre"):
         starts["pre"] = len(seq) / fps + .6
-        for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
+        pc = sc["pre"]
+        if PRE_S and pc.get("ls"):
+            # カードの行は、その行の文が始まる時に出す（同じ文に2行あれば、少しずらす）。絵は beats（絵の時刻, 文）で、その文が始まるまで止めて待つ
+            so = lambda j: .6 + PRE_S[min(j, len(PRE_S) - 1)]
+            seen = {}; nl = []
+            for ln, j in zip(pc["lines"], pc["ls"]):
+                k = seen.get(j, 0); seen[j] = k + 1; nl.append((so(j) + .15 + .9 * k,) + tuple(ln[1:]))
+            pc = dict(pc, lines=nl)
+            if pc.get("note"): pc["note"] = (nl[-1][0] + .9,) + tuple(pc["note"][1:])
+            if pc.get("count"): pc["count"] = (pc["count"][0], nl[pc.get("count_line", 2)][0] + .4, pc["count"][2])
+            sc = dict(sc, pre=pc)
+            beats = [(0.0, 0.0)] + [(a_, so(j)) for a_, j in pc.get("beats", [])]
+            AD = len(pre) / fps; amap = []; total = max(beats[-1][1] + AD - beats[-1][0], .6 + VO["pre"][1] + .6, nl[-1][0] + pc["hold"])
+            for n in range(int(total * fps)):
+                u = n / fps; a_ = AD
+                for (a0, o0), nxt in zip(beats, beats[1:] + [(AD, 1e9)]):
+                    if u < nxt[1]: a_ = min(a0 + max(0, u - o0), nxt[0]); break
+                seq.append((pre[min(len(pre) - 1, int(round(a_ * fps)))], -4, u, False)); amap.append(a_)
+            sc["pre"]["amap"] = amap      # 出す時刻ごとの、前置きの絵の時刻（効果音を絵に合わせる）
+        else:
+            for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
         t = 0.0; starts[f"step{i + 1}"] = len(seq) / fps + .25
         # 発声と、①（流局など）の手順は、最初のコマで止めたまま見せる（2026-11-14 ユーザーの指定「①で画角が少しでも動くのはいらない。止めた絵で説明」）。
         # 次の手順は、止めたコマのすぐ後から動かす（止めた所から先のコマを飛ばすと、絵が飛ぶ）。ツモアガリの①ツモは、山から取る動きそのものなので止めない
         frozen = s[0] == "発声" or (i == 0 and s[0] != "ツモ")
         a0 = sc["steps"][i - 1][3] + 1 if i and (sc["steps"][i - 1][0] == "発声" or (i == 1 and sc["steps"][0][0] != "ツモ")) else s[3]
-        fr = [s[3]] * (s[4] - s[3] + 1) if frozen else range(a0, s[4] + 1)
+        fr = [s[3]] * (s[4] - s[3] + 1) if frozen else list(range(a0, s[4] + 1))
+        for bf, wd in reversed(sc.get("sbeats", {}).get(i, [])):      # 声のその言葉が出るまで、コマ bf で止めて待つ
+            ws = say_at(SUBS.get(f"step{i + 1}", []), wd)
+            if ws is not None and bf in fr:
+                k_ = fr.index(bf); fr = fr[:k_ + 1] + [bf] * max(0, int((.25 + ws - .1) * fps) - (k_ + 1)) + fr[k_ + 1:]
         for f in fr: seq.append((f, i, t, False)); t += 1 / fps
         nd = max(need(f"step{i + 1}") + .25, (BUB_AT.get(f"step{i + 1}", .25) + 1.8) if s[7] else 0)     # 吹き出しが出てから1.8秒は見せる（1秒では一瞬で消えて見えた）
         for _ in range(max(int(s[5] * fps), int(nd * fps) - len(fr))): seq.append((s[3] if frozen else s[4], i, t, True)); t += 1 / fps
@@ -735,10 +842,16 @@ def main():
         cache_prev = cache[f]
         if i == -4:
             pre_card(d, sc["pre"], t)
+            if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
+                pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
+                draw_marks(d, [(k_,) + tuple(v_) for k_, v_ in sc["pre"]["marks"].items()], PMK[pi])
+            if sc["pre"].get("count") and PCNT:
+                key, c0, cd = sc["pre"]["count"]; pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
+                draw_count(d, PCNT[pi][key], t, c0, cd, 13)
         elif i == -3:
             outro_card(im, t, odur)
         elif i == -2:
-            title_card(d, sc, t, len(intro) / fps)
+            title_card(d, sc, t, sum(1 for q in seq if q[1] == -2) / fps)      # 入りの声が長いときも、入りが終わるまで題名を出し続ける（前は入りの絵の長さ4秒で消えた。2026-11-25 ユーザーの指摘）
         elif i >= 0:
             s = sc["steps"][i]
             if name in MARKS:
@@ -747,8 +860,14 @@ def main():
             rail(d, sc["steps"], i); headline(d, i, s, t)
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
+            if i in sc.get("counts", {}) and CNT:
+                key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 7)
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す
                 card_t0.setdefault(i, t); bappu_card(d, t - card_t0[i])
+            kk = sc.get("kuikae")
+            if kk and kk["step"] == i and f"step{i + 1}" in SUBS:
+                ws = say_at(SUBS[f"step{i + 1}"], kk["at"])
+                if ws is not None and t >= .25 + ws - .3: kuikae_card(d, kk, t - (.25 + ws - .3))
             if f"step{i + 1}" in VO and .25 <= t <= .25 + VO[f"step{i + 1}"][1] + .3: sub_at(d, SUBS[f"step{i + 1}"], t - .25)
         else:
             rail(d, sc["steps"], len(sc["steps"]), done_all=True)
