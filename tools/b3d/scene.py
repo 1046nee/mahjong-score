@@ -1643,7 +1643,7 @@ def pre_pose_dahai(t, cam):
     riv = (Vector((-.04, -.46, 1.02)), Vector((pw.x - .02, pw.y + .02, .77)), 34.0)      # 上家の河と、上家の手もと
     HVt = Vector((-.02, (HY + RY) / 2 - .02, .77)); hv = (HVt + Vector((0, -.28, .36)), HVt, 34.0)      # 手牌・山の端・河（本題の①②と同じ）
     hx = (NAMED["hk0"]["p0"][0] + NAMED["hk12"]["p0"][0] + HP + .03) / 2      # ツモった牌（手牌の右）まで
-    hand = (Vector((hx, -.60, 1.12)), Vector((hx, HY + .02, .78)), 18.0)      # 手牌の全体（13枚を数える。両端が切れていた＝2026-11-25 の試しで見た）
+    hand = (Vector((hx, -.52, 1.16)), Vector((hx, HY + .045, .78)), 20.0)      # 低めから（牌の表が読める）・広角で両端まで（遠すぎて牌が小さかった）      # 手牌の全体（13枚を数える。両端が切れていた＝2026-11-25 の試しで見た）
     kb = seg(t, 2.3, 3.0); kc = seg(t, 5.9, 6.5)
     loc = riv[0].lerp(hv[0], kb).lerp(hand[0], kc); tgt = riv[1].lerp(hv[1], kb).lerp(hand[1], kc); lens = riv[2] + (hv[2] - riv[2]) * kb; lens += (hand[2] - lens) * kc
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
