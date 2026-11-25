@@ -890,7 +890,7 @@ def yaku_board(d, t, yk, subs):
         w_, tx = yk[key]; ws = say_at(subs, w_)
         if ws is None or t < .25 + ws: continue
         k = min(1, (t - .25 - ws) / .25); s_ = 1.6 - .6 * k if k < 1 else 1.0
-        cx, cy = x0 + (100 if key == "fu" else 380), y0 + 120 + 92 * len(ph) + 62      # 符と点数を横に並べる（下の吹き出しにかからない）
+        cx, cy = x0 + 800, y0 + (90 if key == "fu" else 220)      # 役の板の右に縦に並べる（下の発声の吹き出しにかからない）
         f_ = font(int((44 if key == "fu" else 64) * s_), 900); tw = d.textlength(tx, font=f_) + 60
         d.rounded_rectangle((cx - tw / 2, cy - 44 * s_, cx + tw / 2, cy + 44 * s_), radius=24, fill=(255, 255, 255, int(255 * k)), outline=(201, 47, 66, int(255 * k)), width=6)
         text_c(d, cx, cy - 3, tx, f_, (201, 47, 66, int(255 * k)))
