@@ -145,39 +145,40 @@ SCRIPTS = {
         (6.2, "手牌はいつも13枚", "切ったあと"),
         (9.2, "ツモって切る、をくり返す"),
     ])),
-    "furiten": dict(title="捨て牌のフリテン", kicker="フリテンは3種類", sub="3種類の1つめ", steps=[
+    "furiten": dict(title="捨て牌のフリテン", kicker="フリテンは3種類", sub="3種類の1つ目", steps=[
         ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
         ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], ""),
     ], tail=(117, 126, 2.4),
-    pre=dict(head="捨て牌のフリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="捨て牌のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
         (3.7, "待ちが変わるまで、ロンできない"),
     ])),
-    "furiten2": dict(title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つめ", steps=[
+    "furiten2": dict(title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
         ("待ち", "まち", "チーしていて、役はタンヤオだけ。一索では役が無い", 24, 24, 2.2, [], ""),
         ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
         ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
         ("打牌", "ダハイ", "自分が打牌すると、フリテンがなくなる", 76, 131, 2.2, [], "", "※番が飛ばされても、自分が打牌するまでは続く"),
-        ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 156, 2.2, [], ""),
-    ], tail=(157, 167, 2.4),
-    pre=dict(head="同巡内フリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+        ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 173, 2.2, [], "ロン"),
+    ], tail=(174, 181, 2.4),
+    sbeats={4: [(159, "フリテンが解けて")]}, bubpos={"ロン": ((720, 1150), (110, 300))},      # 「ロン」と言ってから手牌を倒す（2026-11-25 ユーザーの指定）
+    pre=dict(head="同巡内フリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "アガリ牌が出たのに{ 見逃した }", "役が無いときも"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
         (3.7, "次に自分が打牌するまで、ロンできない"),
     ])),
-    "furiten3": dict(title="リーチ後のフリテン", kicker="フリテンは3種類", sub="3種類の3つめ", steps=[
+    "furiten3": dict(title="リーチ後のフリテン", kicker="フリテンは3種類", sub="3種類の3つ目", steps=[
         ("待ち", "まち", "リーチをしている。一索・四索・七索待ち", 24, 24, 2.2, [], ""),
         ("見逃し", "みのがし", "タンヤオがつく四索・七索を待って、一索を見逃す", 25, 50, 2.2, [], ""),
         ("打牌", "ダハイ", "自分が打牌しても、フリテンのまま", 51, 112, 2.2, [], ""),
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], ""),
     ], tail=(201, 210, 2.4),
-    pre=dict(head="リーチ後のフリテン", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="リーチ後のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -533,12 +534,12 @@ def bubble(d, tx, k):
 MKC = {"teal": (23, 112, 131), "orange": (231, 86, 32), "blue": (66, 97, 170), "red": (201, 47, 66), "green": (22, 138, 80)}
 WAIT_ = ("hand5", "teal", "待ち", ["s1", "s4", "s7"], "LL")
 MARKS = {
-    "furiten": [[WAIT_], [WAIT_, ("fu7", "orange", "自分が切った", ["s1"], "LR")], [WAIT_, ("fu7", "orange", "自分が切った", ["s1"], "LR"), ("called", "red", "ロンできない", ["s4"], "UL")],
+    "furiten": [[], [("fu7", "orange", "自分が切った", ["s1"], "LR")], [("fu7", "orange", "自分が切った", ["s1"], "LR"), ("called", "red", "ロンできない", ["s4"], "UL")],
                 [("fu7", "orange", "", [], ""), ("next", "green", "ツモはできる", ["s4"], "LR")]],
-    "furiten2": [[WAIT_, ("meld", "orange", "チーした牌", ["m2", "m3", "m4"], "RM")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("o2", "red", "ロンできない", ["s4"], "UL")],
-                 [WAIT_, ("next", "orange", "自分が打牌", ["z2"], "LM")], [WAIT_, ("o4", "green", "ロンできる", ["s7"], "UR")]],
-    "furiten3": [[WAIT_, ("rk", "orange", "リーチ", ["m1"], "LR"), ("bou", "orange", "", [], "")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR")], [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("next", "orange", "自分が打牌", ["p9"], "LR")],
-                 [WAIT_, ("o1", "blue", "見逃し", ["s1"], "UR"), ("o6", "red", "ロンできない", ["s4"], "UL")], [("o1", "blue", "", [], ""), ("next2", "green", "ツモはできる", ["s7"], "LR")]],
+    "furiten2": [[("meld", "orange", "チーした牌", ["m2", "m3", "m4"], "RM")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("o1", "blue", "見逃し", ["s1"], "UR"), ("o2", "red", "ロンできない", ["s4"], "UL")],
+                 [("next", "orange", "自分が打牌", ["z2"], "LM")], [("o4", "green", "ロンできる", ["s7"], "UR")]],
+    "furiten3": [[("rk", "orange", "リーチ", ["m1"], "LR"), ("bou", "orange", "", [], "")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("o1", "blue", "見逃し", ["s1"], "UR"), ("next", "orange", "自分が打牌", ["p9"], "LR")],
+                 [("o1", "blue", "見逃し", ["s1"], "UR"), ("o6", "red", "ロンできない", ["s4"], "UL")], [("o1", "blue", "", [], ""), ("next2", "green", "ツモはできる", ["s7"], "LR")]],
 }
 _tim = {}
 def _tile_img(code, h):
@@ -555,9 +556,9 @@ def draw_marks(d, marks, here):
         if not tx: continue
         TH = 104; ims = [_tile_img(c, TH) for c in codes]; f = font(40)
         w = max(d.textlength(tx, font=f), sum(i.width + 6 for i in ims)) + 44; h = 74 + TH + 18
-        x, y = {"UL": (24, 690), "UR": (W - 24 - w, 690), "LL": (24, 1296), "LR": (W - 24 - w, 1296), "RM": (W - 24 - w, 1060), "LM": (24, 1050)}[pos]
+        x, y = {"UL": (24, 690), "UR": (W - 24 - w, 690), "LL": (24, 1110), "LR": (W - 24 - w, 1110), "RM": (W - 24 - w, 1060), "LM": (24, 1050)}[pos]
         box[nm] = (x, y, w, h, ims, f)
-    for nm, col, tx, codes, pos in todo:      # 線 → 囲み → 札の順に重ねる
+    for nm, col, tx, codes, pos in todo:      # 線 → 囲み → 札の順に重ねる（×は囲みと一緒）
         c = MKC[col]; x0, y0, x1, y1 = here[nm]; P_ = 9
         if nm in box:
             x, y, w, h, ims, f = box[nm]; ax = min(max((x0 + x1) / 2, x + 30), x + w - 30); ay = y + h if y + h < y0 else (y if y > y1 else y + h / 2)
@@ -566,6 +567,11 @@ def draw_marks(d, marks, here):
             d.line((ax, ay, tx_, ty_), fill=(255, 255, 255, 255), width=14); d.line((ax, ay, tx_, ty_), fill=c + (255,), width=8)
         d.rounded_rectangle((x0 - P_ - 4, y0 - P_ - 4, x1 + P_ + 4, y1 + P_ + 4), radius=16, outline=(255, 255, 255, 255), width=14)
         d.rounded_rectangle((x0 - P_, y0 - P_, x1 + P_, y1 + P_), radius=13, outline=c + (255,), width=7)
+        if col == "red":      # ロンできない牌には大きな×（2026-11-25 ユーザーの指定）
+            cx_, cy_ = (x0 + x1) / 2, (y0 + y1) / 2; r_ = max(x1 - x0, y1 - y0) / 2 + 22
+            for sg in (1, -1):
+                d.line((cx_ - r_, cy_ - r_ * sg, cx_ + r_, cy_ + r_ * sg), fill=(255, 255, 255, 255), width=20)
+                d.line((cx_ - r_, cy_ - r_ * sg, cx_ + r_, cy_ + r_ * sg), fill=c + (255,), width=11)
     for nm, (x, y, w, h, ims, f) in box.items():
         col, tx = next((m[1], m[2]) for m in todo if m[0] == nm); c = MKC[col]
         d.rounded_rectangle((x, y, x + w, y + h), radius=24, fill=(255, 255, 255, 250), outline=c + (255,), width=7)
@@ -740,6 +746,43 @@ def tile_img(code, w, h):
 _tiles = {}; TEX = [""]
 
 
+FU_HAND = ["m2", "m3", "m4", "m8", "m8", "p5", "p6", "p7", "s2", "s3", "s4", "s5", "s6"]      # フリテンの3本の手牌（scene.py と同じ）
+def hand_strip(d, name, a=1.0):
+    """自分の手牌を牌の絵で、字幕の上に帯で出す（2026-11-25 ユーザーの指定「手牌と自分の河を両方見せる」。卓は上から映すので、立てた手牌の表は見えない）。
+    待ちを作る5枚（二〜六索）は緑の下線、右に「待ち」と一索・四索・七索"""
+    hand = FU_HAND[3:] if name == "furiten2" else FU_HAND; meld = ["m2", "m3", "m4"] if name == "furiten2" else []
+    TH = 84; ims = [_tile_img(c, TH) for c in hand]; tw = ims[0].width
+    mw = sum(_tile_img(c, TH).width + 2 for c in meld) + (TH - tw if meld else 0) + (16 if meld else 0)
+    ww = len(ims) * (tw + 2) + mw; x0 = (W - ww) / 2; y0 = 1362; A = lambda v: int(v * a)
+    d.rounded_rectangle((x0 - 22, y0 - 54, x0 + ww + 22, y0 + TH + 18), radius=24, fill=(255, 255, 255, A(238)))
+    d.text((x0 - 4, y0 - 48), "自分の手牌", font=font(30, 800), fill=(23, 112, 131, A(255)))
+    wt = [_tile_img(c, 40) for c in ("s1", "s4", "s7")]; wx = x0 + ww - sum(i.width + 4 for i in wt)
+    d.text((wx - 70, y0 - 48), "待ち", font=font(30, 800), fill=(23, 112, 131, A(255)))
+    x = x0
+    for k, im in enumerate(ims):
+        if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
+        d._image.alpha_composite(im, (int(x), int(y0)))
+        if k >= len(ims) - 5: d.rectangle((x, y0 + TH + 4, x + tw, y0 + TH + 10), fill=(23, 112, 131, A(255)))
+        x += tw + 2
+    if meld:
+        x += 16
+        for k, c in enumerate(meld):
+            im = _tile_img(c, TH)
+            if k == 0: im = im.rotate(90, expand=True)
+            if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
+            d._image.alpha_composite(im, (int(x), int(y0 + TH - im.height))); x += im.width + 2
+    for im in wt:
+        d._image.alpha_composite(im, (int(wx), int(y0 - 48))); wx += im.width + 4
+
+
+def x_badge(d, t):
+    """「ロンできない」の大きな×（前置きのカードの上）"""
+    a = min(1, t * 5); sc_ = .7 + .3 * min(1, t * 5); cx, cy, r = W / 2, 700, int(120 * sc_)
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(255, 255, 255, int(235 * a)), outline=(201, 47, 66, int(255 * a)), width=12)
+    for sg in (1, -1): d.line((cx - r * .55, cy - r * .55 * sg, cx + r * .55, cy + r * .55 * sg), fill=(201, 47, 66, int(255 * a)), width=26)
+    text_c(d, cx, cy + r + 50, "ロンできない", font(52), (201, 47, 66, int(255 * a)))
+
+
 def kuikae_card(d, kk, t):
     """喰い替えの具体例（2026-11-25 ユーザーの指定「具体的に画面で見せる」）。鳴いた形と、そのあと切れない牌に×"""
     a = min(1, t * 4); A = lambda v: int(v * a); y = 930 + int((1 - a) * 24); h = 470
@@ -792,6 +835,7 @@ def main():
     pm_ = os.path.join(a[0], "pmarks.json"); PMK = json.load(open(pm_)) if os.path.exists(pm_) else []
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = scaled(SCRIPTS[name], fps)
+    BUB_POS.update(sc.get("bubpos", {}))      # 動画ごとの吹き出しの場所（同巡内フリテンの「ロン」は上からの画角）
     # 声（2026-11-13〜）: --voice を付けると、narration.py の台本を VOICEVOX で読ませて入れる。手順ごとの止める長さは、声が言い終わるまでのばす
     VO = {}; BUB_AT = {}; SUBS = {}; PRE_S = []      # PRE_S＝前置きの声の、文ごとの始まり（声が出てからの秒）     # BUB_AT＝手順ごとの、吹き出しを出す時刻（その手順が出てからの秒）・SUBS＝字幕の1文ずつの (出す, 消す, 文)
     if "--voice" in a:
@@ -853,6 +897,12 @@ def main():
                 k = seen.get(j, 0); seen[j] = k + 1; nl.append((so(j) + .15 + .9 * k,) + tuple(ln[1:]))
             pc = dict(pc, lines=nl)
             if pc.get("note"): pc["note"] = (nl[-1][0] + .9,) + tuple(pc["note"][1:])
+            if pc.get("xat"):      # 「どの待ちでもロンできません」と言うときに×
+                import re as _re3; sens = [x for x in _re3.split("(?<=。)", VO["pre"][2]) if x]
+                for j, sen in enumerate(sens):
+                    if pc["xat"] in sen:
+                        nx_ = PRE_S[j + 1] if j + 1 < len(PRE_S) else VO["pre"][1]
+                        pc["x_t"] = .6 + PRE_S[j] + (nx_ - PRE_S[j]) * sen.index(pc["xat"]) / len(sen); break
             if pc.get("count"): pc["count"] = (pc["count"][0], nl[pc.get("count_line", 2)][0] + .4, pc["count"][2])
             sc = dict(sc, pre=pc)
             beats = [(0.0, 0.0)] + [(a_, so(j)) for a_, j in pc.get("beats", [])]
@@ -901,6 +951,7 @@ def main():
         cache_prev = cache[f]
         if i == -4:
             pre_card(d, sc["pre"], t)
+            if sc["pre"].get("x_t") is not None and t >= sc["pre"]["x_t"]: x_badge(d, t - sc["pre"]["x_t"])
             if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
                 pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
                 draw_marks(d, [(k_,) + tuple(v_) for k_, v_ in sc["pre"]["marks"].items()], PMK[pi])
@@ -917,6 +968,7 @@ def main():
                 assert MK, "marks.json が無い（scene.py を動かすと、コマと同じフォルダにできる）"
                 draw_marks(d, MARKS[name][i], MK[min(f, len(MK) - 1)])
             rail(d, sc["steps"], i); headline(d, i, s, t)
+            if name.startswith("furiten"): hand_strip(d, name)
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:

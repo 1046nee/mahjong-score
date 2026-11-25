@@ -1105,7 +1105,7 @@ FREEZE = (2.0, 3.8, 5.0); PAUSE = .7
 if SCENE == "kan":   # ②開示・③副露・④カンドラ・⑤嶺上牌 のあとに間
     FREEZE = (2.0, 2.6, 3.55, 4.5, 5.9); ANIM_DUR = 8.6 + 5 * PAUSE      # ②開示は「4枚を表向きに倒す → 外側2枚を裏返す」の2段（2026-11-14 ユーザーの指定）
 S2T = {"daiminkan": ((2.1, 3.8, 5.0, 6.1, 7.5), 10.4), "kakan": ((2.4, 3.5, 4.9), 7.8), "riichi": ((2.9, 4.1), 6.5),
-       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0), "furiten": ((1.5, 2.4, 4.2, 7.0), 7.8), "furiten2": ((1.5, 2.9, 4.3, 8.3, 9.7), 10.5), "furiten3": ((1.5, 2.9, 7.4, 10.1, 13.3), 14.1),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
+       "tsumo": ((2.9, 4.4), 7.4), "ron": ((2.4, 3.2), 8.6), "dahai": ((2.9, 4.4, 5.8, 8.1), 9.0), "furiten": ((1.5, 2.4, 4.2, 7.0), 7.8), "furiten2": ((1.5, 2.9, 4.3, 8.3, 9.7), 11.6), "furiten3": ((1.5, 2.9, 7.4, 10.1, 13.3), 14.1),      # ツモ・ロンは最後に点棒の支払い（2026-11-16）
        "ryukyoku": ((2.4, 5.9, 7.4), 8.4)}      # 場面ごとの、間を入れる時刻と、もとの動きの長さ
 if S2: FREEZE = S2T[SCENE][0]; ANIM_DUR = S2T[SCENE][1] + len(FREEZE) * PAUSE
 SOFT = .1      # 間の前後で、なめらかに止まる・動き出す（秒）。急に止めると、手が途中でかくっと止まって見えた
@@ -1420,12 +1420,12 @@ def s2_build():
             arms[seat] = ks + [(t0 - .4, Ri), (t0, (0, -.30, hz)), (t0 + d, (lx, ly - .02, hz)), (t0 + d + .4, Ri), (DUR, Ri)]
             return c
         def agari(t_open):      # 両手で手牌の両端を持って倒す（t_open から .8秒）
-            for k in range(13): mv[f"hk{k}"] = [(t_open, t_open + .8, (P(f"hk{k}").x, LY, Z), LIE, .015)]
-            xl, xr = P("hk0").x - .006, P("hk12").x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
+            for k in range(len(HANDS[0])): mv[f"hk{k}"] = [(t_open, t_open + .8, (P(f"hk{k}").x, LY, Z), LIE, .015)]
+            xl, xr = P("hk0").x - .006, P(hand[-1]).x + .006; L0 = Vector(ARMS[0]["L"]["rest"])
             arms[0] = arms[0][:-1] + [(t_open - .1, A(xr, HY - .01, .02)), (t_open + .8, A(xr, LY)), (t_open + 1.4, R), (DUR, R)]
             arms_l[0] = [(0, L0), (t_open - .5, L0), (t_open - .1, A(xl, HY - .01, .02)), (t_open + .8, A(xl, LY)), (t_open + 1.4, L0), (DUR, L0)]
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
-        TABLE = (Vector((0, .065, .77)), Vector((0, -.40, 1.62)), 31.5)
+        TABLE = (Vector((0, .00, .77)), Vector((0, -.52, .74)), 24.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
         focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
@@ -1439,7 +1439,8 @@ def s2_build():
             mv["next"] = [(6.0, 6.8, ST, S_, .06), (7.1, 7.9, slot(n0), L_, .06)]
             arms[0] = [(0, R), (5.4, R), (6.0, A(nx.x, nx.y, .02)), (6.8, A(xt, HY + .01, .02)), (7.1, A(xt, HY + .01, .02)), (7.9, A(slot(n0)[0], slot(n0)[1])), (8.5, R), (DUR, R)]
             c4 = other_cut("o4", 1, 8.8)                                                 # ⑤ 下家の七索（ロンできる）
-            pre["cam2"] = (Vector((MR - .08, -.6, 1.05)), Vector((MR - .08, MY, .78)), 36.0)      # 確認で、チーした牌も見せる
+            agari(10.0)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
+            # 確認では、チーした牌に寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
         else:
             NAMED["bou"]["p0"] = [0, -.05, TOP + .012 + .0023]; NAMED["bou"]["r0"] = [0, 0, 0]; show["bou"] = -1      # はじめから出ているリーチ棒
             c1 = other_cut("o1", 1, 2.0); other_cut("o2", 2, 3.2, .5); other_cut("o3", 3, 3.9, .5)      # ② 下家の一索（見逃し）→ 対面・上家
@@ -1722,7 +1723,7 @@ def pre_pose(t, cam):
     zx = lx - (.06 if SCENE in ("chi", "pon") else .02)        # 使う牌が画面の端に切れないように
     if S2: zx = max(-.12, min(.09, lx))
     zoom = (Vector((zx, -.55, 1.03)), Vector((zx, HY + .03, .78)), 30.0)
-    kz = 0.0 if SCENE in ("riichi", "tsumo", "ron") else seg(t, 1.2, 2.0)      # テンパイを見せる所は寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
+    kz = 0.0 if SCENE in ("riichi", "tsumo", "ron") or FU else seg(t, 1.2, 2.0)      # テンパイを見せる所は寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
     loc = full[0].lerp(zoom[0], kz); tgt = full[1].lerp(zoom[1], kz); lens = full[2] + (zoom[2] - full[2]) * kz
     if KK:      # 手牌の全体 → ポンした明刻（右の隅）→ ツモった4枚目
         mc = S2C["pre"]["cam2"]; ka_ = seg(t, .3, 1.1); kb_ = seg(t, 2.2, 2.9)
@@ -1798,7 +1799,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
         hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
         shoot(fp, "PRE", f, cam)
-    if SCENE in ("chi", "pon", "daiminkan", "ron", "kakan", "riichi", "tsumo", "ryukyoku") and not only:      # 囲む牌の場所（make_clip.py がのせる）
+    if (SCENE in ("chi", "pon", "daiminkan", "ron", "kakan", "riichi", "tsumo", "ryukyoku") or FU) and not only:      # 囲む牌の場所（make_clip.py がのせる）
         import json; pm = []
         if S2 and not S2C: s2_build()
         for f in range(n):
