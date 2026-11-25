@@ -402,6 +402,7 @@ if SCENE == "kan":   # 暗槓の自分の河の一索を九索に（2026-11-14 �
 # ---- 台本で動かす場面（2026-11-13）: 大明槓・加槓・リーチ・ツモあがり・ロンあがり・流局。牌姿と席は Notion の「3D動画の出演表」が正 ----
 S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai", "furiten", "furiten2", "furiten3")      # furiten＝捨て牌・furiten2＝同巡内・furiten3＝リーチ後のフリテン（2026-11-24 ユーザーの指定で3本に）
 FU = SCENE.startswith("furiten")
+DRAWN = {"kan": "hk13", "kakan": "hk10", "riichi": "hk13"}      # ①の前に山からツモる牌（2026-11-25 ユーザーの指定「ツモったら、のセリフには山からツモる絵」）
 FU_OTHER = {}           # フリテン: 動画の中でほかの人が切る牌 (席, 河の何枚目か) → 名前（それまでは河に無い）
 RIICHI_K = -1           # 自分の河で、横向き（リーチの宣言牌）にする牌が何枚目か
 RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
@@ -1823,7 +1824,6 @@ DISC_DUR = 1.8
 DISC_T = 1.3      # 牌が河に着く時刻（make_clip.py が牌の音を鳴らす）
 CLIPCAM = (Vector((0, -.92, 1.30)), Vector((0, .0, .77)), 37.0)      # 他家が切る絵: 自分の真後ろから（自分の選手は消す）
 CLIPCAM_D = (Vector((.46, -.86, 1.58)), Vector((-.02, -.16, .77)), 30.0)      # 自分がツモる絵: 右うしろの高い所から（腕が見える・体にかからない）      # ①の前の絵の画角: 自分の手牌・自分の河・切る人の河が全部入る（2026-11-25 ユーザーの指定「切った牌が何か・手牌や捨て牌が見えるように」）
-DRAWN = {"kan": "hk13", "kakan": "hk10", "riichi": "hk13"}      # ①の前に山からツモる牌（2026-11-25 ユーザーの指定「ツモったら、のセリフには山からツモる絵」）
 def clip_cam(cam, c_=None):
     loc, tgt, lens = c_ or CLIPCAM; cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = [loc, tgt, lens]
 def draw_pose(t, cam):
