@@ -1492,6 +1492,9 @@ def s2_build():
             mv["next"] = [(6.0, 6.8, ST, S_, .06), (7.1, 7.9, slot(n0), L_, .06)]
             arms[0] = [(0, R), (5.4, R), (6.0, A(nx.x, nx.y, .02)), (6.8, A(xt, HY + .01, .02)), (7.1, A(xt, HY + .01, .02)), (7.9, A(slot(n0)[0], slot(n0)[1])), (8.5, R), (DUR, R)]
             c4 = other_cut("o4", 1, 8.8)                                                 # ⑤ 下家の七索（ロンできる）
+            MELDV = (Vector((.06, -.30, .77)), Vector((.04, -.30, .48)), 30.0); focus[0] = MELDV      # ① 手牌と右端のチーした牌（2026-11-26 ユーザーの指定）
+            views.append((5.5, 6.0, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[3] = (HANDV[0], HANDV[1], HANDV[2])      # ④ 南をツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
+            views.append((8.3, 8.6, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))      # ⑤ 下家の七索は卓の全体で
             agari(10.0); to_hand(9.75)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
             # 確認では、チーした牌に寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
         else:
@@ -1502,7 +1505,10 @@ def s2_build():
             other_cut("o4", 1, 7.8, .5); other_cut("o5", 2, 8.5, .5); c6 = other_cut("o6", 3, 9.2)      # ④ 下家・対面 → 上家の四索
             nx2 = P("next2"); mv["next2"] = [(11.0, 11.8, (xt, LY, Z), L_, .08)]         # ⑤ 七索をツモる
             arms[0] = [(0, R), (4.6, R), (5.2, A(nx.x, nx.y, .02)), (6.0, A(xt, HY + .01, .02)), (6.3, A(xt, HY + .01, .02)), (7.1, A(s6[0], s6[1])), (7.6, R),
-                       (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]; agari(12.2); to_hand(10.15)
+                       (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]
+            views.append((4.7, 5.2, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[2] = (HANDV[0], HANDV[1], HANDV[2])      # ③ ツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
+            views.append((7.45, 7.75, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))
+            agari(12.2); to_hand(10.15)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
@@ -1792,6 +1798,12 @@ def pre_pose(t, cam):
     elif S2 and not CALLP and S2C["pre"]["cam2"]:      # 2つ目に見せる所（加槓＝ポンした牌・流局＝卓の全体）
         riv = S2C["pre"]["cam2"]; kb = seg(t, 2.5, 3.1)
         loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
+    if SCENE in ("furiten2", "furiten3"):      # 確認で、下家が待ちの一索を切る → 見逃す（2026-11-26 ユーザーの指定「見逃してロンできないことを映像で」）
+        ta = t - .6; o1 = NAMED["o1"]; ms_ = S2C["mv"]["o1"][0]; k1 = seg(ta, ms_[0], ms_[1])
+        o1.location = Vector(o1["p0"]).lerp(Vector(ms_[2]), k1) + Vector((0, 0, ms_[4] * math.sin(math.pi * k1))); o1.rotation_euler = ms_[3]; hide_tree(o1, ta < ms_[0] - .1)
+        pose_body(ARMS[1], hand_path(ta, S2C["arms"][1]))
+        tb = (Vector((0, -.72, 1.50)), Vector((0, -.17, .77)), 27.0); kt = seg(t, 2.2, 2.8)      # 手牌（後ろから）と、下家の河・自分の河
+        loc = loc.lerp(tb[0], kt); tgt = tgt.lerp(tb[1], kt); lens += (tb[2] - lens) * kt
     if CALLP:               # 切った人の河を見る（チー＝上家・左の奥／ポン＝対面・正面の奥）
         riv = (Vector((-.11, -.42, 1.00)), Vector((p0.x, p0.y + .04, .77)), 44.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
         if CALL_SEAT == 2: riv = (Vector((.0, -.34, 1.06)), Vector((.0, p0.y - .02, .77)), 40.0)
@@ -1807,6 +1819,10 @@ def pre_marks(t):
     if SCENE == "kakan": grp = {"own": (["meld0", "meld1", "meld2"], .9), "call": (S2C["pre"]["lift"], 3.2)}
     elif FU and SCENE == "furiten":
         grp = {"own": (S2C["pre"]["lift"], 2.0), "cut": (["fu7"], 0.0)}
+    elif SCENE == "furiten2":
+        grp = {"own": (S2C["pre"]["lift"], 2.0), "miss": (["o1"], 3.25)}
+    elif SCENE == "furiten3":
+        grp = {"own": (S2C["pre"]["lift"], 2.0), "riichi": (["rk", "bou"], 0.0), "miss": (["o1"], 3.25)}
     elif SCENE == "ryukyoku":
         wp = [n for n in NAMED if n.startswith("wp")] + ["dora"]
         grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.35, 3.8), "wanpai": (wp, 4.6)}      # 王牌に寄ったら河底牌の印は消す（重なった）
@@ -1819,7 +1835,7 @@ def pre_marks(t):
     for key, g_ in grp.items():
         ns, t0 = g_[0], g_[1]
         if t < t0 or (len(g_) > 2 and t > g_[2]) or any(NAMED[n].hide_render for n in ns): continue
-        ps = [project(q) for n in ns for q in tile_corners(NAMED[n])]
+        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n]) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
         b = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
         if b[0] > 20 and b[2] < 1060 and b[1] > 20 and b[3] < 1900: out[key] = b      # 画面の外は囲まない
     return out

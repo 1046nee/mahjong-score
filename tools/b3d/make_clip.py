@@ -155,8 +155,8 @@ SCRIPTS = {
         ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], "ツモ"),
-    ], tail=(117, 126, 2.4), bubw={3: "ツモアガリできます"}, bubpos={"ツモ": ((720, 1150), (110, 300))},
-    pre=dict(head="捨て牌のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    ], tail=(117, 126, 2.4), bubw={3: "ツモアガリできます"}, bubpos={"ツモ": ((760, 1350), (120, 260))},
+    pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -169,8 +169,8 @@ SCRIPTS = {
         ("打牌", "ダハイ", "自分が打牌すると、フリテンがなくなる", 76, 131, 2.2, [], "", "※番が飛ばされても、自分が打牌するまでは続く"),
         ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 173, 2.2, [], "ロン"),
     ], tail=(174, 181, 2.4),
-    sbeats={4: [(159, "フリテンが解けて")]}, bubpos={"ロン": ((720, 1150), (110, 300))},      # 「ロン」と言ってから手牌を倒す（2026-11-25 ユーザーの指定）
-    pre=dict(head="同巡内フリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    sbeats={4: [(159, "フリテンが解けて")]}, bubpos={"ロン": ((760, 1350), (120, 260))},      # 「ロン」と言ってから手牌を倒す（2026-11-25 ユーザーの指定）
+    pre=dict(head="同巡内フリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="次の自分の打牌までロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "アガリ牌が出たのに{ 見逃した }", "役が無いときも"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -182,8 +182,8 @@ SCRIPTS = {
         ("打牌", "ダハイ", "自分が打牌しても、フリテンのまま", 51, 112, 2.2, [], ""),
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], "ツモ"),
-    ], tail=(201, 210, 2.4), bubw={4: "ツモアガリできます"}, bubpos={"ツモ": ((720, 1150), (110, 300))},
-    pre=dict(head="リーチ後のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    ], tail=(201, 210, 2.4), bubw={4: "ツモアガリできます"}, bubpos={"ツモ": ((760, 1350), (120, 260))},
+    pre=dict(head="リーチ後のフリテン", marks={"riichi": ("orange", "リーチ", ["m1"], "LR", 0), "own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="この局はもうロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -870,12 +870,14 @@ def hand_strip(d, name, a=1.0):
         d._image.alpha_composite(im, (int(wx), int(y0 - 48))); wx += im.width + 4
 
 
-def x_badge(d, t):
+def x_badge(d, t, tx="ロンできない"):
     """「ロンできない」の大きな×（前置きのカードの上）"""
     a = min(1, t * 5); sc_ = .7 + .3 * min(1, t * 5); cx, cy, r = W / 2, 700, int(120 * sc_)
     d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(255, 255, 255, int(235 * a)), outline=(201, 47, 66, int(255 * a)), width=12)
     for sg in (1, -1): d.line((cx - r * .55, cy - r * .55 * sg, cx + r * .55, cy + r * .55 * sg), fill=(201, 47, 66, int(255 * a)), width=26)
-    text_c(d, cx, cy + r + 50, "ロンできない", font(52), (201, 47, 66, int(255 * a)))
+    tw = d.textlength(tx, font=font(48)) + 60
+    d.rounded_rectangle((cx - tw / 2, cy + r + 18, cx + tw / 2, cy + r + 86), radius=34, fill=(201, 47, 66, int(255 * a)))      # かんたんな説明（2026-11-26 ユーザーの指定）
+    text_c(d, cx, cy + r + 50, tx, font(48), (255, 255, 255, int(255 * a)))
 
 
 def yaku_board(d, t, yk, subs):
@@ -1090,7 +1092,7 @@ def main():
         CUR[0] = im      # 囲みの外を暗くする（draw_marks）ため、いまの絵
         if i == -4:
             pre_card(d, sc["pre"], t)
-            if sc["pre"].get("x_t") is not None and t >= sc["pre"]["x_t"]: x_badge(d, t - sc["pre"]["x_t"])
+            if sc["pre"].get("x_t") is not None and t >= sc["pre"]["x_t"]: x_badge(d, t - sc["pre"]["x_t"], sc["pre"].get("xtext", "ロンできない"))
             if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
                 pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
                 here_ = {k_: b_ for k_, b_ in PMK[pi].items() if b_[3] < 1240}      # カードの所（下）に入った牌は囲まない（カメラが動いて、カードに重なった）
@@ -1120,7 +1122,7 @@ def main():
             if i == 0 and DMK and sc.get("clip") and isinstance(f, str) and os.path.basename(f).startswith("d"):      # 切られた牌・ツモった牌に印
                 di = min(int(os.path.basename(f)[1:5]), len(DMK) - 1)
                 draw_marks(d, [("tile",) + tuple(sc["clip"])], DMK[di], now=n / fps, key="clip")
-            if name.startswith("furiten") and i < len(sc["steps"]) - 1: hand_strip(d, name)      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
+            if name.startswith("furiten") and i < len(sc["steps"]) - 1 and i not in {"furiten2": (3,), "furiten3": (2,)}.get(name, ()): hand_strip(d, name)      # 卓の手牌を映す手順では、帯は出さない      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
