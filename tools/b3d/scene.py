@@ -1475,19 +1475,24 @@ def s2_build():
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
         TABLE = (Vector((0, .02, .77)), Vector((0, -.40, .92)), 31.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
         focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
+        HANDV = (Vector((-.02, HY + .07, .77)), Vector((0, -.34, .40)), 30.0)      # 卓の手牌とツモった牌（立てた手牌の表が読める低さ。2026-11-25 ユーザーの指定「ツモの所作で手牌と引いた牌が見えるように」）
+        def to_hand(t0):      # t0 から手牌の画角へ（以後の間もこの画角）
+            views.append((t0, t0 + .5, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2]))
+            for n_, f_ in enumerate(FREEZE):
+                if f_ > t0: focus[n_] = (HANDV[0], HANDV[1], HANDV[2])
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
             c = other_cut("called", 3, 3.2)                                              # ③ 上家の四索
             mv["next"] = [(4.8, 5.6, (xt, LY, Z), L_, .08)]                              # ④ 四索をツモって、手牌の横に表向きで置く
-            arms[0] = [(0, R), (4.4, R), (4.8, A(nx.x, nx.y, .02)), (5.6, A(xt, LY)), (DUR, R)]; agari(6.0)
+            arms[0] = [(0, R), (4.4, R), (4.8, A(nx.x, nx.y, .02)), (5.6, A(xt, LY)), (DUR, R)]; agari(6.0); to_hand(4.25)
         elif SCENE == "furiten2":
             c1, c2 = other_cut("o1", 1, 2.0), other_cut("o2", 2, 3.4)                    # ② 下家の一索（見逃し）③ 対面の四索
             other_cut("o3", 3, 4.7); ST = (xt, last_.y, last_.z)                         # ④ 上家が切る → 自分が南をツモ切り
             mv["next"] = [(6.0, 6.8, ST, S_, .06), (7.1, 7.9, slot(n0), L_, .06)]
             arms[0] = [(0, R), (5.4, R), (6.0, A(nx.x, nx.y, .02)), (6.8, A(xt, HY + .01, .02)), (7.1, A(xt, HY + .01, .02)), (7.9, A(slot(n0)[0], slot(n0)[1])), (8.5, R), (DUR, R)]
             c4 = other_cut("o4", 1, 8.8)                                                 # ⑤ 下家の七索（ロンできる）
-            agari(10.0)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
+            agari(10.0); to_hand(9.75)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
             # 確認では、チーした牌に寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
         else:
             NAMED["bou"]["p0"] = [0, -.05, TOP + .012 + .0023]; NAMED["bou"]["r0"] = [0, 0, 0]; show["bou"] = -1      # はじめから出ているリーチ棒
@@ -1497,7 +1502,7 @@ def s2_build():
             other_cut("o4", 1, 7.8, .5); other_cut("o5", 2, 8.5, .5); c6 = other_cut("o6", 3, 9.2)      # ④ 下家・対面 → 上家の四索
             nx2 = P("next2"); mv["next2"] = [(11.0, 11.8, (xt, LY, Z), L_, .08)]         # ⑤ 七索をツモる
             arms[0] = [(0, R), (4.6, R), (5.2, A(nx.x, nx.y, .02)), (6.0, A(xt, HY + .01, .02)), (6.3, A(xt, HY + .01, .02)), (7.1, A(s6[0], s6[1])), (7.6, R),
-                       (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]; agari(12.2)
+                       (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]; agari(12.2); to_hand(10.15)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
@@ -1768,7 +1773,9 @@ def pre_pose(t, cam):
     lx = sum(o["p0"][0] for o in lift) / len(lift)
     KK = SCENE == "kakan"
     up = seg(t, 2.8, 3.2) if KK else seg(t, 1.6, 2.0)
-    for o in lift: o.location = o.location + Vector((0, 0, .016 * up))
+    for k_, o in enumerate(lift):
+        hop = .012 * max(0.0, math.sin(2 * math.pi * (t * 1.3 - k_ * .14))) * seg(t, 2.0, 2.3) if FU else 0.0      # フリテンの待ちは、ぽこぽこ順に跳ねる（2026-11-25 ユーザーの指定）
+        o.location = o.location + Vector((0, 0, .016 * up + hop))
     hx = (NAMED["hk0"]["p0"][0] + NAMED["hk13"]["p0"][0]) / 2 if SCENE == "kan" else HX0 + 6 * HP
     if S2: hx = (NAMED["hk0"]["p0"][0] + NAMED[f"hk{len(HANDS[0]) - 1}"]["p0"][0]) / 2
     full = (Vector((hx, -.62, 1.17)), Vector((hx, HY + .05, .78)), 19.0)
@@ -1798,6 +1805,8 @@ def pre_marks(t):
     """前置きで囲む牌の場所（make_clip.py が囲みと札をのせる。2026-11-25 ユーザーの指定「ターツや相手の牌に、目で見てわかる印」）。
     own＝使う手牌（持ち上げ終えてから）・call＝人が切った牌（河に着いてから）。加槓は own＝ポンした明刻・call＝ツモった4枚目"""
     if SCENE == "kakan": grp = {"own": (["meld0", "meld1", "meld2"], .9), "call": (S2C["pre"]["lift"], 3.2)}
+    elif FU and SCENE == "furiten":
+        grp = {"own": (S2C["pre"]["lift"], 2.0), "cut": (["fu7"], 0.0)}
     elif SCENE == "ryukyoku":
         wp = [n for n in NAMED if n.startswith("wp")] + ["dora"]
         grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.35, 3.8), "wanpai": (wp, 4.6)}      # 王牌に寄ったら河底牌の印は消す（重なった）

@@ -156,7 +156,7 @@ SCRIPTS = {
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], "ツモ"),
     ], tail=(117, 126, 2.4), bubw={3: "ツモアガリできます"}, bubpos={"ツモ": ((720, 1150), (110, 300))},
-    pre=dict(head="捨て牌のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL")}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="捨て牌のフリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -261,7 +261,10 @@ def title_card(d, sc, t, dur):
     if a <= 0: return
     A = lambda v: int(v * a)
     y = 230 + int((1 - k) * 40)      # 上に置く（真ん中だと卓と選手が隠れる）
-    d.rounded_rectangle((70, y, W - 70, y + 440), radius=60, fill=(12, 20, 22, A(215)))
+    tr = any(r for p, r, t_ in ruby_parts(sc["title"]))
+    # 題名と小見出しのあいだが空きすぎていた（2026-11-26 ユーザーの指摘・全動画）。カードの高さは中身に合わせ、小見出しは題名のすぐ下に少し大きく
+    TY = 252 if tr else 222; SY = TY + 132; CH = SY + 74
+    d.rounded_rectangle((70, y, W - 70, y + CH), radius=60, fill=(12, 20, 22, A(215)))
     # 左上に小さく、まじゃすこのマーク（2026-11-16 ユーザーの指定。締めと同じアイコン）。帯は「ルールとマナーに沿った正しい手順」（ルールやマナーに沿った方法だと示す）
     ic = _app_icon(78)
     if a < 1: ic = ic.copy(); ic.putalpha(ic.getchannel("A").point(lambda v: int(v * a)))
@@ -270,9 +273,8 @@ def title_card(d, sc, t, dur):
     kw = d.textlength(kt, font=ft) + 64
     d.rounded_rectangle((W / 2 - kw / 2, y + 44, W / 2 + kw / 2, y + 44 + 78), radius=39, fill=(231, 86, 32, A(255)))
     text_c(d, W / 2, y + 44 + 37, kt, ft, (255, 255, 255, A(255)))
-    tr = any(r for p, r, t_ in ruby_parts(sc["title"]))
-    ruby_c(d, W / 2, y + (252 if tr else 222), sc["title"], fit(d, sc["title"], 132 if tr else 140, W - 140 - 90), (255, 255, 255, A(255)), 44)     # 長い題名（ロンアガリの方法）は、カードに入るまで小さく
-    ruby_c(d, W / 2, y + 384, sc.get("sub", ""), font(48, 700), (255, 255, 255, A(220)), 22)
+    ruby_c(d, W / 2, y + TY, sc["title"], fit(d, sc["title"], 132 if tr else 140, W - 140 - 90), (255, 255, 255, A(255)), 44)     # 長い題名（ロンアガリの方法）は、カードに入るまで小さく
+    ruby_c(d, W / 2, y + SY, sc.get("sub", ""), font(52, 700), (255, 255, 255, A(225)), 22)
     text_c(d, W / 2, 1790, "majasco.jp", font(40, 800), (255, 255, 255, A(200)))
 
 def _app_icon(sz):
@@ -548,7 +550,7 @@ def bubble(d, tx, k):
 MKC = {"teal": (23, 112, 131), "orange": (231, 86, 32), "blue": (66, 97, 170), "red": (201, 47, 66), "green": (22, 138, 80)}
 WAIT_ = ("hand5", "teal", "待ち", ["s1", "s4", "s7"], "LL")
 MARKS = {
-    "furiten": [[], [("fu7", "orange", "自分が切った", ["s1"], "LR")], [("fu7", "orange", "自分が切った", ["s1"], "LR"), ("called", "red", "ロンできない", ["s4"], "UL")],
+    "furiten": [[], [("fu7", "orange", "自分が切った", ["s1"], "LR")], [("called", "red", "ロンできない", ["s4"], "UL"), ("fu7", "orange", "自分が切った", ["s1"], "LR", "自分の河に")],
                 [("fu7", "orange", "", [], ""), ("next", "green", "ツモはできる", ["s4"], "LR")]],
     "furiten2": [[("meld", "orange", "チーした牌", ["m2", "m3", "m4"], "RM")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("o1", "blue", "見逃し", ["s1"], "UR"), ("o2", "red", "ロンできない", ["s4"], "UL")],
                  [("next", "orange", "自分が打牌", ["z2"], "LM")], [("o4", "green", "ロンできる", ["s7"], "UR")]],
@@ -599,7 +601,17 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
         if not tx: continue
         TH = 118; ims = [_tile_img(c, TH) for c in codes]; f = font(44)
         w = max(d.textlength(tx, font=f) + 64, sum(i.width + 8 for i in ims) + 8); h = 76 + (TH + 14 if ims else 0)
-        x, y = {"UL": (24, 690), "UR": (W - 24 - w, 690), "LL": (24, 1110), "LR": (W - 24 - w, 1110), "RM": (W - 24 - w, 1060), "LM": (24, 1050)}[pos]
+        # 札は、その牌のすぐ近くに置く（上 → 下 → 右 → 左の順に、見出し・字幕・ほかの札や牌に重ならない所）。矢印は短く（2026-11-25 ユーザーの指摘「矢印の始まりと終わりの位置が適切か」）
+        x0, y0, x1, y1 = here[nm]; cx = (x0 + x1) / 2; cy = (y0 + y1) / 2; G = 70
+        cand = [(cx - w / 2, y0 - G - h), (cx - w / 2, y1 + G), (x1 + G, cy - h / 2), (x0 - G - w, cy - h / 2)]
+        taken = [b[:4] for b in box.values()] + [(here[m[0]][0] - 10, here[m[0]][1] - 10, here[m[0]][2] - here[m[0]][0] + 20, here[m[0]][3] - here[m[0]][1] + 20) for m in todo]
+        hit = lambda x, y: any(x < bx + bw and bx < x + w and y < by + bh and by < y + h for bx, by, bw, bh in taken)
+        best = None
+        for x, y in cand:
+            x = min(max(x, 20), W - 20 - w); y = min(max(y, 610), 1290 - h)
+            if not hit(x, y): best = (x, y); break
+        if best is None: x, y = min(max(cand[0][0], 20), W - 20 - w), min(max(cand[0][1], 610), 1290 - h)
+        else: x, y = best
         box[nm] = (x, y, w, h, ims, f)
     import math as _m
     for nm, col, tx, codes, pos in todo:      # 輪 → 矢印
@@ -613,8 +625,13 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
                 d.line((cx - r_, cy - r_ * sg, cx + r_, cy + r_ * sg), fill=(255, 255, 255, 255), width=24)
                 d.line((cx - r_, cy - r_ * sg, cx + r_, cy + r_ * sg), fill=c + (255,), width=13)
         if nm in box and k > .3:      # 札から牌へ、はずむ矢印
-            x, y, w, h, ims, f = box[nm]; bx, by = min(max(cx, x + 40), x + w - 40), (y + h + 10 if y + h < cy else y - 10)
+            x, y, w, h, ims, f = box[nm]; bx, by = min(max(cx, x + 30), x + w - 30), min(max(cy, y + 20), y + h - 20)      # 札のふちの、牌にいちばん近い所から
+            if y + h < cy: by = y + h + 6
+            elif y > cy: by = y - 6
+            elif x + w < cx: bx = x + w + 6
+            else: bx = x - 6
             L = _m.hypot(cx - bx, cy - by) or 1; ux, uy = (cx - bx) / L, (cy - by) / L
+            if L < max(rx, ry) + 40: continue      # 札が牌のすぐとなりなら、矢印はいらない
             ex, ey = cx - ux * (max(rx, ry) + 16), cy - uy * (max(rx, ry) + 16)
             bob = 10 * _m.sin(tnow * 7)      # 先がぴょこぴょこ動く
             ex, ey = ex - ux * bob, ey - uy * bob
@@ -630,11 +647,12 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
         d.rounded_rectangle((lx, ly + (1 - sc_) * 20, lx + lw, ly + 62 + (1 - sc_) * 20), radius=32, fill=c + (a,))
         text_c(d, lx + lw / 2, ly + 30 + (1 - sc_) * 20, tx, f, (255, 255, 255, a))
         xx = x + w / 2 - (sum(i.width + 8 for i in ims) - 8) / 2
-        for i in ims:
+        for j_, i in enumerate(ims):
             i2 = i.resize((max(1, int(i.width * sc_)), max(1, int(i.height * sc_))), Image.LANCZOS) if sc_ != 1 else i
             if a < 255: i2 = i2.copy(); i2.putalpha(i2.getchannel("A").point(lambda v: int(v * a / 255)))
+            hop = int(18 * max(0.0, _m.sin(2 * _m.pi * (tnow * 1.3 - j_ * .14)))) if tx == "待ち" else 0      # 待ちの牌は、ぽこぽこ順に跳ねる
             sh = Image.new("RGBA", i2.size, (0, 0, 0, 0)); sh.putalpha(i2.getchannel("A").point(lambda v: int(v * .35)))
-            d._image.alpha_composite(sh, (int(xx + 6), int(y + 76 + 8))); d._image.alpha_composite(i2, (int(xx), int(y + 76)))
+            d._image.alpha_composite(sh, (int(xx + 6), int(y + 76 + 8))); d._image.alpha_composite(i2, (int(xx), int(y + 76 - hop)))
             xx += i.width + 8
 
 def summary(d, sc, k):
@@ -1076,7 +1094,9 @@ def main():
             if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
                 pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
                 here_ = {k_: b_ for k_, b_ in PMK[pi].items() if b_[3] < 1240}      # カードの所（下）に入った牌は囲まない（カメラが動いて、カードに重なった）
-                draw_marks(d, [(k_,) + tuple(v_) for k_, v_ in sc["pre"]["marks"].items()], here_, now=n / fps, key="pre")
+                pl_ = sc["pre"].get("lines", [])      # 5つ目＝カードのその行が出てから
+                mk_ = [(k_,) + tuple(v_[:4]) for k_, v_ in sc["pre"]["marks"].items() if len(v_) < 5 or (v_[4] < len(pl_) and t >= pl_[v_[4]][0])]
+                draw_marks(d, mk_, here_, now=n / fps, key="pre")
             if sc["pre"].get("count") and PCNT:
                 key, c0, cd = sc["pre"]["count"]; pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
                 draw_count(d, PCNT[pi][key], t, c0, cd, 13)
@@ -1089,12 +1109,18 @@ def main():
             if name in MARKS:
                 assert MK, "marks.json が無い（scene.py を動かすと、コマと同じフォルダにできる）"
                 xe = say_end(SUBS.get(f"step{i + 1}", []), "ロンできません")
-                draw_marks(d, MARKS[name][i], MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe, now=n / fps, key=f"s{i}")
+                ms_ = []
+                for m_ in MARKS[name][i]:      # 6つ目＝その言葉を言い始めてから出す
+                    if len(m_) > 5:
+                        w_ = say_at(SUBS.get(f"step{i + 1}", []), m_[5])
+                        if w_ is not None and t < .25 + w_: continue
+                    ms_.append(m_[:5])
+                draw_marks(d, ms_, MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe, now=n / fps, key=f"s{i}")
             rail(d, sc["steps"], i); headline(d, i, s, t)
             if i == 0 and DMK and sc.get("clip") and isinstance(f, str) and os.path.basename(f).startswith("d"):      # 切られた牌・ツモった牌に印
                 di = min(int(os.path.basename(f)[1:5]), len(DMK) - 1)
                 draw_marks(d, [("tile",) + tuple(sc["clip"])], DMK[di], now=n / fps, key="clip")
-            if name.startswith("furiten"): hand_strip(d, name)
+            if name.startswith("furiten") and i < len(sc["steps"]) - 1: hand_strip(d, name)      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
