@@ -1515,7 +1515,7 @@ def s2_build():
                        (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]
             views.append((4.25, 4.7, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[2] = (HANDV[0], HANDV[1], HANDV[2])      # 前にかがむ前に切りかえる（かがんだ頭をカメラが通った）      # ③ ツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
             views.append((7.45, 7.75, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))
-            agari(12.2); to_hand(10.0)
+            agari(12.2); to_hand(10.2)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
