@@ -1482,7 +1482,7 @@ def s2_build():
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
         TABLE = (Vector((0, .02, .77)), Vector((0, -.40, .92)), 31.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
         focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
-        HANDV = (Vector((-.02, HY + .07, .77)), Vector((0, -.34, .40)), 30.0)      # 卓の手牌とツモった牌（立てた手牌の表が読める低さ。2026-11-25 ユーザーの指定「ツモの所作で手牌と引いた牌が見えるように」）
+        HANDV = (Vector((-.02, HY + .07, .77)), Vector((-.17, -.30, .50)), 31.0)      # 卓の手牌とツモった牌（立てた手牌の表が読める低さ。2026-11-25 ユーザーの指定「ツモの所作で手牌と引いた牌が見えるように」）
         def to_hand(t0):      # t0 から手牌の画角へ（以後の間もこの画角）
             views.append((t0, t0 + .5, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2]))
             for n_, f_ in enumerate(FREEZE):
