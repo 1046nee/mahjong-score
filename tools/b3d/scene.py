@@ -1482,11 +1482,11 @@ def s2_build():
         # 説明の動画は、卓全体を画面に収めたまま動かさず、大事な牌を囲む（2026-11-24 ユーザーの指定）。囲みと札は make_clip.py が marks.json を見てのせる
         TABLE = (Vector((0, .02, .77)), Vector((0, -.40, .92)), 31.0)      # 河の字が読める近さ（真上からだと小さすぎた。2026-11-25 ユーザーの指摘）。手牌は make_clip.py が絵の帯で出す
         focus = [TABLE] * len(FREEZE); views = [(.05, 1.5, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2])]
-        HANDV = (Vector((-.02, HY + .07, .77)), Vector((-.17, -.30, .50)), 31.0)      # 卓の手牌とツモった牌（立てた手牌の表が読める低さ。2026-11-25 ユーザーの指定「ツモの所作で手牌と引いた牌が見えるように」）
+        HANDV = (Vector((-.02, HY + .07, .77)), Vector((-.26, -.30, .54)), 31.0)      # 卓の手牌とツモった牌（立てた手牌の表が読める低さ。2026-11-25 ユーザーの指定「ツモの所作で手牌と引いた牌が見えるように」）
         def to_hand(t0):      # t0 から手牌の画角へ（以後の間もこの画角）
             views.append((t0, t0 + .5, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2]))
             for n_, f_ in enumerate(FREEZE):
-                if f_ > t0: focus[n_] = (HANDV[0], HANDV[1], HANDV[2])
+                if f_ > t0 - .2: focus[n_] = (HANDV[0], HANDV[1], HANDV[2])
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
@@ -1513,9 +1513,9 @@ def s2_build():
             nx2 = P("next2"); mv["next2"] = [(11.0, 11.8, (xt, LY, Z), L_, .08)]         # ⑤ 七索をツモる
             arms[0] = [(0, R), (4.6, R), (5.2, A(nx.x, nx.y, .02)), (6.0, A(xt, HY + .01, .02)), (6.3, A(xt, HY + .01, .02)), (7.1, A(s6[0], s6[1])), (7.6, R),
                        (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.8, A(xt, LY)), (DUR, R)]
-            views.append((4.7, 5.2, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[2] = (HANDV[0], HANDV[1], HANDV[2])      # ③ ツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
+            views.append((4.25, 4.7, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[2] = (HANDV[0], HANDV[1], HANDV[2])      # 前にかがむ前に切りかえる（かがんだ頭をカメラが通った）      # ③ ツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
             views.append((7.45, 7.75, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))
-            agari(12.2); to_hand(10.15)
+            agari(12.2); to_hand(10.0)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
