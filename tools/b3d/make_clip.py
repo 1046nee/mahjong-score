@@ -874,7 +874,7 @@ def hand_strip(d, name, a=1.0):
 
 def x_badge(d, t, tx="ロンできない"):
     """「ロンできない」の大きな×（前置きのカードの上）"""
-    a = min(1, t * 5); sc_ = .7 + .3 * min(1, t * 5); cx, cy, r = W / 2, 700, int(120 * sc_)
+    a = min(1, t * 5); sc_ = .7 + .3 * min(1, t * 5); cx, cy, r = W / 2, 300, int(120 * sc_)      # 画面の上（卓や札にかからない）
     d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(255, 255, 255, int(235 * a)), outline=(201, 47, 66, int(255 * a)), width=12)
     for sg in (1, -1): d.line((cx - r * .55, cy - r * .55 * sg, cx + r * .55, cy + r * .55 * sg), fill=(201, 47, 66, int(255 * a)), width=26)
     tw = d.textlength(tx, font=font(48)) + 60
@@ -1095,13 +1095,13 @@ def main():
         CUR[0] = im      # 囲みの外を暗くする（draw_marks）ため、いまの絵
         if i == -4:
             pre_card(d, sc["pre"], t)
-            if sc["pre"].get("x_t") is not None and t >= sc["pre"]["x_t"]: x_badge(d, t - sc["pre"]["x_t"], sc["pre"].get("xtext", "ロンできない"))
             if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
                 pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
                 here_ = {k_: b_ for k_, b_ in PMK[pi].items() if b_[3] < 1240}      # カードの所（下）に入った牌は囲まない（カメラが動いて、カードに重なった）
                 pl_ = sc["pre"].get("lines", [])      # 5つ目＝カードのその行が出てから
                 mk_ = [(k_,) + tuple(v_[:4]) for k_, v_ in sc["pre"]["marks"].items() if len(v_) < 5 or (v_[4] < len(pl_) and t >= pl_[v_[4]][0])]
                 draw_marks(d, mk_, here_, now=n / fps, key="pre")
+            if sc["pre"].get("x_t") is not None and t >= sc["pre"]["x_t"]: x_badge(d, t - sc["pre"]["x_t"], sc["pre"].get("xtext", "ロンできない"))      # 札の上に重ねる
             if sc["pre"].get("counts") and PCNT and sc["pre"].get("cts"):      # いちばん新しく始まった数え（前置きの絵の時刻 → 出す時刻）
                 pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
                 cur_ = [(c_, ct_) for c_, ct_ in zip(sc["pre"]["counts"], sc["pre"]["cts"]) if t >= ct_]
