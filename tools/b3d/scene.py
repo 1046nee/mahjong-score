@@ -1486,7 +1486,7 @@ def s2_build():
         def to_hand(t0):      # t0 から手牌の画角へ（以後の間もこの画角）
             views.append((t0, t0 + .5, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2]))
             for n_, f_ in enumerate(FREEZE):
-                if f_ > t0 - .2: focus[n_] = (HANDV[0], HANDV[1], HANDV[2])
+                if f_ > t0 - .05: focus[n_] = (HANDV[0], HANDV[1], HANDV[2])
         pre = dict(lift=hand[-5:], call=False, cam2=None)      # 待ちの形＝二三四五六索
         if SCENE == "furiten":
             f7 = P("fu7"); mv["fu7"] = [(1.9, 2.3, (f7.x, f7.y, f7.z + .012), LIE, 0), (2.6, 2.9, tuple(f7), LIE, 0)]      # ② 自分で切った一索を少し浮かせる
