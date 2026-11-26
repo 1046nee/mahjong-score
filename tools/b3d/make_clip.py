@@ -143,12 +143,14 @@ SCRIPTS = {
         ("理牌", "リーパイ", "ツモった牌を、手牌の並びに入れる", 70, 94, 1.6, [], ""),
         ("ツモ切り", "ツモぎり", "ツモった牌を、そのまま切ることもある", 95, 130, 1.6, [], ""),
     ], tail=(131, 141, 2.4),
-    counts={2: ("riv", .3, .3)},      # ③河: 自分の河に「1・2・3…7」を順に出す（2026-11-25 ユーザーの指定「説明は、セリフだけでなく見て分かる演出を」）
-    pre=dict(head="自分の番の流れ", ls=[0, 1, 2, 2], beats=[(3.1, 1), (5.9, 2)], hold=2.0, concl=True, count=("hand", 6.6, .2), lines=[      # 前置きの絵（scene.py の pre_pose_dahai）に合わせた時刻
+    counts={2: ("riv", .3, .15)},      # ③河: 自分の河に「1・2・3…7」を順に出す（2026-11-25 ユーザーの指定「説明は、セリフだけでなく見て分かる演出を」）
+    pre=dict(head="自分の番の流れ", ls=[0, 1, 2, 3, 3], beats=[(2.1, 1), (2.2, 2), (4.7, 3)], hold=2.0, concl=True,
+             counts=[("hand", 2.1, .06, 13), ("hand", 3.6, .06, 14), ("hand", 5.6, .06, 13)], lines=[      # 13 → ツモって14 → 切って13 を数える（2026-11-26 ユーザーの指定）      # 前置きの絵（scene.py の pre_pose_dahai）に合わせた時刻
         (0.5, "{上家|カミチャ}が切ったら、自分の番"),
-        (3.1, "1枚{ツモ}って、1枚切る"),
-        (6.2, "手牌はいつも13枚", "切ったあと"),
-        (9.2, "ツモって切る、をくり返す"),
+        (1.0, "手牌は13枚"),
+        (2.0, "山から1枚{ツモ}って14枚"),
+        (3.0, "1枚切って、13枚に戻る"),
+        (4.0, "ツモって切る、をくり返す"),
     ])),
     "furiten": dict(title="捨て牌のフリテン", kicker="フリテンは3種類", sub="3種類の1つ目", steps=[
         ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
@@ -790,8 +792,8 @@ def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
             if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
                 am = sc["pre"].get("amap")
                 for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + (next((k / fps for k, x in enumerate(am) if x >= t_), t_) if am else t_), snd))
-                if sc["pre"].get("count"):      # 数える丸が出るたびに小さな音
-                    _, c0, cd = sc["pre"]["count"]; ev += [(sec + c0 + k * cd, "tick") for k in range(13)]
+                for (k_, a_, cd, nmx), ct_ in zip(sc["pre"].get("counts", []), sc["pre"].get("cts", [])):      # 数える丸が出るたびに小さな音
+                    ev += [(sec + ct_ + k * cd, "tick") for k in range(nmx)]
             if i >= 0 and sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in subs_:      # 例が切りかわるたびに「ポン」
                 ev += [(sec + p[0], "pop") for p in bappu_phases(subs_[f"step{i + 1}"])]
             yk_ = sc.get("yaku", {}).get(i)
@@ -1053,6 +1055,7 @@ def main():
                     if u < nxt[1]: a_ = min(a0 + max(0, u - o0), nxt[0]); break
                 seq.append((pre[min(len(pre) - 1, int(round(a_ * fps)))], -4, u, False)); amap.append(a_)
             sc["pre"]["amap"] = amap      # 出す時刻ごとの、前置きの絵の時刻（効果音を絵に合わせる）
+            if pc.get("counts"): sc["pre"]["cts"] = [next((k / fps for k, x in enumerate(amap) if x >= c_[1] - 1e-6), 0.0) for c_ in pc["counts"]]
         else:
             for n, fp in enumerate(pre + [pre[-1]] * max(int(sc["pre"]["hold"] * fps), int((need("pre") + .6) * fps) - len(pre))): seq.append((fp, -4, n / fps, False))
     for i, s in enumerate(sc["steps"]):
@@ -1099,9 +1102,10 @@ def main():
                 pl_ = sc["pre"].get("lines", [])      # 5つ目＝カードのその行が出てから
                 mk_ = [(k_,) + tuple(v_[:4]) for k_, v_ in sc["pre"]["marks"].items() if len(v_) < 5 or (v_[4] < len(pl_) and t >= pl_[v_[4]][0])]
                 draw_marks(d, mk_, here_, now=n / fps, key="pre")
-            if sc["pre"].get("count") and PCNT:
-                key, c0, cd = sc["pre"]["count"]; pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
-                draw_count(d, PCNT[pi][key], t, c0, cd, 13)
+            if sc["pre"].get("counts") and PCNT and sc["pre"].get("cts"):      # いちばん新しく始まった数え（前置きの絵の時刻 → 出す時刻）
+                pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
+                cur_ = [(c_, ct_) for c_, ct_ in zip(sc["pre"]["counts"], sc["pre"]["cts"]) if t >= ct_]
+                if cur_: (key, a_, cd, nmx), ct_ = cur_[-1]; draw_count(d, PCNT[pi][key], t, ct_, cd, nmx)
         elif i == -3:
             outro_card(im, t, odur)
         elif i == -2:

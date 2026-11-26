@@ -272,7 +272,7 @@ RIVER_W = 5 * RP + TL + .003             # 河の1段の幅（5枚＋リーチ�
 RX0 = -RIVER_W / 2 + TW / 2               # 河の1枚目の中心（6枚で折り返す）。横向き1枚まで入れた1段が、卓の真ん中にそろう
 TAKEN = float(arg("--taken", ".5"))   # 山から取った割合（配牌＋ツモ。0＝配る前）
 DORA = arg("--dora", "m8")            # ドラ表示牌
-RY, WY, HY = -.118, -.215, -.335         # 河・山・手牌の位置（手前の席の座標の y）。手牌と山のあいだは、倒した牌1枚（TL）が入る広さにする（-.255/-.318 だと、晒した牌が山の下にもぐった）
+RY, WY, HY = -.118, -.262, -.335         # 河・山・手牌の位置（手前の席の座標の y）。手牌と山のあいだは、倒した牌1枚（TL）が入る広さにする（-.255/-.318 だと、晒した牌が山の下にもぐった）
 BACK = {"dark": "#2F62C8", "green": "#177083"}[THEME]   # 牌の背の色
 _tile_mesh = {}
 def tile_mesh(code):
@@ -403,6 +403,10 @@ if SCENE == "kan":   # 暗槓の自分の河の一索を九索に（2026-11-14 �
 S2 = SCENE in ("daiminkan", "kakan", "riichi", "tsumo", "ron", "ryukyoku", "dahai", "furiten", "furiten2", "furiten3")      # furiten＝捨て牌・furiten2＝同巡内・furiten3＝リーチ後のフリテン（2026-11-24 ユーザーの指定で3本に）
 FU = SCENE.startswith("furiten")
 DRAWN = {"kan": "hk13", "kakan": "hk10", "riichi": "hk13"}      # ①の前に山からツモる牌（2026-11-25 ユーザーの指定「ツモったら、のセリフには山からツモる絵」）
+WALLNEXT = {}; WALLHIDE = {}      # 場面の中でツモる山の牌（WALLHIDE＝ほかの人がツモって消える時刻）
+WALL_SCHED = {"furiten": [2.7, "next"], "furiten2": [1.5, 2.9, 4.2, "next", 8.3], "furiten3": [1.5, 2.7, 3.4, "next", 7.3, 8.0, 8.7, "next2"],
+              "riichi": ["next", 5.4, 6.0, 6.6, "next2"], "dahai": ["next", 5.75, 5.85, 5.95, "next2"], "ryukyoku": ["haitei"],
+              "chi": [], "pon": [], "daiminkan": [], "ron": []}      # 自分がツモる順と、ほかの人がツモる時刻（もとの時刻）
 FU_OTHER = {}           # フリテン: 動画の中でほかの人が切る牌 (席, 河の何枚目か) → 名前（それまでは河に無い）
 RIICHI_K = -1           # 自分の河で、横向き（リーチの宣言牌）にする牌が何枚目か
 RINSHAN = "p4"          # 嶺上牌の絵（暗槓＝四筒。2026-11-14 ユーザーの指定で一索から変えた）
@@ -513,29 +517,32 @@ def build_tiles():
     x0 = -(n - 1) / 2 * (TW + .0008); WP = TW + .0008
     BRK = n - 8                                                   # 手前の山の、割れ目の左の幢（右の7幢が王牌）
     order = [(0, k) for k in range(BRK, -1, -1)] + [(s_, k) for s_ in (3, 2, 1) for k in range(n - 1, -1, -1)]
-    taken = set(order[:round(len(order) * TAKEN)])
-    if SCENE == "ryukyoku": taken = set(order[:-1])      # 最後の幢（下家の山の、王牌のとなり）の下段だけが海底牌として残る
-    nxt = order[round(len(order) * TAKEN)] if round(len(order) * TAKEN) < len(order) else None      # 次にツモる幢
-    if SCENE == "dahai" or FU:      # ツモと打牌・フリテン: 次にツモる幢は、左の山の、自分に近い端（手をのばしやすい所）
-        taken = set(order[:BRK + 2]); nxt = order[BRK + 2]
-    WALL.update(n=n, x0=x0, WP=WP, BRK=BRK)
+    # 山の残りは、河の枚数から計算する（2026-11-26 ユーザーの指摘「河の枚数と山の枚数・位置が合っていない」・全動画）。
+    # 配牌52枚＋ツモった数（＝捨てた数＋鳴いた牌＋手に持っているツモ牌）を、割れ目の左から時計回りに、1幢ずつ上段 → 下段の順に取る
+    tiles = [(s_, k_, lv_) for (s_, k_) in order for lv_ in (1, 0)]
+    later = len(FU_OTHER) + (1 if SCENE == "furiten" else 0)      # 場面の中で切る牌（河にはあるが、まだツモっていない）
+    T = min(len(tiles) - 1, 52 + sum(len(r_) for r_ in RIVERS) - later + (1 if MELD0 else 0))
+    gone = set(tiles[:T]); WALLNEXT.clear()
+    for j_, it_ in enumerate(WALL_SCHED.get(SCENE, ["next"])):      # この場面の中でツモる牌（next・next2＝自分。数字＝ほかの人がその時刻にツモる）
+        if T + j_ < len(tiles): WALLNEXT[tiles[T + j_]] = it_
+    WALL.update(n=n, x0=x0, WP=WP, BRK=BRK, T=T)
+    if "--wallinfo" in sys.argv: print("WALLINFO", SCENE, "T", T, "next", tiles[T] if T < len(tiles) else None, "rivers", [len(r_) for r_ in RIVERS], flush=True); sys.exit(0)
     for i, r in enumerate(roots):
         for k in range(n):
-            if (i, k) in taken: continue
             x = x0 + k * WP + (.007 if (i == 0 and k > BRK) else 0)     # 王牌は割れ目の分だけ右へ
             for lv in range(2):
-                if SCENE == "ryukyoku" and (i, k) == order[-1]:
-                    if lv == 0: named["haitei"] = tile(HAITEI, (x, WY, Z), r, "down")
-                    continue
+                if (i, k, lv) in gone: continue
+                wn = WALLNEXT.get((i, k, lv))
+                if wn == "haitei": named["haitei"] = tile(HAITEI, (x, WY, Z + lv * TT), r, "down"); continue
                 if i == 0 and k == BRK + 3 and lv == 1:                  # ドラ表示牌（表を向ける）
                     named["dora"] = tile(DORA, (x, WY + WANPAI_DY, Z + TT), r, "lie"); continue
                 code = {(BRK + 1, 1): RINSHAN, (BRK + 4, 1): "p2"}.get((k, lv), "back") if i == 0 else "back"
                 if SCENE == "riichi" and i == 0 and k == BRK + 3 and lv == 0: code = "m6"      # 裏ドラ表示牌（ドラ表示牌の下）
-                if (i, k) == nxt and lv == 0 and NEXT2_CODE != "back": code = NEXT2_CODE
-                if (i, k) == nxt and lv == 1: code = NEXT_CODE   # 伏せた牌でも、めくる・取る牌は絵を持たせる（嶺上牌＝四筒・カンドラ表示牌＝二筒）
+                if wn == "next": code = NEXT_CODE      # 伏せた牌でも、取る牌は絵を持たせる
+                if wn == "next2": code = NEXT2_CODE
                 t = tile(code, (x, WY + (WANPAI_DY if (i == 0 and k > BRK) else 0), Z + lv * TT), r, "down")
-                if (i, k) == nxt and lv == 1: named["next"] = t
-                if (i, k) == nxt and lv == 0 and NEXT2_CODE != "back": named["next2"] = t
+                if wn in ("next", "next2"): named[wn] = t
+                elif isinstance(wn, float): named[f"wd{k}_{i}_{lv}"] = t; WALLHIDE[f"wd{k}_{i}_{lv}"] = wn
                 if i == 0 and k in (BRK + 1, BRK + 2): named[f"rinshan{k - BRK}{lv}"] = t
                 if i == 0 and k == BRK + 4 and lv == 1: named["kandora"] = t       # カンドラ表示牌になる牌（ドラ表示牌の左となり・上段）
                 if i == 0 and k > BRK: named[f"wp{k}_{lv}"] = t      # 王牌（流局で囲む）
@@ -1451,7 +1458,7 @@ def s2_build():
                    (6.2, A(nx2.x, nx2.y, .02)), (6.9, A(xt, HY + .01, .02)), (7.0, A(xt, HY + .01, .02)), (7.6, A(slot(n0 + 1)[0], slot(n0 + 1)[1])), (8.0, R), (DUR, R)]
         rv = (Vector((RX0 + 2.5 * RP, RY + RIVER_DY - .5 * RIVER_PITCH, .77)), Vector((-.01, -.17, .50)), 42)      # 河の2段が入る所
         # ①②は、手牌の全体（左の山の端・河も）が入る画角のまま（ツモった牌に寄らない。2026-11-25 ユーザーの指定）
-        HV = (Vector((-.02, (HY + RY) / 2 - .02, .77)), Vector((0, -.28, .36)), 34)
+        HV = (Vector((-.04, -.10, .77)), Vector((.66, -.68, 1.09)), 27)      # ①②は前置きと同じ、右うしろの高い所から（手牌・ツモった牌・河・山。2026-11-26 ユーザーの指定）
         focus = [HV, rv, (Vector((P("hk6").x, HY + .10, .77)), Vector((0, -.36, .42)), 30), HV]      # ④理牌は手牌を画面の下寄りに（真上からだと見出しのカードに隠れた）
         views = [(-1.0, -.5, tuple(HV[0] + HV[1]), tuple(HV[0]), HV[2])]      # はじめからこの画角（①の頭に、自分の選手の後ろ頭が大きく映っていた。2026-11-25 の試しで見た）
         pre = dict(lift=["hk12"], call=False, cam2=None)
@@ -1571,6 +1578,7 @@ def anim_pose_s2(t, cam):
             if k <= 0: break
             loc = loc.lerp(Vector(l1), k) + Vector((0, 0, lift * math.sin(math.pi * k))); rot = rot.lerp(Vector(r1), k)
         o.location = loc; o.rotation_euler = tuple(rot)
+    for nm, th in WALLHIDE.items(): hide_tree(NAMED[nm], t >= th)      # ほかの人がツモった山の牌
     for nm, ts in S2C["show"].items():
         hide_tree(NAMED[nm], t < ts)
         if nm not in S2C["mv"] or t < S2C["mv"][nm][0][0]: NAMED[nm].location = NAMED[nm]["p0"]; NAMED[nm].rotation_euler = NAMED[nm]["r0"]
@@ -1702,7 +1710,7 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
 # 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
-PRE_DUR = {"dahai": 9.6, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
+PRE_DUR = {"dahai": 6.8, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
 def pre_pose_ryukyoku(t, cam):
     """流局の前置き（2026-11-25 ユーザーの指定「海底牌をツモる・河底牌を切る絵をセリフに合わせて」「王牌が画面に入り、どれかわかるように」）:
     山の最後の1枚（海底牌）を映す → 自分がツモって（1.0〜2.4）そのまま切る（2.6〜3.3＝河底牌）→ 王牌14枚に寄る（3.8〜4.6）"""
@@ -1724,22 +1732,22 @@ def pre_pose_ryukyoku(t, cam):
     kc = seg(t, 3.8, 4.6)
     loc = c1[0].lerp(c2[0], kc); tgt = c1[1].lerp(c2[1], kc); lens = c1[2] + (c2[2] - c1[2]) * kc
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = [loc, tgt, lens]
+DAHAI_WIDE = (Vector((.62, -.78, 1.86)), Vector((-.04, -.10, .77)), 27.0)      # 右うしろの高い所から: 手牌の全体・自分の河・ツモる山・のばした腕（2026-11-26 ユーザーの指定「引きで、腕をのばしてツモる」）
 def pre_pose_dahai(t, cam):
-    """ツモと打牌の前置き（2026-11-25 ユーザーの指定）: 上家が牌を切る（0.6〜1.6）→ 自分が1枚ツモって1枚切る（本題の動きを 3.1〜5.9 に）→ 手牌の全体を映して13枚を数える"""
-    main = 0.0 if t < 3.1 else min(4.3, 1.4 + (t - 3.1) * (4.3 - 1.4) / 2.8)
+    """ツモと打牌の前置き（2026-11-26 ユーザーの指定）: 上家が切る（0.6〜1.5）→ 13枚を数える → 腕をのばして1枚ツモる（2.2〜3.6）→ 14枚 → 1枚切る（4.7〜5.6）→ 13枚。
+    数える丸は make_clip.py（pcount.json・台本の counts）"""
+    if t < 2.2: main = 1.4
+    elif t < 3.6: main = 1.4 + (t - 2.2)
+    elif t < 4.7: main = 2.8
+    else: main = min(4.15, 2.8 + (t - 4.7))
     anim_pose(main, cam)
+    hide_tree(bpy.data.objects["player0"], False)      # 自分の腕でツモる（選手を出す）
     m6 = NAMED[f"riv3_{len(RIVERS[3]) - 1}"]; p0 = Vector(m6["p0"])      # 上家が最後に切る牌（上家の席の座標）
-    k = seg(t, .6, 1.5); fr = Vector((p0.x * .5, -.27, p0.z + .04))      # 上家の手もとから
+    k = seg(t, .6, 1.5); fr = Vector((p0.x * .5, -.27, p0.z + .04))
     m6.location = lerp(fr, p0, k) + Vector((0, 0, .03 * math.sin(math.pi * k))); hide_tree(m6, t < .55)
-    Ri = Vector(ARMS[3]["R"]["rest"]); hz = TOP + TL + .012      # 上家の右手で切る（席3の座標で、手もと → 河）
+    Ri = Vector(ARMS[3]["R"]["rest"]); hz = TOP + TL + .012
     w = hand_path(t, [(0, Ri), (.3, Ri), (.6, (fr.x, -.29, hz)), (1.5, (p0.x, p0.y - .02, hz)), (2.0, Ri), (PRE_DUR, Ri)]); pose_body(ARMS[3], w)
-    pw = Vector((p0.y, -p0.x, .77))      # 卓の座標（上家の席は 270度 回してある）
-    riv = (Vector((-.04, -.46, 1.02)), Vector((pw.x - .02, pw.y + .02, .77)), 34.0)      # 上家の河と、上家の手もと
-    HVt = Vector((-.02, (HY + RY) / 2 - .02, .77)); hv = (HVt + Vector((0, -.28, .36)), HVt, 34.0)      # 手牌・山の端・河（本題の①②と同じ）
-    hx = (NAMED["hk0"]["p0"][0] + NAMED["hk12"]["p0"][0] + HP + .03) / 2      # ツモった牌（手牌の右）まで
-    hand = (Vector((hx, -.52, 1.16)), Vector((hx, HY + .045, .78)), 20.0)      # 低めから（牌の表が読める）・広角で両端まで（遠すぎて牌が小さかった）      # 手牌の全体（13枚を数える。両端が切れていた＝2026-11-25 の試しで見た）
-    kb = seg(t, 2.3, 3.0); kc = seg(t, 5.9, 6.5)
-    loc = riv[0].lerp(hv[0], kb).lerp(hand[0], kc); tgt = riv[1].lerp(hv[1], kb).lerp(hand[1], kc); lens = riv[2] + (hv[2] - riv[2]) * kb; lens += (hand[2] - lens) * kc
+    loc, tgt, lens = DAHAI_WIDE
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
     CAMST[:] = [loc, tgt, lens]
 
