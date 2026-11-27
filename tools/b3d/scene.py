@@ -1174,7 +1174,7 @@ def anim_setup():
         s2_sticks()
     for k_, o_ in NAMED.items():       # 動かす牌の、はじめの位置と向きを覚えておく
         o_["p0"] = list(o_.location); o_["r0"] = list(o_.rotation_euler)
-    cd = bpy.data.cameras.new("anim"); o = bpy.data.objects.new("cam_anim", cd); add(o); sc.camera = o
+    cd = bpy.data.cameras.new("anim"); cd.clip_start = .01; o = bpy.data.objects.new("cam_anim", cd); add(o); sc.camera = o
     return o
 def hand_path(t, keys):
     """右手の道すじ（時刻→位置）。途中は少し持ち上げて動かす"""
@@ -1741,7 +1741,7 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
 # 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
-PRE_DUR = {"dahai": 7.4, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
+PRE_DUR = {"dahai": 7.8, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
 def pre_pose_ryukyoku(t, cam):
     """流局の前置き（2026-11-25 ユーザーの指定「海底牌をツモる・河底牌を切る絵をセリフに合わせて」「王牌が画面に入り、どれかわかるように」）:
     山の最後の1枚（海底牌）を映す → 自分がツモって（1.0〜2.4）そのまま切る（2.6〜3.3＝河底牌）→ 王牌14枚に寄る（3.8〜4.6）"""
@@ -1771,7 +1771,7 @@ def pre_pose_dahai(t, cam):
     if t < 2.2: main = 1.4
     elif t < 3.72: main = 1.4 + (t - 2.2)      # ツモって、手を戻すまで
     elif t < 4.7: main = 2.92
-    else: main = min(4.15, 2.92 + (t - 4.7))
+    else: main = min(4.75, 2.92 + (t - 4.7))      # 切って手を戻しきるまで（本題の時刻は間を含む。4.15 で止めると、切る途中の腕が残った）
     anim_pose(main, cam)
     hide_tree(bpy.data.objects["player0"], False)      # 自分の腕でツモる（選手を出す）
     m6 = NAMED[f"riv3_{len(RIVERS[3]) - 1}"]; p0 = Vector(m6["p0"])      # 上家が最後に切る牌（上家の席の座標）
