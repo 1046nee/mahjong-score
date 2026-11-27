@@ -1164,7 +1164,9 @@ def main():
             if sc["pre"].get("counts") and PCNT and sc["pre"].get("cts"):      # いちばん新しく始まった数え（前置きの絵の時刻 → 出す時刻）
                 pi = min(int(os.path.basename(f)[1:5]), len(PCNT) - 1) if isinstance(f, str) else 0
                 cur_ = [(c_, ct_) for c_, ct_ in zip(sc["pre"]["counts"], sc["pre"]["cts"]) if t >= ct_]
-                if cur_: (key, a_, cd, nmx), ct_ = cur_[-1]; draw_count(d, PCNT[pi][key], t, ct_, cd, nmx)
+                if cur_:
+                    (key, a_, cd, nmx), ct_ = cur_[-1]
+                    if len(PCNT[pi][key]) == nmx: draw_count(d, PCNT[pi][key], t, ct_, cd, nmx)      # 枚数が変わったら（14枚から1枚切ったら）、その数えは消す。次の数えは手を戻してから
         elif i == -3:
             outro_card(im, t, odur)
         elif i == -2:
