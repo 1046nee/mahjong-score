@@ -247,6 +247,7 @@ def headline(d, i, s, k):
     dy = int((1 - min(1, k * 4)) * 30)
     y = 330 + dy
     NT = s[8] if len(s) > 8 else ""      # 注意書き（例: 喰い替え）。説明の下に、オレンジの字で1行
+    TOPY[0] = 330 + (326 if NT else 258) + 62 * s[2].count("\n") + 20
     d.rounded_rectangle((40, y, W - 40, y + (326 if NT else 258) + 62 * s[2].count("\n")), radius=44, fill=(255, 255, 255, 240))
     d.ellipse((76, y + 34, 76 + 104, y + 34 + 104), fill=ORANGE)
     text_c(d, 76 + 52, y + 34 + 50, str(i + 1), font(72), WHITE)
@@ -577,6 +578,7 @@ def _ease_pop(k):
     import math as _m
     return 1 + .18 * _m.sin(_m.pi * min(1, k)) * (1 - min(1, k)) * 2 if k < 1 else 1.0
 CUR = [None]
+TOPY = [610]      # 札を置ける一番上（見出しのカードの下。注意書きのある手順はカードが高いので下げる＝2026-11-27 札がカードに隠れた）
 def _ring_pad(b):
     """囲みのすきまと線の太さ（牌の大きさに合わせる。小さい牌は細く・すきまも小さく）"""
     m = min(b[2] - b[0], b[3] - b[1])
@@ -616,9 +618,9 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
         hit = lambda x, y: any(x < bx + bw and bx < x + w and y < by + bh and by < y + h for bx, by, bw, bh in taken)
         best = None
         for x, y in cand:
-            x = min(max(x, 20), W - 20 - w); y = min(max(y, 610), 1290 - h)
+            x = min(max(x, 20), W - 20 - w); y = min(max(y, TOPY[0]), 1290 - h)
             if not hit(x, y): best = (x, y); break
-        if best is None: x, y = min(max(cand[0][0], 20), W - 20 - w), min(max(cand[0][1], 610), 1290 - h)
+        if best is None: x, y = min(max(cand[0][0], 20), W - 20 - w), min(max(cand[0][1], TOPY[0]), 1290 - h)
         else: x, y = best
         box[nm] = (x, y, w, h, ims, f)
     import math as _m
