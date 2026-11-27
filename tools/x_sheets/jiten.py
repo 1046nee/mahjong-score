@@ -12,21 +12,21 @@ PAGES = [
  ("牌の呼び方", "#177083", S("""萬子|マンズ|漢数字の牌
 筒子|ピンズ|丸の牌
 索子|ソーズ|竹の牌
-数牌|シュウパイ・スウパイ|一〜九の牌
-字牌|ジハイ・ツーパイ|風牌と三元牌
+数牌|シュウパイ|一〜九の牌
+字牌|ジハイ（ツーパイ）|風牌と三元牌
 風牌|フォンパイ|東南西北
 三元牌|サンゲンパイ|白發中
 么九牌|ヤオチューハイ|一・九と字牌
-老頭牌|ロウトウハイ・ラオトウパイ|一と九の数牌
+老頭牌|ロウトウハイ（ラオトウパイ）|一と九の数牌
 中張牌|チュンチャンパイ|二〜八の数牌
 尖張牌|センチャンパイ|三と七
 翻牌|ファンパイ|役牌
-客風牌|コーフォンパイ・オタカゼハイ|役にならない風
-圏風牌|チャンフォンパイ・ケンフォンパイ|場風の牌
+客風牌|コーフォンパイ（オタカゼハイ）|役にならない風
+圏風牌|チャンフォンパイ（ケンフォンパイ）|場風の牌
 門風牌|メンフォンパイ|自風の牌
-連風牌|レンフォンパイ・リェンフォンパイ|場風と自風が同じ牌
+連風牌|レンフォンパイ|場風と自風が同じ牌
 役牌|ヤクハイ|刻子で役になる牌
-花牌|ハナハイ・ファパイ|花や季節の牌
+花牌|ハナハイ（ファパイ）|花や季節の牌
 尖牌|センパイ|尖張牌の略
 端牌|ハシハイ|一と九の数牌
 心牌|シンパイ|数牌の五
@@ -75,7 +75,7 @@ PAGES = [
 抜きドラ|ヌキドラ|三麻の北などのドラ
 完全安全牌|カンゼンアンゼンハイ|絶対にロンされない牌
 槓ウラ|カンウラ|カンドラの裏ドラ""")),
- ("山と準備", "#4261AA", S("""洗牌|シーパイ・センパイ|牌をかき混ぜる
+ ("山と準備", "#4261AA", S("""洗牌|シーパイ（センパイ）|牌をかき混ぜる
 砌牌|チーパイ|山を積む
 壁牌|ピーパイ|積んだ山
 幢|トン|上下2枚の1組
@@ -93,7 +93,7 @@ PAGES = [
 嶺上|リンシャン|嶺上牌のある所
 海底|ハイテイ|山のいちばん最後
 河底|ホウテイ|捨て牌のいちばん最後
-牌|パイ・ハイ|麻雀の駒
+牌|パイ|麻雀の駒
 上ヅモ|ウワヅモ|山の上の段
 下ヅモ|シタヅモ|山の下の段
 骰子|シャイツ|サイコロ
@@ -108,7 +108,7 @@ PAGES = [
 ("席・局の進み方・動作", "その2", [
  ("席と場所", "#7A5CB8", S("""起家|チーチャ|最初の親
 仮東|カリトン|席決めの仮の親
-荘家|チャンチャ|親
+荘家|チャンチャ（ソウチャ）|親
 散家|サンチャ|子
 東家|トンチャ|親の席
 南家|ナンチャ|東家の右
@@ -116,12 +116,12 @@ PAGES = [
 北家|ペーチャ|東家の左
 自家|ジチャ|自分
 他家|ターチャ|自分以外の3人
-上家|カミチャ・シャンチャ|左の人
+上家|カミチャ（シャンチャ）|左の人
 下家|シモチャ|右の人
 対面|トイメン|正面の人
 対家|トイチャ|対面の正式な名
 場風|バカゼ|東場なら東
-自風|ジカゼ・ジフウ|自分の席の風
+自風|ジカゼ（ジフウ）|自分の席の風
 雀士|ジャンシ|麻雀を打つ人
 雀荘|ジャンソウ|麻雀を打つ店
 親|オヤ|東家の人
@@ -138,11 +138,11 @@ PAGES = [
 南入|ナンニュウ|南場に入ること
 西入|シャーニュウ|西場に入ること
 連荘|レンチャン|親が続く
-輪荘|リンチャン・ロンチャン|親が移る
+輪荘|リンチャン（ロンチャン）|親が移る
 本場|ホンバ|積み重なる数
 供託|キョウタク|場に出した点棒
 流局|リュウキョク|アガリなしで終わる
-荒牌平局|ホワンパイピンチュー|ふつうの流局
+荒牌平局|ホワンパイピンチュー（コウハイヘイキョク）|ふつうの流局
 九種九牌|キュウシュキュウハイ|么九牌9種で流局
 四風連打|スーフーレンダ|同じ風牌4枚で流局
 四家立直|スーチャリーチ|4人リーチの流局
@@ -168,7 +168,7 @@ PAGES = [
 仮親|カリオヤ|仮東と同じ
 最終局|オーラス|最後の局""")),
  ("動作と鳴き", "#177083", S("""自摸|ツモ|山から1枚取る
-摸打|モウダ・モウタ|ツモって切る
+摸打|モウダ|ツモって切る
 打牌|ダハイ|牌を切る
 手番|テバン|自分の番
 手牌|テハイ|持っている牌
@@ -183,10 +183,10 @@ PAGES = [
 大明槓|ダイミンカン|人の牌でカン
 加槓|カカン|ポンに1枚足す
 副露牌|フーロハイ|鳴いて見せた牌
-和了|ホーラ・アガリ|アガること
-栄和|ロンホー・ロン|人の牌でアガる
+和了|ホーラ（アガリ）|アガること
+栄和|ロンホー（ロン）|人の牌でアガる
 自摸和|ツモホー|ツモでアガる
-放銃|ホウジュウ・ホーチャン|ロンされる牌を切る
+放銃|ホウジュウ（ホーチャン）|ロンされる牌を切る
 門前|メンゼン|鳴いていない状態
 門前清|メンゼンチン|門前の正式な名
 二家和|ダブロン|2人が同時にロン
@@ -259,7 +259,7 @@ PAGES = [
 間四軒|アイダヨンケン|間が4つの捨て牌""")),
  ("反則と決まり", "#C92F42", S("""錯和|チョンボ|アガリの間違いなど
 多牌|ターハイ|手牌が多い
-少牌|ショウハイ|手牌が足りない
+少牌|ショウハイ（シャオパイ）|手牌が足りない
 先自摸|サキヅモ|順番より先に取る
 誤吃|ゴチー|間違えたチー
 誤碰|ゴポン|間違えたポン
@@ -346,8 +346,8 @@ PAGES = [
 小三元|ショウサンゲン|三元牌2つと雀頭""")),
  ("3翻・6翻・満貫", "#7A5CB8", S("""二盃口|リャンペーコー|一盃口が2組
 純全帯么九|ジュンチャンタイヤオチュー|ジュンチャン
-混一色|ホンイーソー|1色と字牌
-清一色|チンイーソー|1色だけ（6翻）
+混一色|ホンイーソー（ホンイツ）|1色と字牌
+清一色|チンイーソー（チンイツ）|1色だけ（6翻）
 流し満貫|ナガシマンガン|捨て牌が么九牌だけ""")),
  ("役満", "#C92F42", S("""国士無双|コクシムソウ|么九牌13種
 四暗刻|スーアンコー|暗刻4つ
@@ -392,13 +392,16 @@ PAGES = [
 金門橋|キンモンキョウ|つながる順子4つ"""))]),
 ]
 def cell(k, y, m, c):
-    L = len(k); fs = {1: 25, 2: 25, 3: 24, 4: 20.5, 5: 17.5, 6: 16}[L]; ys = 12.5 if len(y) <= 9 else 11 if len(y) <= 10 else 10 if len(y) <= 12 else 8
-    return f'<div class="c">{"<i>規</i>" if k in KI else ""}<div class="k" style="font-size:{fs}px">{k}</div><div class="y" style="font-size:{ys}px">{y}</div><div class="m">{m}</div></div>'
+    L = len(k); fs = {1: 25, 2: 25, 3: 24, 4: 20.5, 5: 17.5, 6: 16}[L]
+    y, alt = (y.split("（")[0], "（" + y.split("（")[1]) if "（" in y else (y, "")      # 別の読みはカッコで下に小さく（2026-11-27 ユーザーの指定）
+    ys = 12.5 if len(y) <= 9 else 11 if len(y) <= 10 else 10 if len(y) <= 12 else 8
+    al = f'<div class="al" style="font-size:{9 if len(alt) <= 11 else 7.5}px">{alt}</div>' if alt else ""
+    return f'<div class="c">{"<i>規</i>" if k in KI else ""}<div class="k" style="font-size:{fs}px">{k}</div><div class="y" style="font-size:{ys}px">{y}</div>{al}<div class="m">{m}</div></div>'
 TOT = sum(len(ws) for _, _, ss in PAGES for _, _, ws in ss)
 css = """.sec { border: 2px solid var(--c); border-radius: 8px; overflow: hidden; margin-bottom: 8px; background: #fff; } .sb { display: flex; align-items: baseline; background: var(--c); color: #fff; padding: 2px 12px; } .sb b { font-size: 16.5px; font-weight: 900; } .sb em { margin-left: auto; font-style: normal; font-size: 12px; font-weight: 800; }
 .g { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: #D5DEDC; } .c { position: relative; text-align: center; padding: 5px 1px 5px; background: #fff; min-width: 0; }
 .c i { position: absolute; top: 2px; left: 2px; font-style: normal; font-size: 8.5px; font-weight: 900; color: #fff; background: #E25A1C; border-radius: 3px; width: 12px; height: 12px; line-height: 12px; }
-.c .k { color: #1F2A28; font-weight: 900; height: 31px; display: flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; } .y { font-weight: 900; color: var(--c); white-space: nowrap; height: 17px; line-height: 17px; } .m { font-size: 10px; font-weight: 700; color: #4C5B58; white-space: nowrap; }
+.c .k { color: #1F2A28; font-weight: 900; height: 31px; display: flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; } .y { font-weight: 900; color: var(--c); white-space: nowrap; height: 17px; line-height: 17px; } .al { font-weight: 800; color: #6B7A77; white-space: nowrap; line-height: 11px; margin-top: -2px; } .m { font-size: 10px; font-weight: 700; color: #4C5B58; white-space: nowrap; }
 .lg { display: inline-block; font-size: 10px; font-weight: 900; color: #fff; background: #E25A1C; border-radius: 3px; padding: 0 3px; }"""
 outdir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "まじゃすこ素材", "x", "kanji"); os.makedirs(outdir, exist_ok=True)
 for n, (title, no, secs) in enumerate(PAGES, 1):
