@@ -1417,9 +1417,12 @@ def s2_build():
         arms_l[0] = [(0, L0), (8.6, L0), (9.0, A(xl, HY - .01, .02)), (9.55, A(xl, LY)), (9.9, L0), (DUR, L0)]
         BOARD = (Vector((0, -.10, .77)), Vector((0, -.30, .98)), 31)      # 頭より前・上から（頭の中に入って真っ黒になった）      # ④ 4人の河と自分の手牌（全員の打牌が見える）
         URA = (Vector((bx - .05, by_ + .01, .77)), Vector((-.16, -.26, .50)), 30)      # 手牌と、右の2枚（腕にかくれない引き）      # ⑤ 手牌の右の2枚（自分の選手の右前から）
-        focus = [Vector((sx_, sy_, .77)), (Vector((0, -.12, .77)), Vector((0, -.2, .56)), 42), BOARD, URA]
+        cxh = (P("hk0").x + xt) / 2
+        HANDR = (Vector((cxh + .012, HY + .10, .78)), Vector((0, -.44, .32)), 22.5)      # ツモ〜倒すまでは自分の目の高さから手牌の正面（頭と胴は消す）。上からだと手牌が小さく、アガリ牌が読めなかった（2026-11-27）
+        focus = [Vector((sx_, sy_, .77)), (Vector((0, -.12, .77)), Vector((0, -.2, .56)), 42), HANDR, URA]
         views = [(4.6, 5.2, (0, -.50, 1.50), (0, -.09, .77), 34.0),
                  (5.4, 5.8, tuple(BOARD[0] + BOARD[1]), tuple(BOARD[0]), BOARD[2]),
+                 (7.15, 7.5, tuple(HANDR[0] + HANDR[1]), tuple(HANDR[0]), HANDR[2]),
                  (9.6, 10.0, tuple(URA[0] + URA[1]), tuple(URA[0]), URA[2]),
                  (12.4, 13.0, (0, -.40, 2.0), (0, .06, .77), 30.0)]      # まとめのあいだは引いて、千点棒・河・倒した手牌・裏ドラ
         pre = dict(lift=["hk3", "hk4"], call=False, cam2=None)
@@ -1586,6 +1589,7 @@ def anim_pose_s2(t, cam):
     if not S2C: s2_build()
     if SCENE == "dahai" and "--pre" not in sys.argv: hide_self_body(True)      # 手牌を自分の目の高さから映すので、自分の頭と胴は消す（腕は出す）
     tr = t; t = warp(t)
+    if SCENE == "riichi" and "--pre" not in sys.argv and "--disc" not in sys.argv: hide_self_body(7.15 <= t < 12.45)      # ④の手牌の正面の画角から⑤のあいだ（途中で出すと、ぱっと現れる）
     for nm, ms in S2C["mv"].items():
         o = NAMED[nm]; loc = Vector(o["p0"]); rot = Vector(o["r0"])
         for (a, b, l1, r1, lift) in ms:
