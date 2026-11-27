@@ -1459,10 +1459,10 @@ def s2_build():
         views = [(3.5, 4.4, tuple(DV[1]), tuple(DV[0]), 30.0), (4.95, 5.75, tuple(WIDE[0] + WIDE[1]), tuple(WIDE[0]), 36.0),
                  (6.6, 7.2, tuple(RECV[0] + RECV[1]), tuple(RECV[0]), 30.0)]
         # 支払い: 下家（子）と上家（親）は1,000点棒を、自分のとなりまで手で送る。対面（子）は1,000点棒1本を、卓の上をすべらせて自分の前へ
-        pay_stick(mv, arms, show, 1, "pay1", 5.3, (.12, -.258), hz)      # 自分の前に並べる（寄った画角に入るように）
-        pay_stick(mv, arms, show, 2, "pay2", 5.4, (.01, -.262), hz, far=True)
-        pay_stick(mv, arms, show, 3, "pay3", 5.5, (-.10, -.258), hz)
-        pay_stick(mv, arms, show, 3, "pay3b", 5.55, (-.10, -.266), hz)      # 親の2本目（1000・2000 の親の分＝2,000点）
+        pay_stick(mv, arms, show, 1, "pay1", 5.3, (.03, -.258), hz)      # 自分の前の、山の残りより左に並べる（右に置くと山に隠れた）
+        pay_stick(mv, arms, show, 2, "pay2", 5.4, (-.06, -.262), hz, far=True)
+        pay_stick(mv, arms, show, 3, "pay3", 5.5, (-.15, -.258), hz)
+        pay_stick(mv, arms, show, 3, "pay3b", 5.55, (-.15, -.266), hz)      # 親の2本目（1000・2000 の親の分＝2,000点）
         pre = dict(lift=["hk9", "hk10"], call=False, cam2=None)
     elif SCENE == "dahai":      # ツモと打牌（2026-11-16・2026-11-25 ユーザーの指摘で組み直し）
         h12 = P("hk12"); xt = h12.x + HP + .03; ST = (xt, h12.y, h12.z)                  # ツモった牌は、手牌の右に少し離して立てる
