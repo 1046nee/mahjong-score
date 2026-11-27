@@ -113,18 +113,18 @@ def _two():
 
 
 # 牌の音の時刻（scene.py の「もとの時刻 t」と、その時の音）。scene.py の動きを変えたら、ここもそろえる
-_NAKI = [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.15, "slide"), (4.45, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")]     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
+_NAKI = [(1.5, "tap"), (2.0, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.45, "tap"), (5.0, "slide"), (5.7, "tap"), (6.5, "clack")]     # tap＝牌を掴む（2026-11-14 ユーザーの指定）
 TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒す・taosu＝手牌をまとめて倒す/伏せる・clackt＝牌と牌が当たる・clack＝打牌
     "pon": _NAKI, "chi": _NAKI,
     "kan": [(1.5, "tap"), (2.0, "clack2"), (2.55, "clackt"), (3.5, "slide"), (3.9, "tap"), (4.5, "clackt"), (5.0, "tap"), (5.9, "clackt"), (6.5, "tap"), (7.3, "clack")],
-    "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.15, "slide"), (4.45, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
+    "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.45, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
     "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
-    "riichi": [(1.5, "tap"), (2.4, "clack"), (3.2, "tap"), (4.1, "tap"), (4.6, "tap"), (5.1, "clackt"), (6.3, "clack"), (6.9, "clack"), (7.5, "clack"), (7.6, "tap"), (8.3, "clackt"), (9.5, "taosu"), (10.0, "tap"), (10.7, "clackt"), (11.4, "clackt"), (12.1, "clackt")],
-    "tsumo": [(2.0, "tap"), (2.8, "clackt"), (2.95, "tap"), (3.4, "clackt"), (3.6, "tap"), (4.35, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
+    "riichi": [(1.5, "tap"), (2.4, "clack"), (2.45, "tap"), (2.85, "clackt"), (3.2, "tap"), (4.1, "tap"), (6.3, "clack"), (6.9, "clack"), (7.5, "clack"), (7.6, "tap"), (8.3, "clackt"), (9.5, "taosu"), (10.0, "tap"), (10.7, "clackt"), (11.0, "tap"), (11.5, "clackt")],
+    "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.25, "tap"), (3.55, "clackt"), (3.85, "tap"), (4.35, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
     "ron": [(1.5, "tap"), (2.3, "taosu"), (5.8, "tap"), (7.5, "tap")],
     "dahai": [(2.0, "tap"), (2.8, "clackt"), (3.1, "tap"), (3.7, "clack"), (4.9, "tap"), (5.6, "clackt"), (6.2, "tap"), (6.9, "clackt"), (7.0, "tap"), (7.6, "clack")],      # 2026-11-25 切るのを早め、手を戻す
     "furiten": [(3.2, "tap"), (3.8, "clack"), (4.8, "tap"), (5.6, "clackt"), (5.9, "tap"), (6.8, "taosu")],
-    "furiten2": [(2.0, "tap"), (2.6, "clack"), (3.4, "tap"), (4.0, "clack"), (4.7, "tap"), (5.3, "clack"), (6.0, "tap"), (6.8, "clackt"), (7.1, "tap"), (7.9, "clack"), (8.8, "tap"), (9.4, "clack"), (10.8, "taosu")],
+    "furiten2": [(2.0, "tap"), (2.6, "clack"), (3.4, "tap"), (4.0, "clack"), (4.7, "tap"), (5.3, "clack"), (5.8, "tap"), (6.5, "clackt"), (7.2, "tap"), (7.9, "clack"), (8.8, "tap"), (9.4, "clack"), (10.8, "taosu"), (11.1, "slide")],
     "furiten3": [(2.0, "tap"), (2.6, "clack"), (3.7, "clack"), (4.4, "clack"), (5.2, "tap"), (6.0, "clackt"), (6.3, "tap"), (7.1, "clack"), (8.3, "clack"), (9.0, "clack"), (9.8, "clack"), (11.0, "tap"), (11.8, "clackt"), (12.1, "tap"), (13.0, "taosu")],
     "ryukyoku": [(1.5, "taosu"), (1.65, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (7.3, "tap")],      # 上家（親）→ 自分 → 下家 → 対面
 }

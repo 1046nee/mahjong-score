@@ -23,11 +23,11 @@ SCRIPTS = {
     "chi": dict(clip=("blue", "上家が切った", ["m6"], "UR"), title="チーの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「チー」と声に出す。ポンが優先なので一拍おいてから", 0, 6, 2.2, [], "チー"),     # 肩ごしで顔が見えるうちに止める（カメラが動き出す前）
         ("開示", "かいじ", "鳴くのに使う{搭子|ターツ}を倒して、みんなに見せる", 7, 31, 1.6, ["m4", "m5"], ""),          # 止める所は、手がどいて真上から寄ったコマ
-        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 32, 61, 1.4, ["m6"], ""),
-        ("副露", "フーロ", "取った牌を左に横向きで付け、卓の右端に寄せる", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
+        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 32, 61, 1.4, ["m6"], ""),
+        ("副露", "フーロ", "3枚を卓の右端に寄せる。{上家|カミチャ}からは左が横向き", 62, 84, 1.6, ["m6", "m4", "m5"], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 109, 1.4, ["s3"], "", "※鳴いた牌と同じ牌・反対側のスジの牌は切れない（喰い替え）"),     # 形の上で切れない牌（2026-11-16 ユーザーの指定）
     ], tail=(110, 120, 2.4),
-    sbeats={3: [(62, "横向きで付けます"), (68, "卓の右端に寄せます")]},       # ④は、置いた所で止めて「卓の右端に寄せます」の声で寄せる（2026-11-25 ユーザーの指定）
+    sbeats={3: [(69, "卓の右端に寄せます")]},       # ④は、置いた所で止めて「卓の右端に寄せます」の声で寄せる（2026-11-25 ユーザーの指定）
     kuikae=dict(step=4, at="鳴いた牌と", meld=["m6", "m4", "m5"], side=0, ng=[("m6", "同じ牌", "同じ牌"), ("m3", "反対側のスジ", "反対側のスジ")]),      # 喰い替えの具体例（四萬五萬で六萬をチー）
     pre=dict(head="チーできるとき", marks={"own": ("orange", "搭子", ["m4", "m5"], "UR"), "call": ("blue", "上家が切った", ["m6"], "UL")}, ls=[0, 2, 2, 3], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {搭子|ターツ} がある", "あと1枚で順子になる2枚"),
@@ -38,11 +38,11 @@ SCRIPTS = {
     "pon": dict(clip=("blue", "対面が切った", ["z6"], "UR"), title="ポンの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「ポン」と声に出す。チーより優先される", 0, 6, 2.2, [], "ポン"),
         ("開示", "かいじ", "鳴くのに使う{対子|トイツ}を倒して、みんなに見せる", 7, 31, 1.6, [], ""),
-        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 32, 61, 1.4, [], ""),
-        ("副露", "フーロ", "{対面|トイメン}から鳴いたら真ん中に横向きで付け、右端に寄せる", 62, 84, 1.6, [], ""),
+        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 32, 61, 1.4, [], ""),
+        ("副露", "フーロ", "3枚を卓の右端に寄せる。{対面|トイメン}からは真ん中が横向き", 62, 84, 1.6, [], ""),
         ("打牌", "ダハイ", "手牌からいらない牌を1枚切る", 85, 109, 1.4, [], "", "※鳴いた牌と同じ牌は切れない（喰い替え）"),
     ], tail=(110, 120, 2.4),
-    sbeats={3: [(62, "横向きで付けます"), (68, "卓の右端に寄せます")]},
+    sbeats={3: [(69, "卓の右端に寄せます")]},
     kuikae=dict(step=4, at="鳴いた牌と", meld=["z6", "z6", "z6"], side=1, ng=[("z6", "同じ牌", "同じ牌")]),      # 發をポン
     pre=dict(head="ポンできるとき", marks={"own": ("orange", "対子", ["z6", "z6"], "UL"), "call": ("blue", "対面が切った", ["z6"], "UR")}, ls=[0, 2, 2, 3], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {対子|トイツ} がある", "同じ牌2枚"),
@@ -59,7 +59,7 @@ SCRIPTS = {
         ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 113, 135, 1.4, [], ""),
     ], tail=(136, 145, 2.4),
     sbeats={1: [(32, "外側の2枚を裏返します")]},     # ②は表向きに倒した所で止め、「外側の2枚を裏返します」の声で裏返す（2026-11-25 ユーザーの指定）
-    pre=dict(head="暗槓できるとき", ls=[0, 0, 1, 1], hold=1.8, concl=True, lines=[
+    pre=dict(head="暗槓できるとき", marks={"own": ("orange", "同じ牌4枚", ["z1", "z1", "z1", "z1"], "UL")}, ls=[0, 0, 1, 1], hold=1.8, concl=True, lines=[
         (0.3, "手牌の中だけで{ 同じ牌4枚 }", "自分でツモってそろえた"),
         (1.6, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (2.9, "鳴き扱いにならない", "{門前|メンゼン}のまま"),
@@ -69,13 +69,13 @@ SCRIPTS = {
     "daiminkan": dict(clip=("blue", "下家が切った", ["z5"], "UR"), title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="7つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。人が切った牌で4枚目をそろえる", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "手牌の同じ牌3枚を倒して、みんなに見せる", 7, 32, 1.6, [], ""),
-        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取ってくる", 33, 61, 1.4, [], ""),
-        ("副露", "フーロ", "{下家|シモチャ}から鳴いたら右に横向きで付け、右端に寄せる", 62, 84, 1.6, [], ""),
+        ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 33, 61, 1.4, [], ""),
+        ("副露", "フーロ", "4枚を卓の右端に寄せる。{下家|シモチャ}からは右が横向き", 62, 84, 1.6, [], ""),
         ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 85, 105, 1.6, [], ""),
         ("嶺上牌", "リンシャンパイ", "王牌の端から、嶺上牌を1枚ツモる", 106, 131, 1.4, [], ""),
         ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 132, 154, 1.4, [], ""),
     ], tail=(155, 165, 2.4),
-    sbeats={3: [(62, "横向きで付けます"), (68, "卓の右端に寄せます")]},
+    sbeats={3: [(69, "卓の右端に寄せます")]},
     pre=dict(head="大明槓できるとき", marks={"own": ("orange", "暗刻", ["z5", "z5", "z5"], "UL"), "call": ("blue", "下家が切った", ["z5"], "UR")}, ls=[0, 2, 2, 3, 4], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {暗刻|アンコ} がある", "同じ牌3枚"),
         (3.4, "{他家|ターチャ}が{ 4枚目 }を切った → カン"),
@@ -98,22 +98,23 @@ SCRIPTS = {
     ])),
     "riichi": dict(clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
-        ("打牌", "ダハイ", "いらない牌を、横向きにして切る", 7, 42, 1.8, [], ""),
+        ("打牌", "ダハイ", "いらない牌を横向きにして切り、ツモった牌は手牌へ", 7, 42, 1.8, [], ""),
         ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),
         ("ツモ", "", "全員が打牌したあと、アガリ牌をツモって倒す", 81, 140, 1.8, [], "ツモ"),
-        ("裏ドラ", "うらドラ", "ドラ表示牌と下の牌を手もとへ。下の牌をめくる", 141, 180, 1.8, [], ""),     # 2026-11-25 ユーザーの指定
-    ], tail=(181, 189, 2.4), bubw={3: "ツモ、と声に出して"}, bubpos={"ツモ": ((700, 1180), (110, 300))},
+        ("裏ドラ", "うらドラ", "ドラ表示牌と下の牌を手もとに並べ、下の牌をめくる", 141, 180, 1.8, [], ""),     # 2026-11-25 ユーザーの指定
+    ], tail=(181, 189, 2.4), bubw={3: "ツモ、と声に出して"},
+    doracard=dict(step=4, at="裏ドラ表示牌です", rows=[("表ドラ", "s4", "s5", (255, 170, 120)), ("裏ドラ", "m6", "m7", (140, 220, 230))]), bubpos={"ツモ": ((700, 1180), (110, 300))},
     pre=dict(head="リーチできるとき", marks={"own": ("orange", "待ち", ["p3", "p6"], "UL")}, ls=[0, 1, 1], hold=2.0, concl=True, lines=[
         (0.3, "{門前|メンゼン}である", "ポン・チー・明槓をしていない"),
         (1.6, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (2.8, "1,000点棒を出して、リーチできる"),
     ], note=(3.4, "※持ち点や山の残り枚数の条件は、ルールによって違う"))),     # 環境ごとに違う条件は、ただし書きに（2026-11-14 ユーザーの指定）
-    "tsumo": dict(sbeats={2: [(50, "そのあと")]},      # ③ ツモった牌を倒したら止め、「そのあと」で手牌を倒す
+    "tsumo": dict(sbeats={2: [(53, "そのあと")]},      # ③ ツモった牌を倒したら止め、「そのあと」で手牌を倒す
                   yaku={3: dict(items=[("メンゼンツモ", "メンゼンツモ", 1), ("タンヤオ", "タンヤオ", 1), ("ドラ1", "ドラ", 1)], fu=("3翻30符", "30符"), pts=("点数は", "1000・2000"))},
                   title="ツモアガリの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
-        ("ツモ", "", "山から1枚ツモって、手牌の右に少し離して立てる。手牌には入れない", 0, 42, 1.6, [], ""),
+        ("ツモ", "", "山から1枚ツモる。手牌の中には入れない", 0, 42, 1.6, [], ""),
         ("発声", "はっせい", "アガリ牌なら「ツモ」と声に出す", 43, 49, 2.0, [], "ツモ"),
-        ("開示", "かいじ", "ツモった牌を片手で倒し、そのあと手牌を両手で倒す", 50, 68, 2.0, [], ""),
+        ("開示", "かいじ", "ツモった牌を倒して見せ、そのあと手牌を両手で倒す", 50, 68, 2.0, [], ""),
         ("申告", "しんこく", "同卓者に点数を申告する", 69, 75, 2.6, [], "1000・2000"),      # 役やドラの説明はカードに書かない（2026-11-25 ユーザーの指定）
         ("支払い", "しはらい", "ほかの3人が、アガった人に点数を払う", 76, 104, 2.0, [], ""),     # 点数の支払いも見せる（2026-11-16 ユーザーの指定）
     ], tail=(105, 105, 2.4),
@@ -169,9 +170,9 @@ SCRIPTS = {
         ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
         ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
         ("打牌", "ダハイ", "自分が打牌すると、フリテンがなくなる", 76, 131, 2.2, [], "", "※番が飛ばされても、自分が打牌するまでは続く"),
-        ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 173, 2.2, [], "ロン"),
-    ], tail=(174, 181, 2.4),
-    sbeats={4: [(159, "フリテンが解けて")]}, bubpos={"ロン": ((760, 1350), (120, 260))},      # 「ロン」と言ってから手牌を倒す（2026-11-25 ユーザーの指定）
+        ("ロンできる", "", "このあとの七索なら、ロンできる", 132, 186, 2.2, [], "ロン"),
+    ], tail=(187, 193, 2.4),
+    sbeats={3: [(107, "いらないので")], 4: [(159, "フリテンが解けて")]}, bubpos={"ロン": ((760, 1350), (120, 260))},      # 「ロン」と言ってから手牌を倒す（2026-11-25 ユーザーの指定）
     pre=dict(head="同巡内フリテン", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="次の自分の打牌までロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "アガリ牌が出たのに{ 見逃した }", "役が無いときも"),
@@ -769,14 +770,23 @@ def subtitle(d, tx, k):
 
 
 def draw_count(d, ps, t, t0, dt, nmax=None):
-    """牌の上に「1・2・3…」の丸を順に出す（ps＝牌の場所 [x, 上のふち] の並び・t0 から dt 秒おきに1つずつ）"""
-    for k, (x, y) in enumerate(ps[:nmax] if nmax else ps):
+    """牌の上に「1・2・3…」の丸を順に出す（ps＝牌の場所 [x, 上のふち] の並び・t0 から dt 秒おきに1つずつ）。
+    数え終わったら「N枚」の札。14枚目はチカチカ（2026-11-26 ユーザーの指定）"""
+    ps = ps[:nmax] if nmax else ps
+    for k, (x, y) in enumerate(ps):
         a = (t - t0 - k * dt) / .12
         if a <= 0: break
         a = min(1, a); r = 24; cy = y - 34 - int((1 - a) * 14)
-        d.ellipse((x - r, cy - r, x + r, cy + r), fill=(231, 86, 32, int(255 * a)), outline=(255, 255, 255, int(255 * a)), width=4)
+        blink = k == 13 and int((t - t0) * 6) % 2 == 0
+        col = (255, 200, 40) if blink else (231, 86, 32)
+        d.ellipse((x - r, cy - r, x + r, cy + r), fill=col + (int(255 * a),), outline=(255, 255, 255, int(255 * a)), width=4)
         text_c(d, x, cy - 1, str(k + 1), font(30), (255, 255, 255, int(255 * a)))
-
+    if ps and t >= t0 + len(ps) * dt:
+        k = min(1, (t - t0 - len(ps) * dt) / .25); s_ = _ease_pop(k); x, y = ps[-1]
+        lab = f"{len(ps)}枚"; f_ = font(int(60 * s_), 900); w_ = d.textlength(lab, font=f_) + 50
+        cx = min(max(sum(p[0] for p in ps) / len(ps), w_ / 2 + 30), W - w_ / 2 - 30); cy = min(p[1] for p in ps) - 130
+        d.rounded_rectangle((cx - w_ / 2, cy - 48 * s_, cx + w_ / 2, cy + 48 * s_), radius=40, fill=(255, 200, 40) if len(ps) == 14 else (23, 112, 131), outline=(255, 255, 255), width=5)
+        text_c(d, cx, cy - 3, lab, f_, (31, 42, 40) if len(ps) == 14 else (255, 255, 255))
 
 def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
     """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
@@ -882,71 +892,112 @@ def x_badge(d, t, tx="ロンできない"):
     text_c(d, cx, cy + r + 50, tx, font(48), (255, 255, 255, int(255 * a)))
 
 
+PTS_RON = {20: [None, None, None, None], 30: ["1000", "2000", "3900", "7700"], 40: ["1300", "2600", "5200", "8000"], 50: ["1600", "3200", "6400", "8000"], 60: ["2000", "3900", "7700", "8000"]}
+PTS_TSUMO = {20: [None, "400・700", "700・1300", "1300・2600"], 30: ["300・500", "500・1000", "1000・2000", "2000・3900"], 40: ["400・700", "700・1300", "1300・2600", "2000・4000"],
+             50: ["400・800", "800・1600", "1600・3200", "2000・4000"], 60: ["500・1000", "1000・2000", "2000・3900", "2000・4000"]}      # 子のアガリ（0本場）。ツモは「子の払い・親の払い」
 def yaku_board(d, t, yk, subs):
-    """申告の手順で、声に合わせて役が1つずつ出てきて、翻の数が増えていく（2026-11-25 ユーザーの指定「遊びを入れる」）。
-    最後に符と点数が、はんこのように出る"""
+    """申告（2026-11-26 ユーザーの指定）: 声に合わせて役が1つずつ出て翻が増える → 「3翻30符」→ 子の点数表（1〜4翻・20〜60符）で
+    3翻30符のマスを光らせ、点数が出る。発声の吹き出しが出たら消す（make_clip.py が呼ばない）"""
     import math as _m
-    x0, y0 = 46, 640; ph = []
+    x0, y0 = 46, 660; ph = []
     for w, lab, han in yk["items"]:
         ws = say_at(subs, w)
         if ws is not None: ph.append((.25 + ws, lab, han))
     if not ph or t < ph[0][0]: return
     a0 = min(1, (t - ph[0][0]) * 4)
     tot = sum(h for t_, l, h in ph if t >= t_); last = max(t_ for t_, l, h in ph if t >= t_)
-    d.rounded_rectangle((x0, y0, x0 + 560, y0 + 120 + 92 * len(ph) + 10), radius=36, fill=(12, 20, 22, int(205 * a0)))
-    d.text((x0 + 34, y0 + 26), "役", font=font(44, 900), fill=(255, 255, 255, int(255 * a0)))
-    # 翻の数（増えるたびに、ぽこんと大きくなる）
-    k = min(1, (t - last) / .35); s_ = _ease_pop(k) * (1.25 - .25 * k)
-    r = 62 * s_; cx, cy = x0 + 470, y0 + 62
-    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(231, 86, 32, 255), outline=(255, 255, 255, 255), width=5)
-    text_c(d, cx, cy - 4, f"{tot}翻", font(int(46 * s_), 900), (255, 255, 255, 255))
+    PW = 520; PH = 104 + 86 * len(ph)
+    d.rounded_rectangle((x0, y0, x0 + PW, y0 + PH), radius=34, fill=(12, 20, 22, int(210 * a0)))
+    d.text((x0 + 30, y0 + 22), "役", font=font(44, 900), fill=(255, 255, 255, int(255 * a0)))
+    k = min(1, (t - last) / .35); s_ = _ease_pop(k) * (1.2 - .2 * k)      # 翻の数（増えるたびに、ぽこんと大きく）。板の中に収める
+    r = 38 * s_; cx, cy = x0 + PW - 64, y0 + 54
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(231, 86, 32, 255), outline=(255, 255, 255, 255), width=4)
+    text_c(d, cx, cy - 3, f"{tot}翻", font(int(32 * s_), 900), (255, 255, 255, 255))
     for n, (t_, lab, han) in enumerate(ph):
         if t < t_: break
-        k = min(1, (t - t_) / .3); yy = y0 + 120 + n * 92; xx = x0 + 30 - (1 - k) * 80
-        a = int(255 * k)
-        d.rounded_rectangle((xx, yy, xx + 360, yy + 76), radius=38, fill=(255, 255, 255, a))
-        text_c(d, xx + 180, yy + 36, lab, font(40, 900), (23, 112, 131, a))
-        d.rounded_rectangle((xx + 376, yy + 10, xx + 476, yy + 66), radius=28, fill=(231, 86, 32, a))
-        text_c(d, xx + 426, yy + 36, f"+{han}翻", font(30, 900), (255, 255, 255, a))
-    for key, yoff in (("fu", 0), ("pts", 1)):      # 符・点数は、はんこのように
-        w_, tx = yk[key]; ws = say_at(subs, w_)
-        if ws is None or t < .25 + ws: continue
-        k = min(1, (t - .25 - ws) / .25); s_ = 1.6 - .6 * k if k < 1 else 1.0
-        cx, cy = x0 + 800, y0 + (90 if key == "fu" else 220)      # 役の板の右に縦に並べる（下の発声の吹き出しにかからない）
-        f_ = font(int((44 if key == "fu" else 64) * s_), 900); tw = d.textlength(tx, font=f_) + 60
-        d.rounded_rectangle((cx - tw / 2, cy - 44 * s_, cx + tw / 2, cy + 44 * s_), radius=24, fill=(255, 255, 255, int(255 * k)), outline=(201, 47, 66, int(255 * k)), width=6)
-        text_c(d, cx, cy - 3, tx, f_, (201, 47, 66, int(255 * k)))
+        k = min(1, (t - t_) / .3); yy = y0 + 104 + n * 86; xx = x0 + 26 - (1 - k) * 80; a = int(255 * k)
+        d.rounded_rectangle((xx, yy, xx + 330, yy + 70), radius=35, fill=(255, 255, 255, a))
+        text_c(d, xx + 165, yy + 33, lab, font(38, 900), (23, 112, 131, a))
+        d.rounded_rectangle((xx + 346, yy + 8, xx + 446, yy + 62), radius=27, fill=(231, 86, 32, a))
+        text_c(d, xx + 396, yy + 33, f"+{han}翻", font(30, 900), (255, 255, 255, a))
+    # 「3翻30符」→ 点数表
+    wf = say_at(subs, yk["fu"][0])
+    if wf is None or t < .25 + wf: return
+    kf = min(1, (t - .25 - wf) / .3)
+    fu = int(yk["fu"][1].replace("符", "")); tsumo = "・" in yk["pts"][1]; TB = PTS_TSUMO if tsumo else PTS_RON
+    cx_, cy_ = x0 + PW + 24, y0 + 30      # 板の右に「3翻 30符」
+    lab_ = f"{tot}翻 {fu}符"; lw = d.textlength(lab_, font=font(44, 900)) + 50
+    d.rounded_rectangle((cx_, cy_, cx_ + lw, cy_ + 76), radius=38, fill=(255, 255, 255, int(255 * kf)), outline=(231, 86, 32, int(255 * kf)), width=6)
+    text_c(d, cx_ + lw / 2, cy_ + 36, lab_, font(44, 900), (231, 86, 32, int(255 * kf)))
+    ty = y0 + PH + 24; tx0 = 46; CW0 = 120; CW = (W - 92 - CW0) / 4; RH = 62
+    TT_ = 50      # 表の題の行
+    d.rounded_rectangle((tx0, ty, W - 46, ty + TT_ + RH * 6 + 16), radius=28, fill=(255, 255, 255, int(240 * kf)))
+    hdr = "子のツモ（子・親の払い）" if tsumo else "子のロン"
+    d.text((tx0 + 20, ty + 12), hdr, font=font(30, 900), fill=(23, 112, 131, int(255 * kf)))
+    ty += TT_
+    for c in range(4): text_c(d, tx0 + CW0 + CW * (c + .5), ty + 16 + RH * .5, f"{c + 1}翻", font(32, 900), (23, 112, 131, int(255 * kf)))
+    wp = say_at(subs, yk["pts"][0]); hot = wp is not None and t >= .25 + wp
+    for rI, f_ in enumerate((20, 30, 40, 50, 60)):
+        yy = ty + 16 + RH * (rI + 1)
+        text_c(d, tx0 + CW0 / 2, yy + RH / 2, f"{f_}符", font(32, 900), (23, 112, 131, int(255 * kf)))
+        for c in range(4):
+            v = TB[f_][c]; xx = tx0 + CW0 + CW * c
+            on = (f_ == fu and c + 1 == tot)
+            if on and hot:      # 3翻30符のマスを光らせる
+                pk = .5 + .5 * _m.sin((t - .25 - wp) * 10)
+                d.rounded_rectangle((xx + 4, yy + 4, xx + CW - 4, yy + RH - 4), radius=16, fill=(231, 86, 32, int(255 * kf)), outline=(255, 210, 120, int(255 * pk)), width=6)
+            elif (f_ == fu or c + 1 == tot) and kf >= 1:      # 行と列をうすく
+                d.rectangle((xx + 4, yy + 4, xx + CW - 4, yy + RH - 4), fill=(255, 236, 222, 255))
+            text_c(d, xx + CW / 2, yy + RH / 2, v or "—", font(26 if tsumo else 32, 900), (255, 255, 255, 255) if on and hot else (40, 50, 50, int(255 * kf)))
+
+def dora_card(d, t, dc):
+    """表示牌 → ドラ を見せる図（2026-11-26 ユーザーの指定「表示牌→表ドラ、表示牌→裏ドラが目で見てわかるように」）。行ごとに、ぽこんと出る"""
+    a = min(1, t * 4); y0 = 650; h = 360; A = lambda v: int(v * a)
+    d.rounded_rectangle((60, y0, W - 60, y0 + h), radius=40, fill=(12, 20, 22, A(205)), outline=(231, 86, 32, A(255)), width=6)
+    th = 112
+    for n, (lab, ind, dora, col) in enumerate(dc["rows"]):
+        k = (t - n * .6) / .3
+        if k <= 0: continue
+        k = min(1, k); s_ = _ease_pop(k); yy = y0 + 40 + n * 160
+        text_c(d, 175, yy + th / 2, lab, font(40, 900), col + (int(255 * k),))
+        im = _tile_img(ind, int(th * s_)); d._image.alpha_composite(im, (300, int(yy + (th - im.height) / 2)))
+        text_c(d, 300 + im.width / 2, yy + th + 18, "表示牌", font(26, 800), (220, 230, 230, int(255 * k)))
+        ax = 300 + im.width + 30
+        d.line((ax, yy + th / 2, ax + 120, yy + th / 2), fill=col + (int(255 * k),), width=10)
+        d.polygon([(ax + 140, yy + th / 2), (ax + 112, yy + th / 2 - 20), (ax + 112, yy + th / 2 + 20)], fill=col + (int(255 * k),))
+        im2 = _tile_img(dora, int(th * s_)); d._image.alpha_composite(im2, (int(ax + 170), int(yy + (th - im2.height) / 2)))
+        text_c(d, ax + 170 + im2.width / 2, yy + th + 18, "ドラ", font(26, 800), col + (int(255 * k),))
 
 
 def kuikae_card(d, kk, t, subs):
     """喰い替えの具体例（2026-11-25 ユーザーの指定）。「鳴いた牌と…」と話し始めたらカード（鳴いた形）→ 声に合わせて、切れない牌が1枚ずつ、ぽこんと出る"""
-    a = min(1, t * 4); A = lambda v: int(v * a); y = 900 + int((1 - a) * 24); h = 520
+    a = min(1, t * 4); A = lambda v: int(v * a); y = 650 + int((1 - a) * 24); h = 540      # 画面の上寄り（下の卓の、鳴いた牌と手牌が見えるように）
     d.rounded_rectangle((60, y, W - 60, y + h), radius=44, fill=(12, 20, 22, A(200)), outline=(231, 86, 32, A(255)), width=6)
-    d.rounded_rectangle((W / 2 - 190, y - 30, W / 2 + 190, y + 40), radius=35, fill=(231, 86, 32, A(255)))
-    ruby_c(d, W / 2, y + 6, "{喰い替え|くいかえ}の例", font(42, 800), (255, 255, 255, A(255)), 22)
+    d.rounded_rectangle((W / 2 - 190, y + 34, W / 2 + 190, y + 98), radius=32, fill=(231, 86, 32, A(255)))      # 見出しはカードの中（ルビがカードの外に出ていた。2026-11-26 ユーザーの指摘）
+    ruby_c(d, W / 2, y + 68, "{喰い替え|くいかえ}の例", font(40, 800), (255, 255, 255, A(255)), 22)
     th = 118
-    text_c(d, 200, y + 150, "鳴いた形", font(38, 800), (140, 220, 230, A(255)))
+    text_c(d, 200, y + 175, "鳴いた形", font(38, 800), (140, 220, 230, A(255)))
     x = 330
     for n, c in enumerate(kk["meld"]):
         im = _tile_img(c, th)
         if n == kk.get("side"): im = im.rotate(90, expand=True)
         if a < 1: im = im.copy(); im.putalpha(im.getchannel("A").point(lambda v: int(v * a)))
-        d._image.alpha_composite(im, (int(x), int(y + 90 + (th - im.size[1])))); x += im.size[0] + 8
-    d.line((110, y + 250, W - 110, y + 250), fill=(255, 255, 255, A(60)), width=3)
-    text_c(d, 200, y + 380, "切れない", font(38, 800), (255, 120, 120, A(255)))
+        d._image.alpha_composite(im, (int(x), int(y + 115 + (th - im.size[1])))); x += im.size[0] + 8
+    d.line((110, y + 268, W - 110, y + 268), fill=(255, 255, 255, A(60)), width=3)
+    text_c(d, 200, y + 395, "切れない", font(38, 800), (255, 120, 120, A(255)))
     x = 330
     for c, lab, wd in kk["ng"]:
         ws = say_at(subs, wd)
         k = 1.0 if ws is None else (t + kk["_t0"] - (.25 + ws)) / .3
         if k <= 0: continue
         s_ = _ease_pop(min(1, k)); im = _tile_img(c, int(th * s_))
-        yy = y + 300 + (th - im.height) / 2; d._image.alpha_composite(im, (int(x + (int(th * .75) - im.width) / 2), int(yy)))
-        cx, cy = x + th * .375, y + 300 + th / 2
+        yy = y + 315 + (th - im.height) / 2; d._image.alpha_composite(im, (int(x + (int(th * .75) - im.width) / 2), int(yy)))
+        cx, cy = x + th * .375, y + 315 + th / 2
         if k > .6:      # 牌の右上に、赤い丸の×（牌の絵は隠さない）
-            bx, by, r = x + th * .75 - 6, y + 300 + 4, 26
+            bx, by, r = x + th * .75 - 6, y + 315 + 4, 26
             d.ellipse((bx - r - 4, by - r - 4, bx + r + 4, by + r + 4), fill=(255, 255, 255, 255)); d.ellipse((bx - r, by - r, bx + r, by + r), fill=(201, 47, 66, 255))
             for sg in (1, -1): d.line((bx - 11, by - 11 * sg, bx + 11, by + 11 * sg), fill=(255, 255, 255, 255), width=7)
-        text_c(d, cx, y + 300 + th + 36, lab, font(32, 800), (235, 240, 240, 255))
+        text_c(d, cx, y + 315 + th + 36, lab, font(32, 800), (235, 240, 240, 255))
         x += max(int(th * .75), int(d.textlength(lab, font=font(32, 800)))) + 70
 
 
@@ -1022,7 +1073,8 @@ def main():
     assert frames, "コマが無い: " + src
     intro = sorted(glob.glob(os.path.join(src, "i[0-9]*.png")))
     disc = sorted(glob.glob(os.path.join(src, "d[0-9]*.png")))
-    if disc and sc["steps"][0][7]: BUB_POS[sc["steps"][0][7]] = ((690, 1120), (90, 300))      # ①の前の絵（自分の真後ろ・右うしろから）では、自分の手牌の上に出す
+    if disc and sc["steps"][0][7]:      # ①の前の絵の上の吹き出し。他家が切る絵（自分の真後ろから）＝手牌の上・自分がツモる絵（右うしろから）＝自分の選手（左下）の頭の右
+        BUB_POS[sc["steps"][0][7]] = ((420, 1230), (-140, 300)) if name in ("kan", "kakan", "riichi") else ((690, 1120), (90, 300))
     # 出すコマの並び: (元のコマ, 手順, その手順が出てからの秒, 止めているか)
     seq = []
     starts["intro"] = .5
@@ -1125,7 +1177,7 @@ def main():
             rail(d, sc["steps"], i); headline(d, i, s, t)
             if i == 0 and DMK and sc.get("clip") and isinstance(f, str) and os.path.basename(f).startswith("d"):      # 切られた牌・ツモった牌に印
                 di = min(int(os.path.basename(f)[1:5]), len(DMK) - 1)
-                draw_marks(d, [("tile",) + tuple(sc["clip"])], DMK[di], now=n / fps, key="clip")
+                draw_marks(d, [("tile",) + tuple(sc["clip"]), ("src", "orange", "山から1枚", [], "UR")], DMK[di], now=n / fps, key="clip")
             if name.startswith("furiten") and i < len(sc["steps"]) - 1 and i not in {"furiten2": (3,), "furiten3": (2,)}.get(name, ()): hand_strip(d, name)      # 卓の手牌を映す手順では、帯は出さない      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
@@ -1135,7 +1187,11 @@ def main():
                 bappu_live(d, t, bappu_phases(SUBS[f"step{i + 1}"]))
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す
                 card_t0.setdefault(i, t); bappu_card(d, t - card_t0[i])
-            if i in sc.get("yaku", {}) and f"step{i + 1}" in SUBS: yaku_board(d, t, sc["yaku"][i], SUBS[f"step{i + 1}"])
+            dc_ = sc.get("doracard")
+            if dc_ and dc_["step"] == i and f"step{i + 1}" in SUBS:
+                ws_ = say_end(SUBS[f"step{i + 1}"], dc_["at"])
+                if ws_ is not None and t >= .25 + ws_: dora_card(d, t - .25 - ws_, dc_)
+            if i in sc.get("yaku", {}) and f"step{i + 1}" in SUBS and not (s[7] and t > BUB_AT.get(f"step{i + 1}", .25)): yaku_board(d, t, sc["yaku"][i], SUBS[f"step{i + 1}"])      # 吹き出しが出たら消す（重ならないように切りかえる）
             kk = sc.get("kuikae")
             if kk and kk["step"] == i and f"step{i + 1}" in SUBS:
                 ws = say_at(SUBS[f"step{i + 1}"], kk["at"])
