@@ -1216,10 +1216,10 @@ def tile_corners(o, face=False):
     印の囲みは面だけで作る（側面まで入れると、河の横向きの牌や奥の牌で、となりの牌まで囲んだ＝2026-11-27 ユーザーの指摘）"""
     if face:
         cs = [tile_corners_z(o, z) for z in (0, TT)]
-        cam = bpy.context.scene.camera
-        if cam is None: return cs[1]
-        cl = cam.matrix_world.translation
-        return min(cs, key=lambda c: (sum(c, Vector()) / 4 - cl).length)
+        ce = [sum(c, Vector()) / 4 for c in cs]
+        if abs(ce[0].z - ce[1].z) > TT * .5: return cs[0] if ce[0].z > ce[1].z else cs[1]      # 寝ている牌は上の面（カメラで選ぶと、別のカメラを見て下の面を選び、囲みが下へずれた）
+        cl = CAMST[0] if CAMST else bpy.context.scene.camera.matrix_world.translation      # 立っている牌は、カメラに近い面
+        return min(cs, key=lambda c: (sum(c, Vector()) / 4 - Vector(cl)).length)
     return tile_corners_z(o, 0) + tile_corners_z(o, TT)
 def tile_corners_z(o, zz):
     rx, ry, rz = o.rotation_euler; out = []
