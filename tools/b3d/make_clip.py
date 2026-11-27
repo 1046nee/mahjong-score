@@ -145,9 +145,9 @@ SCRIPTS = {
         ("理牌", "リーパイ", "ツモった牌を、手牌の並びに入れる", 70, 94, 1.6, [], ""),
         ("ツモ切り", "ツモぎり", "ツモった牌を、そのまま切ることもある", 95, 130, 1.6, [], ""),
     ], tail=(131, 141, 2.4),
-    counts={2: ("riv", .3, .15)},      # ③河: 自分の河に「1・2・3…7」を順に出す（2026-11-25 ユーザーの指定「説明は、セリフだけでなく見て分かる演出を」）
-    pre=dict(head="自分の番の流れ", ls=[0, 1, 2, 3, 3], beats=[(2.3, 1), (2.4, 2), (4.7, 3)], hold=2.0, concl=True,
-             counts=[("hand", 2.3, .06, 13), ("hand", 3.75, .06, 14), ("hand", 5.75, .06, 13)], lines=[      # 13 → ツモって14 → 切って13 を数える（2026-11-26 ユーザーの指定）      # 前置きの絵（scene.py の pre_pose_dahai）に合わせた時刻
+    counts={2: ("riv", .3, .15)},      # ③河: 自分の河に「1・2・3…6」を順に出す（2026-11-25 ユーザーの指定「説明は、セリフだけでなく見て分かる演出を」）
+    pre=dict(head="自分の番の流れ", top=90, ls=[0, 1, 2, 3, 3], beats=[(2.3, 1), (2.4, 2), (4.7, 3)], hold=2.0, concl=True,
+             counts=[("hand", 2.3, .06, 13), ("hand", 3.75, .06, 14), ("hand", 6.15, .06, 13)], lines=[      # 13 → ツモって14 → 切って13 を数える（2026-11-26 ユーザーの指定）      # 前置きの絵（scene.py の pre_pose_dahai）に合わせた時刻
         (0.5, "{上家|カミチャ}が切ったら、自分の番"),
         (1.0, "手牌は13枚"),
         (2.0, "山から1枚{ツモ}って14枚"),
@@ -376,7 +376,7 @@ def pre_card(d, pre, t):
     NT = pre.get("note"); NH = (92 if any(r for p, r, t_ in ruby_parts(NT[1])) else 56) if NT else 0      # ただし書き（緑の帯の下に、小さな灰色の字。ルビがあるときは高く）
     HO = 42 if any(r for p, r, t_ in ruby_parts(pre["head"])) else 0      # 題名にルビがあるときは、上の枠から離す
     hgt = 146 + RH * (len(pre["lines"]) - (1 if CB else 0)) + (CH + 50 if CB else 18) + NH + HO
-    y = H - 80 - hgt + int((1 - k) * 30)
+    y = (pre["top"] if pre.get("top") else H - 80 - hgt) + int((1 - k) * 30)      # top: 画面の上に置く（ツモと打牌は手牌が画面の下寄りになる画角なので）
     d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, fill=(255, 255, 255, int(242 * k)))
     if CARD_BORDER:      # カードの枠（色, 太さ）
         c_, w_ = CARD_BORDER; d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, outline=c_ + (int(255 * k),), width=w_)
@@ -577,6 +577,10 @@ def _ease_pop(k):
     import math as _m
     return 1 + .18 * _m.sin(_m.pi * min(1, k)) * (1 - min(1, k)) * 2 if k < 1 else 1.0
 CUR = [None]
+def _ring_pad(b):
+    """囲みのすきまと線の太さ（牌の大きさに合わせる。小さい牌は細く・すきまも小さく）"""
+    m = min(b[2] - b[0], b[3] - b[1])
+    return max(5, min(22, m * .16)), int(max(4, min(9, m * .12)))
 def draw_marks(d, marks, here, xon=True, now=None, key=""):
     """大事な牌を目立たせる（2026-11-25 ユーザーの指定「枠よりウィットに富んだ・見ていて面白い表現を」）:
     まわりを少し暗くして、その牌にスポットライト（丸く明るいまま）＋色の輪 → 札（色のラベルと3Dの牌。白いカードは敷かない）から、はずむ矢印で指す。
@@ -596,8 +600,8 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
         sc_ = 4; m = Image.new("L", (W // sc_, H // sc_), int(255 * .42 * max(kk_.values())))
         dm = ImageDraw.Draw(m)
         for nm, col, tx, codes, pos in todo:
-            x0, y0, x1, y1 = here[nm]; cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; rx, ry = (x1 - x0) / 2 + 46, (y1 - y0) / 2 + 46
-            dm.ellipse(((cx - rx) / sc_, (cy - ry) / sc_, (cx + rx) / sc_, (cy + ry) / sc_), fill=0)
+            x0, y0, x1, y1 = here[nm]; pd, lw = _ring_pad(here[nm]); e = pd + lw + 6
+            dm.rounded_rectangle(((x0 - e) / sc_, (y0 - e) / sc_, (x1 + e) / sc_, (y1 + e) / sc_), radius=min(x1 - x0, y1 - y0) / 2 / sc_ + e / sc_, fill=0)
         m = m.filter(ImageFilter.GaussianBlur(5)).resize((W, H), Image.BILINEAR)
         im.paste(Image.new("RGBA", (W, H), (8, 14, 18, 255)), (0, 0), m)
     tnow = now or 0.0; box = {}
@@ -620,9 +624,11 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
     import math as _m
     for nm, col, tx, codes, pos in todo:      # 輪 → 矢印
         c = MKC[col]; x0, y0, x1, y1 = here[nm]; k = kk_[nm]; a = int(255 * min(1, k * 2.5))
-        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; rx, ry = ((x1 - x0) / 2 + 30) * _ease_pop(k), ((y1 - y0) / 2 + 30) * _ease_pop(k)
-        d.ellipse((cx - rx - 5, cy - ry - 5, cx + rx + 5, cy + ry + 5), outline=(255, 255, 255, a), width=16)
-        d.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), outline=c + (a,), width=9)
+        cx, cy = (x0 + x1) / 2, (y0 + y1) / 2; pd, lw = _ring_pad(here[nm]); ep = _ease_pop(k)
+        rx, ry = ((x1 - x0) / 2 + pd) * ep, ((y1 - y0) / 2 + pd) * ep; rr = min(rx, ry)
+        # 牌の面に沿った角丸の囲み（楕円だと、小さい河の牌でとなりの牌まで入った＝2026-11-27 ユーザーの指摘）。線は牌の外がわに
+        d.rounded_rectangle((cx - rx - lw / 2 - 3, cy - ry - lw / 2 - 3, cx + rx + lw / 2 + 3, cy + ry + lw / 2 + 3), radius=rr + lw / 2 + 3, outline=(255, 255, 255, a), width=lw + 6)
+        d.rounded_rectangle((cx - rx, cy - ry, cx + rx, cy + ry), radius=rr, outline=c + (a,), width=lw)
         if col == "red" and xon:      # ロンできない牌には大きな×。「ロンできません」を言い終えてから
             r_ = max(rx, ry) * .8
             for sg in (1, -1):
@@ -770,7 +776,7 @@ def subtitle(d, tx, k):
     for n, r_ in enumerate(rows): ruby_c(d, W / 2, y + PAD + 32 + n * LH, r_, ft, (255, 255, 255, a), 24)
 
 
-def draw_count(d, ps, t, t0, dt, nmax=None):
+def draw_count(d, ps, t, t0, dt, nmax=None, chip=True):
     """牌の上に「1・2・3…」の丸を順に出す（ps＝牌の場所 [x, 上のふち] の並び・t0 から dt 秒おきに1つずつ）。
     数え終わったら「N枚」の札。14枚目はチカチカ（2026-11-26 ユーザーの指定）"""
     ps = ps[:nmax] if nmax else ps
@@ -782,7 +788,7 @@ def draw_count(d, ps, t, t0, dt, nmax=None):
         col = (255, 200, 40) if blink else (231, 86, 32)
         d.ellipse((x - r, cy - r, x + r, cy + r), fill=col + (int(255 * a),), outline=(255, 255, 255, int(255 * a)), width=4)
         text_c(d, x, cy - 1, str(k + 1), font(30), (255, 255, 255, int(255 * a)))
-    if ps and t >= t0 + len(ps) * dt:
+    if chip and ps and t >= t0 + len(ps) * dt:
         k = min(1, (t - t0 - len(ps) * dt) / .25); s_ = _ease_pop(k); x, y = ps[-1]
         lab = f"{len(ps)}枚"; f_ = font(int(60 * s_), 900); w_ = d.textlength(lab, font=f_) + 50
         cx = min(max(sum(p[0] for p in ps) / len(ps), w_ / 2 + 30), W - w_ / 2 - 30); cy = min(p[1] for p in ps) - 130
@@ -821,7 +827,7 @@ def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
                     w_ = say_at(subs_[f"step{i + 1}"], wd_)
                     if w_ is not None: ev.append((sec + .25 + w_, "pop"))
             if i >= 0 and i in sc.get("counts", {}):
-                _, c0, cd = sc["counts"][i]; ev += [(sec + c0 + k * cd, "tick") for k in range(7)]
+                _, c0, cd = sc["counts"][i]; ev += [(sec + c0 + k * cd, "tick") for k in range(6)]
         if i >= 0 and not held and not isinstance(f, str): first.setdefault(f, sec)
     for t, snd in sfx.TILE_EVENTS.get(name, []):
         fr = sfx.frame_of(name, t, fps)
@@ -1183,7 +1189,7 @@ def main():
             bt = BUB_AT.get(f"step{i + 1}", .25)
             if s[7] and t > bt: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
-                key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 7)
+                key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 6, chip=False)      # 河は1段目の6枚まで（7枚目の丸と「7枚」の札は出さない＝2026-11-27 ユーザーの指定）
             if sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in SUBS:
                 bappu_live(d, t, bappu_phases(SUBS[f"step{i + 1}"]))
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す

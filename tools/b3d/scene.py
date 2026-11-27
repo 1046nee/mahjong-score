@@ -273,7 +273,7 @@ RX0 = -RIVER_W / 2 + TW / 2               # 河の1枚目の中心（6枚で折�
 TAKEN = float(arg("--taken", ".5"))   # 山から取った割合（配牌＋ツモ。0＝配る前）
 DORA = arg("--dora", "m8")            # ドラ表示牌
 RY, WY, HY = -.118, -.262, -.335         # 河・山・手牌の位置（手前の席の座標の y）。手牌と山のあいだは、倒した牌1枚（TL）が入る広さにする（-.255/-.318 だと、晒した牌が山の下にもぐった）
-DAHAI_HAND = (Vector((-.01, -.68, 1.18)), Vector((-.01, HY + .12, .78)), 21.5)      # 自分の目の高さから（頭と胴は消して、腕だけ出す）      # 自分の真後ろの上から（頭は消す）。手牌の14枚が全部、正面から見える（2026-11-27 ユーザーの指定「手牌が全部見えるほうを優先。選手が邪魔なら見せ方を工夫」）      # 右肩の上から、自分の手牌（14枚）とツモる腕（2026-11-26 ユーザーの指定「13枚・14枚は手牌が前面に」）      # 右うしろの高い所から: 手牌の全体・自分の河・ツモる山・のばした腕（2026-11-26 ユーザーの指定「引きで、腕をのばしてツモる」）
+DAHAI_HAND = (Vector((-.01, -.54, .97)), Vector((-.01, -.22, .80)), 13.0)      # 自分の頭の前・下から（頭も胴も消さない。頭はこの上と後ろにあるので映らない＝2026-11-27 ユーザーの指定「人を透過させない」）。手牌14枚の字と河が入る
 BACK = {"dark": "#2F62C8", "green": "#177083"}[THEME]   # 牌の背の色
 _tile_mesh = {}
 def tile_mesh(code):
@@ -1211,12 +1211,21 @@ def project(p, W_=1080, H_=1920):
     d = Vector(p) - loc; dot = lambda a, b: a.x * b.x + a.y * b.y + a.z * b.z
     z = dot(d, f); k = lens / 36 * H_ / z
     return (W_ / 2 + dot(d, R_) * k, H_ / 2 - dot(d, U) * k)
-def tile_corners(o):
-    """牌の8つの角（卓の座標）"""
+def tile_corners(o, face=False):
+    """牌の8つの角（卓の座標）。face=True なら、カメラから見える大きな面（表か裏）の4つの角だけ。
+    印の囲みは面だけで作る（側面まで入れると、河の横向きの牌や奥の牌で、となりの牌まで囲んだ＝2026-11-27 ユーザーの指摘）"""
+    if face:
+        cs = [tile_corners_z(o, z) for z in (0, TT)]
+        cam = bpy.context.scene.camera
+        if cam is None: return cs[1]
+        cl = cam.matrix_world.translation
+        return min(cs, key=lambda c: (sum(c, Vector()) / 4 - cl).length)
+    return tile_corners_z(o, 0) + tile_corners_z(o, TT)
+def tile_corners_z(o, zz):
     rx, ry, rz = o.rotation_euler; out = []
     for x in (-TW / 2, TW / 2):
         for y in (-TL / 2, TL / 2):
-            for z in (0, TT):
+            for z in (zz,):
                 a, b, c = x, y, z
                 b, c = b * math.cos(rx) - c * math.sin(rx), b * math.sin(rx) + c * math.cos(rx)
                 a, c = a * math.cos(ry) + c * math.sin(ry), -a * math.sin(ry) + c * math.cos(ry)
@@ -1232,7 +1241,7 @@ def marks_at(t):
         if any(n not in NAMED or NAMED[n].hide_render for n in ns): continue
         if nm not in ("fu7",) and nm not in MARK_GROUPS and nm in S2C["mv"] and w < S2C["mv"][nm][-1][1] - .02: continue
         if nm in ("next", "next2") and nm not in S2C["mv"]: continue
-        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n]) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
+        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n], True) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
         out[nm] = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
     return out
 
@@ -1591,11 +1600,6 @@ def hide_self_body(v=True):
     """自分の選手の頭と胴を消す（腕は残す）。手牌の正面を、選手の目の位置から映すとき（2026-11-27）"""
     for nm in ("headroot0", "torso0"):
         if nm in bpy.data.objects: hide_tree(bpy.data.objects[nm], v)
-def hide_self_near(cam, r=.32):
-    """カメラが自分の頭の近くにある間だけ、自分の頭と胴を消す（手牌を目の高さから映す画角。ほかの画角では選手を出す＝2026-11-27 ユーザーの指定）"""
-    h = bpy.data.objects.get("headroot0")
-    if h is None: return
-    hide_self_body((cam.location - (h.matrix_world.translation + Vector((0, 0, .10)))).length < r)
 def anim_pose_s2(t, cam):
     if not S2C: s2_build()
     tr = t; t = warp(t)
@@ -1620,7 +1624,6 @@ def anim_pose_s2(t, cam):
         if wl is not None and i == 0: wl = wl + Vector((-.085, -.085, .03)) * max(pk)
         pose_body(ARMS[i], w, wl)
     cam_pose(t, tr, cam, S2C["px"](t), S2C["focus"], pk, S2C["views"])
-    if SCENE == "dahai": hide_self_near(cam)
 
 def anim_pose(t, cam):
     if S2: return anim_pose_s2(t, cam)
@@ -1738,7 +1741,7 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
 # 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
-PRE_DUR = {"dahai": 6.8, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
+PRE_DUR = {"dahai": 7.4, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
 def pre_pose_ryukyoku(t, cam):
     """流局の前置き（2026-11-25 ユーザーの指定「海底牌をツモる・河底牌を切る絵をセリフに合わせて」「王牌が画面に入り、どれかわかるように」）:
     山の最後の1枚（海底牌）を映す → 自分がツモって（1.0〜2.4）そのまま切る（2.6〜3.3＝河底牌）→ 王牌14枚に寄る（3.8〜4.6）"""
@@ -1778,10 +1781,10 @@ def pre_pose_dahai(t, cam):
     w = hand_path(t, [(0, Ri), (.3, Ri), (.6, (fr.x, -.29, hz)), (1.5, (p0.x, p0.y - .02, hz)), (2.0, Ri), (PRE_DUR, Ri)]); pose_body(ARMS[3], w)
     pw = Vector((p0.y, -p0.x, .77))      # 上家の河（卓の座標）
     RIV = (Vector((-.04, -.46, 1.02)), Vector((pw.x - .02, pw.y + .02, .77)), 34.0)      # 上家が切る所だけ、上家の河を（2026-11-26 ユーザーの指定）
-    PH = (Vector((-.01, -.74, 1.22)), Vector((-.01, HY + .03, .78)), 22.0)      # 確認のカード（画面の下半分）に手牌がかからないよう、少し引いて手牌を画面の真ん中に（2026-11-27 ユーザーの指摘）
+    PH = DAHAI_HAND      # 確認のカードは画面の上に置く（make_clip.py の pre の top）
     kc = seg(t, 1.7, 2.15); loc = RIV[0].lerp(PH[0], kc); tgt = RIV[1].lerp(PH[1], kc); lens = RIV[2] + (PH[2] - RIV[2]) * kc
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
-    CAMST[:] = [loc, tgt, lens]; hide_self_near(cam)
+    CAMST[:] = [loc, tgt, lens]
 
 
 def count_pos():
@@ -1875,7 +1878,7 @@ def pre_marks(t):
     for key, g_ in grp.items():
         ns, t0 = g_[0], g_[1]
         if t < t0 or (len(g_) > 2 and t > g_[2]) or any(NAMED[n].hide_render for n in ns): continue
-        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n]) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
+        ps = [project(q) for n in ns for q in (tile_corners(NAMED[n], True) if n != "bou" else [Vector(NAMED[n].location) + Vector((x, y, 0)) for x in (-.033, .033) for y in (-.004, .004)])]
         b = [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))]
         if b[0] > 20 and b[2] < 1060 and b[1] > 20 and b[3] < 1900: out[key] = b      # 画面の外は囲まない
     return out
@@ -1904,7 +1907,7 @@ def draw_pose(t, cam):
     clip_cam(cam, CLIPCAM_D)
 def clip_marks(t=9.0):
     """①の前の絵で囲む所: tile＝切られた牌・ツモった牌（動き終えてから）・src＝ツモる前の山の牌（どこから取るか。2026-11-26 ユーザーの指定）"""
-    box = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o)])
+    box = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o, True)])
     if SCENE in DRAWN and t < .55: return {"src": box(NAMED[DRAWN[SCENE]])}
     if t < DISC_T: return {}
     return {"tile": box(NAMED["called"] if SCENE in ("chi", "pon", "daiminkan", "ron") else NAMED[DRAWN[SCENE]])}
