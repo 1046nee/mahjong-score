@@ -1585,6 +1585,10 @@ def s2_build():
     if SCENE in DRAWN and "next" in NAMED: show["next"] = 1e9      # ①の前にツモった牌（draw_pose）。山にはもう無い
     S2C.update(mv=mv, arms=arms, arms_l=arms_l, focus=focus, views=views, show=show, px=px, pre=pre)
 
+def hide_self_body(v=True):
+    """自分の選手の頭と胴を消す（腕は残す）。手牌の正面を、選手の目の位置から映すとき（2026-11-27）"""
+    for nm in ("headroot0", "torso0"):
+        if nm in bpy.data.objects: hide_tree(bpy.data.objects[nm], v)
 def anim_pose_s2(t, cam):
     if not S2C: s2_build()
     if SCENE == "dahai" and "--pre" not in sys.argv: hide_self_body(True)      # 手牌を自分の目の高さから映すので、自分の頭と胴は消す（腕は出す）
@@ -1751,10 +1755,6 @@ def pre_pose_ryukyoku(t, cam):
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler(); CAMST[:] = [loc, tgt, lens]
 DAHAI_WIDE = (Vector((.62, -.78, 1.86)), Vector((-.04, -.10, .77)), 27.0)
 DAHAI_HAND = (Vector((.02, -.66, 1.17)), Vector((.02, HY + .12, .78)), 23.0)      # 自分の目の高さから（頭と胴は消して、腕だけ出す）      # 自分の真後ろの上から（頭は消す）。手牌の14枚が全部、正面から見える（2026-11-27 ユーザーの指定「手牌が全部見えるほうを優先。選手が邪魔なら見せ方を工夫」）      # 右肩の上から、自分の手牌（14枚）とツモる腕（2026-11-26 ユーザーの指定「13枚・14枚は手牌が前面に」）      # 右うしろの高い所から: 手牌の全体・自分の河・ツモる山・のばした腕（2026-11-26 ユーザーの指定「引きで、腕をのばしてツモる」）
-def hide_self_body(v=True):
-    """自分の選手の頭と胴を消す（腕は残す）。手牌の正面を、選手の目の位置から映すとき（2026-11-27）"""
-    for nm in ("headroot0", "torso0"):
-        if nm in bpy.data.objects: hide_tree(bpy.data.objects[nm], v)
 
 def pre_pose_dahai(t, cam):
     """ツモと打牌の前置き（2026-11-26 ユーザーの指定）: 上家が切る（0.6〜1.5）→ 13枚を数える → 腕をのばして1枚ツモる（2.2〜3.6）→ 14枚 → 1枚切る（4.7〜5.6）→ 13枚。
