@@ -119,11 +119,11 @@ TILE_EVENTS = {     # 9本すべて（2026-11-15）。clack2＝2枚以上を倒�
     "kan": [(1.5, "tap"), (2.0, "clack2"), (2.55, "clackt"), (3.5, "slide"), (3.9, "tap"), (4.5, "clackt"), (5.0, "tap"), (5.9, "clackt"), (6.5, "tap"), (7.3, "clack")],
     "daiminkan": [(1.5, "tap"), (2.1, "clack2"), (2.9, "tap"), (3.8, "clackt"), (4.45, "tap"), (5.0, "slide"), (5.5, "tap"), (6.1, "clackt"), (6.6, "tap"), (7.5, "clackt"), (8.1, "tap"), (8.9, "clack")],
     "kakan": [(1.5, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "clackt"), (4.0, "tap"), (4.9, "clackt"), (5.5, "tap"), (6.3, "clack")],
-    "riichi": [(1.5, "tap"), (2.4, "clack"), (2.45, "tap"), (2.85, "clackt"), (3.2, "tap"), (4.1, "tap"), (6.3, "clack"), (6.9, "clack"), (7.5, "clack"), (7.6, "tap"), (8.3, "clackt"), (8.9, "clackt"), (9.55, "taosu"), (10.0, "tap"), (10.7, "clackt"), (11.3, "tap"), (11.8, "clackt")],
+    "riichi": [(1.5, "tap"), (2.4, "clack"), (2.45, "tap"), (2.85, "clackt"), (3.2, "tap"), (4.1, "tap"), (6.3, "clack"), (6.9, "clack"), (7.5, "clack"), (7.6, "tap"), (8.3, "clackt"), (8.9, "clackt"), (10.05, "taosu"), (10.5, "tap"), (11.2, "clackt"), (11.8, "tap"), (12.3, "clackt")],
     "tsumo": [(2.0, "tap"), (2.8, "clackt"), (3.25, "tap"), (3.55, "clackt"), (3.85, "tap"), (4.35, "taosu"), (6.1, "tap"), (6.3, "tap"), (6.4, "tap")],     # 点棒が置かれる音（小さく）
     "ron": [(1.5, "tap"), (2.3, "taosu"), (5.8, "tap"), (7.5, "tap")],
     "dahai": [(2.0, "tap"), (2.8, "clackt"), (3.2, "tap"), (3.75, "clack"), (4.9, "tap"), (5.6, "clackt"), (6.05, "clack"), (6.15, "clack"), (6.25, "clack"), (6.2, "tap"), (6.9, "clackt"), (7.35, "tap"), (7.95, "clack")],      # 2026-11-25 切るのを早め、手を戻す
-    "furiten": [(3.2, "tap"), (3.8, "clack"), (4.8, "tap"), (5.4, "clackt"), (5.75, "tap"), (6.0, "clackt"), (6.95, "taosu")],
+    "furiten": [(3.2, "tap"), (3.8, "clack"), (4.8, "tap"), (5.4, "clackt"), (6.0, "tap"), (6.25, "clackt"), (7.2, "taosu")],
     "furiten2": [(2.0, "tap"), (2.6, "clack"), (3.4, "tap"), (4.0, "clack"), (4.7, "tap"), (5.3, "clack"), (5.8, "tap"), (6.5, "clackt"), (7.2, "tap"), (7.9, "clack"), (8.8, "tap"), (9.4, "clack"), (10.8, "taosu"), (11.1, "slide")],
     "furiten3": [(2.0, "tap"), (2.6, "clack"), (3.7, "clack"), (4.4, "clack"), (5.2, "tap"), (6.0, "clackt"), (6.4, "tap"), (7.1, "clack"), (8.3, "clack"), (9.0, "clack"), (9.8, "clack"), (10.8, "tap"), (11.4, "clackt"), (12.0, "tap"), (12.25, "clackt"), (12.95, "taosu")],
     "ryukyoku": [(1.5, "taosu"), (1.65, "tap"), (2.3, "taosu"), (4.2, "taosu"), (5.0, "taosu"), (7.3, "tap")],      # 上家（親）→ 自分 → 下家 → 対面
@@ -136,7 +136,7 @@ PRE_EVENTS["ryukyoku"] = [(1.6, "tap"), (2.4, "clackt"), (2.9, "tap"), (3.5, "cl
 PRE_EVENTS["kakan"] = [(2.8, "pop")]      # 加槓は明刻を見せてから、4枚目を持ち上げる（scene.py の pre_pose）
 PRE_EVENTS["dahai"] = [(1.5, "clack"), (2.8, "tap"), (3.6, "clackt"), (4.98, "tap"), (5.53, "clack")]      # 上家が切る・自分がツモる・手を戻してから切る（scene.py の pre_pose_dahai）
 FREEZE = {"pon": (2.0, 3.8, 5.0), "chi": (2.0, 3.8, 5.0), "kan": (2.0, 2.6, 3.55, 4.5, 5.9),     # scene.py の FREEZE・S2T とそろえる
-          "daiminkan": (2.1, 3.8, 5.0, 6.1, 7.5), "kakan": (2.4, 3.5, 4.9), "riichi": (2.9, 4.1, 9.6, 12.3), "tsumo": (2.9, 4.4), "ron": (2.4, 3.2), "ryukyoku": (2.4, 5.9, 8.1), "dahai": (2.9, 4.4, 5.8, 8.1), "furiten": (1.5, 2.4, 4.2, 7.0), "furiten2": (1.5, 2.9, 4.3, 8.3, 9.7), "furiten3": (1.5, 2.9, 7.4, 10.1, 13.3)}
+          "daiminkan": (2.1, 3.8, 5.0, 6.1, 7.5), "kakan": (2.4, 3.5, 4.9), "riichi": (2.9, 4.1, 10.1, 12.8), "tsumo": (2.9, 4.4), "ron": (2.4, 3.2), "ryukyoku": (2.4, 5.9, 8.1), "dahai": (2.9, 4.4, 5.8, 8.1), "furiten": (1.5, 2.4, 4.2, 7.3), "furiten2": (1.5, 2.9, 4.3, 8.3, 9.7), "furiten3": (1.5, 2.9, 7.4, 10.1, 13.3)}
 PAUSE = .7
 
 
