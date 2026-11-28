@@ -166,7 +166,7 @@ SCRIPTS = {
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
         (3.7, "待ちが変わるまで、ロンできない"),
     ])),
-    "furiten2": dict(bub_hides=(4,), title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
+    "furiten2": dict(bub_hides=(4,), bubdur={4: 1.8}, title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
         ("待ち", "まち", "チーしていて、役はタンヤオだけ。一索では役が無い", 24, 24, 2.2, [], ""),
         ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
         ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
@@ -1271,7 +1271,8 @@ def main():
                 draw_marks(d, [("tile",) + tuple(sc["clip"]), ("src", "orange", "山から1枚", [], "UR")], DMK[di], now=n / fps, key="clip")
             if name.startswith("furiten") and i < len(sc["steps"]) - 1 and i not in {"furiten2": (3,), "furiten3": (2,)}.get(name, ()): hand_strip(d, name)      # 卓の手牌を映す手順では、帯は出さない      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
             bt = BUB_AT.get(f"step{i + 1}", .25)
-            if s[7] and t > bt: bubble(d, s[7], t - bt)
+            bd_ = sc.get("bubdur", {}).get(i)      # 吹き出しを出しておく秒（ほかの動画は手順が1.8秒ほどで終わって消える。同巡内フリテン⑤は手順が長いので、同じ長さで消す＝2026-11-28 ユーザーの指定）
+            if s[7] and t > bt and (bd_ is None or t < bt + bd_): bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
                 key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 6, chip=False)      # 河は1段目の6枚まで（7枚目の丸と「7枚」の札は出さない＝2026-11-27 ユーザーの指定）
             if sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in SUBS:
