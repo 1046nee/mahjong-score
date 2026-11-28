@@ -1873,7 +1873,7 @@ def pre_pose(t, cam):
         loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
         if SCENE == "daiminkan":      # 最後に、暗刻と下家が切った牌の4枚が入る所（加槓と同じ。2026-11-28 ユーザーの指定）
             mx_ = (lx + p0.x) / 2; my_ = (HY + p0.y) / 2; kc_ = seg(t, 4.6, 5.2)
-            _b = [float(x) for x in os.environ.get("DMB", ".02,-.62,1.30,.01,-.10,46").split(",")]
+            _b = [float(x) for x in os.environ.get("DMB", ".02,-.66,1.30,.01,-.18,44").split(",")]
             both = (Vector((mx_ + _b[0], my_ + _b[1], _b[2])), Vector((mx_ + _b[3], my_ + _b[4], .77)), _b[5])
             loc = loc.lerp(both[0], kc_); tgt = tgt.lerp(both[1], kc_); lens += (both[2] - lens) * kc_
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
