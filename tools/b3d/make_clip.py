@@ -96,7 +96,7 @@ SCRIPTS = {
         (2.8, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (3.6, "ポンした3枚に足して、加槓できる"),
     ])),
-    "riichi": dict(clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "riichi": dict(yoko=(1, "切ります", "リーチの宣言牌"), clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
         ("打牌", "ダハイ", "いらない牌を横向きにして切り、ツモった牌は手牌へ", 7, 42, 1.8, [], ""),
         ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),
@@ -159,14 +159,14 @@ SCRIPTS = {
         ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 126, 2.2, [], "ツモ"),
-    ], tail=(127, 139, 2.4), bubw={3: "ツモアガリできます"}, after_motion=(3,),      # 牌と手牌を倒して右手を戻しきってから、止めた絵に「ツモ」とツモ牌の印（2026-11-28 ユーザーの指定） bubpos={"ツモ": ((760, 1350), (120, 260))},
+    ], tail=(127, 139, 2.4), bubw={3: "ツモアガリ"}, after_motion=(3,), sbeats={3: [(95, "できます")]},      # 手を戻してツモ牌を見せた所で止め、「ツモ」の吹き出し → 倒す。印は倒し終えて手が離れてから（2026-11-28 ユーザーの指定）      # 牌と手牌を倒して右手を戻しきってから、止めた絵に「ツモ」とツモ牌の印（2026-11-28 ユーザーの指定） bubpos={"ツモ": ((760, 1350), (120, 260))},
     pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, nudge={"cut": 34}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
         (3.7, "待ちが変わるまで、ロンできない"),
     ])),
-    "furiten2": dict(bub_hides=(4,), bubdur={4: 1.8}, title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
+    "furiten2": dict(bub_hides=(4,), bub_still=(4,), title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
         ("待ち", "まち", "チーしていて、役はタンヤオだけ。一索では役が無い", 24, 24, 2.2, [], ""),
         ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
         ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
@@ -186,7 +186,7 @@ SCRIPTS = {
         ("打牌", "ダハイ", "自分が打牌しても、フリテンのまま", 51, 112, 2.2, [], ""),
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 208, 2.2, [], "ツモ"),
-    ], tail=(209, 217, 2.4), bubw={4: "ツモアガリできます"}, after_motion=(4,),      # 手牌を倒して右手を戻しきってから「ツモ」とツモ牌の印（捨て牌のフリテンと同じ） bubpos={"ツモ": ((760, 1350), (120, 260))},
+    ], tail=(209, 217, 2.4), bubw={4: "ツモアガリ"}, after_motion=(4,), sbeats={4: [(175, "できます")]},      # 捨て牌のフリテンと同じ      # 手牌を倒して右手を戻しきってから「ツモ」とツモ牌の印（捨て牌のフリテンと同じ） bubpos={"ツモ": ((760, 1350), (120, 260))},
     pre=dict(head="リーチ後のフリテン", marks={"riichi": ("orange", "リーチ", [], "LR", 0), "bou": ("orange", "", [], "", 0), "own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="この局はもうロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
@@ -1223,8 +1223,6 @@ def main():
     HOLD_T = {}
     for f_, i_, t_, h_ in seq:
         if h_ and i_ >= 0: HOLD_T.setdefault(i_, t_)
-    for i_ in sc.get("after_motion", ()):      # 吹き出しと言葉待ちの印は、動きが止まってから
-        if i_ in HOLD_T: BUB_AT[f"step{i_ + 1}"] = max(BUB_AT.get(f"step{i_ + 1}", .25), HOLD_T[i_] + .15)
     tmp = tempfile.mkdtemp(); cache = {}; fade = None; cache_prev = None; card_t0 = {}; hold_n = 0
     for n, (f, i, t, held) in enumerate(seq):
         if f not in cache:
@@ -1278,7 +1276,8 @@ def main():
             if name.startswith("furiten") and i < len(sc["steps"]) - 1 and i not in {"furiten2": (3,), "furiten3": (2,)}.get(name, ()): hand_strip(d, name)      # 卓の手牌を映す手順では、帯は出さない      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
             bt = BUB_AT.get(f"step{i + 1}", .25)
             bd_ = sc.get("bubdur", {}).get(i)      # 吹き出しを出しておく秒（ほかの動画は手順が1.8秒ほどで終わって消える。同巡内フリテン⑤は手順が長いので、同じ長さで消す＝2026-11-28 ユーザーの指定）
-            if s[7] and t > bt and (bd_ is None or t < bt + bd_): bubble(d, s[7], t - bt)
+            still_ = i in sc.get("bub_still", ()) and any(f_ > bf_ for bf_, w_ in sc.get("sbeats", {}).get(i, []) for f_ in [f] if not isinstance(f, str))      # 止めた絵から動き始めたら消す（画角が変わる＝2026-11-28 ユーザーの指定）
+            if s[7] and t > bt and (bd_ is None or t < bt + bd_) and not still_: bubble(d, s[7], t - bt)
             if i in sc.get("counts", {}) and CNT:
                 key, c0, cd = sc["counts"][i]; draw_count(d, CNT[min(f, len(CNT) - 1)][key], t, c0, cd, 6, chip=False)      # 河は1段目の6枚まで（7枚目の丸と「7枚」の札は出さない＝2026-11-27 ユーザーの指定）
             if sc.get("cards", {}).get(i) == "bappu2" and f"step{i + 1}" in SUBS:
@@ -1296,7 +1295,7 @@ def main():
             if DRK and s[0] == "カンドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):
                 bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
                 w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 1.5; w2 = say_at(SUBS[f"step{i + 1}"], "カンドラが") or 2.0
-                kandora_marks(d, bx_, .25 + w1, t)
+                kandora_marks(d, bx_, .25 + w1, t, t_old=.25 + w1)      # 元ドラ・新ドラの札は同時に（リーチの表ドラ・裏ドラとそろえる＝2026-11-28 ユーザーの指定）
                 if t >= .25 + w2:      # 表示牌 → ドラ のカード（3Dの牌）。王牌と重ならない側に
                     yb = min(v[1] for v in (bx_["dora"], bx_.get("kandora") or bx_["dora"]))
                     dora_card(d, t - .25 - w2, dict(y=(1100 if yb < 900 else 640), rows=[("元ドラ", DRK["dora"], next_dora(DRK["dora"]), (140, 220, 230)), ("新ドラ", DRK["kandora"], next_dora(DRK["kandora"]), (255, 170, 120))]))

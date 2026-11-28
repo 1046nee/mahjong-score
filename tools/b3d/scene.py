@@ -1280,7 +1280,7 @@ def anim_pose_kan(t, cam):
     rs = NAMED["rinshan11"]; k5 = seg(t, 5.0, 5.9); r0 = Vector(rs["p0"])
     xr = NAMED["hk9"]["p0"][0] + HP + .012
     rs.rotation_euler = (math.radians(180 - 90 * k5), 0, 0)
-    rs.location = lerp(r0, (xr, HY + TT, Z + TL / 2), k5) + Vector((0, 0, .06 * math.sin(math.pi * k5)))
+    rs.location = lerp(r0, (xr, HY + TT, Z + TL / 2), k5) + Vector((0, 0, .012 * math.sin(math.pi * k5)))      # 低く運ぶ（大明槓・加槓とそろえる＝2026-11-28 ユーザーの指定）
     # ⑥ 打牌（六索を河の4枚目へ）
     d6 = NAMED["hk9"]; k6 = seg(t, 6.5, 7.3); s0 = Vector(d6["p0"]); dst = (RX0 + 3 * RP, RY, Z)
     d6.rotation_euler = (math.radians(90) * (1 - seg(t, 6.7, 7.2)), 0, 0)
@@ -1290,7 +1290,7 @@ def anim_pose_kan(t, cam):
     kx = sum(o["p0"][0] for o in K) / 4
     KD = (dx.x + .075, dx.y - .05, hz - .004)      # カンドラをめくるときの手は、牌の右どなり（真上に置くと、めくった牌が手の中を通った＝2026-11-14 ユーザーの指摘）
     keys = [(0.0, R), (1.0, R), (1.5, (kx, HY + .01, hz + .02)), (2.0, (kx, LY, hz)), (2.8, (kx, LY, hz)), (3.5, ((E[1] + E[2]) / 2, MY, hz)),
-            (3.9, KD), (4.5, KD), (5.0, (r0.x + .035, r0.y - .02, hz)), (5.9, (xr + .035, HY - .02, hz + .01)), (6.1, R), (6.2, R),
+            (3.9, KD), (4.5, KD), (5.0, (r0.x + .05, r0.y - .02, hz)), (5.9, (xr + .05, HY - .02, hz + .01)), (6.1, R), (6.2, R),
             (6.5, (s0.x, HY + .01, hz + .02)), (7.3, (dst[0], dst[1], hz)), (7.7, R), (ANIM_DUR, R)]      # ⑥の止める絵までに腕を戻す
     w = hand_path(t, keys) + Vector((.004, -.026 * TS, 0)) * (seg(t, 1.0, 1.5) - seg(t, 7.3, 7.7))
     pk = [pause_k(tr, n) for n in range(len(FREEZE))]
@@ -2013,7 +2013,7 @@ if ANIM:
         import json; cc = []
         for f in range(n): anim_pose(f / FPS, cam); cc.append(count_pos())
         json.dump(cc, open(os.path.join(OUT, "count.json"), "w"))
-    if SCENE in ("chi", "pon", "daiminkan", "kakan") and (not only or "--callmk" in sys.argv):      # 鳴いた牌（横向き）の場所。右端に寄せたあと「横向きの牌は…」で点滅させる（2026-11-28 ユーザーの指定）
+    if SCENE in ("chi", "pon", "daiminkan", "kakan", "riichi") and (not only or "--callmk" in sys.argv):      # 鳴いた牌（横向き）の場所。右端に寄せたあと「横向きの牌は…」で点滅させる（2026-11-28 ユーザーの指定）
         import json; ck = []
         box_ = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o, True)])
         for f in range(n):
@@ -2022,7 +2022,7 @@ if ANIM:
                 from bpy_extras.object_utils import world_to_camera_view
                 o_ = NAMED["called"]; ps_ = [world_to_camera_view(bpy.context.scene, cam, q) for q in tile_corners(o_, False)]
                 ps_ = [(v.x * 1080, (1 - v.y) * 1920) for v in ps_]; ck.append([round(min(p[0] for p in ps_)), round(min(p[1] for p in ps_)), round(max(p[0] for p in ps_)), round(max(p[1] for p in ps_))])
-            else: ck.append(box_(NAMED["hk10" if SCENE == "kakan" else "called"]))      # 加槓＝重ねた4枚目（上側の牌。2026-11-28 ユーザーの指定）
+            else: ck.append(box_(NAMED["hk10" if SCENE == "kakan" else "hk12" if SCENE == "riichi" else "called"]))      # リーチ＝宣言牌      # 加槓＝重ねた4枚目（上側の牌。2026-11-28 ユーザーの指定）
         json.dump(ck, open(os.path.join(OUT, "callmk.json"), "w"))
         if "--callmk" in sys.argv: print("CALLMK", n); sys.exit(0)
     if SCENE in ("kan", "daiminkan", "kakan", "riichi") and (not only or "--doramk" in sys.argv):      # リーチは表ドラ・裏ドラ      # 元ドラ表示牌・新ドラ表示牌の場所（make_clip.py が札をのせる。2026-11-28 ユーザーの指定）
