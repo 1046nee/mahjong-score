@@ -1437,9 +1437,8 @@ def s2_build():
         URA = (Vector((bx - .05, by_ + .01, .77)), Vector((-.16, -.26, .50)), 30)      # 手牌と、右の2枚（腕にかくれない引き）      # ⑤ 手牌の右の2枚（自分の選手の右前から）
         cxh = (P("hk0").x + xt) / 2
         HANDR = (Vector((cxh + .012, HY + .10, .78)), Vector((0, -.44, .32)), 22.5)      # ツモ〜倒すまでは自分の目の高さから手牌の正面（頭と胴は消す）。上からだと手牌が小さく、アガリ牌が読めなかった（2026-11-27）
-        focus = [Vector((sx_, sy_, .77)), (Vector((0, -.12, .77)), Vector((0, -.2, .56)), 42), HANDR, URA]
-        views = [(4.6, 5.2, (0, -.50, 1.50), (0, -.09, .77), 34.0),
-                 (5.4, 5.8, tuple(BOARD[0] + BOARD[1]), tuple(BOARD[0]), BOARD[2]),
+        focus = [Vector((sx_, sy_, .77)), BOARD, HANDR, URA]      # ③の間は上からの画角（点棒を出したら、斜めからそのまま上へ＝2026-11-28 ユーザーの指定）
+        views = [(4.1, 4.15, tuple(BOARD[0] + BOARD[1]), tuple(BOARD[0]), BOARD[2]),
                  (7.15, 7.5, tuple(HANDR[0] + HANDR[1]), tuple(HANDR[0]), HANDR[2]),
                  (10.1, 10.5, tuple(URA[0] + URA[1]), tuple(URA[0]), URA[2]),
                  (12.9, 13.5, (0, -.40, 2.0), (0, .06, .77), 30.0)]      # まとめのあいだは引いて、千点棒・河・倒した手牌・裏ドラ
@@ -1759,7 +1758,7 @@ if ANIM and "--outro" in sys.argv:      # 締めのコマを o0000.png〜 に書
 
 # ---------------- 前置き: ①発声の前に、自分の手牌を映して「なぜ鳴けるのか」を見せる（2026-11-13 ユーザーの依頼） ----------------
 # 入りのあと・①の前。手前の選手の目から手牌（使う牌を少し持ち上げる）→（チーは上家が六萬を切るところ）。文字は make_clip.py の pre
-PRE_DUR = {"dahai": 7.8, "ryukyoku": 6.0}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
+PRE_DUR = {"dahai": 7.8, "ryukyoku": 6.0, "daiminkan": 6.2}.get(SCENE, 5.0)      # ツモと打牌・流局は流れを見せるので長い（2026-11-25）
 def pre_pose_ryukyoku(t, cam):
     """流局の前置き（2026-11-25 ユーザーの指定「海底牌をツモる・河底牌を切る絵をセリフに合わせて」「王牌が画面に入り、どれかわかるように」）:
     山の最後の1枚（海底牌）を映す → 自分がツモって（1.0〜2.4）そのまま切る（2.6〜3.3＝河底牌）→ 王牌14枚に寄る（3.8〜4.6）"""
@@ -1872,6 +1871,10 @@ def pre_pose(t, cam):
         if CALL_SEAT == 2: riv = (Vector((.0, -.34, 1.06)), Vector((.0, p0.y - .02, .77)), 40.0)
         if CALL_SEAT == 1: riv = (Vector((.11, -.42, 1.00)), Vector((p0.x, p0.y + .04, .77)), 44.0)
         loc = loc.lerp(riv[0], kb); tgt = tgt.lerp(riv[1], kb); lens += (riv[2] - lens) * kb
+        if SCENE == "daiminkan":      # 最後に、暗刻と下家が切った牌の4枚が入る所（加槓と同じ。2026-11-28 ユーザーの指定）
+            mx_ = (lx + p0.x) / 2; my_ = (HY + p0.y) / 2; kc_ = seg(t, 4.6, 5.2)
+            both = (Vector((mx_ + .02, my_ - .36, 1.12)), Vector((mx_, my_ + .01, .77)), 30.0)
+            loc = loc.lerp(both[0], kc_); tgt = tgt.lerp(both[1], kc_); lens += (both[2] - lens) * kc_
     cam.data.lens = lens; cam.location = loc; cam.rotation_euler = (tgt - loc).to_track_quat("-Z", "Y").to_euler()
     CAMST[:] = [loc, tgt, lens]
 
@@ -1893,7 +1896,8 @@ def pre_marks(t):
         CALLP = SCENE in ("chi", "pon") or (S2 and S2C["pre"]["call"])
         lift = S2C["pre"]["lift"] if S2 else (["hk10", "hk11", "hk12", "hk13"] if SCENE == "kan" else ["hk11", "hk12"])
         grp = {"own": (lift, 2.0, 2.5) if SCENE == "daiminkan" else (lift, 2.0)}      # 大明槓: 暗刻の囲みは、下家の河へ画角が動き始めたら消す（動く間にカードと重なった＝2026-11-28 ユーザーの指定）
-        if CALLP: grp["call"] = (["called"], 3.75)
+        if CALLP: grp["call"] = (["called"], 3.75, 4.6) if SCENE == "daiminkan" else (["called"], 3.75)
+        if SCENE == "daiminkan": grp["own2"] = (lift, 5.2); grp["call2"] = (["called"], 5.2)      # 4枚が入る画角に着いたら、両方とも囲む（動く間は出さない）
     out = {}
     for key, g_ in grp.items():
         ns, t0 = g_[0], g_[1]

@@ -76,14 +76,14 @@ SCRIPTS = {
         ("打牌", "ダハイ", "アガリ牌でなければ、いらない牌を1枚切る", 132, 154, 1.4, [], ""),
     ], tail=(155, 165, 2.4),
     sbeats={3: [(69, "卓の右端に寄せます")]},
-    pre=dict(head="大明槓できるとき", marks={"own": ("orange", "暗刻", ["z5", "z5", "z5"], "UL"), "call": ("blue", "下家が切った", ["z5"], "UR")}, ls=[0, 2, 2, 3, 4], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
+    pre=dict(head="大明槓できるとき", marks={"own": ("orange", "暗刻", ["z5", "z5", "z5"], "UL"), "call": ("blue", "下家が切った", ["z5"], "UR"), "own2": ("orange", "暗刻", ["z5", "z5", "z5"], "UL"), "call2": ("blue", "下家が切った", ["z5"], "UR")}, ls=[0, 2, 2, 3, 4], beats=[(2.4, 2)], hold=1.8, concl=True, lines=[
         (0.3, "手牌に {暗刻|アンコ} がある", "同じ牌3枚"),
         (3.4, "{他家|ターチャ}が{ 4枚目 }を切った → カン"),
         (3.9, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (4.4, "暗槓と違い、{ 鳴き扱い }になる", "{門前|メンゼン}ではなくなる"),
         (4.9, "だれの捨て牌でも大明槓できる"),
     ])),
-    "kakan": dict(yoko=(1, "横向きで重ねます", "加えた牌"), clip=("orange", "ツモ", ["z7"], "UL"), title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "kakan": dict(clip_hide_bub=True, yoko=(1, "横向きで重ねます", "加えた牌"), clip=("orange", "ツモ", ["z7"], "UL"), title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("加槓", "カカン", "ポンした牌の横向きの1枚に、横向きで重ねる", 7, 36, 1.8, [], ""),
         ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 37, 57, 1.6, [], ""),
@@ -96,14 +96,14 @@ SCRIPTS = {
         (2.8, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (3.6, "ポンした3枚に足して、加槓できる"),
     ])),
-    "riichi": dict(yoko=(1, "切ります", "リーチの宣言牌", True), clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "riichi": dict(disc_hold=(2, 1.2), clip_hide_bub=True, yoko=(1, "切ります", "リーチの宣言牌", True), clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
         ("打牌", "ダハイ", "いらない牌を横向きにして切り、ツモった牌は手牌へ", 7, 42, 1.8, [], ""),
         ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),
         ("ツモ", "", "全員が打牌したあと、アガリ牌をツモる。「ツモ」でアガリ牌を倒し、手牌も倒す", 81, 146, 1.8, [], "ツモ"),
         ("裏ドラ", "うらドラ", "ドラ表示牌と下の牌を手もとに並べ、下の牌をめくる", 147, 186, 1.8, [], ""),     # 2026-11-25 ユーザーの指定
     ], tail=(187, 195, 2.4), bubw={3: "ツモ、と声に出して"},
-    sbeats={3: [(118, "ツモ、と声に"), (127, "そのあと")], 4: [(164, "下の牌を")]},      # 「そのあと」はアガリ牌を倒して右手を戻した所で止める（2026-11-28 ユーザーの指定）      # ツモ牌を見せる → 「ツモ」でアガリ牌だけ倒す → 手牌／2枚を並べて見せる → めくる
+    sbeats={3: [(118, "ツモ、と声に"), (127, "そのあと")], 4: [(164, "表に")]},      # 「そのあと」はアガリ牌を倒して右手を戻した所で止める（2026-11-28 ユーザーの指定）      # ツモ牌を見せる → 「ツモ」でアガリ牌だけ倒す → 手牌／2枚を並べて見せる → めくる
     doracard=dict(step=4, at="これが裏ドラです", labels=("表ドラ", "裏ドラ", "めくります"), rows=[("表ドラ", "s4", "s5", (255, 170, 120)), ("裏ドラ", "m6", "m7", (140, 220, 230))]), bubpos={"ツモ": ((700, 800), (150, 230))},
     pre=dict(head="リーチできるとき", marks={"own": ("orange", "待ち", ["p3", "p6"], "UL")}, ls=[0, 1, 1], hold=2.0, concl=True, lines=[
         (0.3, "{門前|メンゼン}である", "ポン・チー・明槓をしていない"),
@@ -1205,7 +1205,10 @@ def main():
         a0 = sc["steps"][i - 1][3] + 1 if i and (sc["steps"][i - 1][0] == "発声" or (i == 1 and sc["steps"][0][0] != "ツモ")) else s[3]
         fr = [s[3]] * (s[4] - s[3] + 1) if frozen else list(range(a0, s[4] + 1))
         hf = s[3] if frozen else s[4]
-        if i == 0 and disc: fr = disc; hf = disc[-1]      # 他家が切ってから発声する（scene.py --disc）。止めるのも、切った牌が河にある絵
+        if i == 0 and disc:
+            fr = list(disc); hf = disc[-1]
+            dh_ = sc.get("disc_hold")      # (止めるコマ, 秒)。「山から1枚」を長く見せる（リーチ。2026-11-28 ユーザーの指定）
+            if dh_: fr = fr[:dh_[0] + 1] + [fr[dh_[0]]] * int(dh_[1] * fps) + fr[dh_[0] + 1:]      # 他家が切ってから発声する（scene.py --disc）。止めるのも、切った牌が河にある絵
         for bf, wd in sc.get("sbeats", {}).get(i, []):      # 声のその言葉が出るまで、コマ bf で止めて待つ（前から順に。前の止めの分も時刻に入る）
             ws = say_at(SUBS.get(f"step{i + 1}", []), wd)
             if ws is not None and bf in fr:
@@ -1270,7 +1273,7 @@ def main():
                     ms_.append(m_[:5])
                 draw_marks(d, ms_, MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe, now=n / fps, key=f"s{i}")
             rail(d, sc["steps"], i); headline(d, i, s, t)
-            if i == 0 and DMK and sc.get("clip") and isinstance(f, str) and os.path.basename(f).startswith("d"):      # 切られた牌・ツモった牌に印
+            if i == 0 and DMK and sc.get("clip") and isinstance(f, str) and os.path.basename(f).startswith("d") and not (sc.get("clip_hide_bub") and s[7] and t > BUB_AT.get("step1", .25)):      # 吹き出しが出たらツモ牌の印は消す（リーチ）      # 切られた牌・ツモった牌に印
                 di = min(int(os.path.basename(f)[1:5]), len(DMK) - 1)
                 draw_marks(d, [("tile",) + tuple(sc["clip"]), ("src", "orange", "山から1枚", [], "UR")], DMK[di], now=n / fps, key="clip")
             if name.startswith("furiten") and i < len(sc["steps"]) - 1 and i not in {"furiten2": (3,), "furiten3": (2,)}.get(name, ()): hand_strip(d, name)      # 卓の手牌を映す手順では、帯は出さない      # 最後の手順（ツモ・ロン）は卓の手牌を映すので、帯は消す
