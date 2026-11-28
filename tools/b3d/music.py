@@ -271,14 +271,20 @@ PACKS = {"wa": pack_wa, "stage": pack_stage, "pop": pack_pop}
 NAMES = {"wa": "和モダン", "stage": "対局の緊張感", "pop": "ポップ"}
 
 
+def _box_same(x, win):
+    """np.convolve(x, np.ones(win) / win, "same") と同じ値を、累積和で速く（畳み込みだと1本に1時間かかった）"""
+    c = np.concatenate(([0.0], np.cumsum(x))); i = np.arange(len(x)) + (win - 1) // 2 + 1
+    return (c[np.clip(i, 0, len(x))] - c[np.clip(i - win, 0, len(x))]) / win
+
+
 def score(voice, sr, bgm_from, outro_at, key="wa"):
     """声（＋効果音）の音 voice（sr）に、入り・BGM・締めを足して返す（make_clip.py --music。2026-11-24〜）。
     入りは0秒、BGMは bgm_from 秒から（入りの琴が鳴り終わるころ）、締めは outro_at 秒に置き、動画の終わりまで。BGMは声の大きさに合わせて下げる"""
     P = PACKS[key]; n = len(voice); v = np.interp(np.arange(int(n * SR / sr)) * sr / SR, np.arange(n), voice); N = len(v)
     o = P("outro"); N = max(N, int((outro_at + len(o) / SR + .2) * SR)); v = np.pad(v, (0, N - len(v)))
     bgm = P("bgm"); bgm = np.tile(bgm, N // len(bgm) + 1)[:N]
-    win = int(.25 * SR); lev = np.sqrt(np.convolve(v ** 2, np.ones(win) / win, "same")); lev /= lev.max() + 1e-9
-    duck = np.convolve(1 - .65 * np.clip(lev * 4, 0, 1), np.ones(win) / win, "same")
+    win = int(.25 * SR); lev = np.sqrt(np.maximum(_box_same(v ** 2, win), 0)); lev /= lev.max() + 1e-9
+    duck = _box_same(1 - .65 * np.clip(lev * 4, 0, 1), win)
     fade = np.zeros(N); a = int(bgm_from * SR); z = int(outro_at * SR); r = int(1.5 * SR)
     fade[a:z] = 1; fade[a:a + r] = np.linspace(0, 1, r)[:max(0, min(r, z - a))]; fade[max(a, z - r):z] = np.linspace(1, 0, z - max(a, z - r))
     mix = v * .95 + norm(bgm, .16) * duck * fade
