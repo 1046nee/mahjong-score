@@ -158,8 +158,8 @@ SCRIPTS = {
         ("待ち", "まち", "待ちを確かめる。一索・四索・七索の3種類", 24, 24, 2.2, [], ""),
         ("河", "かわ", "自分の河に、待ちの一索がある", 25, 44, 2.2, [], ""),
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
-        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 116, 2.2, [], "ツモ"),
-    ], tail=(117, 126, 2.4), bubw={3: "ツモアガリできます"}, bubpos={"ツモ": ((760, 1350), (120, 260))},
+        ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 126, 2.2, [], "ツモ"),
+    ], tail=(127, 139, 2.4), bubw={3: "ツモアガリできます"}, after_motion=(3,),      # 牌と手牌を倒して右手を戻しきってから、止めた絵に「ツモ」とツモ牌の印（2026-11-28 ユーザーの指定） bubpos={"ツモ": ((760, 1350), (120, 260))},
     pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
@@ -1215,6 +1215,11 @@ def main():
     outro = sorted(glob.glob(os.path.join(src, "o[0-9]*.png")))      # 締め（scene.py --anim --outro）。最後のコマで2秒止める
     odur = (len(outro) + 2 * fps) / fps
     for n, fp in enumerate(outro + [outro[-1]] * (2 * fps) if outro else []): seq.append((fp, -3, n / fps, False))
+    HOLD_T = {}
+    for f_, i_, t_, h_ in seq:
+        if h_ and i_ >= 0: HOLD_T.setdefault(i_, t_)
+    for i_ in sc.get("after_motion", ()):      # 吹き出しと言葉待ちの印は、動きが止まってから
+        if i_ in HOLD_T: BUB_AT[f"step{i_ + 1}"] = max(BUB_AT.get(f"step{i_ + 1}", .25), HOLD_T[i_] + .15)
     tmp = tempfile.mkdtemp(); cache = {}; fade = None; cache_prev = None; card_t0 = {}; hold_n = 0
     for n, (f, i, t, held) in enumerate(seq):
         if f not in cache:
@@ -1256,6 +1261,7 @@ def main():
                     if len(m_) > 5:
                         w_ = say_at(SUBS.get(f"step{i + 1}", []), m_[5])
                         if w_ is not None and t < .25 + w_: continue
+                        if i in sc.get("after_motion", ()) and t < HOLD_T.get(i, 0) + .15: continue
                     ms_.append(m_[:5])
                 draw_marks(d, ms_, MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe, now=n / fps, key=f"s{i}")
             rail(d, sc["steps"], i); headline(d, i, s, t)
@@ -1278,7 +1284,7 @@ def main():
             if DRK and s[0] == "裏ドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):      # 表ドラ・裏ドラの札（カンの元ドラ・新ドラと同じ。2026-11-28 ユーザーの指定）
                 bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
                 w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 3.0; w0 = say_end(SUBS[f"step{i + 1}"], "並べます") or 1.5
-                kandora_marks(d, bx_, .25 + w1, t, labels=("表ドラ", "裏ドラ"), t_old=.25 + w0)
+                kandora_marks(d, bx_, .25 + w1, t, labels=("表ドラ", "裏ドラ"), t_old=.25 + w1)      # 表ドラ・裏ドラの札は同時に（2026-11-28 ユーザーの指定）
             if DRK and s[0] == "カンドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):
                 bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
                 w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 1.5; w2 = say_at(SUBS[f"step{i + 1}"], "カンドラが") or 2.0
