@@ -160,7 +160,7 @@ SCRIPTS = {
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 126, 2.2, [], "ツモ"),
     ], tail=(127, 139, 2.4), bubw={3: "ツモアガリできます"}, after_motion=(3,),      # 牌と手牌を倒して右手を戻しきってから、止めた絵に「ツモ」とツモ牌の印（2026-11-28 ユーザーの指定） bubpos={"ツモ": ((760, 1350), (120, 260))},
-    pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, nudge={"cut": 25}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, nudge={"cut": 34}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -624,7 +624,8 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
             if not hit(x, y): best = (x, y); break
         if best is None: x, y = min(max(cand[0][0], 20), W - 20 - w), min(max(cand[0][1], TOPY[0]), 1290 - h)
         else: x, y = best
-        x += MK_NUDGE.get(nm, 0)      # 札を牌に寄せる分（河にかかってもよい。2026-11-28 ユーザーの指定）
+        if nm in MK_NUDGE:      # 札を牌のすぐ左へ。右のふちが短い矢印の根もと（河にかかってもよい＝2026-11-28 ユーザーの指定「矢印のすぐ左まで」）
+            pd_, lw_ = _ring_pad(here[nm]); x = x0 - pd_ - lw_ - MK_NUDGE[nm] - w
         box[nm] = (x, y, w, h, ims, f)
     import math as _m
     for nm, col, tx, codes, pos in todo:      # 輪 → 矢印
@@ -641,12 +642,13 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
                 d.line((cx - r_, cy - r_ * sg, cx + r_, cy + r_ * sg), fill=c + (255,), width=13)
         if nm in box and k > .3:      # 札から牌へ、はずむ矢印
             x, y, w, h, ims, f = box[nm]; bx, by = min(max(cx, x + 30), x + w - 30), min(max(cy, y + 20), y + h - 20)      # 札のふちの、牌にいちばん近い所から
+            if nm in MK_NUDGE: bx, by = x + w + 4, cy      # 寄せた札は、右のふちから横に短く
             if y + h < cy: by = y + h + 6
             elif y > cy: by = y - 6
             elif x + w < cx: bx = x + w + 6
             else: bx = x - 6
             L = _m.hypot(cx - bx, cy - by) or 1; ux, uy = (cx - bx) / L, (cy - by) / L
-            if L < max(rx, ry) + (12 if nm in MK_NUDGE else 40): continue      # 寄せた札は、短くても矢印を残す      # 札が牌のすぐとなりなら、矢印はいらない
+            if L < max(rx, ry) + (0 if nm in MK_NUDGE else 40): continue      # 寄せた札は、短くても矢印を残す      # 札が牌のすぐとなりなら、矢印はいらない
             ex, ey = cx - ux * (max(rx, ry) + 16), cy - uy * (max(rx, ry) + 16)
             bob = 10 * _m.sin(tnow * 7)      # 先がぴょこぴょこ動く
             ex, ey = ex - ux * bob, ey - uy * bob
@@ -662,6 +664,7 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
         d.rounded_rectangle((lx, ly + (1 - sc_) * 20, lx + lw, ly + 62 + (1 - sc_) * 20), radius=32, fill=c + (a,))
         text_c(d, lx + lw / 2, ly + 30 + (1 - sc_) * 20, tx, f, (255, 255, 255, a))
         xx = x + w / 2 - (sum(i.width + 8 for i in ims) - 8) / 2
+        if nm in MK_NUDGE: xx = x + w - (sum(i.width + 8 for i in ims) - 8)      # 寄せた札は、牌の絵も右（矢印の側）にそろえる
         for j_, i in enumerate(ims):
             i2 = i.resize((max(1, int(i.width * sc_)), max(1, int(i.height * sc_))), Image.LANCZOS) if sc_ != 1 else i
             if a < 255: i2 = i2.copy(); i2.putalpha(i2.getchannel("A").point(lambda v: int(v * a / 255)))
