@@ -166,7 +166,7 @@ SCRIPTS = {
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
         (3.7, "待ちが変わるまで、ロンできない"),
     ])),
-    "furiten2": dict(title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
+    "furiten2": dict(bub_hides=(4,), title="同巡内フリテン", kicker="フリテンは3種類", sub="3種類の2つ目", steps=[
         ("待ち", "まち", "チーしていて、役はタンヤオだけ。一索では役が無い", 24, 24, 2.2, [], ""),
         ("見逃し", "みのがし", "{下家|シモチャ}の一索は、役が無いのでロンできない", 25, 50, 2.2, [], ""),
         ("ロンできない", "", "{対面|トイメン}の四索は役があるが、ロンできない", 51, 75, 2.2, [], ""),
@@ -1262,6 +1262,7 @@ def main():
                         w_ = say_at(SUBS.get(f"step{i + 1}", []), m_[5])
                         if w_ is not None and t < .25 + w_: continue
                         if i in sc.get("after_motion", ()) and t < HOLD_T.get(i, 0) + .15: continue
+                    if i in sc.get("bub_hides", ()) and s[7] and t > BUB_AT.get(f"step{i + 1}", .25): continue      # 吹き出しが出たら印は消す
                     ms_.append(m_[:5])
                 draw_marks(d, ms_, MK[min(f, len(MK) - 1)], xe is None or t >= .25 + xe, now=n / fps, key=f"s{i}")
             rail(d, sc["steps"], i); headline(d, i, s, t)
