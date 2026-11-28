@@ -198,7 +198,7 @@ SCRIPTS = {
         ("テンパイ", "", "あと1枚でアガれる人は、両手で手牌を倒して見せる。{東家|トンチャ}から順に", 7, 36, 2.0, [], ""),     # 流局のテンパイ・ノーテンは声に出さない（2026-11-14 ユーザーの指定）
         ("ノーテン", "", "テンパイでない人は、両手で手牌を伏せる", 37, 86, 2.0, [], ""),
         ("点棒", "てんぼう", "ノーテンの人がテンパイの人へ払う（場に3,000点）", 87, 122, 2.2, [], ""),
-    ], tail=(123, 134, 2.4), cards={3: "bappu2"},     # ④は、声の文ごとにノーテン罰符の例を切りかえる（2026-11-25 ユーザーの指定）
+    ], tail=(123, 134, 2.4), cards={3: "bappu2"}, order=dict(steps=(1, 2), at="東家", c=(540, 1036, 300, 280), labels=["東家", "南家", "西家", "北家"]),      # 手牌を倒す順（反時計回り。2026-11-28 ユーザーの指定）     # ④は、声の文ごとにノーテン罰符の例を切りかえる（2026-11-25 ユーザーの指定）
     sbeats={3: [(92, "ノーテンの2人が")]},       # 点棒は「ノーテンの2人が」の声で払う
     pre=dict(head="流局になるとき", ls=[0, 1, 2, 2], beats=[(1.0, 1), (3.8, 2)], hold=2.0, concl=True,
              marks={"haitei": ("orange", "海底牌", [], "UL"), "houtei": ("blue", "河底牌", [], "UL"), "wanpai": ("green", "王牌 14枚", [], "UR")}, lines=[
@@ -378,6 +378,7 @@ def pre_card(d, pre, t):
     HO = 42 if any(r for p, r, t_ in ruby_parts(pre["head"])) else 0      # 題名にルビがあるときは、上の枠から離す
     hgt = 146 + RH * (len(pre["lines"]) - (1 if CB else 0)) + (CH + 50 if CB else 18) + NH + HO
     y = (pre["top"] if pre.get("top") else H - 80 - hgt) + int((1 - k) * 30)      # top: 画面の上に置く（ツモと打牌は手牌が画面の下寄りになる画角なので）
+    TOPY[0] = (pre["top"] + hgt + 20) if pre.get("top") else 610      # 札はカードの下に
     d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, fill=(255, 255, 255, int(242 * k)))
     if CARD_BORDER:      # カードの枠（色, 太さ）
         c_, w_ = CARD_BORDER; d.rounded_rectangle((40, y, W - 40, y + hgt), radius=44, outline=c_ + (int(255 * k),), width=w_)
@@ -797,6 +798,60 @@ def draw_count(d, ps, t, t0, dt, nmax=None, chip=True):
         d.rounded_rectangle((cx - w_ / 2, cy - 48 * s_, cx + w_ / 2, cy + 48 * s_), radius=40, fill=(255, 200, 40) if len(ps) == 14 else (23, 112, 131), outline=(255, 255, 255), width=5)
         text_c(d, cx, cy - 3, lab, f_, (31, 42, 40) if len(ps) == 14 else (255, 255, 255))
 
+def order_ring(im, t, od):
+    """手牌を倒す順の矢印（2026-11-28 ユーザーの指定）: 画面の9時（東家）→6時（南家）→3時（西家）→12時（北家）へ、反時計回りの円の矢印。
+    t＝出してからの秒。番号つきの札が順に出て、矢印がのびる"""
+    import math as _m
+    cx, cy, rx, ry = od["c"]; k = max(0.0, min(1.0, t / 1.4)); Q = 3
+    lay = Image.new("RGBA", (W * Q, H * Q), (0, 0, 0, 0)); dl = ImageDraw.Draw(lay); col = (231, 86, 32); gap = 24
+    for i, (a0, a1) in enumerate([(180, 90), (90, 0), (0, -90)]):
+        f = max(0.0, min(1.0, k * 3 - i))
+        if f <= 0: break
+        st = a0 - gap; en = st - (a0 - a1 - 2 * gap) * f
+        pts = [(cx + rx * _m.cos(_m.radians(a)), cy + ry * _m.sin(_m.radians(a))) for a in [st + (en - st) * j / 40 for j in range(41)]]
+        P = [(x * Q, y * Q) for x, y in pts]
+        dl.line(P, fill=(255, 255, 255, 255), width=26 * Q, joint="curve"); dl.line(P, fill=col + (255,), width=14 * Q, joint="curve")
+        if f > .15:
+            (x1, y1), (x2, y2) = pts[-2], pts[-1]; an = _m.atan2(y2 - y1, x2 - x1); L = 46; Wd = 30
+            tip = (x2 + _m.cos(an) * L * .55, y2 + _m.sin(an) * L * .55)
+            b1 = (x2 - _m.cos(an) * L * .45 + _m.cos(an + _m.pi / 2) * Wd, y2 - _m.sin(an) * L * .45 + _m.sin(an + _m.pi / 2) * Wd)
+            b2 = (x2 - _m.cos(an) * L * .45 - _m.cos(an + _m.pi / 2) * Wd, y2 - _m.sin(an) * L * .45 - _m.sin(an + _m.pi / 2) * Wd)
+            tri = [(q[0] * Q, q[1] * Q) for q in (tip, b1, b2)]
+            dl.polygon(tri, fill=(255, 255, 255, 255)); dl.line(tri + [tri[0]], fill=(255, 255, 255, 255), width=12 * Q); dl.polygon(tri, fill=col + (255,))
+    lay = lay.resize((W, H), Image.LANCZOS); im.alpha_composite(lay)
+    d = ImageDraw.Draw(im)
+    for i, (ang, tx) in enumerate(zip((180, 90, 0, 270), od["labels"])):
+        a = max(0.0, min(1.0, (k * 3 + .35 - i) / .35))
+        if a <= 0: break
+        s_ = _ease_pop(a); x = cx + rx * _m.cos(_m.radians(ang)); y = cy + ry * _m.sin(_m.radians(ang))
+        ft = font(int(38 * s_)); r = 27 * s_; w = d.textlength(tx, font=ft); Wp = 2 * r + 10 * s_ + w + 22 * s_; Hp = 64 * s_; x0 = x - Wp / 2; y0 = y - Hp / 2
+        d.rounded_rectangle((x0 - 5, y0 - 5, x0 + Wp + 5, y0 + Hp + 5), radius=Hp / 2 + 5, fill=(255, 255, 255, 255))
+        d.rounded_rectangle((x0, y0, x0 + Wp, y0 + Hp), radius=Hp / 2, fill=(23, 112, 131, 255))
+        d.ellipse((x0 + 5 * s_, y0 + 5 * s_, x0 + 5 * s_ + 2 * r, y0 + 5 * s_ + 2 * r), fill=col + (255,))
+        text_c(d, x0 + 5 * s_ + r, y0 + 5 * s_ + r, str(i + 1), font(int(36 * s_)), WHITE)
+        text_c(d, x0 + 2 * r + 16 * s_ + w / 2, y0 + Hp / 2, tx, ft, WHITE)
+
+def next_dora(c):
+    """表示牌 → ドラ（数牌は次の数・9の次は1。風は東南西北・三元は白發中の順に回る）"""
+    if c[0] == "z":
+        n = int(c[1]); return "z" + str((n % 4) + 1 if n <= 4 else ((n - 5 + 1) % 3) + 5)
+    return c[0] + str(int(c[1]) % 9 + 1)
+
+def kandora_marks(d, bx, t_new, now):
+    """④カンドラ: 牌の上に「元ドラ表示牌」「新ドラ表示牌」の札（6枚切りの数字と同じ見せ方。2026-11-28 ユーザーの指定）"""
+    for key, tx, col, t0 in (("dora", "元ドラ表示牌", (23, 112, 131), 0.0), ("kandora", "新ドラ表示牌", (231, 86, 32), t_new)):
+        b = bx.get(key)
+        if not b or now < t0: continue
+        k = min(1, (now - t0) / .3); s_ = _ease_pop(k); x = (b[0] + b[2]) / 2; y = b[1] - 16
+        ft = font(int(34 * s_)); w = d.textlength(tx, font=ft) + 34 * s_; h = 58 * s_
+        lx = x
+        if bx.get("kandora") and now >= t_new:      # 2つ並ぶときは、札を左右に開く（となり同士の牌なので、真上だと重なる）。矢じりは牌の真上のまま
+            other = bx["kandora"] if key == "dora" else bx["dora"]; sd = -1 if x < (other[0] + other[2]) / 2 else 1
+            lx = x + sd * (w / 2 - 20)
+        d.rounded_rectangle((lx - w / 2, y - h, lx + w / 2, y), radius=h / 2, fill=col + (255,), outline=(255, 255, 255, 255), width=4)
+        text_c(d, lx, y - h / 2, tx, ft, WHITE)
+        d.polygon([(x - 12, y - 2), (x + 12, y - 2), (x, y + 14)], fill=col + (255,))
+
 def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
     """効果音を鳴らす時刻（秒）と音。画面の出来事（手順・吹き出し・カード）と、牌の当たる瞬間（sfx.TILE_EVENTS）"""
     import sfx
@@ -961,7 +1016,7 @@ def yaku_board(d, t, yk, subs):
 
 def dora_card(d, t, dc):
     """表示牌 → ドラ を見せる図（2026-11-26 ユーザーの指定「表示牌→表ドラ、表示牌→裏ドラが目で見てわかるように」）。行ごとに、ぽこんと出る"""
-    a = min(1, t * 4); y0 = 650; h = 360; A = lambda v: int(v * a)
+    a = min(1, t * 4); y0 = dc.get("y", 650); h = 360; A = lambda v: int(v * a)
     d.rounded_rectangle((60, y0, W - 60, y0 + h), radius=40, fill=(12, 20, 22, A(205)), outline=(231, 86, 32, A(255)), width=6)
     th = 112
     for n, (lab, ind, dora, col) in enumerate(dc["rows"]):
@@ -1030,7 +1085,8 @@ def main():
     cp_ = os.path.join(a[0], "count.json"); CNT = json.load(open(cp_)) if os.path.exists(cp_) else []      # 数える丸の場所（ツモと打牌）
     pp_ = os.path.join(a[0], "pcount.json"); PCNT = json.load(open(pp_)) if os.path.exists(pp_) else []
     pm_ = os.path.join(a[0], "pmarks.json"); PMK = json.load(open(pm_)) if os.path.exists(pm_) else []
-    dm_ = os.path.join(a[0], "dmarks.json"); DMK = json.load(open(dm_)) if os.path.exists(dm_) else []      # ①の前の絵（他家が切る・自分がツモる）で囲む牌
+    dm_ = os.path.join(a[0], "dmarks.json"); DMK = json.load(open(dm_)) if os.path.exists(dm_) else []
+    dk_ = os.path.join(a[0], "doramk.json"); DRK = json.load(open(dk_)) if os.path.exists(dk_) else None      # カンの元ドラ・新ドラの場所      # ①の前の絵（他家が切る・自分がツモる）で囲む牌
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = scaled(SCRIPTS[name], fps)
     BUB_POS.update(sc.get("bubpos", {}))      # 動画ごとの吹き出しの場所（同巡内フリテンの「ロン」は上からの画角）
@@ -1198,11 +1254,24 @@ def main():
                 bappu_live(d, t, bappu_phases(SUBS[f"step{i + 1}"]))
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す
                 card_t0.setdefault(i, t); bappu_card(d, t - card_t0[i])
+            if DRK and s[0] == "カンドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):
+                bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
+                w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 1.5; w2 = say_at(SUBS[f"step{i + 1}"], "カンドラが") or 2.0
+                kandora_marks(d, bx_, .25 + w1, t)
+                if t >= .25 + w2:      # 表示牌 → ドラ のカード（3Dの牌）。王牌と重ならない側に
+                    yb = min(v[1] for v in (bx_["dora"], bx_.get("kandora") or bx_["dora"]))
+                    dora_card(d, t - .25 - w2, dict(y=(1150 if yb < 900 else 640), rows=[("元ドラ", DRK["dora"], next_dora(DRK["dora"]), (140, 220, 230)), ("新ドラ", DRK["kandora"], next_dora(DRK["kandora"]), (255, 170, 120))]))
             dc_ = sc.get("doracard")
             if dc_ and dc_["step"] == i and f"step{i + 1}" in SUBS:
                 ws_ = say_end(SUBS[f"step{i + 1}"], dc_["at"])
                 if ws_ is not None and t >= .25 + ws_: dora_card(d, t - .25 - ws_, dc_)
             if i in sc.get("yaku", {}) and f"step{i + 1}" in SUBS and not (s[7] and t > BUB_AT.get(f"step{i + 1}", .25)): yaku_board(d, t, sc["yaku"][i], SUBS[f"step{i + 1}"])      # 吹き出しが出たら消す（重ならないように切りかえる）
+            od_ = sc.get("order")
+            if od_ and i in od_["steps"] and "step%d" % (od_["steps"][0] + 1) in SUBS:
+                ws_ = say_at(SUBS["step%d" % (od_["steps"][0] + 1)], od_["at"])
+                if ws_ is not None:
+                    t_ = (t - .25 - ws_) if i == od_["steps"][0] else 99
+                    if t_ >= 0: order_ring(ov, t_, od_)
             kk = sc.get("kuikae")
             if kk and kk["step"] == i and f"step{i + 1}" in SUBS:
                 ws = say_at(SUBS[f"step{i + 1}"], kk["at"])
