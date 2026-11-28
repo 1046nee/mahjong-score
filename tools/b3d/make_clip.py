@@ -96,7 +96,7 @@ SCRIPTS = {
         (2.8, "そろうのは {槓子|カンツ}", "同じ牌4枚"),
         (3.6, "ポンした3枚に足して、加槓できる"),
     ])),
-    "riichi": dict(yoko=(1, "切ります", "リーチの宣言牌"), clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "riichi": dict(yoko=(1, "切ります", "リーチの宣言牌", True), clip=("orange", "ツモ", ["s8"], "UL"), title="リーチの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「リーチ」と声に出す", 0, 6, 2.2, [], "リーチ"),
         ("打牌", "ダハイ", "いらない牌を横向きにして切り、ツモった牌は手牌へ", 7, 42, 1.8, [], ""),
         ("供託", "きょうたく", "1,000点棒を1本、卓の中央に出す（アガった人がもらう）", 43, 80, 1.8, [], ""),
@@ -1287,7 +1287,9 @@ def main():
             yk_ = sc.get("yoko")
             if CMK and yk_ and yk_[0] == i and f"step{i + 1}" in SUBS and not isinstance(f, str):      # 右端に寄せたあと「横向きの牌は…」で、鳴いた牌を点滅
                 w_ = say_at(SUBS[f"step{i + 1}"], yk_[1])
-                if w_ is not None: blink_mark(d, CMK[min(f, len(CMK) - 1)], t - .25 - w_, yk_[2])
+                if w_ is not None:
+                    t0_ = max(.25 + w_, HOLD_T.get(i, 0) + .15) if len(yk_) > 3 and yk_[3] else .25 + w_      # 4つ目が真なら、動きが止まってから（リーチの宣言牌は、置いて手を戻してから＝2026-11-28）
+                    blink_mark(d, CMK[min(f, len(CMK) - 1)], t - t0_, yk_[2])
             if DRK and s[0] == "裏ドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):      # 表ドラ・裏ドラの札（カンの元ドラ・新ドラと同じ。2026-11-28 ユーザーの指定）
                 bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
                 w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 3.0; w0 = say_end(SUBS[f"step{i + 1}"], "並べます") or 1.5
