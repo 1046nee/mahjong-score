@@ -1933,7 +1933,8 @@ def draw_pose(t, cam):
     k = seg(t, DRAW_PICK, DRAW_LAND)
     o.location = src.lerp(dst, k) + Vector((0, 0, .05 * math.sin(math.pi * k))); o.rotation_euler = tuple(sr.lerp(dr, k))
     R = Vector(ARMS[0]["R"]["rest"]); hz = TOP + TL + .012; A_ = lambda v, dz=0.0: (v.x + .004, v.y - .026 * TS, hz + dz)
-    w = hand_path(t, [(0, R), (DRAW_GO, R), (DRAW_PICK, A_(src, .02)), (DRAW_LAND, A_(dst, .02)), (DRAW_LAND + .45, R), (DISC_DUR, R)]); pose_body(ARMS[0], w)
+    _o = [float(x) for x in os.environ.get("DRAWBACK", ".04,-.16,-.01").split(",")]; RB = R + Vector(_o)      # 印の間は手を手前に引いておく（手牌・王牌にかからない＝2026-11-28 ユーザーの指定）
+    w = hand_path(t, [(0, RB), (DRAW_GO, RB), (DRAW_PICK, A_(src, .02)), (DRAW_LAND, A_(dst, .02)), (DRAW_LAND + .45, R), (DISC_DUR, R)]); pose_body(ARMS[0], w)
     clip_cam(cam, CLIPCAM_D)
 def clip_marks(t=9.0):
     """①の前の絵で囲む所: tile＝切られた牌・ツモった牌（動き終えてから）・src＝ツモる前の山の牌（どこから取るか。2026-11-26 ユーザーの指定）"""
