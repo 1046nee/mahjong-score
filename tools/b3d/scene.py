@@ -505,6 +505,10 @@ if S2:
         RIVERS = auto_rivers([17, 17, 17, 18], HANDS[0] + OPEN_HANDS[3] + [DORA, HAITEI], ban=("s5", "s8", "s9", "z1"))
 CALL_K = len(RIVERS[CALL_SEAT]) - 1     # 鳴く牌が上家の河の何枚目か（0始まり）
 
+FU2_FULL = (lambda _c: (Vector(_c[0:3]), Vector(_c[3:6]), _c[6]))([float(x) for x in os.environ.get("FU2_FULL", ".12,-.72,1.50,.07,-.26,.77,28").split(",")])
+FU2_TB = (lambda _c: (Vector(_c[0:3]), Vector(_c[3:6]), _c[6]))([float(x) for x in os.environ.get("FU2_TB", ".12,-.72,1.50,.07,-.26,.77,28").split(",")])
+FU2_MELDV = (lambda _c: (Vector(_c[0:3]), Vector(_c[3:6]), _c[6]))([float(x) for x in os.environ.get("FU2_MELDV", ".10,-.36,.77,-.48,-.28,.46,30").split(",")])
+FU2_TOP = (lambda _c: (Vector(_c[0:3]), Vector(_c[3:6]), _c[6]))([float(x) for x in os.environ.get("FU2_TOP", ".06,-.30,.77,0,-.12,.62,30").split(",")])
 WALL = {}
 def wall_x(k):
     """手前の山の k 幢目の x（王牌は割れ目の分だけ右）"""
@@ -1528,17 +1532,20 @@ def s2_build():
             mv["next"] = [(5.8, 6.5, ST, S_, .06), (7.2, 7.9, slot(n0), L_, .06)]
             arms[0] = [(0, R), (5.3, R), (5.8, A(nx.x, nx.y, .02)), (6.5, A(xt, HY + .01, .02)), (6.85, R), (6.95, R), (7.2, A(xt, HY + .01, .02)), (7.9, A(slot(n0)[0], slot(n0)[1])), (8.25, R), (DUR, R)]
             c4 = other_cut("o4", 1, 8.8)                                                 # ⑤ 下家の七索（ロンできる）
-            MELDV = (Vector((.06, -.30, .77)), Vector((.04, -.30, .48)), 30.0); focus[0] = MELDV      # ① 手牌と右端のチーした牌（2026-11-26 ユーザーの指定）
+            MELDV = FU2_MELDV; focus[0] = MELDV      # ① 手牌と右端のチーした牌（2026-11-26 ユーザーの指定）
             views.append((5.5, 6.0, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[3] = (HANDV[0], HANDV[1], HANDV[2])      # ④ 南をツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
             views.append((8.3, 8.6, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))      # ⑤ 下家の七索は卓の全体で
-            agari(10.0); to_hand(9.75)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
+            agari(10.0)      # 「ロン」と言って手牌を倒す（2026-11-25 ユーザーの指定）
+            views.append((9.75, 10.25, tuple(FU2_TOP[0] + FU2_TOP[1]), tuple(FU2_TOP[0]), FU2_TOP[2]))      # 上から（低い画角は、前にかがんだ自分の頭で真っ暗になった＝2026-11-28 ユーザーの指摘）
+            for n_, f_ in enumerate(FREEZE):
+                if f_ > 9.7: focus[n_] = FU2_TOP
             # 倒したらすぐ手をどけ、右端のチーした3枚を手牌のとなりへ寄せて、全部が入る画角に（2026-11-26 ユーザーの指定）
             arms[0] = [k_ for k_ in arms[0] if k_[0] <= 10.8] + [(11.05, R), (DUR, R)]; arms_l[0] = [k_ for k_ in arms_l[0] if k_[0] <= 10.8] + [(11.05, Vector(ARMS[0]["L"]["rest"])), (DUR, Vector(ARMS[0]["L"]["rest"]))]
             lx_ = P(hand[-1]).x + TW / 2 + .025; m0x = lx_ + TL / 2
             for j_, (nm_, dx_) in enumerate((("meld0", m0x), ("meld1", m0x + TL / 2 + .001 + TW / 2), ("meld2", m0x + TL / 2 + .002 + TW * 1.5))):
                 yy_ = LY - (TL - TW) / 2 if j_ == 0 else LY
                 mv[nm_] = [(11.1, 11.7, (dx_, yy_, Z), NAMED[nm_]["r0"], .02)]
-            ALLV = (Vector(((P("hk0").x + m0x + TW * 2) / 2, LY + .02, .77)), Vector((0, -.30, .50)), 32.0)
+            ALLV = (Vector(((P("hk0").x + m0x + TW * 2) / 2, LY + .02, .77)), Vector((0, -.12, .62)), 30.0)      # 上から（手前の頭にかからない）
             views.append((11.1, 11.7, tuple(ALLV[0] + ALLV[1]), tuple(ALLV[0]), ALLV[2]))
             # 確認では、チーした牌に寄らない（手牌の全体のまま。2026-11-25 ユーザーの指定）
         else:
@@ -1854,7 +1861,9 @@ def pre_pose(t, cam):
         ta = t - .6; o1 = NAMED["o1"]; ms_ = S2C["mv"]["o1"][0]; k1 = seg(ta, ms_[0], ms_[1])
         o1.location = Vector(o1["p0"]).lerp(Vector(ms_[2]), k1) + Vector((0, 0, ms_[4] * math.sin(math.pi * k1))); o1.rotation_euler = ms_[3]; hide_tree(o1, ta < ms_[0] - .1)
         pose_body(ARMS[1], hand_path(ta, S2C["arms"][1]))
-        tb = (Vector((0, -.72, 1.50)), Vector((0, -.17, .77)), 27.0); kt = seg(t, 2.2, 2.8)      # 手牌（後ろから）と、下家の河・自分の河
+        tb = (Vector((0, -.72, 1.50)), Vector((0, -.17, .77)), 27.0); kt = seg(t, 2.2, 2.8)
+        if SCENE == "furiten2":      # チーした牌（右端）も入る所（タンヤオ狙いで一索を見逃すのが伝わるように＝2026-11-28 ユーザーの指定）
+            tb = FU2_TB; loc = loc.lerp(FU2_FULL[0], 1.0); tgt = tgt.lerp(FU2_FULL[1], 1.0); lens = FU2_FULL[2]      # 手牌（後ろから）と、下家の河・自分の河
         loc = loc.lerp(tb[0], kt); tgt = tgt.lerp(tb[1], kt); lens += (tb[2] - lens) * kt
     if CALLP:               # 切った人の河を見る（チー＝上家・左の奥／ポン＝対面・正面の奥）
         riv = (Vector((-.11, -.42, 1.00)), Vector((p0.x, p0.y + .04, .77)), 44.0); kb = seg(t, 2.5, 3.1)      # 上家の河は縦に並ぶので、縦長の画面に収まる
