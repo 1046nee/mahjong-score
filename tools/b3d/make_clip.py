@@ -160,7 +160,7 @@ SCRIPTS = {
         ("ロンできない", "", "{他家|ターチャ}が四索を切っても、ロンできない", 45, 74, 2.2, [], "", "※ポン・チーで鳴かれて、河に無くてもフリテン"),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 75, 126, 2.2, [], "ツモ"),
     ], tail=(127, 139, 2.4), bubw={3: "ツモアガリできます"}, after_motion=(3,),      # 牌と手牌を倒して右手を戻しきってから、止めた絵に「ツモ」とツモ牌の印（2026-11-28 ユーザーの指定） bubpos={"ツモ": ((760, 1350), (120, 260))},
-    pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="捨て牌のフリテン", xtext="待ちが変わるまでロンできない", marks={"own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "cut": ("orange", "自分が切った", ["s1"], "LR", 1)}, nudge={"cut": 25}, xat="どの待ちでもロンできません", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{聴牌|テンパイ}している", "あと1枚でアガれる形"),
         (1.6, "待ちの牌を1種でも{ 切っている }", "自分の河にある"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -584,6 +584,7 @@ def _ring_pad(b):
     """囲みのすきまと線の太さ（牌の大きさに合わせる。小さい牌は細く・すきまも小さく）"""
     m = min(b[2] - b[0], b[3] - b[1])
     return max(5, min(22, m * .16)), int(max(4, min(9, m * .12)))
+MK_NUDGE = {}
 def draw_marks(d, marks, here, xon=True, now=None, key=""):
     """大事な牌を目立たせる（2026-11-25 ユーザーの指定「枠よりウィットに富んだ・見ていて面白い表現を」）:
     まわりを少し暗くして、その牌にスポットライト（丸く明るいまま）＋色の輪 → 札（色のラベルと3Dの牌。白いカードは敷かない）から、はずむ矢印で指す。
@@ -623,6 +624,7 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
             if not hit(x, y): best = (x, y); break
         if best is None: x, y = min(max(cand[0][0], 20), W - 20 - w), min(max(cand[0][1], TOPY[0]), 1290 - h)
         else: x, y = best
+        x += MK_NUDGE.get(nm, 0)      # 札を牌に寄せる分（河にかかってもよい。2026-11-28 ユーザーの指定）
         box[nm] = (x, y, w, h, ims, f)
     import math as _m
     for nm, col, tx, codes, pos in todo:      # 輪 → 矢印
@@ -644,7 +646,7 @@ def draw_marks(d, marks, here, xon=True, now=None, key=""):
             elif x + w < cx: bx = x + w + 6
             else: bx = x - 6
             L = _m.hypot(cx - bx, cy - by) or 1; ux, uy = (cx - bx) / L, (cy - by) / L
-            if L < max(rx, ry) + 40: continue      # 札が牌のすぐとなりなら、矢印はいらない
+            if L < max(rx, ry) + (12 if nm in MK_NUDGE else 40): continue      # 寄せた札は、短くても矢印を残す      # 札が牌のすぐとなりなら、矢印はいらない
             ex, ey = cx - ux * (max(rx, ry) + 16), cy - uy * (max(rx, ry) + 16)
             bob = 10 * _m.sin(tnow * 7)      # 先がぴょこぴょこ動く
             ex, ey = ex - ux * bob, ey - uy * bob
@@ -1234,6 +1236,7 @@ def main():
         CUR[0] = im      # 囲みの外を暗くする（draw_marks）ため、いまの絵
         if i == -4:
             pre_card(d, sc["pre"], t)
+            MK_NUDGE.clear(); MK_NUDGE.update(sc["pre"].get("nudge", {}) if i == -4 else {})
             if sc["pre"].get("marks") and PMK:      # 使う手牌と、人が切った牌を囲む（2026-11-25 ユーザーの指定）
                 pi = min(int(os.path.basename(f)[1:5]), len(PMK) - 1) if isinstance(f, str) else 0
                 here_ = {k_: b_ for k_, b_ in PMK[pi].items() if b_[3] < 1240}      # カードの所（下）に入った牌は囲まない（カメラが動いて、カードに重なった）
