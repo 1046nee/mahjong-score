@@ -883,7 +883,12 @@ def sfx_events(sc, name, seq, fps, bub_at={}, subs_={}):
             # 画面の出来事で鳴らすのは、発声の吹き出しと、手順の切りかえ（2026-11-24 ユーザーの指定で足した。琴の「ポロン」）。箇条書き・まとめでは鳴らさない
             if i >= 0 and sc["steps"][i][7]: ev.append((sec + bub_at.get(f"step{i + 1}", .25), "pop"))
             if i >= 0: ev.append((sec, "kstep"))
-            if i == 0 and isinstance(f, str) and os.path.basename(f).startswith("d"): ev.append((sec + 1.3, "clack"))      # 他家の打牌（scene.py の DISC_T）
+            if i == 0 and isinstance(f, str) and os.path.basename(f).startswith("d"):
+                if sc.get("clip") and sc["clip"][1] == "ツモ":      # 自分のツモ: 山の牌を持つ音・手牌の横に置く音（scene.py の DRAW_PICK・DRAW_LAND）。止めたコマの分もずらす
+                    for t_, snd in ((.95, "tap"), (1.55, "clackt")):
+                        k_ = int(round(t_ * fps)); m_ = next((m for m in range(n, len(seq)) if isinstance(seq[m][0], str) and os.path.basename(seq[m][0]).startswith("d") and int(os.path.basename(seq[m][0])[1:5]) >= k_), None)
+                        if m_ is not None: ev.append((m_ / fps, snd))
+                else: ev.append((sec + 1.3, "clack"))      # 他家の打牌（scene.py の DISC_T）
             if i == -4:       # 前置き: 鳴くのに使う手牌が動いた瞬間と、他家がその牌を切った瞬間に「ポンッ」（sfx.PRE_EVENTS）
                 am = sc["pre"].get("amap")
                 for t_, snd in sfx.PRE_EVENTS.get(name, []): ev.append((sec + (next((k / fps for k, x in enumerate(am) if x >= t_), t_) if am else t_), snd))

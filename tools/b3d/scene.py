@@ -1915,6 +1915,7 @@ def hide_tree(o, v=True):
 # ---------------- ①発声の前: 他家が牌を切る（2026-11-25 ユーザーの指定「他家が切った牌に対して発声する流れに」。チー・ポン・大明槓・ロン） ----------------
 DISC_DUR = 2.4      # 切った・ツモった牌を、手をどけて見せてから発声（最後のコマで手が戻りきっているように）
 DISC_T = 1.3      # 牌が河に着く時刻（make_clip.py が牌の音を鳴らす）
+DRAW_GO, DRAW_PICK, DRAW_LAND = .55, .95, 1.55      # 自分のツモ: 印が消えて手が出る → 山の牌を持つ → 手牌の横に置く（make_clip.py の音もこの時刻）
 CLIPCAM = (Vector((0, -.92, 1.30)), Vector((0, .0, .77)), 37.0)      # 他家が切る絵: 自分の真後ろから（自分の選手は消す）
 CLIPCAM_D = (Vector((.46, -.86, 1.58)), Vector((-.02, -.16, .77)), 30.0)      # 自分がツモる絵: 右うしろの高い所から（腕が見える・体にかからない）      # ①の前の絵の画角: 自分の手牌・自分の河・切る人の河が全部入る（2026-11-25 ユーザーの指定「切った牌が何か・手牌や捨て牌が見えるように」）
 def clip_cam(cam, c_=None):
@@ -1928,16 +1929,17 @@ def draw_pose(t, cam):
         src = Vector((l_.x * math.cos(a_) - l_.y * math.sin(a_), l_.x * math.sin(a_) + l_.y * math.cos(a_), l_.z + .002)); sr = sr + Vector((0, 0, a_))
     hide_tree(nx, True)
     if sr.z - dr.z > math.pi: dr = dr + Vector((0, 0, 2 * math.pi))      # 左の山（270度）からは、近い向きに回す
-    k = seg(t, .7, DISC_T)
+    # 「山から1枚」の印が出ている間（〜DRAW_GO）は手も腕も動かさない。印が消えると同時に手が出る（2026-11-28 ユーザーの指定）
+    k = seg(t, DRAW_PICK, DRAW_LAND)
     o.location = src.lerp(dst, k) + Vector((0, 0, .05 * math.sin(math.pi * k))); o.rotation_euler = tuple(sr.lerp(dr, k))
     R = Vector(ARMS[0]["R"]["rest"]); hz = TOP + TL + .012; A_ = lambda v, dz=0.0: (v.x + .004, v.y - .026 * TS, hz + dz)
-    w = hand_path(t, [(0, R), (.25, R), (.7, A_(src, .02)), (DISC_T, A_(dst, .02)), (DISC_T + .5, R), (DISC_DUR, R)]); pose_body(ARMS[0], w)
+    w = hand_path(t, [(0, R), (DRAW_GO, R), (DRAW_PICK, A_(src, .02)), (DRAW_LAND, A_(dst, .02)), (DRAW_LAND + .45, R), (DISC_DUR, R)]); pose_body(ARMS[0], w)
     clip_cam(cam, CLIPCAM_D)
 def clip_marks(t=9.0):
     """①の前の絵で囲む所: tile＝切られた牌・ツモった牌（動き終えてから）・src＝ツモる前の山の牌（どこから取るか。2026-11-26 ユーザーの指定）"""
     box = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o, True)])
-    if SCENE in DRAWN and t < .55: return {"src": box(NAMED[DRAWN[SCENE]])}
-    if t < DISC_T: return {}
+    if SCENE in DRAWN and t < DRAW_GO: return {"src": box(NAMED[DRAWN[SCENE]])}
+    if t < (DRAW_LAND if SCENE in DRAWN else DISC_T): return {}
     return {"tile": box(NAMED["called"] if SCENE in ("chi", "pon", "daiminkan", "ron") else NAMED[DRAWN[SCENE]])}
 def disc_pose(t, cam):
     """鳴かれる人が手もとから河へ1枚切る。画角は CLIPCAM（手牌・自分の河・切る人の河が入る）。発声の吹き出しもこの絵の上に出す"""
