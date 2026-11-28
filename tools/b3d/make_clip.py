@@ -20,7 +20,7 @@ NUM = "①②③④⑤⑥⑦⑧"
 
 # 台本: 手順ごとに (名前, 読み, 説明, 最初のコマ, 最後のコマ, 止める秒, 囲む牌, 吹き出し)。コマの番号は、1秒12コマで数えた番号（もっと細かく書き出したときは、scaled が番号を読みかえる）
 SCRIPTS = {
-    "chi": dict(clip=("blue", "上家が切った", ["m6"], "UR"), title="チーの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "chi": dict(yoko=(3, "横向きの牌は", "上家から＝横向き"), clip=("blue", "上家が切った", ["m6"], "UR"), title="チーの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「チー」と声に出す。ポンが優先なので一拍おいてから", 0, 6, 2.2, [], "チー"),     # 肩ごしで顔が見えるうちに止める（カメラが動き出す前）
         ("開示", "かいじ", "鳴くのに使う{搭子|ターツ}を倒して、みんなに見せる", 7, 31, 1.6, ["m4", "m5"], ""),          # 止める所は、手がどいて真上から寄ったコマ
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 32, 61, 1.4, ["m6"], ""),
@@ -35,7 +35,7 @@ SCRIPTS = {
         (3.9, "そろうのは {順子|シュンツ}", "数がつながった3枚"),
         (4.4, "上家の捨て牌だけチーできる"),
     ])),
-    "pon": dict(clip=("blue", "対面が切った", ["z6"], "UR"), title="ポンの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "pon": dict(yoko=(3, "横向きの牌は", "対面から＝横向き"), clip=("blue", "対面が切った", ["z6"], "UR"), title="ポンの方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「ポン」と声に出す。チーより優先される", 0, 6, 2.2, [], "ポン"),
         ("開示", "かいじ", "鳴くのに使う{対子|トイツ}を倒して、みんなに見せる", 7, 31, 1.6, [], ""),
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 32, 61, 1.4, [], ""),
@@ -66,7 +66,7 @@ SCRIPTS = {
         (3.7, "自分でそろえた4枚なら、暗槓できる"),
     ])),
     # ここから下は、scene.py の「台本で動かす場面」（S2T の間の時刻からコマを計算: 間 n の止めるコマ＝(時刻＋n×0.7＋0.58)×12）
-    "daiminkan": dict(clip=("blue", "下家が切った", ["z5"], "UR"), title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="7つの手順で覚える", steps=[
+    "daiminkan": dict(yoko=(3, "横向きの牌は", "下家から＝横向き"), clip=("blue", "下家が切った", ["z5"], "UR"), title="大明槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="7つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。人が切った牌で4枚目をそろえる", 0, 6, 2.2, [], "カン"),
         ("開示", "かいじ", "手牌の同じ牌3枚を倒して、みんなに見せる", 7, 32, 1.6, [], ""),
         ("回収", "かいしゅう", "{他家|ターチャ}が切った牌を取り、横向きで付ける", 33, 61, 1.4, [], ""),
@@ -83,7 +83,7 @@ SCRIPTS = {
         (4.4, "暗槓と違い、{ 鳴き扱い }になる", "{門前|メンゼン}ではなくなる"),
         (4.9, "だれの捨て牌でも大明槓できる"),
     ])),
-    "kakan": dict(clip=("orange", "ツモ", ["z7"], "UL"), title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
+    "kakan": dict(yoko=(1, "横向きの1枚", "横向きの牌"), clip=("orange", "ツモ", ["z7"], "UL"), title="加槓の方法", kicker="ルールとマナーに沿った正しい手順", sub="5つの手順で覚える", steps=[
         ("発声", "はっせい", "「カン」と声に出す。自分の番で、ツモったあとに", 0, 6, 2.2, [], "カン"),
         ("加槓", "カカン", "ポンした牌の横向きの1枚に、横向きで重ねる", 7, 36, 1.8, [], ""),
         ("カンドラ", "", "ドラ表示牌のとなりを1枚めくる。カンドラが1つ増える", 37, 57, 1.6, [], ""),
@@ -837,6 +837,22 @@ def next_dora(c):
         n = int(c[1]); return "z" + str((n % 4) + 1 if n <= 4 else ((n - 5 + 1) % 3) + 5)
     return c[0] + str(int(c[1]) % 9 + 1)
 
+def blink_mark(d, b, t, tx="横向き"):
+    """鳴いた牌（横向き）を点滅させる（2026-11-28 ユーザーの指定「文面だけだとわかりにくい。もらった牌を点滅させたり、囲った丸を点滅させたり」）。
+    牌に明るい色を重ねて点滅＋輪も点滅、上に札（札は点滅させない）"""
+    import math as _m
+    if t < 0: return
+    k = min(1, t / .3); s_ = _ease_pop(k); bl = .5 + .5 * _m.cos(2 * _m.pi * 1.6 * t)      # 1秒に1.6回
+    pad, lw = _ring_pad(b); pad += 4; col = (231, 86, 32)
+    x0, y0, x1, y1 = b[0] - pad, b[1] - pad, b[2] + pad, b[3] + pad
+    d.rounded_rectangle((b[0], b[1], b[2], b[3]), radius=8, fill=(255, 200, 90, int(120 * bl * k)))
+    d.rounded_rectangle((x0, y0, x1, y1), radius=pad + 8, outline=(255, 255, 255, int(255 * (.35 + .65 * bl) * k)), width=lw + 6)
+    d.rounded_rectangle((x0, y0, x1, y1), radius=pad + 8, outline=col + (int(255 * (.35 + .65 * bl) * k),), width=lw + 2)
+    ft = font(int(36 * s_)); w = d.textlength(tx, font=ft) + 40 * s_; h = 62 * s_; cx = (x0 + x1) / 2; yb = y0 - 18
+    d.rounded_rectangle((cx - w / 2, yb - h, cx + w / 2, yb), radius=h / 2, fill=col + (255,), outline=(255, 255, 255, 255), width=4)
+    text_c(d, cx, yb - h / 2, tx, ft, WHITE)
+    d.polygon([(cx - 13, yb - 2), (cx + 13, yb - 2), (cx, yb + 15)], fill=col + (255,))
+
 def kandora_marks(d, bx, t_new, now, labels=("元ドラ", "新ドラ"), t_old=0.0):
     """④カンドラ: 牌の上に「元ドラ表示牌」「新ドラ表示牌」の札（6枚切りの数字と同じ見せ方。2026-11-28 ユーザーの指定）"""
     for key, tx, col, t0 in (("dora", labels[0], (23, 112, 131), t_old), ("kandora", labels[1], (231, 86, 32), t_new)):
@@ -1086,6 +1102,7 @@ def main():
     pp_ = os.path.join(a[0], "pcount.json"); PCNT = json.load(open(pp_)) if os.path.exists(pp_) else []
     pm_ = os.path.join(a[0], "pmarks.json"); PMK = json.load(open(pm_)) if os.path.exists(pm_) else []
     dm_ = os.path.join(a[0], "dmarks.json"); DMK = json.load(open(dm_)) if os.path.exists(dm_) else []
+    ck_ = os.path.join(a[0], "callmk.json"); CMK = json.load(open(ck_)) if os.path.exists(ck_) else None      # 鳴いた牌（横向き）の場所
     dk_ = os.path.join(a[0], "doramk.json"); DRK = json.load(open(dk_)) if os.path.exists(dk_) else None      # カンの元ドラ・新ドラの場所      # ①の前の絵（他家が切る・自分がツモる）で囲む牌
     name = a[a.index("--script") + 1] if "--script" in a else "chi"
     sc = scaled(SCRIPTS[name], fps)
@@ -1254,6 +1271,10 @@ def main():
                 bappu_live(d, t, bappu_phases(SUBS[f"step{i + 1}"]))
             if sc.get("cards", {}).get(i) == "bappu" and held:      # 手順の動きが終わって止めているあいだに、早見表を出す
                 card_t0.setdefault(i, t); bappu_card(d, t - card_t0[i])
+            yk_ = sc.get("yoko")
+            if CMK and yk_ and yk_[0] == i and f"step{i + 1}" in SUBS and not isinstance(f, str):      # 右端に寄せたあと「横向きの牌は…」で、鳴いた牌を点滅
+                w_ = say_at(SUBS[f"step{i + 1}"], yk_[1])
+                if w_ is not None: blink_mark(d, CMK[min(f, len(CMK) - 1)], t - .25 - w_, yk_[2])
             if DRK and s[0] == "裏ドラ" and f"step{i + 1}" in SUBS and not isinstance(f, str):      # 表ドラ・裏ドラの札（カンの元ドラ・新ドラと同じ。2026-11-28 ユーザーの指定）
                 bx_ = DRK["frames"][min(f, len(DRK["frames"]) - 1)]
                 w1 = say_end(SUBS[f"step{i + 1}"], "めくります") or 3.0; w0 = say_end(SUBS[f"step{i + 1}"], "並べます") or 1.5

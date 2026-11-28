@@ -2013,6 +2013,18 @@ if ANIM:
         import json; cc = []
         for f in range(n): anim_pose(f / FPS, cam); cc.append(count_pos())
         json.dump(cc, open(os.path.join(OUT, "count.json"), "w"))
+    if SCENE in ("chi", "pon", "daiminkan", "kakan") and (not only or "--callmk" in sys.argv):      # 鳴いた牌（横向き）の場所。右端に寄せたあと「横向きの牌は…」で点滅させる（2026-11-28 ユーザーの指定）
+        import json; ck = []
+        box_ = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o, True)])
+        for f in range(n):
+            anim_pose(f / FPS, cam); bpy.context.view_layer.update()
+            if SCENE in ("chi", "pon"):      # チー・ポンは CAMST を使わない（カメラの向きで写す）
+                from bpy_extras.object_utils import world_to_camera_view
+                o_ = NAMED["called"]; ps_ = [world_to_camera_view(bpy.context.scene, cam, q) for q in tile_corners(o_, False)]
+                ps_ = [(v.x * 1080, (1 - v.y) * 1920) for v in ps_]; ck.append([round(min(p[0] for p in ps_)), round(min(p[1] for p in ps_)), round(max(p[0] for p in ps_)), round(max(p[1] for p in ps_))])
+            else: ck.append(box_(NAMED["meld0" if SCENE == "kakan" else "called"]))      # 加槓＝ポンの横向きの1枚（4枚目はその上に重ねる）
+        json.dump(ck, open(os.path.join(OUT, "callmk.json"), "w"))
+        if "--callmk" in sys.argv: print("CALLMK", n); sys.exit(0)
     if SCENE in ("kan", "daiminkan", "kakan", "riichi") and (not only or "--doramk" in sys.argv):      # リーチは表ドラ・裏ドラ      # 元ドラ表示牌・新ドラ表示牌の場所（make_clip.py が札をのせる。2026-11-28 ユーザーの指定）
         import json; dk = []
         box_ = lambda o: (lambda ps: [round(min(p[0] for p in ps)), round(min(p[1] for p in ps)), round(max(p[0] for p in ps)), round(max(p[1] for p in ps))])([project(q) for q in tile_corners(o, True)])
