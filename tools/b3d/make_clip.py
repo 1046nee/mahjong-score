@@ -187,7 +187,7 @@ SCRIPTS = {
         ("ロンできない", "", "{上家|カミチャ}が四索を切っても、ロンできない", 113, 153, 2.2, [], ""),
         ("ツモ", "", "自分で引いたアガリ牌なら、ツモアガリできる", 154, 200, 2.2, [], "ツモ"),
     ], tail=(201, 210, 2.4), bubw={4: "ツモアガリできます"}, bubpos={"ツモ": ((760, 1350), (120, 260))},
-    pre=dict(head="リーチ後のフリテン", marks={"riichi": ("orange", "リーチ", [], "LR", 0), "own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="この局はもうロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
+    pre=dict(head="リーチ後のフリテン", marks={"riichi": ("orange", "リーチ", [], "LR", 0), "bou": ("orange", "", [], "", 0), "own": ("teal", "待ち", ["s1", "s4", "s7"], "UL"), "miss": ("blue", "見逃し", ["s1"], "UR", 1)}, xat="どの待ちでもロンできません", xtext="この局はもうロンできない", ls=[0, 0, 0, 1], hold=2.0, concl=True, lines=[
         (0.3, "{リーチ}をしている", "待ちを変えられない"),
         (1.6, "アガリ牌が出たのに{ 見逃した }"),
         (2.9, "どの待ちでも{ロン}できない", "ツモはできる"),
@@ -560,8 +560,8 @@ MARKS = {
                 [("fu7", "orange", "", [], ""), ("next", "green", "ツモはできる", ["s4"], "LR")]],
     "furiten2": [[("meld", "orange", "チーした牌", ["m2", "m3", "m4"], "RM")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("o1", "blue", "見逃し", ["s1"], "UR"), ("o2", "red", "ロンできない", ["s4"], "UL")],
                  [("next", "orange", "自分が打牌", ["z2"], "LM")], [("o4", "green", "ロンできる", ["s7"], "UR")]],
-    "furiten3": [[("rk", "orange", "リーチ", [], "LR"), ("bou", "orange", "", [], "")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("o1", "blue", "見逃し", ["s1"], "UR"), ("next", "orange", "自分が打牌", ["p9"], "LR")],
-                 [("o1", "blue", "見逃し", ["s1"], "UR"), ("o6", "red", "ロンできない", ["s4"], "UL")], [("o1", "blue", "", [], ""), ("next2", "green", "ツモはできる", ["s7"], "LR")]],
+    "furiten3": [[("rk", "orange", "リーチ", [], "LR"), ("bou", "orange", "", [], "")], [("o1", "blue", "見逃し", ["s1"], "UR")], [("next", "orange", "自分が打牌", ["p9"], "LR")],      # ③は手牌に寄った画角で一索が映らないので、見逃しは出さない（2026-11-28 ユーザーの指定）
+                 [("o1", "blue", "見逃し", ["s1"], "UR"), ("o6", "red", "ロンできない", ["s4"], "UL")], [("o1", "blue", "", [], ""), ("next2", "green", "ツモはできる", ["s7"], "LR", "ツモアガリできます")]],      # ⑤の「ツモはできる」は手を引いてから（手がかかったまま出ていた）
 }
 _tim = {}
 def _tile_img(code, h):
@@ -839,7 +839,7 @@ def next_dora(c):
 
 def kandora_marks(d, bx, t_new, now):
     """④カンドラ: 牌の上に「元ドラ表示牌」「新ドラ表示牌」の札（6枚切りの数字と同じ見せ方。2026-11-28 ユーザーの指定）"""
-    for key, tx, col, t0 in (("dora", "元ドラ表示牌", (23, 112, 131), 0.0), ("kandora", "新ドラ表示牌", (231, 86, 32), t_new)):
+    for key, tx, col, t0 in (("dora", "元ドラ", (23, 112, 131), 0.0), ("kandora", "新ドラ", (231, 86, 32), t_new)):
         b = bx.get(key)
         if not b or now < t0: continue
         k = min(1, (now - t0) / .3); s_ = _ease_pop(k); x = (b[0] + b[2]) / 2; y = b[1] - 16
@@ -1035,7 +1035,7 @@ def dora_card(d, t, dc):
 
 def kuikae_card(d, kk, t, subs):
     """喰い替えの具体例（2026-11-25 ユーザーの指定）。「鳴いた牌と…」と話し始めたらカード（鳴いた形）→ 声に合わせて、切れない牌が1枚ずつ、ぽこんと出る"""
-    a = min(1, t * 4); A = lambda v: int(v * a); y = kk.get("y", 650) + int((1 - a) * 24); h = 540      # 鳴いた牌と重ならない高さ（動画ごとに y。チーは鳴いた牌が画面の上なので下へ）
+    a = min(1, t * 4); A = lambda v: int(v * a); y = kk.get("y", max(650, TOPY[0])) + int((1 - a) * 24); h = 540      # 鳴いた牌と重ならない高さ（動画ごとに y。チーは鳴いた牌が画面の上なので下へ）
     d.rounded_rectangle((60, y, W - 60, y + h), radius=44, fill=(12, 20, 22, A(200)), outline=(231, 86, 32, A(255)), width=6)
     d.rounded_rectangle((W / 2 - 190, y + 34, W / 2 + 190, y + 98), radius=32, fill=(231, 86, 32, A(255)))      # 見出しはカードの中（ルビがカードの外に出ていた。2026-11-26 ユーザーの指摘）
     ruby_c(d, W / 2, y + 68, "{喰い替え|くいかえ}の例", font(40, 800), (255, 255, 255, A(255)), 22)
@@ -1260,7 +1260,7 @@ def main():
                 kandora_marks(d, bx_, .25 + w1, t)
                 if t >= .25 + w2:      # 表示牌 → ドラ のカード（3Dの牌）。王牌と重ならない側に
                     yb = min(v[1] for v in (bx_["dora"], bx_.get("kandora") or bx_["dora"]))
-                    dora_card(d, t - .25 - w2, dict(y=(1150 if yb < 900 else 640), rows=[("元ドラ", DRK["dora"], next_dora(DRK["dora"]), (140, 220, 230)), ("新ドラ", DRK["kandora"], next_dora(DRK["kandora"]), (255, 170, 120))]))
+                    dora_card(d, t - .25 - w2, dict(y=(1100 if yb < 900 else 640), rows=[("元ドラ", DRK["dora"], next_dora(DRK["dora"]), (140, 220, 230)), ("新ドラ", DRK["kandora"], next_dora(DRK["kandora"]), (255, 170, 120))]))
             dc_ = sc.get("doracard")
             if dc_ and dc_["step"] == i and f"step{i + 1}" in SUBS:
                 ws_ = say_end(SUBS[f"step{i + 1}"], dc_["at"])

@@ -1547,12 +1547,12 @@ def s2_build():
             ST = (xt, last_.y, last_.z); s6 = (RX0 + 5 * RP + (TL - TW), RY + RIVER_DY, Z)      # 横向きの牌の分だけ右へ
             mv["next"] = [(5.2, 6.0, ST, S_, .06), (6.4, 7.1, s6, L_, .06)]              # ③ 九筒をツモって、手を戻して見せてから切る
             other_cut("o4", 1, 7.8, .5); other_cut("o5", 2, 8.5, .5); c6 = other_cut("o6", 3, 9.2)      # ④ 下家・対面 → 上家の四索
-            nx2 = P("next2"); mv["next2"] = [(11.0, 11.6, ST, S_, .06), (11.8, 12.05, (xt, LY, Z), L_, .015)]         # ⑤ 七索をツモって立て、手を戻して見せてから倒す
+            nx2 = P("next2"); mv["next2"] = [(10.8, 11.4, ST, S_, .06), (12.0, 12.25, (xt, LY, Z), L_, .015)]         # ⑤ 七索をツモって立て、手を戻して見せてから倒す
             arms[0] = [(0, R), (4.6, R), (5.2, A(nx.x, nx.y, .02)), (6.0, A(xt, HY + .01, .02)), (6.12, R), (6.2, R), (6.4, A(xt, HY + .01, .02)), (7.1, A(s6[0], s6[1])), (7.45, R),
-                       (10.5, R), (11.0, A(nx2.x, nx2.y, .02)), (11.6, A(xt, HY + .01, .02)), (11.72, R), (11.75, R), (11.8, A(xt, HY - .01, .02)), (12.05, A(xt, LY)), (DUR, R)]
+                       (10.3, R), (10.8, A(nx2.x, nx2.y, .02)), (11.4, A(xt, HY + .01, .02)), (11.55, R), (11.85, R), (12.0, A(xt, HY - .01, .02)), (12.25, A(xt, LY)), (DUR, R)]      # ツモったら手を戻して、何を引いたか見せてから倒す（前は手を戻す間が一瞬で、牌に手がかかったままだった＝2026-11-28 ユーザーの指摘）
             views.append((4.25, 4.7, tuple(HANDV[0] + HANDV[1]), tuple(HANDV[0]), HANDV[2])); focus[2] = (HANDV[0], HANDV[1], HANDV[2])      # 前にかがむ前に切りかえる（かがんだ頭をカメラが通った）      # ③ ツモ切り＝卓の手牌（2026-11-26 ユーザーの指定）
             views.append((7.45, 7.75, tuple(TABLE[0] + TABLE[1]), tuple(TABLE[0]), TABLE[2]))
-            agari(12.2); to_hand(10.2)
+            agari(12.4); to_hand(10.0)
     elif SCENE == "ron":
         for k in range(13): mv[f"hk{k}"] = [(1.5, 2.3, (P(f"hk{k}").x, LY, Z), LIE, .015)]
         # 両手で、手牌の左端と右端を持って倒す（2026-11-14 ユーザーの指定）。アガリ牌のほうへカメラは行かない（その手順はやめた）
@@ -1874,7 +1874,7 @@ def pre_marks(t):
     elif SCENE == "furiten2":
         grp = {"own": (S2C["pre"]["lift"], 2.0), "miss": (["o1"], 3.25)}
     elif SCENE == "furiten3":
-        grp = {"own": (S2C["pre"]["lift"], 2.0), "riichi": (["rk", "bou"], 0.0), "miss": (["o1"], 3.25)}
+        grp = {"own": (S2C["pre"]["lift"], 2.0), "riichi": (["rk"], 0.0), "bou": (["bou"], 0.0), "miss": (["o1"], 3.25)}      # 宣言牌とリーチ棒は別々に囲む（①と同じ。2026-11-28 ユーザーの指定）
     elif SCENE == "ryukyoku":
         wp = [n for n in NAMED if n.startswith("wp")] + ["dora"]
         grp = {"haitei": (["haitei"], .3, 1.55), "houtei": (["haitei"], 3.55, 3.8), "wanpai": (wp, 4.6)}      # 王牌に寄ったら河底牌の印は消す（重なった）
