@@ -1379,10 +1379,10 @@ def s2_build():
         mv["called"] = [(2.9, 3.8, (E3, ys, Z), rc, .05), (4.45, 5.0, (E3 + DXm, ys + DYm, Z), rc, 0)]      # 河から、そのまま暗刻の右へ      # ③は手前に置いて手をどけ、④で押して付ける（2026-11-25 ユーザーの指摘）
         kd = P("kandora"); mv["kandora"] = [(5.5, 6.1, (kd.x, kd.y, kd.z - TT), LIE, .025)]
         rs = P("rinshan11"); xr = P("hk9").x + HP + .012; dst = slot(n0)
-        mv["rinshan11"] = [(6.6, 7.5, (xr, HY + TT, Z + TL / 2), STAND, .06), (8.1, 8.9, dst, LIE, .06)]
+        mv["rinshan11"] = [(6.6, 7.5, (xr, HY + TT, Z + TL / 2), STAND, .012), (8.1, 8.9, dst, LIE, .06)]      # 嶺上牌は低く運ぶ（高く弧を描くと、上にある手を貫通した＝2026-11-28 ユーザーの指摘）
         kx = P("hk11").x
         arms[0] = [(0, R), (1.0, R), (1.5, A(kx, HY + .01, .02)), (2.1, A(E[1], LY)), (2.9, A(c.x, c.y)), (3.8, A(E3, ys)), (4.2, (E3 + .07, ys - .12, hz + .05)), (4.45, A(E[1], LY)), (5.0, A(E[1] + DXm, MY)),
-                   (5.5, (kd.x + .075, kd.y - .05, hz - .004)), (6.1, (kd.x + .075, kd.y - .05, hz - .004)), (6.6, (rs.x + .035, rs.y - .02, hz)), (7.5, (xr + .035, HY - .02, hz + .01)), (7.8, (xr + .035, HY - .02, hz + .01)), (8.1, A(xr, HY + .01, .02)), (8.9, A(dst[0], dst[1])), (9.3, R), (DUR, R)]      # 嶺上牌は右手前を持つ（真上だと、起こした牌が手を貫通した＝2026-11-28 ユーザーの指摘。暗槓と同じ）      # ⑦の止める絵までに腕を戻す
+                   (5.5, (kd.x + .075, kd.y - .05, hz - .004)), (6.1, (kd.x + .075, kd.y - .05, hz - .004)), (6.6, (rs.x + .05, rs.y - .02, hz)), (7.5, (xr + .05, HY - .02, hz + .01)), (7.8, (xr + .05, HY - .02, hz + .01)), (8.1, A(xr, HY + .01, .02)), (8.9, A(dst[0], dst[1])), (9.3, R), (DUR, R)]      # 嶺上牌は右手前を持つ（真上だと、起こした牌が手を貫通した＝2026-11-28 ユーザーの指摘。暗槓と同じ）      # ⑦の止める絵までに腕を戻す
         px = lambda t: .03 - .05 * (seg(t, 2.2, 2.9) - seg(t, 3.1, 3.8)) + .13 * seg(t, 4.2, 5.0) - .11 * seg(t, 5.2, 5.6) - .04 * seg(t, 7.6, 8.1)
         focus = [Vector((E[1], LY, .77)), Vector(((E[1] + E3) / 2, LY, .77)), Vector(((E[1] + E3) / 2 + DXm, MY, .77)), Vector((kd.x - .01, kd.y, .77)), Vector((xr - .03, HY, .77))]
         pre = dict(lift=["hk10", "hk11", "hk12"], call=True, cam2=None)
@@ -1391,9 +1391,9 @@ def s2_build():
         mv["hk10"] = [(1.5, 2.4, top, (0, 0, -math.pi / 2), .05)]
         kd = P("kandora"); mv["kandora"] = [(2.9, 3.5, (kd.x, kd.y, kd.z - TT), LIE, .025)]
         rs = P("rinshan11"); t10 = P("hk10"); dst = slot(n0)
-        mv["rinshan11"] = [(4.0, 4.9, tuple(t10), STAND, .06), (5.5, 6.3, dst, LIE, .06)]
-        arms[0] = [(0, R), (1.0, R), (1.5, A(t10.x, HY + .01, .02)), (2.4, A(top[0], top[1])), (2.9, (kd.x + .075, kd.y - .05, hz - .004)), (3.5, (kd.x + .075, kd.y - .05, hz - .004)), (4.0, (rs.x + .035, rs.y - .02, hz)),
-                   (4.9, (t10.x + .035, HY - .02, hz + .01)), (5.2, (t10.x + .035, HY - .02, hz + .01)), (5.5, A(t10.x, HY + .01, .02)), (6.3, A(dst[0], dst[1])), (6.75, R), (DUR, R)]      # ⑤の止める絵までに腕を戻す
+        mv["rinshan11"] = [(4.0, 4.9, tuple(t10), STAND, .012), (5.5, 6.3, dst, LIE, .06)]      # 嶺上牌は低く運ぶ（大明槓と同じ）
+        arms[0] = [(0, R), (1.0, R), (1.5, A(t10.x, HY + .01, .02)), (2.4, A(top[0], top[1])), (2.9, (kd.x + .075, kd.y - .05, hz - .004)), (3.5, (kd.x + .075, kd.y - .05, hz - .004)), (4.0, (rs.x + .05, rs.y - .02, hz)),
+                   (4.9, (t10.x + .05, HY - .02, hz + .01)), (5.2, (t10.x + .05, HY - .02, hz + .01)), (5.5, A(t10.x, HY + .01, .02)), (6.3, A(dst[0], dst[1])), (6.75, R), (DUR, R)]      # ⑤の止める絵までに腕を戻す
         px = lambda t: .03 + .16 * (seg(t, 1.5, 2.4) - seg(t, 2.6, 2.9))
         focus = [Vector((m0.x + .012, m0.y + TW / 2, .77)), Vector((kd.x - .01, kd.y, .77)), Vector((t10.x - .03, HY, .77))]
         pre = dict(lift=["hk10"], call=False, cam2=(Vector((MR - .08, -.6, 1.05)), Vector((MR - .08, MY, .78)), 36.0))
@@ -2022,7 +2022,7 @@ if ANIM:
                 from bpy_extras.object_utils import world_to_camera_view
                 o_ = NAMED["called"]; ps_ = [world_to_camera_view(bpy.context.scene, cam, q) for q in tile_corners(o_, False)]
                 ps_ = [(v.x * 1080, (1 - v.y) * 1920) for v in ps_]; ck.append([round(min(p[0] for p in ps_)), round(min(p[1] for p in ps_)), round(max(p[0] for p in ps_)), round(max(p[1] for p in ps_))])
-            else: ck.append(box_(NAMED["meld0" if SCENE == "kakan" else "called"]))      # 加槓＝ポンの横向きの1枚（4枚目はその上に重ねる）
+            else: ck.append(box_(NAMED["hk10" if SCENE == "kakan" else "called"]))      # 加槓＝重ねた4枚目（上側の牌。2026-11-28 ユーザーの指定）
         json.dump(ck, open(os.path.join(OUT, "callmk.json"), "w"))
         if "--callmk" in sys.argv: print("CALLMK", n); sys.exit(0)
     if SCENE in ("kan", "daiminkan", "kakan", "riichi") and (not only or "--doramk" in sys.argv):      # リーチは表ドラ・裏ドラ      # 元ドラ表示牌・新ドラ表示牌の場所（make_clip.py が札をのせる。2026-11-28 ユーザーの指定）
