@@ -1892,7 +1892,7 @@ def pre_marks(t):
     else:
         CALLP = SCENE in ("chi", "pon") or (S2 and S2C["pre"]["call"])
         lift = S2C["pre"]["lift"] if S2 else (["hk10", "hk11", "hk12", "hk13"] if SCENE == "kan" else ["hk11", "hk12"])
-        grp = {"own": (lift, 2.0)}
+        grp = {"own": (lift, 2.0, 2.5) if SCENE == "daiminkan" else (lift, 2.0)}      # 大明槓: 暗刻の囲みは、下家の河へ画角が動き始めたら消す（動く間にカードと重なった＝2026-11-28 ユーザーの指定）
         if CALLP: grp["call"] = (["called"], 3.75)
     out = {}
     for key, g_ in grp.items():
@@ -1959,7 +1959,7 @@ if ANIM and "--pre" in sys.argv:        # 前置きのコマを p0000.png〜 に
     cam = anim_setup()
     n = int(PRE_DUR * FPS)
     only = arg("--frames", "")
-    for f in ([int(x) for x in only.split(",")] if only else range(n)):
+    for f in ([int(x) for x in only.split(",")] if only else [] if "--pmarks" in sys.argv else range(n)):      # --pmarks＝絵は書き出さず、囲む牌の場所だけ作り直す
         fp = os.path.join(OUT, f"p{f:04d}.png")
         for o_ in NAMED.values(): o_.location = o_["p0"]; o_.rotation_euler = o_["r0"]
         hide_tree(bpy.data.objects["player0"]); pre_pose(f / FPS, cam)
